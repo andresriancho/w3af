@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import hashlib
 import os
 import string
 import cPickle
@@ -27,7 +28,7 @@ from itertools import repeat, starmap
 from random import choice
 
 from core.controllers.misc.temp_dir import get_temp_dir
-from core.data.db.disk_item import disk_item
+from core.data.db.disk_item import DiskItem
 from core.data.db.db import DBClientSQLite
 
 
@@ -106,6 +107,15 @@ class DiskList(DBClientSQLite):
 
     def _get_eq_attrs_values(self, obj):
         '''
+        @param obj: The object from which I need a hash.
+
+        @return: A hash representing the eq_attrs specified in the DiskItem.
+        '''
+        concatenated_eq_attrs = self.__internal_get_eq_attrs_values(obj)
+        return hashlib.md5(concatenated_eq_attrs).hexdigest()
+
+    def __internal_get_eq_attrs_values(self, obj):
+        '''
         @param obj: The object from which I need a unique string.
 
         @return: A string with all the values from the get_eq_attrs() method
@@ -114,34 +124,34 @@ class DiskList(DBClientSQLite):
         '''
         result = ''
 
-        if obj is None:
-            return obj
-
         if isinstance(obj, basestring):
             return obj
+        
+        if obj is None:
+            return str(obj)
 
         elif isinstance(obj, (int, float)):
             return str(obj)
 
         elif isinstance(obj, (list, tuple, set)):
             for sub_obj in obj:
-                result += self._get_eq_attrs_values(sub_obj)
+                result += self.__internal_get_eq_attrs_values(sub_obj)
             return result
 
         elif isinstance(obj, dict):
             for key, value in obj.iteritems():
-                result += self._get_eq_attrs_values(key)
-                result += self._get_eq_attrs_values(value)
+                result += self.__internal_get_eq_attrs_values(key)
+                result += self.__internal_get_eq_attrs_values(value)
             return result
 
-        elif isinstance(obj, disk_item):
+        elif isinstance(obj, DiskItem):
             for attr in obj.get_eq_attrs():
                 value = getattr(obj, attr)
-                result += self._get_eq_attrs_values(value)
+                result += self.__internal_get_eq_attrs_values(value)
 
             return result
         else:
-            msg = 'Complex classes like %s need to inherit from disk_item to be stored.'
+            msg = 'Complex classes like %s need to inherit from DiskItem to be stored.'
             raise Exception(msg % type(obj))
 
     def __contains__(self, value):
@@ -182,9 +192,15 @@ class DiskList(DBClientSQLite):
 
     def ordered_iter(self):
         # TODO: How do I make the __iter__ thread safe?
-        results = self.select('SELECT pickle FROM data ORDER BY eq_attrs ASC')
+        # How do I avoid loading all items in memory?
+        objects = []
+        results = self.select('SELECT pickle FROM data')
+        
         for r in results:
             obj = cPickle.loads(r[0])
+            objects.append(obj)
+        
+        for obj in sorted(objects):
             yield obj
 
     def __iter__(self):

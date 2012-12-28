@@ -1,5 +1,5 @@
 '''
-disk_item.py
+DiskItem.py
 
 Copyright 2012 Andres Riancho
 
@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-class disk_item(object):
+class DiskItem(object):
     '''
-    This is a very simple class that's intented to be a base class for objects
+    This is a very simple class that's intended to be a base class for objects
     that want to be stored in a DiskList of DiskSet. It basically exposes the
     "get_eq_attrs" method which returns a list with the names of the attributes
     that make this object "unique".

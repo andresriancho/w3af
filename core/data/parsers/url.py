@@ -35,7 +35,7 @@ from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
 from core.data.dc.data_container import DataContainer
 from core.data.dc.queryString import QueryString
-from core.data.db.disk_item import disk_item
+from core.data.db.disk_item import DiskItem
 
 
 def set_changed(meth):
@@ -152,7 +152,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     return qs
 
 
-class URL(disk_item):
+class URL(DiskItem):
     '''
     This class represents a URL and gives access to all its parts
     with several "getter" methods.

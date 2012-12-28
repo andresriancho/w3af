@@ -31,7 +31,7 @@ from core.controllers.exceptions import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.headers import Headers
 from core.data.dc.data_container import DataContainer
-from core.data.db.disk_item import disk_item
+from core.data.db.disk_item import DiskItem
 from core.data.parsers.url import URL
 
 
@@ -42,7 +42,7 @@ CRLF = CR + LF
 SP = ' '
 
 
-class FuzzableRequest(disk_item):
+class FuzzableRequest(DiskItem):
     '''
     This class represents a fuzzable request. Fuzzable requests were created
     to allow w3af plugins to be much simpler and don't really care if the
