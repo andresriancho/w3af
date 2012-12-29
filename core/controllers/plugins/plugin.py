@@ -156,10 +156,10 @@ class Plugin(Configurable):
                     inform.append(i)
 
         elif unique == 'VAR':
-            reportedVARs = []
+            reported_vars = []
             for i in info_obj_list:
-                if (i.get_url(), i.get_var()) not in reportedVARs:
-                    reportedVARs.append((i.get_url(), i.get_var()))
+                if (i.get_url(), i.get_var()) not in reported_vars:
+                    reported_vars.append((i.get_url(), i.get_var()))
                     inform.append(i)
 
         elif unique is None:
