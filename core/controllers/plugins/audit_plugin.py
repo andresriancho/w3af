@@ -47,8 +47,9 @@ class AuditPlugin(Plugin):
 
         @param fuzzable_request: A fuzzable_request instance
         '''
-        # These lines were added because we need to return the new vulnerabilities found by this
-        # audit plugin, and I don't want to change the code of EVERY plugin!
+        # These lines were added because we need to return the new
+        # vulnerabilities found by this audit plugin, and I don't want to
+        # change the code of EVERY plugin!
         before_vuln_dict = kb.kb.get(self)
 
         self.audit_with_copy(fuzzable_request)
