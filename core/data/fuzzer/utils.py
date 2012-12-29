@@ -28,19 +28,6 @@ def rand_alpha(length=0):
     Create a random string ONLY with letters
 
     @return: A random string only composed by letters.
-
-    >>> x = rand_alpha( length=10 )
-    >>> len(x) == 10
-    True
-    >>> x = rand_alpha( length=20 )
-    >>> len(x) == 20
-    True
-    >>> x = rand_alpha( length=5 )
-    >>> y = rand_alpha( length=5 )
-    >>> z = rand_alpha( length=5 )
-    >>> w = rand_alpha( length=5 )
-    >>> x != y != z != w
-    True
     '''
     return ''.join(choice(letters) for _ in xrange(length or randint(10, 30)))
 
@@ -50,19 +37,6 @@ def rand_alnum(length=0):
     Create a random string with random length
 
     @return: A random string of with length > 10 and length < 30.
-
-    >>> x = rand_number( length=10 )
-    >>> len(x) == 10
-    True
-    >>> x = rand_number( length=20 )
-    >>> len(x) == 20
-    True
-    >>> x = rand_number( length=5 )
-    >>> y = rand_number( length=5 )
-    >>> z = rand_number( length=5 )
-    >>> w = rand_number( length=5 )
-    >>> x != y != z != w
-    True
     '''
     jibber = ''.join([letters, digits])
     return ''.join(choice(jibber) for _ in xrange(length or randint(10, 30)))
@@ -73,16 +47,6 @@ def rand_number(length=0, exclude_numbers=[]):
     Create a random string ONLY with numbers
 
     @return: A random string only composed by numbers.
-
-    >>> x = rand_number( length=1 )
-    >>> int(x) in range(10)
-    True
-    >>> x = rand_number( length=2 )
-    >>> int(x) in range(100)
-    True
-    >>> x = rand_number( length=3 )
-    >>> int(x) in range(1000)
-    True
     '''
     max_tries = 100
     while True:
