@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from core.data.parsers.htmlParser import HTMLParser
-from core.data.parsers.pdf import PDFParser
+from core.data.parsers.pdf import PDFParser, pdf_to_text
 from core.data.parsers.swf import SWFParser
 from core.data.parsers.wml_parser import WMLParser
 
@@ -83,7 +83,7 @@ class DocumentParser(object):
             #   So... just to be sure I search in the last 12 characters.
             if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
                 try:
-                    text = PDFParser.pdf_to_text(document)
+                    text = pdf_to_text(document)
                 except Exception:
                     return False
                 else:

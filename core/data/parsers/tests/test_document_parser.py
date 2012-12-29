@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import os
 
 from nose.plugins.skip import SkipTest
 
@@ -44,17 +45,18 @@ def _build_http_response(body_content, content_type):
 
 class TestDocumentParserFactory(unittest.TestCase):
 
+    PDF_FILE = os.path.join('core', 'data', 'parsers', 'tests', 'data',
+                            'links.pdf')
+
     def test_html(self):
         parser = document_parser_factory(_build_http_response('', 'text/html'))
 
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
 
-    def test_pdf(self):
-        raise SkipTest('Need to define an example PDF file that doesnt break'
-                       ' the pypdf parser.')
+    def test_pdf_case01(self):
         parser = document_parser_factory(
-            _build_http_response('%PDF-\n1\n%%EOF',
+            _build_http_response(file(self.PDF_FILE).read(),
                                  'application/pdf'))
 
         self.assertIsInstance(parser, DocumentParser)
