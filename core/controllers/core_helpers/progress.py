@@ -57,7 +57,9 @@ class progress(object):
 
         '''
         if self._current_value == self._max_value:
-            om.out.error('Current value can never be greater than max value!')
+            # TODO: Find a way to show progress!
+            #om.out.error('Current value can never be greater than max value!')
+            pass
         else:
             # inc the counter
             self._current_value += 1
