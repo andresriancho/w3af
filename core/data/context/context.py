@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from functools import wraps
 
 ATTR_DELIMETERS = ['"', '`', "'"]
 JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove', 
@@ -37,18 +38,20 @@ class Context(object):
         return False
 
     def can_break(self, payload):
-        raise 'can_break() should be implemented'
+        raise NotImplementedError('can_break() should be implemented')
     
     def match(self, data):
-        raise 'match() should be implemented'
+        raise NotImplementedError('match() should be implemented')
 
     def inside_comment(self, data):
-        raise 'inside_comment() should be implemented'
+        raise NotImplementedError('inside_comment() should be implemented')
 
     def save(self, data):
         self.data = data
 
 def normalize_html(meth):
+    
+    @wraps(meth)
     def wrap(self, data):
         data = data.replace("\\'",'')
         data = data.replace('\\"','')
@@ -66,6 +69,7 @@ def normalize_html(meth):
                 s = '&gt;'
             new_data += s
         return meth(self, new_data)
+    
     return wrap
 
 def get_html_attr(data):
@@ -116,14 +120,20 @@ def get_html_attr(data):
 
 def _inside_js(data):
     script_index = data.lower().rfind('<script')
-    if script_index > data.lower().rfind('</script>') and data[script_index:].count('>'):
+    
+    if script_index > data.lower().rfind('</script>') and \
+    data[script_index:].count('>'):
         return True
+    
     return False
 
 def _inside_style(data):
-    script_index = data.lower().rfind('<style')
-    if script_index > data.lower().rfind('</style>') and data[script_index:].count('>'):
+    style_index = data.lower().rfind('<style')
+    
+    if style_index > data.lower().rfind('</style>') and \
+    data[style_index:].count('>'):
         return True
+    
     return False
 
 def _inside_html_attr(data, attrs):
@@ -175,6 +185,8 @@ def inside_js(meth):
     return wrap
 
 def inside_style(meth):
+    
+    @wraps(meth)
     def wrap(self, data):
         if _inside_style(data):
             data = crop_style(data)
@@ -183,13 +195,17 @@ def inside_style(meth):
             data = crop_style(data, 'attr')
             return meth(self, data)
         return False
+    
     return wrap
 
 def inside_html(meth):
+    
+    @wraps(meth)
     def wrap(self, data):
         if _inside_js(data) or _inside_style(data):
             return False
         return meth(self, data)
+    
     return wrap
 
 
@@ -198,7 +214,7 @@ class HtmlContext(Context):
     @normalize_html
     @inside_html
     def inside_comment(self, data):
-        # We are inside <!--...
+        # We are inside <!--...-->
         if data.rfind('<!--') <= data.rfind('-->'):
             return False
         return True
@@ -386,7 +402,7 @@ class StyleContext(Context):
     @normalize_html
     @inside_style
     def inside_comment(self, data):
-        # We are inside /*...
+        # We are inside /*...*/
         if data.rfind('/*') <= data.rfind('*/'):
             return False
         return True
@@ -532,7 +548,7 @@ class StyleComment(StyleContext):
     def __init__(self):
         self.name = 'STYLE_COMMENT'
 
-    def match(self, data):
+    def match(self, data): 
         return self.inside_comment(data)
 
     def can_break(self, data):

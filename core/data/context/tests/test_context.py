@@ -24,7 +24,8 @@ import unittest
 from core.data.context.context import (get_context , get_contexts, HtmlText,
                                         ScriptSingleQuote, ScriptText, HtmlComment,
                                         HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
-                                        HtmlAttr, HtmlAttrDoubleQuote2ScriptText)
+                                        HtmlAttr, HtmlAttrDoubleQuote2ScriptText,
+                                        StyleComment)
 
 class TestContext(unittest.TestCase):
     html = '''
@@ -80,12 +81,30 @@ class TestContext(unittest.TestCase):
     HTML_ATTR_SINGLE_QUOTE'''
 
 
-    def _test_all(self):
+    def test_all(self):
         for context in get_contexts():
             self.assertEqual(
                     get_context(self.html, context.get_name())[0][0].get_name(), 
                     context.get_name()
                    )
+
+    def test_style_comment(self):
+        style_comment = '''
+        <html>
+            <head>
+                <style>
+                /*
+                Hello STYLE_COMMENT world
+                 * */
+                </style>
+            </head>
+        </html>
+        '''
+        
+        self.assertEqual(
+                get_context(style_comment, StyleComment().get_name())[0][0].get_name(), 
+                StyleComment().get_name()
+               )
     
     def test_html_inside_js(self):
         self.assertEqual(
