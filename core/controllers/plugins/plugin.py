@@ -29,7 +29,7 @@ from core.data.kb.vuln import Vuln
 from core.data.options.option_list import OptionList
 from core.controllers.configurable import Configurable
 from core.controllers.threads.threadpool import return_args
-from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
+from core.controllers.exceptions import w3afMustStopOnUrlError
 
 
 class Plugin(Configurable):
@@ -132,7 +132,7 @@ class Plugin(Configurable):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        raise w3afException(
+        raise NotImplementedError(
             'Plugin is not implementing required method get_long_desc')
 
     def print_uniq(self, info_obj_list, unique):
