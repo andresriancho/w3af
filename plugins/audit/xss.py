@@ -66,10 +66,17 @@ class xss(AuditPlugin):
         @param freq: A FuzzableRequest
         '''
         fake_mutants = create_mutants(freq, ['',])
-        for mutant in fake_mutants:
-            
-            if not self._identify_trivial_xss(mutant):
-                self._search_xss(mutant)
+        
+        # Run this in the worker pool in order to get different
+        # parameters tested at the same time.
+        self.worker_pool.map(self._check_persistent_xss, fake_mutants)
+        
+    def _check_xss_in_parameter(self, mutant):
+        '''
+        Tries to identify (persistent) XSS in one parameter.
+        ''' 
+        if not self._identify_trivial_xss(mutant):
+            self._search_xss(mutant)
 
     def _report_vuln(self, mutant, response, mod_value):
         '''
