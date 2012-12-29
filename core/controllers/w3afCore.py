@@ -192,9 +192,9 @@ class w3afCore(object):
             #
             raise
         except w3afMustStopException, wmse:
-            self.scan_end_hook(wmse, ignore_err=True)
-            om.out.error('\n**IMPORTANT** The following error was '
-                         'detected by w3af and couldn\'t be resolved:\n%s\n' % wmse)
+            error = '\n**IMPORTANT** The following error was detected by'\
+                    ' w3af and couldn\'t be resolved:\n%s\n' % wmse
+            om.out.error(error)
         except Exception:
             om.out.error('\nUnhandled error, traceback: %s\n' %
                          traceback.format_exc())
@@ -328,14 +328,11 @@ class w3afCore(object):
             raise w3afException(
                 'No audit, grep or crawl plugins configured to run.')
 
-    def scan_end_hook(self, exc_inst=None, ignore_err=False):
+    def scan_end_hook(self):
         '''
         This method is called when the process ends normally or by an error.
         '''
         try:
-            if exc_inst:
-                om.out.debug(str(exc_inst))
-
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the data
             # from the history in their end() method. 
@@ -350,8 +347,7 @@ class w3afCore(object):
             close_all_db_connections()
 
         except Exception:
-            if not ignore_err:
-                raise
+            raise
 
         finally:
             # The scan has ended, terminate all workers
