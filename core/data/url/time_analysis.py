@@ -1,5 +1,5 @@
 '''
-timeAnalysis.py
+time_analysis.py
 
 Copyright 2006 Andres Riancho
 
@@ -35,7 +35,7 @@ AVERAGE_CALCULATION = 3
 TIME_DEVIATION_MULTIPLIER = 25
 
 
-class timeAnalysis:
+class time_analysis:
     '''
     This class analyzes the response time of a GET/POST .
     It is usefull for finding possible DoS's to Web Apps, buffer overflows, etc.
@@ -89,7 +89,7 @@ class timeAnalysis:
             if (receiveTime - sentTime) > (self._average * TIME_DEVIATION_MULTIPLIER):
                 # The time deviation was to big, report it.
                 ### TODO: Check WHY this AINT working and enable output again
-                #om.out.vulnerability('timeAnalysis detected a big time deviation when ' +
+                #om.out.vulnerability('time_analysis detected a big time deviation when ' +
                 #'requesting the URI: ' + uri + ' with method: ' + method +
                 #' and the following data: ' + str(dc) + ' . The average time for a response is: ' +
                 #str(self._average) + ' , this response took: ' + str(receiveTime - sentTime))
@@ -114,7 +114,7 @@ class timeAnalysis:
             self._registerResponse(uri, method, dc)
         else:
             # Something went really wrong, the tuple aint registered anywhere
-            om.out.error('timeAnalysis plugin detected an internal error.')
+            om.out.error('time_analysis plugin detected an internal error.')
 
         if self._numberOfRequests == AVERAGE_CALCULATION:
             # Now we are going to calculate the average time
