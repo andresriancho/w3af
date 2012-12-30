@@ -27,7 +27,7 @@ import pprint
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from mock import patch, call
+from mock import MagicMock, patch, call
 
 import core.controllers.output_manager as om
 
@@ -175,6 +175,15 @@ class TestW3afCorePause(unittest.TestCase):
         alive_threads = threading.enumerate()
         self.assertEqual(len(alive_threads), 0, nice_repr(alive_threads))
 
+    def test_stop_by_keyboardinterrupt(self):
+        '''
+        Verify that the Ctrl+C stops the scan.
+        '''
+        mock_call = MagicMock(side_effect=KeyboardInterrupt())
+        self.w3afcore.status.set_current_fuzzable_request = mock_call
+        
+        self.w3afcore.start()
+
 class TestExceptionHandler(TestW3afCorePause):
     '''
     Inherit from TestW3afCorePause to get the nice setUp().
@@ -266,7 +275,8 @@ class TestCoreExceptions(unittest.TestCase):
             
             message = 'Test exception.'
             self.assertIn(call.information(message), om_mock.mock_calls)
-        
+
+
 def nice_repr(alive_threads):
     repr_alive = [repr(x) for x in alive_threads]
     repr_alive.sort()

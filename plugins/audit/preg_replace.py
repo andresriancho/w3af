@@ -81,7 +81,7 @@ class preg_replace(AuditPlugin):
                                          self.get_name(), mutant)
 
                     v.add_to_highlight(preg_error_string)
-                    kb.kb.append_uniq(self, 'preg_replace', v)
+                    self.kb_append_uniq(self, 'preg_replace', v)
                     break
 
     def end(self):

@@ -140,7 +140,7 @@ class eval(AuditPlugin):
                                      desc, severity.HIGH, response_ids,
                                      self.get_name(), mutant)
 
-                kb.kb.append_uniq(self, 'eval', v)
+                self.kb_append_uniq(self, 'eval', v)
                 break
 
     def _analyze_echo(self, mutant, response):
@@ -160,7 +160,7 @@ class eval(AuditPlugin):
                                      desc, severity.HIGH, response.id,
                                      self.get_name(), mutant)
 
-                kb.kb.append_uniq(self, 'eval', v)
+                self.kb_append_uniq(self, 'eval', v)
 
     def end(self):
         '''

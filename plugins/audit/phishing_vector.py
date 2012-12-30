@@ -71,7 +71,7 @@ class phishing_vector(AuditPlugin):
         if self._has_no_bug(mutant):
             vulns = self._find_phishing_vector(mutant, response)
             for vuln in vulns:
-                kb.kb.append_uniq(self, 'phishing_vector', vuln)
+                self.kb_append_uniq(self, 'phishing_vector', vuln)
 
     def _find_phishing_vector(self, mutant, response):
         '''

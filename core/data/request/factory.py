@@ -27,11 +27,8 @@ from StringIO import StringIO
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
 import core.data.parsers.parser_cache as parser_cache
-import core.data.parsers.wsdlParser as wsdlParser
 
-from core.data.misc.encoding import smart_unicode
 from core.controllers.exceptions import w3afException
-
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
@@ -41,7 +38,9 @@ from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers
 from core.data.parsers.url import parse_qs
+from core.data.parsers.wsdl import WSDLParser
 from core.data.url.HTTPRequest import HTTPRequest
+from core.data.misc.encoding import smart_unicode
 
 
 __all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
@@ -118,7 +117,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
 
     if not form_list:
         # Check if its a wsdl file
-        wsdlp = wsdlParser.wsdlParser()
+        wsdlp = WSDLParser()
         try:
             wsdlp.set_wsdl(resp.get_body())
         except w3afException:

@@ -1,5 +1,5 @@
 '''
-htmlParser.py
+html.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.output_manager as om
 import core.data.dc.form as form
 
-from core.data.parsers.sgmlParser import SGMLParser
+from core.data.parsers.sgml import SGMLParser
 
 
 class HTMLParser(SGMLParser):

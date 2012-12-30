@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
+
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -82,7 +82,7 @@ class xst(AuditPlugin):
                                  freq)
 
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-                kb.kb.append(self, 'xst', v)
+                self.kb_append(self, 'xst', v)
 
     def get_long_desc(self):
         '''

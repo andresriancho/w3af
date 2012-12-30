@@ -29,7 +29,7 @@ from datetime import date
 from pprint import pformat
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
+
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -91,7 +91,7 @@ class ssl_certificate(AuditPlugin):
 
             v.set_url(url)
 
-            kb.kb.append(self, 'ssl_v2', v)
+            self.kb_append(self, 'ssl_v2', v)
             om.out.vulnerability(desc % domain)
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -133,7 +133,7 @@ class ssl_certificate(AuditPlugin):
 
             v.set_url(url)
             
-            kb.kb.append(self, tag, v)
+            self.kb_append(self, tag, v)
             om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
             return
 
@@ -153,7 +153,7 @@ class ssl_certificate(AuditPlugin):
             desc = 'The certificate for "%s" will expire soon.' % domain
             i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
             i.set_url(url)
-            kb.kb.append(self, 'ssl_soon_expire', i)
+            self.kb_append(self, 'ssl_soon_expire', i)
             om.out.information(i.get_desc())
 
         # Print the SSL information to the log
@@ -163,7 +163,7 @@ class ssl_certificate(AuditPlugin):
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(url)
         
-        kb.kb.append(self, 'certificate', i)
+        self.kb_append(self, 'certificate', i)
 
     def _dump_ssl_info(self, cert, cert_der, cipher):
         '''Dump X509 certificate.'''

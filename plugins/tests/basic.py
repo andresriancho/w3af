@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import os
 
 from nose.plugins.attrib import attr
 
@@ -139,6 +140,23 @@ class TestBasic(unittest.TestCase):
         for plugin_type in self.w3afcore.plugins.get_plugin_types():
             self.w3afcore.plugins.get_plugin_type_desc(plugin_type)
 
+    def test_no_kb_access_from_plugin(self):
+        for audit_plugin in os.listdir(os.path.join('plugins', 'audit')):
+            if audit_plugin.endswith('pyc'):
+                continue
+            
+            joined_entry = os.path.join('plugins', 'audit', audit_plugin)
+            
+            if os.path.isdir(joined_entry):
+                continue
+            
+            plugin_code = file(joined_entry).read()
+            
+            if 'kb.kb.append' in plugin_code:
+                msg = '%s plugin is directly writing to the kb instead of'\
+                      ' going through kb_append_uniq or kb_append.'
+                self.assertTrue(False, msg % audit_plugin)
+        
     def test_plugin_is_of_correct_type(self):
         
         def defined_in_subclass(klass, attr):

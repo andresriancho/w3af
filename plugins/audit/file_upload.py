@@ -197,7 +197,7 @@ class file_upload(AuditPlugin):
             v['file_dest'] = get_response.get_url()
             v['file_vars'] = mutant.get_file_vars()
 
-            kb.kb.append(self, 'file_upload', v)
+            self.kb_append_uniq(self, 'file_upload', v)
             return
 
     def end(self):

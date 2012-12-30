@@ -89,7 +89,7 @@ class mx_injection(AuditPlugin):
                                          self.get_name(), mutant)
                     
                     v.add_to_highlight(mx_error)
-                    kb.kb.append_uniq(self, 'mx_injection', v)
+                    self.kb_append_uniq(self, 'mx_injection', v)
                     break
 
     def end(self):

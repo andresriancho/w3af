@@ -152,7 +152,7 @@ class frontpage(AuditPlugin):
                 v.set_method('POST')
                 
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-                kb.kb.append(self, 'frontpage', v)
+                self.kb_append(self, 'frontpage', v)
             else:
                 msg = 'The file that was uploaded using the POST method is not'
                 msg += ' present on the remote web server at %s' % target_url

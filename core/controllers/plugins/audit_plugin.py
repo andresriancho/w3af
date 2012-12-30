@@ -1,5 +1,5 @@
 '''
-AuditPlugin.py
+audit_plugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,6 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import inspect
+import threading
+
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.plugin import Plugin
@@ -36,41 +39,68 @@ class AuditPlugin(Plugin):
 
     def __init__(self):
         Plugin.__init__(self)
+        
         self._uri_opener = None
+        self._store_kb_vulns = False
+        self._audit_return_vulns_lock = threading.RLock()
+        self._newly_found_vulns = []
 
-    # FIXME: This method is awful and returns LOTS of false positives. Only
-    #        used by ./core/ui/gui/reqResViewer.py
-    def audit_wrapper(self, fuzzable_request):
+    def audit_return_vulns(self, fuzzable_request):
         '''
-        Receives a FuzzableRequest and forwards it to the internal method
-        audit()
-
-        @param fuzzable_request: A fuzzable_request instance
+        @param fuzzable_request: The fuzzable_request instance to analyze for
+                                 vulnerabilities.
+        @return: The vulnerabilities found when running this audit plugin.
         '''
-        # These lines were added because we need to return the new
-        # vulnerabilities found by this audit plugin, and I don't want to
-        # change the code of EVERY plugin!
-        before_vuln_dict = kb.kb.get(self)
+        with self._audit_return_vulns_lock:
+            
+            self._store_kb_vulns = True
+            
+            try:
+                self.audit_with_copy(fuzzable_request)
+            finally:
+                self._store_kb_vulns = False
+                
+                new_vulnerabilities = self._newly_found_vulns
+                self._newly_found_vulns = []
+                
+                return new_vulnerabilities
 
-        self.audit_with_copy(fuzzable_request)
+    def _audit_return_vulns_in_caller(self):
+        '''
+        This is a helper method that returns True if the method audit_return_vulns
+        is in the call stack.
+        
+        Please note that this method is *very* slow (because of the inspect
+        module being slow) and should only be called when audit_return_vulns
+        was previously called.
+        '''
+        the_stack = inspect.stack()
 
-        after_vuln_dict = kb.kb.get(self)
+        for _,_,_,function_name,_,_ in the_stack:
+            if function_name == 'audit_return_vulns':
+                return True
+            
+        return False
 
-        # Now I get the difference between them:
-        before_list = []
-        after_list = []
-        for var_name in before_vuln_dict:
-            for item in before_vuln_dict[var_name]:
-                before_list.append(item)
-
-        for var_name in after_vuln_dict:
-            for item in after_vuln_dict[var_name]:
-                after_list.append(item)
-
-        new_ones = after_list[len(before_list) - 1:]
-
-        # And return it,
-        return new_ones
+    def kb_append_uniq(self, location_a, location_b, vuln):
+        '''
+        kb.kb.append_uniq a vulnerability to the KB
+        '''
+        if self._store_kb_vulns:
+            if self._audit_return_vulns_in_caller():
+                self._newly_found_vulns.append(vuln)
+        
+        kb.kb.append_uniq(location_a, location_b, vuln)
+        
+    def kb_append(self, location_a, location_b, vuln):
+        '''
+        kb.kb.append a vulnerability to the KB
+        '''
+        if self._store_kb_vulns:
+            if self._audit_return_vulns_in_caller():
+                self._newly_found_vulns.append(vuln)
+        
+        kb.kb.append(location_a, location_b, vuln)
 
     def audit_with_copy(self, fuzzable_request):
         '''

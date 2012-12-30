@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.dc.form as form
 import core.controllers.output_manager as om
 
-from core.data.parsers.sgmlParser import SGMLParser
+from core.data.parsers.sgml import SGMLParser
 from core.data.parsers.url import URL
 
 

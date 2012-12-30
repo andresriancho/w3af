@@ -92,7 +92,7 @@ class xss(AuditPlugin):
                              mutant)
         v.add_to_highlight(mod_value) 
         
-        kb.kb.append(self, 'xss', v)
+        self.kb_append_uniq(self, 'xss', v)
 
     def _identify_trivial_xss(self, mutant):
         '''
@@ -223,7 +223,7 @@ class xss(AuditPlugin):
                         v.add_to_highlight(mutant.get_mod_value())
 
                         om.out.vulnerability(v.get_desc())
-                        kb.kb.append(self, 'xss', v)
+                        self.kb_append_uniq(self, 'xss', v)
                         break
 
     def get_options(self):

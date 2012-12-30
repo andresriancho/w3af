@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.exceptions import w3afException, w3afMustStopException
@@ -124,7 +124,7 @@ class buffer_overflow(AuditPlugin):
             i = Info.from_mutant('Potential buffer overflow vulnerability',
                                  desc, response.ids, self.get_name(), mutant)
             
-            kb.kb.append_uniq(self, 'buffer_overflow', i)
+            self.kb_append_uniq(self, 'buffer_overflow', i)
         else:
             self._analyze_result(mutant, response)
 
@@ -145,7 +145,7 @@ class buffer_overflow(AuditPlugin):
             
                 v.add_to_highlight(error_str)
                 
-                kb.kb.append_uniq(self, 'buffer_overflow', v)
+                self.kb_append_uniq(self, 'buffer_overflow', v)
 
     def end(self):
         '''

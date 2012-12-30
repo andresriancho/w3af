@@ -166,7 +166,7 @@ class sqli(AuditPlugin):
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
                     
-                    kb.kb.append_uniq(self, 'sqli', v)
+                    self.kb_append_uniq(self, 'sqli', v)
                     break
 
     def end(self):

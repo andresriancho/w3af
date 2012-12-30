@@ -82,7 +82,7 @@ class blind_sqli(AuditPlugin):
 
                 if found_vuln is not None:
                     om.out.vulnerability(found_vuln.get_desc())
-                    kb.kb.append_uniq(self, 'blind_sqli', found_vuln)
+                    self.kb_append_uniq(self, 'blind_sqli', found_vuln)
                     break
 
     def _has_sql_injection(self, mutant):

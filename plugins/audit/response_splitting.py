@@ -75,14 +75,14 @@ class response_splitting(AuditPlugin):
         #
         if self._has_no_bug(mutant):
 
-            if self._header_was_injected(response):
+            if self._header_was_injected(mutant, response):
                 desc = 'Response splitting was found at: %s' % mutant.found_at()
                 
                 v = Vuln.from_mutant('Response splitting vulnerability', desc,
                                      severity.MEDIUM, response.id,
                                      self.get_name(), mutant)
 
-                kb.kb.append(self, 'response_splitting', v)
+                self.kb_append_uniq(self, 'response_splitting', v)
                 
             # When trying to send a response splitting to php 5.1.2 I get :
             # Header may not contain more than a single header, new line detected
@@ -97,7 +97,7 @@ class response_splitting(AuditPlugin):
                                          desc, response.id, self.get_name(),
                                          mutant)
                     
-                    kb.kb.append(self, 'response_splitting', i)
+                    self.kb_append_uniq(self, 'response_splitting', i)
 
                     return
 
@@ -110,10 +110,11 @@ class response_splitting(AuditPlugin):
         self.print_uniq(kb.kb.get('response_splitting',
                                   'response_splitting'), 'VAR')
 
-    def _header_was_injected(self, response):
+    def _header_was_injected(self, mutant, response):
         '''
         This method verifies if a header was successfully injected
 
+        @param mutant: The mutant that was sent to generate the response
         @param response: The HTTP response where I want to find the injected header.
         @return: True / False
         '''
@@ -132,10 +133,11 @@ class response_splitting(AuditPlugin):
                 msg = msg % (HEADER_NAME,HEADER_VALUE)
                 om.out.information(msg)
 
-                i = Info('Parameter modifies response headers', msg,
-                         response.id, self.get_name())
+                i = Info.from_mutant('Parameter modifies response headers',
+                                     msg, response.id, self.get_name(),
+                                     mutant)
                 
-                kb.kb.append(self, 'response_splitting', i)
+                self.kb_append_uniq(self, 'response_splitting', i)
                 return False
 
         return False

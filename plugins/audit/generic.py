@@ -141,7 +141,7 @@ class generic(AuditPlugin):
                                      severity.MEDIUM, id_list, self.get_name(),
                                      mutant)
 
-                kb.kb.append(self, 'generic', v)
+                self.kb_append_uniq(self, 'generic', v)
                 self._already_reported.append((mutant.get_url(),
                                                mutant.get_var()))
             else:
@@ -153,7 +153,7 @@ class generic(AuditPlugin):
                 i = Info.from_mutant('Potential unidentified vulnerability',
                                      desc, id_list, self.get_name(), mutant)
                 
-                kb.kb.append(self, 'generic', i)
+                self.kb_append_uniq(self, 'generic', i)
                 
                 self._already_reported.append((mutant.get_url(),
                                                mutant.get_var()))

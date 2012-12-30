@@ -124,7 +124,8 @@ class OutputPlugin(Plugin):
 
     def _clean_string(self, string_to_clean):
         '''
-        @param string_to_clean: A string that should be cleaned before using it in a message object.
+        @param string_to_clean: A string that should be cleaned before using
+                                it in a message object.
         '''
         for char, replace in [('\0', '\\0'), ('\t', '\\t')]:  # ('\n','\\n'),('\r','\\r'),
             string_to_clean = string_to_clean.replace(char, replace)

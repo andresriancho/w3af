@@ -97,7 +97,7 @@ class dav(AuditPlugin):
             v.set_url(res.get_url())
             v.set_method('SEARCH')
             
-            kb.kb.append(self, 'dav', v)
+            self.kb_append(self, 'dav', v)
 
     #pylint: disable=C0103
     def _PROPFIND(self, domain_path):
@@ -125,7 +125,7 @@ class dav(AuditPlugin):
             v.set_url(res.get_url())
             v.set_method('PROPFIND')
 
-            kb.kb.append(self, 'dav', v)
+            self.kb_append(self, 'dav', v)
 
     #pylint: disable=C0103
     def _PUT(self, domain_path):
@@ -150,7 +150,7 @@ class dav(AuditPlugin):
             v.set_url(url)
             v.set_method('PUT')
             
-            kb.kb.append(self, 'dav', v)
+            self.kb_append(self, 'dav', v)
 
         # Report some common errors
         elif put_response.get_code() == 500:
@@ -164,7 +164,7 @@ class dav(AuditPlugin):
             i.set_url(url)
             i.set_method('PUT')
             
-            kb.kb.append(self, 'dav', i)
+            self.kb_append(self, 'dav', i)
 
         # Report some common errors
         elif put_response.get_code() == 403:
@@ -180,7 +180,7 @@ class dav(AuditPlugin):
             i.set_url(url)
             i.set_method('PUT')
             
-            kb.kb.append(self, 'dav', i)
+            self.kb_append(self, 'dav', i)
 
     def end(self):
         '''

@@ -117,7 +117,7 @@ class os_commanding(AuditPlugin):
                     v['separator'] = sentSeparator
                     v.add_to_highlight(file_pattern_match)
                     
-                    kb.kb.append_uniq(self, 'os_commanding', v)
+                    self.kb_append_uniq(self, 'os_commanding', v)
                     break
 
     def _get_os_separator(self, mutant):
@@ -164,7 +164,7 @@ class os_commanding(AuditPlugin):
                     v['os'] = delay_obj.get_OS()
                     v['separator'] = delay_obj.get_separator()
 
-                    kb.kb.append_uniq(self, 'os_commanding', v)
+                    self.kb_append_uniq(self, 'os_commanding', v)
 
                     break
 

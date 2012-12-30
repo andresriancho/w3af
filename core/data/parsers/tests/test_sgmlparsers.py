@@ -28,8 +28,8 @@ from random import choice
 
 from nose.plugins.attrib import attr
 
-from core.data.parsers.htmlParser import HTMLParser
-from core.data.parsers.sgmlParser import SGMLParser
+from core.data.parsers.html import HTMLParser
+from core.data.parsers.sgml import SGMLParser
 from core.data.parsers.url import URL
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers

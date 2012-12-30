@@ -117,7 +117,7 @@ class redos(AuditPlugin):
                                          severity.MEDIUM, response.id,
                                          self.get_name(), mutant)
                     
-                    kb.kb.append_uniq(self, 'redos', v)
+                    self.kb_append_uniq(self, 'redos', v)
 
                 else:
                     # The first delay existed... I must report something...

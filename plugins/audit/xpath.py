@@ -21,8 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
+import core.controllers.output_manager as om
+
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -123,7 +124,7 @@ class xpath(AuditPlugin):
                                          self.get_name(), mutant)
                     
                     v.add_to_highlight(xpath_error)
-                    kb.kb.append(self, 'xpath', v)
+                    self.kb_append_uniq(self, 'xpath', v)
                     break
 
     def end(self):

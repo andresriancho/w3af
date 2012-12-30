@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
+
 import core.data.constants.severity as severity
 
 from core.data.kb.vuln import Vuln
@@ -146,7 +146,7 @@ class cors_origin(AuditPlugin):
                     v = Vuln('Multiple CORS misconfigurations', msg,
                              vuln_severity, response_id, self.get_name())
 
-                    kb.kb.append(self, 'cors_origin', v)
+                    self.kb_append(self, 'cors_origin', v)
                     om.out.vulnerability(msg)
                     return [v, ]
 
@@ -231,7 +231,7 @@ class cors_origin(AuditPlugin):
 
                 v.set_url(forged_req.get_url())
                 
-                kb.kb.append(self, 'cors_origin', v)
+                self.kb_append(self, 'cors_origin', v)
                 om.out.vulnerability(msg)
 
                 return self._filter_report('_allow_methods_counter',
@@ -259,7 +259,7 @@ class cors_origin(AuditPlugin):
 
             v.set_url(forged_req.get_url())
 
-            kb.kb.append(self, 'cors_origin', v)
+            self.kb_append(self, 'cors_origin', v)
             om.out.vulnerability(msg)
             return self._filter_report('_universal_allow_counter',
                                        'universal allow-origin',
@@ -313,7 +313,7 @@ class cors_origin(AuditPlugin):
                 v = Vuln(name, msg, sev, response.get_id(), self.get_name())
                 v.set_url(forged_req.get_url())
 
-                kb.kb.append(self, 'cors_origin', v)
+                self.kb_append(self, 'cors_origin', v)
                 om.out.vulnerability(msg)
                 return self._filter_report('_origin_echo_counter',
                                            'origin echoed in allow-origin',
@@ -357,7 +357,7 @@ class cors_origin(AuditPlugin):
                      severity.INFORMATION, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
             
-            kb.kb.append(self, 'cors_origin', v)
+            self.kb_append(self, 'cors_origin', v)
             om.out.vulnerability(msg)
             return self._filter_report('_universal_origin_allow_creds_counter',
                                        'withCredentials CORS implementation error',

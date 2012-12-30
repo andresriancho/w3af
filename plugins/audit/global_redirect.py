@@ -74,7 +74,7 @@ class global_redirect(AuditPlugin):
             v = Vuln.from_mutant('Insecure redirection', desc, severity.MEDIUM,
                                  response.id, self.get_name(), mutant)
 
-            kb.kb.append_uniq(self, 'global_redirect', v)
+            self.kb_append_uniq(self, 'global_redirect', v)
 
     def end(self):
         '''

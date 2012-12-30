@@ -29,7 +29,7 @@ from core.data.parsers.url import URL
 from core.data.parsers.document_parser import document_parser_factory, DocumentParser
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
-from core.data.parsers.htmlParser import HTMLParser
+from core.data.parsers.html import HTMLParser
 from core.data.parsers.pdf import PDFParser
 from core.controllers.exceptions import w3afException
 

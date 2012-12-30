@@ -1,5 +1,5 @@
 '''
-wsdlParser.py
+wsdl.py
 
 Copyright 2006 Andres Riancho
 
@@ -37,7 +37,7 @@ except ImportError:
 import xml.parsers.expat as expat
 
 
-class wsdlParser:
+class WSDLParser(object):
     '''
     This class parses WSDL documents.
 

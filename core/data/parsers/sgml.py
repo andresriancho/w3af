@@ -1,6 +1,6 @@
 # coding: utf8
 '''
-sgmlParser.py
+sgml.py
 
 Copyright 2006 Andres Riancho
 

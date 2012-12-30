@@ -77,7 +77,7 @@ class csrf(AuditPlugin):
         v = Vuln.from_fr('CSRF vulnerability', msg, severity.HIGH,
                          orig_response.id, self.get_name(), freq)
         
-        kb.kb.append(self, 'csrf', v)
+        self.kb_append_uniq(self, 'csrf', v)
 
     def _is_resp_equal(self, res1, res2):
         '''

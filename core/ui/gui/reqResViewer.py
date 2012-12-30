@@ -480,7 +480,7 @@ class ThreadedURLImpact(threading.Thread):
                         'audit', plugin_name)
                     tmp_result = []
                     try:
-                        tmp_result = plugin.audit_wrapper(self.request)
+                        tmp_result = plugin.audit_return_vulns(self.request)
                         plugin.end()
                     except w3afException, e:
                         om.out.error(str(e))
@@ -499,7 +499,7 @@ class ThreadedURLImpact(threading.Thread):
                 plugin = self.w3af.plugins.get_plugin_inst(
                     self.plugin_type, self.plugin_name)
                 try:
-                    self.result = plugin.audit_wrapper(self.request)
+                    self.result = plugin.audit_return_vulns(self.request)
                     plugin.end()
                 except w3afException, e:
                     om.out.error(str(e))

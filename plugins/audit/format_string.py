@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
@@ -81,7 +81,7 @@ class format_string(AuditPlugin):
                     
                     v.add_to_highlight(error)
                     
-                    kb.kb.append_uniq(self, 'format_string', v)
+                    self.kb_append_uniq(self, 'format_string', v)
                     break
 
     def end(self):

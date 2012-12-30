@@ -122,7 +122,7 @@ class ldapi(AuditPlugin):
                     
                     v.add_to_highlight(ldap_error_string)
                     
-                    kb.kb.append_uniq(self, 'ldapi', v)
+                    self.kb_append_uniq(self, 'ldapi', v)
                     break
 
     def end(self):

@@ -23,8 +23,9 @@ from __future__ import with_statement
 
 import re
 
-import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
+import core.controllers.output_manager as om
+
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
@@ -162,7 +163,7 @@ class lfi(AuditPlugin):
                 v['file_pattern'] = file_pattern_match
                 
                 v.add_to_highlight(file_pattern_match)
-                kb.kb.append_uniq(self, 'lfi', v)
+                self.kb_append_uniq(self, 'lfi', v)
                 return
 
         #
@@ -189,7 +190,7 @@ class lfi(AuditPlugin):
                 match_source_code = match.group(0)
                 v['file_pattern'] = match_source_code
 
-                kb.kb.append_uniq(self, 'lfi', v)
+                self.kb_append_uniq(self, 'lfi', v)
                 return
 
         #
@@ -207,7 +208,7 @@ class lfi(AuditPlugin):
                 i = Info.from_mutant('File read error', desc, response.id,
                                      self.get_name(), mutant)
                 
-                kb.kb.append_uniq(self, 'error', i)
+                self.kb_append_uniq(self, 'error', i)
 
     def end(self):
         '''

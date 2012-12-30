@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
+
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -93,7 +93,7 @@ class un_ssl(AuditPlugin):
                                      desc, severity.MEDIUM, response_ids,
                                      self.get_name(), freq)
 
-                    kb.kb.append(self, 'un_ssl', v)
+                    self.kb_append(self, 'un_ssl', v)
                     
                     om.out.vulnerability(v.get_desc(),
                                          severity=v.get_severity())

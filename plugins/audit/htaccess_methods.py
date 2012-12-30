@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
+
 import core.data.constants.severity as severity
 import core.data.constants.response_codes as http_constants
 
@@ -148,7 +148,7 @@ class htaccess_methods(AuditPlugin):
             v.set_url(url)
             v['methods'] = allowed_methods
             
-            kb.kb.append(self, 'auth', v)
+            self.kb_append(self, 'auth', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def get_long_desc(self):

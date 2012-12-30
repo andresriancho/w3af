@@ -112,7 +112,7 @@ class ssi(AuditPlugin):
                                      mutant)
 
                 v.add_to_highlight(e_res)
-                kb.kb.append_uniq(self, 'ssi', v)
+                self.kb_append_uniq(self, 'ssi', v)
 
     def end(self):
         '''
@@ -163,7 +163,7 @@ class ssi(AuditPlugin):
                                      self.get_name(), mutant)
                 
                 v.add_to_highlight(matched_expected_result)
-                kb.kb.append(self, 'ssi', v)
+                self.kb_append(self, 'ssi', v)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       filtered_freq_generator(self._freq_list),

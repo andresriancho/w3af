@@ -253,7 +253,7 @@ class rfi(AuditPlugin):
                                  severity.HIGH, response.id, self.get_name(),
                                  mutant)
 
-            kb.kb.append_uniq(self, 'rfi', v)
+            self.kb_append_uniq(self, 'rfi', v)
 
         elif rfi_data.rfi_result_part_1 in response \
                 and rfi_data.rfi_result_part_2 in response:
@@ -267,7 +267,7 @@ class rfi(AuditPlugin):
                                  severity.MEDIUM, response.id, self.get_name(),
                                  mutant)
 
-            kb.kb.append_uniq(self, 'rfi', v)
+            self.kb_append_uniq(self, 'rfi', v)
 
         else:
             #
@@ -285,7 +285,7 @@ class rfi(AuditPlugin):
                                          self.get_name(), mutant)
 
                     v.add_to_highlight(error)
-                    kb.kb.append_uniq(self, 'rfi', v)
+                    self.kb_append_uniq(self, 'rfi', v)
                     break
 
     def end(self):
