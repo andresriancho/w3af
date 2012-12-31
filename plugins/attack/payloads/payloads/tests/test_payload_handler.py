@@ -30,6 +30,7 @@ from plugins.attack.payloads.payload_handler import (payload_to_file,
 
 from core.data.kb.exec_shell import ExecShell
 from core.data.kb.read_shell import ReadShell
+from core.data.kb.tests.test_vuln import MockVuln
 
 
 class TestPayloadHandler(unittest.TestCase):
@@ -59,19 +60,19 @@ class TestPayloadHandler(unittest.TestCase):
         self.assertFalse('__init__.py' in payload_list)
 
     def test_get_payload_instance(self):
-        shell = FakeExecShell(None, None, None)
+        shell = FakeExecShell()
         for payload_name in get_payload_list():
-            payload_inst = get_payload_instance(payload_name, FakeExecShell)
+            payload_inst = get_payload_instance(payload_name, shell)
 
             self.assertTrue(payload_inst.require() in ('linux', 'windows'))
 
     def test_runnable_payloads_exec(self):
-        shell = FakeExecShell(None, None, None)
+        shell = FakeExecShell()
         runnable = runnable_payloads(shell)
 
         EXCEPTIONS = set(['portscan', ])
-        all = get_payload_list()
-        all_but_exceptions = set(all) - EXCEPTIONS
+        all_payloads = get_payload_list()
+        all_but_exceptions = set(all_payloads) - EXCEPTIONS
 
         self.assertEquals(
             set(runnable),
@@ -79,7 +80,7 @@ class TestPayloadHandler(unittest.TestCase):
         )
 
     def test_runnable_payloads_read(self):
-        shell = FakeReadShell(None, None, None)
+        shell = FakeReadShell()
         runnable = runnable_payloads(shell)
 
         EXPECTED = (
@@ -94,12 +95,12 @@ class TestPayloadHandler(unittest.TestCase):
             self.assertFalse(name in runnable)
 
     def test_exec_payload_exec(self):
-        shell = FakeExecShell(None, None, None)
+        shell = FakeExecShell()
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
 
     def test_exec_payload_read(self):
-        shell = FakeReadShell(None, None, None)
+        shell = FakeReadShell()
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
 
@@ -124,6 +125,10 @@ class FakeExecShell(ExecShell):
     
     worker_pool = None
     
+    def __init__(self):
+        vuln = MockVuln()       
+        super(FakeExecShell, self).__init__(vuln, None, None)
+    
     def execute(self, command):
         return commands.getoutput(command)
 
@@ -137,6 +142,10 @@ class FakeExecShell(ExecShell):
 class FakeReadShell(ReadShell):
 
     worker_pool = None
+
+    def __init__(self):
+        vuln = MockVuln()       
+        super(FakeReadShell, self).__init__(vuln, None, None)
 
     def read(self, filename):
         return file(filename).read()

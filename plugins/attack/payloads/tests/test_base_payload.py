@@ -20,20 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from mock import MagicMock
+
 from plugins.attack.payloads.base_payload import Payload
+from plugins.attack.payloads.payloads.tests.test_payload_handler import (FakeReadShell,
+                                                                         FakeExecShell)
 from core.data.kb.shell import shell
 
 
 class TestBasePayload(unittest.TestCase):
     
     def setUp(self):
-        self.bp = Payload(None)
+        self.bp = Payload(FakeReadShell())
     
     def test_can_run(self):
         self.assertEqual(self.bp.can_run(), set())
     
     def test_run_only_read(self):
-        bp = Payload(None)
+        bp = Payload(FakeReadShell())
         self.assertRaises(AttributeError, bp.run, 'filename')
 
     def test_run_execute(self):
@@ -48,21 +52,16 @@ class TestBasePayload(unittest.TestCase):
             def api_execute(self, cmd):
                 self.called_api_execute = True
         
-        class FakeShell(shell):
-            called_execute = False
-            
-            def __init__(self): pass
-            
-            def execute(self, cmd):
-                self.called_execute = True
-                
-        executable = Executable(FakeShell())
+        shell = FakeExecShell()
+        shell.execute = MagicMock(return_value='')
+        
+        executable = Executable(shell)
         
         self.assertEqual(self.bp.can_run(), set())
         
         executable.run('command')
         self.assertTrue(executable.called_run_execute)
-        self.assertTrue(executable.shell.called_execute)
+        self.assertEqual(executable.shell.execute.call_count, 1)
 
         executable.run_api('command')
         self.assertTrue(executable.called_api_execute)
