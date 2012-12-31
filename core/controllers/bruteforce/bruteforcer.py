@@ -170,7 +170,7 @@ class user_password_bruteforcer(object):
         for line in file(self.combo_file):
             try:
                 user, passwd = line.strip().split(self.combo_separator)
-            except:
+            except ValueError:
                 om.out.debug('Invalid combo entry: "%s"' % line)
             else:
                 yield user, passwd

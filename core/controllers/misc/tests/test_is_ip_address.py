@@ -1,5 +1,5 @@
 '''
-is_ip_address.py
+test_is_ip_address.py
 
 Copyright 2010 Andres Riancho
 
@@ -19,16 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-def is_ip_address(address):
-    parts = address.split(".")
-    if len(parts) != 4:
-        return False
+import unittest
 
-    for item in parts:
-        if not item.isdigit():
-            return False
+from core.controllers.misc.is_ip_address import is_ip_address
 
-        if not 0 <= int(item) <= 255:
-            return False
 
-    return True
+class TestIsIPAddress(unittest.TestCase):
+    
+    def test_is_ip_address_true(self):
+        self.assertTrue(is_ip_address('127.0.0.1'))
+    
+    def test_is_ip_address_false_case01(self):
+        self.assertFalse(is_ip_address('127.0.0.1.2'))
+    
+    def test_is_ip_address_false_case02(self):
+        self.assertFalse(is_ip_address('127.0.0.256'))
+                

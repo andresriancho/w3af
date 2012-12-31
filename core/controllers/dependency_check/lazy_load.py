@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from multiprocessing import Pool
 
 
 def _module_load_worker(module_name):
     try:
         __import__(module_name)
-    except:
+    except ImportError:
         return False
     else:
         return True

@@ -298,14 +298,17 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 self.wfile.write(self.protocol_version +
                                  " 200 Connection established\r\n\r\n")
 
-                # Now, transform the socket that connects the browser and the proxy to a SSL socket!
+                # Now, transform the socket that connects the browser and the
+                # proxy to a SSL socket!
                 ctx = SSL.Context(SSL.SSLv23_METHOD)
                 ctx.set_timeout(5)
 
                 try:
                     ctx.use_privatekey_file(self._uri_opener._proxy_cert)
-                except:
-                    om.out.error("[proxy error] Couldn't find certificate file %s" % self._uri_opener._proxy_cert)
+                except SSL.Error:
+                    error = "[proxy error] Couldn't find certificate file %s"
+                    error = error % self._uri_opener._proxy_cert
+                    om.out.error(error)
 
                 ctx.use_certificate_file(self._uri_opener._proxy_cert)
                 ctx.load_verify_locations(self._uri_opener._proxy_cert)

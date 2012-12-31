@@ -169,7 +169,7 @@ class OutputPlugin(Plugin):
                 res = item[1].split('/')[-1:][0]
                 return res.replace('.py', '')
 
-        except:
+        except Exception:
             return 'unknown-caller'
 
     def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):

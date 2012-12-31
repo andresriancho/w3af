@@ -111,14 +111,14 @@ class ManualRequests(entries.RememberingWindow):
         self.vbox.pack_start(toolbar, False)
         toolbar.show()
         # Fix content length checkbox
-        self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
-        self._fixContentLengthCB.set_active(True)
-        self._fixContentLengthCB.show()
+        self._fix_content_lengthCB = gtk.CheckButton('Fix content length header')
+        self._fix_content_lengthCB.set_active(True)
+        self._fix_content_lengthCB.show()
         # request-response viewer
         self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive],
                                                  withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
-        self.vbox.pack_start(self._fixContentLengthCB, False, False)
+        self.vbox.pack_start(self._fix_content_lengthCB, False, False)
         self.vbox.pack_start(self.reqresp, True, True)
         # Add a default request
         if initialRequest is None:
@@ -147,7 +147,7 @@ class ManualRequests(entries.RememberingWindow):
             gtk.main_iteration()
 
         # Get the fix content length value
-        fixContentLength = self._fixContentLengthCB.get_active()
+        fixContentLength = self._fix_content_lengthCB.get_active()
 
         # threading game
         event = threading.Event()
@@ -300,9 +300,9 @@ class FuzzyRequests(entries.RememberingWindow):
         self.sSB_state.change(self, False)
 
         # Fix content length checkbox
-        self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
-        self._fixContentLengthCB.set_active(True)
-        self._fixContentLengthCB.show()
+        self._fix_content_lengthCB = gtk.CheckButton('Fix content length header')
+        self._fix_content_lengthCB.set_active(True)
+        self._fix_content_lengthCB.show()
 
         # request
         self.originalReq = reqResViewer.requestPart(self, w3af,
@@ -347,7 +347,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.sendfb = gtk.Label("0 ok, 0 errors")
         self.sendfb.set_sensitive(False)
         t.attach(self.sendfb, 2, 3, 1, 2)
-        t.attach(self._fixContentLengthCB, 3, 4, 1, 2)
+        t.attach(self._fix_content_lengthCB, 3, 4, 1, 2)
         t.show_all()
 
         vbox.pack_start(t, False, False, padding=5)
@@ -509,7 +509,7 @@ class FuzzyRequests(entries.RememberingWindow):
                 return
 
         # Get the fix content length value
-        fixContentLength = self._fixContentLengthCB.get_active()
+        fixContentLength = self._fix_content_lengthCB.get_active()
 
         # initial state
         self.result_ok = 0

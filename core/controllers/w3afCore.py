@@ -401,7 +401,7 @@ class w3afCore(object):
         '''
         try:
             create_temp_dir()
-        except:
+        except Exception:
             msg = ('The w3af tmp directory "%s" is not writable. Please set '
                    'the correct permissions and ownership.' % TEMP_DIR)
             print msg

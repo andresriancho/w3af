@@ -128,7 +128,7 @@ def dependency_check():
     #mem_test('after soappy import')
     try:
         from pdfminer.converter import TextConverter
-    except:
+    except ImportError:
         packages.append('pdfminer')
         packages_debian.append('python-pdfminer')
         #TODO
@@ -138,7 +138,7 @@ def dependency_check():
     #mem_test('after pypdf import')
     try:
         from OpenSSL import SSL
-    except:
+    except ImportError:
         packages.append('pyOpenSSL')
         packages_debian.append('python-pyopenssl')
         packages_mac_ports.extend(['py26-openssl'])
@@ -147,7 +147,7 @@ def dependency_check():
     #mem_test('after ssl import')
     try:
         from lxml import etree
-    except:
+    except ImportError:
         packages.append('lxml')
         packages_debian.append('python-lxml')
         packages_openbsd.append('py-lxml')
@@ -212,7 +212,7 @@ def dependency_check():
     #mem_test('after scapy import')
     # Now output the results of the dependency check
     curr_platform = platform.system().lower()
-
+    
     if packages:
         msg = 'Your python installation needs the following packages:\n'
         msg += '    ' + ' '.join(packages)

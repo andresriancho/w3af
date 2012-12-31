@@ -77,7 +77,7 @@ class crawl_infrastructure(BaseConsumer):
 
             try:
                 work_unit = self.in_queue.get(timeout=0.2)
-            except:
+            except Queue.Empty:
                 self._route_all_plugin_results()
             else:
                 if work_unit == POISON_PILL:

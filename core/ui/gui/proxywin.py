@@ -221,7 +221,7 @@ class ProxiedRequests(entries.RememberingWindow):
         try:
             self.proxy.set_what_to_trap(self.pref.get_value('proxy', 'trap'))
             self.proxy.set_what_not_to_trap(self.pref.get_value('proxy', 'notrap'))
-            self.proxy.set_methodsToTrap(
+            self.proxy.set_methods_to_trap(
                 self.pref.get_value('proxy', 'methodtrap'))
             self.proxy.set_fix_content_length(
                 self.pref.get_value('proxy', 'fixlength'))

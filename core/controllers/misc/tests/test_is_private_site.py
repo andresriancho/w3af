@@ -1,7 +1,7 @@
 '''
-is_ip_address.py
+test_is_private_site.py
 
-Copyright 2010 Andres Riancho
+Copyright 2008 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -19,16 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-def is_ip_address(address):
-    parts = address.split(".")
-    if len(parts) != 4:
-        return False
+import unittest
 
-    for item in parts:
-        if not item.isdigit():
-            return False
+from core.controllers.misc.is_private_site import is_private_site
 
-        if not 0 <= int(item) <= 255:
-            return False
 
-    return True
+class TestIsPrivateSite(unittest.TestCase):
+    def test_is_private_site_true_case02(self):
+        self.assertTrue(is_private_site('127.0.0.1'))
+        
+    def test_is_private_site_true_case01(self):
+        self.assertTrue(is_private_site('192.168.0.1'))
+    
+    def test_is_private_site_false_case01(self):
+        self.assertFalse(is_private_site('192.1.0.1'))
+
+    def test_is_private_site_false_case02(self):
+        self.assertFalse(is_private_site('www.w3af.org'))
+        

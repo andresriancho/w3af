@@ -213,7 +213,7 @@ class w3af_core_profiles(object):
                 profile_home, profile_name + '.pw3af')
             try:
                 profile_instance = profile(profile_filename)
-            except:
+            except w3afException:
                 invalid_profiles.append(profile_filename)
             else:
                 instance_list.append(profile_instance)
