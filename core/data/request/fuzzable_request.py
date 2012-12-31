@@ -35,8 +35,7 @@ from core.data.db.disk_item import DiskItem
 from core.data.parsers.url import URL
 
 
-#CR = '\r'
-CR = ''
+CR = '\r'
 LF = '\n'
 CRLF = CR + LF
 SP = ' '
@@ -74,15 +73,6 @@ class FuzzableRequest(DiskItem):
     def dump(self):
         '''
         @return: a DETAILED str representation of this fuzzable request.
-
-        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"),\
-                                 headers=Headers([('Host','www.w3af.com'),]))
-        >>> fr.dump()
-        'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
-        >>> fr.set_method('POST')
-        >>> fr.set_data('D474')
-        >>> fr.dump()
-        'POST http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\nD474'
         '''
         return "%s%s%s" % (self.dump_request_head(),
                            CRLF, str(self.get_data() or ''))

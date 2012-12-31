@@ -75,10 +75,10 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertTrue(fr.is_variant_of(fr_other))
 
     def test_dump_case01(self):
-        expected = '\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
-                              'Hello: World',
-                              '',
-                              ''])
+        expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                'Hello: World',
+                                '',
+                                ''])
         headers = Headers([('Hello', 'World')])
 
         fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']},
@@ -86,10 +86,10 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.dump(), expected)
 
     def test_dump_case02(self):
-        expected = u'\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
-                              u'Hola: Múndo',
-                              u'',
-                              u''])
+        expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                 u'Hola: Múndo',
+                                 u'',
+                                 u''])
         headers = Headers([(u'Hola', u'Múndo')])
         fr = FuzzableRequest(self.url, method='GET', dc={u'á': ['b']},
                              headers=headers)
@@ -98,12 +98,35 @@ class TestFuzzableRequest(unittest.TestCase):
     def test_dump_case03(self):
         header_value = ''.join(chr(i) for i in xrange(256))
         
-        expected = u'\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
-                              u'Hola: %s' % smart_unicode(header_value),
-                              u'',
-                              u''])
+        expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                 u'Hola: %s' % smart_unicode(header_value),
+                                 u'',
+                                 u''])
 
         headers = Headers([(u'Hola', header_value)])
         fr = FuzzableRequest(self.url, method='GET', dc={u'a': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
+
+    def test_dump_mangle(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),\
+                             headers=Headers([('Host','www.w3af.com'),]))
+
+        expected = u'\r\n'.join([u'GET http://www.w3af.com/ HTTP/1.1',
+                                 u'Host: www.w3af.com',
+                                 u'',
+                                 u''])
+        
+        self.assertEqual(fr.dump(), expected)
+        
+        fr.set_method('POST')
+        fr.set_data('data=23')
+        
+        expected = u'\r\n'.join([u'POST http://www.w3af.com/ HTTP/1.1',
+                                 u'Host: www.w3af.com',
+                                 u'',
+                                 u'data=23'])
+        
+        self.assertEqual(fr.dump(), expected)
+
+        
