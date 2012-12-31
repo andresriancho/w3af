@@ -175,7 +175,7 @@ class TestXSS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.WAVSEP_PATH, cfg['plugins'])
         
-        xss_vulns = self.kb.getData('xss', 'xss')
+        xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
         
         expected = [
