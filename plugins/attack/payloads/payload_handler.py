@@ -116,7 +116,11 @@ def get_payload_desc(payload_name):
     >>> get_payload_desc('tcp')
     'This payload shows TCP socket information'
     '''
-    payload = get_payload_instance(payload_name, None)
+    class FakePayload(object):
+        def __init__(self):
+            self.worker_pool = None
+            
+    payload = get_payload_instance(payload_name, FakePayload())
     return payload.get_desc()
 
 
