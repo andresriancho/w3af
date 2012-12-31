@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.data.parsers.url import URL
 
 
 class exception_raise(CrawlPlugin):
@@ -31,6 +30,7 @@ class exception_raise(CrawlPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+    # pylint: disable=E1102
     exception_to_raise = None
     
     def __init__(self):
