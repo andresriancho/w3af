@@ -63,7 +63,7 @@ class TestEmailReport(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         xss_count = self._from_pop3_get_vulns()
 
-        self.assertGreaterEqual(len(xss_vulns), 3)
+        self.assertGreaterEqual(len(xss_vulns), 10)
         self.assertEqual(len(xss_vulns), xss_count)
 
     def _from_pop3_get_vulns(self):
@@ -79,7 +79,9 @@ class TestEmailReport(PluginTest):
             for email_line in pop_conn.retr(email_id + 1)[1]:
                 if email_line.startswith('Subject: '):
                     subject = email_line
-                elif 'Cross Site Scripting was found at:' in email_line:
+                elif 'A Cross Site Scripting vulnerability was found at:' in email_line:
+                    xss_count += 1
+                elif 'A persistent Cross Site Scripting vulnerability' in email_line:
                     xss_count += 1
 
             pop_conn.dele(email_id + 1)

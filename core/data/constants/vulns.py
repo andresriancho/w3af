@@ -68,7 +68,7 @@ VULNS = {
          10043: 'SSL Certificate dump',
          10044: 'Secure content over insecure channel',
          10045: 'XPATH injection vulnerability',
-         10046: 'Permanent cross site scripting vulnerability',
+         10046: 'Persistent Cross-Site Scripting vulnerability',
          10047: 'Cross site scripting vulnerability',
          10048: 'Cross site tracing vulnerability',
          10049: 'Parameter modifies response headers',
