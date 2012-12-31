@@ -142,7 +142,7 @@ class TestBasic(unittest.TestCase):
 
     def test_no_kb_access_from_plugin(self):
         for audit_plugin in os.listdir(os.path.join('plugins', 'audit')):
-            if audit_plugin.endswith('pyc'):
+            if not audit_plugin.endswith('.py'):
                 continue
             
             joined_entry = os.path.join('plugins', 'audit', audit_plugin)
