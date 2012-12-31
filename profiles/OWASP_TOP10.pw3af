@@ -188,7 +188,7 @@ verbose = True
 [audit.xst]
 
 [audit.xss]
-checkStored = True
+persistent_xss = True
 numberOfChecks = 3
 
 [profile]
@@ -206,8 +206,6 @@ name = OWASP_TOP10
 [grep.private_ip]
 
 [crawl.phishtank]
-db_file = plugins/crawl/phishtank/index.xml
-update_db = False
 
 [http-settings]
 proxy_port = 8080

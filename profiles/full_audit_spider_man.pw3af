@@ -42,7 +42,7 @@ diffRatio = 0.35
 [audit.xpath]
 
 [audit.xss]
-checkStored = True
+persistent_xss = True
 numberOfChecks = 3
 
 [audit.htaccess_methods]

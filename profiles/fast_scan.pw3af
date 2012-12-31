@@ -53,7 +53,7 @@ verbose = False
 [grep.feeds]
 
 [audit.xss]
-checkStored = True
+persistent_xss = True
 numberOfChecks = 3
 
 [grep.hash_analysis]
