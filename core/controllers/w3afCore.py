@@ -89,7 +89,7 @@ class w3afCore(object):
         self.status = w3af_core_status()
         self.target = w3af_core_target()
         self.progress = progress()
-        self.strategy = None
+        self.strategy = w3af_core_strategy(self)
         
         self._create_worker_pool()
 
@@ -126,10 +126,11 @@ class w3afCore(object):
         # Reset global sequence number generator
         consecutive_number_generator.reset()
                
-        # Now that we know we're going to run a scan, create the strategy
-        # instance, we don't create it before (in __init__) because we do not
-        # need it at that point
+        # Now that we know we're going to run a new scan, overwrite the old
+        # strategy which might still have data stored in it and create a new
+        # one  
         self.strategy = w3af_core_strategy(self)
+        
         # And create these two again just to clear their internal states
         self.status = w3af_core_status()
         self.progress = progress()
