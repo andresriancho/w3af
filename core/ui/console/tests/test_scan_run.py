@@ -35,8 +35,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         commands_to_run = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                           'set fileName %s' % self.OUTPUT_FILE,
-                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set output_file %s' % self.OUTPUT_FILE,
+                           'set http_output_file %s' % self.OUTPUT_HTTP_FILE,
                            'set verbose True', 'back',
                            'output config console',
                            'set verbose False', 'back',
@@ -73,8 +73,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         scan_commands_1 = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                           'set fileName %s' % self.OUTPUT_FILE,
-                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set output_file %s' % self.OUTPUT_FILE,
+                           'set http_output_file %s' % self.OUTPUT_HTTP_FILE,
                            'set verbose True', 'back',
                            'output config console',
                            'set verbose False', 'back',
@@ -97,8 +97,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         scan_commands_2 = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                           'set fileName %s' % self.OUTPUT_FILE,
-                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set output_file %s' % self.OUTPUT_FILE,
+                           'set http_output_file %s' % self.OUTPUT_HTTP_FILE,
                            'set verbose True', 'back',
                            'output config console',
                            'set verbose False', 'back',
@@ -113,7 +113,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                            'start',
                            'exit']
 
-        expected_2 = ('Cross Site Scripting was found at',
+        expected_2 = ('A Cross Site Scripting vulnerability was found at',
                       'New URL found by web_spider plugin: "%s"' % target_2)
 
         scan_commands = scan_commands_1 + scan_commands_2
