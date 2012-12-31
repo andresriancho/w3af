@@ -64,7 +64,7 @@ class PluginTest(unittest.TestCase):
                 response = urllib2.urlopen(target)
                 response.read()
             except urllib2.URLError, e:
-                if hasattr(e, 'code') and e.code == 404:
+                if hasattr(e, 'code') and e.code in (404, 401):
                     continue
                 
                 self.assertTrue(False, msg)
