@@ -43,7 +43,6 @@ diffRatio = 0.35
 
 [audit.xss]
 persistent_xss = True
-numberOfChecks = 3
 
 [audit.htaccess_methods]
 

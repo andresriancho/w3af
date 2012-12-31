@@ -54,7 +54,6 @@ verbose = False
 
 [audit.xss]
 persistent_xss = True
-numberOfChecks = 3
 
 [grep.hash_analysis]
 
