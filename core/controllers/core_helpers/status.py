@@ -59,7 +59,7 @@ class w3af_core_status(object):
         >>> s = w3af_core_status()
 
         >>> s.get_status()
-        'Not running.'
+        'Stopped.'
         >>> s.start()
         >>> s.get_status()
         'Starting scan.'
