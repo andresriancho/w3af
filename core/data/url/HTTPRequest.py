@@ -55,3 +55,9 @@ class HTTPRequest(urllib2.Request):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def __repr__(self):
+        fmt = '<HTTPRequest "%s" (redir:%s, cookies:%s, cache:%s)>'
+        return fmt % (self.url_object.url_string, self.follow_redir,
+                      self.cookies, self.get_from_cache)
+        
