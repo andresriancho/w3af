@@ -132,6 +132,7 @@ class w3af_core_status(object):
         '''
         return self._current_fuzzable_request
 
+    # pylint: disable=E0202
     def set_current_fuzzable_request(self, fuzzable_request):
         '''
         @param fuzzable_request: The FuzzableRequest that the w3afCore is
