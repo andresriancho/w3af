@@ -180,6 +180,7 @@ class TestW3afCorePause(unittest.TestCase):
         Verify that the Ctrl+C stops the scan.
         '''
         mock_call = MagicMock(side_effect=KeyboardInterrupt())
+        # pylint: disable=E0202
         self.w3afcore.status.set_current_fuzzable_request = mock_call
         
         self.w3afcore.start()
@@ -257,13 +258,6 @@ class TestCoreExceptions(unittest.TestCase):
         self.exception_plugin.exception_to_raise = w3afMustStopByUnknownReasonExc
         self.assertRaises(w3afMustStopByUnknownReasonExc, self.w3afcore.start)
                 
-    def test_stop_unknown_exception(self):
-        '''
-        Verify that the w3afMustStopByUnknownReasonExc stops the scan.
-        '''
-        self.exception_plugin.exception_to_raise = w3afMustStopByUnknownReasonExc
-        self.assertRaises(w3afMustStopByUnknownReasonExc, self.w3afcore.start)
-
     def test_stop_by_user_request(self):
         '''
         Verify that the w3afMustStopByUserRequest stops the scan.
