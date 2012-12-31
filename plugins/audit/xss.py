@@ -69,7 +69,7 @@ class xss(AuditPlugin):
         
         # Run this in the worker pool in order to get different
         # parameters tested at the same time.
-        self.worker_pool.map(self._check_persistent_xss, fake_mutants)
+        self.worker_pool.map(self._check_xss_in_parameter, fake_mutants)
         
     def _check_xss_in_parameter(self, mutant):
         '''
