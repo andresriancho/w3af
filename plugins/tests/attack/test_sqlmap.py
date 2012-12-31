@@ -106,7 +106,7 @@ class TestSQLMapShell(PluginTest):
     def test_found_exploit_sqlmap_blind_sqli(self):
         # Run the scan
         cfg = self._run_configs['blind_sqli']
-        self._scan(cfg['target'], cfg['plugins'], debug=True)
+        self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')

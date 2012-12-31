@@ -43,7 +43,7 @@ class TestPykto(PluginTest):
 
     def test_basic_pykto(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'], debug=True)
+        self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('pykto', 'vuln')
         self.assertGreater(len(vulns), 10, vulns)
