@@ -26,9 +26,9 @@ import core.controllers.output_manager as om
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
+from core.data.dc.headers import Headers
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
-from core.controllers.plugins.mangle_plugin import string_to_headers
 from core.controllers.exceptions import w3afException
 
 
@@ -67,12 +67,12 @@ class sed(ManglePlugin):
         for regex, string in self._req_head_manglers:
             header_string = regex.sub(string, header_string)
         
-        header_dict = string_to_headers(header_string)
+        headers_inst = Headers.from_string(header_string)
 
         return create_fuzzable_request(
                                        request.get_url(),
                                        request.get_method(),
-                                       data, header_dict
+                                       data, headers_inst
                                        )
 
     def mangle_response(self, response):
