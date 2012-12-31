@@ -114,34 +114,3 @@ class ManglePlugin(Plugin):
         response.set_headers(headers)
         return response
 
-
-def headers_to_string(header_dict):
-    '''
-    @param header_dict: The header dictionary of the request
-    @return: A string representation of the dictionary
-    '''
-    res = ''
-    for key in header_dict:
-        res += key + ': ' + header_dict[key] + '\r\n'
-    return res
-
-
-def string_to_headers(header_str):
-    '''
-    The reverse of headers_to_string
-    '''
-    res = {}
-    splitted_str = header_str.split('\r\n')
-    for s in splitted_str:
-        if s != '':
-            try:
-                name = s.split(':')[0]
-                value = ':'.join(s.split(':')[1:])
-            except:
-                msg = 'You "over-mangled" the header! Now the headers are'\
-                      ' invalid, ignoring: "%s".' % s
-                om.out.error(msg)
-            else:
-                # Escape the space after the ":"
-                res[name] = value[1:]
-    return res

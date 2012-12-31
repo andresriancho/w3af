@@ -48,17 +48,17 @@ class TestHeaders(unittest.TestCase):
     def test_str(self):
         headers = Headers([('a', 'b')])
 
-        self.assertEqual(str(headers), 'a: b\n')
+        self.assertEqual(str(headers), 'a: b\r\n')
 
     def test_str_multi(self):
         headers = Headers([('a', 'b'), ('1', '2')])
 
-        self.assertEqual(str(headers), 'a: b\n1: 2\n')
+        self.assertEqual(str(headers), 'a: b\r\n1: 2\r\n')
 
     def test_unicode(self):
         headers = Headers([('a', 'b')])
 
-        self.assertEqual(unicode(headers), 'a: b\n')
+        self.assertEqual(unicode(headers), 'a: b\r\n')
 
     def test_str_strange(self):
         header_value = ''.join(chr(i) for i in xrange(256))
@@ -108,3 +108,18 @@ class TestHeaders(unittest.TestCase):
 
         self.assertEqual(cloned['a'], ['b'])
         self.assertEqual(cloned['c'], ['d'])
+
+    def test_from_string(self):
+        headers_from_str = Headers.from_string('a: b\r\n')
+        headers_from_obj = Headers([('a', 'b')])
+        self.assertEqual(headers_from_str, headers_from_obj)
+
+    def test_to_str_from_string(self):
+        headers_from_obj = Headers([('a', 'b')])
+        headers_from_str = Headers.from_string(str(headers_from_obj))
+        
+        self.assertEqual(headers_from_str, headers_from_obj)
+
+    def test_from_invalid_string(self):
+        self.assertRaises(ValueError, Headers.from_string, 'ab')
+

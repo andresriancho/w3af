@@ -21,12 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
+import core.controllers.output_manager as om
+
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
-from core.controllers.plugins.mangle_plugin import headers_to_string, string_to_headers
+from core.controllers.plugins.mangle_plugin import string_to_headers
 from core.controllers.exceptions import w3afException
 
 
@@ -60,16 +62,18 @@ class sed(ManglePlugin):
         for regex, string in self._req_body_manglers:
             data = regex.sub(string, data)
 
-        header_string = headers_to_string(request.get_headers())
+        header_string = str(request.get_headers())
+        
         for regex, string in self._req_head_manglers:
             header_string = regex.sub(string, header_string)
+        
         header_dict = string_to_headers(header_string)
 
         return create_fuzzable_request(
-            request.get_url(),
-            request.get_method(),
-            data, header_dict
-        )
+                                       request.get_url(),
+                                       request.get_method(),
+                                       data, header_dict
+                                       )
 
     def mangle_response(self, response):
         '''
@@ -85,12 +89,19 @@ class sed(ManglePlugin):
 
         response.set_body(body)
 
-        header_string = headers_to_string(response.get_headers())
+        header_string = str(response.get_headers())
 
         for regex, string in self._res_head_manglers:
             header_string = regex.sub(string, header_string)
 
-        response.set_headers(string_to_headers(header_string))
+        try:
+            mangled_header = Headers.from_string(header_string)
+        except ValueError:
+            error = 'Your header modifications created an invalid header string'\
+                    ' that could NOT be parsed back to a Header object.'
+            om.out.error(error)
+        else:
+            response.set_headers(mangled_header)
 
         if self._res_body_manglers and self._user_option_fix_content_len:
             response = self._fixContentLen(response)
@@ -99,9 +110,10 @@ class sed(ManglePlugin):
 
     def set_options(self, option_list):
         '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using get_options()
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed
+        using the XML Options that was retrieved from the plugin using
+        get_options()
 
         This method MUST be implemented on every plugin.
 

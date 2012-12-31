@@ -32,6 +32,30 @@ class Headers(DataContainer):
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
         super(Headers, self).__init__(cleaned_vals, encoding)
+
+    @classmethod
+    def from_string(cls, headers_str):
+        '''
+        @param headers_str: A string with the HTTP headers, example:
+            Server: Apache
+            Content-Length: 123
+        '''
+        res = []
+        splitted_str = headers_str.split('\r\n')
+        for one_header_line in splitted_str:
+            
+            if not one_header_line:
+                continue
+            
+            name, value = one_header_line.split(':', 1)
+            
+            # Escape the space after the ":"
+            value = value[1:]
+            
+            res.append((name, value))
+        
+        return cls(res)
+ 
     
     def clean_values(self, init_val):        
         if isinstance(init_val, DataContainer)\
@@ -86,14 +110,14 @@ class Headers(DataContainer):
     def __str__(self):
         '''
         >>> str(Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items()))
-        'HoST: w3af.com\\nAccEpt: */*\\n'
+        'HoST: w3af.com\\r\\nAccEpt: */*\\r\\n'
 
         >>> repr(Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items()))
         "Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})"
 
         @return: string representation of the Headers() object.
         '''
-        return self._to_str_with_separators(u': ', u'\n') + u'\n'
+        return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'
 
     def __unicode__(self):
         return str(self).decode(self.encoding)
