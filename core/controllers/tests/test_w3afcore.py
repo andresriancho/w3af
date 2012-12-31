@@ -278,6 +278,6 @@ class TestCoreExceptions(unittest.TestCase):
 
 
 def nice_repr(alive_threads):
-    repr_alive = [repr(x) for x in alive_threads]
+    repr_alive = [repr(x) for x in alive_threads][:20]
     repr_alive.sort()
     return pprint.pformat(repr_alive)    
