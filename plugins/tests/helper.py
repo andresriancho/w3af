@@ -22,6 +22,7 @@ import os
 import unittest
 import urllib2
 
+from functools import wraps
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
@@ -161,6 +162,7 @@ def onlyroot(meth):
 
     Raises a nose SkipTest exception if the user doesn't have root permissions.
     '''
+    @wraps(meth)
     def test_inner_onlyroot(self, *args, **kwds):
         '''Note that this method needs to start with test_ in order for nose
         to run it!'''
