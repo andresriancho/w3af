@@ -48,7 +48,7 @@ class TestFrontpage(PluginTest):
                           set([v.get_name() for v in vulns])
                           )
 
-    raise SkipTest('FIXME: Need to setup a working frontpage environment and have a positive test also!')
-
     def test_frontpage_upload(self):
-        pass
+        msg = 'FIXME: Need to setup a working frontpage environment and have'\
+              ' a positive test also!'
+        raise SkipTest(msg)
