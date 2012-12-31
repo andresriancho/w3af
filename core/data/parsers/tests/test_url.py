@@ -24,7 +24,8 @@ import unittest
 
 from nose.plugins.skip import SkipTest
 
-from core.data.parsers.url import URL
+from core.data.parsers.url import URL, parse_qs
+from core.data.dc.queryString import QueryString
 
 
 class TestURLParser(unittest.TestCase):
@@ -260,3 +261,32 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/')
         self.assertEqual(u.url_join('http://w3af.org:8080/abc.html').url_string,
                          u'http://w3af.org:8080/abc.html')
+
+    def test_parse_qs_case01(self):
+        self.assertEqual(parse_qs('id=3'),
+                         QueryString( [(u'id', [u'3']),] ))
+    
+    def test_parse_qs_case02(self):
+        self.assertEqual(parse_qs('id=3+1'),
+                         QueryString( [(u'id', [u'3+1']),] ))
+    
+    def test_parse_qs_case03(self):
+        self.assertEqual(parse_qs('id=3&id=4'),
+                         QueryString( [(u'id', [u'3', u'4']),] ))
+    
+    def test_parse_qs_case04(self):
+        self.assertEqual(parse_qs('id=3&ff=4&id=5'),
+                         QueryString( [(u'id', [u'3', u'5']),
+                                       (u'ff', [u'4'])] ))
+    
+    def test_parse_qs_case05(self):
+        self.assertEqual(parse_qs('pname'),
+                         QueryString( [(u'pname', [u'']),] ))
+    
+    def test_parse_qs_case06(self):
+        self.assertEqual(parse_qs(u'%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp'),
+                         QueryString( [(u'\u9834\u82f1', [u'\u75ab\u76ca']),] ))
+    
+    def test_parse_qs_case07(self):
+        self.assertRaises(TypeError, parse_qs, QueryString())
+        

@@ -108,22 +108,10 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
 
     @param url_enc_str: The string to parse
     @return: A QueryString object (a dict wrapper).
-
-    >>> parse_qs('id=3')
-    QueryString({u'id': [u'3']})
-    >>> parse_qs('id=3+1')
-    QueryString({u'id': [u'3+1']})
-    >>> parse_qs('id=3&id=4')
-    QueryString({u'id': [u'3', u'4']})
-    >>> parse_qs('id=3&ff=4&id=5')
-    QueryString({u'id': [u'3', u'5'], u'ff': [u'4']})
-    >>> parse_qs('pname')
-    QueryString({u'pname': [u'']})
-    >>> parse_qs(u'%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp')
-    QueryString({u'\u9834\u82f1': [u'\u75ab\u76ca']})
-    >>> parse_qs('%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp')
-    QueryString({u'\u9834\u82f1': [u'\u75ab\u76ca']})
     '''
+    if not isinstance(qstr, basestring):
+        raise TypeError('parse_qs requires a basestring as input.')
+    
     qs = QueryString(encoding=encoding)
 
     if qstr:
