@@ -69,8 +69,6 @@ verbose = False
 
 [infrastructure.zone_h]
 
-[infrastructure.netcraft]
-
 [infrastructure.finger_google]
 
 [infrastructure.favicon_identification]

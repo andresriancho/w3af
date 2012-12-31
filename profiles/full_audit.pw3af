@@ -182,8 +182,6 @@ only_target_domain = True
 
 [infrastructure.zone_h]
 
-[infrastructure.netcraft]
-
 [infrastructure.finger_google]
 result_limit = 300
 fastSearch = False
