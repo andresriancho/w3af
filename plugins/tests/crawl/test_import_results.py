@@ -79,7 +79,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         self.assertEqual(post_fr.get_url(
-        ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
+        ).url_string, 'http://moth/w3af/audit/xss/data_receptor.php')
         self.assertEqual(post_fr.get_dc(), {'firstname': ['abc']})
         self.assertEqual(post_fr.get_data(), 'firstname=abc')
 
@@ -102,7 +102,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         self.assertEqual(post_fr.get_url(
-        ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
+        ).url_string, 'http://moth/w3af/audit/xss/data_receptor.php')
         self.assertEqual(
             post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
         self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
@@ -125,7 +125,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         self.assertEqual(post_fr.get_url(
-        ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
+        ).url_string, 'http://moth/w3af/audit/xss/data_receptor.php')
         self.assertEqual(
             post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
         self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')

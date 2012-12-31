@@ -57,14 +57,14 @@
   </item>
   <item>
     <time>Wed Oct 10 12:30:31 ART 2012</time>
-    <url><![CDATA[http://moth/w3af/audit/xss/dataReceptor.php]]></url>
+    <url><![CDATA[http://moth/w3af/audit/xss/data_receptor.php]]></url>
     <host ip="192.168.56.101">moth</host>
     <port>80</port>
     <protocol>http</protocol>
     <method>POST</method>
-    <path><![CDATA[/w3af/audit/xss/dataReceptor.php]]></path>
+    <path><![CDATA[/w3af/audit/xss/data_receptor.php]]></path>
     <extension>php</extension>
-    <request base64="true"><![CDATA[UE9TVCAvdzNhZi9hdWRpdC94c3MvZGF0YVJlY2VwdG9yLnBocCBIVFRQLzEuMQ0KSG9zdDogbW90aA0KUHJveHktQ29ubmVjdGlvbjoga2VlcC1hbGl2ZQ0KQ29udGVudC1MZW5ndGg6IDI2DQpDYWNoZS1Db250cm9sOiBtYXgtYWdlPTANCk9yaWdpbjogaHR0cDovL21vdGgNClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChYMTE7IExpbnV4IHg4Nl82NCkgQXBwbGVXZWJLaXQvNTM3LjQgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMjIuMC4xMjI5LjkyIFNhZmFyaS81MzcuNA0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi94LXd3dy1mb3JtLXVybGVuY29kZWQNCkFjY2VwdDogdGV4dC9odG1sLGFwcGxpY2F0aW9uL3hodG1sK3htbCxhcHBsaWNhdGlvbi94bWw7cT0wLjksKi8qO3E9MC44DQpSZWZlcmVyOiBodHRwOi8vbW90aC93M2FmL2F1ZGl0L3hzcy90ZXN0LWZvcm1zLmh0bWwNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCxkZWZsYXRlLHNkY2gNCkFjY2VwdC1MYW5ndWFnZTogZW4tVVMsZW47cT0wLjgNCkFjY2VwdC1DaGFyc2V0OiBJU08tODg1OS0xLHV0Zi04O3E9MC43LCo7cT0wLjMNCg0KdXNlcj1hZnNmYXNmJmZpcnN0bmFtZT1hc2Y=]]></request>
+    <request base64="true"><![CDATA[UE9TVCAvdzNhZi9hdWRpdC94c3MvZGF0YV9yZWNlcHRvci5waHAgSFRUUC8xLjENCkhvc3Q6IG1vdGgNClByb3h5LUNvbm5lY3Rpb246IGtlZXAtYWxpdmUNCkNvbnRlbnQtTGVuZ3RoOiAyNg0KQ2FjaGUtQ29udHJvbDogbWF4LWFnZT0wDQpPcmlnaW46IGh0dHA6Ly9tb3RoDQpVc2VyLUFnZW50OiBNb3ppbGxhLzUuMCAoWDExOyBMaW51eCB4ODZfNjQpIEFwcGxlV2ViS2l0LzUzNy40IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzIyLjAuMTIyOS45MiBTYWZhcmkvNTM3LjQNCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkDQpBY2NlcHQ6IHRleHQvaHRtbCxhcHBsaWNhdGlvbi94aHRtbCt4bWwsYXBwbGljYXRpb24veG1sO3E9MC45LCovKjtxPTAuOA0KUmVmZXJlcjogaHR0cDovL21vdGgvdzNhZi9hdWRpdC94c3MvdGVzdC1mb3Jtcy5odG1sDQpBY2NlcHQtRW5jb2Rpbmc6IGd6aXAsZGVmbGF0ZSxzZGNoDQpBY2NlcHQtTGFuZ3VhZ2U6IGVuLVVTLGVuO3E9MC44DQpBY2NlcHQtQ2hhcnNldDogSVNPLTg4NTktMSx1dGYtODtxPTAuNywqO3E9MC4zDQoNCnVzZXI9YWZzZmFzZiZmaXJzdG5hbWU9YXNm]]></request>
     <status>200</status>
     <responselength>345</responselength>
     <mimetype>HTML</mimetype>

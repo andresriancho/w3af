@@ -72,13 +72,13 @@ class TestXUrllib(unittest.TestCase):
             'root:x:0:0:' in http_response.body, http_response.body)
 
     def test_POST(self):
-        url = URL('http://moth/w3af/audit/xss/dataReceptor2.php')
+        url = URL('http://moth/w3af/audit/xss/data_receptor2.php')
         data = DataContainer([('empresa', 'abc'), ('firstname', 'def')])
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertTrue('def' in http_response.body, http_response.body)
 
     def test_POST_special_chars(self):
-        url = URL('http://moth/w3af/audit/xss/dataReceptor2.php')
+        url = URL('http://moth/w3af/audit/xss/data_receptor2.php')
         test_data = 'abc<def>"-á-'
         data = DataContainer([('empresa', test_data), ('firstname', 'def')])
         http_response = self.uri_opener.POST(url, data, cache=False)

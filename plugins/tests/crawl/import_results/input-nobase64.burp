@@ -219,14 +219,14 @@ This file contains links to all test scripts and files used by the w3af framewor
   </item>
   <item>
     <time>Wed Oct 10 12:30:31 ART 2012</time>
-    <url><![CDATA[http://moth/w3af/audit/xss/dataReceptor.php]]></url>
+    <url><![CDATA[http://moth/w3af/audit/xss/data_receptor.php]]></url>
     <host ip="192.168.56.101">moth</host>
     <port>80</port>
     <protocol>http</protocol>
     <method>POST</method>
-    <path><![CDATA[/w3af/audit/xss/dataReceptor.php]]></path>
+    <path><![CDATA[/w3af/audit/xss/data_receptor.php]]></path>
     <extension>php</extension>
-    <request base64="false"><![CDATA[POST /w3af/audit/xss/dataReceptor.php HTTP/1.1
+    <request base64="false"><![CDATA[POST /w3af/audit/xss/data_receptor.php HTTP/1.1
 Host: moth
 Proxy-Connection: keep-alive
 Content-Length: 26
@@ -255,7 +255,7 @@ Content-Type: text/html
 <html>
 Start--
 <br/>asf<br/>
-Notice: Undefined index: firstname in /var/www/moth/w3af/audit/xss/dataReceptor.php on line 7
+Notice: Undefined index: firstname in /var/www/moth/w3af/audit/xss/data_receptor.php on line 7
 Test GET:<br/>--End
 </html>
 ]]></response>
