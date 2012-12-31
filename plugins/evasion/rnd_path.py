@@ -22,9 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from core.controllers.plugins.evasion_plugin import EvasionPlugin
-
-from core.data.fuzzer.utils import rand_alnum
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.fuzzer.utils import rand_alnum
 
 
 class rnd_path(EvasionPlugin):
@@ -43,35 +42,6 @@ class rnd_path(EvasionPlugin):
         @param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
         @return: The modified request
-
-        >>> from core.data.parsers.url import URL
-        >>> import re
-        >>> rp = rnd_path()
-
-        >>> u = URL('http://www.w3af.com/')
-        >>> r = HTTPRequest( u )
-        >>> url_string = rp.modify_request( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../', url_string) is not None
-        True
-
-        >>> u = URL('http://www.w3af.com/abc/')
-        >>> r = HTTPRequest( u )
-        >>> url_string = rp.modify_request( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/', url_string) is not None
-        True
-
-        >>> u = URL('http://www.w3af.com/abc/def.htm')
-        >>> r = HTTPRequest( u )
-        >>> url_string = rp.modify_request( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm', url_string) is not None
-        True
-
-        >>> u = URL('http://www.w3af.com/abc/def.htm?id=1')
-        >>> r = HTTPRequest( u )
-        >>> url_string = rp.modify_request( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None
-        True
-
         '''
         # We mangle the URL
         path = request.url_object.get_path()

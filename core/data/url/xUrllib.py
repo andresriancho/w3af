@@ -542,9 +542,9 @@ class xUrllib(object):
         self._check_uri(req)
 
         # Evasion
+        req = self._evasion(req)
         original_url = req._Request__original
         original_url_inst = req.url_object
-        req = self._evasion(req)
 
         start_time = time.time()
         res = None
@@ -668,8 +668,8 @@ class xUrllib(object):
                          )
 
             from_cache = hasattr(res, 'from_cache')
-            flags = ' (id=%s,from_cache=%i,grep=%i)' % (
-                res.id, from_cache, grep)
+            flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,
+                                                        grep)
             msg += flags
             om.out.debug(msg)
 
@@ -839,7 +839,8 @@ class xUrllib(object):
             try:
                 request = eplugin.modify_request(request)
             except w3afException, e:
-                msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"'
+                msg = 'Evasion plugin "%s" failed to modify the request.'\
+                      ' Exception: "%s".'
                 om.out.error(msg % (eplugin.get_name(), e))
 
         return request

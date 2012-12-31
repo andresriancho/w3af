@@ -39,38 +39,9 @@ class rnd_hex_encode(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @param request: HTTPRequest instance that is going to be modified
+                        by the evasion plugin
         @return: The modified request
-
-        >>> from core.data.parsers.url import URL
-        >>> rhe = rnd_hex_encode()
-
-        >>> u = URL('http://www.w3af.com/')
-        >>> r = HTTPRequest( u )
-        >>> rhe.modify_request( r ).url_object.url_string
-        u'http://www.w3af.com/'
-
-        >>> u = URL('http://www.w3af.com/a/')
-        >>> r = HTTPRequest( u )
-        >>> rhe.modify_request( r ).url_object.get_path() in ['/a/','/%61/']
-        True
-
-        >>> u = URL('http://www.w3af.com/')
-        >>> r = HTTPRequest( u, data='a=b' )
-        >>> rhe.modify_request( r ).get_data() in ['a=b','%61=b','a=%62','%61=%62']
-        True
-
-        >>> u = URL('http://www.w3af.com/aa/')
-        >>> r = HTTPRequest( u )
-        >>> rhe.modify_request( r ).url_object.get_path() in ['/aa/','/%61a/','/a%61/','/%61%61/']
-        True
-
-        >>> #
-        >>> #    The plugins should not modify the original request
-        >>> #
-        >>> u.url_string
-        u'http://www.w3af.com/aa/'
-
         '''
         # First we mangle the URL
         path = request.url_object.get_path()

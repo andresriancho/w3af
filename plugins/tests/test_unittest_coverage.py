@@ -55,6 +55,12 @@ class TestUnittestCoverage(unittest.TestCase):
     def test_grep(self):
         self._analyze_unittests('grep')
 
+    def test_evasion(self):
+        self._analyze_unittests('evasion')
+
+    def test_mangle(self):
+        self._analyze_unittests('mangle')
+
     def _analyze_unittests(self, plugin_type):
         plugins = self.w3afcore.plugins.get_plugin_list(plugin_type)
 

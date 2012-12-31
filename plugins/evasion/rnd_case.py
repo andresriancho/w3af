@@ -39,40 +39,9 @@ class rnd_case(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @param request: HTTPRequest instance that is going to be modified
+                        by the evasion plugin
         @return: The modified request
-
-        >>> from core.data.parsers.url import URL
-        >>> rc = rnd_case()
-
-        >>> u = URL('http://www.w3af.com/')
-        >>> r = HTTPRequest( u )
-        >>> rc.modify_request( r ).url_object.url_string
-        u'http://www.w3af.com/'
-
-        >>> u = URL('http://www.w3af.com/ab/')
-        >>> r = HTTPRequest( u )
-        >>> rc.modify_request( r ).url_object.get_path() in ['/ab/','/aB/','/Ab/','/AB/']
-        True
-
-        >>> u = URL('http://www.w3af.com/')
-        >>> r = HTTPRequest( u, data='a=b' )
-        >>> rc.modify_request( r ).get_data() in ['a=b','A=b','a=B','A=B']
-        True
-
-        >>> u = URL('http://www.w3af.com/a/B')
-        >>> r = HTTPRequest( u )
-        >>> options = ['/a/b','/a/B','/A/b','/A/B']
-        >>> path = rc.modify_request( r ).url_object.get_path()
-        >>> path in options
-        True
-
-        >>> #
-        >>> #    The plugins should not modify the original request
-        >>> #
-        >>> u.url_string
-        u'http://www.w3af.com/a/B'
-
         '''
         # First we mangle the URL
         path = request.url_object.get_path()
