@@ -25,10 +25,10 @@ from core.data.context.context import (get_context , get_contexts, HtmlText,
                                         ScriptSingleQuote, ScriptText, HtmlComment,
                                         HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                                         HtmlAttr, HtmlAttrDoubleQuote2ScriptText,
-                                        StyleComment)
+                                        StyleComment, StyleText)
 
 class TestContext(unittest.TestCase):
-    html = '''
+    HTML = '''
     <html>
         <head>
             <style>
@@ -83,12 +83,21 @@ class TestContext(unittest.TestCase):
 
     def test_all(self):
         for context in get_contexts():
-            self.assertEqual(
-                    get_context(self.html, context.get_name())[0][0].get_name(), 
-                    context.get_name()
-                   )
-
-    def test_style_comment(self):
+            found = False
+            
+            expected_context_name = context.get_name()
+            for contexts in get_context(self.HTML, expected_context_name):
+                for calculated_context in contexts:
+                    if calculated_context.get_name() == expected_context_name:
+                        found = True
+            
+            if not found:
+                msg = 'The analysis for %s context failed, got %r instead.' 
+                msg = msg % (expected_context_name,
+                             get_context(self.HTML, expected_context_name))
+                self.assertTrue(False, msg)
+                
+    def test_style_comment_case01(self):
         style_comment = '''
         <html>
             <head>
@@ -100,15 +109,35 @@ class TestContext(unittest.TestCase):
             </head>
         </html>
         '''
+        self.assertEqual(
+                get_context(style_comment, StyleComment().get_name())[0][1].get_name(), 
+                StyleComment().get_name()
+               )
+
+    def test_style_comment_case02(self):
+        style_comment = '''
+        <html>
+            <head>
+                <style>
+                /*
+                Hello world
+                 * */
+                </style>
+                <style>
+                    PAYLOAD
+                </style>
+            </head>
+        </html>
+        '''
         
         self.assertEqual(
-                get_context(style_comment, StyleComment().get_name())[0][0].get_name(), 
-                StyleComment().get_name()
+                         get_context(style_comment, 'PAYLOAD')[0][0].get_name(), 
+                         StyleText().get_name()
                )
     
     def test_html_inside_js(self):
         self.assertEqual(
-                get_context(self.html, HtmlText().get_name())[2][0].get_name(), 
+                get_context(self.HTML, HtmlText().get_name())[2][0].get_name(), 
                 ScriptSingleQuote().get_name()
                )
 
