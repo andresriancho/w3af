@@ -49,7 +49,10 @@ class TestArchiveDotOrg(PluginTest):
         expected_set = set((self.archive_url + end) for end in EXPECTED_URLS)
         urls_as_strings = set([u.url_string for u in urls])
 
-        self.assertTrue(urls_as_strings.issuperset(expected_set))
+        msg = 'Got the following URLs %s and expected %s.'
+        msg = msg % (urls_as_strings, expected_set)
+
+        self.assertTrue(urls_as_strings.issuperset(expected_set), msg)
         self.assertGreater(len(urls), 50)
 
     def test_raise_on_local_domain(self):

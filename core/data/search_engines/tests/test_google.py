@@ -120,9 +120,10 @@ class BaseGoogleAPISearch(unittest.TestCase):
               ' NOT working anymore.'
         self.assertEqual(searcher.status, FINISHED_OK, msg)
 
-        msg = 'Got less results than expected:\n%s' % '\n'.join(
-            str(r) for r in searcher.links)
-        self.assertEqual(len(searcher.links), self.COUNT, msg)
+        link_list = '\n'.join(str(r) for r in searcher.links)
+        msg = 'Got less results than expected, %s is less than %s:\n%s'
+        msg = msg % (len(searcher.links), self.COUNT, link_list)
+        self.assertGreaterEqual(len(searcher.links), self.COUNT, msg)
 
         for link in searcher.links:
             self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
