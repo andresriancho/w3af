@@ -182,12 +182,6 @@ class dav(AuditPlugin):
             
             self.kb_append(self, 'dav', i)
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('dav', 'dav'), 'VAR')
-
     def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before

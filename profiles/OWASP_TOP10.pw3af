@@ -111,7 +111,7 @@ only_target_domain = True
 [audit.xpath]
 
 [audit.generic]
-diffRatio = 0.35
+diff_ratio = 0.35
 
 [grep.http_in_body]
 

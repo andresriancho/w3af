@@ -169,12 +169,6 @@ class sqli(AuditPlugin):
                     self.kb_append_uniq(self, 'sqli', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('sqli', 'sqli'), 'VAR')
-
     def _findsql_error(self, response):
         '''
         This method searches for SQL errors in html's.

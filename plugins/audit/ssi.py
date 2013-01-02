@@ -170,8 +170,6 @@ class ssi(AuditPlugin):
                                       analyze_persistent,
                                       cache=False)
 
-        self.print_uniq(kb.kb.get('ssi', 'ssi'), 'VAR')
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

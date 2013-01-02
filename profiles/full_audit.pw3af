@@ -27,7 +27,7 @@ use_echo = True
 [audit.phishing_vector]
 
 [audit.generic]
-diffRatio = 0.35
+diff_ratio = 0.35
 
 [audit.format_string]
 

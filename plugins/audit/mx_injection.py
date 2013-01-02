@@ -92,12 +92,6 @@ class mx_injection(AuditPlugin):
                     self.kb_append_uniq(self, 'mx_injection', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('mx_injection', 'mx_injection'), 'VAR')
-
     def _get_MX_injection_strings(self):
         '''
         Gets a list of strings to test against the web app.

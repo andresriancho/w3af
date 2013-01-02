@@ -149,7 +149,6 @@ class htaccess_methods(AuditPlugin):
             v['methods'] = allowed_methods
             
             self.kb_append(self, 'auth', v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def get_long_desc(self):
         '''

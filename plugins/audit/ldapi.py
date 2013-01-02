@@ -125,12 +125,6 @@ class ldapi(AuditPlugin):
                     self.kb_append_uniq(self, 'ldapi', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('ldapi', 'ldapi'), 'VAR')
-
     def _find_ldap_error(self, response):
         '''
         This method searches for LDAP errors in html's.

@@ -101,15 +101,6 @@ class response_splitting(AuditPlugin):
 
                     return
 
-
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('response_splitting',
-                                  'response_splitting'), 'VAR')
-
     def _header_was_injected(self, mutant, response):
         '''
         This method verifies if a header was successfully injected

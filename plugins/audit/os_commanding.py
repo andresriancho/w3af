@@ -165,14 +165,7 @@ class os_commanding(AuditPlugin):
                     v['separator'] = delay_obj.get_separator()
 
                     self.kb_append_uniq(self, 'os_commanding', v)
-
                     break
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('os_commanding', 'os_commanding'), 'VAR')
 
     def _get_echo_commands(self):
         '''

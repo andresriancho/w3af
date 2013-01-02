@@ -28,10 +28,12 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_number, rand_alnum
-from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.misc.levenshtein import relative_distance
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
+from core.data.db.disk_list import DiskList
+
+from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.misc.levenshtein import relative_distance
 
 
 class generic(AuditPlugin):
@@ -40,11 +42,13 @@ class generic(AuditPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    ERROR_STRINGS = ['d\'kc"z\'gj\'\"**5*(((;-*`)', '']
+
     def __init__(self):
         AuditPlugin.__init__(self)
 
         #   Internal variables
-        self._already_reported = []
+        self._potential_vulns = DiskList()
 
         #   User configured variables
         self._diff_ratio = 0.30
@@ -64,7 +68,7 @@ class generic(AuditPlugin):
             # First I check that the current modified parameter in the mutant
             # doesn't have an already reported vulnerability. I don't want to
             # report vulnerabilities more than once.
-            if (m.get_url(), m.get_var()) in self._already_reported:
+            if (m.get_url(), m.get_var()) in self._potential_vulns:
                 continue
 
             # Now, we request the limit (something that doesn't exist)
@@ -81,24 +85,14 @@ class generic(AuditPlugin):
             # I also try to trigger errors by sending empty strings
             #     If http://localhost/a.php?b=1 ; then I should request b=
             #     If http://localhost/a.php?b=abc ; then I should request b=
-            for error_string in self._get_error_strings():
+            for error_string in self.ERROR_STRINGS:
 
-                if self._has_no_bug(m):
+                m.set_mod_value(error_string)
+                error_response = self._uri_opener.send_mutant(m)
 
-                    m.set_mod_value(error_string)
-                    error_response = self._uri_opener.send_mutant(m)
-
-                    # Now I compare all responses
-                    self._analyze_responses(
-                        orig_resp, limit_response, error_response, m)
-
-    def _get_error_strings(self):
-        '''
-        @return: A list of strings that could generate errors. Please note that
-                 an empty string is something that, in most cases, is not tested.
-                 Although, I have found that it could trigger some errors.
-        '''
-        return ['d\'kc"z\'gj\'\"**5*(((;-*`)', '']
+                # Now I compare responses
+                self._analyze_responses(orig_resp, limit_response,
+                                        error_response, m)
 
     def _analyze_responses(self, orig_resp, limit_response, error_response, mutant):
         '''
@@ -134,29 +128,10 @@ class generic(AuditPlugin):
                     1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
-                desc = 'An unidentified vulnerability was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                v = Vuln.from_mutant('Unidentified vulnerability', desc,
-                                     severity.MEDIUM, id_list, self.get_name(),
-                                     mutant)
+                self._potential_vulns.append((mutant.get_url(),
+                                              mutant.get_var(),
+                                              mutant, id_list))
 
-                self.kb_append_uniq(self, 'generic', v)
-                self._already_reported.append((mutant.get_url(),
-                                               mutant.get_var()))
-            else:
-                # *maybe* and just *maybe* this is a vulnerability
-                desc = '[Manual verification required] A potential' \
-                       'vulnerability was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                i = Info.from_mutant('Potential unidentified vulnerability',
-                                     desc, id_list, self.get_name(), mutant)
-                
-                self.kb_append_uniq(self, 'generic', i)
-                
-                self._already_reported.append((mutant.get_url(),
-                                               mutant.get_var()))
 
     def _get_limit_response(self, m):
         '''
@@ -185,19 +160,33 @@ class generic(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        vulnsAndInfos = kb.kb.get_all_vulns()
-        vulnsAndInfos.extend(kb.kb.get_all_infos())
-        self.print_uniq(vulnsAndInfos, 'VAR')
+        all_vulns_and_infos = kb.kb.get_all_vulns()
+        all_vulns_and_infos.extend(kb.kb.get_all_infos())
 
+        for url, variable, mutant, id_list in self._potential_vulns:
+            for info in all_vulns_and_infos:
+                if info.get_var() == variable and info.get_url() == url:
+                    break
+            else:
+                desc = 'An unidentified vulnerability was found at: %s'
+                desc = desc % mutant.found_at()
+                
+                v = Vuln.from_mutant('Unidentified vulnerability', desc,
+                                     severity.MEDIUM, id_list, self.get_name(),
+                                     mutant)
+        
+                self.kb_append_uniq(self, 'generic', v)
+                
+                
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
-        d = 'If two strings have a diff ratio less than diffRatio, then they are '
+        d = 'If two strings have a diff ratio less than diff_ratio, then they are '
         d += '*really* different'
-        o = opt_factory('diffRatio', self._diff_ratio, d, 'float')
+        o = opt_factory('diff_ratio', self._diff_ratio, d, 'float')
         ol.add(o)
 
         return ol
@@ -210,7 +199,7 @@ class generic(AuditPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._diff_ratio = options_list['diffRatio'].get_value()
+        self._diff_ratio = options_list['diff_ratio'].get_value()
 
     def get_long_desc(self):
         '''

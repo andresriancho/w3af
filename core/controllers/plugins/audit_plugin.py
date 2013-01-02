@@ -23,6 +23,7 @@ import inspect
 import threading
 
 import core.data.kb.knowledge_base as kb
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.plugin import Plugin
 from core.data.request.variant_identification import are_variants
@@ -90,7 +91,10 @@ class AuditPlugin(Plugin):
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
         
-        kb.kb.append_uniq(location_a, location_b, info)
+        added_to_kb = kb.kb.append_uniq(location_a, location_b, info)
+        
+        if added_to_kb:
+            om.out.report_finding(info)
         
     def kb_append(self, location_a, location_b, info):
         '''
@@ -101,6 +105,7 @@ class AuditPlugin(Plugin):
                 self._newly_found_vulns.append(info)
         
         kb.kb.append(location_a, location_b, info)
+        om.out.report_finding(info)
 
     def audit_with_copy(self, fuzzable_request):
         '''

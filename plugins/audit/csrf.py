@@ -196,13 +196,6 @@ class csrf(AuditPlugin):
                 return True
         return False
 
-    def end(self):
-        '''
-        This method is called at the end, when w3afCore aint going to use this
-        plugin anymore.
-        '''
-        self.print_uniq(kb.kb.get('csrf', 'csrf'), None)
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

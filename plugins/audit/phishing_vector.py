@@ -68,17 +68,10 @@ class phishing_vector(AuditPlugin):
         '''
         Analyze results of the _send_mutant method.
         '''
-        if self._has_no_bug(mutant):
-            vulns = self._find_phishing_vector(mutant, response)
-            for vuln in vulns:
-                self.kb_append_uniq(self, 'phishing_vector', vuln)
-
-    def _find_phishing_vector(self, mutant, response):
-        '''
-        Find the phishing vectors!
-        '''
+        if self._has_bug(mutant):
+            return
+        
         dom = response.get_dom()
-        res = []
 
         if response.is_text_or_html() and dom is not None:
 
@@ -94,23 +87,16 @@ class phishing_vector(AuditPlugin):
                 for url in self._test_urls:
                     if src_attr.startswith(url):
                         # Vuln vuln!
-                        desc = 'A phishing vector was found at: %s' % mutant.found_at()
+                        desc = 'A phishing vector was found at: %s'
+                        desc = desc % mutant.found_at()
                         
                         v = Vuln.from_mutant('Phishing vector', desc,
                                              severity.LOW, response.id,
                                              self.get_name(), mutant)
                         
                         v.add_to_highlight(src_attr)
-                        res.append(v)
+                        self.kb_append_uniq(self, 'phishing_vector', v)
 
-        return res
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('phishing_vector',
-                                  'phishing_vector'), 'VAR')
 
     def get_long_desc(self):
         '''

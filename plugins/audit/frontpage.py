@@ -154,9 +154,9 @@ class frontpage(AuditPlugin):
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                 self.kb_append(self, 'frontpage', v)
             else:
-                msg = 'The file that was uploaded using the POST method is not'
-                msg += ' present on the remote web server at %s' % target_url
-                om.out.debug(msg)
+                msg = 'The file that was uploaded using the POST method is'\
+                      ' not present on the remote web server at "%s".'
+                om.out.debug(msg % target_url)
 
     def get_options(self):
         '''

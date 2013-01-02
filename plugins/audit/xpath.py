@@ -127,12 +127,6 @@ class xpath(AuditPlugin):
                     self.kb_append_uniq(self, 'xpath', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('xpath', 'xpath'), 'VAR')
-
     def _find_xpath_error(self, response):
         '''
         This method searches for xpath errors in html's.

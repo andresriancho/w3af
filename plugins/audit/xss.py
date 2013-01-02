@@ -165,8 +165,6 @@ class xss(AuditPlugin):
         '''
         if self._check_persistent_xss:
             self._identify_persistent_xss()
-        
-        self.print_uniq(kb.kb.get('xss', 'xss'), 'VAR')
     
     def _identify_persistent_xss(self):
         '''

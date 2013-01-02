@@ -210,13 +210,6 @@ class lfi(AuditPlugin):
                 
                 self.kb_append_uniq(self, 'error', i)
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('lfi', 'lfi'), 'VAR')
-        self.print_uniq(kb.kb.get('lfi', 'error'), 'VAR')
-
     def _find_file(self, response):
         '''
         This method finds out if the local file has been successfully included in

@@ -92,7 +92,6 @@ class ssl_certificate(AuditPlugin):
             v.set_url(url)
 
             self.kb_append(self, 'ssl_v2', v)
-            om.out.vulnerability(desc % domain)
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -134,7 +133,6 @@ class ssl_certificate(AuditPlugin):
             v.set_url(url)
             
             self.kb_append(self, tag, v)
-            om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
             return
 
         except Exception, e:
@@ -151,10 +149,11 @@ class ssl_certificate(AuditPlugin):
                        exp_date.tm_mday) - date.today()).days
         if expire_days < self._min_expire_days:
             desc = 'The certificate for "%s" will expire soon.' % domain
+            
             i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
             i.set_url(url)
+            
             self.kb_append(self, 'ssl_soon_expire', i)
-            om.out.information(i.get_desc())
 
         # Print the SSL information to the log
         desc = 'This is the information about the SSL certificate used in the'\

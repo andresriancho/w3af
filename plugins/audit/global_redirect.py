@@ -76,13 +76,6 @@ class global_redirect(AuditPlugin):
 
             self.kb_append_uniq(self, 'global_redirect', v)
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('global_redirect',
-                                  'global_redirect'), 'VAR')
-
     def _find_redirect(self, response):
         '''
         This method checks if the browser was redirected (using a 302 code)

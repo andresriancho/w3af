@@ -142,17 +142,9 @@ class buffer_overflow(AuditPlugin):
                 v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
                                      severity.MEDIUM, response.id,
                                      self.get_name(), mutant)
-            
                 v.add_to_highlight(error_str)
                 
                 self.kb_append_uniq(self, 'buffer_overflow', v)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(
-            kb.kb.get('buffer_overflow', 'buffer_overflow'), 'VAR')
 
     def get_plugin_deps(self):
         '''

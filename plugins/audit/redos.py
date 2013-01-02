@@ -133,12 +133,6 @@ class redos(AuditPlugin):
                     # positives
                     om.out.debug(str(i))
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('redos', 'redos'), 'VAR')
-
     def _get_wait_patterns(self, run):
         '''
         @return: This method returns a list of commands to try to execute in order

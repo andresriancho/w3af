@@ -28,10 +28,12 @@ import threading
 from multiprocessing.dummy import Process
 
 from core.controllers.misc.factory import factory
-from core.data.constants.encodings import UTF8
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
+from core.data.constants.encodings import UTF8
+
 
 start_lock = threading.Lock()
+
 
 def start_thread_on_demand(func):
     '''
@@ -276,6 +278,25 @@ class output_manager(Process):
 
                 # Append the plugin to the list
             self._output_plugin_list.append(plugin)
+
+    def report_finding(self, info_inst):
+        '''
+        The plugins call this in order to report an info/vuln object to the
+        user. This is an utility function that simply calls information() or
+        vulnerability() with the correct parameters, depending on the info_inst
+        type and severity.
+        
+        @param info_inst: An Info class or subclass.
+        '''
+        from core.data.kb.info import Info
+        from core.data.kb.vuln import Vuln
+        
+        if isinstance(info_inst, Vuln):
+            self.vulnerability(info_inst.get_desc(),
+                               severity=info_inst.get_severity())
+            
+        elif isinstance(info_inst, Info):
+            self.information(info_inst.get_desc())
 
     @start_thread_on_demand
     def __getattr__(self, name):

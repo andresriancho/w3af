@@ -162,12 +162,6 @@ class eval(AuditPlugin):
 
                 self.kb_append_uniq(self, 'eval', v)
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('eval', 'eval'), 'VAR')
-
     def _find_eval_result(self, response):
         '''
         This method searches for the randomized self._rnd string in html's.

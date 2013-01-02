@@ -84,12 +84,6 @@ class preg_replace(AuditPlugin):
                     self.kb_append_uniq(self, 'preg_replace', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('preg_replace', 'preg_replace'), 'VAR')
-
     def _find_preg_error(self, response):
         '''
         This method searches for preg_replace errors in html's.

@@ -288,12 +288,6 @@ class rfi(AuditPlugin):
                     self.kb_append_uniq(self, 'rfi', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('rfi', 'rfi'), 'VAR')
-
     def _create_file(self):
         '''
         Create random name file php with random php content. To be used in the

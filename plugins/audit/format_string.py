@@ -84,12 +84,6 @@ class format_string(AuditPlugin):
                     self.kb_append_uniq(self, 'format_string', v)
                     break
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('format_string', 'format_string'), 'VAR')
-
     def _get_string_list(self):
         '''
         @return: This method returns a list of format strings.

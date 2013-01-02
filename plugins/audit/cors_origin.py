@@ -147,7 +147,6 @@ class cors_origin(AuditPlugin):
                              vuln_severity, response_id, self.get_name())
 
                     self.kb_append(self, 'cors_origin', v)
-                    om.out.vulnerability(msg)
                     return [v, ]
 
         return []
@@ -232,7 +231,6 @@ class cors_origin(AuditPlugin):
                 v.set_url(forged_req.get_url())
                 
                 self.kb_append(self, 'cors_origin', v)
-                om.out.vulnerability(msg)
 
                 return self._filter_report('_allow_methods_counter',
                                            'sensitive and uncommon methods',
@@ -260,7 +258,7 @@ class cors_origin(AuditPlugin):
             v.set_url(forged_req.get_url())
 
             self.kb_append(self, 'cors_origin', v)
-            om.out.vulnerability(msg)
+
             return self._filter_report('_universal_allow_counter',
                                        'universal allow-origin',
                                        severity.MEDIUM, [v, ])
@@ -314,7 +312,7 @@ class cors_origin(AuditPlugin):
                 v.set_url(forged_req.get_url())
 
                 self.kb_append(self, 'cors_origin', v)
-                om.out.vulnerability(msg)
+
                 return self._filter_report('_origin_echo_counter',
                                            'origin echoed in allow-origin',
                                            severity.HIGH, [v, ])
@@ -358,7 +356,7 @@ class cors_origin(AuditPlugin):
             v.set_url(forged_req.get_url())
             
             self.kb_append(self, 'cors_origin', v)
-            om.out.vulnerability(msg)
+
             return self._filter_report('_universal_origin_allow_creds_counter',
                                        'withCredentials CORS implementation error',
                                        severity.INFORMATION, [v, ])

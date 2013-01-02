@@ -200,12 +200,6 @@ class file_upload(AuditPlugin):
             self.kb_append_uniq(self, 'file_upload', v)
             return
 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('file_upload', 'file_upload'), 'VAR')
-
     def _generate_urls(self, domain_path_list, uploaded_file_name):
         '''
         @param url: A URL where the uploaded_file_name could be
