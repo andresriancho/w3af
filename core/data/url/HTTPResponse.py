@@ -41,6 +41,7 @@ SP = ' '
 
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
+ANY_TAG_MATCH = re.compile('(<.*?>)')
 
 
 def from_httplib_resp(httplibresp, original_url=None):
@@ -191,15 +192,18 @@ class HTTPResponse(object):
         '''
         @return: A clear text representation of the HTTP response body.
         '''
-
         clear_text_body = self._clear_text_body
 
         if clear_text_body is None:
+            
             # Calculate the clear text body
             dom = self.get_dom()
             if dom is not None:
-                clear_text_body = self._clear_text_body = ''.join(
-                    dom.itertext())
+                clear_text_body = ''.join(dom.itertext())
+            else:
+                clear_text_body = ANY_TAG_MATCH.sub('', self.get_body())
+            
+            self._clear_text_body = clear_text_body
 
         return clear_text_body
 
