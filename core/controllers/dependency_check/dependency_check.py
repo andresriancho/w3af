@@ -100,8 +100,8 @@ def dependency_check():
         packages.append('nltk')
         packages_debian.append('python-nltk')
         packages_openbsd.append('py-nltk')
-        #TODO
-        #packages_mac_port.append()
+        packages_mac_ports.append('py27-nltk')
+        
         msg = '    If you can not install nltk with the system package manager,' \
               ' try the following:\n' \
               '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n' \
@@ -122,8 +122,7 @@ def dependency_check():
             packages.append('SOAPpy')
             packages_debian.append('python-soappy')
             packages_openbsd.append('py-SOAPpy')
-            #TODO
-            #packages_mac_port.append()
+            packages_mac_ports.append('py27-soappy')
             reason_for_exit = True
     #mem_test('after soappy import')
     try:
@@ -132,7 +131,7 @@ def dependency_check():
         packages.append('pdfminer')
         packages_debian.append('python-pdfminer')
         #TODO
-        #packages_mac_port.append()
+        #packages_mac_ports.append()
         reason_for_exit = True
         
     #mem_test('after pypdf import')
@@ -141,7 +140,7 @@ def dependency_check():
     except ImportError:
         packages.append('pyOpenSSL')
         packages_debian.append('python-pyopenssl')
-        packages_mac_ports.extend(['py26-openssl'])
+        packages_mac_ports.extend(['py27-openssl'])
         packages_openbsd.append('py-openssl')
         reason_for_exit = True
     #mem_test('after ssl import')
@@ -151,8 +150,7 @@ def dependency_check():
         packages.append('lxml')
         packages_debian.append('python-lxml')
         packages_openbsd.append('py-lxml')
-        #TODO
-        #packages_mac_port.append()
+        packages_mac_ports.append('py27-lxml')
         reason_for_exit = True
     #mem_test('after lxml import')
     try:
@@ -176,8 +174,7 @@ def dependency_check():
         packages.append('pysvn')
         packages_debian.append('python-svn')
         packages_openbsd.append('py-pysvn')
-        #TODO
-        #packages_mac_port.append()
+        packages_mac_ports.append('py27-pysvn')
         reason_for_exit = True
     #mem_test('after pysvn import')
 
@@ -185,8 +182,7 @@ def dependency_check():
         packages.append('scapy')
         packages_debian.append('python-scapy')
         packages_openbsd.append('scapy')
-        #TODO
-        #packages_mac_port.append()
+        packages_mac_ports.append('scapy')
         reason_for_exit = True
     else:
         try:
