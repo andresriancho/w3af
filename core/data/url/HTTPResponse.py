@@ -113,7 +113,7 @@ class HTTPResponse(object):
         # A unique id identifier for the response
         self.id = _id
         # From cache defaults to False
-        self._fromCache = False
+        self._from_cache = False
         # Set the info
         self._info = headers
         # Set code
@@ -125,8 +125,8 @@ class HTTPResponse(object):
         self._uri = original_url
         # The URL where we were redirected to (equal to original_url
         # when no redirect)
-        self._redirectedURL = geturl
-        self._redirectedURI = geturl.uri2url()
+        self._redirected_url = geturl
+        self._redirected_uri = geturl.uri2url()
 
         # Set the rest
         self._msg = msg
@@ -154,7 +154,7 @@ class HTTPResponse(object):
             'code': self.get_code(),
             'url': str(self.get_url()),
             'id': self.id and ' | id:%s' % self.id or '',
-            'fcache': self._fromCache and ' | fromCache:True' or ''
+            'fcache': self._from_cache and ' | fromCache:True' or ''
         }
         return '<HTTPResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
 
@@ -264,17 +264,16 @@ class HTTPResponse(object):
     charset = property(get_charset, set_charset)
     
     def set_redir_url(self, ru):
-        self._redirectedURL = ru
+        self._redirected_url = ru
 
     def get_redir_url(self):
-        return self._redirectedURL
+        return self._redirected_url
 
     def set_redir_uri(self, ru):
-        self._redirectedURI = ru
+        self._redirected_uri = ru
 
     def get_redir_uri(self):
-        return self._redirectedURI
-
+        return self._redirected_uri
 
     def get_headers(self):
         if self._headers is None:
@@ -388,20 +387,20 @@ class HTTPResponse(object):
         return self._uri
 
     def was_redirected(self):
-        return self._uri != self._redirectedURI
+        return self._uri != self._redirected_uri
 
     def set_from_cache(self, fcache):
         '''
         @param fcache: True if this response was obtained from the
         local cache.
         '''
-        self._fromCache = fcache
+        self._from_cache = fcache
 
     def get_from_cache(self):
         '''
         @return: True if this response was obtained from the local cache.
         '''
-        return self._fromCache
+        return self._from_cache
 
     def set_wait_time(self, t):
         self._time = t
