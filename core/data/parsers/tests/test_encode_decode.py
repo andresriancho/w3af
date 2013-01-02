@@ -78,13 +78,11 @@ class TestURLEncode(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(urlencode(parse_qs(u'a=1&a=c'), 'latin1'), 'a=1&a=c')
 
-    def test_tilde(self):
-        msg = 'This same unittest passed when written as a doctest, so I don\'t'\
-              ' care much about why it is NOT passing when I migrated it to a'\
-              ' unittest. It bothers me... but I\'m not too worried.'
-        raise SkipTest(msg)
-        self.assertEqual(
-            urlencode(parse_qs(u'a=á&a=2'), 'latin1'), 'a=%C3%A1&a=2')
+    def test_tilde_case01(self):
+        self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'latin1'), 'a=%E1&a=2')
+
+    def test_tilde_case02(self):
+        self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'utf-8'), 'a=%C3%A1&a=2')
 
     def test_raises(self):
         self.assertRaises(TypeError, urlencode, u'a=b&c=d', 'utf-8')
