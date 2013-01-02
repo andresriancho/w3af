@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from urlparse import parse_qs
-from nose.plugins.skip import SkipTest
 
 from core.data.parsers.encode_decode import htmldecode, urlencode
 
@@ -44,6 +43,28 @@ class TestHTMLDecode(unittest.TestCase):
 
     def test_html_encoded(self):
         self.assertEqual(htmldecode(u'&aacute;'), u'á')
+
+    def test_bug_trigger_case01(self):
+        '''
+        u'í'.decode('utf-8')
+        
+        UnicodeEncodeError: 'ascii' codec can't encode character u'\xed' in
+                            position 9745: ordinal not in range(128)
+        '''
+        html = u'Aquí encontrará'
+        self.assertEqual(htmldecode(html), html)
+    
+    def test_bug_trigger_case02(self):
+        html = 'Aqu\xc3\xad encontrar\xc3\xa1'.encode('utf-8')
+        self.assertEqual(htmldecode(html), html)
+
+    def test_bug_trigger_case03(self):
+        html = u'\xed'
+        self.assertEqual(htmldecode(html), html)
+
+    def test_bug_trigger_case04(self):
+        html = u'\xed'
+        self.assertEqual(htmldecode(html), html)
 
     def test_html_invalid_utf8_entity_encoded(self):
         '''Test for invalid entity encoded chars'''

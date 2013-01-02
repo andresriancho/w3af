@@ -60,6 +60,8 @@ def htmldecode(text, use_repr=False):
         except:
             return match.group(0)
 
+    # TODO: Requires more analysis
+    #
     # re.sub decodes the text before applying the regular expression
     # and if we don't decode it ourselves, the default settings are
     # used, which can (in strange cases), trigger a UnicodeDecodeError
@@ -67,10 +69,18 @@ def htmldecode(text, use_repr=False):
     # In some cases, the text has special characters, which we want to
     # encode in &#xYY format. We encode it like this because it is the
     # "best thing we can do" with the available time we have
-    decoded_text = text.decode(DEFAULT_ENCODING, errors=HTML_ENCODE)
+    #
+    # It seems that I still need to learn more about the encoding/decoding
+    # stuff, since adding this isinstance fixes a bug that I can't reproduce
+    # with the test_encode_decode, even with the same input string :S
+    #
+    # My understanding of this isinstance is that we're basically preventing
+    # a "double decode" which can trigger UnicodeDecodeError
+    if not isinstance(text, unicode):
+        text = text.decode(DEFAULT_ENCODING, errors=HTML_ENCODE)
 
     # "main"
-    return CHAR_REF_PATT.sub(entitydecode, decoded_text)
+    return CHAR_REF_PATT.sub(entitydecode, text)
 
 
 def urlencode(query, encoding, safe='/<>"\'=:()'):
