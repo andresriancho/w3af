@@ -24,7 +24,6 @@ from __future__ import with_statement
 import cPickle
 import os
 import shelve
-import string
 import sys
 import threading
 
@@ -55,7 +54,6 @@ class temp_shelve(object):
         # Create the lock
         self._shelve_lock = threading.RLock()
 
-        fail_count = 0
         while True:
             # Get the temp filename to use
             tempdir = get_temp_dir()
@@ -71,12 +69,11 @@ class temp_shelve(object):
                 # Create the shelve
                 self._shelve = shelve.open(self._filename, flag='c')
             except Exception, e:
+                filename = self._filename
                 self._filename = None
-
-                fail_count += 1
-                if fail_count == 5:
-                    msg = 'Failed to create shelve file "%s". Original exception: "%s"'
-                    raise Exception(msg % (self._filename, e))
+                
+                msg = 'Failed to create shelve file "%s". Original exception: "%s"'
+                raise Exception(msg % (filename, e))
             else:
                 break
 
