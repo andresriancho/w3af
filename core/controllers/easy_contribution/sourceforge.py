@@ -26,7 +26,7 @@ import ssl
 import time
 import xmlrpclib
 
-from core.controllers.exception_handling.helpers import VERSIONS
+from core.controllers.exception_handling.helpers import get_versions
 
 #
 #    Yeah, yeah, I know that this sucks but it's the best we could do...
@@ -108,7 +108,7 @@ $plugins
         #    Apply all the info
         #
         bdata = {'plugins': plugins, 't_back': tback,
-                 'user_desc': desc, 'w3af_v': VERSIONS}
+                 'user_desc': desc, 'w3af_v': get_versions()}
 
         # Build details string
         details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)

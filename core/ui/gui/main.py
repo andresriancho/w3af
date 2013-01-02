@@ -47,7 +47,7 @@ from core.controllers.w3afCore import w3afCore
 from core.controllers.misc_settings import MiscSettings
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
-from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.exception_handling.helpers import pprint_plugins, get_versions
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.gui.splash import Splash
@@ -60,13 +60,10 @@ from core.ui.gui import export_request
 from core.ui.gui import entries, encdec, messages, logtab, pluginconfig, confpanel
 from core.ui.gui import wizard, guardian, proxywin
 
-# This is just general info, to help people knowing their system
+# This is just general info, to help people know their system and report more
+# complete bugs
 print "Starting w3af, running on:"
-print "  Python version: "
-print "\n".join("    " + x for x in sys.version.split("\n"))
-print "  GTK version: ", ".".join(str(x) for x in gtk.gtk_version)
-print "  PyGTK version: ", ".".join(str(x) for x in gtk.pygtk_version)
-print
+print get_versions()
 
 # Threading initializer
 if sys.platform == "win32":
@@ -285,10 +282,6 @@ class MainApp(object):
         self.exceptions_sb = guardian.FoundExceptionsStatusBar(self.w3af)
         self.sb = entries.StatusBar(_("Program started"), [self.exceptions_sb,
                                                            guard])
-
-        # Using print so the user can read this in the console, together with
-        # the GTK, python and pygtk versions.
-        print '\n  '.join(get_w3af_version().split('\n'))
 
         self.w3af.mainwin = self
         self.is_running = False
