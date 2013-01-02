@@ -476,8 +476,8 @@ class ThreadedURLImpact(threading.Thread):
                 #   Get all the plugins and work with that list
                 #
                 for plugin_name in self.w3af.plugins.get_plugin_list('audit'):
-                    plugin = self.w3af.plugins.get_plugin_inst(
-                        'audit', plugin_name)
+                    plugin = self.w3af.plugins.get_plugin_inst('audit',
+                                                               plugin_name)
                     tmp_result = []
                     try:
                         tmp_result = plugin.audit_return_vulns(self.request)
