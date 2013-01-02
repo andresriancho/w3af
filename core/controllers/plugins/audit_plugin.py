@@ -82,25 +82,25 @@ class AuditPlugin(Plugin):
             
         return False
 
-    def kb_append_uniq(self, location_a, location_b, vuln):
+    def kb_append_uniq(self, location_a, location_b, info):
         '''
         kb.kb.append_uniq a vulnerability to the KB
         '''
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
-                self._newly_found_vulns.append(vuln)
+                self._newly_found_vulns.append(info)
         
-        kb.kb.append_uniq(location_a, location_b, vuln)
+        kb.kb.append_uniq(location_a, location_b, info)
         
-    def kb_append(self, location_a, location_b, vuln):
+    def kb_append(self, location_a, location_b, info):
         '''
         kb.kb.append a vulnerability to the KB
         '''
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
-                self._newly_found_vulns.append(vuln)
+                self._newly_found_vulns.append(info)
         
-        kb.kb.append(location_a, location_b, vuln)
+        kb.kb.append(location_a, location_b, info)
 
     def audit_with_copy(self, fuzzable_request):
         '''
