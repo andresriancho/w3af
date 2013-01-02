@@ -45,47 +45,50 @@ class un_ssl(AuditPlugin):
         '''
         Check if the protocol specified in freq is https and fetch the same URL
         using http. ie:
-            - input: https://a/
-            - check: http://a/
+            - input: https://w3af.org/
+            - check: http://w3af.org/
 
         @param freq: A FuzzableRequest
         '''
         if not self._run:
             return
         else:
-            self._run = False
-
             # Define some variables
-            initial_url = freq.get_url()
-            insecure_url = initial_url.copy()
-            secure_url = initial_url.copy()
+            initial_uri = freq.get_uri()
+            insecure_uri = initial_uri.copy()
+            secure_uri = initial_uri.copy()
 
-            insecure_url.set_protocol('http')
+            insecure_uri.set_protocol('http')
             insecure_fr = freq.copy()
-            insecure_fr.set_url(insecure_url)
+            insecure_fr.set_url(insecure_uri)
 
-            secure_url.set_protocol('https')
+            secure_uri.set_protocol('https')
             secure_fr = freq.copy()
-            secure_fr.set_url(secure_url)
+            secure_fr.set_url(secure_uri)
+
+            send_mutant = self._uri_opener.send_mutant
 
             try:
-                insecure_response = self._uri_opener.send_mutant(
-                    insecure_fr, follow_redir=False, grep=False)
-                secure_response = self._uri_opener.send_mutant(
-                    secure_fr, follow_redir=False, grep=False)
+                insecure_response = send_mutant(insecure_fr, grep=False)
+                secure_response = send_mutant(secure_fr, grep=False)
             except w3afException:
                 # No vulnerability to report since one of these threw an error
-                # (because there is nothing listening on that port).
-                pass
+                # (because there is nothing listening on that port). It makes
+                # no sense to keep running since we already got an error
+                self._run = False
+                
             else:
+                if self._redirects_to_secure(insecure_response, secure_response):
+                    return
+                
                 if insecure_response.get_code() == secure_response.get_code()\
                 and relative_distance_boolean(insecure_response.get_body(),
                                               secure_response.get_body(),
                                               0.95):
-                    desc = 'Secure content can be accesed using the insecure'\
+                    desc = 'Secure content can be accessed using the insecure'\
                            ' protocol HTTP. The vulnerable URLs are:'\
                            ' "%s" - "%s" .'
-                    desc = desc % (secure_url, insecure_url)
+                    desc = desc % (secure_uri, insecure_uri)
                     
                     response_ids = [insecure_response.id, secure_response.id]
                     
@@ -97,6 +100,22 @@ class un_ssl(AuditPlugin):
                     
                     om.out.vulnerability(v.get_desc(),
                                          severity=v.get_severity())
+                    
+                    # In most cases, when one resource is available, all are
+                    # so we just stop searching for this vulnerability
+                    self._run = False
+
+    def _redirects_to_secure(self, insecure_response, secure_response):
+        '''
+        @return: Is the insecure response redirecting to an HTTPS resource?
+        '''
+        if insecure_response.was_redirected():
+            redirect_target = insecure_response.get_redir_url()
+            
+            if redirect_target.get_protocol() == 'https':
+                return True
+        
+        return False
 
     def get_long_desc(self):
         '''
