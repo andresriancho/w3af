@@ -38,7 +38,8 @@ from core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_i
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.core_helpers.exception_handler import ExceptionData
 
-from core.controllers.exceptions import w3afMustStopException
+from core.controllers.exceptions import (w3afMustStopException,
+                                         w3afMustStopByUserRequest)
 
 
 class w3af_core_strategy(object):
@@ -283,6 +284,8 @@ class w3af_core_strategy(object):
             try:
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
                 is_404(response)
+            except w3afMustStopByUserRequest:
+                raise
             except Exception, e:
                 msg = 'Failed to initialize the 404 detection, original' \
                       ' exception was: "%s".'
