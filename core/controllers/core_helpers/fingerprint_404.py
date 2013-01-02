@@ -31,7 +31,6 @@ import core.controllers.output_manager as om
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alnum
 
-from core.controllers.exceptions import w3afException
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
 from core.controllers.misc.decorators import retry
@@ -88,8 +87,8 @@ class fingerprint_404(object):
         #    the object in order to use it.
         #
         if self._uri_opener is None:
-            raise w3afException(
-                '404 fingerprint database was incorrectly initialized.')
+            msg = '404 fingerprint database was incorrectly initialized.'
+            raise RuntimeError(msg)
 
         # Get the filename extension and create a 404 for it
         extension = url.get_extension()
