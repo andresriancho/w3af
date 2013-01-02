@@ -111,9 +111,9 @@ class lang(GrepPlugin):
                     kb.kb.save(self, 'lang', identified_lang)
 
                 else:
-                    msg = 'Could not determine the page language using ' + \
-                        response.get_url()
-                    msg += ', not enough text to make a good analysis.'
+                    msg = 'Could not determine the page language using %s,'\
+                          ' not enough text to make a good analysis.'
+                    msg = msg % response.get_url()
                     om.out.debug(msg)
                     # Keep running until giving a good response...
                     self._exec = True
