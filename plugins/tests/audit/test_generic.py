@@ -27,21 +27,38 @@ class TestGeneric(PluginTest):
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php'
 
     _run_configs = {
-        'cfg': {
-            'target': target_url + '?id=1',
-            'plugins': {
-                'audit': (PluginConfig('generic'),),
-            }
-        }
+        'generic_only': {
+                         'target': target_url + '?id=1',
+                         'plugins': {
+                                     'audit': (PluginConfig('generic'),),
+                                     }
+                         },
+        'generic_sqli': {
+                         'target': target_url + '?id=1',
+                         'plugins': {
+                                     'audit': (PluginConfig('generic'),
+                                               PluginConfig('sqli'),),
+                                     }
+                         }
     }
 
     def test_found_generic(self):
-        cfg = self._run_configs['cfg']
+        cfg = self._run_configs['generic_only']
         self._scan(cfg['target'], cfg['plugins'])
+        
         vulns = self.kb.get('generic', 'generic')
+        
         self.assertEquals(1, len(vulns))
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Unidentified vulnerability', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
+
+    def test_found_generic_not_reported(self):
+        cfg = self._run_configs['generic_sqli']
+        self._scan(cfg['target'], cfg['plugins'])
+        
+        vulns = self.kb.get('generic', 'generic')
+        
+        self.assertEquals(0, len(vulns))
