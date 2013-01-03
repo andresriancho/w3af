@@ -52,7 +52,7 @@ class ssl_certificate(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-        self._already_tested = ScalableBloomFilter()
+        self._already_tested = set()
         self._min_expire_days = 30
         self._ca_file = os.path.join('plugins', 'audit', 'ssl_certificate',
                                      'ca.pem')
@@ -66,11 +66,17 @@ class ssl_certificate(AuditPlugin):
         url = freq.get_url()
         domain = url.get_domain()
 
-        if 'HTTPS' != url.get_protocol().upper() or domain in self._already_tested:
+        if 'http' == url.get_protocol().lower():
             return
+        
+        with self._plugin_lock:
 
-        self._already_tested.add(domain)
+            if not domain in self._already_tested:
+                self._already_tested.add(domain)
+                
+                self._analyze_ssl_cert(url, domain)
 
+    def _analyze_ssl_cert(self, url, domain):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # SSLv2 check
         # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
