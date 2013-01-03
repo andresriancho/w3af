@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -46,7 +45,7 @@ class blind_sqli(AuditPlugin):
         # User configured variables
         self._eq_limit = 0.9
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for blind SQL injection vulnerabilities.
 

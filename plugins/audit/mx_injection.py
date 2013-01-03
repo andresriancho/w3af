@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -56,16 +55,15 @@ class mx_injection(AuditPlugin):
         '''
         AuditPlugin.__init__(self)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for mx injection vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()
-        mutants = create_mutants(
-            freq, mx_injection_strings, orig_resp=orig_resp)
+        mutants = create_mutants(freq, mx_injection_strings,
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

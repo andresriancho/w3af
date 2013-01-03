@@ -54,10 +54,10 @@ class ssl_certificate(AuditPlugin):
 
         self._already_tested = ScalableBloomFilter()
         self._min_expire_days = 30
-        self._ca_file = os.path.join(
-            'plugins', 'audit', 'ssl_certificate', 'ca.pem')
+        self._ca_file = os.path.join('plugins', 'audit', 'ssl_certificate',
+                                     'ca.pem')
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Get the cert and do some checks against it.
 

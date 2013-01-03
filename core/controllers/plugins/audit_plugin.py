@@ -107,23 +107,27 @@ class AuditPlugin(Plugin):
         kb.kb.append(location_a, location_b, info)
         om.out.report_finding(info)
 
-    def audit_with_copy(self, fuzzable_request):
+    def audit_with_copy(self, fuzzable_request, orig_resp):
         '''
+        @param freq: A FuzzableRequest
+        @param orig_resp: The HTTP response we get from sending the freq
+        
         Copy the FuzzableRequest before auditing.
 
         I copy the fuzzable request, to avoid cross plugin contamination.
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         '''
-        return self.audit(fuzzable_request.copy())
+        return self.audit(fuzzable_request.copy(), orig_resp)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_resp):
         '''
         The freq is a FuzzableRequest that is going to be modified and sent.
 
         This method MUST be implemented on every plugin.
 
         @param freq: A FuzzableRequest
+        @param orig_resp: The HTTP response we get from sending the freq
         '''
         msg = 'Plugin is not implementing required method audit'
         raise NotImplementedError(msg)

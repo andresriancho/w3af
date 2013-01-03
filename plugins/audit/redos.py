@@ -49,7 +49,7 @@ class redos(AuditPlugin):
         # The wait time of the first test I'm going to perform
         self._wait_time = 1
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for ReDoS vulnerabilities using time delays.
 
@@ -69,8 +69,7 @@ class redos(AuditPlugin):
 
         # Send the FuzzableRequest without any fuzzing, so we can measure the
         # response time of this script in order to compare it later
-        res = self._uri_opener.send_mutant(freq, grep=False)
-        self._original_wait_time = res.get_wait_time()
+        self._original_wait_time = orig_response.get_wait_time()
 
         # Prepare the strings to create the mutants
         patterns_list = self._get_wait_patterns(run=1)

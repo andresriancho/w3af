@@ -49,7 +49,7 @@ class frontpage(AuditPlugin):
         self._already_tested = ScalableBloomFilter()
         self._stop_on_first = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Searches for file upload vulns using a POST to author.dll.
 

@@ -44,7 +44,7 @@ class xst(AuditPlugin):
         # Internal variables
         self._exec = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Verify xst vulns by sending a TRACE request and analyzing the response.
         '''

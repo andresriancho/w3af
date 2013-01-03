@@ -23,7 +23,6 @@ from __future__ import with_statement
 
 from lxml import etree
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.data.fuzzer.fuzzer import create_mutants
@@ -52,7 +51,7 @@ class phishing_vector(AuditPlugin):
         self._test_urls = ('hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/',
                            'fTp://w3af.sf.net/')
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Find those phishing vectors!
 

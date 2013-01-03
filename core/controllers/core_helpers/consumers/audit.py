@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 
+from core.controllers.misc.decorators import retry
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.exceptions import w3afException
 
@@ -51,7 +52,34 @@ class audit(BaseConsumer):
             except Exception, e:
                 self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)                
 
+    @retry(3)
+    def get_original_response(self, fuzzable_request):
+        plugin = self._consumer_plugins[0]
+        return plugin._uri_opener.send_mutant(fuzzable_request, grep=False,
+                                              cache=False)
+        
     def _consume(self, fuzzable_request):
+        '''
+        Consume a fuzzable_request that was found by the crawl/infrastructure
+        plugins. Basically perform these steps:
+        
+            * GET the FuzzableRequest and get a handler to the HTTPResponse inst
+            * Send the fuzzable_request and http_response instances to all
+              plugins in different threads in order for them to work on them
+        
+        Getting the original response at this level is a performance
+        enhancement to avoid sending the same HTTP request many times, once
+        for each audit plugin that needed the http_response.
+        
+        @param fuzzable_request: A FuzzableRequest instance
+        '''
+        try:
+            orig_resp = self.get_original_response(fuzzable_request)
+        except Exception, e:
+            self.handle_exception('audit', 'audit.getget_original_response_name()',
+                                  'audit.get_original_response()', e)
+            return
+
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
                                                          fuzzable_request))
@@ -66,9 +94,9 @@ class audit(BaseConsumer):
                 fuzzable_request)
 
             self._threadpool.apply_async(self._audit,
-                                        (plugin, fuzzable_request,))
+                                        (plugin, fuzzable_request, orig_resp))
 
-    def _audit(self, plugin, fuzzable_request):
+    def _audit(self, plugin, fuzzable_request, orig_resp):
         '''
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to handle
@@ -80,7 +108,7 @@ class audit(BaseConsumer):
         '''
         self._add_task()
         try:
-            plugin.audit_with_copy(fuzzable_request)
+            plugin.audit_with_copy(fuzzable_request, orig_resp)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)

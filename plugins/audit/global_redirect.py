@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 import core.data.parsers.parser_cache as parser_cache
 
@@ -49,7 +48,7 @@ class global_redirect(AuditPlugin):
         self._meta_url_re = re.compile(
             '.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for global redirect vulnerabilities.
 

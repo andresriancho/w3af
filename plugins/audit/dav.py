@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -43,7 +42,7 @@ class dav(AuditPlugin):
         # Internal variables
         self._already_tested_dirs = ScalableBloomFilter()
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Searches for file upload vulns using PUT method.
 
@@ -64,7 +63,7 @@ class dav(AuditPlugin):
             results = []
             for func in [self._PUT, self._PROPFIND, self._SEARCH]:
                 apply_res = self.worker_pool.apply_async(func,
-                                                            (domain_path,))
+                                                         (domain_path,))
                 results.append(apply_res)
 
             for apply_res in results:

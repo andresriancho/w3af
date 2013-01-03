@@ -23,7 +23,6 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import ExactDelay
@@ -85,26 +84,25 @@ class eval(AuditPlugin):
         self._use_time_delay = True
         self._use_echo = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for eval() user input injection vulnerabilities.
         @param freq: A FuzzableRequest
         '''
         if self._use_echo:
-            self._fuzz_with_echo(freq)
+            self._fuzz_with_echo(freq, orig_response)
 
         if self._use_time_delay:
             self._fuzz_with_time_delay(freq)
 
-    def _fuzz_with_echo(self, freq):
+    def _fuzz_with_echo(self, freq, orig_response):
         '''
         Tests an URL for eval() usage vulnerabilities using echo strings.
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
         print_strings = [pstr % (self._rnd,) for pstr in self.PRINT_STRINGS]
 
-        mutants = create_mutants(freq, print_strings, orig_resp=orig_resp)
+        mutants = create_mutants(freq, print_strings, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

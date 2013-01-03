@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.data.constants.severity as severity
-import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -52,7 +51,7 @@ class os_commanding(AuditPlugin):
         self._special_chars = ['', '&&', '|', ';']
         self._file_compiled_regex = []
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for OS Commanding vulnerabilities.
 
@@ -71,22 +70,21 @@ class os_commanding(AuditPlugin):
         #
         # This also speeds-up the detection process a little bit in the cases where
         # there IS a vulnerability present and can be found with both methods.
-        self._with_echo(freq)
+        self._with_echo(freq, orig_response)
         self._with_time_delay(freq)
 
-    def _with_echo(self, freq):
+    def _with_echo(self, freq, orig_response):
         '''
         Tests an URL for OS Commanding vulnerabilities using cat/type to write the
         content of a known file (i.e. /etc/passwd) to the HTML.
 
         @param freq: A FuzzableRequest
         '''
-        original_response = self._uri_opener.send_mutant(freq)
         # Prepare the strings to create the mutants
         command_list = self._get_echo_commands()
         only_command_strings = [v.get_command() for v in command_list]
-        mutants = create_mutants(
-            freq, only_command_strings, orig_resp=original_response)
+        mutants = create_mutants(freq, only_command_strings,
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

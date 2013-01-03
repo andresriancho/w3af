@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from math import log, floor
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -50,7 +49,7 @@ class csrf(AuditPlugin):
         self._strict_mode = False
         self._equal_limit = 0.95
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for csrf vulnerabilities.
 

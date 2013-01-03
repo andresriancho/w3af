@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.output_manager as om
-
 import core.data.constants.severity as severity
 import core.data.constants.response_codes as http_constants
 
@@ -44,7 +42,7 @@ class htaccess_methods(AuditPlugin):
         AuditPlugin.__init__(self)
         self._already_tested = ScalableBloomFilter()
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for htaccess misconfigurations.
 

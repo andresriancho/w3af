@@ -27,7 +27,6 @@ import BaseHTTPServer
 from functools import partial
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 import core.controllers.daemons.webserver as webserver
 import core.data.constants.ports as ports
@@ -76,7 +75,7 @@ class rfi(AuditPlugin):
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for remote file inclusion vulnerabilities.
 
@@ -85,12 +84,12 @@ class rfi(AuditPlugin):
         # The plugin is going to use two different techniques:
         # 1- create a request that will include a file from the w3af site
         if self._use_w3af_site:
-            self._w3af_site_test_inclusion(freq)
+            self._w3af_site_test_inclusion(freq, orig_response)
 
         # Sanity check
         if self._correctly_configured():
             # 2- create a request that will include a file from a local web server
-            self._local_test_inclusion(freq)
+            self._local_test_inclusion(freq, orig_response)
         else:
             # Report error to the user only once
             if not self._error_reported:
@@ -123,7 +122,7 @@ class rfi(AuditPlugin):
                     del s
                 return True
 
-    def _local_test_inclusion(self, freq):
+    def _local_test_inclusion(self, freq, orig_response):
         '''
         Check for RFI using a local web server
 
@@ -171,12 +170,12 @@ class rfi(AuditPlugin):
                                           RFIWebHandler)
 
                 # Perform the real work
-                self._test_inclusion(freq, rfi_data)
+                self._test_inclusion(freq, rfi_data, orig_response)
             except Exception, e:
                 om.out.error('An error occurred while running local webserver:'
                              ' "%s"' % e)
 
-    def _w3af_site_test_inclusion(self, freq):
+    def _w3af_site_test_inclusion(self, freq, orig_response):
         '''
         Check for RFI using the official w3af site.
 
@@ -188,13 +187,13 @@ class rfi(AuditPlugin):
         rfi_result_part_1 = 'w3af'
         rfi_result_part_2 = ' by Andres Riancho'
 
-        rfi_data = RFIData(
-            rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
+        rfi_data = RFIData(rfi_url, rfi_result_part_1,
+                           rfi_result_part_2, rfi_result)
 
         # Perform the real work
-        self._test_inclusion(freq, rfi_data)
+        self._test_inclusion(freq, rfi_data, orig_response)
 
-    def _test_inclusion(self, freq, rfi_data):
+    def _test_inclusion(self, freq, rfi_data, orig_response):
         '''
         Checks a FuzzableRequest for remote file inclusion bugs.
 
@@ -202,10 +201,8 @@ class rfi(AuditPlugin):
         @param rfi_data: A RFIData object with all the information about the RFI
         @return: None, vulnerabilities are stored in the KB in _analyze_result
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
-
         rfi_url_list = self._mutate_rfi_urls(rfi_data.rfi_url)
-        mutants = create_mutants(freq, rfi_url_list, orig_resp=orig_resp)
+        mutants = create_mutants(freq, rfi_url_list, orig_resp=orig_response)
 
         analyze_result_par = partial(self._analyze_result, rfi_data)
 

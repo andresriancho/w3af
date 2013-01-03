@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -54,7 +53,7 @@ class response_splitting(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for response splitting vulnerabilities.
 

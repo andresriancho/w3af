@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 import core.data.constants.severity as severity
@@ -76,15 +75,14 @@ class xpath(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for xpath injection vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
         xpath_strings = self._get_xpath_strings()
-        mutants = create_mutants(freq, xpath_strings, orig_resp=orig_resp)
+        mutants = create_mutants(freq, xpath_strings, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

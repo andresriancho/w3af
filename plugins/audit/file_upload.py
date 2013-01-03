@@ -53,7 +53,7 @@ class file_upload(AuditPlugin):
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Searches for file upload vulns.
 

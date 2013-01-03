@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.constants.severity as severity
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
@@ -50,17 +49,15 @@ class ssi(AuditPlugin):
         re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'
         self._extract_results_re = re.compile(re_str) 
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for server side inclusion vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
-
         # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
-        mutants = create_mutants(freq, ssi_strings, orig_resp=orig_resp)
+        mutants = create_mutants(freq, ssi_strings, orig_resp=orig_response)
 
         # Used in end() to detect "persistent SSI"
         for mut in mutants:

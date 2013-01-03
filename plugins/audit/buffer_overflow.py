@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.exceptions import w3afException, w3afMustStopException
@@ -90,23 +89,16 @@ class buffer_overflow(AuditPlugin):
         '''
         AuditPlugin.__init__(self)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for buffer overflow vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        try:
-            orig_resp = self._uri_opener.send_mutant(freq)
-        except w3afException:
-            msg = 'Failed to perform the initial request during buffer'\
-                  ' overflow testing'
-            om.out.debug(msg)
-        else:
-            mutants = create_mutants(freq, self.BUFFER_TESTS,
-                                     orig_resp=orig_resp)
+        mutants = create_mutants(freq, self.BUFFER_TESTS,
+                                 orig_resp=orig_response)
 
-            self.worker_pool.map(self._send_request, mutants)
+        self.worker_pool.map(self._send_request, mutants)
 
     def _send_request(self, mutant):
         '''

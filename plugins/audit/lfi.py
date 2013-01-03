@@ -23,7 +23,6 @@ from __future__ import with_statement
 
 import re
 
-import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 import core.data.constants.severity as severity
@@ -55,21 +54,19 @@ class lfi(AuditPlugin):
         self._error_compiled_regex = []
         self._open_basedir = False
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for local file inclusion vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
-
         # Which payloads do I want to send to the remote end?
         local_files = []
         local_files.append(freq.get_url().get_file_name())
         if not self._open_basedir:
             local_files.extend(self._get_local_file_list(freq.get_url()))
 
-        mutants = create_mutants(freq, local_files, orig_resp=orig_resp)
+        mutants = create_mutants(freq, local_files, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

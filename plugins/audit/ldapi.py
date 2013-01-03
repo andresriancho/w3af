@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 import core.controllers.output_manager as om
 
@@ -87,15 +86,14 @@ class ldapi(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for LDAP injection vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        orig_resp = self._uri_opener.send_mutant(freq)
-        mutants = create_mutants(
-            freq, self.LDAPI_STRINGS, orig_resp=orig_resp)
+        mutants = create_mutants(freq, self.LDAPI_STRINGS,
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,

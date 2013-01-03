@@ -41,7 +41,7 @@ class un_ssl(AuditPlugin):
         # Internal variables
         self._run = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Check if the protocol specified in freq is https and fetch the same URL
         using http. ie:

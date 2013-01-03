@@ -29,7 +29,6 @@ from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_number, rand_alnum
 from core.data.kb.vuln import Vuln
-from core.data.kb.info import Info
 from core.data.db.disk_list import DiskList
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -53,15 +52,14 @@ class generic(AuditPlugin):
         #   User configured variables
         self._diff_ratio = 0.30
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Find all kind of bugs without using a fixed database of errors.
 
         @param freq: A FuzzableRequest
         '''
         # First, get the original response and create the mutants
-        orig_resp = self._uri_opener.send_mutant(freq)
-        mutants = create_mutants(freq, ['', ], orig_resp=orig_resp)
+        mutants = create_mutants(freq, ['', ], orig_resp=orig_response)
 
         for m in mutants:
 
@@ -91,7 +89,7 @@ class generic(AuditPlugin):
                 error_response = self._uri_opener.send_mutant(m)
 
                 # Now I compare responses
-                self._analyze_responses(orig_resp, limit_response,
+                self._analyze_responses(orig_response, limit_response,
                                         error_response, m)
 
     def _analyze_responses(self, orig_resp, limit_response, error_response, mutant):
@@ -184,8 +182,8 @@ class generic(AuditPlugin):
         '''
         ol = OptionList()
 
-        d = 'If two strings have a diff ratio less than diff_ratio, then they are '
-        d += '*really* different'
+        d = 'If two strings have a diff ratio less than diff_ratio, then they'\
+            '  are really different.'
         o = opt_factory('diff_ratio', self._diff_ratio, d, 'float')
         ol.add(o)
 

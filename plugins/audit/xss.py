@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.core_helpers.update_urls_in_kb import get_fuzzable_requests_from_kb
@@ -59,7 +58,7 @@ class xss(AuditPlugin):
         # User configured parameters
         self._check_persistent_xss = True
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Tests an URL for XSS vulnerabilities.
         

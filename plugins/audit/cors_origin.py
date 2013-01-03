@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
-import core.controllers.output_manager as om
-
 import core.data.constants.severity as severity
 
 from core.data.kb.vuln import Vuln
@@ -61,7 +59,7 @@ class cors_origin(AuditPlugin):
         self._universal_origin_allow_creds_counter = 0
         self._allow_methods_counter = 0
 
-    def audit(self, freq):
+    def audit(self, freq, orig_response):
         '''
         Plugin entry point.
 
