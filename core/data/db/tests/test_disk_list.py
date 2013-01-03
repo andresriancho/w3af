@@ -32,7 +32,7 @@ from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
 
 
-class test_DiskList(unittest.TestCase):
+class TestDiskList(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
