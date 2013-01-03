@@ -77,6 +77,9 @@ class ssl_certificate(AuditPlugin):
                 self._analyze_ssl_cert(url, domain)
 
     def _analyze_ssl_cert(self, url, domain):
+        '''
+        Analyze the SSL cert and store the information in the KB.
+        '''
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # SSLv2 check
         # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
@@ -162,8 +165,9 @@ class ssl_certificate(AuditPlugin):
             self.kb_append(self, 'ssl_soon_expire', i)
 
         # Print the SSL information to the log
-        desc = 'This is the information about the SSL certificate used in the'\
-               ' target site:\n%s' % self._dump_ssl_info(cert, cert_der, cipher)
+        desc = 'This is the information about the SSL certificate used for'\
+               ' %s site:\n%s' % (domain,
+                                  self._dump_ssl_info(cert, cert_der, cipher))
         om.out.information(desc)
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(url)
@@ -189,15 +193,17 @@ class ssl_certificate(AuditPlugin):
         '''
         ol = OptionList()
 
-        d = 'Set minimal amount of days before expiration of the certificate for alerting'
-        h = 'If the certificate will expire in period of minExpireDays w3af will show alert about it'
+        d = 'Set minimal amount of days before expiration of the certificate'\
+            ' for alerting'
+        h = 'If the certificate will expire in period of minExpireDays w3af'\
+            ' will show an alert about it, which is useful for admins to'\
+            ' remember to renew the certificate.'
         o = opt_factory(
             'minExpireDays', self._min_expire_days, d, 'integer', help=h)
         ol.add(o)
 
-        d = 'Set minimal amount of days before expiration of the certificate for alerting'
-        h = 'CA PEM file path'
-        o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE, help=h)
+        d = 'CA PEM file path'
+        o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE)
         ol.add(o)
 
         return ol
