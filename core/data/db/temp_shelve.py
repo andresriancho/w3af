@@ -33,6 +33,10 @@ from core.controllers.misc.temp_dir import get_temp_dir
 
 class temp_shelve(object):
     '''
+    Please make sure you read shelve_vs_sqlite3.py before using this class
+    in any important part of the framework. To sum up: sqlite3 is much faster
+    than shelve.
+     
     It's a shelve wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
         - Is thread safe
@@ -54,39 +58,36 @@ class temp_shelve(object):
         # Create the lock
         self._shelve_lock = threading.RLock()
 
-        while True:
-            # Get the temp filename to use
-            tempdir = get_temp_dir()
-            filename = rand_alnum(12) + '.w3af.temp_shelve'
-            self._filename = os.path.join(tempdir, filename)
+        # Get the temp filename to use
+        tempdir = get_temp_dir()
+        filename = rand_alnum(12) + '.w3af.temp_shelve'
+        self._filename = os.path.join(tempdir, filename)
 
-            # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
-            if (sys.platform == 'win32') or (sys.platform == 'cygwin'):
-                self._filename = self._filename.decode(
-                    "MBCS").encode("utf-8")
+        # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
+        if (sys.platform == 'win32') or (sys.platform == 'cygwin'):
+            self._filename = self._filename.decode(
+                "MBCS").encode("utf-8")
 
-            try:
-                # Create the shelve
-                self._shelve = shelve.open(self._filename, flag='c')
-            except Exception, e:
-                filename = self._filename
-                self._filename = None
-                
-                msg = 'Failed to create shelve file "%s". Original exception: "%s"'
-                raise Exception(msg % (filename, e))
-            else:
-                break
+        try:
+            # Create the shelve
+            self._shelve = shelve.open(self._filename, flag='c')
+        except Exception, e:
+            filename = self._filename
+            self._filename = None
+            
+            msg = 'Failed to create shelve file "%s". Original exception: "%s"'
+            raise Exception(msg % (filename, e))
 
-            # Now we perform a small trick... we remove the temp file directory entry
-            #
-            # According to the python documentation: On Windows, attempting to remove a file that
-            # is in use causes an exception to be raised; on Unix, the directory entry is removed
-            # but the storage allocated to the file is not made available until the original file
-            # is no longer in use
-            try:
-                os.remove(self._filename)
-            except Exception:
-                pass
+        # Now we perform a small trick... we remove the temp file directory entry
+        #
+        # According to the python documentation: On Windows, attempting to remove a file that
+        # is in use causes an exception to be raised; on Unix, the directory entry is removed
+        # but the storage allocated to the file is not made available until the original file
+        # is no longer in use
+        try:
+            os.remove(self._filename)
+        except Exception:
+            pass
 
     def __repr__(self):
         return repr(self)
