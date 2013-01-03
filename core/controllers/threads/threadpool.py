@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import Queue
+
 from functools import partial
 
 from multiprocessing.pool import ThreadPool
@@ -62,7 +64,13 @@ class Pool(ThreadPool):
     def __init__(self, processes=None, initializer=None, initargs=(), worker_names=None):
         self.Process = partial(DaemonProcess, name=worker_names)
         ThreadPool.__init__(self, processes, initializer, initargs)
-
+    
+    def _setup_queues(self):
+        self._inqueue = Queue.Queue(20)
+        self._outqueue = Queue.Queue()
+        self._quick_put = self._inqueue.put
+        self._quick_get = self._outqueue.get
+        
     def map_multi_args(self, func, iterable, chunksize=None):
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()

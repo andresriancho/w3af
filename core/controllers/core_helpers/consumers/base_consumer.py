@@ -47,14 +47,16 @@ class BaseConsumer(Process):
         '''
         super(BaseConsumer, self).__init__()
 
-        self.in_queue = Queue.Queue()
-        # See documentation in the property below
-        self._out_queue = Queue.Queue()
+        self.in_queue = Queue.Queue(10)
+        self._out_queue = Queue.Queue(10)
+        
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
+        
         self._tasks_in_progress_counter = 0
+        
         if create_pool:
-            self._threadpool = Pool(10, worker_names=thread_name)
+            self._threadpool = Pool(5, worker_names=thread_name)
 
     def run(self):
         '''
@@ -161,6 +163,7 @@ class BaseConsumer(Process):
         #    This output queue can contain one of the following:
         #        * POISON_PILL
         #        * (plugin_name, fuzzable_request, AsyncResult)
+        #        * An exception
         return self._out_queue
 
     def in_queue_size(self):
