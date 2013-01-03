@@ -192,8 +192,7 @@ class LocalProxy(Proxy):
         # User configured parameters
         self._methods_to_trap = set()
         self._what_to_trap = re.compile('.*')
-        self._what_not_to_trap = re.compile(
-            '.*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$')
+        self._what_not_to_trap = re.compile('.*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$')
         self._trap = False
         self._fix_content_length = True
 
