@@ -70,7 +70,7 @@ class symfony(GrepPlugin):
                     i = Info('Symfony Framework with CSRF protection disabled',
                              desc, response.id, self.get_name())
                     i.set_url(url)
-                    kb.kb.append(self, 'symfony', i)
+                    self.kb_append_uniq(self, 'symfony', i, 'URL')
 
     def symfony_detected(self, response):
         if self._override:
@@ -109,12 +109,6 @@ class symfony(GrepPlugin):
         ol.add(o)
 
         return ol
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('symfony', 'symfony'), 'URL')
 
     def get_long_desc(self):
         '''

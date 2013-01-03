@@ -184,7 +184,7 @@ only_target_domain = True
 
 [infrastructure.finger_google]
 result_limit = 300
-fastSearch = False
+fast_search = False
 
 [infrastructure.favicon_identification]
 

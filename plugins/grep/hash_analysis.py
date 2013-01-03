@@ -83,7 +83,7 @@ class hash_analysis(GrepPlugin):
                     i.set_url(response.get_url())
                     i.add_to_highlight(possible_hash)
                     
-                    kb.kb.append(self, 'hash_analysis', i)
+                    self.kb_append(self, 'hash_analysis', i)
 
                     self._already_reported.add( (possible_hash,
                                                  response.get_url()) )
@@ -139,12 +139,6 @@ class hash_analysis(GrepPlugin):
                 return hash_type
             
         return None
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('hash_analysis', 'hash_analysis'), None)
 
     def get_long_desc(self):
         '''

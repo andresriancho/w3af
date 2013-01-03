@@ -104,7 +104,7 @@ class user_defined_regex(GrepPlugin):
                         
                         om.out.information(desc)
 
-                        kb.kb.append(self, 'user_defined_regex', info_inst)
+                        self.kb_append_uniq(self, 'user_defined_regex', info_inst, 'URL')
 
                     # Save the info_inst
                     self._regexlist_compiled[index] = (regex, info_inst)
@@ -185,13 +185,6 @@ class user_defined_regex(GrepPlugin):
         ol.add(o)
 
         return ol
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(
-            kb.kb.get('user_defined_regex', 'user_defined_regex'), 'URL')
 
     def get_long_desc(self):
         '''

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from core.data.kb.info import Info
 from core.data.kb.knowledge_base import kb
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.parsers.url import URL

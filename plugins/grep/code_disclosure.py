@@ -70,7 +70,7 @@ class code_disclosure(GrepPlugin):
                     v.set_url(response.get_url())
                     v.add_to_highlight(match.group())
                     
-                    kb.kb.append(self, 'code_disclosure', v)
+                    self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
                     self._already_added.add(response.get_url())
 
                 else:
@@ -85,15 +85,7 @@ class code_disclosure(GrepPlugin):
 
                     v.set_url(response.get_url())
                     v.add_to_highlight(match.group())
-                    kb.kb.append(self, 'code_disclosure', v)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        # Print code_disclosure
-        self.print_uniq(kb.kb.get('code_disclosure',
-                                  'code_disclosure'), 'URL')
+                    self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
     def get_long_desc(self):
         '''

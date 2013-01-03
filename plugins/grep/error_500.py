@@ -103,9 +103,7 @@ class error_500(GrepPlugin):
                 
                 v.set_uri(request.get_uri())
                 
-                kb.kb.append(self, 'error_500', v)
-
-        self.print_uniq(kb.kb.get('error_500', 'error_500'), 'VAR')
+                self.kb_append_uniq(self, 'error_500', v, 'VAR')
 
     def get_long_desc(self):
         '''

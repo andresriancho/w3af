@@ -64,13 +64,7 @@ class blank_body(GrepPlugin):
                      response.id, self.get_name())
             i.set_url(response.get_url())
             
-            kb.kb.append(self, 'blank_body', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('blank_body', 'blank_body'), None)
+            self.kb_append(self, 'blank_body', i)
 
     def get_long_desc(self):
         '''

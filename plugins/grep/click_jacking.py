@@ -83,9 +83,7 @@ class click_jacking(GrepPlugin):
         v = Vuln('Click-Jacking vulnerability', desc,
                  severity.MEDIUM, response_ids, self.get_name())
         
-        kb.kb.append(self, 'click_jacking', v)
-
-        self.print_uniq(kb.kb.get('click_jacking', 'click_jacking'), 'URL')
+        self.kb_append(self, 'click_jacking', v)
 
     def get_long_desc(self):
         return '''

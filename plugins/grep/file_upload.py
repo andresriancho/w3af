@@ -74,13 +74,7 @@ class file_upload(GrepPlugin):
                     to_highlight = etree.tostring(input_file)
                     i.add_to_highlight(to_highlight)
                     
-                    kb.kb.append(self, 'file_upload', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('file_upload', 'file_upload'), 'URL')
+                    self.kb_append_uniq(self, 'file_upload', i, 'URL')
 
     def get_long_desc(self):
         '''

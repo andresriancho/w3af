@@ -93,7 +93,7 @@ class private_ip(GrepPlugin):
 
                         v['IP'] = match
                         v.add_to_highlight(match)
-                        kb.kb.append(self, 'header', v)
+                        self.kb_append(self, 'header', v)
 
             #
             #   Search for IP addresses in the HTML
@@ -127,7 +127,7 @@ class private_ip(GrepPlugin):
 
                             v['IP'] = match
                             v.add_to_highlight(match)
-                            kb.kb.append(self, 'HTML', v)
+                            self.kb_append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
         '''
@@ -148,13 +148,6 @@ class private_ip(GrepPlugin):
                 pass
             else:
                 self._ignore_if_match.add(ip_address)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('private_ip', 'header'), None)
-        self.print_uniq(kb.kb.get('private_ip', 'HTML'), None)
 
     def get_long_desc(self):
         '''

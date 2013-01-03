@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.kb.knowledge_base as kb
-
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
@@ -74,7 +72,7 @@ class wsdl_greper(GrepPlugin):
             i.set_url(response.get_url())
             i.add_to_highlight(*match_list)
             
-            kb.kb.append(self, 'wsdl', i)
+            self.kb_append_uniq(self, 'wsdl', i, 'URL')
 
     def analyze_disco(self, request, response):
         for disco_string in self._disco_strings:
@@ -87,16 +85,9 @@ class wsdl_greper(GrepPlugin):
                 i.set_url(response.get_url())
                 i.add_to_highlight(disco_string)
                 
-                kb.kb.append(self, 'disco', i)
+                self.kb_append_uniq(self, 'disco', i, 'URL')
                 break
                 
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('wsdl_greper', 'wsdl'), 'URL')
-        self.print_uniq(kb.kb.get('wsdl_greper', 'disco'), 'URL')
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

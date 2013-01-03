@@ -80,7 +80,7 @@ class dom_xss(GrepPlugin):
             v.set_url(response.get_url())
             v.add_to_highlight(vuln_code)
             
-            kb.kb.append(self, 'dom_xss', v)
+            self.kb_append(self, 'dom_xss', v)
 
     def _smart_grep(self, response):
         '''
@@ -102,12 +102,6 @@ class dom_xss(GrepPlugin):
                         if user_controlled in parameters.groups()[0]:
                             res.append(user_controlled)
         return res
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('dom_xss', 'dom_xss'), None)
 
     def get_long_desc(self):
         '''

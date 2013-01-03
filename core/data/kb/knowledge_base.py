@@ -39,6 +39,9 @@ class InMemoryKnowledgeBase(object):
     def __init__(self):
         self._kb = {}
         self._kb_lock = threading.RLock()
+    
+        self.FILTERS = {'URL': self.filter_url,
+                        'VAR': self.filter_var}        
 
     def save(self, calling_instance, variable_name, value):
         '''
@@ -52,38 +55,72 @@ class InMemoryKnowledgeBase(object):
             else:
                 self._kb[name][variable_name] = value
 
-    def append_uniq(self, location_a, location_b, info_inst):
+    def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
         '''
         Append to a location in the KB if and only if there it no other
         vulnerability in the same location for the same URL and parameter.
 
         Does this in a thread-safe manner.
 
+        @param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
+                          (location_a, location_b) if there is NO OTHER info
+                          in that location with the same:
+                              - 'VAR': URL,Variable,DataContainer.keys()
+                              - 'URL': URL
+
         @return: True if the vuln was added. False if there was already a
                  vulnerability in the KB location with the same URL and
                  parameter.
         '''
         if not isinstance(info_inst, Info):
-            ValueError('append_unique requires an info object as parameter.')
+            raise ValueError('append_uniq requires an info object as parameter.')
+        
+        filter_function = self.FILTERS.get(filter_by, None)
+        
+        if filter_function is None:
+            raise ValueError('append_uniq only knows about URL or VAR filters.')
 
         with self._kb_lock:
-            for saved_vuln in self.get(location_a, location_b):
-                
-                if saved_vuln.get_var() == info_inst.get_var() and\
-                saved_vuln.get_url() == info_inst.get_url():
-                
-                    if saved_vuln.get_dc() is None and\
-                    info_inst.get_dc() is None:
-                        return False
-                    
-                    if saved_vuln.get_dc() is not None and\
-                    info_inst.get_dc() is not None:
-                        
-                        if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
-                            return False 
+            
+            if filter_function(location_a, location_b, info_inst):
+                self.append(location_a, location_b, info_inst)
+                return True
+            
+            return False
 
-            self.append(location_a, location_b, info_inst)
-            return True
+    def filter_url(self, location_a, location_b, info_inst):
+        '''
+        @return: True if there is no other info in (location_a, location_b)
+                 with the same URL as the info_inst.
+        '''
+        for saved_vuln in self.get(location_a, location_b):
+            if saved_vuln.get_url() == info_inst.get_url():
+                return False
+        
+        return True
+
+    def filter_var(self, location_a, location_b, info_inst):
+        '''
+        @return: True if there is no other info in (location_a, location_b)
+                 with the same URL,Variable,DataContainer.keys() as the
+                 info_inst.
+        '''
+        for saved_vuln in self.get(location_a, location_b):
+            
+            if saved_vuln.get_var() == info_inst.get_var() and\
+            saved_vuln.get_url() == info_inst.get_url():
+            
+                if saved_vuln.get_dc() is None and\
+                info_inst.get_dc() is None:
+                    return False
+                
+                if saved_vuln.get_dc() is not None and\
+                info_inst.get_dc() is not None:
+                    
+                    if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
+                        return False
+        
+        return True
 
     def append(self, calling_instance, variable_name, value):
         '''

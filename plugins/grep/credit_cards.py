@@ -97,7 +97,7 @@ class credit_cards(GrepPlugin):
                 v.set_url(response.get_url())
                 v.add_to_highlight(card)
                 
-                kb.kb.append(self, 'credit_cards', v)
+                self.kb_append_uniq(self, 'credit_cards', v, 'URL')
 
     def _find_card(self, body):
         '''
@@ -113,12 +113,6 @@ class credit_cards(GrepPlugin):
                 res.append(possible_cc)
 
         return res
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('credit_cards', 'credit_cards'), 'URL')
 
     def get_long_desc(self):
         '''

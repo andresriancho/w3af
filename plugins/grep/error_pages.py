@@ -166,7 +166,7 @@ class error_pages(GrepPlugin):
             i.set_url(response.get_url())
             i.add_to_highlight(msg)
             
-            kb.kb.append(self, 'error_page', i)
+            self.kb_append(self, 'error_page', i)
 
             # There is no need to report more than one info for the same result,
             # the user will read the info object and analyze it even if we report it
@@ -197,12 +197,6 @@ class error_pages(GrepPlugin):
                     kb.kb.append(self, 'server', match_string)
                     
                     self._already_reported_versions.append(match_string)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('error_pages', 'errorPage'), 'URL')
 
     def get_long_desc(self):
         '''

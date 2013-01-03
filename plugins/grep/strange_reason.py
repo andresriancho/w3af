@@ -80,13 +80,7 @@ class strange_reason(GrepPlugin):
                     i['reason'] = response.get_msg()
                     i.add_to_highlight(response.get_msg())
                     
-                    kb.kb.append(self, 'strange_reason', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('strange_reason', 'strange_reason'), 'URL')
+                    self.kb_append_uniq(self, 'strange_reason', i, 'URL')
 
     def get_long_desc(self):
         '''

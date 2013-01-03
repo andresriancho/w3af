@@ -61,13 +61,7 @@ class oracle(GrepPlugin):
                     i.set_url(url)
                     i.add_to_highlight(msg)
                     
-                    kb.kb.append(self, 'oracle', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('oracle', 'oracle'), 'URL')
+                    self.kb_append(self, 'oracle', i)
 
     def get_long_desc(self):
         '''

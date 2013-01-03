@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.parsers.parser_cache as parser_cache
@@ -68,8 +67,6 @@ class finger_bing(InfrastructurePlugin):
             #   Send the requests using threads:
             self.worker_pool.map(self._find_accounts, results)
 
-            self.print_uniq(kb.kb.get('finger_bing', 'emails'), None)
-
     def _find_accounts(self, page):
         '''
         Finds emails in bing result.
@@ -114,8 +111,8 @@ class finger_bing(InfrastructurePlugin):
                         i['user'] = mail.split('@')[0]
                         i['url_list'] = [page.URL, ]
                         
-                        kb.kb.append('emails', 'emails', i)
-                        kb.kb.append('finger_bing', 'emails', i)
+                        self.kb_append('emails', 'emails', i)
+                        self.kb_append('finger_bing', 'emails', i)
 
     def get_options(self):
         '''

@@ -111,7 +111,7 @@ class meta_tags(GrepPlugin):
                         i.set_uri(response.get_uri())
                         i.add_to_highlight(where, content)
 
-                        kb.kb.append(self, 'meta_tags', i)
+                        self.kb_append_uniq(self, 'meta_tags', i, 'URL')
 
     def _find_name(self, tag):
         '''
@@ -121,12 +121,6 @@ class meta_tags(GrepPlugin):
             if key.lower() == 'name':
                 return value
         return ''
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('meta_tags', 'meta_tags'), 'URL')
 
     def get_long_desc(self):
         '''

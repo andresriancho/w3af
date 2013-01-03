@@ -77,13 +77,7 @@ class svn_users(GrepPlugin):
                     v['user'] = user
                     v.add_to_highlight(user)
                     
-                    kb.kb.append(self, 'users', v)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('svn_users', 'users'), 'URL')
+                    self.kb_append_uniq(self, 'users', v, 'URL')
 
     def get_long_desc(self):
         '''

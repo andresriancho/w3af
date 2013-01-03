@@ -78,13 +78,7 @@ class feeds(GrepPlugin):
                 i.set_uri(uri)
                 i.add_to_highlight(feed_type)
                 
-                kb.kb.append(self, 'feeds', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('feeds', 'feeds'), 'URL')
+                self.kb_append_uniq(self, 'feeds', i, 'URL')
 
     def get_long_desc(self):
         '''

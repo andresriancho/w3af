@@ -73,14 +73,7 @@ class objects(GrepPlugin):
                 i.set_url(url)
                 i.add_to_highlight(tag_name)
 
-                kb.kb.append(self, tag_name, i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        for obj_type in self._tag_names:
-            self.print_uniq(kb.kb.get('objects', obj_type), 'URL')
+                self.kb_append_uniq(self, tag_name, i, 'URL')
 
     def get_long_desc(self):
         '''

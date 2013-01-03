@@ -25,6 +25,7 @@ import threading
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
+from core.controllers.misc.decorators import retry
 from core.controllers.plugins.plugin import Plugin
 from core.data.request.variant_identification import are_variants
 
@@ -46,6 +47,11 @@ class AuditPlugin(Plugin):
         self._audit_return_vulns_lock = threading.RLock()
         self._newly_found_vulns = []
 
+    @retry(3)
+    def get_original_response(self, fuzzable_request):
+        return self._uri_opener.send_mutant(fuzzable_request, grep=False,
+                                            cache=False)
+
     def audit_return_vulns(self, fuzzable_request):
         '''
         @param fuzzable_request: The fuzzable_request instance to analyze for
@@ -57,7 +63,10 @@ class AuditPlugin(Plugin):
             self._store_kb_vulns = True
             
             try:
-                self.audit_with_copy(fuzzable_request)
+                orig_response = self.get_original_response(fuzzable_request)
+                self.audit_with_copy(fuzzable_request, orig_response)
+            except Exception, e:
+                om.out.error(str(e))
             finally:
                 self._store_kb_vulns = False
                 
@@ -91,10 +100,7 @@ class AuditPlugin(Plugin):
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
         
-        added_to_kb = kb.kb.append_uniq(location_a, location_b, info)
-        
-        if added_to_kb:
-            om.out.report_finding(info)
+        super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
         
     def kb_append(self, location_a, location_b, info):
         '''
@@ -104,8 +110,7 @@ class AuditPlugin(Plugin):
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
         
-        kb.kb.append(location_a, location_b, info)
-        om.out.report_finding(info)
+        super(AuditPlugin, self).kb_append(location_a, location_b, info)
 
     def audit_with_copy(self, fuzzable_request, orig_resp):
         '''

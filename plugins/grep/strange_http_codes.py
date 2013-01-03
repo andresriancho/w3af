@@ -79,14 +79,7 @@ class strange_http_codes(GrepPlugin):
             i['code'] = response.get_code()
             i.add_to_highlight(str(response.get_code()), response.get_msg())
             
-            kb.kb.append(self, 'strange_http_codes', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(
-            kb.kb.get('strange_http_codes', 'strange_http_codes'), 'URL')
+            self.kb_append_uniq(self, 'strange_http_codes', i, 'URL')
 
     def get_long_desc(self):
         '''

@@ -67,8 +67,6 @@ class finger_google(InfrastructurePlugin):
             else:
                 self._do_complete_search(domain)
 
-            self.print_uniq(kb.kb.get('finger_google', 'emails'), None)
-
     def _do_fast_search(self, domain):
         '''
         Only search for mail addresses in the google result page.
@@ -152,25 +150,27 @@ class finger_google(InfrastructurePlugin):
                     i['user'] = mail.split('@')[0]
                     i['url_list'] = [response.get_uri(), ]
 
-                    kb.kb.append('emails', 'emails', i)
-                    kb.kb.append(self, 'emails', i)
+                    self.kb_append('emails', 'emails', i)
+                    self.kb_append(self, 'emails', i)
 
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d2 = 'Fetch the first "result_limit" results from the Google search'
-        o2 = opt_factory('result_limit', self._result_limit, d2, 'integer')
-
-        d3 = 'Do a fast search, when this feature is enabled, not all mail addresses are found'
-        h3 = 'This method is faster, because it only searches for emails in the small page '
-        h3 += 'snippet that google shows to the user after performing a common search.'
-        o3 = opt_factory(
-            'fastSearch', self._fast_search, d3, 'boolean', help=h3)
-
         ol = OptionList()
-        ol.add(o2)
-        ol.add(o3)
+        
+        d = 'Fetch the first "result_limit" results from the Google search'
+        o = opt_factory('result_limit', self._result_limit, d, 'integer')
+        ol.add(o)
+        
+        d = 'Do a fast search, when this feature is enabled, not all mail'\
+            ' addresses are found'
+        h = 'This method is faster, because it only searches for emails in'\
+             ' the small page snippet that google shows to the user after'\
+             ' performing a common search.'
+        o = opt_factory('fast_search', self._fast_search, d, 'boolean', help=h)
+        ol.add(o)
+        
         return ol
 
     def set_options(self, options_list):
@@ -182,7 +182,7 @@ class finger_google(InfrastructurePlugin):
         @return: No value is returned.
         '''
         self._result_limit = options_list['result_limit'].get_value()
-        self._fast_search = options_list['fastSearch'].get_value()
+        self._fast_search = options_list['fast_search'].get_value()
 
     def get_plugin_deps(self):
         '''
@@ -200,10 +200,10 @@ class finger_google(InfrastructurePlugin):
 
         Two configurable parameters exist:
             - result_limit
-            - fastSearch
+            - fast_search
 
-        If fastSearch is set to False, this plugin searches google for : "@domain.com", requests all
-        search results and parses them in order   to find new mail addresses. If the fastSearch
+        If fast_search is set to False, this plugin searches google for : "@domain.com", requests all
+        search results and parses them in order   to find new mail addresses. If the fast_search
         configuration parameter is set to True, only mail addresses that appear on the google
         result page are parsed and added to the list, the result links are\'nt visited.
         '''

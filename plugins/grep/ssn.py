@@ -74,7 +74,7 @@ class ssn(GrepPlugin):
                 v.set_uri(uri)
 
                 v.add_to_highlight(found_ssn)
-                kb.kb.append(self, 'ssn', v)
+                self.kb_append_uniq(self, 'ssn', v, 'URL')
 
     def _find_SSN(self, body_without_tags):
         '''
@@ -156,13 +156,6 @@ class ssn(GrepPlugin):
             return '%s-%s-%s' % (area_number, group_number, serial_number)
 
         return None
-
-    def end(self):
-        '''
-        This method is called when the plugin won't be used anymore.
-        '''
-        # Print results
-        self.print_uniq(kb.kb.get('ssn', 'ssn'), 'URL')
 
     def get_long_desc(self):
         '''

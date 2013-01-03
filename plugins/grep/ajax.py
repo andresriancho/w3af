@@ -78,19 +78,13 @@ class ajax(GrepPlugin):
 
                     res = self._ajax_regex_re.search(script_content)
                     if res:
-                        desc = 'The URL: "%s" has an AJAX code.' % url
+                        desc = 'The URL: "%s" has AJAX code.' % url
                         i = Info('AJAX code', desc, response.id,
                                  self.get_name())
                         i.set_url(url)
                         i.add_to_highlight(res.group(0))
                         
-                        kb.kb.append(self, 'ajax', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('ajax', 'ajax'), 'URL')
+                        self.kb_append_uniq(self, 'ajax', i, 'URL')
 
     def get_long_desc(self):
         '''

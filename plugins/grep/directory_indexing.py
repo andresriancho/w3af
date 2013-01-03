@@ -82,14 +82,8 @@ class directory_indexing(GrepPlugin):
                      self.get_name())
             v.set_url(response.get_url())
 
-            kb.kb.append(self, 'directory', v)
+            self.kb_append_uniq(self, 'directory', v, 'URL')
             break
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('directory_indexing', 'directory'), 'URL')
 
     def get_long_desc(self):
         '''

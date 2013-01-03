@@ -91,7 +91,7 @@ class url_session(GrepPlugin):
                              self.get_name())
                     i.set_uri(response.get_uri())
                     
-                    kb.kb.append(self, 'url_session', i)
+                    self.kb_append(self, 'url_session', i)
                     break
     
     
@@ -115,13 +115,7 @@ class url_session(GrepPlugin):
                          self.get_name())
                 i.set_uri(response.get_uri())
 
-                kb.kb.append(self, 'url_session', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('url_session', 'url_session'), None)
+                self.kb_append(self, 'url_session', i)
 
     def get_long_desc(self):
         '''

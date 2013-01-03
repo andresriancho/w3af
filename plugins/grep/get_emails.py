@@ -111,7 +111,7 @@ class get_emails(GrepPlugin):
                 i['user'] = mail_address.split('@')[0]
                 i.add_to_highlight(mail_address)
                 
-                kb.kb.append('emails', kb_key, i)
+                self.kb_append('emails', kb_key, i)
 
             else:
 
@@ -147,13 +147,6 @@ class get_emails(GrepPlugin):
         ol.add(o1)
 
         return ol
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('emails', 'emails'), None)
-        self.print_uniq(kb.kb.get('emails', 'external_emails'), None)
 
     def get_long_desc(self):
         '''

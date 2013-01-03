@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.parsers.parser_cache as parser_cache
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -89,10 +88,10 @@ class strange_parameters(GrepPlugin):
                                  response.id, self.get_name())
                         i.set_uri(ref)
                         i.set_var(param_name)
-                        i['parameterValue'] = qs[param_name][element_index]
+                        i['parameter_value'] = qs[param_name][element_index]
                         i.add_to_highlight(qs[param_name][element_index])
 
-                        kb.kb.append(self, 'strange_parameters', i)
+                        self.kb_append(self, 'strange_parameters', i)
 
                     # To find this kind of vulns
                     # http://thedailywtf.com/Articles/Oklahoma-
@@ -111,17 +110,10 @@ class strange_parameters(GrepPlugin):
                                  severity.LOW, response.id, self.get_name())
                         v.set_uri(ref)
                         v.set_var(param_name)
-                        v['parameterValue'] = qs[param_name][element_index]
+                        v['parameter_value'] = qs[param_name][element_index]
                         
                         v.add_to_highlight(qs[param_name][element_index])
-                        kb.kb.append(self, 'strange_parameters', v)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('strange_parameters',
-                                  'strange_parameters'), 'VAR')
+                        self.kb_append(self, 'strange_parameters', v)
 
     def _is_SQL(self, request, parameter, value):
         '''

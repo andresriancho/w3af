@@ -56,7 +56,7 @@ class test_knowledge_base(unittest.TestCase):
         kb.append('a', 'b', 3)
         self.assertEqual(kb.get('a', 'b'), [1, 2, 3])
 
-    def test_append_uniq_true(self):
+    def test_append_uniq_var_default(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', '1')]))
@@ -71,7 +71,22 @@ class test_knowledge_base(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
 
-    def test_append_uniq_bug_10Dec2012(self):
+    def test_append_uniq_var_specific(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
+        i1.set_dc(QueryString([('id', '1')]))
+        i1.set_var('id')
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/abc.html?id=3'))
+        i2.set_dc(QueryString([('id', '3')]))
+        i2.set_var('id')
+
+        kb.append_uniq('a', 'b', i1, filter_by='VAR')
+        kb.append_uniq('a', 'b', i2, filter_by='VAR')
+        self.assertEqual(kb.get('a', 'b'), [i1, ])
+
+    def test_append_uniq_var_bug_10Dec2012(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html'))
         i1.set_var('id')
@@ -84,7 +99,7 @@ class test_knowledge_base(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
         
-    def test_append_uniq_false(self):
+    def test_append_uniq_var_not_uniq(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', '1')]))
@@ -99,6 +114,36 @@ class test_knowledge_base(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
+    def test_append_uniq_url_uniq(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
+        i1.set_dc(QueryString([('id', '1')]))
+        i1.set_var('id')
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/abc.html?id=3'))
+        i2.set_dc(QueryString([('id', '3')]))
+        i2.set_var('id')
+
+        kb.append_uniq('a', 'b', i1, filter_by='URL')
+        kb.append_uniq('a', 'b', i2, filter_by='URL')
+        self.assertEqual(kb.get('a', 'b'), [i1,])
+
+    def test_append_uniq_url_different(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
+        i1.set_dc(QueryString([('id', '1')]))
+        i1.set_var('id')
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/def.html?id=3'))
+        i2.set_dc(QueryString([('id', '3')]))
+        i2.set_var('id')
+
+        kb.append_uniq('a', 'b', i1, filter_by='URL')
+        kb.append_uniq('a', 'b', i2, filter_by='URL')
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
+        
     def test_append_save(self):
         kb.append('a', 'b', 1)
         kb.append('a', 'b', 2)

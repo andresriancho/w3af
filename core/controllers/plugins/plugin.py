@@ -23,6 +23,7 @@ import sys
 import threading
 import Queue
 
+import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 from core.data.kb.vuln import Vuln
@@ -135,50 +136,23 @@ class Plugin(Configurable):
         raise NotImplementedError(
             'Plugin is not implementing required method get_long_desc')
 
-    def print_uniq(self, info_obj_list, unique):
+    def kb_append_uniq(self, location_a, location_b, info, filter_by='VAR'):
         '''
-        Print the items of info_obj_list to the user interface
-
-        @param info_obj_list: A list of info objects
-        @param unique: Defines whats unique:
-            - 'URL': The URL must be unique
-            - 'VAR': The url/variable combination must be unique
-            - None: Print all vulns, nothing should be unique
+        kb.kb.append_uniq a vulnerability to the KB
         '''
+        added_to_kb = kb.kb.append_uniq(location_a, location_b, info,
+                                        filter_by=filter_by)
 
-        # Create the list of things to inform
-        inform = []
-        if unique == 'URL':
-            reported_urls = []
-            for i in info_obj_list:
-                if i.get_url() not in reported_urls:
-                    reported_urls.append(i.get_url())
-                    inform.append(i)
-
-        elif unique == 'VAR':
-            reported_vars = []
-            for i in info_obj_list:
-                if (i.get_url(), i.get_var()) not in reported_vars:
-                    reported_vars.append((i.get_url(), i.get_var()))
-                    inform.append(i)
-
-        elif unique is None:
-            inform = info_obj_list
-
-        else:
-            error = 'plugins.print_uniq(): Unknown unique parameter value.'
-            om.out.error(error)
-
-        # Print the list
-        for i in inform:
-            if isinstance(i, Vuln):
-                om.out.vulnerability(i.get_desc(),
-                                     severity=i.get_severity())
-            else:
-                om.out.information(i.get_desc())
+        if added_to_kb:
+            om.out.report_finding(info)
         
-        return inform
-
+    def kb_append(self, location_a, location_b, info):
+        '''
+        kb.kb.append a vulnerability to the KB
+        '''
+        kb.kb.append(location_a, location_b, info)
+        om.out.report_finding(info)
+        
     def __eq__(self, other):
         '''
         This function is called when extending a list of plugin instances.

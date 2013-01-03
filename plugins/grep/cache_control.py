@@ -148,8 +148,7 @@ class cache_control(GrepPlugin):
         v = Vuln('Missing cache control for HTTPS content', desc,
                  severity.LOW, response_ids, self.get_name())
         
-        kb.kb.append(self, 'cache_control', v)
-        self.print_uniq(kb.kb.get('cache_control', 'cache_control'), 'URL')
+        self.kb_append_uniq(self, 'cache_control', v, 'URL')
 
     def get_long_desc(self):
         return '''\

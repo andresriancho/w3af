@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.data.kb.knowledge_base as kb
-
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.kb.info import Info
@@ -82,7 +80,7 @@ class dot_net_event_validation(GrepPlugin):
                 i.set_url(response.get_url())
                 i.add_to_highlight(res.group())
                 
-                kb.kb.append(self, 'dot_net_event_validation', i)
+                self.kb_append(self, 'dot_net_event_validation', i)
 
             if not self._encryptedVs.search(response.get_body()):
                 # Nice! We can decode the viewstate! =)
@@ -95,14 +93,7 @@ class dot_net_event_validation(GrepPlugin):
                          response.id, self.get_name())
                 i.set_url(response.get_url())
                 
-                kb.kb.append(self, 'dot_net_event_validation', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('dot_net_event_validation',
-                                  'dot_net_event_validation'), 'URL')
+                self.kb_append(self, 'dot_net_event_validation', i)
 
     def get_long_desc(self):
         '''

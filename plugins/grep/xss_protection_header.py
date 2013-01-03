@@ -55,14 +55,7 @@ class xss_protection_header(GrepPlugin):
                      response.id, self.get_name())
             i.add_to_highlight('X-XSS-Protection')
             
-            kb.kb.append(self, 'xss_protection_header', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(kb.kb.get('xss_protection_header',
-                                  'xss_protection_header'), 'URL')
+            self.kb_append_uniq(self, 'xss_protection_header', i, 'URL')
 
     def get_long_desc(self):
         '''

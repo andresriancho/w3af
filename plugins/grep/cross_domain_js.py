@@ -88,14 +88,7 @@ class cross_domain_js(GrepPlugin):
                     to_highlight = etree.tostring(script_src_tag)
                     i.add_to_highlight(to_highlight)
                     
-                    kb.kb.append(self, 'cross_domain_js', i)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        self.print_uniq(
-            kb.kb.get('cross_domain_js', 'cross_domain_js'), 'URL')
+                    self.kb_append_uniq(self, 'cross_domain_js', i, 'URL')
 
     def get_long_desc(self):
         '''
