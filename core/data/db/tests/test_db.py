@@ -25,7 +25,8 @@ import os
 from itertools import repeat, starmap
 from random import choice
 
-from core.controllers.misc.temp_dir import get_temp_dir, create_temp_dir
+from core.controllers.misc.temp_dir import (get_temp_dir, create_temp_dir,
+                                            remove_temp_dir)
 from core.data.db.db import DBClientSQLite
 
 
@@ -33,6 +34,9 @@ class TestDB(unittest.TestCase):
     
     def setUp(self):
         create_temp_dir()
+    
+    def tearDown(self):
+        remove_temp_dir()
     
     def test_open_error(self):
         invalid_filename = '/'
@@ -48,3 +52,11 @@ class TestDB(unittest.TestCase):
         
         db.select('SELECT * from TEST')
         
+    def test_close_twice(self):
+        temp_dir = get_temp_dir()
+        fname = ''.join(starmap(choice, repeat((string.letters,), 18)))
+        filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
+                
+        db = DBClientSQLite(filename)
+        db.close()
+        db.close()
