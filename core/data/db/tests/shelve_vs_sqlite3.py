@@ -2,7 +2,7 @@ import time
 import shelve
 import sqlite3
  
-def test_sqlite3():
+def _sqlite3_inserts():
     conn = sqlite3.connect("debug.s3db")
     cur = conn.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS [mydict] ("
@@ -15,7 +15,7 @@ def test_sqlite3():
     cur.close()
     conn.close()
     
-def test_shelve():
+def _shelve_inserts():
     d = shelve.open("debug.shelf")
     for i in xrange(0, 1000000):
         d[str(i)] = str(i*2)
@@ -30,5 +30,7 @@ def measure(what, func):
 
     print '%s took %s seconds' % (what, end-start)
 
-measure('sqlite3', test_sqlite3) # sqlite3 took 9.87409496307 seconds
-measure('shelve', test_shelve) # shelve took 63.4450500011 seconds
+if __name__ == '__main__':
+    measure('sqlite3', _sqlite3_inserts) # sqlite3 took 9.87409496307 seconds
+    measure('shelve', _shelve_inserts) # shelve took 63.4450500011 seconds
+    
