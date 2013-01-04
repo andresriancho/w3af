@@ -161,7 +161,9 @@ def main():
 
 if __name__ == "__main__":
     exit_code = main()
+    
     back_to_current_dir()
     dump_cpu_usage()
+    
     sys.exit(exit_code)
     
