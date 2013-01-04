@@ -28,7 +28,6 @@ import traceback
 try:
     import core.ui.console.io.console as term
     import core.ui.console.tables as tables
-    import core.controllers.w3afCore
     import core.controllers.output_manager as om
 
     from core.ui.console.rootMenu import rootMenu
@@ -39,6 +38,7 @@ try:
     from core.data.constants.disclaimer import DISCLAIMER
     from core.data.db.startup_cfg import StartUpConfig
 
+    from core.controllers.w3afCore import w3afCore
     from core.controllers.auto_update import UIUpdater
     from core.controllers.exceptions import (w3afException,
                                              w3afMustStopException)
@@ -121,9 +121,9 @@ class ConsoleUI(object):
         cons_upd = ConsoleUIUpdater(force=do_upd, rev=rev)
         cons_upd.update()
         # Core initialization
-        self._w3af = core.controllers.w3afCore.w3afCore()
+        self._w3af = w3afCore()
         self._w3af.plugins.set_plugins(['console'], 'output')
-
+        
     def __initFromParent(self, parent):
         self._context = parent._context
         self._w3af = parent._w3af
