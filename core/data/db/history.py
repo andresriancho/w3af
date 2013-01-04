@@ -40,9 +40,9 @@ import core.data.kb.knowledge_base as kb
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead
-from core.data.async_db.where_helper import WhereHelper
+from core.data.db.where_helper import WhereHelper
 from core.data.fuzzer.utils import rand_alpha
-from core.data.async_db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_db_instance
 
 
 class HistoryItem(object):
@@ -83,7 +83,7 @@ class HistoryItem(object):
         
         with self.history_lock:
             # FIXME: This won't work when doing two consecutive scans
-            if not self.db.table_exists(self.get_table_name()):
+            if not self._db.table_exists(self.get_table_name()):
                 # This means that it is the first time that w3af creates a
                 # HistoryItem and we need to create some dirs and DBs
                 self.init_structure()

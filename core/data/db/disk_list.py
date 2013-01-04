@@ -23,8 +23,8 @@ import hashlib
 import cPickle
 
 
-from core.data.async_db.disk_item import DiskItem
-from core.data.async_db.dbms import get_default_db_instance
+from core.data.db.disk_item import DiskItem
+from core.data.db.dbms import get_default_db_instance
 from core.data.fuzzer.utils import rand_alpha
 
 

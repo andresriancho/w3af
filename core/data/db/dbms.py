@@ -245,7 +245,7 @@ class SQLiteExecutor(Process):
                     #       storing all results in memory
                     if fetch_all:
                         result = result.fetchall()
-                        
+
                     future.set_result(result)
 
 create_temp_dir()

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import cPickle
 
 from core.data.fuzzer.utils import rand_alpha
-from core.data.async_db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_db_instance
 
 
 class DiskDict(object):
@@ -83,13 +83,22 @@ class DiskDict(object):
         return bool(r[0])
     
     def __setitem__(self, key, value):
-        query = "INSERT INTO %s VALUES (NULL, ?, ?)" % self.table_name
-        self.db.execute(query, (cPickle.dumps(key), cPickle.dumps(value)))
+        # Test if it is already in the DB:
+        if key in self:
+            query = 'UPDATE %s SET value = ? WHERE key=?' % self.table_name
+            self.db.execute(query, (cPickle.dumps(value), cPickle.dumps(key)))
+        else:
+            query = "INSERT INTO %s VALUES (NULL, ?, ?)" % self.table_name
+            self.db.execute(query, (cPickle.dumps(key), cPickle.dumps(value)))
 
     def __getitem__(self, key):
         query = 'SELECT value FROM %s WHERE key=? limit 1' % self.table_name
-        r = self.db.select_one(query, (cPickle.dumps(key),))
-        return cPickle.loads(r[0])
+        r = self.db.select(query, (cPickle.dumps(key),))
+        
+        if not r:
+            raise KeyError('%s not in DiskDict.' % key)
+
+        return cPickle.loads(r[0][0])
 
     def __len__(self):
         query = 'SELECT count(*) FROM %s' % self.table_name

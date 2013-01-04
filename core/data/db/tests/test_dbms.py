@@ -28,7 +28,7 @@ from random import choice
 
 from core.controllers.misc.temp_dir import (get_temp_dir, create_temp_dir,
                                             remove_temp_dir)
-from core.data.async_db.dbms import SQLiteDBMS, get_default_db_instance
+from core.data.db.dbms import SQLiteDBMS, get_default_db_instance
 
 
 def get_temp_filename():

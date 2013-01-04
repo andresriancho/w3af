@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import threading
 
-from core.data.async_db.disk_dict import DiskDict
+from core.data.db.disk_dict import DiskDict
 
 
 class VariantDB(object):

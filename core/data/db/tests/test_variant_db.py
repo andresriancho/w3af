@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.parsers.url import URL
-from core.data.async_db.variant_db import VariantDB
+from core.data.db.variant_db import VariantDB
 from core.controllers.misc.temp_dir import create_temp_dir
 
 

@@ -26,7 +26,7 @@ import threading
 from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.data.async_db.disk_list import DiskList
+from core.data.db.disk_list import DiskList
 from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers

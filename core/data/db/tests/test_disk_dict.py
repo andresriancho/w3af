@@ -23,7 +23,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.data.async_db.disk_dict import DiskDict
+from core.data.db.disk_dict import DiskDict
 
 
 @attr('smoke')
@@ -33,37 +33,52 @@ class TestDiskDict(unittest.TestCase):
         create_temp_dir()
 
     def test_int(self):
-        tshelve = DiskDict()
+        disk_dict = DiskDict()
+        
         for i in xrange(100):
-            tshelve[i] = i
-        self.assertEqual(len(tshelve), 100)
-        self.assertEqual(tshelve[50], 50)
+            disk_dict[i] = i
+        
+        # Do it twice to test that it works as expected (not creating a new)
+        # row in the table, but modifying the value
+        for i in xrange(100):
+            disk_dict[i] = i
+        
+        self.assertEqual(len(disk_dict), 100)
+        self.assertEqual(disk_dict[50], 50)
+        self.assertIn(50, disk_dict)
 
+    def test_not_in(self):
+        disk_dict = DiskDict()
+        
+        self.assertRaises(KeyError, disk_dict.__getitem__, 'abc')
+        
     def test_get(self):
-        tshelve = DiskDict()
+        disk_dict = DiskDict()
 
-        tshelve[0] = 'abc'
-        abc1 = tshelve.get(0)
-        abc2 = tshelve.get(0, 1)
-        two = tshelve.get(1, 2)
+        disk_dict[0] = 'abc'
+        
+        abc1 = disk_dict.get(0)
+        abc2 = disk_dict.get(0, 1)
+        two = disk_dict.get(1, 2)
+        
         self.assertEqual(abc1, 'abc')
         self.assertEqual(abc2, 'abc')
         self.assertEqual(two, 2)
 
     def test_keys(self):
-        tshelve = DiskDict()
+        disk_dict = DiskDict()
 
-        tshelve['a'] = 'abc'
-        tshelve['b'] = 'abc'
-        tshelve['c'] = 'abc'
+        disk_dict['a'] = 'abc'
+        disk_dict['b'] = 'abc'
+        disk_dict['c'] = 'abc'
 
-        self.assertEqual(set(tshelve.keys()), set(['a', 'b', 'c']))
+        self.assertEqual(set(disk_dict.keys()), set(['a', 'b', 'c']))
 
     def test_iterkeys(self):
-        tshelve = DiskDict()
+        disk_dict = DiskDict()
 
-        tshelve['a'] = 'abc'
-        tshelve['b'] = 'abc'
-        tshelve['c'] = 'abc'
+        disk_dict['a'] = 'abc'
+        disk_dict['b'] = 'abc'
+        disk_dict['c'] = 'abc'
 
-        self.assertEqual(set(tshelve.iterkeys()), set(['a', 'b', 'c']))
+        self.assertEqual(set(disk_dict.iterkeys()), set(['a', 'b', 'c']))
