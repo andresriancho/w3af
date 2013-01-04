@@ -56,9 +56,9 @@ class DBClient(object):
         # Lets create the table
         #
         sql = 'CREATE TABLE ' + name + '('
-        for columnData in columns:
-            columnName, columnType = columnData
-            sql += columnName + ' ' + columnType + ', '
+        for column_data in columns:
+            column_name, column_type = column_data
+            sql += column_name + ' ' + column_type + ', '
         # Finally the PK
         sql += 'PRIMARY KEY (' + ','.join(primaryKeyColumns) + '))'
 
