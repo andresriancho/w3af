@@ -32,7 +32,7 @@ from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.number_generator import (consecutive_number_generator
                                                     as core_num_gen)
-from core.controllers.exceptions import w3afException
+from core.controllers.exceptions import FileException
 from core.data.db.history import HistoryItem
 from core.data.dc.headers import Headers
 from core.data.request.factory import create_fuzzable_request
@@ -110,8 +110,8 @@ class CacheHandler(urllib2.BaseHandler):
         request.id = response.id = core_num_gen.inc()
         try:
             CacheClass.store_in_cache(request, response)
-        except w3afException, w3:
-            om.out.debug(str(w3))
+        except FileException, fe:
+            om.out.debug(str(fe))
 
         return response
 
@@ -270,8 +270,8 @@ class DiskCachedResponse(CachedResponse):
             f.write(headers)
             f.close()
         except Exception, e:
-            raise w3afException(
-                'localCache.py: Could not save headers file. Error: ' + str(e))
+            msg = 'localCache.py: Could not save headers file. Exception: "%s".'
+            raise FileException(msg % e)
 
         try:
             body = response.read()
@@ -283,8 +283,8 @@ class DiskCachedResponse(CachedResponse):
                 f.write(body)
                 f.close()
             except Exception, e:
-                raise w3afException(
-                    'localCache.py: Could not save body file. Error: ' + str(e))
+                msg = 'localCache.py: Could not save body file. Exception: "%s".'
+                raise FileException(msg % e)
 
         try:
             f = open(fname + ".code", "w")
@@ -296,17 +296,16 @@ class DiskCachedResponse(CachedResponse):
             f.write(str(response.code))
             f.close()
         except Exception, e:
-            raise w3afException(
-                'localCache.py: Could not save msg file. Error: ' + str(e))
+            msg = 'localCache.py: Could not save code file. Exception: "%s".'
+            raise FileException(msg % e)
 
         try:
             f = open(fname + ".msg", "w")
             f.write(str(response.msg))
             f.close()
         except Exception, e:
-            om.out.error(
-                'localCache.py: Could not save msg file. Error: ' + str(e))
-            raise e
+            msg = 'localCache.py: Could not save msg file. Exception: "%s".'
+            raise FileException(msg % e)
 
     @staticmethod
     def exists_in_cache(req):
@@ -395,6 +394,7 @@ class SQLCachedResponse(CachedResponse):
     @staticmethod
     def init():
         create_temp_dir()
+        HistoryItem().init()
     
     @staticmethod
     def clear():

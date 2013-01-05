@@ -123,3 +123,6 @@ class w3afProxyException(w3afException):
 
 class DBException(w3afException):
     pass
+
+class FileException(w3afException):
+    pass

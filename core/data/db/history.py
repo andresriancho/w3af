@@ -93,28 +93,28 @@ class HistoryItem(object):
     def __init__(self):
         self._db = get_default_db_instance()
         
-        with self.history_lock:
-            # FIXME: This won't work when doing two consecutive scans
-            if not self._db.table_exists(self.get_table_name()):
-                # This means that it is the first time that w3af creates a
-                # HistoryItem and we need to create some dirs and DBs
-                self.init_db()
-        
         self._session_dir = os.path.join(get_temp_dir(),
                                          self._db.get_file_name() + '_traces')
-        
-        if not os.path.exists(self._session_dir):
-            os.mkdir(self._session_dir)
+
+    def init(self):
+        self.init_traces_dir()
+        self.init_db()
+
+    def init_traces_dir(self):
+        with self.history_lock:
+            if not os.path.exists(self._session_dir):
+                os.mkdir(self._session_dir)
     
     def init_db(self):
         '''
         Init history table and indexes.
         '''
-        tablename = self.get_table_name()
-        self._db.create_table(tablename,
-                              self.get_columns(),
-                              self.get_primary_key_columns())
-        self._db.create_index(tablename, self.get_index_columns())
+        with self.history_lock:
+            tablename = self.get_table_name()
+            self._db.create_table(tablename,
+                                  self.get_columns(),
+                                  self.get_primary_key_columns())
+            self._db.create_index(tablename, self.get_index_columns())
 
     def get_response(self):
         resp = self._response

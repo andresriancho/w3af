@@ -44,10 +44,11 @@ class TestHistoryItem(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
         create_temp_dir()
-        HistoryItem().clear()
+        HistoryItem().init()
 
     def tearDown(self):
         remove_temp_dir()
+        HistoryItem().clear()
         kb.kb.cleanup()
 
     def test_single_db(self):
