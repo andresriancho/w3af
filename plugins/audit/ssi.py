@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
-from core.data.db.temp_shelve import temp_shelve
+from core.data.db.disk_dict import DiskDict
 from core.data.db.disk_list import DiskList
 from core.data.kb.vuln import Vuln
 from core.data.esmre.multi_in import multi_in
@@ -43,7 +43,7 @@ class ssi(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal variables
-        self._expected_res_mutant = temp_shelve()
+        self._expected_res_mutant = DiskDict()
         self._freq_list = DiskList()
         
         re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'

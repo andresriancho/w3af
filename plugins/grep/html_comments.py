@@ -29,7 +29,7 @@ import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 
 from core.data.esmre.multi_in import multi_in
-from core.data.db.temp_shelve import temp_shelve
+from core.data.db.disk_dict import DiskDict
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.kb.info import Info
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -62,7 +62,7 @@ class html_comments(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._comments = temp_shelve()
+        self._comments = DiskDict()
         self._already_reported_interesting = ScalableBloomFilter()
 
     def grep(self, request, response):

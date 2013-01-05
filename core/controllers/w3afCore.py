@@ -50,7 +50,6 @@ from core.controllers.exceptions import (w3afException, w3afMustStopException,
 
 from core.data.url.xUrllib import xUrllib
 from core.data.kb.knowledge_base import kb
-from core.data.db.db import close_all_db_connections
 
 
 class w3afCore(object):
@@ -345,8 +344,6 @@ class w3afCore(object):
             # we can perform some exploitation.
             self.uri_opener.end()
             
-            close_all_db_connections()
-
         except Exception:
             raise
 
