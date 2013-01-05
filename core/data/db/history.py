@@ -78,7 +78,6 @@ class HistoryItem(object):
     history_lock = threading.RLock()
 
     def __init__(self):
-        '''Construct object.'''
         self._db = get_default_db_instance()
         
         with self.history_lock:
@@ -86,9 +85,23 @@ class HistoryItem(object):
             if not self._db.table_exists(self.get_table_name()):
                 # This means that it is the first time that w3af creates a
                 # HistoryItem and we need to create some dirs and DBs
-                self.init_structure()
-                
-        self._session_dir = kb.kb.get('history', 'session_dir')
+                self.init_db()
+        
+        self._session_dir = os.path.join(get_temp_dir(),
+                                         self._db.get_file_name() + '_traces')
+        
+        if not os.path.exists(self._session_dir):
+            os.mkdir(self._session_dir)
+    
+    def init_db(self):
+        '''
+        Init history table and indexes.
+        '''
+        tablename = self.get_table_name()
+        self._db.create_table(tablename,
+                              self.get_columns(),
+                              self.get_primary_key_columns())
+        self._db.create_index(tablename, self.get_index_columns())
 
     def get_response(self):
         resp = self._response
@@ -114,22 +127,6 @@ class HistoryItem(object):
 
     request = property(get_request, set_request)
     
-    def init_structure(self):
-        '''
-        Init history structure.
-        '''
-        traces = self._db.get_file_name() + '_traces'
-        session_dir = os.path.join(get_temp_dir(), traces)
-        
-        os.mkdir(session_dir)
-        kb.kb.save('history', 'session_dir', session_dir)
-        
-        tablename = self.get_table_name()
-        self._db.create_table(tablename,
-                              self.get_columns(),
-                              self.get_primary_key_columns())
-        self._db.create_index(tablename, self.get_index_columns())
-
     def find(self, searchData, result_limit=-1, orderData=[], full=False):
         '''Make complex search.
         search_data = {name: (value, operator), ...}
@@ -348,19 +345,14 @@ class HistoryItem(object):
     def clear(self):
         '''Clear history and delete all trace files.'''
         if not self._db:
-            raise w3afException('The database is not initialized yet.')
+            return
         
         # Get the DB filename 
-        db_filename = self._db.get_file_name()
-        self._db.close()
+        self._db.drop_table(self.get_table_name())
         self._db = None
         
-        # Delete files
-        os.remove(db_filename)
         # It might be the case that another thread removes the session dir
         # at the same time as we, so we simply ignore errors here
         rmtree(self._session_dir, ignore_errors=True)
-        
-        kb.kb.save('history', 'db', [])
         
         return True

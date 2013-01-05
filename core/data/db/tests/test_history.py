@@ -104,6 +104,7 @@ class TestHistoryItem(unittest.TestCase):
     def test_mark(self):
         mark_id = random.randint(1, 499)
         url = URL('http://w3af.org/a/b/c.php')
+        
         for i in xrange(0, 500):
             fr = FuzzReq(url, dc={'a': ['1']})
             hdr = Headers([('Content-Type', 'text/html')])
@@ -115,8 +116,10 @@ class TestHistoryItem(unittest.TestCase):
             if i == mark_id:
                 h1.toggle_mark()
             h1.save()
+            
         h2 = HistoryItem()
         h2.load(mark_id)
+        
         self.assertTrue(h2.mark)
 
     def test_save_load(self):
@@ -169,7 +172,6 @@ class TestHistoryItem(unittest.TestCase):
         clear_result = h1.clear()
         
         self.assertTrue(clear_result)
-        self.assertRaises(w3afException, h1.read, 1)
         self.assertFalse(os.path.exists(h1._session_dir),
                          '%s exists.' % h1._session_dir)
 
@@ -187,7 +189,7 @@ class TestHistoryItem(unittest.TestCase):
         h1.save()
         
         h1.clear()
-        self.assertRaises(w3afException, h1.clear)
+        h1.clear()
 
     def test_tag(self):
         tag_id = random.randint(501, 999)
