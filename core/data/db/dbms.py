@@ -29,6 +29,7 @@ from concurrent.futures import Future, Executor
 from multiprocessing.dummy import Queue, Process
 
 from core.data.misc.file_utils import replace_file_special_chars
+from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import get_temp_dir, create_temp_dir
 
 
@@ -112,9 +113,14 @@ class SQLiteDBMS(object):
         return ftor(self.cursor.execute, query, parameters).result()
 
     def select_one(self, sql, parameters=()):
-        """Return only the first row of the SELECT, or None if there are no
-        matching rows."""
-        return self.select(sql, parameters)[0]
+        """
+        @return: Only the first row of the SELECT, or None if there are no
+        matching rows.
+        """
+        try:
+            return self.select(sql, parameters)[0]
+        except IndexError:
+            return None
 
     def commit(self):
         self.conn_commit()
@@ -160,7 +166,8 @@ class SQLiteDBMS(object):
         return self.execute(sql, commit=True)
 
     def table_exists(self, name):
-        query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+        query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"\
+                " LIMIT 1"
         r = self.select(query, (name,))
         return bool(r)        
 
@@ -182,6 +189,8 @@ class SQLiteExecutor(Process):
     A very simple thread that takes work via submit() and processes it in a
     different thread.
     '''
+    DEBUG = False
+    
     def __init__(self):
         super(SQLiteExecutor, self).__init__()
         
@@ -235,11 +244,15 @@ class SQLiteExecutor(Process):
                 
                 if not future.set_running_or_notify_cancel():
                     return
-        
+                
+                if self.DEBUG:
+                    print func, args, kwargs
+                    
                 try:
                     result = func(*args, **kwargs)
                 except Exception, e:
-                    future.set_exception(e)
+                    dbe = DBException(str(e))
+                    future.set_exception(dbe)
                 else:
                     # TODO: Is there a better way to do this? By doing this I'm
                     #       storing all results in memory

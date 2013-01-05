@@ -57,7 +57,7 @@ class w3af_core_target(Configurable):
         cf.cf.save('target_framework', 'unknown')
         cf.cf.save('target_domains', set())
         cf.cf.save('baseURLs', [])
-        cf.cf.save('session_name', 'defaultSession' + '-' +
+        cf.cf.save('session_name', 'default_session' + '-' +
                    time.strftime('%Y-%b-%d_%H-%M-%S'))
 
     def get_options(self):

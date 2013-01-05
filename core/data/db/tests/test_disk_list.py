@@ -30,6 +30,7 @@ from core.data.db.disk_list import DiskList
 from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
+from core.data.db.dbms import get_default_db_instance
 
 
 class TestDiskList(unittest.TestCase):
@@ -239,3 +240,14 @@ class TestDiskList(unittest.TestCase):
 
         dl_as_list.sort()
         self.assertEqual(dl_as_list, range(1000))
+
+    def test_remove_table(self):
+        disk_list = DiskList()
+        table_name = disk_list.table_name
+        db = get_default_db_instance()
+        
+        self.assertTrue(db.table_exists(table_name))
+        
+        del disk_list
+        
+        self.assertFalse(db.table_exists(table_name))

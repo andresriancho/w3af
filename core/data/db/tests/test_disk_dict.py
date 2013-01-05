@@ -24,6 +24,7 @@ from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_dict import DiskDict
+from core.data.db.dbms import get_default_db_instance
 
 
 @attr('smoke')
@@ -82,3 +83,14 @@ class TestDiskDict(unittest.TestCase):
         disk_dict['c'] = 'abc'
 
         self.assertEqual(set(disk_dict.iterkeys()), set(['a', 'b', 'c']))
+
+    def test_remove_table(self):
+        disk_dict = DiskDict()
+        table_name = disk_dict.table_name
+        db = get_default_db_instance()
+        
+        self.assertTrue(db.table_exists(table_name))
+        
+        del disk_dict
+        
+        self.assertFalse(db.table_exists(table_name))

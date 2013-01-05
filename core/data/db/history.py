@@ -23,6 +23,7 @@ import os
 import time
 import threading
 
+from functools import wraps
 from shutil import rmtree
 from errno import EEXIST
 
@@ -37,12 +38,24 @@ except ImportError:
     from StringIO import StringIO
 
 import core.data.kb.knowledge_base as kb
-from core.controllers.exceptions import w3afException
+
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead
+from core.controllers.exceptions import DBException
 from core.data.db.where_helper import WhereHelper
 from core.data.fuzzer.utils import rand_alpha
 from core.data.db.dbms import get_default_db_instance
+
+
+def verify_has_db(meth):
+    
+    @wraps(meth)
+    def inner_verify_has_db(self, *args, **kwds):
+        if self._db is None:
+            raise RuntimeError('The database is not initialized yet.')
+        return meth(self, *args, **kwds)
+    
+    return inner_verify_has_db
 
 
 class HistoryItem(object):
@@ -51,11 +64,11 @@ class HistoryItem(object):
     _db = None
     _DATA_TABLE = 'data_table'
     _COLUMNS = [
-        ('id', 'integer'), ('url', 'text'), ('code', 'integer'),
-        ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
-        ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
-        ('charset', 'text'), ('method', 'text'), ('response_size', 'integer'),
-        ('codef', 'integer'), ('alias', 'text'), ('has_qs', 'integer')
+        ('id', 'INTEGER'), ('url', 'TEXT'), ('code', 'INTEGER'),
+        ('tag', 'TEXT'), ('mark', 'INTEGER'), ('info', 'TEXT'),
+        ('time', 'FLOAT'), ('msg', 'TEXT'), ('content_type', 'TEXT'),
+        ('charset', 'TEXT'), ('method', 'TEXT'), ('response_size', 'INTEGER'),
+        ('codef', 'INTEGER'), ('alias', 'TEXT'), ('has_qs', 'INTEGER')
     ]
     _PRIMARY_KEY_COLUMNS = ('id',)
     _INDEX_COLUMNS = ('alias',)
@@ -106,7 +119,7 @@ class HistoryItem(object):
     def get_response(self):
         resp = self._response
         if not resp and self.id:
-            self._request, resp = self._loadFromFile(self.id)
+            self._request, resp = self._load_from_file(self.id)
             self._response = resp
         return resp
 
@@ -118,7 +131,7 @@ class HistoryItem(object):
     def get_request(self):
         req = self._request
         if not req and self.id:
-            req, self._response = self._loadFromFile(self.id)
+            req, self._response = self._load_from_file(self.id)
             self._request = req
         return req
 
@@ -127,13 +140,12 @@ class HistoryItem(object):
 
     request = property(get_request, set_request)
     
+    @verify_has_db
     def find(self, searchData, result_limit=-1, orderData=[], full=False):
         '''Make complex search.
         search_data = {name: (value, operator), ...}
         orderData = [(name, direction)]
         '''
-        if not self._db:
-            raise w3afException('The database is not initialized yet.')
         result = []
         sql = 'SELECT * FROM ' + self._DATA_TABLE
         where = WhereHelper(searchData)
@@ -153,14 +165,14 @@ class HistoryItem(object):
         try:
             for row in self._db.select(sql, where.values()):
                 item = self.__class__()
-                item._loadFromRow(row, full)
+                item._load_from_row(row, full)
                 result.append(item)
-        except w3afException:
-            raise w3afException(
-                'You performed an invalid search. Please verify your syntax.')
+        except DBException:
+            msg = 'You performed an invalid search. Please verify your syntax.'
+            raise DBException(msg)
         return result
 
-    def _loadFromRow(self, row, full=True):
+    def _load_from_row(self, row, full=True):
         '''Load data from row with all columns.'''
         self.id = row[0]
         self.url = row[1]
@@ -175,9 +187,11 @@ class HistoryItem(object):
         self.method = row[10]
         self.response_size = int(row[11])
 
-    def _loadFromFile(self, id):
-
-        fname = os.path.join(self._session_dir, str(id) + self._EXTENSION)
+    def _get_fname_for_id(self, _id):
+        return os.path.join(self._session_dir, str(_id) + self._EXTENSION)
+    
+    def _load_from_file(self, id):
+        fname = self._get_fname_for_id(id)
         #
         #    Due to some concurrency issues, we need to perform this check
         #    before we try to read the .trace file.
@@ -201,35 +215,37 @@ class HistoryItem(object):
             rrfile.close()
             return (req, res)
 
+    @verify_has_db
     def delete(self, id=None):
         '''Delete data from DB by ID.'''
-        if not self._db:
-            raise w3afException('The database is not initialized yet.')
         if not id:
             id = self.id
+            
         sql = 'DELETE FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         self._db.execute(sql, (id,))
-        # FIXME
-        # don't forget about files!
+        
+        try:
+            fname = self._get_fname_for_id(id)
+            os.remove(fname)
+        except OSError:
+            pass
 
+    @verify_has_db
     def load(self, id=None, full=True, retry=True):
         '''Load data from DB by ID.'''
-        if not self._db:
-            raise w3afException('The database is not initialized yet.')
-
         if not id:
             id = self.id
 
         sql = 'SELECT * FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         try:
             row = self._db.select_one(sql, (id,))
-        except Exception, e:
-            msg = 'An unexpected error occurred while searching for id "%s".'\
-                  ' Original exception: "%s".'
-            raise w3afException(msg % (id, e))
+        except DBException, dbe:
+            msg = 'An unexpected error occurred while searching for id "%s"'\
+                  ' in table "%s". Original exception: "%s".'
+            raise DBException(msg % (id, self._DATA_TABLE, dbe))
         else:
             if row is not None:
-                self._loadFromRow(row, full)
+                self._load_from_row(row, full)
             else:
                 # The request/response with 'id' == id is not in the DB!
                 # Lets do some "error handling" and try again!
@@ -248,14 +264,13 @@ class HistoryItem(object):
                     # raise an exception and finish our pain.
                     msg = ('An internal error occurred while searching for '
                            'id "%s", even after commit/retry' % id)
-                    raise w3afException(msg)
+                    raise DBException(msg)
 
         return True
 
+    @verify_has_db
     def read(self, id, full=True):
         '''Return item by ID.'''
-        if not self._db:
-            raise w3afException('The database is not initialized yet.')
         result_item = self.__class__()
         result_item.load(id, full)
         return result_item
@@ -301,8 +316,7 @@ class HistoryItem(object):
         #
         # Save raw data to file
         #
-        fname = os.path.join(self._session_dir,
-                             str(self.response.id) + self._EXTENSION)
+        fname = self._get_fname_for_id(self.id)
 
         with FileLock(fname, timeout=1):
             rrfile = open(fname, 'wb')
@@ -323,28 +337,28 @@ class HistoryItem(object):
     def get_index_columns(self):
         return self._INDEX_COLUMNS
 
-    def _updateField(self, name, value):
+    def _update_field(self, name, value):
         '''Update custom field in DB.'''
         sql = 'UPDATE ' + self._DATA_TABLE
         sql += ' SET ' + name + ' = ? '
         sql += ' WHERE id = ?'
         self._db.execute(sql, (value, self.id))
 
-    def update_tag(self, value, forceDb=False):
+    def update_tag(self, value, force_db=False):
         '''Update tag.'''
         self.tag = value
-        if forceDb:
-            self._updateField('tag', value)
+        if force_db:
+            self._update_field('tag', value)
 
-    def toggle_mark(self, forceDb=False):
+    def toggle_mark(self, force_db=False):
         '''Toggle mark state.'''
         self.mark = not self.mark
-        if forceDb:
-            self._updateField('mark', int(self.mark))
+        if force_db:
+            self._update_field('mark', int(self.mark))
 
     def clear(self):
         '''Clear history and delete all trace files.'''
-        if not self._db:
+        if self._db is None:
             return
         
         # Get the DB filename 

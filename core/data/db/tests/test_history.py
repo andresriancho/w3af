@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import random
 import unittest
-import time
 import os.path
 
 from nose.plugins.attrib import attr
@@ -28,8 +27,9 @@ from nose.plugins.attrib import attr
 import core.data.kb.config as cf
 import core.data.kb.knowledge_base as kb
 
+from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
-from core.controllers.exceptions import w3afException
+from core.data.db.dbms import get_default_db_instance
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.utils import rand_alnum
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
@@ -43,15 +43,12 @@ class TestHistoryItem(unittest.TestCase):
 
     def setUp(self):
         kb.kb.cleanup()
-        cf.cf.cleanup()
-        cf.cf.save('session_name',
-                   'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         create_temp_dir()
+        HistoryItem().clear()
 
     def tearDown(self):
         remove_temp_dir()
         kb.kb.cleanup()
-        cf.cf.cleanup()
 
     def test_single_db(self):
         h1 = HistoryItem()
@@ -102,7 +99,7 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(len(h2.find(search_data)), 1)
 
     def test_mark(self):
-        mark_id = random.randint(1, 499)
+        mark_id = 3
         url = URL('http://w3af.org/a/b/c.php')
         
         for i in xrange(0, 500):
@@ -116,11 +113,14 @@ class TestHistoryItem(unittest.TestCase):
             if i == mark_id:
                 h1.toggle_mark()
             h1.save()
-            
+
         h2 = HistoryItem()
         h2.load(mark_id)
-        
         self.assertTrue(h2.mark)
+
+        h3 = HistoryItem()
+        h3.load(mark_id-1)
+        self.assertFalse(h3.mark)
 
     def test_save_load(self):
         i = random.randint(1, 499)
@@ -140,21 +140,25 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_delete(self):
         i = random.randint(1, 499)
+        
         url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
+        res.set_id(i)
+        
         h1 = HistoryItem()
         h1.request = fr
-        res.set_id(i)
         h1.response = res
         h1.save()
+        
+        fname = h1._get_fname_for_id(i)
+        self.assertTrue(os.path.exists(fname))
+        
         h1.delete(i)
-        try:
-            h2 = h1.read(i)
-        except:
-            h2 = None
-        self.assertEqual(h2, None)
+        
+        self.assertRaises(DBException, h1.read, i)
+        self.assertFalse(os.path.exists(fname))
 
     def test_clear(self):
         
@@ -168,12 +172,20 @@ class TestHistoryItem(unittest.TestCase):
         res.set_id(1)
         h1.response = res
         h1.save()
+
+        table_name = h1.get_table_name()
+        db = get_default_db_instance()
+        
+        self.assertTrue(db.table_exists(table_name))
         
         clear_result = h1.clear()
         
         self.assertTrue(clear_result)
         self.assertFalse(os.path.exists(h1._session_dir),
                          '%s exists.' % h1._session_dir)
+        
+        
+        self.assertFalse(db.table_exists(table_name))        
 
     def test_clear_clear(self):
         
@@ -211,3 +223,4 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(tag_id)
         self.assertEqual(h2.tag, tag_value)
+

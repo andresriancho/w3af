@@ -119,3 +119,7 @@ class w3afProxyException(w3afException):
     A small class that defines a w3af Proxy Exception.
     '''
     pass
+
+
+class DBException(w3afException):
+    pass

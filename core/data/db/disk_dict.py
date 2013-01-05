@@ -38,7 +38,7 @@ class DiskDict(object):
     def __init__(self):
         self.db = get_default_db_instance()
 
-        self.table_name = rand_alpha(16)
+        self.table_name = rand_alpha(30)
 
         # Create table
         # DO NOT add the AUTOINCREMENT flag to the table creation since that

@@ -36,7 +36,7 @@ class DiskSet(DiskList):
         self.__append = super(DiskSet, self).append
 
         self.lock = threading.RLock()
-
+    
     def add(self, value):
         '''
         Append a value to the DiskSet (only if the value is not already contained

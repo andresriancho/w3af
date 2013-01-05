@@ -26,6 +26,7 @@ import sqlite3
 from itertools import repeat, starmap
 from random import choice
 
+from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import (get_temp_dir, create_temp_dir,
                                             remove_temp_dir)
 from core.data.db.dbms import SQLiteDBMS, get_default_db_instance
@@ -47,7 +48,7 @@ class TestDB(unittest.TestCase):
     
     def test_open_error(self):
         invalid_filename = '/'
-        self.assertRaises(Exception, SQLiteDBMS, invalid_filename)
+        self.assertRaises(DBException, SQLiteDBMS, invalid_filename)
     
     def test_simple_db(self):
         db = SQLiteDBMS(get_temp_filename())
@@ -80,7 +81,7 @@ class TestDB(unittest.TestCase):
         fr.result()
         
         db.drop_table('TEST').result()
-        self.assertRaises(sqlite3.OperationalError, db.drop_table('TEST').result)
+        self.assertRaises(DBException, db.drop_table('TEST').result)
     
     def test_simple_db_with_index(self):
         db = SQLiteDBMS(get_temp_filename())
@@ -88,7 +89,7 @@ class TestDB(unittest.TestCase):
         fr.result()
         
         db.create_index('TEST', ['data']).result()
-        self.assertRaises(sqlite3.OperationalError,
+        self.assertRaises(DBException,
                           db.create_index('TEST', ['data']).result)
     
     def test_table_exists(self):

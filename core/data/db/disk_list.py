@@ -56,7 +56,7 @@ class DiskList(object):
     def __init__(self):
         self.db = get_default_db_instance()
 
-        self.table_name = rand_alpha(16)
+        self.table_name = rand_alpha(30)
 
         # Create table
         # DO NOT add the AUTOINCREMENT flag to the table creation since that
@@ -131,7 +131,7 @@ class DiskList(object):
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the
         # first match.
-        query = 'SELECT count(*) FROM %s WHERE eq_attrs=? limit 1' % self.table_name
+        query = 'SELECT count(*) FROM %s WHERE eq_attrs=? LIMIT 1' % self.table_name
         r = self.db.select_one(query, t)
         return bool(r[0])
 
