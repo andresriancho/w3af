@@ -31,7 +31,7 @@ import sqlite3
 
 from collections import deque
 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-    ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
+                  ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
