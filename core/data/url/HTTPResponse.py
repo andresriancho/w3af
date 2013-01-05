@@ -88,7 +88,9 @@ class HTTPResponse(object):
         @param msg: HTTP message
         @param id: Optional response identifier
         @param time: The time between the request and the response
-        @param alias: Optional alias for the response
+        @param alias: Alias for the response, this contains a hash that helps
+                      the backend sqlite find http_responses faster by indexing
+                      by this attr.
         @param charset: Response's encoding; obligatory when `read` is unicode
         '''
         if not isinstance(geturl, URL):
