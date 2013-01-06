@@ -24,8 +24,7 @@ from __future__ import with_statement
 import sys
 import sqlite3
 
-from functools import partial
-from concurrent.futures import Future, Executor
+from concurrent.futures import Future
 from multiprocessing.dummy import Queue, Process
 
 from core.data.misc.file_utils import replace_file_special_chars
@@ -50,58 +49,28 @@ class SQLiteDBMS(object):
                  cache_size=2000):
 
         super(SQLiteDBMS, self).__init__()
-
-        # Convert the filename to UTF-8, this is needed for windows, and special
-        # characters, see:
-        # http://www.sqlite.org/c3ref/open.html
-        unicode_filename = filename.decode(sys.getfilesystemencoding())
-        filename = unicode_filename.encode("utf-8")
-        self.filename = replace_file_special_chars(filename)
-
+        
+        in_queue = Queue()
+        self.sql_executor = SQLiteExecutor(in_queue)
+        self.sql_executor.start()
+        
+        future = self.sql_executor.setup(filename, autocommit, journal_mode,
+                                         cache_size)
+        # Raises an exception if an error was found during setup
+        future.result()
+        
+        self.filename = filename
         self.autocommit = autocommit
-        self.journal_mode = journal_mode
-        self.cache_size = cache_size
-
-        self.sql_executor = sqex = SQLiteExecutor()
-        sqlite3_connect = partial(sqex.submit_blocking, sqlite3.connect)
-        
-        #
-        #    Setup phase
-        #
-        if self.autocommit:
-            conn = sqlite3_connect(self.filename,
-                                   isolation_level=None,
-                                   check_same_thread=True)
-        else:
-            conn = sqlite3_connect(self.filename,
-                                   check_same_thread=True)
-        
-        conn_execute = partial(sqex.submit_blocking, conn.execute)
-        
-        conn_execute('PRAGMA journal_mode = %s' % self.journal_mode)
-        conn_execute('PRAGMA cache_size = %s' % self.cache_size)
-        conn.text_factory = str
-        
-        self.cursor = sqex.submit_blocking(conn.cursor)
-        
-        cursor_execute = partial(sqex.submit_blocking, self.cursor.execute)
-        cursor_execute('PRAGMA synchronous=OFF')
-        
-        # Store these attrs for later use, these are basically helpers to
-        # write less code in the methods below
-        self.cursor_execute_blocking = cursor_execute
-        self.cursor_execute = partial(sqex.submit, self.cursor.execute)
-        self.conn_commit = partial(sqex.submit, conn.commit)
 
     def execute(self, query, parameters=(), commit=False):
         """
         `execute` calls are non-blocking: just queue up the request and
         return a future.
         """
-        fr = self.cursor_execute(query, parameters)
+        fr = self.sql_executor.query(query, parameters)
         
         if self.autocommit or commit:
-            self.conn_commit()
+            self.sql_executor.commit()
             
         return fr
 
@@ -109,24 +78,24 @@ class SQLiteDBMS(object):
         '''
         I can't think about any non-blocking use of calling select()
         '''
-        ftor = self.sql_executor.submit_fetch_all
-        return ftor(self.cursor.execute, query, parameters).result()
+        future = self.sql_executor.select(query, parameters)
+        return future.result()
 
-    def select_one(self, sql, parameters=()):
+    def select_one(self, query, parameters=()):
         """
         @return: Only the first row of the SELECT, or None if there are no
         matching rows.
         """
         try:
-            return self.select(sql, parameters)[0]
+            return self.select(query, parameters)[0]
         except IndexError:
             return None
 
     def commit(self):
-        self.conn_commit()
+        self.sql_executor.commit()
 
     def close(self):
-        self.conn_commit()
+        self.commit()
         self.sql_executor.stop()
 
     def get_file_name(self):
@@ -134,8 +103,8 @@ class SQLiteDBMS(object):
         return self.filename
     
     def drop_table(self, name):
-        sql = 'DROP TABLE %s' % name
-        return self.execute(sql, commit=True)
+        query = 'DROP TABLE %s' % name
+        return self.execute(query, commit=True)
     
     def create_table(self, name, columns, pk_columns=()):
         '''
@@ -148,22 +117,22 @@ class SQLiteDBMS(object):
             raise ValueError('create_table requires column names and types')
         
         # Create the table
-        sql = 'CREATE TABLE %s (' % name
+        query = 'CREATE TABLE %s (' % name
         
         all_columns = []
         for column_data in columns:
             column_name, column_type = column_data
             all_columns.append('%s %s' % (column_name, column_type))
             
-        sql += ', '.join(all_columns)
+        query += ', '.join(all_columns)
         
         # Finally the PK
         if pk_columns:
-            sql += ', PRIMARY KEY (%s)' % ','.join(pk_columns)
+            query += ', PRIMARY KEY (%s)' % ','.join(pk_columns)
 
-        sql += ')'
+        query += ')'
 
-        return self.execute(sql, commit=True)
+        return self.execute(query, commit=True)
 
     def table_exists(self, name):
         query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"\
@@ -178,10 +147,10 @@ class SQLiteDBMS(object):
         @param table: The table from which you want to create an index from
         @param columns: A list of column names.
         '''
-        sql = 'CREATE INDEX %s_index ON %s( %s )' % (
-            table, table, ','.join(columns))
+        query = 'CREATE INDEX %s_index ON %s( %s )' % (table, table,
+                                                       ','.join(columns))
 
-        return self.execute(sql, commit=True)
+        return self.execute(query, commit=True)
 
 
 class SQLiteExecutor(Process):
@@ -191,7 +160,7 @@ class SQLiteExecutor(Process):
     '''
     DEBUG = False
     
-    def __init__(self):
+    def __init__(self, in_queue):
         super(SQLiteExecutor, self).__init__()
         
         # Setting the thread to daemon mode so it dies with the rest of the
@@ -199,26 +168,91 @@ class SQLiteExecutor(Process):
         self.daemon = True
         self.name = 'SQLiteExecutor'
         
-        self._in_queue = Queue()
-        self.start()
-    
-    def submit(self, func, *args, **kwds):
-        future = Future()
-        self._in_queue.put((func, False, args, kwds, future) )
-        return future
+        self._in_queue = in_queue
 
-    def submit_fetch_all(self, func, *args, **kwds):
+    def query(self, query, parameters):
         future = Future()
-        self._in_queue.put((func, True, args, kwds, future) )
+        request = ('QUERY', (query, parameters), {}, future)
+        self._in_queue.put(request)
         return future
     
-    def submit_blocking(self, func, *args, **kwds):
-        future = Future()
-        self._in_queue.put((func, False, args, kwds, future))
-        return future.result()
+    def _query_handler(self, query, parameters):
+        return self.cursor.execute(query, parameters)
 
+    def select(self, query, parameters):
+        future = Future()
+        request = ('SELECT', (query, parameters), {}, future)
+        self._in_queue.put(request)
+        return future
+    
+    def _select_handler(self, query, parameters):
+        result = self.cursor.execute(query, parameters)
+        result_lst = []
+        for row in result:
+            result_lst.append(row)
+        return result_lst
+    
+    def commit(self):
+        future = Future()
+        request = ('COMMIT', None, None, future)
+        self._in_queue.put(request)
+        return future
+
+    def _commit_handler(self):
+        return self.conn.commit()
+        
     def stop(self):
-        self._in_queue.put(None)
+        future = Future()
+        request = ('POISON', None, None, future)
+        self._in_queue.put(request)
+        return future
+    
+    def setup(self, filename, autocommit=False, journal_mode="OFF",
+              cache_size=2000):
+        '''
+        Request the process to perform a setup.
+        '''
+        future = Future()
+        request = ('SETUP',
+                   (filename,),
+                   {'autocommit': autocommit,
+                    'journal_mode': journal_mode,
+                    'cache_size': autocommit},
+                   future)
+        self._in_queue.put(request)
+        return future
+    
+    def _setup_handler(self, filename, autocommit=False, journal_mode="OFF",
+                       cache_size=2000):
+        # Convert the filename to UTF-8, this is needed for windows, and special
+        # characters, see:
+        # http://www.sqlite.org/c3ref/open.html
+        unicode_filename = filename.decode(sys.getfilesystemencoding())
+        filename = unicode_filename.encode("utf-8")
+        self.filename = replace_file_special_chars(filename)
+
+        self.autocommit = autocommit
+        self.journal_mode = journal_mode
+        self.cache_size = cache_size
+        
+        #
+        #    Setup phase
+        #
+        if self.autocommit:
+            conn = sqlite3.connect(self.filename,
+                                   isolation_level=None,
+                                   check_same_thread=True)
+        else:
+            conn = sqlite3.connect(self.filename,
+                                   check_same_thread=True)
+        
+        conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
+        conn.execute('PRAGMA cache_size = %s' % self.cache_size)
+        conn.text_factory = str
+        self.conn = conn
+        
+        self.cursor = conn.cursor()
+        self.cursor.execute('PRAGMA synchronous=OFF')
     
     def run(self):
         '''
@@ -234,35 +268,47 @@ class SQLiteExecutor(Process):
 
         The Queue.get() will make sure we don't have 100% CPU usage in the loop
         '''
+        OP_CODES = {'SETUP': self._setup_handler,
+                    'QUERY': self._query_handler,
+                    'SELECT': self._select_handler,
+                    'COMMIT': self._commit_handler,
+                    'POISON': 'POISON'}
+        
         while True:
-            work_item = self._in_queue.get()
+            op_code, args, kwds, future = self._in_queue.get()
             
-            if work_item is None:
+            if self.DEBUG:
+                print '%s %s %s' % (op_code, args, kwds)
+            
+            handler = OP_CODES.get(op_code, None)
+            
+            if handler is None:
+                # Invalid OPCODE
+                continue
+            
+            elif handler == 'POISON':
                 break
+             
             else:
-                func, fetch_all, args, kwargs, future = work_item
                 
                 if not future.set_running_or_notify_cancel():
                     return
-                
-                if self.DEBUG:
-                    print func, args, kwargs
-                    
+                                    
                 try:
-                    result = func(*args, **kwargs)
+                    result = handler(*args, **kwds)
                 except Exception, e:
                     dbe = DBException(str(e))
                     future.set_exception(dbe)
                 else:
-                    # TODO: Is there a better way to do this? By doing this I'm
-                    #       storing all results in memory
-                    if fetch_all:
-                        result = result.fetchall()
-
                     future.set_result(result)
 
-create_temp_dir()
-default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
+default_db = None
 
 def get_default_db_instance():
+    global default_db
+    
+    if default_db is None:
+        create_temp_dir()
+        default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
+        
     return default_db

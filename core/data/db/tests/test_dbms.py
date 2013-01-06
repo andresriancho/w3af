@@ -37,7 +37,7 @@ def get_temp_filename():
     filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
     return filename
 
-class TestDB(unittest.TestCase):
+class TestDBMS(unittest.TestCase):
     
     def setUp(self):
         create_temp_dir()
@@ -104,3 +104,8 @@ class TestDB(unittest.TestCase):
         db = SQLiteDBMS(get_temp_filename())
         db.close()
         db.close()
+
+class TestDefaultDB(unittest.TestCase):
+    def test_get_default_db_instance(self):
+        self.assertEqual(id(get_default_db_instance()),
+                         id(get_default_db_instance()))    
