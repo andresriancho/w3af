@@ -125,6 +125,7 @@ def dependency_check():
             packages_mac_ports.append('py27-soappy')
             reason_for_exit = True
     #mem_test('after soappy import')
+    
     try:
         from pdfminer.converter import TextConverter
     except ImportError:
@@ -133,8 +134,18 @@ def dependency_check():
         #TODO
         #packages_mac_ports.append()
         reason_for_exit = True
-        
     #mem_test('after pypdf import')
+
+    try:
+        from concurrent.futures import Future
+    except ImportError:
+        packages.append('futures')
+        packages_debian.append('python-concurrent.futures')
+        #TODO
+        #packages_mac_ports.append()
+        reason_for_exit = True
+    #mem_test('after pypdf import')
+    
     try:
         from OpenSSL import SSL
     except ImportError:
