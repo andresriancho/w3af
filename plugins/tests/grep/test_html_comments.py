@@ -46,8 +46,8 @@ class TestHTMLComments(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         infos_html = self.kb.get('html_comments', 'html_comment_hides_html')
-        infos_interesting = self.kb.get(
-            'html_comments', 'interesting_comments')
+        infos_interesting = self.kb.get('html_comments',
+                                        'interesting_comments')
 
         self.assertEquals(1, len(infos_html))
         self.assertEquals(1, len(infos_interesting))

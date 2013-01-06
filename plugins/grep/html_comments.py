@@ -73,25 +73,27 @@ class html_comments(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html():
-            try:
-                dp = parser_cache.dpc.get_document_parser_for(response)
-            except w3afException:
-                return
-            
-            for comment in dp.get_comments():
-                # These next two lines fix this issue:
-                # audit.ssi + grep.html_comments + web app with XSS = false positive
-                if request.sent(comment):
-                    continue
+        if not response.is_text_or_html():
+            return
+        
+        try:
+            dp = parser_cache.dpc.get_document_parser_for(response)
+        except w3afException:
+            return
+        
+        for comment in dp.get_comments():
+            # These next two lines fix this issue:
+            # audit.ssi + grep.html_comments + web app with XSS = false positive
+            if request.sent(comment):
+                continue
 
-                # show nice comments ;)
-                comment = comment.strip()
+            # show nice comments ;)
+            comment = comment.strip()
 
-                if self._is_new(comment, response):
+            if self._is_new(comment, response):
 
-                    self._interesting_word(comment, request, response)
-                    self._html_in_comment(comment, request, response)
+                self._interesting_word(comment, request, response)
+                self._html_in_comment(comment, request, response)
 
     def _interesting_word(self, comment, request, response):
         '''
@@ -113,14 +115,15 @@ class html_comments(GrepPlugin):
                 kb.kb.append(self, 'interesting_comments', i)
                 om.out.information(i.get_desc())
                 
-                self._already_reported_interesting.add(
-                    (word, response.get_url()))
+                self._already_reported_interesting.add((word,
+                                                        response.get_url()))
 
     def _html_in_comment(self, comment, request, response):
         '''
         Find HTML code in HTML comments
         '''
         html_in_comment = self.HTML_RE.search(comment)
+        
         if html_in_comment and \
         (comment, response.get_url()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
@@ -147,13 +150,16 @@ class html_comments(GrepPlugin):
         in order to avoid duplicates.
         '''
         with self._plugin_lock:
-            if comment not in self._comments.keys():
+            
+            comment_data = self._comments.get(comment, None)
+            
+            if comment_data is None:
                 self._comments[comment] = [(response.get_url(), response.id), ]
                 return True
             else:
-                if response.get_url() not in [x[0] for x in self._comments[comment]]:
-                    self._comments[comment].append((
-                        response.get_url(), response.id))
+                if response.get_url() not in [x[0] for x in comment_data]:
+                    comment_data.append((response.get_url(), response.id))
+                    self._comments[comment] = comment_data
                     return True
 
         return False
@@ -168,12 +174,13 @@ class html_comments(GrepPlugin):
             urls_with_this_comment = self._comments[comment]
             stick_comment = ' '.join(comment.split())
             if len(stick_comment) > 40:
-                msg = 'A comment with the string "%s..." (and %s more bytes) was found on these URL(s):'
+                msg = 'A comment with the string "%s..." (and %s more bytes)'\
+                      ' was found on these URL(s):'
                 om.out.information(
                     msg % (stick_comment[:40], str(len(stick_comment) - 40)))
             else:
-                msg = 'A comment containing "%s" was found on these URL(s):' % (stick_comment)
-                om.out.information(msg)
+                msg = 'A comment containing "%s" was found on these URL(s):'
+                om.out.information(msg % (stick_comment))
 
             for url, request_id in urls_with_this_comment:
                 inform.append('- ' + url +
