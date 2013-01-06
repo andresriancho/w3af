@@ -50,7 +50,7 @@ class InMemoryKnowledgeBase(object):
         name = self._get_real_name(calling_instance)
 
         with self._kb_lock:
-            if name not in self._kb.keys():
+            if name not in self._kb:
                 self._kb[name] = {variable_name: value}
             else:
                 self._kb[name][variable_name] = value
@@ -129,7 +129,7 @@ class InMemoryKnowledgeBase(object):
         name = self._get_real_name(calling_instance)
 
         with self._kb_lock:
-            if name not in self._kb.keys():
+            if name not in self._kb:
                 self._kb[name] = {variable_name: [value]}
             else:
                 if variable_name in self._kb[name]:
@@ -172,8 +172,8 @@ class InMemoryKnowledgeBase(object):
         res = []
 
         with self._kb_lock:
-            for pdata in self._kb.values():
-                for vals in pdata.values():
+            for pdata in self._kb.itervalues():
+                for vals in pdata.itervalues():
                     if not isinstance(vals, list):
                         continue
                     for v in vals:
