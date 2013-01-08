@@ -46,7 +46,7 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_list = [plugin, ]
+            om.out._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
@@ -65,7 +65,7 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_list = [plugin, ]
+            om.out._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
@@ -92,7 +92,7 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, action, plugin_action)
 
         # Invoke action
-        om.out._output_plugin_list = [plugin, ]
+        om.out._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         om_action(msg, False)
 
@@ -113,7 +113,7 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, 'get_name', plugin_get_name)
 
         # Invoke action
-        om.out._output_plugin_list = [plugin, ]
+        om.out._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         # This one will be ignored at the output manager level
         om_action(msg, False, ignore_plugins=set(['fake']))
@@ -139,7 +139,7 @@ class TestOutputManager(unittest.TestCase):
 
         w3af_core = w3afCore()
 
-        om.out._output_plugin_list = [invalid_plugin, ]
+        om.out._output_plugin_instances = [invalid_plugin, ]
         om.out.information('abc')
         om.out.process_all_messages()
 
