@@ -125,6 +125,7 @@ class TestOutputManager(unittest.TestCase):
         plugin_action.assert_called_once_with(msg, False)        
 
     def test_error_handling(self):
+        
         class InvalidPlugin(object):
             def information(self, msg, new_line=True):
                 raise Exception('Test')

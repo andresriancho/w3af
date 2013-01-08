@@ -151,6 +151,7 @@ class html_comments(GrepPlugin):
         '''
         with self._plugin_lock:
             
+            #pylint: disable=E1103
             comment_data = self._comments.get(comment, None)
             
             if comment_data is None:
@@ -161,7 +162,8 @@ class html_comments(GrepPlugin):
                     comment_data.append((response.get_url(), response.id))
                     self._comments[comment] = comment_data
                     return True
-
+            #pylint: enable=E1103
+            
         return False
 
     def end(self):

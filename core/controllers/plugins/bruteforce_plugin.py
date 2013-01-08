@@ -87,6 +87,15 @@ class BruteforcePlugin(AuditPlugin):
         p_bf.passwd_file = self._passwd_file
         return p_bf.generator()
 
+    def audit(self, freq):
+        '''
+        This method MUST be implemented on every plugin.
+
+        @param freq: A FuzzableRequest that is going to be modified and sent.
+        '''
+        msg = 'Plugin is not implementing required method audit'
+        raise NotImplementedError(msg)
+
     def bruteforce_wrapper(self, fuzzable_request):
         self.audit(fuzzable_request.copy())
 

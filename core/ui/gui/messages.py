@@ -30,6 +30,7 @@ from core.ui.gui.common.searchable import Searchable
 from core.data.db.disk_list import DiskList
 
 
+#pylint: disable=E1103
 def subscribe_to_messages(observer_function):
     '''
     Subscribe observer_function to the GtkOutput messages
@@ -50,6 +51,7 @@ def unsubscribe_to_messages(observer_function):
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.unsubscribe(observer_function)
             break
+#pylint: enable=E1103
 
 
 class _LineScroller(gtk.TextView):
