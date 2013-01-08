@@ -43,8 +43,8 @@ class TestEventValidation(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.get(
-            'dot_net_event_validation', 'dot_net_event_validation')
+        vulns = self.kb.get('dot_net_event_validation',
+                            'dot_net_event_validation')
 
         self.assertEquals(3, len(vulns))
 

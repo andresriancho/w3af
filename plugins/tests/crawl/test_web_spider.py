@@ -60,7 +60,7 @@ class TestWebSpider(PluginTest):
             'd%20f/index.html', '2.html', 'a%20b.html',
             'a.gif', 'd%20f/', '1.html'
         )
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         self.assertEquals(
             set(str(u) for u in urls),
             set((self.follow_links_url + end) for end in expected_urls)
@@ -73,7 +73,7 @@ class TestWebSpider(PluginTest):
         
         # pylint: disable=E1101
         # Pylint fails to detect the object types that come out of the KB            
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         
         expected = (
             u'', u'index.html',
@@ -148,7 +148,7 @@ class TestWebSpider(PluginTest):
 
         inner_pages = 'innerpages/'
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         self.assertEquals(
             set(str(u) for u in urls if inner_pages in str(
                 u) and str(u).endswith('.php')),

@@ -74,7 +74,7 @@ class TestDirBruter(PluginTest):
 
     def test_fuzzer_found_urls(self):
         self._scan(self._run_simple['target'], self._run_simple['plugins'])
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
 
         EXPECTED_URLS = (
             'setup/', 'header/', 'images/', 'portal/', 'index/', '')
@@ -90,7 +90,7 @@ class TestDirBruter(PluginTest):
     def test_recursive(self):
         self._scan(
             self._run_recursive['target'], self._run_recursive['plugins'])
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
 
         EXPECTED_URLS = ('spameggs/', 'test/', 'spameggs/portal/',
                          'spameggs/portal/andres/', '')

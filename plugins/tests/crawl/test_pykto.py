@@ -48,7 +48,7 @@ class TestPykto(PluginTest):
         vulns = self.kb.get('pykto', 'vuln')
         self.assertGreater(len(vulns), 10, vulns)
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         self.assertTrue(len(urls) > 5, urls)
 
         hidden_url = 'http://moth/hidden/'

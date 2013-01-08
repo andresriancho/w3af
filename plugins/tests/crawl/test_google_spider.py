@@ -43,7 +43,7 @@ class TestGoogleSpider(PluginTest):
             'blog', 'es/clients/',
         )
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
 
         self.assertEquals(
             set(str(u) for u in urls),

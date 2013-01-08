@@ -23,8 +23,6 @@ verbose = True
 description = This is an empty profile that you can use to start a new configuration from.
 name = empty_profile
 
-[output.gtk_output]
-
 [http-settings]
 proxy_port = 8080
 url_parameter = 

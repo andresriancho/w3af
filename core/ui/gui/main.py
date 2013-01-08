@@ -50,11 +50,13 @@ from core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
 from core.controllers.exception_handling.helpers import pprint_plugins, get_versions
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
+
 from core.ui.gui.splash import Splash
 from core.ui.gui.exception_handling import unhandled
 from core.ui.gui.exception_handling import user_reports_bug
 from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
-
+from core.ui.gui.output.gtk_output import GtkOutput
+ 
 from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from core.ui.gui import export_request
 from core.ui.gui import entries, encdec, messages, logtab, pluginconfig, confpanel
@@ -274,7 +276,7 @@ class MainApp(object):
         splash.push(_("Initializing core..."))
 
         # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugins(['gtk_output'])
+        om.out.set_output_plugin_inst(GtkOutput())
 
         # status bar
         splash.push(_("Building the status bar..."))
@@ -592,7 +594,7 @@ class MainApp(object):
         @param widget: the widget that generated the signal.
         '''
         # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugins(['gtk_output'])
+        om.out.set_output_plugin_inst(GtkOutput())
 
         if not self.save_state_to_core():
             return
@@ -732,7 +734,6 @@ class MainApp(object):
         # cleanup
         self.nb.set_current_page(0)
         self.w3af.cleanup()
-        messages.getQueueDiverter(reset=True)
         self.set_tabs(False)
         self.sb(_("Scan results cleared"))
         self.exploitallsens.set_sensitive(False, "stopstart")
@@ -744,7 +745,7 @@ class MainApp(object):
         self.window.set_title(MAIN_TITLE)
 
         # This is done here in order to keep the logging facility.
-        om.out.set_output_plugins(['gtk_output'])
+        om.out.set_output_plugin_inst(GtkOutput())
 
     def _scan_superviseStatus(self):
         '''Handles the waiting until core actually stopped.

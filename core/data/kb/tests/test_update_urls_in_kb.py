@@ -25,20 +25,18 @@ import core.data.kb.knowledge_base as kb
 
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.controllers.core_helpers.update_urls_in_kb import update_kb
 
 
 class TestUpdateURLs(unittest.TestCase):
 
     def setUp(self):
-        kb.kb.save('urls', 'url_objects', list())
-        kb.kb.save('urls', 'fuzzable_requests', set())
+        kb.kb.cleanup()
 
     def test_basic(self):
         u1 = URL('http://w3af.org/')
         r1 = FuzzableRequest(u1, method='GET')
-        update_kb(r1)
-        result = kb.kb.get('urls', 'url_objects')
+        kb.kb.add_fuzzable_request(r1)
+        result = kb.kb.get_all_known_urls()
         self.assertEquals(len(result), 1)
         self.assertEquals("http://w3af.org/", list(result)[0].url_string)
 
@@ -46,11 +44,11 @@ class TestUpdateURLs(unittest.TestCase):
         r2 = FuzzableRequest(u2, method='GET')
         u3 = URL('http://w3af.org/')
         r3 = FuzzableRequest(u3, method='GET')
-        update_kb(r1)
-        update_kb(r2)
-        update_kb(r3)
+        kb.kb.add_fuzzable_request(r1)
+        kb.kb.add_fuzzable_request(r2)
+        kb.kb.add_fuzzable_request(r3)
 
-        result = kb.kb.get('urls', 'url_objects')
+        result = kb.kb.get_all_known_urls()
         self.assertEquals(len(result), 2)
         expected_set = set(["http://w3af.org/", "http://w3af.org/blog/"])
         self.assertEqual(expected_set,

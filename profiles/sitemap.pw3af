@@ -4,8 +4,6 @@ name = sitemap
 
 [crawl.sitemap_xml]
 
-[output.gtk_output]
-
 [misc-settings]
 maxThreads = 15
 fuzzed_files_extension = gif

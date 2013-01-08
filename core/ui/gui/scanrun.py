@@ -600,7 +600,7 @@ class ScanRunBody(gtk.Notebook):
 
 class IteratedURLList(object):
     '''
-    Simply provide a way to access the kb.kb.get('urls', 'url_objects')
+    Simply provide a way to access the kb.kb.get_all_known_urls()
     in an iterated manner!
 
     @author: Andres Riancho < andres.riancho @ gmail.com >
@@ -611,7 +611,7 @@ class IteratedURLList(object):
     def get(self):
         '''Serves the elements taken from the list.'''
         while True:
-            llist = kb.kb.get('urls', 'url_objects')
+            llist = kb.kb.get_all_known_urls()
 
             if self._index < len(llist):
                 msg = llist[self._index]

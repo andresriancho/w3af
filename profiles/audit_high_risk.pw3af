@@ -13,8 +13,6 @@ use_w3af_site = True
 listen_address = 
 listen_port = 44449
 
-[output.gtk_output]
-
 [misc-settings]
 maxThreads = 15
 form_fuzzing_mode = tmb

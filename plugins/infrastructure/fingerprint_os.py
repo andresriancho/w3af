@@ -88,7 +88,7 @@ class fingerprint_os(InfrastructurePlugin):
                      self.get_name())
             i.set_url(windows_response.get_url())
             
-            kb.kb.save(self, 'operating_system_str', os_str)
+            kb.kb.raw_write(self, 'operating_system_str', os_str)
             kb.kb.append(self, 'operating_system', i)
             om.out.information(i.get_desc())
             return True

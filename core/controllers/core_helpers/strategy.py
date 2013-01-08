@@ -60,11 +60,6 @@ class w3af_core_strategy(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
 
-        # Internal attribute to keep track of all known fuzzable requests
-        # TODO: Make this a DiskSet to reduce memory usage.
-        self._fuzzable_request_set = set()
-        kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
-
         # Consumer threads
         self._grep_consumer = None
         self._audit_consumer = None

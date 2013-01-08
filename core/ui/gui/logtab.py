@@ -23,11 +23,14 @@ from __future__ import division
 
 import gtk
 import gobject
-from core.ui.gui import messages, entries
-import core.data.constants.severity as severity
 import time
 import pango
 import itertools
+import Queue
+
+import core.data.constants.severity as severity
+from core.ui.gui import messages, entries
+from core.data.db.disk_list import DiskList
 
 # margins (they have to be > 10)
 MIZQ = 20
@@ -56,8 +59,9 @@ class LogGraph(gtk.DrawingArea):
         self.pangolayout = self.create_pango_layout("")
 
         # get the messages
-        self.messages = messages.getQueueDiverter()
-        self.all_messages = []
+        messages.subscribe_to_messages(self.message_observer)
+        self.messages = Queue.Queue()
+        self.all_messages = DiskList()
 
         # control variables
         self.alreadyStopped = False
@@ -71,7 +75,10 @@ class LogGraph(gtk.DrawingArea):
         gobject.timeout_add(500, self.add_message().next)
         self.connect("expose-event", self.area_expose_cb)
         self.show()
-
+    
+    def message_observer(self, message):
+        self.messages.put(message)
+        
     def add_message(self):
         '''Adds a message to the graph.
 

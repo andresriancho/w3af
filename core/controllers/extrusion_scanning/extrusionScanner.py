@@ -100,8 +100,8 @@ class extrusionScanner(object):
             return True
 
     def estimate_scan_time(self):
-        savedResults = kb.kb.get('extrusionScanner', 'extrusions')
-        if savedResults:
+        saved_results = kb.kb.raw_read('extrusionScanner', 'extrusions')
+        if saved_results:
             return 1
         else:
             _, file_content, _ = self._selectExtrusionClient()
@@ -114,14 +114,14 @@ class extrusionScanner(object):
         if not self._forceReRun:
             # Try to return the data from the kb !
             remoteId = self._getRemoteId()
-            savedResults = kb.kb.get('extrusionScanner', 'extrusions')
-            if remoteId in savedResults:
+            saved_results = kb.kb.raw_read('extrusionScanner', 'extrusions')
+            if remoteId in saved_results:
                 om.out.information(
                     'Reusing previous result from the knowledgeBase:')
                 msg = '- Selecting port "%s" for inbound connections from the'
-                msg += ' compromised server to w3af.' % savedResults[remoteId]
+                msg += ' compromised server to w3af.' % saved_results[remoteId]
                 om.out.information(msg)
-                return savedResults[remoteId]
+                return saved_results[remoteId]
 
         om.out.information(
             'Please wait some seconds while w3af performs an extrusion scan.')
@@ -187,15 +187,15 @@ class extrusionScanner(object):
 
                     if not self._forceReRun:
                         om.out.debug('Saving information in the kb.')
-                        savedResults = kb.kb.get(
-                            'extrusionScanner', 'extrusions')
-                        if savedResults:
-                            savedResults[remoteId] = port
+                        saved_results = kb.kb.raw_read('extrusionScanner',
+                                                       'extrusions')
+                        if saved_results:
+                            saved_results[remoteId] = port
                         else:
-                            savedResults = {}
-                            savedResults[remoteId] = port
-                        kb.kb.save(
-                            'extrusionScanner', 'extrusions', savedResults)
+                            saved_results = {}
+                            saved_results[remoteId] = port
+                        kb.kb.raw_write('extrusionScanner', 'extrusions',
+                                        saved_results)
 
                     return port
 

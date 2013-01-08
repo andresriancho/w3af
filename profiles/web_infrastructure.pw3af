@@ -5,8 +5,6 @@ name = web_infrastructure
 [infrastructure.shared_hosting]
 result_limit = 300
 
-[output.gtk_output]
-
 [misc-settings]
 maxThreads = 15
 form_fuzzing_mode = tmb

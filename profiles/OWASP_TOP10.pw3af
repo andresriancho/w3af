@@ -196,8 +196,6 @@ name = OWASP_TOP10
 
 [grep.html_comments]
 
-[output.gtk_output]
-
 [grep.ssn]
 
 [grep.code_disclosure]

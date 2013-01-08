@@ -18,14 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import gtk
 import gobject
 import pango
-import time
+import Queue
 
-# For write_console_messages
-from core.ui.gui import helpers
+from core.ui.gui import messages
 
 
 class PromptView(gtk.TextView):
@@ -56,7 +54,9 @@ class PromptView(gtk.TextView):
         }
 
         # These lines are for printing the om.out.console messages
-        gobject.timeout_add(200, helpers.write_console_messages(self).next)
+        messages.subscribe_to_messages(self.message_observer)
+        self.messages = Queue.Queue()
+        gobject.timeout_add(200, self.add_message)
 
         # mono spaced font looks more like a terminal to me =)
         # and works better with the output of some unix commands
@@ -78,14 +78,27 @@ class PromptView(gtk.TextView):
         gobject.idle_add(self._prompt)
         gobject.idle_add(self.grab_focus)
 
-    def add_message(self, text):
-        '''
-        This method is called from the write_console_messages generator.
+    def message_observer(self, message):
+        self.messages.put(message)
 
-        @param text: A string to write to the console textviev
-        @return: None
+    def add_message(self):
         '''
-        self.insert_into_textbuffer(text)
+        This method is called from gobject.timeout_add and will add messages
+        from self.message to the textbuffer.
+
+        @return: True to keep running
+        '''
+        for msg in self.messages.get():
+            if msg.get_type() != 'console':
+                continue
+    
+            # Handling new lines
+            text = msg.get_msg()
+            if msg.get_new_line():
+                text += '\n'
+
+            self.insert_into_textbuffer(text)
+            yield True
 
     def insert_into_textbuffer(self, text):
         '''

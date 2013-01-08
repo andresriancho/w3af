@@ -34,7 +34,7 @@ class test_file_upload(unittest.TestCase):
 
     def setUp(self):
         self.plugin = file_upload()
-        kb.kb.save('file_upload', 'file_upload', [])
+        kb.kb.clear('file_upload', 'file_upload')
 
     def tearDown(self):
         self.plugin.end()

@@ -30,7 +30,7 @@ from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.dc.headers import Headers
-from core.data.db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_temp_db_instance
 
 
 class test_DiskSet(unittest.TestCase):
@@ -170,7 +170,7 @@ class test_DiskSet(unittest.TestCase):
     def test_remove_table(self):
         disk_set = DiskSet()
         table_name = disk_set.table_name
-        db = get_default_db_instance()
+        db = get_default_temp_db_instance()
         
         self.assertTrue(db.table_exists(table_name))
         

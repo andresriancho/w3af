@@ -35,7 +35,7 @@ class TestPHPInfo(PluginTest):
     def test_phpinfo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         urls = [url.url_string for url in urls]
 
         self.assertTrue(self.base_url + 'phpinfo.php' in urls)

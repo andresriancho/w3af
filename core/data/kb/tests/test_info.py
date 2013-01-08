@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import cPickle
 
 from nose.plugins.attrib import attr
 
@@ -32,7 +33,8 @@ from core.data.fuzzer.mutants.mutant import Mutant
 
 class MockInfo(Info):
     def __init__(self):
-        super(MockInfo, self).__init__('TestCase', Info.LONG_DESC, 1, 'plugin_name')
+        long_desc = 'Foo bar spam eggs' * 10
+        super(MockInfo, self).__init__('TestCase', long_desc, 1, 'plugin_name')
 
 @attr('smoke')
 class TestInfo(unittest.TestCase):
@@ -95,6 +97,9 @@ class TestInfo(unittest.TestCase):
         desc = 'abc ' * 30
         i.set_desc(desc)
         self.assertTrue(i.get_desc().startswith(desc))
+    
+    def test_pickleable(self):
+        cPickle.dumps(MockInfo())
     
     def test_from_info(self):
         url = URL('http://moth/')

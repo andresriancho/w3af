@@ -429,39 +429,6 @@ def open_help(chapter=''):
     webbrowser.open("file://" + helpfile)
 
 
-def write_console_messages(dlg):
-    '''
-    Write console messages to the TextDialog.
-
-    @param dlg: The TextDialog.
-    '''
-    import core.data.kb.knowledge_base as kb
-    from core.ui.gui import messages
-
-    msg_queue = messages.getQueueDiverter()
-    get_message_index = kb.kb.get('get_message_index', 'get_message_index')
-    inc_message_index = kb.kb.get('inc_message_index', 'inc_message_index')
-
-    for msg in msg_queue.get(get_message_index()):
-        if msg is None:
-            yield True
-            continue
-
-        inc_message_index()
-
-        if msg.get_type() != 'console':
-            continue
-
-        # Handling new lines
-        text = msg.get_msg()
-        if msg.getNewLine():
-            text += '\n'
-
-        dlg.add_message(text)
-
-    yield False
-
-
 class DrawingAreaStringRepresentation(gtk.DrawingArea):
 
     def __init__(self, str_repr=None, width=60, height=40):

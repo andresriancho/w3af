@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
+import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.core_helpers.update_urls_in_kb import get_fuzzable_requests_from_kb
 
 from core.data.kb.vuln import Vuln
 from core.data.db.disk_list import DiskList
@@ -176,7 +176,7 @@ class xss(AuditPlugin):
         @return: None, Vuln (if any) are saved to the kb.
         '''
         # Get all known fuzzable requests from the core
-        fuzzable_requests = get_fuzzable_requests_from_kb()
+        fuzzable_requests = kb.kb.get_all_known_fuzzable_requests()
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       fuzzable_requests,

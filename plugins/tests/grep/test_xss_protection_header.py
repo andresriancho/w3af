@@ -34,7 +34,7 @@ class test_xss_protection_header(unittest.TestCase):
 
     def setUp(self):
         self.plugin = xss_protection_header()
-        kb.kb.save('xss_protection_header', 'xss_protection_header', [])
+        kb.kb.clear('xss_protection_header', 'xss_protection_header')
 
     def tearDown(self):
         self.plugin.end()

@@ -44,7 +44,7 @@ from core.controllers.misc.FileLock import FileLock, FileLockRead
 from core.controllers.exceptions import DBException
 from core.data.db.where_helper import WhereHelper
 from core.data.fuzzer.utils import rand_alpha
-from core.data.db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_temp_db_instance
 
 
 def verify_has_db(meth):
@@ -91,7 +91,7 @@ class HistoryItem(object):
     history_lock = threading.RLock()
 
     def __init__(self):
-        self._db = get_default_db_instance()
+        self._db = get_default_temp_db_instance()
         
         self._session_dir = os.path.join(get_temp_dir(),
                                          self._db.get_file_name() + '_traces')

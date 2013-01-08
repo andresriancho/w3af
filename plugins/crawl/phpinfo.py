@@ -603,7 +603,7 @@ class phpinfo(CrawlPlugin):
                'test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php',
                'PHPversion.php', 'x.php', 'xx.php', 'xxx.php']
 
-        identified_os = kb.kb.get('fingerprint_os', 'operating_system_str')
+        identified_os = kb.kb.raw_read('fingerprint_os', 'operating_system_str')
 
         if not isinstance(identified_os, basestring):
             identified_os = cf.cf.get('target_os')

@@ -5,8 +5,6 @@ name = full_audit_spider_man
 [output.console]
 verbose = False
 
-[output.gtk_output]
-
 [audit.file_upload]
 extensions = gif,html
 

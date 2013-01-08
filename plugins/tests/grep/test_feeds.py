@@ -34,7 +34,7 @@ class test_feeds(unittest.TestCase):
 
     def setUp(self):
         self.plugin = feeds()
-        kb.kb.save('feeds', 'feeds', [])
+        kb.kb.clear('feeds', 'feeds')
 
     def tearDown(self):
         self.plugin.end()

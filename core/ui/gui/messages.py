@@ -20,28 +20,36 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
 import gobject
+import Queue
 
-import core.data.kb.knowledge_base as kb
+import core.controllers.output_manager as om
 
-from core.ui.gui import helpers, entries
+from core.ui.gui.output.gtk_output import GtkOutput
+from core.ui.gui import entries
 from core.ui.gui.common.searchable import Searchable
 from core.data.db.disk_list import DiskList
 
 
-def getQueueDiverter(reset=False, instance=[]):
-    '''Returns only one instance of the IteratedQueue.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+def subscribe_to_messages(observer_function):
     '''
-    if reset:
-        if instance:
-            del instance[:]
-        return
-    if not instance:
-        q = kb.kb.get("gtk_output", "queue")
-        inst = helpers.IteratedQueue(q)
-        instance.append(inst)
-    return instance[0]
+    Subscribe observer_function to the GtkOutput messages
+    '''
+    all_output_plugins = om.out.get_output_plugin_inst()
+    for plugin_inst in all_output_plugins:
+        if isinstance(plugin_inst, GtkOutput):
+            plugin_inst.subscribe(observer_function)
+            break
+
+
+def unsubscribe_to_messages(observer_function):
+    '''
+    Unsubscribe observer_function to the GtkOutput messages
+    '''
+    all_output_plugins = om.out.get_output_plugin_inst()
+    for plugin_inst in all_output_plugins:
+        if isinstance(plugin_inst, GtkOutput):
+            plugin_inst.unsubscribe(observer_function)
+            break
 
 
 class _LineScroller(gtk.TextView):
@@ -61,12 +69,14 @@ class _LineScroller(gtk.TextView):
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.textbuffer = self.get_buffer()
         self.show()
-        self.messages = getQueueDiverter()
         self.all_messages = DiskList()
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
-
+        
+        subscribe_to_messages(self.message_observer)
+        self.messages = Queue.Queue()
+        
         # scroll bar
         self.freeze_scrollbar = False
         scroll_bar.connect("value-changed", self.scroll_changed)
@@ -82,6 +92,9 @@ class _LineScroller(gtk.TextView):
         }
 
         gobject.timeout_add(500, self.add_message().next)
+
+    def message_observer(self, message):
+        self.messages.put(message)
 
     def filter(self, filtinfo):
         '''Applies a different filter to the textview.

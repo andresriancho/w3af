@@ -24,7 +24,7 @@ import StringIO
 from lxml import etree
 from nose.plugins.attrib import attr
 
-from core.data.kb.vuln import Vuln
+from core.data.kb.tests.test_vuln import MockVuln
 from core.data.parsers.url import URL
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -110,7 +110,7 @@ class XMLParser:
             name = attrib['name']
             plugin = attrib['plugin']
             
-            v = Vuln(name, Vuln.LONG_DESC, 'High', 1, plugin)
+            v = MockVuln(name, None, 'High', 1, plugin)
             v.set_url(URL(attrib['url']))
             
             self.vulns.append(v)

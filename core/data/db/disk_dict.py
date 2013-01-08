@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import cPickle
 
 from core.data.fuzzer.utils import rand_alpha
-from core.data.db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_temp_db_instance
 
 
 class DiskDict(object):
@@ -36,7 +36,7 @@ class DiskDict(object):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
-        self.db = get_default_db_instance()
+        self.db = get_default_temp_db_instance()
 
         self.table_name = rand_alpha(30)
 

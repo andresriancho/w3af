@@ -37,7 +37,7 @@ class test_code_disclosure(unittest.TestCase):
 
     def setUp(self):
         self.plugin = code_disclosure()
-        kb.kb.save('code_disclosure', 'code_disclosure', [])
+        kb.kb.clear('code_disclosure', 'code_disclosure')
 
     def tearDown(self):
         self.plugin.end()

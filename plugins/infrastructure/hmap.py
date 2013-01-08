@@ -100,7 +100,7 @@ class hmap(InfrastructurePlugin):
                 # Save the results in the KB so that other plugins can use this
                 # information
                 kb.kb.append(self, 'server', i)
-                kb.kb.save(self, 'server_string', server)
+                kb.kb.raw_write(self, 'server_string', server)
 
             #
             # Fingerprint file generated (this is independent from the results)

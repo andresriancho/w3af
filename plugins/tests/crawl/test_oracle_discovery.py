@@ -39,7 +39,7 @@ class TestOracleDiscovery(PluginTest):
         # important actually)
         self.assertEqual(len(infos), 1, infos)
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         urls = [url.url_string for url in urls]
 
         # FIXME: See above.

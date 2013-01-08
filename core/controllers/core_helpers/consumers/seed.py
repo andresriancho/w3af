@@ -24,10 +24,10 @@ import traceback
 from multiprocessing.dummy import Queue, Process
 
 import core.controllers.output_manager as om
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.exceptions import (w3afMustStopException,
                                          w3afMustStopOnUrlError)
-from core.controllers.core_helpers.update_urls_in_kb import update_kb
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.exceptions import w3afException
 from core.data.request.factory import create_fuzzable_requests
@@ -100,7 +100,7 @@ class seed(Process):
                 for seed in filtered_seeds:
                     self._out_queue.put((None, None, seed))
 
-                    # Update the list / set that lives in the KB
-                    update_kb(seed)
+                    # Update the set that lives in the KB
+                    kb.kb.add_fuzzable_request(seed)
 
         self._out_queue.put(POISON_PILL)

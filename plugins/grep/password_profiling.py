@@ -51,11 +51,13 @@ class password_profiling(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
+        
         self._init = True
-
+        self.captured_lang = None
+        
         #TODO: develop more plugins, there is a, pure-python metadata reader named
         #      hachoir-metadata it will be useful for writing A LOT of plugins
-
+        
         # Plugins to run
         self._plugins_names_dict = ['html', 'pdf']
         self._plugins = []
@@ -68,15 +70,8 @@ class password_profiling(GrepPlugin):
         @param response: The HTTP response object
         @return: None.
         '''
-        if self._init:
-            kb.kb.save(self, 'password_profiling', {})
-            self._init = False
-            
-        # Initial setup
-        # FIXME: When I migrate to a DB backend for the KB, this line will
-        # have a huge performance hit since it will run a DB query for each
-        # HTTP request
-        lang = kb.kb.get('lang', 'lang') or 'unknown'
+        if not self.got_lang():
+            return
 
         # I added the 404 code here to avoid doing some is_404 lookups
         if response.get_code() not in [500, 401, 403, 404] \
@@ -87,15 +82,36 @@ class password_profiling(GrepPlugin):
             data = self._run_plugins(response)
 
             with self._plugin_lock:
-                old_data = kb.kb.get('password_profiling',
-                                     'password_profiling')
+                old_data = kb.kb.raw_read('password_profiling',
+                                          'password_profiling')
                 
-                new_data = self.merge_maps(old_data, data, request, lang)
+                new_data = self.merge_maps(old_data, data, request,
+                                           self.captured_lang)
                 
                 new_data = self._trim_data(new_data)
                 
                 # save the updated map
-                kb.kb.save(self, 'password_profiling', new_data)
+                kb.kb.raw_write(self, 'password_profiling', new_data)
+    
+    def got_lang(self):
+        '''
+        Initial setup that's run until we have the language or lang plugin
+        gave up
+        
+        @return: True if we were able to get the language from the lang plugin
+        '''
+        if self._init:
+            captured_lang = kb.kb.raw_read('lang', 'lang')
+            if captured_lang is None or captured_lang == []:
+                # The lang plugin is still trying to identify the language
+                return False
+            else:
+                self.captured_lang = captured_lang
+                self._init = False
+                kb.kb.raw_write(self, 'password_profiling', {})
+                return True
+        
+        return True
     
     def _trim_data(self, data):
         '''
@@ -175,7 +191,7 @@ class password_profiling(GrepPlugin):
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
 
-        profiling_data = kb.kb.get('password_profiling', 'password_profiling')
+        profiling_data = kb.kb.raw_read('password_profiling', 'password_profiling')
 
         # This fixes a very strange bug where for some reason the kb doesn't
         # have a dict anymore (threading issue most likely) Seen here:

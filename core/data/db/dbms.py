@@ -31,6 +31,13 @@ from core.data.misc.file_utils import replace_file_special_chars
 from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import get_temp_dir, create_temp_dir
 
+# Constants
+SETUP = 'SETUP'
+QUERY = 'QUERY'
+SELECT = 'SELECT'
+COMMIT = 'COMMIT'
+POISON = 'POISON'
+
 
 class SQLiteDBMS(object):
     """
@@ -172,7 +179,7 @@ class SQLiteExecutor(Process):
 
     def query(self, query, parameters):
         future = Future()
-        request = ('QUERY', (query, parameters), {}, future)
+        request = (QUERY, (query, parameters), {}, future)
         self._in_queue.put(request)
         return future
     
@@ -181,7 +188,7 @@ class SQLiteExecutor(Process):
 
     def select(self, query, parameters):
         future = Future()
-        request = ('SELECT', (query, parameters), {}, future)
+        request = (SELECT, (query, parameters), {}, future)
         self._in_queue.put(request)
         return future
     
@@ -194,7 +201,7 @@ class SQLiteExecutor(Process):
     
     def commit(self):
         future = Future()
-        request = ('COMMIT', None, None, future)
+        request = (COMMIT, None, None, future)
         self._in_queue.put(request)
         return future
 
@@ -203,7 +210,7 @@ class SQLiteExecutor(Process):
         
     def stop(self):
         future = Future()
-        request = ('POISON', None, None, future)
+        request = (POISON, None, None, future)
         self._in_queue.put(request)
         return future
     
@@ -213,7 +220,7 @@ class SQLiteExecutor(Process):
         Request the process to perform a setup.
         '''
         future = Future()
-        request = ('SETUP',
+        request = (SETUP,
                    (filename,),
                    {'autocommit': autocommit,
                     'journal_mode': journal_mode,
@@ -268,11 +275,11 @@ class SQLiteExecutor(Process):
 
         The Queue.get() will make sure we don't have 100% CPU usage in the loop
         '''
-        OP_CODES = {'SETUP': self._setup_handler,
-                    'QUERY': self._query_handler,
-                    'SELECT': self._select_handler,
-                    'COMMIT': self._commit_handler,
-                    'POISON': 'POISON'}
+        OP_CODES = {SETUP: self._setup_handler,
+                    QUERY: self._query_handler,
+                    SELECT: self._select_handler,
+                    COMMIT: self._commit_handler,
+                    POISON: POISON}
         
         while True:
             op_code, args, kwds, future = self._in_queue.get()
@@ -286,7 +293,7 @@ class SQLiteExecutor(Process):
                 # Invalid OPCODE
                 continue
             
-            elif handler == 'POISON':
+            elif handler == POISON:
                 break
              
             else:
@@ -302,13 +309,23 @@ class SQLiteExecutor(Process):
                 else:
                     future.set_result(result)
 
-default_db = None
 
-def get_default_db_instance():
-    global default_db
+temp_default_db = None
+
+def get_default_temp_db_instance():
+    global temp_default_db
     
-    if default_db is None:
+    if temp_default_db is None:
         create_temp_dir()
-        default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
+        temp_default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
         
-    return default_db
+    return temp_default_db
+
+def get_default_persistent_db_instance():
+    '''
+    At some point I'll want to have persistent DB for storing the KB and other
+    information across different w3af processes, or simply to save the findings
+    in a KB and don't remove them. I'm adding this method as a reminder of
+    where it should be done.
+    '''
+    return get_default_temp_db_instance()

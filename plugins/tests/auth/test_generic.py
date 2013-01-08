@@ -117,7 +117,7 @@ class TestGeneric(PluginTest):
         self._scan(self.demo_testfire_net['target'],
                    self.demo_testfire_net['plugins'])
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         url_strings = set(str(u) for u in urls)
 
         self.assertTrue(self.demo_testfire + 'queryxpath.aspx' in url_strings)

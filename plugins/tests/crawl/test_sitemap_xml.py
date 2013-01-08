@@ -37,7 +37,7 @@ class TestSitemap(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
 
         self.assertEqual(len(urls), 3, urls)
 

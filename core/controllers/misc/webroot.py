@@ -25,13 +25,14 @@ import core.data.kb.knowledge_base as kb
 
 def get_webroot_dirs(domain=None):
     '''
-    @return: A list of strings with possible webroots. This function also analyzed the contents of the
-    knowledgeBase and tries to use that information in order to guess.
+    @return: A list of strings with possible webroots. This function also 
+             analyzed the contents of the knowledgeBase and tries to use
+             that information in order to guess.
     '''
     result = []
 
     # This one has more probability of success that all the other ones together
-    obtained_webroot = kb.kb.get('path_disclosure', 'webroot')
+    obtained_webroot = kb.kb.raw_read('path_disclosure', 'webroot')
     if obtained_webroot:
         result.append(obtained_webroot)
 

@@ -34,16 +34,17 @@ class apache_root_directory(Payload):
             for user in users:
                 directory.append('/' + parse_etc_passwd(passwd, user) + '/')
 
-        apache_config_files = self.exec_payload(
-            'apache_config_files')['apache_config']
+        apache_config_files = self.exec_payload('apache_config_files')
+        apache_config_files = apache_config_files['apache_config']
+        
         if apache_config_files:
             for file in apache_config_files:
                 file_content = self.shell.read(file)
                 if parse_config_file(file_content) != '':
                     directory.append(parse_config_file(file_content) + '/')
 
-        if kb.kb.get('pathdisclosure', 'webroot'):
-            directory.append(kb.kb.get('pathdisclosure', 'webroot'))
+        if kb.kb.raw_read('pathdisclosure', 'webroot'):
+            directory.append(kb.kb.raw_read('pathdisclosure', 'webroot'))
 
         # perform some normalization and filtering
         directory = [p.replace('//', '/') for p in directory if p != '']

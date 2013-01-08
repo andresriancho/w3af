@@ -44,7 +44,7 @@ class TestContentNegotiation(PluginTest):
         info = infos[0]
         self.assertEqual(info.get_name(), 'HTTP Content Negotiation enabled')
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         expected_fnames = set(['backup.zip', 'backup.php', 'backup.gz',
                                'backup.tar', ''])
         self.assertEqual(expected_fnames,

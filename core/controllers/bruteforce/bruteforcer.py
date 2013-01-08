@@ -181,12 +181,12 @@ def get_profiling_results(self, max_items=50):
         return cmp(y[1], x[1])
 
     #pylint: disable=E1103
-    kb_data = kb.kb.get('password_profiling', 'password_profiling')
+    kb_data = kb.kb.raw_read('password_profiling', 'password_profiling')
 
     if not kb_data:
-        msg = 'No password profiling information collected for using during'
-        msg += ' the bruteforce process, please try to enable crawl.web_spider'
-        msg += ' and grep.password_profiling plugins and try again.'
+        msg = 'No password profiling information collected for using during'\
+              ' the bruteforce process, please try to enable crawl.web_spider'\
+              ' and grep.password_profiling plugins and try again.'
         om.out.debug(msg)
         return []
 

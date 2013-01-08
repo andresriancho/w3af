@@ -78,7 +78,7 @@ class server_header(InfrastructurePlugin):
 
                 # Also save this for easy internal use
                 # other plugins can use this information
-                kb.kb.save(self, 'server_string', server)
+                kb.kb.raw_write(self, 'server_string', server)
                 break
 
         else:
@@ -96,7 +96,7 @@ class server_header(InfrastructurePlugin):
 
             # Also save this for easy internal use
             # other plugins can use this information
-            kb.kb.save(self, 'server_string', '')
+            kb.kb.raw_write(self, 'server_string', '')
 
     def _check_x_power(self, fuzzable_request):
         '''
@@ -135,7 +135,7 @@ class server_header(InfrastructurePlugin):
                         # Save the results in the KB so that other plugins can
                         # use this information. Before knowing that some servers
                         # may return more than one poweredby header I had:
-                        #     kb.kb.save( self , 'powered_by' , powered_by )
+                        #     kb.kb.raw_write( self , 'powered_by' , powered_by )
                         # But I have seen an IIS server with PHP that returns
                         # both the ASP.NET and the PHP headers
                         pow_by_kb = kb.kb.get('server_header', 'powered_by')
@@ -143,7 +143,11 @@ class server_header(InfrastructurePlugin):
 
                         if powered_by not in powered_by_in_kb:
                             kb.kb.append(self, 'powered_by', i)
-                            kb.kb.append(self, 'powered_by_string', powered_by)
+                            
+                            # Update the list and save it,
+                            powered_by_in_kb.append(powered_by)
+                            kb.kb.raw_write(self, 'powered_by_string',
+                                            powered_by_in_kb)
 
     def get_long_desc(self):
         '''

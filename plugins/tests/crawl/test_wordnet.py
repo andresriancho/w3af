@@ -19,9 +19,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import core.data.kb.knowledge_base as kb
+
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.wordnet import wordnet
-from core.controllers.core_helpers.update_urls_in_kb import get_fuzzable_requests_from_kb
 
 
 class TestWordnet(PluginTest):
@@ -50,7 +51,7 @@ class TestWordnet(PluginTest):
                          'show.php?os=unix', 'show.php?os=windows',
         )
 
-        frs = get_fuzzable_requests_from_kb()
+        frs = kb.kb.get_all_known_fuzzable_requests()
         
         self.assertEquals(
             set(fr.get_uri().url_string for fr in frs),

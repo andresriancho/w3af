@@ -34,7 +34,7 @@ class TestDigitSum(PluginTest):
     def test_found_fname(self):
         self._scan(self.digit_sum_url + 'index-3-1.html',
                    self._run_config['plugins'])
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
 
         EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html')
 
@@ -46,7 +46,7 @@ class TestDigitSum(PluginTest):
     def test_found_qs(self):
         self._scan(self.digit_sum_url + 'index1.php?id=22',
                    self._run_config['plugins'])
-        frs = self.kb.get('urls', 'fuzzable_requests')
+        frs = self.kb.get_all_known_fuzzable_requests()
 
         EXPECTED_URLS = ('index1.php?id=22', 'index1.php?id=21',
                          # These last two look very uninteresting, but please take

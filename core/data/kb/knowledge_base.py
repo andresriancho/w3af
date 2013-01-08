@@ -20,41 +20,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import threading
+import cPickle
 
+from core.data.fuzzer.utils import rand_alpha
+from core.data.db.dbms import get_default_persistent_db_instance
+from core.data.db.disk_set import DiskSet
+from core.data.parsers.url import URL
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
 from core.data.kb.shell import shell
 
 
-class InMemoryKnowledgeBase(object):
+class BasicKnowledgeBase(object): 
     '''
-    This class saves the data that is sent to it by plugins. It is the only way
-    in which plugins can exchange information.
-
-    Data is stored on memory.
+    This is a base class from which all implementations of KnowledgeBase will
+    inherit. It has the basic utility methods that will be used.
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
-        self._kb = {}
         self._kb_lock = threading.RLock()
     
         self.FILTERS = {'URL': self.filter_url,
-                        'VAR': self.filter_var}        
-
-    def save(self, calling_instance, variable_name, value):
-        '''
-        This method saves the variable_name value to a dict.
-        '''
-        name = self._get_real_name(calling_instance)
-
-        with self._kb_lock:
-            if name not in self._kb:
-                self._kb[name] = {variable_name: value}
-            else:
-                self._kb[name][variable_name] = value
-
+                        'VAR': self.filter_var}
+        
     def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
         '''
         Append to a location in the KB if and only if there it no other
@@ -122,28 +113,138 @@ class InMemoryKnowledgeBase(object):
         
         return True
 
-    def append(self, calling_instance, variable_name, value):
+    def get_all_vulns(self):
         '''
-        This method appends the variable_name value to a dict.
+        @return: A list of all vulns reported by all plugins.
         '''
-        name = self._get_real_name(calling_instance)
+        return self.get_all_entries_of_class(Vuln)
 
-        with self._kb_lock:
-            if name not in self._kb:
-                self._kb[name] = {variable_name: [value]}
-            else:
-                if variable_name in self._kb[name]:
-                    self._kb[name][variable_name].append(value)
-                else:
-                    self._kb[name][variable_name] = [value]
+    def get_all_infos(self):
+        '''
+        @return: A list of all vulns reported by all plugins.
+        '''
+        return self.get_all_entries_of_class(Info)
 
-    def get(self, plugin_name, variable_name=None):
+    def get_all_shells(self):
+        '''
+        @return: A list of all vulns reported by all plugins.
+        '''
+        return self.get_all_entries_of_class(shell)
+
+    def _get_real_name(self, data):
+        if isinstance(data, basestring):
+            return data
+        else:
+            return data.get_name()
+
+    def append(self, location_a, location_b, value):
+        '''
+        This method appends the location_b value to a dict.
+        '''
+        raise NotImplementedError
+
+    def get(self, plugin_name, location_b=None):
         '''
         @param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
                                 but could also be the plugin instance.
 
-        @param variable_name: The name of the variables under which the vuln
+        @param location_b: The name of the variables under which the vuln
+                                 objects were saved. Typically the same name of
+                                 the plugin, or something like "vulns", "errors",
+                                 etc. In most cases this is NOT None. When set
+                                 to None, a dict with all the vuln objects found
+                                 by the plugin_name is returned.
+
+        @return: Returns the data that was saved by another plugin.
+        '''
+        raise NotImplementedError
+
+    def get_all_entries_of_class(self, klass):
+        '''
+        @return: A list of all objects of class == klass that are saved in the kb.
+        '''
+        raise NotImplementedError
+
+    def clear(self, location_a, location_b):
+        '''
+        Clear any values stored in (location_a, location_b)
+        '''
+        raise NotImplementedError
+    
+    def raw_write(self, location_a, location_b, value):
+        '''
+        This method saves the value to (location_a,location_b)
+        '''
+        raise NotImplementedError
+
+    def raw_read(self, location_a, location_b):
+        '''
+        This method reads the value from (location_a,location_b)
+        '''
+        raise NotImplementedError
+    
+    def dump(self):
+        raise NotImplementedError
+
+    def cleanup(self):
+        '''
+        Cleanup all internal data.
+        '''
+        raise NotImplementedError
+    
+class InMemoryKnowledgeBase(BasicKnowledgeBase):
+    '''
+    This class saves the data that is sent to it by plugins. It is the only way
+    in which plugins can exchange information.
+
+    Data is stored on memory.
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
+    '''
+    def __init__(self):
+        super(InMemoryKnowledgeBase, self).__init__()
+        self._kb = {}
+
+    def clear(self, location_a, location_b):
+        if location_a in self._kb:
+            if location_b in self._kb[location_a]:
+                del self._kb[location_a][location_b] 
+                
+    def raw_write(self, location_a, location_b, value):
+        '''
+        This method saves the value to (location_a,location_b)
+        '''
+        name = self._get_real_name(location_a)
+
+        with self._kb_lock:
+            if name not in self._kb:
+                self._kb[name] = {location_b: value}
+            else:
+                self._kb[name][location_b] = value
+
+    def append(self, location_a, location_b, value):
+        '''
+        This method appends the location_b value to a dict.
+        '''
+        name = self._get_real_name(location_a)
+
+        with self._kb_lock:
+            if name not in self._kb:
+                self._kb[name] = {location_b: [value]}
+            else:
+                if location_b in self._kb[name]:
+                    self._kb[name][location_b].append(value)
+                else:
+                    self._kb[name][location_b] = [value]
+    
+    def get(self, plugin_name, location_b=None):
+        '''
+        @param plugin_name: The plugin that saved the data to the
+                                kb.info Typically the name of the plugin,
+                                but could also be the plugin instance.
+
+        @param location_b: The name of the variables under which the vuln
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set
@@ -158,12 +259,14 @@ class InMemoryKnowledgeBase(object):
             if name not in self._kb:
                 return []
             else:
-                if variable_name is None:
+                if location_b is None:
                     return self._kb[name]
-                elif variable_name not in self._kb[name]:
+                elif location_b not in self._kb[name]:
                     return []
                 else:
-                    return self._kb[name][variable_name]
+                    return self._kb[name][location_b]
+    
+    raw_read = get
 
     def get_all_entries_of_class(self, klass):
         '''
@@ -181,24 +284,6 @@ class InMemoryKnowledgeBase(object):
                             res.append(v)
         return res
 
-    def get_all_vulns(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(Vuln)
-
-    def get_all_infos(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(Info)
-
-    def get_all_shells(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(shell)
-
     def dump(self):
         return self._kb
 
@@ -209,14 +294,8 @@ class InMemoryKnowledgeBase(object):
         with self._kb_lock:
             self._kb.clear()
 
-    def _get_real_name(self, data):
-        if isinstance(data, basestring):
-            return data
-        else:
-            return data.get_name()
 
-
-class DBKnowledgeBase(object):
+class DBKnowledgeBase(BasicKnowledgeBase):
     '''
     This class saves the data that is sent to it by plugins. It is the only way
     in which plugins can exchange information.
@@ -227,68 +306,81 @@ class DBKnowledgeBase(object):
     '''
 
     def __init__(self):
-        # TODO: Read the comment in password_profiling about performance
-        self._kb = {}
-        self._kb_lock = threading.RLock()
+        super(DBKnowledgeBase, self).__init__()
+        
+        self.urls = DiskSet()
+        self.fuzzable_requests = DiskSet()
+        
+        self.db = get_default_persistent_db_instance()
 
-    def save(self, calling_instance, variable_name, value):
+        columns = [('location_a', 'TEXT'),
+                   ('location_b', 'TEXT'),
+                   ('pickle', 'BLOB')]
+
+        self.table_name = rand_alpha(30)
+        self.db.create_table(self.table_name, columns)
+        self.db.create_index(self.table_name, ['location_a', 'location_b'])
+        self.db.commit()
+
+    def clear(self, location_a, location_b):
+        location_a = self._get_real_name(location_a)
+        
+        query = "DELETE FROM %s WHERE location_a = ? and location_b = ?"
+        params = (location_a, location_b)
+        self.db.execute(query % self.table_name, params)
+
+    def raw_write(self, location_a, location_b, value):
         '''
-        This method saves the variable_name value to a dict.
+        This method saves value to (location_a,location_b) but previously
+        clears any pre-existing values.
         '''
-        name = self._get_real_name(calling_instance)
+        if isinstance(value, Info):
+            raise TypeError('Use append or append_uniq to store vulnerabilities')
+        
+        location_a = self._get_real_name(location_a)
+        
+        self.clear(location_a, location_b)
+        self.append(location_a, location_b, value, ignore_type=True)
 
-        with self._kb_lock:
-            if name not in self._kb.keys():
-                self._kb[name] = {variable_name: value}
-            else:
-                self._kb[name][variable_name] = value
-
-    def append_uniq(self, location_a, location_b, info_inst):
+    def raw_read(self, location_a, location_b):
         '''
-        Append to a location in the KB if and only if there it no other
-        vulnerability in the same location for the same URL and parameter.
-
-        Does this in a thread-safe manner.
-
-        @return: True if the vuln was added. False if there was already a
-                 vulnerability in the KB location with the same URL and
-                 parameter.
+        This method reads the value from (location_a,location_b)
         '''
-        if not isinstance(info_inst, Info):
-            ValueError('append_unique requires an info object as parameter.')
+        location_a = self._get_real_name(location_a)
+        result = self.get(location_a, location_b)
+        
+        if len(result) > 1:
+            msg = 'Incorrect use of raw_write/raw_read, found %s.'
+            raise RuntimeError(msg % result)
+        elif len(result) == 0:
+            return []
+        else:
+            return result[0]
 
-        with self._kb_lock:
-            for saved_vuln in self.get(location_a, location_b):
-                if saved_vuln.get_var() == info_inst.get_var() and\
-                    saved_vuln.get_url() == info_inst.get_url() and \
-                        saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
-                    return False
-
-            self.append(location_a, location_b, info_inst)
-            return True
-
-    def append(self, calling_instance, variable_name, value):
+    def append(self, location_a, location_b, value, ignore_type=False):
         '''
-        This method appends the variable_name value to a dict.
+        This method appends the location_b value to a dict.
         '''
-        name = self._get_real_name(calling_instance)
+        if not ignore_type and not isinstance(value, (Info, shell)):
+            msg = 'You MUST use raw_write/raw_read to store non-info objects'\
+                  ' to the KnowledgeBase.'
+            raise TypeError(msg)
+        
+        location_a = self._get_real_name(location_a)
+        
+        pickled_obj = cPickle.dumps(value)
+        t = (location_a, location_b, pickled_obj)
+        
+        query = "INSERT INTO %s VALUES (?, ?, ?)" % self.table_name
+        self.db.execute(query, t)
 
-        with self._kb_lock:
-            if name not in self._kb.keys():
-                self._kb[name] = {variable_name: [value]}
-            else:
-                if variable_name in self._kb[name]:
-                    self._kb[name][variable_name].append(value)
-                else:
-                    self._kb[name][variable_name] = [value]
-
-    def get(self, plugin_name, variable_name=None):
+    def get(self, location_a, location_b):
         '''
-        @param plugin_name: The plugin that saved the data to the
-                                kb.info Typically the name of the plugin,
-                                but could also be the plugin instance.
+        @param location_a: The plugin that saved the data to the
+                           kb.info Typically the name of the plugin,
+                           but could also be the plugin instance.
 
-        @param variable_name: The name of the variables under which the vuln
+        @param location_b: The name of the variables under which the vuln
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set
@@ -297,69 +389,103 @@ class DBKnowledgeBase(object):
 
         @return: Returns the data that was saved by another plugin.
         '''
-        name = self._get_real_name(plugin_name)
-
-        with self._kb_lock:
-            if name not in self._kb:
-                return []
-            else:
-                if variable_name is None:
-                    return self._kb[name]
-                elif variable_name not in self._kb[name]:
-                    return []
-                else:
-                    return self._kb[name][variable_name]
+        location_a = self._get_real_name(location_a)
+        
+        if location_b is None:
+            query = 'SELECT pickle FROM %s WHERE location_a = ?'
+            params = (location_a,)
+        else:
+            query = 'SELECT pickle FROM %s WHERE location_a = ?'\
+                                           ' and location_b = ?'
+            params = (location_a, location_b)
+        
+        result_lst = []
+        
+        results = self.db.select(query % self.table_name, params)
+        for r in results:
+            obj = cPickle.loads(r[0])
+            result_lst.append(obj)
+        
+        return result_lst
 
     def get_all_entries_of_class(self, klass):
         '''
         @return: A list of all objects of class == klass that are saved in the kb.
         '''
-        res = []
+        query = 'SELECT pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+        
+        result_lst = []
 
-        with self._kb_lock:
-            for pdata in self._kb.values():
-                for vals in pdata.values():
-                    if not isinstance(vals, list):
-                        continue
-                    for v in vals:
-                        if isinstance(v, klass):
-                            res.append(v)
-        return res
-
-    def get_all_vulns(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(Vuln)
-
-    def get_all_infos(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(Info)
-
-    def get_all_shells(self):
-        '''
-        @return: A list of all vulns reported by all plugins.
-        '''
-        return self.get_all_entries_of_class(shell)
+        for r in results:
+            obj = cPickle.loads(r[0])
+            if isinstance(obj, klass):
+                result_lst.append(obj)
+        
+        return result_lst
 
     def dump(self):
-        return self._kb
+        result_dict = {}
+        
+        query = 'SELECT location_a, location_b, pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+        
+        for location_a, location_b, pickle in results:
+            obj = cPickle.loads(pickle)
+            
+            if location_a not in result_dict:
+                result_dict[location_a] = {location_b: [obj,]}
+            elif location_b not in result_dict[location_a]:
+                result_dict[location_a][location_b] = [obj,]
+            else:
+                result_dict[location_a][location_b].append(obj)
+                
+        return result_dict
 
     def cleanup(self):
         '''
         Cleanup internal data.
         '''
-        with self._kb_lock:
-            self._kb.clear()
+        self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
+        self.urls.clear()
+        self.fuzzable_requests.clear()
+    
+    def get_all_known_urls(self):
+        '''
+        @return: A DiskSet with all the known URLs as URL objects.
+        '''
+        return self.urls
+    
+    def add_url(self, url):
+        '''
+        @return: True if the URL was previously unknown 
+        '''
+        if not isinstance(url, URL):
+            msg = 'add_url requires a URL as parameter got %s instead.'
+            raise TypeError(msg % type(url))
+        
+        return self.urls.add(url)
+    
+    def get_all_known_fuzzable_requests(self):
+        '''
+        @return: A DiskSet with all the known URLs as URL objects.
+        '''
+        return self.fuzzable_requests
+    
+    def add_fuzzable_request(self, fuzzable_request):
+        '''
+        @return: True if the FuzzableRequest was previously unknown 
+        '''
+        if not isinstance(fuzzable_request, FuzzableRequest):
+            msg = 'add_fuzzable_request requires a FuzzableRequest as parameter.'\
+                  'got %s instead.'
+            raise TypeError(msg % type(fuzzable_request))
+        
+        self.add_url(fuzzable_request.get_url())
+        
+        return self.fuzzable_requests.add(fuzzable_request)
+        
 
-    def _get_real_name(self, data):
-        if isinstance(data, basestring):
-            return data
-        else:
-            return data.get_name()
-
-KnowledgeBase = InMemoryKnowledgeBase
+KnowledgeBase = DBKnowledgeBase
 
 kb = KnowledgeBase()

@@ -39,7 +39,7 @@ class TestURLFuzzer(PluginTest):
         
         expected_urls = ('/index.html', '/index.html~',
                          '/index.html.zip', '.tgz')
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         
         self.assertEquals(
             set(str(u) for u in urls),

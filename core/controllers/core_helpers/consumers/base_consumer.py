@@ -47,8 +47,8 @@ class BaseConsumer(Process):
         '''
         super(BaseConsumer, self).__init__()
 
-        self.in_queue = Queue.Queue(10)
-        self._out_queue = Queue.Queue(10)
+        self.in_queue = Queue.Queue()
+        self._out_queue = Queue.Queue()
         
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
@@ -56,7 +56,7 @@ class BaseConsumer(Process):
         self._tasks_in_progress_counter = 0
         
         if create_pool:
-            self._threadpool = Pool(5, worker_names=thread_name)
+            self._threadpool = Pool(10, worker_names=thread_name)
 
     def run(self):
         '''

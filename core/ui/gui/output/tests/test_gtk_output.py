@@ -20,27 +20,33 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-import core.data.kb.knowledge_base as kb
-
-from plugins.output.gtk_output import gtk_output
+from core.ui.gui.output.gtk_output import GtkOutput
 
 
 class TestGTKOutput(unittest.TestCase):
 
     def setUp(self):
-        self.plugin = gtk_output()
+        self.gtk_output = GtkOutput()
 
     def tearDown(self):
-        self.plugin.end()
+        self.gtk_output.end()
 
     def test_gtk_output(self):
-        self.plugin.console('1')
-        self.plugin.information('2')
-        self.plugin.vulnerability('3')
-        self.plugin.debug('4')
-        self.plugin.error('5')
+        messages = []
+        def observer(message):
+            messages.append((message.get_type(), message.get_msg()))
+            
+        self.gtk_output.subscribe(observer)
+        
+        self.gtk_output.console('1')
+        self.gtk_output.information('2')
+        self.gtk_output.vulnerability('3')
+        self.gtk_output.debug('4')
+        self.gtk_output.error('5')
 
-        gtk_output_queue = kb.kb.get('gtk_output', 'queue')
+        self.gtk_output.unsubscribe(observer)
+
+        self.gtk_output.vulnerability('ignores')
 
         EXPECTED = set([
             ('console', '1'),
@@ -50,12 +56,4 @@ class TestGTKOutput(unittest.TestCase):
             ('error', '5'), ]
         )
 
-        from_queue = set()
-        # pylint: disable=E1103
-        # E1103: Instance of 'list' has no 'qsize' member (but some types
-        # could not be inferred)
-        while gtk_output_queue.qsize() > 0:
-            msg = gtk_output_queue.get()
-            from_queue.add((msg.get_type(), msg.get_msg()))
-
-        self.assertEquals(from_queue, EXPECTED)
+        self.assertEquals(set(messages), EXPECTED)

@@ -154,7 +154,7 @@ class file_upload(AuditPlugin):
 
             # Gen expr for directories where I can search for the uploaded file
             domain_path_list = set(u.get_domain_path() for u in
-                                   kb.kb.get('urls', 'url_objects'))
+                                   kb.kb.get_all_known_urls())
 
             # FIXME: Note that in all cases where I'm using kb's url_object info
             # I'll be making a mistake if the audit plugin is run before all

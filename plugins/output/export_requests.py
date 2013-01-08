@@ -50,14 +50,14 @@ class export_requests(OutputPlugin):
         '''
         Exports a list of fuzzable requests to the user configured file.
         '''
-        fuzzable_request_list = kb.kb.get('urls', 'fuzzable_requests')
+        fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
 
         filename = self.output_file
         try:
             out_file = open(filename, 'w')
             out_file.write('HTTP-METHOD,URI,POSTDATA\n')
 
-            for fr in fuzzable_request_list:
+            for fr in fuzzable_request_set:
                 # TODO: How shall we export WebServiceRequests?
                 if not isinstance(fr, WebServiceRequest):
                     out_file.write(fr.export() + '\n')

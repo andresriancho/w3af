@@ -29,7 +29,7 @@ import core.data.kb.knowledge_base as kb
 
 from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
-from core.data.db.dbms import get_default_db_instance
+from core.data.db.dbms import get_default_temp_db_instance
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.utils import rand_alnum
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
@@ -175,7 +175,7 @@ class TestHistoryItem(unittest.TestCase):
         h1.save()
 
         table_name = h1.get_table_name()
-        db = get_default_db_instance()
+        db = get_default_temp_db_instance()
         
         self.assertTrue(db.table_exists(table_name))
         

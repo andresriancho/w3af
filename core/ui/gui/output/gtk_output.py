@@ -20,29 +20,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import time
-import Queue
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-
 from core.controllers.plugins.output_plugin import OutputPlugin
 
+DEBUG = 'debug'
+INFORMATION = 'information'
+ERROR = 'error'
+VULNERABILITY = 'vulnerability'
+CONSOLE = 'console'
+LOG_HTTP = 'log_http'
 
-class gtk_output(OutputPlugin):
+
+class GtkOutput(OutputPlugin):
     '''
-    Saves messages to kb.kb.get('gtk_output', 'queue') to be displayed in the UI.
+    This is an observer which exposes an OutputPlugin API in order to be added
+    to the output manager as one more plugin.
+    
+    Please note that this is NOT a real plugin, as it can't be enabled/disabled
+    by a user.
+    
+    Any part of the GTK ui can subscribe to the messages that this object
+    receives, and will get all data that is sent to the output manager. 
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
-        OutputPlugin.__init__(self)
-        if not kb.kb.get('gtk_output', 'queue') == []:
-            self.queue = kb.kb.get('gtk_output', 'queue')
-        else:
-            self.queue = Queue.Queue(500)
-            kb.kb.save('gtk_output', 'queue', self.queue)
-
+        self._observers = []
+        
     def debug(self, msg_string, new_line=True):
         '''
         This method is called from the output object. The output object was
@@ -50,12 +56,12 @@ class gtk_output(OutputPlugin):
         action for debug messages.
         '''
         #
-        #   I don't really want to add debug messages to the queue, as they are only used
-        #   in the time graph that's displayed under the log. In order to save some memory
-        #   I'm only creating the object, but without any msg.
+        #   I don't really want to add debug messages to the queue, as they are
+        #   only used in the time graph that's displayed under the log. In order
+        #   to save some memory. I'm only creating the object, but without any msg.
         #
-        m = message('debug', '', new_line)
-        self._addToQueue(m)
+        m = Message(DEBUG, '', new_line)
+        self._send_to_observers(m)
 
     def information(self, msg_string, new_line=True):
         '''
@@ -63,8 +69,8 @@ class gtk_output(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for informational messages.
         '''
-        m = message('information', self._clean_string(msg_string), new_line)
-        self._addToQueue(m)
+        m = Message(INFORMATION, self._clean_string(msg_string), new_line)
+        self._send_to_observers(m)
 
     def error(self, msg_string, new_line=True):
         '''
@@ -72,8 +78,8 @@ class gtk_output(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
         '''
-        m = message('error', self._clean_string(msg_string), new_line)
-        self._addToQueue(m)
+        m = Message(ERROR, self._clean_string(msg_string), new_line)
+        self._send_to_observers(m)
 
     def vulnerability(self, msg_string, new_line=True, severity=severity.MEDIUM):
         '''
@@ -81,35 +87,35 @@ class gtk_output(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
         '''
-        m = message('vulnerability', self._clean_string(msg_string), new_line)
+        m = Message(VULNERABILITY, self._clean_string(msg_string), new_line)
         m.set_severity(severity)
-        self._addToQueue(m)
+        self._send_to_observers(m)
 
     def console(self, msg_string, new_line=True):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        m = message('console', self._clean_string(msg_string), new_line)
-        self._addToQueue(m)
+        m = Message(CONSOLE, self._clean_string(msg_string), new_line)
+        self._send_to_observers(m)
 
-    def _addToQueue(self, m):
+    def _send_to_observers(self, m):
         '''
-        Adds a message object to the queue. If the queue isn't there, it creates one.
+        Adds a message object to the queue.
         '''
-        self.queue.put(m)
+        for observer in self._observers:
+            observer(m)
+    
+    def subscribe(self, observer):
+        self._observers.append(observer)
 
-    def get_long_desc(self):
-        '''
-        @return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
-        Saves messages to kb.kb.get('gtk_output', 'queue'), messages are
-        saved in the form of objects. This plugin was created to be able to
-        communicate with the gui and should be enabled if you are using it.
-        '''
+    def unsubscribe(self, observer):
+        if observer in self._observers:
+            self._observers.remove(observer)
 
+    def end(self):
+        self._observers = []
 
-class message:
+class Message(object):
     def __init__(self, msg_type, msg, new_line=True):
         '''
         @param msg_type: console, information, vulnerability, etc

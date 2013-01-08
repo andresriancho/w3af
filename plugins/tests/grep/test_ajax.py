@@ -39,7 +39,7 @@ class test_ajax(unittest.TestCase):
         self.plugin = ajax()
         self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
-        kb.kb.save('ajax', 'ajax', [])
+        kb.kb.clear('ajax', 'ajax')
 
     def tearDown(self):
         self.plugin.end()

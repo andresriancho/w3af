@@ -34,7 +34,7 @@ class test_objects(unittest.TestCase):
 
     def setUp(self):
         self.plugin = objects()
-        kb.kb.save('objects', 'objects', [])
+        kb.kb.clear('objects', 'objects')
 
     def tearDown(self):
         self.plugin.end()

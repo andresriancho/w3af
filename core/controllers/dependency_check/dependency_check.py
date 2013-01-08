@@ -53,6 +53,7 @@ def dependency_check():
     packages_debian = []
     packages_mac_ports = []
     packages_openbsd = []
+    packages_pip = []
     additional_information = []
 
     if platform.system() != 'Windows':
@@ -140,6 +141,7 @@ def dependency_check():
         from concurrent.futures import Future
     except ImportError:
         packages.append('futures')
+        packages_pip.append('futures')
         packages_debian.append('python-concurrent.futures')
         #TODO
         #packages_mac_ports.append()
@@ -217,6 +219,14 @@ def dependency_check():
                 additional_information.append(msg % scapy.config.conf.version)
                 reason_for_exit = True
     #mem_test('after scapy import')
+    
+    try:
+        import guess_language
+    except ImportError:
+        packages.append('guess_language')
+        packages_pip.append('guess-language')
+        reason_for_exit = True
+    
     # Now output the results of the dependency check
     curr_platform = platform.system().lower()
     
@@ -227,6 +237,10 @@ def dependency_check():
     if packages_debian and 'linux' in curr_platform:
         msg = 'On Debian based systems:\n'
         msg += '    sudo apt-get install ' + ' '.join(packages_debian)
+        print msg, '\n'
+    if packages_pip:
+        msg = 'After installing Python\'s pip:\n'
+        msg += '    sudo pip install ' + ' '.join(packages_pip)
         print msg, '\n'
     if packages_mac_ports and is_mac(curr_platform):
         msg = 'On Mac OSX with mac ports installed:\n'

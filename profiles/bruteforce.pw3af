@@ -5,8 +5,6 @@ name = bruteforce
 [output.console]
 verbose = True
 
-[output.gtk_output]
-
 [bruteforce.basic_auth]
 
 [bruteforce.form_auth]

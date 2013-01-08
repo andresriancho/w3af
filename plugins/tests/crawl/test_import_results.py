@@ -73,7 +73,7 @@ class TestImportResults(PluginTest):
         cfg = self._run_configs['csv']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get('urls', 'fuzzable_requests')
+        fr_list = self.kb.get_all_known_fuzzable_requests()
 
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)
@@ -96,7 +96,7 @@ class TestImportResults(PluginTest):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get('urls', 'fuzzable_requests')
+        fr_list = self.kb.get_all_known_fuzzable_requests()
 
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)
@@ -119,7 +119,7 @@ class TestImportResults(PluginTest):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get('urls', 'fuzzable_requests')
+        fr_list = self.kb.get_all_known_fuzzable_requests()
 
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)

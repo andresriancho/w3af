@@ -27,34 +27,55 @@ from core.data.kb.tests.test_info import MockInfo
 from core.data.dc.queryString import QueryString
 
 
-class test_knowledge_base(unittest.TestCase):
+class TestKnowledgeBase(unittest.TestCase):
 
     def setUp(self):
         kb.cleanup()
 
     def test_basic(self):
-        kb.save('a', 'b', 'c')
-        data = kb.get('a', 'b')
+        kb.raw_write('a', 'b', 'c')
+        data = kb.raw_read('a', 'b')
         self.assertEqual(data, 'c')
 
-    def test_default(self):
+    def test_default_get(self):
         self.assertEqual(kb.get('a', 'b'), [])
+    
+    def test_default_raw_read(self):
+        self.assertEqual(kb.raw_read('a', 'b'), [])
+
+    def test_raw_read_error(self):
+        kb.append('a', 'b', MockInfo())
+        kb.append('a', 'b', MockInfo())
+        self.assertRaises(RuntimeError, kb.raw_read,'a', 'b')
 
     def test_default_first_saved(self):
-        kb.save('a', 'b', 'c')
+        kb.raw_write('a', 'b', 'c')
         self.assertEqual(kb.get('a', 'not-exist'), [])
+        self.assertEqual(kb.raw_read('a', 'not-exist'), [])
 
     def test_return_all_for_plugin(self):
-        kb.append('a', 'b', 'c')
-        kb.append('a', 'b', 'd')
-        kb.append('a', 'b', 'e')
-        self.assertEqual(kb.get('a'), {'b': ['c', 'd', 'e']})
+        i1 = MockInfo()
+        i2 = MockInfo()
+        i3 = MockInfo()
+        
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i2)
+        kb.append('a', 'b', i3)
+        
+        self.assertEqual(kb.get('a', 'b'), [i1, i2, i3])
 
     def test_append(self):
-        kb.append('a', 'b', 1)
-        kb.append('a', 'b', 2)
-        kb.append('a', 'b', 3)
-        self.assertEqual(kb.get('a', 'b'), [1, 2, 3])
+        i1 = MockInfo()
+        i2 = MockInfo()
+        i3 = MockInfo()
+        
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i2)
+        kb.append('a', 'b', i3)
+        
+        self.assertEqual(kb.get('a', 'b'), [i1, i1, i1, i2, i3])
 
     def test_append_uniq_var_default(self):
         i1 = MockInfo()
@@ -145,23 +166,33 @@ class test_knowledge_base(unittest.TestCase):
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
         
     def test_append_save(self):
-        kb.append('a', 'b', 1)
-        kb.append('a', 'b', 2)
-        kb.save('a', 'b', 3)
-        self.assertEqual(kb.get('a', 'b'), 3)
+        i1 = MockInfo()
+        
+        kb.append('a', 'b', i1)
+        kb.raw_write('a', 'b', 3)
+        
+        self.assertEqual(kb.raw_read('a', 'b'), 3)
 
     def test_save_append(self):
-        kb.save('a', 'b', [1, ])
-        kb.append('a', 'b', 2)
-        kb.append('a', 'b', 3)
-        self.assertEqual(kb.get('a', 'b'), [1, 2, 3])
+        '''
+        Although calling raw_write and then append is highly discouraged,
+        someone would want to use it.
+        '''
+        kb.raw_write('a', 'b', 1)
+        
+        i1 = MockInfo()
+        i2 = MockInfo()
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i2)
+        
+        self.assertEqual(kb.get('a', 'b'), [1, i1, i2])
 
     def test_all_of_klass(self):
-        kb.save('a', 'b', [1, ])
+        kb.raw_write('a', 'b', 1)
         self.assertEqual(kb.get_all_entries_of_class(int), [1])
 
     def test_all_of_klass_str(self):
-        kb.append('a', 'b', 'abc')
+        kb.raw_write('a', 'b', 'abc')
         self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
     def test_dump_empty(self):
@@ -169,5 +200,17 @@ class test_knowledge_base(unittest.TestCase):
         self.assertEqual(empty, {})
 
     def test_dump(self):
-        kb.save('a', 'b', [1, ])
+        kb.raw_write('a', 'b', 1)
         self.assertEqual(kb.dump(), {'a': {'b': [1]}})
+
+    def test_clear(self):
+        kb.raw_write('a', 'b', 'abc')
+        kb.raw_write('a', 'c', 'abc')
+        kb.clear('a', 'b')
+        self.assertEqual(kb.raw_read('a', 'b'), [])
+        self.assertEqual(kb.raw_read('a', 'c'), 'abc')
+
+    def test_overwrite(self):
+        kb.raw_write('a', 'b', 'abc')
+        kb.raw_write('a', 'b', 'def')
+        self.assertEqual(kb.raw_read('a', 'b'), 'def')

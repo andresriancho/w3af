@@ -28,7 +28,7 @@ from random import choice
 from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import (get_temp_dir, create_temp_dir,
                                             remove_temp_dir)
-from core.data.db.dbms import SQLiteDBMS, get_default_db_instance
+from core.data.db.dbms import SQLiteDBMS, get_default_temp_db_instance
 
 
 def get_temp_filename():
@@ -59,7 +59,7 @@ class TestDBMS(unittest.TestCase):
         self.assertEqual( ('1', 'a'), db.select_one('SELECT * from TEST'))
 
     def test_default_db(self):
-        db = get_default_db_instance()
+        db = get_default_temp_db_instance()
         db.create_table('TEST', set([('id', 'INT'), ('data', 'TEXT')])).result()
         
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
@@ -106,6 +106,6 @@ class TestDBMS(unittest.TestCase):
         db.close()
 
 class TestDefaultDB(unittest.TestCase):
-    def test_get_default_db_instance(self):
-        self.assertEqual(id(get_default_db_instance()),
-                         id(get_default_db_instance()))    
+    def test_get_default_temp_db_instance(self):
+        self.assertEqual(id(get_default_temp_db_instance()),
+                         id(get_default_temp_db_instance()))    

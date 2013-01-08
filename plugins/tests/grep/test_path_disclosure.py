@@ -33,14 +33,16 @@ from plugins.grep.path_disclosure import path_disclosure
 class test_path_disclosure(unittest.TestCase):
 
     def setUp(self):
-        self.plugin = path_disclosure()
         kb.kb.cleanup()
-        self.url = URL('http://www.w3af.com/')
+        
+        self.plugin = path_disclosure()
+        self.url = URL('http://www.w3af.com/foo/bar.py')
         self.header = Headers([('content-type', 'text/html')])
         self.request = FuzzableRequest(self.url, method='GET')
 
     def tearDown(self):
         self.plugin.end()
+        kb.kb.cleanup()
 
     def test_path_disclosure(self):
 
@@ -60,3 +62,13 @@ class test_path_disclosure(unittest.TestCase):
 
         path = infos[0]['path']
         self.assertEqual(path, '/etc/passwd')
+
+    def test_path_disclosure_calculated_webroot(self):
+        kb.kb.add_url(self.url)
+        
+        res = HTTPResponse(200, 'header /var/www/foo/bar.py footer',
+                           self.header, self.url, self.url, _id=1)
+        self.plugin.grep(self.request, res)
+
+        webroot = kb.kb.raw_read('path_disclosure', 'webroot')
+        self.assertEqual(webroot, '/var/www')

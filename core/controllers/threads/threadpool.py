@@ -66,7 +66,7 @@ class Pool(ThreadPool):
         ThreadPool.__init__(self, processes, initializer, initargs)
     
     def _setup_queues(self):
-        self._inqueue = Queue.Queue(20)
+        self._inqueue = Queue.Queue()
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
         self._quick_get = self._outqueue.get

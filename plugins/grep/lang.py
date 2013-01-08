@@ -21,16 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import guess_language
+
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.esmre.multi_in import multi_in
-
-
-def whole_words(l):
-    return [' %s ' % w for w in l]
 
 
 class lang(GrepPlugin):
@@ -39,44 +36,13 @@ class lang(GrepPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-
-    PREPOSITIONS = {'en': multi_in(whole_words(['aboard', 'about', 'above',
-                                                'absent', 'across', 'after', 'against', 'along',
-                                                'alongside', 'amid', 'amidst', 'among',
-                                                'amongst', 'around', 'as', 'astride', 'at',
-                                                'atop', 'before', 'behind', 'below',
-                                                'beneath', 'beside', 'besides', 'between',
-                                                'beyond', 'but', 'by', 'despite', 'down',
-                                                'during', 'except', 'following', 'for',
-                                                'from', 'in', 'inside', 'into', 'like',
-                                                'mid', 'minus', 'near', 'nearest', 'notwithstanding',
-                                                'of', 'off', 'on', 'onto', 'opposite', 'out',
-                                                'outside', 'over', 'past', 're', 'round',
-                                                'save', 'since', 'than', 'through', 'throughout',
-                                                'till', 'to', 'toward', 'towards', 'under',
-                                                'underneath', 'unlike', 'until', 'up',
-                                                'upon', 'via', 'with', 'within', 'without'])),
-
-                    # The 'a' preposition was removed, cause its also used in english
-                    'es': multi_in(whole_words(['ante', 'bajo', 'cabe', 'con',
-                                                'contra', 'de', 'desde', 'en', 'entre', 'hacia',
-                                                'hasta', 'para', 'por', 'segun', 'si',
-                                                'so', 'sobre', 'tras'])),
-
-                    # Turkish
-                    # Sertan Kolat <sertan@gmail.com>
-                    'tr': multi_in(whole_words(['ancak', 'burada', 'duyuru', 'evet',
-                                                'fakat', 'gibi', 'haber', 'kadar', 'karar', 'kaynak',
-                                                'olarak', 'sayfa', 'siteye', 'sorumlu',
-                                                'tamam', 'yasak', 'zorunlu'])),
-                    }
-
     def __init__(self):
         GrepPlugin.__init__(self)
 
         # Internal variables
         self._exec = True
-
+        self._tries_left = 25
+        
     def grep(self, request, response):
         '''
         Get the page indicated by the fuzzable_request and determine the language
@@ -86,42 +52,37 @@ class lang(GrepPlugin):
         @param response: The HTTP response object
         '''
         with self._plugin_lock:
-            if self._exec and not is_404(response) and response.is_text_or_html():
-                kb.kb.save(self, 'lang', 'unknown')
-
-                matches = {}
+            if self._exec and response.is_text_or_html() and not is_404(response):
+                
                 body = response.get_clear_text_body().lower()
 
-                for lang_string, m_in_obj in self.PREPOSITIONS.iteritems():
-                    matches[lang_string] = len(m_in_obj.query(body))
+                guessed_lang = guess_language.guessLanguage(body)
 
-                # Determine who is the winner
-                def sortfunc(x, y):
-                    return cmp(y[1], x[1])
-
-                items = matches.items()
-                items.sort(sortfunc)
-
-                if items[0][1] > items[1][1] * 2:
-                    # Only run once
-                    self._exec = False
-                    identified_lang = items[0][0]
-                    om.out.information(
-                        'The page is written in: "%s".' % identified_lang)
-                    kb.kb.save(self, 'lang', identified_lang)
-
+                if guessed_lang == 'UNKNOWN':
+                    # None means "I'm still trying"
+                    kb.kb.raw_write(self, 'lang', None)
+                    
+                    # Keep running until self._tries_left is zero 
+                    self._tries_left -= 1
+                    
+                    if self._tries_left == 0:
+                        msg = 'Could not determine the site language using the'\
+                              ' first 25 HTTP responses, not enough text to make'\
+                              ' a good analysis.'
+                        om.out.debug(msg)
+                        
+                        # unknown means I'll stop testing because I don't
+                        # have any idea about the target's language
+                        kb.kb.raw_write(self, 'lang', 'unknown')
+                        
+                        self._exec = False
                 else:
-                    msg = 'Could not determine the page language using %s,'\
-                          ' not enough text to make a good analysis.'
-                    msg = msg % response.get_url()
-                    om.out.debug(msg)
-                    # Keep running until giving a good response...
-                    self._exec = True
-
-    def end(self):
-        if self._exec:
-            # I never got executed !
-            om.out.information('Could not determine the language of the site.')
+                    # Only run until we find the page language
+                    self._exec = False
+                    
+                    msg = 'The page is written in: "%s".'
+                    om.out.information(msg % guessed_lang)
+                    kb.kb.raw_write(self, 'lang', guessed_lang)
 
     def get_long_desc(self):
         '''

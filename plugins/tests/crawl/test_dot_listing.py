@@ -46,7 +46,7 @@ class TestDotListing(PluginTest):
         self.assertEqual(set([self.base_url + '.listing'] * 2),
                          set([i.get_url().url_string for i in infos]))
 
-        urls = self.kb.get('urls', 'url_objects')
+        urls = self.kb.get_all_known_urls()
         urls = [url.url_string for url in urls]
 
         self.assertTrue(self.base_url + '.listing' in urls)

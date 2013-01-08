@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.constants.common_directories import get_common_directories
 from core.data.kb.vuln import Vuln
+from core.data.db.disk_list import DiskList
 
 
 class path_disclosure(GrepPlugin):
@@ -41,9 +41,11 @@ class path_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_added = []
+        self._already_added = DiskList()
 
-        # Compile all regular expressions now
+        # Compile all regular expressions and store information to avoid
+        # multiple queries to the same function
+        self._common_directories = get_common_directories()
         self._compiled_regexes = {}
         self._compile_regex()
 
@@ -56,10 +58,11 @@ class path_disclosure(GrepPlugin):
         #    all the regular expressions in one (1|2|3|4...|N)
         #    That gave no visible result.
         #
-        for path_disclosure_string in self._get_path_disclosure_strings():
-            regex_string = '(' + path_disclosure_string + \
-                            '.*?)[^A-Za-z0-9\._\-\\/\+~]'
+        for path_disclosure_string in self._common_directories:
+            regex_string = '(%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
+            regex_string = regex_string % path_disclosure_string
             regex = re.compile(regex_string, re.IGNORECASE)
+            
             self._compiled_regexes[path_disclosure_string] = regex
 
     def _potential_disclosures(self, html_string):
@@ -76,7 +79,7 @@ class path_disclosure(GrepPlugin):
         '''
         potential_disclosures = []
 
-        for path_disclosure_string in self._get_path_disclosure_strings():
+        for path_disclosure_string in self._common_directories:
             if path_disclosure_string in html_string:
                 potential_disclosures.append(path_disclosure_string)
 
@@ -93,6 +96,13 @@ class path_disclosure(GrepPlugin):
         if not response.is_text_or_html():
             return
         
+        if self.find_path_disclosure(request, response):
+            self._update_KB_path_list()
+        
+    def find_path_disclosure(self, request, response):
+        '''
+        Actually find the path disclosure vulnerabilities
+        '''
         html_string = response.get_body()
 
         for potential_disclosure in self._potential_disclosures(html_string):
@@ -114,7 +124,7 @@ class path_disclosure(GrepPlugin):
 
                 # This if is to avoid false positives
                 if not request.sent(match) and not \
-                        self._attr_value(match, html_string):
+                self._attr_value(match, html_string):
 
                     # Check for dups
                     if (realurl, match) in self._already_added:
@@ -149,9 +159,11 @@ class path_disclosure(GrepPlugin):
                         v.set_url(realurl)
                         v['path'] = match
                         v.add_to_highlight(match)
-                        kb.kb.append(self, 'path_disclosure', v)
-
-        self._update_KB_path_list()
+                        
+                        self.kb_append(self, 'path_disclosure', v)
+                        return True
+                    
+        return False
 
     def _longest(self, a, b):
         '''
@@ -176,126 +188,64 @@ class path_disclosure(GrepPlugin):
             response_body = '...<b>Error while processing /home/image.png</b>...'
             return: False
         '''
-        regex_res = re.findall('<.+?(["|\']' + re.escape(
-            path_disclosure_string) + '["|\']).*?>', response_body)
+        regex = '<.+?(["|\']%s["|\']).*?>' % re.escape(path_disclosure_string)
+        regex_res = re.findall(regex, response_body)
         in_attr = path_disclosure_string in regex_res
         return in_attr
 
     def _update_KB_path_list(self):
         '''
-        If a path disclosure was found, I can create a list of full paths to all URLs ever visited.
-        This method updates that list.
+        If a path disclosure was found, I can create a list of full paths to
+        all URLs ever visited. This method updates that list.
         '''
         path_disc_vulns = kb.kb.get('path_disclosure', 'path_disclosure')
-        if len(path_disc_vulns) == 0:
-            # I can't calculate the list !
-            pass
-        else:
-            # Init the kb variables
-            kb.kb.save(self, 'listFiles', [])
+        url_list = kb.kb.get_all_known_urls()
+        
+        # Now I find the longest match between one of the URLs that w3af has
+        # discovered, and one of the path disclosure strings that this plugin
+        # has found. I use the longest match because with small match_list I
+        # have more probability of making a mistake.
+        longest_match = ''
+        longest_path_disc_vuln = None
+        for path_disc_vuln in path_disc_vulns:
+            for url in url_list:
+                path_and_file = url.get_path()
 
-            # Note that this list is recalculated every time a new page is accesed
-            # this is goood :P
-            url_list = kb.kb.get('urls', 'url_objects')
+                if path_disc_vuln['path'].endswith(path_and_file):
+                    if len(longest_match) < len(path_and_file):
+                        longest_match = path_and_file
+                        longest_path_disc_vuln = path_disc_vuln
 
-            # Now I find the longest match between one of the URLs that w3af has
-            # discovered, and one of the path disclosure strings that this plugin has
-            # found. I use the longest match because with small match_list I have more
-            # probability of making a mistake.
-            longest_match = ''
-            longest_path_disc_vuln = None
-            for path_disc_vuln in path_disc_vulns:
-                for url in url_list:
-                    path_and_file = url.get_path()
+        # Now I recalculate the place where all the resources are in disk, all
+        # this is done taking the longest_match as a reference, so... if we
+        # don't have a longest_match, then nothing is actually done
+        if not longest_match:
+            return
 
-                    if path_disc_vuln['path'].endswith(path_and_file):
-                        if len(longest_match) < len(path_and_file):
-                            longest_match = path_and_file
-                            longest_path_disc_vuln = path_disc_vuln
+        # Get the webroot
+        webroot = longest_path_disc_vuln['path'].replace(longest_match, '')
 
-            # Now I recalculate the place where all the resources are in disk, all this
-            # is done taking the longest_match as a reference, so... if we don't have a
-            # longest_match, then nothing is actually done
-            if longest_match:
+        #
+        # This if fixes a strange case reported by Olle
+        #         if webroot[0] == '/':
+        #         IndexError: string index out of range
+        # That seems to be because the webroot == ''
+        #
+        if not webroot:
+            return
+        
+        # Check what path separator we should use (linux / windows)
+        path_sep = '/' if webroot.startswith('/') else '\\'
 
-                # Get the webroot
-                webroot = longest_path_disc_vuln[
-                    'path'].replace(longest_match, '')
+        # Create the remote locations
+        remote_locations = []
+        for url in url_list:
+            remote_path = url.get_path().replace('/', path_sep)
+            remote_locations.append(webroot + remote_path)
+        remote_locations = list(set(remote_locations))
 
-                #
-                #   This if fixes a strange case reported by Olle
-                #           if webroot[0] == '/':
-                #           IndexError: string index out of range
-                #   That seems to be because the webroot == ''
-                #
-                if webroot:
-                    kb.kb.save(self, 'webroot', webroot)
-
-                    # Check what path separator we should use (linux / windows)
-                    if webroot[0] == '/':
-                        path_sep = '/'
-                    else:
-                        # windows
-                        path_sep = '\\'
-
-                    # Create the remote locations
-                    remote_locations = []
-                    for url in url_list:
-                        remote_path = url.get_path().replace('/', path_sep)
-                        remote_locations.append(webroot + remote_path)
-                    remote_locations = list(set(remote_locations))
-
-                    kb.kb.save(self, 'listFiles', remote_locations)
-
-    def end(self):
-        '''
-        This method is called when the plugin wont be used anymore.
-        '''
-        inform = kb.kb.get('path_disclosure', 'path_disclosure')
-
-        tmp = {}
-        ids = {}
-        for v in inform:
-            if v.get_url() in tmp.keys():
-                tmp[v.get_url()].append(v['path'])
-            else:
-                tmp[v.get_url()] = [v['path'], ]
-
-            if v['path'] in ids.keys():
-                ids[v['path']].append(v.get_id())
-            else:
-                ids[v['path']] = [v.get_id(), ]
-
-        # Avoid duplicates
-        for url in tmp.keys():
-            tmp[url] = list(set(tmp[url]))
-
-        for url in tmp.keys():
-            om.out.information('The URL: "' + url + '" has the following path disclosure problems:')
-            for path in tmp[url]:
-                to_print = '    - ' + path + ' . Found in request with'
-
-                list_of_id_list = ids[path]
-                complete_list = []
-                for list_of_id in list_of_id_list:
-                    complete_list.extend(list_of_id)
-
-                complete_list = list(set(complete_list))
-                if len(complete_list) == 1:
-                    to_print += ' id ' + str(complete_list[0]) + '.'
-                else:
-                    to_print += ' ids ' + str(complete_list)
-                om.out.information(to_print)
-
-    def _get_path_disclosure_strings(self):
-        '''
-        Return a list of regular expressions to be tested.
-        '''
-
-        path_disclosure_strings = []
-        #path_disclosure_strings.append(r"file:///?[A-Z]\|")
-        path_disclosure_strings.extend(get_common_directories())
-        return path_disclosure_strings
+        kb.kb.raw_write(self, 'list_files', remote_locations)
+        kb.kb.raw_write(self, 'webroot', webroot)
 
     def get_long_desc(self):
         '''

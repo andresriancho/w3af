@@ -34,7 +34,7 @@ class test_credit_cards(unittest.TestCase):
 
     def setUp(self):
         self.plugin = credit_cards()
-        kb.kb.save('credit_cards', 'credit_cards', [])
+        kb.kb.clear('credit_cards', 'credit_cards')
 
     def tearDown(self):
         self.plugin.end()
@@ -85,7 +85,7 @@ class test_credit_cards(unittest.TestCase):
             self.plugin.grep(request, response)
             self.assertEquals(
                 len(kb.kb.get('credit_cards', 'credit_cards')), 0)
-            kb.kb.save('credit_cards', 'credit_cards', [])
+            kb.kb.clear('credit_cards', 'credit_cards')
 
     def test_invalid_check_not_find_credit_card_spaces(self):
         body = '3566 0020 2036 0705'

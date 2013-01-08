@@ -75,9 +75,9 @@ class output_manager(Process):
         self.name = 'OutputManager'
 
         # User configured options
-        self._output_plugin_list = []
-        self._output_plugins = []
-        self._plugins_options = {}
+        self._output_plugin_instances = []
+        self._output_plugin_names = []
+        self._plugin_options = {}
 
         # Internal variables
         self.in_queue = Queue.Queue()
@@ -120,7 +120,7 @@ class output_manager(Process):
         self.in_queue.put((args, kwds))
 
     def __end_output_plugins_impl(self):
-        for o_plugin in self._output_plugin_list:
+        for o_plugin in self._output_plugin_instances:
             o_plugin.end()
 
         # This is a neat trick which basically removes all plugin references
@@ -128,12 +128,14 @@ class output_manager(Process):
         # are not required anymore (since someone is calling end_output_plugins
         # which indicates that the scan is done).
         #
-        # If the console or gtk_output plugins were enabled, I re-enable them
-        # since I don't want to loose the capability of seeing my log messages
-        # in the linux console or the message box in the GTK ui.
+        # If the console plugin was enabled, I re-enable it since I don't want
+        # to loose the capability of seeing my log messages in the console
+        #
+        # Remember that the gtk_output plugin dissapeared and was moved to
+        # core.ui.output
         currently_enabled_plugins = self.get_output_plugins()
         keep_enabled = [pname for pname in currently_enabled_plugins
-                        if pname in ('console', 'gtk_output')]
+                        if pname in ('console',)]
         self.set_output_plugins(keep_enabled)
 
     @start_thread_on_demand
@@ -149,7 +151,7 @@ class output_manager(Process):
         @param plugins_options: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
-        for o_plugin in self._output_plugin_list:
+        for o_plugin in self._output_plugin_instances:
             o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)
 
     def _call_output_plugins_action(self, actionname, *args, **kwds):
@@ -189,7 +191,7 @@ class output_manager(Process):
         ignored_plugins = kwds.pop('ignore_plugins', set())
         
         
-        for o_plugin in self._output_plugin_list:
+        for o_plugin in self._output_plugin_instances:
             
             if o_plugin.get_name() in ignored_plugins:
                 continue
@@ -198,45 +200,54 @@ class output_manager(Process):
                 opl_func_ptr = getattr(o_plugin, actionname)
                 apply(opl_func_ptr, args, kwds)
             except Exception, e:
-                if self._w3af_core is not None:
-                    # Smart error handling, much better than just crashing.
-                    # Doing this here and not with something similar to:
-                    # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework
-                    # exceptions
-                    #
-                    # FIXME: I need to import this here because of the awful
-                    #        singletons I use all over the framework. If imported
-                    #        at the top, they will generate circular import errors
-                    from core.controllers.core_helpers.status import w3af_core_status
+                if self._w3af_core is None:
+                    return
+                
+                # Smart error handling, much better than just crashing.
+                # Doing this here and not with something similar to:
+                # sys.excepthook = handle_crash because we want to handle
+                # plugin exceptions in this way, and not framework
+                # exceptions
+                #
+                # FIXME: I need to import this here because of the awful
+                #        singletons I use all over the framework. If imported
+                #        at the top, they will generate circular import errors
+                from core.controllers.core_helpers.status import w3af_core_status
 
-                    class fake_status(w3af_core_status):
-                        pass
+                class fake_status(w3af_core_status):
+                    pass
 
-                    status = fake_status()
-                    status.set_running_plugin(o_plugin.get_name(), log=False)
-                    status.set_phase('output')
-                    status.set_current_fuzzable_request('n/a')
+                status = fake_status()
+                status.set_running_plugin(o_plugin.get_name(), log=False)
+                status.set_phase('output')
+                status.set_current_fuzzable_request('n/a')
 
-                    exec_info = sys.exc_info()
-                    enabled_plugins = 'n/a'
-                    self._w3af_core.exception_handler.handle(status, e,
-                                                             exec_info, enabled_plugins)
+                exec_info = sys.exc_info()
+                enabled_plugins = 'n/a'
+                self._w3af_core.exception_handler.handle(status, e,
+                                                         exec_info,
+                                                         enabled_plugins)
 
-    def set_output_plugins(self, outputPlugins):
+    def set_output_plugin_inst(self, output_plugin_inst):
+        self._output_plugin_instances.append(output_plugin_inst)
+
+    def get_output_plugin_inst(self):
+        return self._output_plugin_instances
+        
+    def set_output_plugins(self, output_plugins):
         '''
-        @param outputPlugins: A list with the names of Output Plugins that
+        @param output_plugins: A list with the names of Output Plugins that
                                   will be used.
         @return: No value is returned.
         '''
-        self._output_plugin_list = []
-        self._output_plugins = outputPlugins
+        self._output_plugin_instances = []
+        self._output_plugin_names = output_plugins
 
-        for plugin_name in self._output_plugins:
+        for plugin_name in self._output_plugin_names:
             out._add_output_plugin(plugin_name)
 
     def get_output_plugins(self):
-        return self._output_plugins
+        return self._output_plugin_names
 
     def set_plugin_options(self, plugin_name, PluginsOptions):
         '''
@@ -246,7 +257,7 @@ class output_manager(Process):
 
         @return: No value is returned.
         '''
-        self._plugins_options[plugin_name] = PluginsOptions
+        self._plugin_options[plugin_name] = PluginsOptions
 
     def _add_output_plugin(self, OutputPluginName):
         '''
@@ -265,19 +276,19 @@ class output_manager(Process):
             for plugin_name in strReqPlugins:
                 plugin = factory('plugins.output.' + plugin_name)
 
-                if plugin_name in self._plugins_options.keys():
-                    plugin.set_options(self._plugins_options[plugin_name])
+                if plugin_name in self._plugin_options.keys():
+                    plugin.set_options(self._plugin_options[plugin_name])
 
                 # Append the plugin to the list
-                self._output_plugin_list.append(plugin)
+                self._output_plugin_instances.append(plugin)
 
         else:
             plugin = factory('plugins.output.' + OutputPluginName)
-            if OutputPluginName in self._plugins_options.keys():
-                plugin.set_options(self._plugins_options[OutputPluginName])
+            if OutputPluginName in self._plugin_options.keys():
+                plugin.set_options(self._plugin_options[OutputPluginName])
 
                 # Append the plugin to the list
-            self._output_plugin_list.append(plugin)
+            self._output_plugin_instances.append(plugin)
 
     def report_finding(self, info_inst):
         '''

@@ -65,8 +65,6 @@ description = Perform a fast scan of the target site, using only a few discovery
 
 [grep.html_comments]
 
-[output.gtk_output]
-
 [grep.form_autocomplete]
 
 [grep.ssn]

@@ -23,15 +23,12 @@ import Queue
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
-
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import return_args
-from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
-                                                             get_urls_from_kb,
-                                                             get_fuzzable_requests_from_kb)
 from core.data.db.variant_db import VariantDB
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
@@ -176,7 +173,7 @@ class crawl_infrastructure(BaseConsumer):
                 if self._is_new_fuzzable_request(plugin, fuzzable_request):
 
                     # Update the list / set that lives in the KB
-                    update_kb(fuzzable_request)
+                    kb.kb.add_fuzzable_request(fuzzable_request)
 
                     self._out_queue.put((plugin.get_name(), None,
                                          fuzzable_request))
@@ -204,16 +201,15 @@ class crawl_infrastructure(BaseConsumer):
         This method is called after the crawl and bruteforce phases finishes and
         reports identified URLs and fuzzable requests to the user.
         '''
-        if not get_fuzzable_requests_from_kb():
+        if not len(kb.kb.get_all_known_urls()):
             om.out.information('No URLs found during crawl phase.')
             return
 
         # Sort URLs
-        tmp_url_list = get_urls_from_kb()[:]
-        tmp_url_list = list(set(tmp_url_list))
+        tmp_url_list = list(set(kb.kb.get_all_known_urls()))
 
         msg = 'Found %s URLs and %s different injections points.'
-        msg = msg % (len(tmp_url_list), len(get_fuzzable_requests_from_kb()))
+        msg = msg % (len(tmp_url_list), len(kb.kb.get_all_known_fuzzable_requests()))
         om.out.information(msg)
 
         # print the URLs
@@ -226,7 +222,7 @@ class crawl_infrastructure(BaseConsumer):
         # Now I simply print the list that I have after the filter.
         om.out.information('The list of fuzzable requests is:')
         
-        tmp_fr = ['- %s' % fr for fr in get_fuzzable_requests_from_kb()]
+        tmp_fr = ['- %s' % fr for fr in kb.kb.get_all_known_fuzzable_requests()]
         tmp_fr.sort()
         map(om.out.information, tmp_fr)
 

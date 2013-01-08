@@ -108,7 +108,7 @@ class html_comments(GrepPlugin):
 
                 i = Info('Interesting HTML comment', desc,
                          response.id, self.get_name())
-                i.set_dc(request.get_dc)
+                i.set_dc(request.get_dc())
                 i.set_uri(response.get_uri())
                 i.add_to_highlight(word)
                 
@@ -135,7 +135,7 @@ class html_comments(GrepPlugin):
 
             i = Info('HTML comment contains HTML code', desc,
                      response.id, self.get_name())
-            i.set_dc(request.get_dc)
+            i.set_dc(request.get_dc())
             i.set_uri(response.get_uri())
             i.add_to_highlight(html_in_comment.group(0))
             
