@@ -33,7 +33,6 @@ class DiskSet(DiskList):
 
     def __init__(self):
         super(DiskSet, self).__init__()
-        self.__append = super(DiskSet, self).append
 
         self.lock = threading.RLock()
     
@@ -49,7 +48,7 @@ class DiskSet(DiskList):
             if self.__contains__(value):
                 return False
             else:
-                self.__append(value)
+                super(DiskSet, self).append(value)
                 return True
 
     def update(self, value_list):
@@ -62,8 +61,8 @@ class DiskSet(DiskList):
             for value in value_list:
                 self.add(value)
 
-    def extend(self, _):
-        raise Exception('Not a valid DiskSet method.')
+    def extend(self, *args):
+        raise RuntimeError('Not a valid DiskSet method.')
 
-    def append(self, _):
-        raise Exception('Not a valid DiskSet method.')
+    def append(self, *args):
+        raise RuntimeError('Not a valid DiskSet method.')
