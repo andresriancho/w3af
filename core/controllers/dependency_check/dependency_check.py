@@ -23,8 +23,6 @@ import sys
 import platform
 import warnings
 
-import core.controllers.output_manager as om
-
 from core.controllers.dependency_check.lazy_load import lazy_load
 
 
@@ -34,7 +32,6 @@ def dependency_check():
     framework core are met.
     '''
     #mem_test('at start')
-    om.out.debug('Checking core dependencies')
 
     # Check python version
     major, minor, micro, releaselevel, serial = sys.version_info

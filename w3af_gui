@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-import getopt, sys, os
+import getopt
+import sys
+import os
 import gettext
+import base64
 
 # First of all, we need to change the working directory to the directory of w3af.
 current_dir = os.getcwd()
@@ -13,6 +16,17 @@ def back_to_current_dir():
 
 # Translation stuff
 gettext.install('w3af', 'locales/')
+
+# I perform the GTK UI dependency check here
+# please note that there is also a CORE dependency check, which verifies the
+# presence of different libraries.
+# This task is done in different places because the ConsoleUI has different requirements
+# than the GTK UI.
+from core.ui.gui.dependency_check import gtkui_dependency_check
+from core.controllers.dependency_check.dependency_check import dependency_check
+
+dependency_check()
+gtkui_dependency_check()
 
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
@@ -66,12 +80,9 @@ def main():
     for o, a in opts:
         if o in ( "-e"  ):
             # easter egg
-            import base64
-            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'
-            msg += 'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
+            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'\
+                  'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
             om.out.information( base64.b64decode( msg ) )
-        if o == "-s":
-            scriptFile = a
         if o in ('-p', '--profile'):
             # selected profile
             profile = a
@@ -88,7 +99,8 @@ def main():
     if sys.platform != "win32":
         display = os.getenv("DISPLAY")
         if not display:
-            om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
+            om.out.error("The DISPLAY environment variable is not set! You can"
+                         " not use any graphical program without it...")
             return -1
     import core.ui.gui.main
     core.ui.gui.main.main(profile, doupdate)

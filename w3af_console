@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import getopt, sys, os
+import getopt
+import sys
+import os
 import gettext
  
 # First of all, we need to change the working directory to the w3af directory.
@@ -14,6 +16,10 @@ def back_to_current_dir():
 # Translation stuff
 gettext.install('w3af', 'locales/')
 
+# Check if I have all needed dependencies
+from core.controllers.dependency_check.dependency_check import dependency_check
+dependency_check()
+
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
 import core.controllers.output_manager as om
@@ -23,10 +29,6 @@ except Exception, e:
     print 'Something went wrong, w3af failed to start the output manager.'
     print 'Exception: "%s"' % e
     sys.exit(-9)
-
-# Check if I have all needed dependencies
-from core.controllers.dependency_check.dependency_check import dependency_check
-dependency_check()
 
 from core.controllers.profiling.cpu_usage import dump_cpu_usage
 from core.controllers.misc.get_w3af_version import get_w3af_version

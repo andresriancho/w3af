@@ -21,13 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
-# I perform the GTK UI dependency check here
-# please note that there is also a CORE dependency check, which verifies the
-# presence of different libraries.
-# This task is done in different places because the ConsoleUI has different requirements
-# than the GTK UI.
-from core.ui.gui import dependency_check
-dependency_check.gtkui_dependency_check()
 
 # Now that I know that I have them, import them!
 import gtk
@@ -59,7 +52,7 @@ from core.ui.gui.output.gtk_output import GtkOutput
  
 from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from core.ui.gui import export_request
-from core.ui.gui import entries, encdec, messages, logtab, pluginconfig, confpanel
+from core.ui.gui import entries, encdec, logtab, pluginconfig, confpanel
 from core.ui.gui import wizard, guardian, proxywin
 
 # This is just general info, to help people know their system and report more
