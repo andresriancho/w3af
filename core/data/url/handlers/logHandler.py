@@ -62,10 +62,6 @@ class LogHandler(urllib2.BaseHandler):
         '''
         Send the request and the response to the output manager.
         '''
-        orig_headers = request.unredirected_hdrs.items()
-        headers = Headers(orig_headers)
-        fr = create_fuzzable_request_from_request(request,
-                                                  add_headers=headers)
         if isinstance(response, HTTPResponse):
             resp = response
         else:
@@ -73,4 +69,4 @@ class LogHandler(urllib2.BaseHandler):
                                                   original_url=request.url_object)
             resp.set_id(response.id)
 
-        om.out.log_http(fr, resp)
+        om.out.log_http(request, resp)
