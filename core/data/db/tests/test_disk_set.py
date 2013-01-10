@@ -169,11 +169,14 @@ class test_DiskSet(unittest.TestCase):
     
     def test_remove_table(self):
         disk_set = DiskSet()
+        disk_set.add(1)
+        disk_set.add(2)
+        
         table_name = disk_set.table_name
         db = get_default_temp_db_instance()
         
         self.assertTrue(db.table_exists(table_name))
-        
+
         del disk_set
         
         self.assertFalse(db.table_exists(table_name))
