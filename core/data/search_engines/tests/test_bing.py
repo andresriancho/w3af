@@ -23,7 +23,7 @@ import random
 import unittest
 
 from core.data.search_engines.bing import bing
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class test_bing(unittest.TestCase):
@@ -32,7 +32,7 @@ class test_bing(unittest.TestCase):
         self.query, self.limit = random.choice([('big bang theory', 200),
                                                 ('two and half man', 37),
                                                 ('doctor house', 55)])
-        self.bing_se = bing(xUrllib())
+        self.bing_se = bing(ExtendedUrllib())
 
     def test_get_links_results(self):
         results = self.bing_se.get_n_results(self.query, self.limit)

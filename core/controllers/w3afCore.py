@@ -48,7 +48,7 @@ from core.controllers.exceptions import (w3afException, w3afMustStopException,
                                          w3afMustStopByUnknownReasonExc,
                                          w3afMustStopByUserRequest)
 
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.data.kb.knowledge_base import kb
 
 
@@ -98,7 +98,7 @@ class w3afCore(object):
         om.out.set_w3af_core(self)
         
         # Create the URI opener object
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
                 
     def scan_start_hook(self):
         '''
@@ -339,7 +339,7 @@ class w3afCore(object):
             # from the history in their end() method. 
             om.out.end_output_plugins()
             
-            # End the xUrllib (clear the cache and close connections)
+            # End the ExtendedUrllib (clear the cache and close connections)
             #
             # A new instance will be created at exploit_phase_prerequisites so that
             # we can perform some exploitation.
@@ -373,7 +373,7 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         '''
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         self._create_worker_pool()
 
     def _home_directory(self):

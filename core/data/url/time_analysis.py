@@ -56,7 +56,7 @@ class time_analysis:
 
         @param uri: This is the url to register.
         @param method: GET/POST
-        @param dc: This is the data container that xUrllib is going to send.
+        @param dc: This is the data container that ExtendedUrllib is going to send.
         @return: No value is returned.
         '''
         if self._numberOfRequests < AVERAGE_CALCULATION:
@@ -73,7 +73,7 @@ class time_analysis:
 
         @param uri: This is the url to register.
         @param method: GET/POST
-        @param dc: This is the data container that xUrllib is going to send.
+        @param dc: This is the data container that ExtendedUrllib is going to send.
         @return: No value is returned.
         '''
         if self._numberOfRequests < AVERAGE_CALCULATION:
@@ -101,7 +101,7 @@ class time_analysis:
 
         @param uri: This is the url to register.
         @param method: GET/POST
-        @param dc: This is the data container that xUrllib is going to send.
+        @param dc: This is the data container that ExtendedUrllib is going to send.
         @return: No value is returned.
         '''
         if (uri, method, str(dc)) not in self._outgoingRequests.keys():

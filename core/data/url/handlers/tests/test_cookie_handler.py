@@ -25,7 +25,7 @@ import urllib2
 from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.parsers.url import URL
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestCookieHandler(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestCookieHandler(unittest.TestCase):
         self.assertTrue('Cookie was sent.' in with_cookie_res)
 
     def test_xurllib(self):
-        uri_opener = xUrllib()
+        uri_opener = ExtendedUrllib()
         uri_opener.GET(self.URL_SENDS_COOKIE)
 
         resp = uri_opener.GET(self.URL_CHECK_COOKIE, cookies=True)

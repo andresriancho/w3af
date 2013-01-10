@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.url.opener_settings import OpenerSettings
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.data.parsers.url import URL
 
 
@@ -31,17 +31,17 @@ class TestXUrllibIntegration(unittest.TestCase):
     MOTH_MESSAGE = 'Welcome to the moth homepage!'
 
     def setUp(self):
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         
     def test_ntlm_auth_not_configured(self):
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('Must authenticate.', http_response.body)
 
     def test_ntlm_auth_valid_creds(self):
         
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         
         settings = OpenerSettings()
         options = settings.get_options()

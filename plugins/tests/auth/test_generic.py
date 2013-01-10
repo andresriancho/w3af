@@ -23,7 +23,7 @@ from nose.plugins.attrib import attr
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.parsers.url import URL
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestGeneric(PluginTest):
@@ -104,7 +104,7 @@ class TestGeneric(PluginTest):
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else
-        uri_opener = xUrllib()
+        uri_opener = ExtendedUrllib()
         login_url = URL(self.demo_testfire + 'login.aspx')
         try:
             res = uri_opener.GET(login_url)

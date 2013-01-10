@@ -266,6 +266,16 @@ class Info(dict):
 
     def __repr__(self):
         return '<info object for issue: "' + self._desc + '">'
+    
+    def __eq__(self, other):
+        return self.get_uri() == other.get_uri() and\
+               self.get_method() == other.get_method() and\
+               self.get_var() == other.get_var() and\
+               self.get_dc() == other.get_dc() and\
+               self.get_id() == other.get_id() and\
+               self.get_name() == other.get_name() and\
+               self.get_desc() == other.get_desc() and\
+               self.get_plugin_name() == other.get_plugin_name()
 
     def set_id(self, _id):
         '''

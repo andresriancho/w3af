@@ -26,7 +26,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.data.search_engines.google import (google, GAjaxSearch,
                                              GStandardSearch, GMobileSearch,
                                              FINISHED_OK, IS_NEW)
@@ -49,7 +49,7 @@ class test_google(unittest.TestCase):
         self.query, self.limit = random.choice([('big bang theory', 20),
                                                 ('two and half man', 20),
                                                 ('doctor house', 20)])
-        opener = xUrllib()
+        opener = ExtendedUrllib()
         self.gse = google(opener)
 
     def test_get_links_results_len(self):
@@ -94,7 +94,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
     COUNT = 10
     
     def setUp(self):
-        self.opener = xUrllib()
+        self.opener = ExtendedUrllib()
 
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:

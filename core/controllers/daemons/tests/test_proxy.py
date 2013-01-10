@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import unittest
 
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 
@@ -38,7 +38,7 @@ class TestProxy(unittest.TestCase):
 
         for port in xrange(self.PORT, self.PORT + 10):
             try:
-                self._proxy = Proxy(self.IP, port, xUrllib(), w3afProxyHandler)
+                self._proxy = Proxy(self.IP, port, ExtendedUrllib(), w3afProxyHandler)
                 self._proxy.start()
             except Exception, e:
                 last_exception = e

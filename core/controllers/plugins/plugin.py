@@ -202,7 +202,7 @@ class Plugin(Configurable):
 
 class UrlOpenerProxy(object):
     '''
-    Proxy class for urlopener objects such as xUrllib instances.
+    Proxy class for urlopener objects such as ExtendedUrllib instances.
     '''
 
     def __init__(self, url_opener, plugin_inst):

@@ -29,7 +29,7 @@ import core.controllers.output_manager as om
 from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from core.controllers.exceptions import w3afException
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class w3afLocalProxyHandler(w3afProxyHandler):
@@ -169,7 +169,7 @@ class LocalProxy(Proxy):
     interface to perform all its magic ;)
     '''
 
-    def __init__(self, ip, port, urlOpener=xUrllib(),
+    def __init__(self, ip, port, urlOpener=ExtendedUrllib(),
                  proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
         @param ip: IP address to bind
@@ -272,7 +272,7 @@ class LocalProxy(Proxy):
             'Timed out waiting for response from remote server.')
 
 if __name__ == '__main__':
-    lp = LocalProxy('127.0.0.1', 8080, xUrllib())
+    lp = LocalProxy('127.0.0.1', 8080, ExtendedUrllib())
     lp.start()
 
     for i in xrange(10):

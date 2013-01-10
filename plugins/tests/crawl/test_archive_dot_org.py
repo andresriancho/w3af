@@ -22,7 +22,7 @@ from core.controllers.exceptions import w3afRunOnce
 
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 from plugins.crawl.archive_dot_org import archive_dot_org
 from plugins.tests.helper import PluginTest, PluginConfig
@@ -66,7 +66,7 @@ class TestArchiveDotOrg(PluginTest):
         fr = FuzzableRequest(url, method='GET')
 
         ado = archive_dot_org()
-        uri_opener = xUrllib()
+        uri_opener = ExtendedUrllib()
         ado.set_url_opener(uri_opener)
 
         self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)

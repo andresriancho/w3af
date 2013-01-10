@@ -57,24 +57,6 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
 
     @return: The payload result.
     '''
-    if shell_obj is None:
-        #
-        #    I have to go to the KB, and filter the shell objects that are
-        #    available there using the syscalls they provide and the syscalls
-        #    I need.
-
-        # FIXME: The import needs to be here
-        import core.data.kb.knowledge_base as kb
-
-        available_shells = kb.kb.get_all_shells()
-        for shell in available_shells:
-            if payload_name in runnable_payloads(shell):
-                shell_obj = shell
-                break
-
-    #
-    #    Now that I have everything ready, lets run the payload
-    #
     payload_inst = get_payload_instance(payload_name, shell_obj)
     if use_api:
         result = payload_inst.run_api(*args)

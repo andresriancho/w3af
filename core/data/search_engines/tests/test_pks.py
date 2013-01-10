@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.search_engines.pks import pks
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.controllers.misc.temp_dir import create_temp_dir
 
 
@@ -30,7 +30,7 @@ class test_pks(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
-        self.pks_se = pks(xUrllib())
+        self.pks_se = pks(ExtendedUrllib())
 
     def test_get_result(self):
         result = self.pks_se.search('bonsai-sec.com')

@@ -26,7 +26,7 @@ import Queue
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
 
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 from core.data.parsers.url import URL
 from core.data.dc.data_container import DataContainer
 
@@ -41,7 +41,7 @@ class TestXUrllib(unittest.TestCase):
     MOTH_MESSAGE = 'Welcome to the moth homepage!'
 
     def setUp(self):
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
     
     def tearDown(self):
         self.uri_opener.end()

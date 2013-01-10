@@ -1,5 +1,5 @@
 '''
-ReadShell.py
+read_shell.py
 
 Copyright 2010 Andres Riancho
 
@@ -137,7 +137,8 @@ class ReadShell(Shell):
 
     def _identify_os(self):
         '''
-        Identify the remote operating system by reading different files from the OS.
+        Identify the remote operating system by reading different files from
+        the OS.
         '''
         self._rOS = read_os_detection(self.read)
         # TODO: Could we determine this by calling some payloads?

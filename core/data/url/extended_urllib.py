@@ -1,5 +1,5 @@
 '''
-xUrllib.py
+ExtendedUrllib.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,6 +29,7 @@ import urllib
 import urllib2
 import sqlite3
 
+from contextlib import contextmanager
 from collections import deque
 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
                   ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
@@ -57,7 +58,7 @@ from core.data.url.handlers.cache import CachedResponse
 from core.data.dc.headers import Headers
 
 
-class xUrllib(object):
+class ExtendedUrllib(object):
     '''
     This is a urllib2 wrapper.
 
@@ -89,7 +90,8 @@ class xUrllib(object):
         When the core wants to pause a scan, it calls this method, in order to
         freeze all actions
 
-        @param pause_yes_no: True if I want to pause the scan; False to un-pause it.
+        @param pause_yes_no: True if I want to pause the scan;
+                             False to un-pause it.
         '''
         self._user_paused = pause_yes_no
 
@@ -141,7 +143,7 @@ class xUrllib(object):
 
     def end(self):
         '''
-        This method is called when the xUrllib is not going to be used anymore.
+        This method is called when the ExtendedUrllib is not going to be used anymore.
         '''
         self.clear()
         self.settings.clear_cookies()
@@ -193,7 +195,7 @@ class xUrllib(object):
 
     def send_raw_request(self, head, postdata, fix_content_len=True):
         '''
-        In some cases the xUrllib user wants to send a request that was typed
+        In some cases the ExtendedUrllib user wants to send a request that was typed
         in a textbox or is stored in a file. When something like that happens,
         this library allows the user to send the request by specifying two
         parameters for the send_raw_request method:
@@ -272,22 +274,6 @@ class xUrllib(object):
 
         return res
 
-    def raise_size_limit(self, respect_size_limit):
-        '''
-        TODO: This is an UGLY hack that allows me to download oversized files,
-              but it shouldn't be implemented like this! It should look more
-              like the follow_redir parameter.
-        '''
-        if not respect_size_limit:
-            original_size = cf.cf.get('max_file_size')
-            cf.cf.save('max_file_size', 10 ** 10)
-            return
-
-    def lower_size_limit(self, respect_size_limit, original_size):
-        if not respect_size_limit:
-            # restore the original value
-            cf.cf.save('max_file_size', original_size)
-
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
@@ -308,26 +294,20 @@ class xUrllib(object):
         @return: An HTTPResponse object.
         '''
         if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of xUrllib.GET() must be of '
+            raise TypeError('The uri parameter of ExtendedUrllib.GET() must be of '
                             'url.URL type.')
 
         if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of xUrllib.GET() must be of '
+            raise TypeError('The header parameter of ExtendedUrllib.GET() must be of '
                             'Headers type.')
 
         # Validate what I'm sending, init the library (if needed) and check
         # blacklists.
-        #
         self._init()
 
         if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
 
-        original_max = self.raise_size_limit(respect_size_limit)
-
-        #
-        # Create and send the request
-        #
         if data:
             uri = uri.copy()
             uri.querystring = data
@@ -336,14 +316,8 @@ class xUrllib(object):
                           cache=cache)
         req = self._add_headers(req, headers)
 
-        try:
-            http_response = self._send(req, grep=grep)
-        except:
-            self.lower_size_limit(respect_size_limit, original_max)
-            raise
-        else:
-            self.lower_size_limit(respect_size_limit, original_max)
-            return http_response
+        with raise_size_limit(respect_size_limit):
+            return self._send(req, grep=grep)
 
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -361,7 +335,7 @@ class xUrllib(object):
         elif isinstance(uri, HTTPRequest):
             req = uri
         else:
-            msg = 'The uri parameter of xUrllib._new_content_resp() has to be'\
+            msg = 'The uri parameter of ExtendedUrllib._new_content_resp() has to be'\
                   ' of HTTPRequest of URL type.'
             raise Exception(msg)
 
@@ -388,11 +362,11 @@ class xUrllib(object):
         @return: An HTTPResponse object.
         '''
         if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of xUrllib.POST() must be of '
+            raise TypeError('The uri parameter of ExtendedUrllib.POST() must be of '
                             'url.URL type.')
 
         if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of xUrllib.POST() must be of '
+            raise TypeError('The header parameter of ExtendedUrllib.POST() must be of '
                             'Headers type.')
 
         #    Validate what I'm sending, init the library (if needed) and check
@@ -437,20 +411,21 @@ class xUrllib(object):
                 if resource_length.isdigit():
                     resource_length = int(resource_length)
                 else:
-                    msg = 'The content length header value of the response wasn\'t an integer...'
-                    msg += ' this is strange... The value is: "' + \
-                        res.get_headers()[i] + '"'
-                    om.out.error(msg)
+                    msg = 'The content length header value of the response'\
+                          ' wasn\'t an integer, this is strange... The value'\
+                          ' is: "%s".'
+                    om.out.error(msg % res.get_headers()[i])
                     raise w3afException(msg)
 
         if resource_length is not None:
             return resource_length
         else:
-            msg = 'The response didn\'t contain a content-length header. Unable to return the'
-            msg += ' remote file size of request with id: ' + str(res.id)
+            msg = 'The response didn\'t contain a content-length header.'\
+                  ' Unable to return the remote file size of request with'\
+                  ' id: %s' % res.id
             om.out.debug(msg)
-            # I prefer to fetch the file, before this om.out.debug was a "raise w3afException",
-            # but this didnt make much sense
+            # I prefer to fetch the file, before this om.out.debug was a
+            # "raise w3afException", but this didnt make much sense
             return 0
 
     def __getattr__(self, method_name):
@@ -618,7 +593,7 @@ class xUrllib(object):
             msg = ('%s %s returned HTTP code "%s"' %
                    (req.get_method(), original_url, NO_CONTENT))
             om.out.debug(msg)
-            om.out.debug('Unhandled exception in xUrllib._send(): %s' % e)
+            om.out.debug('Unhandled exception in ExtendedUrllib._send(): %s' % e)
             om.out.debug(traceback.format_exc())
 
             # Clear the log of failed requests; this request is done!
@@ -741,7 +716,7 @@ class xUrllib(object):
 
         with self._count_lock:
             if errtotal >= 10 and not self._error_stopped:
-                # Stop using xUrllib instance
+                # Stop using ExtendedUrllib instance
                 self.stop()
                 # Known reason errors. See errno module for more info on these
                 # errors.
@@ -857,3 +832,20 @@ class xUrllib(object):
                                                     )
 
             self._grep_queue_put((fr, response))
+
+@contextmanager
+def raise_size_limit(respect_size_limit):
+    '''
+    TODO: This is an UGLY hack that allows me to download oversized files,
+          but it shouldn't be implemented like this! It should look more
+          like the follow_redir parameter.
+    '''
+    if not respect_size_limit:
+        original_size = cf.cf.get('max_file_size')
+        cf.cf.save('max_file_size', 10 ** 10)
+    
+        yield
+
+        cf.cf.save('max_file_size', original_size)
+    else:
+        yield

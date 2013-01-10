@@ -104,7 +104,7 @@ class blind_sqli_time_delay(object):
         #                 response.get_wait_time() > (original_wait_time + self._wait_time-2):
         #
         # With a small wait time of 5 seconds, this should work without problems...
-        # and without hitting the xUrllib timeout !
+        # and without hitting the ExtendedUrllib timeout !
         #
         #    TODO: Need to implement variable_delay.py (modification of ExactDelay)
         #          and use the following there:

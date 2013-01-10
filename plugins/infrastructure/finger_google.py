@@ -118,7 +118,7 @@ class finger_google(InfrastructurePlugin):
             response = self._uri_opener.GET(gpuri, cache=True,
                                             grep=grep_res)
         except w3afException, w3:
-            msg = 'xUrllib exception raised while fetching page in finger_google,'
+            msg = 'ExtendedUrllib exception raised while fetching page in finger_google,'
             msg += ' error description: ' + str(w3)
             om.out.debug(msg)
             self._newAccounts = []

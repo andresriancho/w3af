@@ -189,10 +189,13 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
 
+            generated_shells = []
+
             # Try to get a shell using a vuln
             s = self._generate_shell(vuln)
             if s is not None:
-                kb.kb.append(self, 'shell', s)
+                kb.kb.append(self.get_name(), 'shell', s)
+                generated_shells.append(s)
                 om.out.console('Vulnerability successfully exploited.'
                                ' Generated shell object %s' % s)
                 if self._generate_only_one:
@@ -203,7 +206,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                     # this is done 5 lines before this comment
                     pass
 
-        return kb.kb.get(self.get_name(), 'shell')
+        return generated_shells
 
     def get_plugin_deps(self):
         '''

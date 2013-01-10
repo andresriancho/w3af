@@ -26,7 +26,7 @@ from plugins.tests.helper import PluginTest, PluginConfig
 class TestAllowedMethods(PluginTest):
     '''
     Note that this is a smoke test because the code in allowed_methods calls
-    custom/special methods on the remote server using xUrllib and that's something
+    custom/special methods on the remote server using ExtendedUrllib and that's something
     we want to make sure works.
     '''
     modsecurity_url = 'http://modsecurity/'

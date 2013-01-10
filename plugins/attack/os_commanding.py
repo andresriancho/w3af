@@ -88,7 +88,7 @@ class os_commanding(AttackPlugin):
         '''
         # The vuln was saved to the kb as:
         # kb.kb.append( self, 'os_commanding', v )
-        exploitDc = vuln.get_dc()
+        exploit_dc = vuln.get_dc()
 
         # Define a test command:
         rand = rand_alpha(8)
@@ -102,9 +102,9 @@ class os_commanding(AttackPlugin):
 
         # Lets define the result header and footer.
         func_ref = getattr(self._uri_opener, vuln.get_method())
-        exploitDc[vuln.get_var()] = command
+        exploit_dc[vuln.get_var()] = command
         try:
-            response = func_ref(vuln.get_url(), str(exploitDc))
+            response = func_ref(vuln.get_url(), str(exploit_dc))
         except w3afException, e:
             om.out.error(str(e))
             return False

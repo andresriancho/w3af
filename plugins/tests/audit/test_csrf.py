@@ -27,7 +27,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestCSRF(PluginTest):
@@ -67,7 +67,7 @@ class TestCSRF(PluginTest):
 
     def test_is_suitable(self):
         x = csrf()
-        uri_opener = xUrllib()
+        uri_opener = ExtendedUrllib()
         x.set_url_opener(uri_opener)
 
         url = URL('http://www.w3af.com/')

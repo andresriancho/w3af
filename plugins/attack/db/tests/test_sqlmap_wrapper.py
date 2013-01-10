@@ -24,7 +24,7 @@ import unittest
 
 from plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
 from core.data.parsers.url import URL
-from core.data.url.xUrllib import xUrllib
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestSQLMapWrapper(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         uri = URL(self.SQLI_GET)
         target = Target(uri)
         
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         
         self.sqlmap = SQLMapWrapper(target, self.uri_opener)
     
@@ -74,7 +74,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         uri = URL(self.SSL_SQLI_GET)
         target = Target(uri)
         
-        self.uri_opener = xUrllib()
+        self.uri_opener = ExtendedUrllib()
         
         self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         vulnerable = self.sqlmap.is_vulnerable()

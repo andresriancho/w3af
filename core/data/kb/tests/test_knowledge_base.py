@@ -21,11 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from core.controllers.threads.threadpool import Pool
+
 from core.data.parsers.url import URL
 from core.data.kb.knowledge_base import kb, DBKnowledgeBase
 from core.data.kb.tests.test_info import MockInfo
+from core.data.kb.tests.test_vuln import MockVuln
+from core.data.kb.shell import Shell
 from core.data.dc.queryString import QueryString
 from core.data.db.dbms import get_default_persistent_db_instance
+from core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestKnowledgeBase(unittest.TestCase):
@@ -228,4 +233,52 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertFalse(db.table_exists(table_name))
         
+    def test_pickleable_info(self):
+        original_info = MockInfo()
         
+        kb.append('a', 'b', original_info)
+        unpickled_info = kb.get('a', 'b')[0]
+        
+        self.assertEqual(original_info, unpickled_info)
+
+    def test_pickleable_vuln(self):
+        original_vuln = MockVuln()
+        
+        kb.append('a', 'b', original_vuln)
+        unpickled_vuln = kb.get('a', 'b')[0]
+        
+        self.assertEqual(original_vuln, unpickled_vuln)
+        
+    def test_pickleable_shells(self):
+        pool = Pool(1)
+        xurllib = ExtendedUrllib()
+        
+        original_shell = Shell(MockVuln(), xurllib, pool)
+        
+        kb.append('a', 'b', original_shell)
+        unpickled_shell = kb.get('a', 'b')[0]
+        
+        self.assertEqual(original_shell, unpickled_shell)
+        self.assertEqual(unpickled_shell.worker_pool, None)
+        self.assertEqual(unpickled_shell._uri_opener, None)
+        
+        pool.terminate()
+        pool.join()
+        
+    def test_pickleable_shells_get_all(self):
+        class FakeCore(object):
+            worker_pool = Pool(1)
+            uri_opener = ExtendedUrllib()
+        
+        core = FakeCore()
+        original_shell = Shell(MockVuln(), core.uri_opener, core.worker_pool)
+        
+        kb.append('a', 'b', original_shell)
+        unpickled_shell = list(kb.get_all_shells(core))[0]
+        
+        self.assertEqual(original_shell, unpickled_shell)
+        self.assertEqual(unpickled_shell.worker_pool, core.worker_pool)
+        self.assertEqual(unpickled_shell._uri_opener, core.uri_opener)
+        
+        core.worker_pool.terminate()
+        core.worker_pool.join()

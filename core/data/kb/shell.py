@@ -39,8 +39,8 @@ class Shell(ExploitResult):
         if not isinstance(vuln, Vuln):
             raise TypeError('Expected Vuln instance in Shell ctor.')
         
-        self._uri_opener = uri_opener
-        self.worker_pool = worker_pool
+        self.set_url_opener(uri_opener)
+        self.set_worker_pool(worker_pool)
         self._vuln = vuln
         
         self._rOS = None
@@ -74,6 +74,12 @@ class Shell(ExploitResult):
 
     def get_url_opener(self):
         return self._uri_opener
+
+    def set_worker_pool(self, worker_pool):
+        self.worker_pool = worker_pool
+    
+    def get_worker_pool(self):
+        return self.worker_pool
 
     def help(self, command):
         '''
@@ -276,3 +282,23 @@ class Shell(ExploitResult):
     
     def __getitem__(self, key):
         return self._vuln[key]
+
+    def __reduce__(self):
+        '''
+        This basically means:
+            * The constructor for this Class is self.__class__
+            * The parameters for that constructor are:
+                - A vulnerability
+                - None: replacing the ExtendedUrllib we don't want to pickle
+                - None: replacing the Pool we don't want to pickle
+        
+        When unpickling cPickle will create the Shell using:
+            Shell(vuln, None, None)
+        
+        So, the UI has the responsibility to assign a ExtendedUrllib and a
+        Pool to the Shell before it is used again.
+        '''
+        return self.__class__, (self._vuln, None, None)
+    
+    def __eq__(self, other):
+        return self._vuln == other._vuln

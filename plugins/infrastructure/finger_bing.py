@@ -84,7 +84,7 @@ class finger_bing(InfrastructurePlugin):
             # Just ignore it
             pass
         except w3afException, w3:
-            msg = 'xUrllib exception raised while fetching page in finger_bing,'
+            msg = 'ExtendedUrllib exception raised while fetching page in finger_bing,'
             msg += ' error description: ' + str(w3)
             om.out.debug(msg)
         else:
