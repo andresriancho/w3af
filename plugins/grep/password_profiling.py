@@ -27,6 +27,7 @@ import core.data.kb.knowledge_base as kb
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.factory import factory
+from core.data.constants.common_words import common_words
 
 
 class password_profiling(GrepPlugin):
@@ -35,16 +36,7 @@ class password_profiling(GrepPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    COMMON_WORDS = {'en': set(['type', 'that', 'from', 'this', 'been', 'there',
-                               'which', 'line', 'error', 'warning', 'file',
-                               'fatal', 'failed', 'open', 'such', 'required',
-                               'directory', 'valid', 'result', 'argument',
-                               'there', 'some']),
-
-                    'es': set(['otro', 'otra', 'para', 'pero', 'hacia', 'algo',
-                               'poder', 'error']),
-
-                    }
+    COMMON_WORDS = common_words
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
 
     BANNED_WORDS = set(['forbidden', 'browsing', 'index'])
