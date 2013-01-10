@@ -26,12 +26,12 @@ import core.controllers.output_manager as om
 
 from core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
 from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
-from core.data.kb.shell import shell
+from core.data.kb.shell import Shell
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
-class ExecShell(shell):
+class ExecShell(Shell):
     '''
     This class represents a shell where users can execute commands in the remote
     operating system and get the output back.

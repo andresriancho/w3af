@@ -29,7 +29,7 @@ from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
-from core.data.kb.shell import shell
+from core.data.kb.shell import Shell
 
 
 class BasicKnowledgeBase(object): 
@@ -129,7 +129,7 @@ class BasicKnowledgeBase(object):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(shell)
+        return self.get_all_entries_of_class(Shell)
 
     def _get_real_name(self, data):
         if isinstance(data, basestring):
@@ -361,7 +361,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         '''
         This method appends the location_b value to a dict.
         '''
-        if not ignore_type and not isinstance(value, (Info, shell)):
+        if not ignore_type and not isinstance(value, (Info, Shell)):
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
             raise TypeError(msg)

@@ -26,14 +26,13 @@ from core.data.kb.vuln import Vuln
 from core.data.kb.exploit_result import ExploitResult
 
 
-class shell(ExploitResult):
+class Shell(ExploitResult):
     '''
     This class represents the output of an attack plugin that gives a shell to
     the w3af user.
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-
     def __init__(self, vuln, uri_opener, worker_pool):
         ExploitResult.__init__(self)
         

@@ -36,7 +36,7 @@ from core.controllers.exceptions import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.data.kb.exec_shell import ExecShell
-from core.data.kb.shell import shell as shell
+from core.data.kb.shell import Shell
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
@@ -374,7 +374,7 @@ class rfi(AttackPlugin):
         '''
 
 
-class PortScanShell(shell):
+class PortScanShell(Shell):
     '''
     I create this shell when for some reason I was unable to create the
     RFIShell, AND the "include()" method is showing errors, allowing me to

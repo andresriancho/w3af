@@ -25,7 +25,6 @@ from mock import MagicMock
 from plugins.attack.payloads.base_payload import Payload
 from plugins.attack.payloads.payloads.tests.test_payload_handler import (FakeReadShell,
                                                                          FakeExecShell)
-from core.data.kb.shell import shell
 
 
 class TestBasePayload(unittest.TestCase):

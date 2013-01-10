@@ -30,7 +30,7 @@ import core.controllers.output_manager as om
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.threads.threadpool import return_args
 from core.controllers.exceptions import w3afException
-from core.data.kb.shell import shell
+from core.data.kb.shell import Shell
 
 ERROR_MSG = 'Empty Path Expression'
 XML_FILTER = '//*'
@@ -235,7 +235,7 @@ class xpath(AttackPlugin):
         '''
 
 
-class XPathReader(shell):
+class XPathReader(Shell):
 
     def __init__(self, vuln, uri_opener, worker_pool, str_delim,
                  true_xpath, is_error_resp):

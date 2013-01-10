@@ -23,12 +23,12 @@ import textwrap
 
 import core.controllers.output_manager as om
 
-from core.data.kb.shell import shell
+from core.data.kb.shell import Shell
 from core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
-class ReadShell(shell):
+class ReadShell(Shell):
     '''
     This class represents a shell that can only read files from the remote system.
 
