@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
-import msgpack
 
 from nose.plugins.attrib import attr
 
@@ -165,16 +164,3 @@ class TestFuzzableRequest(unittest.TestCase):
         r = FuzzableRequest(url)
         self.assertEqual(r.get_url(), url)
     
-    def test_to_from_dict(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        dc = DataContainer()
-        dc['a'] = ['1',]
-        fr.set_dc(dc)
-        
-        msg = msgpack.dumps(fr.to_dict())
-        loaded_fr = msgpack.loads(msg)
-        
-        self.assertEqual(fr, loaded_fr)
-        self.assertEqual(fr.__dict__.values(),
-                         loaded_fr.__dict__.values())
-        

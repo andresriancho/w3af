@@ -171,6 +171,7 @@ def create_fuzzable_request_from_request(request, add_headers=None):
     post_data = str(request.get_data() or '')
     method = request.get_method()
     headers = Headers(request.headers.items())
+    headers.update(request.unredirected_hdrs.items())
     headers.update(add_headers or Headers())
 
     return create_fuzzable_request_from_parts(url, method=method,

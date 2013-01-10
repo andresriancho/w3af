@@ -31,11 +31,11 @@ from core.controllers.exceptions import DBException
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.dbms import get_default_temp_db_instance
 from core.data.db.history import HistoryItem
+from core.data.dc.headers import Headers
 from core.data.fuzzer.utils import rand_alnum
-from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
 from core.data.parsers.url import URL
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.dc.headers import Headers
+from core.data.url.HTTPRequest import HTTPRequest
 
 
 @attr('smoke')
@@ -68,7 +68,7 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.org/a/b/foobar.php?foo=123')
         tag_value = rand_alnum(10)
         for i in xrange(0, 500):
-            fr = FuzzReq(url, dc={'a': ['1']})
+            request = HTTPRequest(url, data='a=1')
             code = 200
             if i == find_id:
                 code = 302
@@ -76,7 +76,7 @@ class TestHistoryItem(unittest.TestCase):
             hdr = Headers([('Content-Type', 'text/html')])
             res = HTTPResponse(code, '<html>', hdr, url, url)
             h1 = HistoryItem()
-            h1.request = fr
+            h1.request = request
             res.set_id(i)
             h1.response = res
             if i == find_id:
@@ -104,11 +104,11 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.org/a/b/c.php')
         
         for i in xrange(0, 500):
-            fr = FuzzReq(url, dc={'a': ['1']})
+            request = HTTPRequest(url, data='a=1')
             hdr = Headers([('Content-Type', 'text/html')])
             res = HTTPResponse(200, '<html>', hdr, url, url)
             h1 = HistoryItem()
-            h1.request = fr
+            h1.request = request
             res.set_id(i)
             h1.response = res
             if i == mark_id:
@@ -126,11 +126,11 @@ class TestHistoryItem(unittest.TestCase):
     def test_save_load(self):
         i = random.randint(1, 499)
         url = URL('http://w3af.com/a/b/c.php')
-        fr = FuzzReq(url, dc={'a': ['1']})
+        request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
         h1 = HistoryItem()
-        h1.request = fr
+        h1.request = request
         res.set_id(i)
         h1.response = res
         h1.save()
@@ -143,13 +143,13 @@ class TestHistoryItem(unittest.TestCase):
         i = random.randint(1, 499)
         
         url = URL('http://w3af.com/a/b/c.php')
-        fr = FuzzReq(url, dc={'a': ['1']})
+        request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
         res.set_id(i)
         
         h1 = HistoryItem()
-        h1.request = fr
+        h1.request = request
         h1.response = res
         h1.save()
         
@@ -164,12 +164,12 @@ class TestHistoryItem(unittest.TestCase):
     def test_clear(self):
         
         url = URL('http://w3af.com/a/b/c.php')
-        fr = FuzzReq(url, dc={'a': ['1']})
+        request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
         
         h1 = HistoryItem()
-        h1.request = fr
+        h1.request = request
         res.set_id(1)
         h1.response = res
         h1.save()
@@ -191,12 +191,12 @@ class TestHistoryItem(unittest.TestCase):
     def test_clear_clear(self):
         
         url = URL('http://w3af.com/a/b/c.php')
-        fr = FuzzReq(url, dc={'a': ['1']})
+        request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
         
         h1 = HistoryItem()
-        h1.request = fr
+        h1.request = request
         res.set_id(1)
         h1.response = res
         h1.save()
@@ -210,11 +210,11 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.org/a/b/c.php')
 
         for i in xrange(501, 1000):
-            fr = FuzzReq(url, dc={'a': ['1']})
+            request = HTTPRequest(url, data='a=1')
             hdr = Headers([('Content-Type', 'text/html')])
             res = HTTPResponse(200, '<html>', hdr, url, url)
             h1 = HistoryItem()
-            h1.request = fr
+            h1.request = request
             res.set_id(i)
             h1.response = res
             if i == tag_id:

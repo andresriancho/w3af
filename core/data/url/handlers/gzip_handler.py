@@ -24,7 +24,7 @@ import gzip
 
 from cStringIO import StringIO
 
-from core.data.url.handlers.localCache import SQLCachedResponse
+from core.data.url.handlers.cache import SQLCachedResponse
 
 
 class HTTPGzipProcessor(urllib2.BaseHandler):

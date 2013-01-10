@@ -70,47 +70,6 @@ class FuzzableRequest(DiskItem):
         # Set the internal variables
         self._sent_info_comp = None
 
-    def to_dict(self):
-        serializable_dict = {}
-        sdict = serializable_dict
-        
-        # Note: The Headers() object can be serialized by msgpack because it
-        #       inherits from dict() and doesn't mangle it too much
-        sdict['data'], sdict['msg'], sdict['headers'] = (self.get_code(),
-                                                         self.get_msg(),
-                                                         self.get_headers())
-        sdict['body'], sdict['time'], sdict['id'] = (self.get_body(),
-                                                     self.get_wait_time(),
-                                                     self.get_id())
-        
-        sdict['uri'] = self.url_object.url_string
-    
-        return serializable_dict
-    
-    @classmethod    
-    def from_dict(cls, unserialized_dict):
-        '''
-        * msgpack is MUCH faster than cPickle,
-        * msgpack can't serialize python objects,
-        * I have to create a dict representation of HTTPResponse to serialize it,
-        * and a from_dict to have the object back
-        
-        @param unserialized_dict: A dict just as returned by to_dict()
-        '''
-        udict = unserialized_dict
-        
-        data, headers = udict['data'], udict['headers']
-        origin_req_host, unverifiable = udict['orig_req_host'], udict['unverifiable']
-        follow_redir, cookies = udict['follow_redir'], udict['cookies']
-        cache = udict['cache']
-                
-        headers_inst = Headers(headers.items())
-        url = URL(udict['uri'])
-    
-        return cls(url, data=data, headers=headers_int,
-                   origin_req_host=origin_req_host, unverifiable=unverifiable,
-                   follow_redir=follow_redir, cookies=cookies, cache=cache)
-
     def dump(self):
         '''
         @return: a DETAILED str representation of this fuzzable request.

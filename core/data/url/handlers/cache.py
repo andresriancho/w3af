@@ -1,5 +1,5 @@
 '''
-localCache.py
+cache.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,8 +33,6 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
                                                     as core_num_gen)
 from core.controllers.exceptions import FileException
 from core.data.db.history import HistoryItem
-from core.data.dc.headers import Headers
-from core.data.request.factory import create_fuzzable_request_from_request
 from core.data.url.HTTPResponse import HTTPResponse
 
 # TODO: Why not POST? Why don't we perform real caching and respect
@@ -86,8 +84,8 @@ class CacheHandler(urllib2.BaseHandler):
         method = request.get_method().upper()
 
         if method in CACHE_METHODS and \
-            request.get_from_cache and \
-                CacheClass.exists_in_cache(request):
+        request.get_from_cache and \
+        CacheClass.exists_in_cache(request):
             try:
                 cache_response_obj = CacheClass(request)
             except Exception:
@@ -270,20 +268,20 @@ class DiskCachedResponse(CachedResponse):
             f.write(headers)
             f.close()
         except Exception, e:
-            msg = 'localCache.py: Could not save headers file. Exception: "%s".'
+            msg = 'cache.py: Could not save headers file. Exception: "%s".'
             raise FileException(msg % e)
 
         try:
             body = response.read()
         except Exception, e:
-            om.out.error('localCache.py: Timeout while fetching page body.')
+            om.out.error('cache.py: Timeout while fetching page body.')
         else:
             try:
                 f = open(fname + ".body", "w")
                 f.write(body)
                 f.close()
             except Exception, e:
-                msg = 'localCache.py: Could not save body file. Exception: "%s".'
+                msg = 'cache.py: Could not save body file. Exception: "%s".'
                 raise FileException(msg % e)
 
         try:
@@ -296,7 +294,7 @@ class DiskCachedResponse(CachedResponse):
             f.write(str(response.code))
             f.close()
         except Exception, e:
-            msg = 'localCache.py: Could not save code file. Exception: "%s".'
+            msg = 'cache.py: Could not save code file. Exception: "%s".'
             raise FileException(msg % e)
 
         try:
@@ -304,7 +302,7 @@ class DiskCachedResponse(CachedResponse):
             f.write(str(response.msg))
             f.close()
         except Exception, e:
-            msg = 'localCache.py: Could not save msg file. Exception: "%s".'
+            msg = 'cache.py: Could not save msg file. Exception: "%s".'
             raise FileException(msg % e)
 
     @staticmethod
@@ -356,19 +354,14 @@ class SQLCachedResponse(CachedResponse):
 
     @staticmethod
     def store_in_cache(request, response):
-        hi = HistoryItem()
-
-        # Set the request
-        headers = Headers(request.unredirected_hdrs.items())
-        req = create_fuzzable_request_from_request(request,
-                                                   add_headers=headers)
-        hi.request = req
-
-        # Set the response
+        # Create the http response object
         resp = HTTPResponse.from_httplib_resp(response,
                                               original_url=request.url_object)
         resp.set_id(response.id)
         resp.set_alias(gen_hash(request))
+
+        hi = HistoryItem()
+        hi.request = request
         hi.response = resp
 
         # Now save them
@@ -378,7 +371,7 @@ class SQLCachedResponse(CachedResponse):
             msg = ('Exception while inserting request/response to the'
                    ' database: %s\nThe request/response that generated'
                    ' the error is: %s %s %s' %
-                   (ex, resp.get_id(), req.get_uri(), resp.get_code()))
+                   (ex, resp.get_id(), request.get_uri(), resp.get_code()))
             om.out.error(msg)
             raise
 

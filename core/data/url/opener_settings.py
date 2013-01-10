@@ -27,7 +27,6 @@ import cookielib
 import core.controllers.output_manager as om
 import core.data.url.handlers.ntlm_auth as HTTPNtlmAuthHandler
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
-import core.data.url.handlers.localCache as localCache
 import core.data.url.handlers.mangleHandler as mangleHandler
 
 from core.controllers.configurable import Configurable
@@ -44,6 +43,7 @@ from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
+from core.data.url.handlers.cache import CacheHandler
 
 
 class OpenerSettings(Configurable):
@@ -331,7 +331,7 @@ class OpenerSettings(Configurable):
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
         self._kAHTTPS = kAHTTPS(self.get_proxy())
-        self._cache_hdler = localCache.CacheHandler()
+        self._cache_hdler = CacheHandler()
 
         # Prepare the list of handlers
         handlers = []

@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
-from core.data.request.factory import create_fuzzable_request_from_parts
+from core.data.request.factory import create_fuzzable_requests
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers

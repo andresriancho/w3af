@@ -53,7 +53,7 @@ from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
-from core.data.url.handlers.localCache import CachedResponse
+from core.data.url.handlers.cache import CachedResponse
 from core.data.dc.headers import Headers
 
 
@@ -361,8 +361,8 @@ class xUrllib(object):
         elif isinstance(uri, HTTPRequest):
             req = uri
         else:
-            msg = 'The uri parameter of xUrllib._new_content_resp() has to be of'
-            msg += ' HTTPRequest of URL type.'
+            msg = 'The uri parameter of xUrllib._new_content_resp() has to be'\
+                  ' of HTTPRequest of URL type.'
             raise Exception(msg)
 
         # Work,
@@ -462,13 +462,6 @@ class xUrllib(object):
         '''
         class AnyMethod(object):
 
-            class MethodRequest(HTTPRequest):
-                def get_method(self):
-                    return self._method
-
-                def set_method(self, method):
-                    self._method = method
-
             def __init__(self, xu, method):
                 self._xurllib = xu
                 self._method = method
@@ -493,9 +486,9 @@ class xUrllib(object):
                 if self._xurllib._is_blacklisted(uri):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
 
-                req = self.MethodRequest(uri, data, follow_redir=follow_redir,
-                                         cookies=cookies, cache=cache)
-                req.set_method(self._method)
+                req = HTTPRequest(uri, data, follow_redir=follow_redir,
+                                  cookies=cookies, cache=cache,
+                                  method=self._method)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
 
