@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import time
+import weakref
 
 import core.data.constants.severity as severity
 from core.controllers.plugins.output_plugin import OutputPlugin
@@ -47,7 +48,7 @@ class GtkOutput(OutputPlugin):
     '''
 
     def __init__(self):
-        self._observers = []
+        self._observers = weakref.WeakSet()
         
     def debug(self, msg_string, new_line=True):
         '''
@@ -106,7 +107,7 @@ class GtkOutput(OutputPlugin):
             observer(m)
     
     def subscribe(self, observer):
-        self._observers.append(observer)
+        self._observers.add(observer)
 
     def unsubscribe(self, observer):
         if observer in self._observers:
