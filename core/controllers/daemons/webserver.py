@@ -54,12 +54,13 @@ def _get_inst(ip, port):
 
 
 class w3afHTTPServer(BaseHTTPServer.HTTPServer):
-    '''Must of the behavior added here is included in
+    '''
+    Most of the behavior added here is included in
     '''
 
     def __init__(self, server_address, webroot, RequestHandlerClass):
-        BaseHTTPServer.HTTPServer.__init__(
-            self, server_address, RequestHandlerClass)
+        BaseHTTPServer.HTTPServer.__init__(self, server_address,
+                                           RequestHandlerClass)
         self.webroot = webroot
         self.__is_shut_down = threading.Event()
         self.__shutdown_request = False
@@ -102,8 +103,8 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
                 self.close_request(request)
 
     def server_bind(self):
-        msg = 'Changing socket options of w3afHTTPServer to (socket.SOL_SOCKET'
-        msg += ', socket.SO_REUSEADDR, 1)'
+        msg = 'Changing socket options of w3afHTTPServer to (socket.SOL_SOCKET'\
+              ', socket.SO_REUSEADDR, 1)'
         om.out.debug(msg)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BaseHTTPServer.HTTPServer.server_bind(self)
