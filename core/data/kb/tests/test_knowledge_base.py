@@ -22,9 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.parsers.url import URL
-from core.data.kb.knowledge_base import kb
+from core.data.kb.knowledge_base import kb, DBKnowledgeBase
 from core.data.kb.tests.test_info import MockInfo
 from core.data.dc.queryString import QueryString
+from core.data.db.dbms import get_default_persistent_db_instance
 
 
 class TestKnowledgeBase(unittest.TestCase):
@@ -214,3 +215,17 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', 'abc')
         kb.raw_write('a', 'b', 'def')
         self.assertEqual(kb.raw_read('a', 'b'), 'def')
+    
+    def test_drop_table(self):
+        kb = DBKnowledgeBase()
+        table_name = kb.table_name
+        
+        db = get_default_persistent_db_instance()
+        
+        self.assertTrue(db.table_exists(table_name))
+        
+        kb.remove()
+        
+        self.assertFalse(db.table_exists(table_name))
+        
+        

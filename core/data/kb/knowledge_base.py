@@ -450,6 +450,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.urls.clear()
         self.fuzzable_requests.clear()
     
+    def remove(self):
+        self.db.drop_table(self.table_name)
+    
     def get_all_known_urls(self):
         '''
         @return: A DiskSet with all the known URLs as URL objects.
