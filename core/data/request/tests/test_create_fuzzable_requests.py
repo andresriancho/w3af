@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
-from core.data.request.factory import create_fuzzable_requests
+from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
@@ -137,8 +137,8 @@ class TestCreateFuzzableRequests(unittest.TestCase):
                            ('cookie', 'abc=def')])
         http_response = HTTPResponse(200, body, headers, self.url, self.url)
 
-        redir_fr_cookie = create_fuzzable_requests(
-            http_response, add_self=False)
+        redir_fr_cookie = create_fuzzable_requests(http_response,
+                                                   add_self=False)
         self.assertEqual(len(redir_fr_cookie), 1)
 
         redir_fr_cookie = redir_fr_cookie[0]

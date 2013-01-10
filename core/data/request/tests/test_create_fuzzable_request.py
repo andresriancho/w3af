@@ -23,7 +23,8 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import (create_fuzzable_request_from_parts,
+                                       create_fuzzable_request_from_request)
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.parsers.url import URL
 
@@ -36,13 +37,13 @@ from core.data.dc.headers import Headers
 
 
 @attr('smoke')
-class TestCreateFuzzableRequest(unittest.TestCase):
+class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
 
     def test_simplest(self):
-        fr = create_fuzzable_request(self.url)
+        fr = create_fuzzable_request_from_parts(self.url)
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), Headers())
@@ -50,7 +51,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
 
     def test_headers(self):
         hdr = Headers([('foo', 'bar')])
-        fr = create_fuzzable_request(self.url, add_headers=hdr)
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr)
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
@@ -58,36 +59,20 @@ class TestCreateFuzzableRequest(unittest.TestCase):
 
     def test_headers_method(self):
         hdr = Headers([('foo', 'bar')])
-        fr = create_fuzzable_request(self.url, method='PUT',
-                                     add_headers=hdr)
+        fr = create_fuzzable_request_from_parts(self.url, method='PUT',
+                                                add_headers=hdr)
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'PUT')
 
-    def test_from_HTTPRequest(self):
-        request = HTTPRequest(self.url)
-        fr = create_fuzzable_request(request)
-
-        self.assertEqual(fr.get_url(), self.url)
-        self.assertEqual(fr.get_method(), 'GET')
-
-    def test_from_HTTPRequest_headers(self):
-        hdr = Headers([('Foo', 'bar')])
-        request = HTTPRequest(self.url, headers=hdr)
-        fr = create_fuzzable_request(request)
-
-        self.assertEqual(fr.get_url(), self.url)
-        self.assertEqual(fr.get_headers(), hdr)
-        self.assertEqual(fr.get_method(), 'GET')
-        self.assertIsInstance(fr, HTTPQSRequest)
-
     def test_simple_post(self):
         post_data = 'a=b&d=3'
         hdr = Headers([('content-length', str(len(post_data)))])
 
-        fr = create_fuzzable_request(self.url, add_headers=hdr,
-                                     post_data=post_data, method='POST')
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr,
+                                                post_data=post_data,
+                                                method='POST')
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
@@ -99,8 +84,9 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         post_data = '{"1":"2"}'
         hdr = Headers([('content-length', str(len(post_data)))])
 
-        fr = create_fuzzable_request(self.url, add_headers=hdr,
-                                     post_data=post_data, method='POST')
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr,
+                                                post_data=post_data,
+                                                method='POST')
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
@@ -115,8 +101,9 @@ class TestCreateFuzzableRequest(unittest.TestCase):
 
         headers = Headers([('content-length', str(len(post_data)))])
 
-        fr = create_fuzzable_request(self.url, add_headers=headers,
-                                     post_data=post_data, method='POST')
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=headers,
+                                                post_data=post_data,
+                                                method='POST')
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), headers)
@@ -129,8 +116,8 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', 'multipart/form-data; boundary=%s' % boundary)])
 
-        fr = create_fuzzable_request(self.url, add_headers=headers,
-                                     post_data=post_data, method='POST')
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=headers,
+                                                post_data=post_data, method='POST')
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), headers)
@@ -148,8 +135,9 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', 'multipart/form-data')])
 
-        fr = create_fuzzable_request(self.url, add_headers=headers,
-                                     post_data=post_data, method='POST')
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=headers,
+                                                post_data=post_data,
+                                                method='POST')
 
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), headers)
@@ -160,3 +148,26 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.get_dc(), {})
 
         self.assertIsInstance(fr, HTTPPostDataRequest)
+
+@attr('smoke')
+class TestCreateFuzzableRequestRequest(unittest.TestCase):
+
+    def setUp(self):
+        self.url = URL('http://www.w3af.com/')
+
+    def test_from_HTTPRequest(self):
+        request = HTTPRequest(self.url)
+        fr = create_fuzzable_request_from_request(request)
+
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_method(), 'GET')
+
+    def test_from_HTTPRequest_headers(self):
+        hdr = Headers([('Foo', 'bar')])
+        request = HTTPRequest(self.url, headers=hdr)
+        fr = create_fuzzable_request_from_request(request)
+
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
+        self.assertEqual(fr.get_method(), 'GET')
+        self.assertIsInstance(fr, HTTPQSRequest)

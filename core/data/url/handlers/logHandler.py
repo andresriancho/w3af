@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 
 import core.controllers.output_manager as om
-import core.data.url.HTTPResponse as HTTPResponse
 
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_request
 
 
 class LogHandler(urllib2.BaseHandler):
@@ -63,13 +63,14 @@ class LogHandler(urllib2.BaseHandler):
         Send the request and the response to the output manager.
         '''
         orig_headers = request.unredirected_hdrs.items()
-        fr = create_fuzzable_request(request,
-                                     add_headers=Headers(orig_headers))
-        if isinstance(response, HTTPResponse.HTTPResponse):
+        headers = Headers(orig_headers)
+        fr = create_fuzzable_request_from_request(request,
+                                                  add_headers=headers)
+        if isinstance(response, HTTPResponse):
             resp = response
         else:
-            resp = HTTPResponse.from_httplib_resp(
-                response, original_url=request.url_object)
+            resp = HTTPResponse.from_httplib_resp(response,
+                                                  original_url=request.url_object)
             resp.set_id(response.id)
 
         om.out.log_http(fr, resp)

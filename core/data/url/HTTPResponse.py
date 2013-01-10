@@ -42,32 +42,7 @@ SP = ' '
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
 ANY_TAG_MATCH = re.compile('(<.*?>)')
-
-
-def from_httplib_resp(httplibresp, original_url=None):
-    '''
-    Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
-    instance
-
-    @param httplibresp: httplib.HTTPResponse instance
-    @param original_url: Optional 'url_object' instance.
-
-    @return: A HTTPResponse instance
-    '''
-    resp = httplibresp
-    code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
-    hdrs = Headers(hdrs.items())
-
-    if original_url:
-        url_inst = URL(resp.geturl(), original_url.encoding)
-        url_inst = url_inst.url_decode()
-    else:
-        url_inst = original_url = URL(resp.geturl())
-
-    charset = getattr(resp, 'encoding', None)
-    return HTTPResponse(code, body, hdrs, url_inst,
-                        original_url, msg, charset=charset)
-
+    
 
 class HTTPResponse(object):
 
@@ -135,6 +110,73 @@ class HTTPResponse(object):
         self._time = time
         self._alias = alias
         self._doc_type = None
+
+    @classmethod
+    def from_httplib_resp(cls, httplibresp, original_url=None):
+        '''
+        Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
+        instance
+    
+        @param httplibresp: httplib.HTTPResponse instance
+        @param original_url: Optional 'url_object' instance.
+    
+        @return: A HTTPResponse instance
+        '''
+        resp = httplibresp
+        code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
+        hdrs = Headers(hdrs.items())
+    
+        if original_url:
+            url_inst = URL(resp.geturl(), original_url.encoding)
+            url_inst = url_inst.url_decode()
+        else:
+            url_inst = original_url = URL(resp.geturl())
+    
+        charset = getattr(resp, 'encoding', None)
+        return cls(code, body, hdrs, url_inst, original_url,
+                   msg, charset=charset)
+
+    @classmethod    
+    def from_dict(cls, unserialized_dict):
+        '''
+        * msgpack is MUCH faster than cPickle,
+        * msgpack can't serialize python objects,
+        * I have to create a dict representation of HTTPResponse to serialize it,
+        * and a from_dict to have the object back
+        
+        @param unserialized_dict: A dict just as returned by to_dict()
+        '''
+        udict = unserialized_dict
+        
+        code, msg, hdrs = udict['code'], udict['msg'], udict['headers']
+        body, _time, _id = udict['body'], udict['time'], udict['id']
+        
+        headers_inst = Headers(hdrs.items())
+        url = URL(udict['uri'])
+    
+        return cls(code, body, headers_inst, url, url, msg=msg, _id=_id,
+                   time=_time)
+
+    def to_dict(self):
+        '''
+        @return: A dict that represents the current object and is serializable
+                 by the json or msgpack modules.
+        '''
+        serializable_dict = {}
+        sdict = serializable_dict
+        
+        # Note: The Headers() object can be serialized by msgpack because it
+        #       inherits from dict() and doesn't mangle it too much
+        sdict['code'], sdict['msg'], sdict['headers'] = (self.get_code(),
+                                                         self.get_msg(),
+                                                         self.get_headers())
+        sdict['body'], sdict['time'], sdict['id'] = (self.get_body(),
+                                                     self.get_wait_time(),
+                                                     self.get_id())
+        
+        sdict['uri'] = self.get_uri().url_string
+    
+        return serializable_dict
 
     def __contains__(self, string_to_test):
         '''

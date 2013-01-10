@@ -23,13 +23,14 @@ import urlparse
 
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_parts
 from core.controllers.exceptions import w3afException
 
 
 def check_version_syntax(version):
     '''
-    @return: True if the syntax of the version section of HTTP is valid; else raise an exception.
+    @return: True if the syntax of the version section of HTTP is valid; else
+             raise an exception.
 
     >>> check_version_syntax('HTTP/1.0')
     True
@@ -69,7 +70,8 @@ def check_version_syntax(version):
 
 def check_uri_syntax(uri, host=None):
     '''
-    @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
+    @return: True if the syntax of the URI section of HTTP is valid; else
+             raise an exception.
 
     >>> check_uri_syntax('http://abc/def.html')
     'http://abc/def.html'
@@ -160,4 +162,5 @@ def HTTPRequestParser(head, postdata):
 
     uri = URL(check_uri_syntax(uri, host))
 
-    return create_fuzzable_request(uri, method, postdata, headers_inst)
+    return create_fuzzable_request_from_parts(uri, method, postdata,
+                                              headers_inst)

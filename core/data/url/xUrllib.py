@@ -48,10 +48,10 @@ from core.controllers.exceptions import (w3afMustStopException, w3afException,
 from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers.logHandler import LogHandler
-from core.data.url.HTTPResponse import HTTPResponse, from_httplib_resp
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
 from core.data.dc.headers import Headers
@@ -673,7 +673,8 @@ class xUrllib(object):
             msg += flags
             om.out.debug(msg)
 
-            http_resp = from_httplib_resp(res, original_url=original_url_inst)
+            http_resp = HTTPResponse.from_httplib_resp(res,
+                                                       original_url=original_url_inst)
             http_resp.set_id(res.id)
             http_resp.set_wait_time(time.time() - start_time)
 
@@ -854,11 +855,12 @@ class xUrllib(object):
                 domain in cf.cf.get('target_domains'):
 
             # Create a fuzzable request based on the urllib2 request object
-            fr = create_fuzzable_request(
-                url_instance,
-                request.get_method(),
-                request.get_data(),
-                Headers(request.headers.items())
-            )
+            headers_inst = Headers(request.headers.items())
+            fr = create_fuzzable_request_from_parts(
+                                                    url_instance,
+                                                    request.get_method(),
+                                                    request.get_data(),
+                                                    headers_inst
+                                                    )
 
             self._grep_queue_put((fr, response))

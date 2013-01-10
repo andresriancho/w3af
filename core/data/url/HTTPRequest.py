@@ -19,10 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import urllib2
 import copy
+import urllib2
 
 from core.data.dc.headers import Headers
+from core.data.parsers.url import URL
 
 
 class HTTPRequest(urllib2.Request):
@@ -49,7 +50,7 @@ class HTTPRequest(urllib2.Request):
 
         headers = dict(headers)
 
-        # Call the base class
+        # Call the base class constructor
         urllib2.Request.__init__(self, url.url_encode(), data,
                                  headers, origin_req_host, unverifiable)
 

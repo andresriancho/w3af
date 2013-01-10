@@ -25,7 +25,7 @@ import core.controllers.output_manager as om
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.dc.headers import Headers
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
@@ -69,11 +69,11 @@ class sed(ManglePlugin):
         
         headers_inst = Headers.from_string(header_string)
 
-        return create_fuzzable_request(
-                                       request.get_url(),
-                                       request.get_method(),
-                                       data, headers_inst
-                                       )
+        return create_fuzzable_request_from_parts(
+                                                  request.get_url(),
+                                                  request.get_method(),
+                                                  data, headers_inst
+                                                  )
 
     def mangle_response(self, response):
         '''

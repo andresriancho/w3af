@@ -26,7 +26,6 @@ import StringIO
 import urllib2
 
 import core.controllers.output_manager as om
-import core.data.url.HTTPResponse as HTTPResponse
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
@@ -35,7 +34,8 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
 from core.controllers.exceptions import FileException
 from core.data.db.history import HistoryItem
 from core.data.dc.headers import Headers
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_request
+from core.data.url.HTTPResponse import HTTPResponse
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
@@ -360,8 +360,8 @@ class SQLCachedResponse(CachedResponse):
 
         # Set the request
         headers = Headers(request.unredirected_hdrs.items())
-        req = create_fuzzable_request(request,
-                                      add_headers=headers)
+        req = create_fuzzable_request_from_request(request,
+                                                   add_headers=headers)
         hi.request = req
 
         # Set the response

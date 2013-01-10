@@ -22,29 +22,17 @@ from __future__ import with_statement
 import os
 import time
 import threading
+import msgpack
 
 from functools import wraps
 from shutil import rmtree
-from errno import EEXIST
-
-try:
-    from cPickle import Pickler, Unpickler
-except ImportError:
-    from pickle import Pickler, Unpickler
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.temp_dir import get_temp_dir
-from core.controllers.misc.FileLock import FileLock, FileLockRead
 from core.controllers.exceptions import DBException
 from core.data.db.where_helper import WhereHelper
-from core.data.fuzzer.utils import rand_alpha
 from core.data.db.dbms import get_default_temp_db_instance
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.url.HTTPRequest import HTTPRequest
 
 
 def verify_has_db(meth):
@@ -209,11 +197,13 @@ class HistoryItem(object):
         #
         #    Ok... the file exists, but it might still be being written
         #
-        with FileLockRead(fname, timeout=1):
-            rrfile = open(fname, 'rb')
-            req, res = Unpickler(rrfile).load()
-            rrfile.close()
-            return (req, res)
+        req_res = open(fname, 'rb')
+        request_dict, response_dict = msgpack.load(req_res)
+        req_res.close()
+        
+        request = HTTPRequest.from_dict(request_dict)
+        response = HTTPResponse.from_dict(response_dict)
+        return (request, response)
 
     @verify_has_db
     def delete(self, id=None):
@@ -317,13 +307,13 @@ class HistoryItem(object):
         # Save raw data to file
         #
         fname = self._get_fname_for_id(self.id)
-
-        with FileLock(fname, timeout=1):
-            rrfile = open(fname, 'wb')
-            p = Pickler(rrfile)
-            p.dump((self.request, self.response))
-            rrfile.close()
-            return True
+        
+        req_res = open(fname, 'wb')
+        data = self.request.to_dict(), self.response.to_dict()
+        msgpack.dump(data, req_res)
+        req_res.close()
+        
+        return True
 
     def get_columns(self):
         return self._COLUMNS

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 import cPickle
+import msgpack
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
@@ -210,7 +211,6 @@ class TestHTTPResponse(unittest.TestCase):
               ' pickling.'
         raise SkipTest(msg)
     
-    
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
         resp = self.create_resp(headers, html)
@@ -226,3 +226,33 @@ class TestHTTPResponse(unittest.TestCase):
         unpickled_dom = unpickled_resp.get_dom()
         self.assertEqual(unpickled_dom, original_dom)
 
+    def test_from_dict(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        orig_resp = self.create_resp(headers, html)
+        
+        msg = msgpack.dumps(orig_resp.to_dict())
+        loaded_dict = msgpack.loads(msg)
+        
+        loaded_resp = HTTPResponse.from_dict(loaded_dict)
+        
+        self.assertEqual(orig_resp, loaded_resp)
+        self.assertEqual(orig_resp.__dict__.values(),
+                         loaded_resp.__dict__.values())
+    
+    def test_from_dict_encodings(self):
+        for body, charset in TEST_RESPONSES.values():
+            html = body.encode(charset)
+            resp = self.create_resp(Headers([('Content-Type', 'text/xml')]),
+                                    html)
+            
+            msg = msgpack.dumps(resp.to_dict())
+            loaded_dict = msgpack.loads(msg)
+            
+            loaded_resp = HTTPResponse.from_dict(loaded_dict)
+
+            self.assertEquals(
+                smart_unicode(html, DEFAULT_CHARSET,
+                              ESCAPED_CHAR, on_error_guess=False),
+                loaded_resp.body
+            )

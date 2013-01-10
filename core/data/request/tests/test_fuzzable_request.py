@@ -21,12 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import msgpack
 
 from nose.plugins.attrib import attr
 
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
+from core.data.dc.data_container import DataContainer
 from core.data.misc.encoding import smart_unicode
 
 
@@ -129,4 +131,50 @@ class TestFuzzableRequest(unittest.TestCase):
         
         self.assertEqual(fr.dump(), expected)
 
+    def test_export_without_dc(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"))
+        self.assertEqual(fr.export(),
+                         'GET,http://www.w3af.com/,')
+    
+    def test_export_with_dc(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"))
+        d = DataContainer()
+        d['a'] = ['1',]
+        fr.set_dc(d)
+        self.assertEqual(fr.export(),
+                         'GET,http://www.w3af.com/?a=1,')
+        
+    def test_equal(self):
+        u = URL("""http://www.w3af.com/""")
+        fr1 = FuzzableRequest(u)
+        fr2 = FuzzableRequest(u)
+        self.assertEqual(fr1, fr2)
+
+        fr1 = FuzzableRequest(URL("http://www.w3af.com/a"))
+        fr2 = FuzzableRequest(URL("http://www.w3af.com/b"))
+        self.assertNotEqual(fr1, fr2)
+        
+        fr1 = FuzzableRequest(u)
+        fr2 = FuzzableRequest(u, method='POST')
+        self.assertNotEqual(fr1, fr2)
+    
+    def test_set_url(self):
+        self.assertRaises(TypeError, FuzzableRequest, 'http://www.google.com/')
+        
+        url = URL('http://www.google.com/')
+        r = FuzzableRequest(url)
+        self.assertEqual(r.get_url(), url)
+    
+    def test_to_from_dict(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"))
+        dc = DataContainer()
+        dc['a'] = ['1',]
+        fr.set_dc(dc)
+        
+        msg = msgpack.dumps(fr.to_dict())
+        loaded_fr = msgpack.loads(msg)
+        
+        self.assertEqual(fr, loaded_fr)
+        self.assertEqual(fr.__dict__.values(),
+                         loaded_fr.__dict__.values())
         

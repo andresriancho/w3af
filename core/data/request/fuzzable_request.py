@@ -70,6 +70,47 @@ class FuzzableRequest(DiskItem):
         # Set the internal variables
         self._sent_info_comp = None
 
+    def to_dict(self):
+        serializable_dict = {}
+        sdict = serializable_dict
+        
+        # Note: The Headers() object can be serialized by msgpack because it
+        #       inherits from dict() and doesn't mangle it too much
+        sdict['data'], sdict['msg'], sdict['headers'] = (self.get_code(),
+                                                         self.get_msg(),
+                                                         self.get_headers())
+        sdict['body'], sdict['time'], sdict['id'] = (self.get_body(),
+                                                     self.get_wait_time(),
+                                                     self.get_id())
+        
+        sdict['uri'] = self.url_object.url_string
+    
+        return serializable_dict
+    
+    @classmethod    
+    def from_dict(cls, unserialized_dict):
+        '''
+        * msgpack is MUCH faster than cPickle,
+        * msgpack can't serialize python objects,
+        * I have to create a dict representation of HTTPResponse to serialize it,
+        * and a from_dict to have the object back
+        
+        @param unserialized_dict: A dict just as returned by to_dict()
+        '''
+        udict = unserialized_dict
+        
+        data, headers = udict['data'], udict['headers']
+        origin_req_host, unverifiable = udict['orig_req_host'], udict['unverifiable']
+        follow_redir, cookies = udict['follow_redir'], udict['cookies']
+        cache = udict['cache']
+                
+        headers_inst = Headers(headers.items())
+        url = URL(udict['uri'])
+    
+        return cls(url, data=data, headers=headers_int,
+                   origin_req_host=origin_req_host, unverifiable=unverifiable,
+                   follow_redir=follow_redir, cookies=cookies, cache=cache)
+
     def dump(self):
         '''
         @return: a DETAILED str representation of this fuzzable request.
@@ -105,17 +146,6 @@ class FuzzableRequest(DiskItem):
             POST,http://localhost/index.php,abc=123&def=789
 
         @return: a csv str representation of the request
-
-        >>> from core.data.dc.data_container import DataContainer
-        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        >>> fr.export()
-        'GET,http://www.w3af.com/,'
-        >>> d = DataContainer()
-        >>> d['a'] = ['1',]
-        >>> fr.set_dc(d)
-        >>> fr.export()
-        'GET,http://www.w3af.com/?a=1,'
-
         '''
         #
         # FIXME: What if a comma is inside the URL or DC?
@@ -180,9 +210,9 @@ class FuzzableRequest(DiskItem):
         data = self._data or ''
         # This is the easy part. If it was exactly like this in the request
         if data and smth_instng in data or \
-            smth_instng in self.get_uri() or \
-            smth_instng in unquote(data) or \
-                smth_instng in unicode(self._uri.url_decode()):
+        smth_instng in self.get_uri() or \
+        smth_instng in unquote(data) or \
+        smth_instng in unicode(self._uri.url_decode()):
             return True
 
         # Ok, it's not in it but maybe something similar
@@ -194,7 +224,7 @@ class FuzzableRequest(DiskItem):
 
             self._sent_info_comp = make_comp(data + unquote(data))
 
-        minLength = 3
+        min_len = 3
         # make the smth_instng comparable
         smth_instng_comps = (make_comp(smth_instng),
                              make_comp(unquote(smth_instng)))
@@ -202,7 +232,7 @@ class FuzzableRequest(DiskItem):
             # We don't want false negatives just because the string is
             # short after making comparable
             if smth_intstng_comp in self._sent_info_comp and \
-                    len(smth_intstng_comp) >= minLength:
+                    len(smth_intstng_comp) >= min_len:
                 return True
         # I didn't sent the smth_instng in any way
         return False
@@ -260,22 +290,6 @@ class FuzzableRequest(DiskItem):
             - The values for each parameter is equal
 
         @return: True if the requests are equal.
-
-
-        >>> u = URL("""http://www.w3af.com/""")
-        >>> fr1 = FuzzableRequest(u)
-        >>> fr2 = FuzzableRequest(u)
-        >>> fr1 == fr2
-        True
-        >>> fr1 = FuzzableRequest(URL("http://www.w3af.com/a"))
-        >>> fr2 = FuzzableRequest(URL("http://www.w3af.com/b"))
-        >>> fr1 == fr2
-        False
-        >>> fr1 = FuzzableRequest(u)
-        >>> fr2 = FuzzableRequest(u, method='POST')
-        >>> fr1 == fr2
-        False
-
         '''
         if isinstance(other, FuzzableRequest):
             return (self._method == other._method and
@@ -318,16 +332,6 @@ class FuzzableRequest(DiskItem):
         return False
 
     def set_url(self, url):
-        '''
-        >>> r = FuzzableRequest('http://www.google.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        TypeError: The "uri" parameter of a FuzzableRequest must be of url.URL type.
-        >>> url = URL('http://www.google.com/')
-        >>> r = FuzzableRequest(url)
-        >>> r.get_url() == url
-        True
-        '''
         if not isinstance(url, URL):
             raise TypeError('The "url" parameter of a %s must be of '
                             'url.URL type.' % type(self).__name__)

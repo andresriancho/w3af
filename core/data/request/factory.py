@@ -37,11 +37,10 @@ from core.data.request.XMLRPCRequest import XMLRPCRequest
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers
-from core.data.parsers.url import parse_qs
+from core.data.parsers.url import URL, parse_qs
 from core.data.parsers.wsdl import WSDLParser
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.misc.encoding import smart_unicode
-
 
 __all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
 
@@ -161,16 +160,29 @@ XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
                 '</methodcall>', '</methodname>', '</params>')
 
 
-def create_fuzzable_request(req_url, method='GET', post_data='',
-                            add_headers=None):
+def create_fuzzable_request_from_request(request, add_headers=None):
+    '''
+    @return: A fuzzable request with the same info as request
+    '''
+    if not isinstance(request, HTTPRequest):
+        raise TypeError('Requires HTTPRequest to create FuzzableRequest.')
+    
+    url = request.url_object
+    post_data = str(request.get_data() or '')
+    method = request.get_method()
+    headers = Headers(request.headers.items())
+    headers.update(add_headers or Headers())
+
+    return create_fuzzable_request_from_parts(url, method=method,
+                                              post_data=post_data,
+                                              add_headers=headers)
+
+def create_fuzzable_request_from_parts(url, method='GET', post_data='',
+                                       add_headers=None):
     '''
     Creates a fuzzable request based on the input parameters.
 
-    @param req_url: Either a URL object that represents the URL or a
-        HTTPRequest instance. If the latter is the case the `method` and
-        `post_data` values are taken from the HTTPRequest object as well
-        as the values in `add_headers` will be merged with the request's
-        headers.
+    @param req_url: A URL object
     @param method: A string that represents the method ('GET', 'POST', etc)
     @param post_data: A string that represents the postdata.
     @param add_headers: A Headers object that holds the headers. If `req_url` is a
@@ -179,22 +191,18 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     '''
     if add_headers is not None and not isinstance(add_headers, Headers):
         raise ValueError('create_fuzzable_request requires Headers object.')
+    
+    if not isinstance(url, URL):
+        raise TypeError('Requires URL to create FuzzableRequest.')
 
-    if isinstance(req_url, HTTPRequest):
-        url = req_url.url_object
-        post_data = str(req_url.get_data() or '')
-        method = req_url.get_method()
-        headers = Headers(req_url.headers.items())
-        headers.update(add_headers or Headers())
-    else:
-        url = req_url
-        headers = add_headers or Headers()
+    headers = add_headers or Headers()
 
     # Just a query string request! No postdata
     if not post_data:
         return HTTPQSRequest(url, method, headers)
 
-    else:  # Seems to be something that has post data
+    else:
+        # Seems to be something that has post data
         data = {}
         conttype, header_name = headers.iget('content-type', '')
         if conttype:

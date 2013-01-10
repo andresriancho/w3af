@@ -34,7 +34,7 @@ from core.controllers.misc.decorators import runonce
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE
 from core.data.options.option_list import OptionList
-from core.data.request.factory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.parsers.url import URL
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
@@ -126,7 +126,8 @@ class import_results(CrawlPlugin):
             # Create the obj based on the information
             uri = URL(uri)
             if uri.is_valid_domain():
-                return create_fuzzable_request(uri, method, postdata)
+                return create_fuzzable_request_from_parts(uri, method,
+                                                          postdata)
 
     def _objs_from_burp_log(self, burp_file):
         '''
