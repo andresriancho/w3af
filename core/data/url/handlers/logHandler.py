@@ -24,8 +24,7 @@ import urllib2
 import core.controllers.output_manager as om
 
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.dc.headers import Headers
-from core.data.request.factory import create_fuzzable_request_from_request
+from core.data.url.HTTPRequest import HTTPRequest
 
 
 class LogHandler(urllib2.BaseHandler):
@@ -62,11 +61,16 @@ class LogHandler(urllib2.BaseHandler):
         '''
         Send the request and the response to the output manager.
         '''
-        if isinstance(response, HTTPResponse):
-            resp = response
-        else:
-            resp = HTTPResponse.from_httplib_resp(response,
-                                                  original_url=request.url_object)
-            resp.set_id(response.id)
+        if not isinstance(response, HTTPResponse):
+            url = request.url_object
+            response = HTTPResponse.from_httplib_resp(response,
+                                                      original_url=url)
+            response.set_id(response.id)
 
-        om.out.log_http(request, resp)
+        if not isinstance(request, HTTPRequest):
+            msg = 'There is something odd going on in LogHandler,'\
+                  ' request should be of type HTTPRequest got %s'\
+                  ' instead.'
+            raise TypeError(msg % type(request))
+
+        om.out.log_http(request, response)

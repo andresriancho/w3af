@@ -33,15 +33,10 @@ from core.data.dc.headers import Headers
 from core.data.dc.data_container import DataContainer
 from core.data.db.disk_item import DiskItem
 from core.data.parsers.url import URL
+from core.data.request.request_mixin import RequestMixIn
 
 
-CR = '\r'
-LF = '\n'
-CRLF = CR + LF
-SP = ' '
-
-
-class FuzzableRequest(DiskItem):
+class FuzzableRequest(RequestMixIn, DiskItem):
     '''
     This class represents a fuzzable request. Fuzzable requests were created
     to allow w3af plugins to be much simpler and don't really care if the
@@ -58,7 +53,8 @@ class FuzzableRequest(DiskItem):
 
     def __init__(self, uri, method='GET',
                  headers=None, cookie=None, dc=None):
-
+        super(FuzzableRequest, self).__init__()
+        
         # Internal variables
         self._dc = dc or DataContainer()
         self._method = method
@@ -69,31 +65,6 @@ class FuzzableRequest(DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
-
-    def dump(self):
-        '''
-        @return: a DETAILED str representation of this fuzzable request.
-        '''
-        return "%s%s%s" % (self.dump_request_head(),
-                           CRLF, str(self.get_data() or ''))
-
-    def get_request_line(self):
-        '''Return request line.'''
-        return "%s %s HTTP/1.1%s" % (self.get_method(),
-                                     self.get_uri().url_encode(),
-                                     CRLF)
-
-    def dump_request_head(self):
-        '''
-        @return: A string with the head of the request
-        '''
-        return "%s%s" % (self.get_request_line(), self.dump_headers())
-
-    def dump_headers(self):
-        '''
-        @return: A string representation of the headers.
-        '''
-        return str(self._headers)
 
     def export(self):
         '''

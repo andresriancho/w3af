@@ -56,3 +56,24 @@ class TestHTTPRequest(unittest.TestCase):
         self.assertEqual(req.__dict__.values(),
                          loaded_req.__dict__.values())
             
+    def test_dump_case01(self):
+        expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                'Hello: World',
+                                '',
+                                ''])
+        u = URL('http://w3af.com/a/b/c.php')
+        headers = Headers([('Hello', 'World')])
+        req = HTTPRequest(u, headers=headers)
+        
+        self.assertEqual(req.dump(), expected)
+
+    def test_dump_case02(self):
+        expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                 u'Hola: Múndo',
+                                 u'',
+                                 u''])
+        u = URL('http://w3af.com/a/b/c.php')
+        headers = Headers([('Hola', 'Múndo')])
+        req = HTTPRequest(u, headers=headers)
+        
+        self.assertEqual(req.dump(), expected)
