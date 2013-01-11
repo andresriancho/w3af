@@ -25,6 +25,11 @@ import urllib2
 from core.data.dc.headers import Headers
 from core.data.parsers.url import URL
 
+CR = '\r'
+LF = '\n'
+CRLF = CR + LF
+SP = ' '
+
 
 class HTTPRequest(urllib2.Request):
 
@@ -78,7 +83,12 @@ class HTTPRequest(urllib2.Request):
         headers = Headers(self.headers.items())
         headers.update(self.unredirected_hdrs.items())
         return headers
-    
+
+    def get_request_line(self):
+        '''Return request line.'''
+        return "%s %s HTTP/1.1%s" % (self.get_method(),
+                                     self.get_uri().url_encode(),
+                                     CRLF)    
     def to_dict(self):
         serializable_dict = {}
         sdict = serializable_dict

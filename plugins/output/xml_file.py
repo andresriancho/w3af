@@ -37,7 +37,7 @@ from core.data.db.history import HistoryItem
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
-from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.url.HTTPRequest import HTTPRequest
 
 # Override builtin 'str' function in order to avoid encoding
 # errors while generating objects' utf8 bytestring representations.
@@ -45,6 +45,9 @@ from core.data.request.fuzzable_request import FuzzableRequest
 # this module's scope.
 str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
+NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
+           'javascript', 'rss+xml', 'soap+xml', 'font-woff',
+           'xhtml+xml', 'xml-dtd', 'xop+xml')
 
 class xml_file(OutputPlugin):
     '''
@@ -192,11 +195,8 @@ class xml_file(OutputPlugin):
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
         """
-        NON_BIN = ['atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
-                   'javascript', 'rss+xml', 'soap+xml', 'font-woff', 'xhtml+xml', 'xml-dtd',
-                   'xop+xml']
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
-        if isinstance(action, FuzzableRequest):
+        if isinstance(action, HTTPRequest):
             headers = action.get_headers()
             body = str(action.get_data() or '')
             status = action.get_request_line()
