@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from nose.plugins.attrib import attr
 
 from plugins.tests.helper import PluginTest, PluginConfig
+import core.data.constants.severity as severity
 
 
 class TestXSS(PluginTest):
@@ -137,6 +138,10 @@ class TestXSS(PluginTest):
                         
             # Persistent XSS
             ('stored/writer.php', 'a', ['a']),
+            
+            # XSS with CSP
+            ('xss_with_safe_csp.php', 'data', ['data']),
+            ('xss_with_weak_csp.php', 'data', ['data']),
         ]
         expected_data = self.normalize_expected_data(self.XSS_PATH,
                                                      expected)
@@ -145,6 +150,16 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
+        
+        # Now we want to verify that the vulnerability with safe CSP has lower
+        # severity than the one with weak CSP
+        csp_vulns = [v for v in xss_vulns if 'csp.php' in v.get_url()]
+        self.assertEqual(len(csp_vulns), 2)
+        
+        severities = [v.get_severity() for v in csp_vulns]
+        self.assertEqual(set(severities),
+                         set([severity.MEDIUM, severity.LOW]),
+                         csp_vulns)
 
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']

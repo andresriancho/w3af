@@ -24,6 +24,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.csp.utils import site_protected_against_xss_by_csp
 
 from core.data.kb.vuln import Vuln
 from core.data.db.disk_list import DiskList
@@ -83,11 +84,21 @@ class xss(AuditPlugin):
         
         @return: None
         '''
+        csp_protects = site_protected_against_xss_by_csp(response)
+        vuln_severity = severity.LOW if csp_protects else severity.MEDIUM
+        
         desc = 'A Cross Site Scripting vulnerability was found at: %s'
         desc = desc % mutant.found_at()
-                
+        
+        if csp_protects:
+            desc += 'The risk associated with this vulnerability was lowered'\
+                    ' because the site correctly implements CSP. The'\
+                    ' vulnerability is still a risk for the application since'\
+                    ' only the latest versions of some browsers implement CSP'\
+                    ' checking.'
+        
         v = Vuln.from_mutant('Cross site scripting vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
+                             vuln_severity, response.id, self.get_name(),
                              mutant)
         v.add_to_highlight(mod_value) 
         
@@ -200,28 +211,50 @@ class xss(AuditPlugin):
             for contexts in get_context(response_body, mod_value):
                 for context in contexts:
                     if context.is_executable() or context.can_break(mod_value):
-                        
-                        response_ids = [response.id, mutant_response_id]
-                        name = 'Persistent Cross-Site Scripting vulnerability'
-                        
-                        desc = 'A persistent Cross Site Scripting vulnerability'\
-                               ' was found by sending "%s" to the "%s" parameter'\
-                               ' at %s, which is echoed when browsing to %s.'
-                        desc = desc % (mod_value, mutant.get_var(), mutant.get_url(),
-                                       response.get_url())
-
-                        v = Vuln.from_mutant(name, desc, severity.HIGH,
-                                             response_ids, self.get_name(),
-                                             mutant)
-                        
-                        v['persistent'] = True
-                        v['write_payload'] = mutant
-                        v['read_payload'] = fuzzable_request
-                        v.add_to_highlight(mutant.get_mod_value())
-
-                        om.out.vulnerability(v.get_desc())
-                        self.kb_append_uniq(self, 'xss', v)
+                        self._report_persistent_vuln(mutant, response,
+                                                     mutant_response_id,
+                                                     mod_value,
+                                                     fuzzable_request)
                         break
+    
+    def _report_persistent_vuln(self, mutant, response, mutant_response_id,
+                                mod_value, fuzzable_request):
+        '''
+        Report a persistent XSS vulnerability to the core.
+        
+        @return: None, a vulnerability is saved in the KB.
+        '''
+        response_ids = [response.id, mutant_response_id]
+        name = 'Persistent Cross-Site Scripting vulnerability'
+        
+        desc = 'A persistent Cross Site Scripting vulnerability'\
+               ' was found by sending "%s" to the "%s" parameter'\
+               ' at %s, which is echoed when browsing to %s.'
+        desc = desc % (mod_value, mutant.get_var(), mutant.get_url(),
+                       response.get_url())
+        
+        csp_protects = site_protected_against_xss_by_csp(response)
+        vuln_severity = severity.MEDIUM if csp_protects else severity.HIGH
+        
+        if csp_protects:
+            desc += 'The risk associated with this vulnerability was lowered'\
+                    ' because the site correctly implements CSP. The'\
+                    ' vulnerability is still a risk for the application since'\
+                    ' only the latest versions of some browsers implement CSP'\
+                    ' checking.'
+                    
+        v = Vuln.from_mutant(name, desc, vuln_severity,
+                             response_ids, self.get_name(),
+                             mutant)
+        
+        v['persistent'] = True
+        v['write_payload'] = mutant
+        v['read_payload'] = fuzzable_request
+        v.add_to_highlight(mutant.get_mod_value())
+
+        om.out.vulnerability(v.get_desc())
+        self.kb_append_uniq(self, 'xss', v)
+        
 
     def get_options(self):
         '''
