@@ -30,6 +30,8 @@ from core.controllers.csp.utils import (unsafe_inline_enabled,
                                         retrieve_csp_report_uri,
                                         provides_csp_features,
                                         retrieve_csp_policies,
+                                        find_vulns,
+                                        site_protected_against_xss_by_csp,
                                         CSP_HEADER_CHROME,
                                         CSP_HEADER_FIREFOX,
                                         CSP_HEADER_W3C,
@@ -41,7 +43,16 @@ from core.controllers.csp.utils import (unsafe_inline_enabled,
                                         CSP_HEADER_W3C_REPORT_ONLY,
                                         CSP_DIRECTIVE_REPORT_URI,
                                         CSP_DIRECTIVE_VALUE_UNSAFE_INLINE,
-                                        CSP_DIRECTIVE_STYLE)
+                                        CSP_DIRECTIVE_STYLE,
+                                        CSP_DIRECTIVE_FORM,
+                                        CSP_DIRECTIVE_SANDBOX,
+                                        CSP_DIRECTIVE_SCRIPT_NONCE,
+                                        CSP_DIRECTIVE_PLUGIN_TYPES,
+                                        CSP_DIRECTIVE_XSS,
+                                        CSP_DIRECTIVE_MEDIA,
+                                        CSP_DIRECTIVE_FRAME,
+                                        CSP_DIRECTIVE_FONT,
+                                        CSP_MISSPELLED_DIRECTIVES)
 
 
 class TestUtils(unittest.TestCase):
@@ -182,7 +193,7 @@ class TestUtils(unittest.TestCase):
         csp_headers = Headers(hrds)
         
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+                
         self.assertFalse(provides_csp_features(http_response))
         
     def test_provides_csp_features_yes_case01(self):
@@ -265,18 +276,21 @@ class TestUtils(unittest.TestCase):
     def test_retrieve_csp_policies_with_policies_case02(self):
         '''
         Test case in which several policies are specified using only 1 CSP
-        header but with 3 differents directives.
+        header but with 7 differents directives.
         '''
-        header_value = "default-src 'self'; img-src *; object-src"\
-                       " media1.example.com media2.example.com"\
-                       " *.cdn.example.com; script-src trustedscripts.example.com"
+        header_value = "default-src 'self'; img-src *;"\
+                       " object-src media1.example.com media2.example.com"\
+                       " *.cdn.example.com; script-src trustedscripts.example.com;"\
+                       " form-action /ctxroot/action1 /ctxroot/action2;"\
+                       " plugin-types application/pdf application/x-java-applet;"\
+                       " reflected-xss block"
         hrds = {CSP_HEADER_W3C: header_value}.items()
         csp_headers = Headers(hrds)
         
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         policies = retrieve_csp_policies(http_response)
         
-        self.assertEqual(len(policies), 4)
+        self.assertEqual(len(policies), 7)
         self.assertEqual(len(policies[CSP_DIRECTIVE_DEFAULT]), 1)
         self.assertEqual(policies[CSP_DIRECTIVE_DEFAULT][0], "self")
         self.assertEqual(len(policies[CSP_DIRECTIVE_IMAGE]), 1)
@@ -288,6 +302,16 @@ class TestUtils(unittest.TestCase):
         self.assertTrue("media1.example.com" in policies[CSP_DIRECTIVE_OBJECT])
         self.assertTrue("media2.example.com" in policies[CSP_DIRECTIVE_OBJECT])
         self.assertTrue("*.cdn.example.com" in policies[CSP_DIRECTIVE_OBJECT])
+        self.assertEqual(len(policies[CSP_DIRECTIVE_FORM]), 2)
+        self.assertTrue("/ctxroot/action1" in policies[CSP_DIRECTIVE_FORM])
+        self.assertTrue("/ctxroot/action2" in policies[CSP_DIRECTIVE_FORM])
+        self.assertEqual(len(policies[CSP_DIRECTIVE_PLUGIN_TYPES]), 2)
+        self.assertTrue(
+            "application/pdf" in policies[CSP_DIRECTIVE_PLUGIN_TYPES])
+        self.assertTrue(
+            "application/x-java-applet" in policies[CSP_DIRECTIVE_PLUGIN_TYPES])
+        self.assertEqual(len(policies[CSP_DIRECTIVE_XSS]), 1)
+        self.assertTrue("block" in policies[CSP_DIRECTIVE_XSS])                        
 
     def test_retrieve_csp_policies_with_policies_case03(self):
         '''
@@ -361,3 +385,287 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(policies[CSP_DIRECTIVE_SCRIPT]), 1)
         self.assertEqual(
             policies[CSP_DIRECTIVE_SCRIPT][0], "report.sample.com")
+        
+    def test_retrieve_csp_policies_with_special_policies_case01(self):
+        '''
+        Test case in which 2 policies are specified using special directives
+        with empty value.
+        '''
+        header_value = "sandbox ; script-nonce "
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        policies = retrieve_csp_policies(http_response)
+        
+        self.assertEqual(len(policies), 2)
+        self.assertEqual(len(policies[CSP_DIRECTIVE_SANDBOX]), 1)
+        self.assertEqual(policies[CSP_DIRECTIVE_SANDBOX][0], "")
+        self.assertEqual(len(policies[CSP_DIRECTIVE_SCRIPT_NONCE]), 1)        
+        self.assertEqual(policies[CSP_DIRECTIVE_SCRIPT_NONCE][0], "")     
+        
+    def test_retrieve_csp_policies_with_special_policies_case02(self):
+        '''
+        Test case in which 2 policies are specified using special directives
+        with explicit values.
+        '''
+        header_value = "sandbox allow-forms allow-scripts ;"\
+                       " script-nonce AABBCCDDEE"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        policies = retrieve_csp_policies(http_response)
+        
+        self.assertEqual(len(policies), 2)
+        self.assertEqual(len(policies[CSP_DIRECTIVE_SANDBOX]), 2)
+        self.assertTrue("allow-forms" in policies[CSP_DIRECTIVE_SANDBOX])
+        self.assertTrue("allow-scripts" in policies[CSP_DIRECTIVE_SANDBOX])
+        self.assertEqual(len(policies[CSP_DIRECTIVE_SCRIPT_NONCE]), 1)        
+        self.assertEqual(policies[CSP_DIRECTIVE_SCRIPT_NONCE][0], "AABBCCDDEE") 
+        
+    def test_find_vulns_case01(self):
+        '''
+        Test case in which we set vulnerables policies using "*" as source  
+        for all directives that allow this value.
+        ''' 
+        header_value = "default-src '*';script-src '*';object-src '*';" \
+                       "style-src '*';img-src '*';media-src '*';" \
+                       "frame-src '*';font-src '*';" \
+                       "form-action '*';connect-src '*';plugin-types '*';"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)  
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        vulns = find_vulns(http_response)  
+        
+        self.assertEqual(len(vulns), 11)
+        #>>>"default-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_DEFAULT]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'default-src' allow all sources.",
+                        vulns[CSP_DIRECTIVE_DEFAULT]))  
+        #>>>"script-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_SCRIPT]), 2)
+        self.assertTrue(self._vuln_exists("Directive 'script-src' allow all javascript sources.",
+                        vulns[CSP_DIRECTIVE_SCRIPT]))   
+        warn_msg = "Directive 'script-src' is defined but no directive " \
+        "'script-nonce' is defined to protect javascript resources."                                                                                              
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_SCRIPT]))                                                                                                                                                                                                                                           
+        #>>>"object-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_OBJECT]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'object-src' allow all plugin sources.",
+                        vulns[CSP_DIRECTIVE_OBJECT]))
+        #>>>"style-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_STYLE]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'style-src' allow all CSS sources.",
+                        vulns[CSP_DIRECTIVE_STYLE]))
+        #>>>"img-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_IMAGE]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'img-src' allow all image sources.",
+                        vulns[CSP_DIRECTIVE_IMAGE]))
+        #>>>"media-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_MEDIA]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'media-src' allow all audio/video sources.",
+                        vulns[CSP_DIRECTIVE_MEDIA]))
+        #>>>"frame-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_FRAME]), 2)
+        self.assertTrue(self._vuln_exists("Directive 'frame-src' allow all sources.",
+                        vulns[CSP_DIRECTIVE_FRAME]))
+        warn_msg = "Directive 'frame-src' is defined but no directive " \
+        "'sandbox' is defined to protect resources. Perhaps sandboxing " \
+        "is defined at html attribute level ?"  
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_FRAME]))              
+        #>>>"font-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_FONT]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'font-src' allow all font sources.",
+                        vulns[CSP_DIRECTIVE_FONT]))
+        #>>>"connect-src"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_CONNECTION]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'connect-src' allow all connection sources.",
+                        vulns[CSP_DIRECTIVE_CONNECTION]))                                                                                 
+        #>>>"form-action"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_FORM]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'form-action' allow all action target.",
+                        vulns[CSP_DIRECTIVE_FORM]))
+        #>>>"plugin-types"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_PLUGIN_TYPES]), 1)
+        self.assertTrue(self._vuln_exists("Directive 'plugin-types' allow all plugins types.",
+                        vulns[CSP_DIRECTIVE_PLUGIN_TYPES]))                      
+
+    def test_find_vulns_case02(self):
+        '''
+        Test case in which we set vulnerables policies for "sandbox",
+        "script-nonce","plugin-types","reflected-xss" directives 
+        using invalid values.
+        ''' 
+        header_value = "sandbox allow-invalid; script-nonce aaa,bbb;"\
+        "plugin-types app/titi application/pdf; reflected-xss disallow;"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)  
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        vulns = find_vulns(http_response)  
+        
+        self.assertEqual(len(vulns), 4)
+        #>>>"sandbox"        
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_SANDBOX]), 1)
+        warn_msg = "Directive 'sandbox' specify invalid value: 'allow-invalid'."
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_SANDBOX]))
+        #>>>"script-nonce"        
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_SCRIPT_NONCE]), 1)
+        warn_msg = "Directive 'script-nonce' is defined "\
+                   "but nonce contains invalid character (','|';')."
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_SCRIPT_NONCE]))
+        #>>>"reflected-xss"        
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_XSS]), 1)
+        warn_msg = "Directive 'reflected-xss' specify invalid value: 'disallow'."
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_XSS]))
+        #>>>"plugins-types"
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_PLUGIN_TYPES]), 1)  
+        warn_msg = "Directive 'plugin-types' specify invalid mime type: 'app/titi'."
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_PLUGIN_TYPES]))                                                
+        
+        
+    def test_find_vulns_case03(self):
+        '''
+        Test case in which we set vulnerables policies for 
+        "sandbox","reflected-xss" directives using valid values.
+        ''' 
+        header_value = "sandbox allow-* allow-forms allow-same-origin " \
+                       "allow-scripts allow-top-navigation;"\
+                       "reflected-xss allow;"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)  
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        vulns = find_vulns(http_response)  
+        
+        self.assertEqual(len(vulns), 2)
+        #>>>"sandbox"        
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_SANDBOX]), 2)
+        warn_msg = "Directive 'sandbox' apply no restrictions."
+        self.assertTrue(vulns[CSP_DIRECTIVE_SANDBOX][0].desc, warn_msg)
+        self.assertTrue(vulns[CSP_DIRECTIVE_SANDBOX][1].desc, warn_msg)    
+        #>>>"reflected-xss"        
+        self.assertEqual(len(vulns[CSP_DIRECTIVE_XSS]), 1)
+        warn_msg = "Directive 'reflected-xss' instruct user agent to "\
+                   "disable its active protections against reflected XSS."
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_XSS]))  
+        
+    def test_find_vulns_case04(self):
+        '''
+        Test case in which we configure correctly policies for all directives.
+        '''  
+        header_value = "default-src 'self';script-src 'self';object-src 'self';" \
+                       "style-src 'self';img-src 'self';media-src 'self';" \
+                       "frame-src 'self';font-src 'self';sandbox;" \
+                       "form-action '/myCtx/act';connect-src 'self';"\
+                       "plugin-types application/pdf;reflected-xss filter;"\
+                       "script-nonce AABBCCDDEE;"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)  
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        vulns = find_vulns(http_response)  
+        self.assertEqual(len(vulns), 0)     
+        
+    def test_find_vulns_case05(self):
+        '''
+        Test case in which we misspell somes policies.
+        '''  
+        header_value = "defauld-src 'self';script-src 'self';object-src 'self';" \
+                       "style-src 'self';image-src 'self';media-src 'self';" \
+                       "frame-src 'self';font-src 'self';sandbox;" \
+                       "form-src '/myCtx/act';connect-src 'self';"\
+                       "plugin-types application/pdf;reflected-xss filter;"\
+                       "script-nonce AABBCCDDEE;"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)  
+        
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        vulns = find_vulns(http_response)  
+        self.assertEqual(len(vulns), 1)  
+        self.assertEqual(len(vulns[CSP_MISSPELLED_DIRECTIVES]), 1) 
+        warn_msg = "Somes directives are misspelled: "\
+        "defauld-src,image-src,form-src"
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_MISSPELLED_DIRECTIVES]))   
+        
+        
+    def test_site_protected_against_xss_by_csp_case01(self):
+        '''
+        Test case in witch site do not provide CSP features.
+        '''
+        hrds = {}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response)
+        self.assertFalse(site_protected)
+              
+    def test_site_protected_against_xss_by_csp_case02(self):
+        '''
+        Test case in witch site provide CSP features and have a vuln 
+        on Script policies.
+        '''
+        header_value = "script-src *;"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response)
+        self.assertFalse(site_protected)
+        
+    def test_site_protected_against_xss_by_csp_case03(self):
+        '''
+        Test case in witch site provide CSP features and enable unsafe inline
+        script into is CSP Script policies BUT we do not 
+        accept theses configurations.
+        '''
+        header_value = "script-src 'self' unsafe-inline; script-nonce 'AADD'"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response)
+        self.assertFalse(site_protected) 
+        
+    def test_site_protected_against_xss_by_csp_case04(self):
+        '''
+        Test case in witch site provide CSP features and enable use of the
+        javascript "eval()" function into is CSP Script policies BUT we do not 
+        accept theses configurations.
+        '''
+        header_value = "script-src 'self' unsafe-eval; script-nonce 'AADD'"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response)
+        self.assertFalse(site_protected)   
+        
+    def test_site_protected_against_xss_by_csp_case05(self):
+        '''
+        Test case in witch site provide CSP features and enable unsafe inline
+        script + use of the javascript "eval()" function into is CSP Script 
+        policies BUT we accept theses configurations.
+        '''
+        header_value = "script-src 'self' unsafe-eval unsafe-inline; "\
+                       "script-nonce 'AADD'"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response,
+                                                           True,
+                                                           True)
+        self.assertTrue(site_protected)                                        
+                
+    def _vuln_exists(self, vuln_desc, vulns_list):
+        '''
+        Internal method to check if a vuln is present into a vulns list
+        coming from method "find_vulns()".
+        
+        @param vuln_desc: Vuln description.
+        @param vulns_list: vulns list coming from method "find_vulns()".
+        @return: True only if vuln is found. 
+        '''        
+        for v in vulns_list:
+            if v.desc == vuln_desc:
+                return True
+        
+        return False
