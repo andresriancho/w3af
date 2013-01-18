@@ -74,7 +74,8 @@ CSP_DIRECTIVE_VALUE_XSS_FILTER = "filter"
 #Valid Mime Types list
 MIME_TYPES = MimeTypes().types_map[1].values()
 
-def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False, allow_unsafe_eval=False):
+def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
+                                      allow_unsafe_eval=False):
     '''
     Method to analyze if a site is protected against XSS vulns type using
     CSP policies.

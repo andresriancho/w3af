@@ -654,7 +654,18 @@ class TestUtils(unittest.TestCase):
                                                            True,
                                                            True)
         self.assertTrue(site_protected)                                        
-                
+
+    def test_site_protected_against_xss_by_csp_case06(self):
+        '''
+        Test case in witch site is secure
+        '''
+        header_value = "default-src 'self'"
+        hrds = {CSP_HEADER_W3C: header_value}.items()
+        csp_headers = Headers(hrds)          
+        http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
+        site_protected = site_protected_against_xss_by_csp(http_response)
+        self.assertTrue(site_protected)
+        
     def _vuln_exists(self, vuln_desc, vulns_list):
         '''
         Internal method to check if a vuln is present into a vulns list
