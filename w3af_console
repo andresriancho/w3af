@@ -4,6 +4,7 @@ import getopt
 import sys
 import os
 import gettext
+import base64
  
 # First of all, we need to change the working directory to the w3af directory.
 current_dir = os.getcwd()
@@ -48,9 +49,6 @@ Options:
     -h or --help
         Display this help message.
 
-    -t or --test-all
-        Runs all test scripts containing an 'assert' sentence.
-    
     -s <script_file> or --script=<script_file>
         Run <script_file> script.
 
@@ -79,9 +77,9 @@ def usage():
 
 def main():
     try:
-        long_options = ['script=', 'help', 'version', 'test-all', 'no-update',
+        long_options = ['script=', 'help', 'version', 'no-update',
                         'force-update', 'profile=', 'revision=', 'profile-run']
-        opts, _ = getopt.getopt(sys.argv[1:], "ehvts:nfpP:r:", long_options)
+        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:r:", long_options)
     except getopt.GetoptError, e:
         # print help information and exit:
         usage()
@@ -95,9 +93,8 @@ def main():
     for o, a in opts:
         if o == "-e":
             # easter egg
-            import base64
-            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'
-            msg += 'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
+            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZG'\
+                  'VzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
             om.out.information( base64.b64decode( msg ) )
         if o in ('-s', '--script'):
             script_file = a
@@ -107,6 +104,7 @@ def main():
             profile = a
         if o in ('-p', '--profile'):
             # selected profile
+            print a
             profile = a
         if o in ('-h', '--help'):
             usage()
