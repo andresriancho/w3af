@@ -169,7 +169,7 @@ class detailed(AuthPlugin):
         This authentication plugin can login to web application with more detailed
         and complex authentication schemas where the generic plugin does not work.
 
-        Three configurable parameters exist:
+        Nine configurable parameters exist:
             - username
             - password
             - username_field

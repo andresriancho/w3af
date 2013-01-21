@@ -150,7 +150,7 @@ class generic(AuthPlugin):
         This authentication plugin can login to web application with generic
         authentication schema.
 
-        Three configurable parameters exist:
+        Seven configurable parameters exist:
             - username
             - password
             - username_field
