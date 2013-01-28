@@ -109,15 +109,15 @@ class email_report(OutputPlugin):
 
     def get_long_desc(self):
         return '''
-            This plugin sends short report (only vulnerabilities) by email to
-            specified addresses.
+        This plugin sends short report (only vulnerabilities) by email to
+        specified addresses.
 
-            There are some configurable parameters:
-                - smtpServer
-                - smtpPort
-                - toAddrs
-                - fromAddr
-            '''
+        There are some configurable parameters:
+            - smtpServer
+            - smtpPort
+            - toAddrs
+            - fromAddr
+        '''
 
     def do_nothing(self, *args, **kwds):
         pass
