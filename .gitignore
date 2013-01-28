@@ -1,4 +1,6 @@
 *.py[cod]
+*.py~
+*~
 
 # C extensions
 *.so
@@ -25,6 +27,8 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+.noseids
+nose.cfg
 
 # Translations
 *.mo
