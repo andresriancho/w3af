@@ -37,9 +37,12 @@ class PromptView(gtk.TextView, MessageConsumer):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, promptText, procfunc):
+        gtk.TextView.__init__(self)
+        MessageConsumer.__init__(self)
+
         self.promptText = promptText
         self.procfunc = procfunc
-        super(PromptView, self).__init__()
+        
         self.set_wrap_mode(gtk.WRAP_CHAR)
 
         # keys

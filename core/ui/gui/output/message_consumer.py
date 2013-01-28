@@ -69,7 +69,5 @@ class MessageConsumer(object):
         if not isinstance(msg, Message):
             raise TypeError('Expected Message and got %s instead.' % type(msg))
         
-        raise NotImplementedError
-        
                         
         

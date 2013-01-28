@@ -586,9 +586,6 @@ class MainApp(object):
 
         @param widget: the widget that generated the signal.
         '''
-        # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugin_inst(GtkOutput())
-
         if not self.save_state_to_core():
             return
 
@@ -600,6 +597,9 @@ class MainApp(object):
             return
 
         def start_scan_wrap():
+            # This is inited before all, to have a full logging facility.
+            om.out.set_output_plugin_inst(GtkOutput())
+            
             try:
                 self.w3af.start()
             except KeyboardInterrupt:

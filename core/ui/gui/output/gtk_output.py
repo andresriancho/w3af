@@ -35,6 +35,9 @@ CONSOLE = 'console'
 LOG_HTTP = 'log_http'
 
 
+observers = set()
+
+
 class GtkOutput(OutputPlugin):
     '''
     This is an observer which exposes an OutputPlugin API in order to be added
@@ -50,7 +53,7 @@ class GtkOutput(OutputPlugin):
     '''
 
     def __init__(self):
-        self._observers = weakref.WeakSet()
+        pass
         
     def debug(self, msg_string, new_line=True):
         '''
@@ -63,7 +66,6 @@ class GtkOutput(OutputPlugin):
         #   only used in the time graph that's displayed under the log. In order
         #   to save some memory. I'm only creating the object, but without any msg.
         #
-        print 'debug'
         m = Message(DEBUG, '', new_line)
         self._send_to_observers(m)
 
@@ -106,18 +108,30 @@ class GtkOutput(OutputPlugin):
         '''
         Adds a message object to the queue.
         '''
-        for observer in self._observers:
-            observer(m)
+        to_remove = set()
+        
+        for observer in observers:
+            try:
+                observer(m)
+            except Exception, e:
+                msg = 'Observer function at "%s" failed with exception "%s".'\
+                      ' Removing observer from list.'
+                om.out.error(msg % (observer, e))
+                to_remove.add(observer)
+        
+        for broken_obs in to_remove:
+            observers.remove(broken_obs)
     
     def subscribe(self, observer):
-        self._observers.add(observer)
+        observers.add(observer)
 
     def unsubscribe(self, observer):
         if observer in self._observers:
-            self._observers.remove(observer)
+            observers.remove(observer)
 
     def end(self):
-        self._observers = []
+        global observers
+        observers = weakref.WeakSet()
 
 #pylint: disable=E1103
 def subscribe_to_messages(observer_function):

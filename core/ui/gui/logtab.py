@@ -56,13 +56,17 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
+        gtk.DrawingArea.__init__(self)
+        MessageConsumer.__init__(self)
+        
         self.w3af = w3af
-        super(LogGraph, self).__init__()
+        
         self.pangolayout = self.create_pango_layout("")
 
         # store all messages to be able to redraw
         self.all_messages = DiskList()
-
+        self._need_redraw = 0
+        
         # control variables
         self.alreadyStopped = False
         self.timeGrouping = 2
@@ -80,9 +84,12 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
 
         @returns: True to keep calling it, and False when all it's done.
         '''
-        super(_LineScroller, self).handle_message(msg)
+        super(LogGraph, self).handle_message(msg)
         
-        if msg is None:
+        self._need_redraw += 1
+        
+        if self._need_redraw % 5 == 0:
+            
             # no more new messages
             if self.flags() & gtk.MAPPED:
                 if self._redrawGen is None:
@@ -91,10 +98,10 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
                 if reset:
                     self._redrawGen = None
 
-        mmseg = int(mess.get_real_time() * 1000)
-        mtype = mess.get_type()
+        mmseg = int(msg.get_real_time() * 1000)
+        mtype = msg.get_type()
         if mtype == "vulnerability":
-            sever = mess.get_severity()
+            sever = msg.get_severity()
         else:
             sever = None
         self.all_messages.append((mmseg, mtype, sever))
