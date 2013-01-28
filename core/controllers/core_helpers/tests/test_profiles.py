@@ -28,7 +28,7 @@ from core.controllers.w3afCore import w3afCore
 from core.controllers.exceptions import w3afException
 
 
-class Test_w3afCore_profiles(unittest.TestCase):
+class TestCoreProfiles(unittest.TestCase):
 
     @attr('smoke')
     def test_use_profile(self):
@@ -119,3 +119,18 @@ class Test_w3afCore_profiles(unittest.TestCase):
             profile_name = profile_inst.get_name()
 
             w3af_core.profiles.use_profile(profile_name, workdir='.')
+
+    def test_cant_start_new_thread_bug(self):
+        '''
+        This tests that https://github.com/andresriancho/w3af/issues/56 was
+        properly fixed after the change in how sqlite threads were managed.
+        '''
+        w3af_core = w3afCore()
+        valid, invalid = w3af_core.profiles.get_profile_list('.')
+
+        for i in xrange(10):
+            for profile_inst in valid:
+                profile_name = profile_inst.get_name()
+
+                w3af_core.profiles.use_profile(profile_name, workdir='.')
+
