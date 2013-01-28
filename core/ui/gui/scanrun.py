@@ -25,12 +25,12 @@ import sys
 import re
 import Queue
 import webbrowser
+import xdot
 
 from multiprocessing.dummy import Process, Event
 
 from core.ui.gui import kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 from core.data.db.history import HistoryItem
-from extlib.xdot import xdot
 
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om

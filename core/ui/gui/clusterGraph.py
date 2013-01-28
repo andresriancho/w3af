@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import gtk.gdk
 import gobject
+import xdot
 
-from extlib.xdot import xdot as xdot
 from core.controllers.misc.levenshtein import relative_distance
-from core.ui.gui.reqResViewer import reqResWindow
 from core.controllers.exceptions import w3afException
-from core.ui.gui import entries
 
+from core.ui.gui.reqResViewer import reqResWindow
+from core.ui.gui import entries
 
 # Constants that define the distance available distance functions
 LEVENSHTEIN = 0

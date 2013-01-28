@@ -25,10 +25,7 @@ import threading
 from core.ui.gui import helpers, entries
 
 # The clustering stuff
-try:
-    from extlib.cluster.cluster import HierarchicalClustering
-except Exception, e:
-    from cluster import HierarchicalClustering
+from cluster import HierarchicalClustering
 
 from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 

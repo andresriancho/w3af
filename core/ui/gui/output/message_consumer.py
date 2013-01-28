@@ -36,7 +36,7 @@ class MessageConsumer(object):
         # get the messages
         subscribe_to_messages(self._message_observer)
         self.messages = Queue.Queue()
-        gobject.timeout_add(200, self._process_queue().next)
+        gobject.timeout_add(500, self._process_queue().next)
         
     def _message_observer(self, message):
         self.messages.put(message)

@@ -38,7 +38,8 @@ from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers
 from core.data.parsers.url import URL, parse_qs
-from core.data.parsers.wsdl import WSDLParser
+#TODO: Rewrite web service support
+#from core.data.parsers.wsdl import WSDLParser
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.misc.encoding import smart_unicode
 
@@ -116,6 +117,8 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
 
     if not form_list:
         # Check if its a wsdl file
+        #TODO: Rewrite web service support
+        '''
         wsdlp = WSDLParser()
         try:
             wsdlp.set_wsdl(resp.get_body())
@@ -132,6 +135,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     req_headers
                 )
                 res.append(wspdr)
+        '''
     else:
         # Create one HTTPPostDataRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')

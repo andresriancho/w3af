@@ -36,19 +36,11 @@ def gtkui_dependency_check():
     packages = []
     packages_debian = []
     packages_mac_ports = []
+    packages_pip = []
     packages_openbsd = []
     additional_information = []
 
     om.out.debug('Checking GTK UI dependencies')
-
-    try:
-        import sqlite3
-    except:
-        packages.append('sqlite3')
-        packages_debian.append('python-pysqlite2')
-        packages_mac_ports.append('py26-sqlite3')
-        packages_openbsd.append('py-sqlite2')
-        reason_for_exit = True
 
     try:
         proc = subprocess.Popen('neato -V', shell=True, stdout=subprocess.PIPE,
@@ -81,6 +73,12 @@ def gtkui_dependency_check():
         reason_for_exit = True
 
     try:
+        import xdot
+    except ImportError:
+        packages_pip.append('xdot')
+        reason_for_exit = True
+
+    try:
         import gtksourceview2
     except:
         packages.append('gtksourceview2')
@@ -106,6 +104,11 @@ def gtkui_dependency_check():
         msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
         msg += '    pkg_add -v  ' + ' '.join(packages_openbsd)
+        print msg, '\n'
+    if packages_pip:
+        msg = 'After installing any missing operating system packages, use'\
+              ' pip to install the remaining modules:\n'
+        msg += '    sudo pip install ' + ' '.join(packages_pip)
         print msg, '\n'
     if additional_information:
         msg = 'Additional information:\n'

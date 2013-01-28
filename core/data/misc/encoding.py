@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import codecs
 import urllib
-import extlib.chardet as chardet
+import chardet
 
 # Custom error handling schemes registration
 ESCAPED_CHAR = "slash_escape_char"
