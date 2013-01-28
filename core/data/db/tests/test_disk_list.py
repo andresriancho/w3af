@@ -148,7 +148,20 @@ class TestDiskList(unittest.TestCase):
         self.assertEqual(dl[0] == 'a', True)
         self.assertEqual(dl[1] == 1, True)
         self.assertEqual(dl[2] == [3, 2, 1], True)
+        self.assertRaises(IndexError, dl.__getitem__, 3)
+        
+    def test_getitem_negative(self):
+        dl = DiskList()
 
+        dl.append('a')
+        dl.append('b')
+        dl.append('c')
+
+        self.assertEqual(dl[-1], 'c')
+        self.assertEqual(dl[-2], 'b')
+        self.assertEqual(dl[-3], 'a')
+        self.assertRaises(IndexError, dl.__getitem__, -4)
+        
     def test_not(self):
         dl = DiskList()
         self.assertFalse(dl)

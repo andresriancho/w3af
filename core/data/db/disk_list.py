@@ -190,7 +190,14 @@ class DiskList(object):
     def __getitem__(self, key):
         # I need to add 1 to this key because the autoincrement in SQLITE
         # starts counting from 1 instead of 0
-        index_ = int(key) + 1
+        if key >= 0:
+            index_ = int(key) + 1
+        else:
+            # TODO: There's room for improvement in this code since we could
+            # find a way to avoid the len(self) which generated one more SELECT
+            # statement and is not very nice in terms of performance
+            index_ = len(self) + int(key) + 1
+            
         query = 'SELECT pickle FROM %s WHERE index_ = ?' % self.table_name
         try:
             r = self.db.select_one(query, (index_,))
