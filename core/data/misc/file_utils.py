@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import string
 import datetime
-import pysvn
 import os
 
+from git import Repo
 
 ALLOWED = string.digits + string.letters + '/.-_'
 
@@ -48,22 +48,21 @@ def get_days_since_file_update(filename):
     '''
     @return: The days since the last update 
     '''
-    try:
-        client = pysvn.Client()
-        entry = client.info(filename)
-        # entry.commit_time is epoch
-        last_commit_time = datetime.datetime.fromtimestamp(entry.commit_time)
-    except (AttributeError, pysvn.ClientError):
-        raise ValueError('%s is not tracked by SVN.')
-    else:
+    repo = Repo(".")
+
+    for c in repo.head.commit.iter_parents(paths=filename):
+
+        last_commit_time = datetime.datetime.fromtimestamp(c.authored_date)
         last_commit_date = last_commit_time.date()
-        
+                
         today_date = datetime.date.today()
     
         time_delta = today_date - last_commit_date
         
         return time_delta.days
-
+    
+    raise Exception('"%s" is not in tracked by this repository.' % filename)
+    
 def days_since_newest_file_update(path):
     '''
     @param path: The path to analyze
