@@ -23,6 +23,7 @@ import threading
 
 from core.ui.gui import history
 from core.ui.gui import helpers
+
 from core.data.options.preferences import Preferences
 from core.data.parsers.baseparser import BaseParser
 from core.controllers.exceptions import w3afException
@@ -608,7 +609,6 @@ class TextDialog(gtk.Dialog):
             self.set_modal(True)
         self.connect('response', self.dialog_response_cb)
         self.show()
-
 
 class RememberingWindow(gtk.Window):
     '''Just a window that remembers position and size.

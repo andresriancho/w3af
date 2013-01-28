@@ -23,6 +23,8 @@ import time
 import weakref
 
 import core.data.constants.severity as severity
+import core.controllers.output_manager as om
+
 from core.controllers.plugins.output_plugin import OutputPlugin
 
 DEBUG = 'debug'
@@ -61,6 +63,7 @@ class GtkOutput(OutputPlugin):
         #   only used in the time graph that's displayed under the log. In order
         #   to save some memory. I'm only creating the object, but without any msg.
         #
+        print 'debug'
         m = Message(DEBUG, '', new_line)
         self._send_to_observers(m)
 
@@ -115,6 +118,29 @@ class GtkOutput(OutputPlugin):
 
     def end(self):
         self._observers = []
+
+#pylint: disable=E1103
+def subscribe_to_messages(observer_function):
+    '''
+    Subscribe observer_function to the GtkOutput messages
+    '''
+    all_output_plugins = om.out.get_output_plugin_inst()
+    for plugin_inst in all_output_plugins:
+        if isinstance(plugin_inst, GtkOutput):
+            plugin_inst.subscribe(observer_function)
+            break
+
+
+def unsubscribe_to_messages(observer_function):
+    '''
+    Unsubscribe observer_function to the GtkOutput messages
+    '''
+    all_output_plugins = om.out.get_output_plugin_inst()
+    for plugin_inst in all_output_plugins:
+        if isinstance(plugin_inst, GtkOutput):
+            plugin_inst.unsubscribe(observer_function)
+            break
+#pylint: enable=E1103
 
 class Message(object):
     def __init__(self, msg_type, msg, new_line=True):

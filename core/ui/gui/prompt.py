@@ -23,10 +23,10 @@ import gobject
 import pango
 import Queue
 
-from core.ui.gui import messages
+from core.ui.gui.output.message_consumer import MessageConsumer
 
 
-class PromptView(gtk.TextView):
+class PromptView(gtk.TextView, MessageConsumer):
     '''Creates a prompt for user interaction.
 
     The user input is passed to the registered function, the result
@@ -53,11 +53,6 @@ class PromptView(gtk.TextView):
             gtk.gdk.keyval_from_name("Control_R"): lambda: False,
         }
 
-        # These lines are for printing the om.out.console messages
-        messages.subscribe_to_messages(self.message_observer)
-        self.messages = Queue.Queue()
-        gobject.timeout_add(200, self.add_message)
-
         # mono spaced font looks more like a terminal to me =)
         # and works better with the output of some unix commands
         # that are run remotely and displayed in the console
@@ -78,27 +73,24 @@ class PromptView(gtk.TextView):
         gobject.idle_add(self._prompt)
         gobject.idle_add(self.grab_focus)
 
-    def message_observer(self, message):
-        self.messages.put(message)
-
-    def add_message(self):
+    def handle_message(self, msg):
         '''
         This method is called from gobject.timeout_add and will add messages
         from self.message to the textbuffer.
 
         @return: True to keep running
         '''
-        for msg in self.messages.get():
-            if msg.get_type() != 'console':
-                continue
-    
-            # Handling new lines
-            text = msg.get_msg()
-            if msg.get_new_line():
-                text += '\n'
+        super(_LineScroller, self).handle_message(msg)
+        
+        if msg.get_type() != 'console':
+            return
 
-            self.insert_into_textbuffer(text)
-            yield True
+        # Handling new lines
+        text = msg.get_msg()
+        if msg.get_new_line():
+            text += '\n'
+
+        self.insert_into_textbuffer(text)
 
     def insert_into_textbuffer(self, text):
         '''

@@ -29,7 +29,9 @@ import itertools
 import Queue
 
 import core.data.constants.severity as severity
+
 from core.ui.gui import messages, entries
+from core.ui.gui.output.message_consumer import MessageConsumer
 from core.data.db.disk_list import DiskList
 
 # margins (they have to be > 10)
@@ -48,7 +50,7 @@ class colors:
     whitesmoke = gtk.gdk.color_parse("whitesmoke")
 
 
-class LogGraph(gtk.DrawingArea):
+class LogGraph(gtk.DrawingArea, MessageConsumer):
     '''Defines a log visualization widget that shows an XY plot
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
@@ -58,9 +60,7 @@ class LogGraph(gtk.DrawingArea):
         super(LogGraph, self).__init__()
         self.pangolayout = self.create_pango_layout("")
 
-        # get the messages
-        messages.subscribe_to_messages(self.message_observer)
-        self.messages = Queue.Queue()
+        # store all messages to be able to redraw
         self.all_messages = DiskList()
 
         # control variables
@@ -71,38 +71,33 @@ class LogGraph(gtk.DrawingArea):
         self.gc = None
         self._redrawGen = None
 
-        # schedule the message adding, and go live!
-        gobject.timeout_add(500, self.add_message().next)
+        # Go live!
         self.connect("expose-event", self.area_expose_cb)
         self.show()
     
-    def message_observer(self, message):
-        self.messages.put(message)
-        
-    def add_message(self):
+    def handle_message(self, msg):
         '''Adds a message to the graph.
 
         @returns: True to keep calling it, and False when all it's done.
         '''
-        for mess in self.messages.get():
-            if mess is None:
-                # no more new messages
-                if self.flags() & gtk.MAPPED:
-                    if self._redrawGen is None:
-                        self._redrawGen = self._redrawAll()
-                    reset = self._redrawGen.next()
-                    if reset:
-                        self._redrawGen = None
-                yield True
-                continue
+        super(_LineScroller, self).handle_message(msg)
+        
+        if msg is None:
+            # no more new messages
+            if self.flags() & gtk.MAPPED:
+                if self._redrawGen is None:
+                    self._redrawGen = self._redrawAll()
+                reset = self._redrawGen.next()
+                if reset:
+                    self._redrawGen = None
 
-            mmseg = int(mess.get_real_time() * 1000)
-            mtype = mess.get_type()
-            if mtype == "vulnerability":
-                sever = mess.get_severity()
-            else:
-                sever = None
-            self.all_messages.append((mmseg, mtype, sever))
+        mmseg = int(mess.get_real_time() * 1000)
+        mtype = mess.get_type()
+        if mtype == "vulnerability":
+            sever = mess.get_severity()
+        else:
+            sever = None
+        self.all_messages.append((mmseg, mtype, sever))
 
     def _redrawAll(self):
         '''Redraws all the graph.'''

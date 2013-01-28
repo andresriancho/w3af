@@ -22,39 +22,14 @@ import gtk
 import gobject
 import Queue
 
-import core.controllers.output_manager as om
-
 from core.ui.gui.output.gtk_output import GtkOutput
+from core.ui.gui.output.message_consumer import MessageConsumer
 from core.ui.gui import entries
 from core.ui.gui.common.searchable import Searchable
 from core.data.db.disk_list import DiskList
 
 
-#pylint: disable=E1103
-def subscribe_to_messages(observer_function):
-    '''
-    Subscribe observer_function to the GtkOutput messages
-    '''
-    all_output_plugins = om.out.get_output_plugin_inst()
-    for plugin_inst in all_output_plugins:
-        if isinstance(plugin_inst, GtkOutput):
-            plugin_inst.subscribe(observer_function)
-            break
-
-
-def unsubscribe_to_messages(observer_function):
-    '''
-    Unsubscribe observer_function to the GtkOutput messages
-    '''
-    all_output_plugins = om.out.get_output_plugin_inst()
-    for plugin_inst in all_output_plugins:
-        if isinstance(plugin_inst, GtkOutput):
-            plugin_inst.unsubscribe(observer_function)
-            break
-#pylint: enable=E1103
-
-
-class _LineScroller(gtk.TextView):
+class _LineScroller(gtk.TextView, MessageConsumer):
     '''The text view of the Messages window.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
@@ -66,18 +41,18 @@ class _LineScroller(gtk.TextView):
         @param possible: all filter keys
         '''
         gtk.TextView.__init__(self)
+        MessageConsumer.__init__(self)
+        
         self.set_editable(False)
         self.set_cursor_visible(False)
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.textbuffer = self.get_buffer()
         self.show()
-        self.all_messages = DiskList()
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
         
-        subscribe_to_messages(self.message_observer)
-        self.messages = Queue.Queue()
+        self.all_messages = DiskList()
         
         # scroll bar
         self.freeze_scrollbar = False
@@ -92,11 +67,6 @@ class _LineScroller(gtk.TextView):
             "information": "blue-fg",
             "error": "brown-fg",
         }
-
-        gobject.timeout_add(500, self.add_message().next)
-
-    def message_observer(self, message):
-        self.messages.put(message)
 
     def filter(self, filtinfo):
         '''Applies a different filter to the textview.
@@ -113,7 +83,7 @@ class _LineScroller(gtk.TextView):
                 textbuff.insert_with_tags_by_name(iterl, text, colortag)
         self.scroll_to_end()
 
-    def add_message(self):
+    def handle_message(self, msg):
         '''Adds a message to the textview.
 
         The message is read from the iterated queue.
@@ -121,30 +91,26 @@ class _LineScroller(gtk.TextView):
         @returns: True to gobject to keep calling it, and False when all
                   it's done.
         '''
+        super(_LineScroller, self).handle_message(msg)
         textbuff = self.textbuffer
-        for mess in self.messages.get():
-            if mess is None:
-                yield True
-                continue
-            text = "[%s] %s\n" % (mess.get_time(), mess.get_msg())
-            mtype = mess.get_type()
+                
+        text = "[%s] %s\n" % (msg.get_time(), msg.get_msg())
+        mtype = msg.get_type()
 
-            # only store it if it's of one of the possible filtered
-            if mtype not in self.possible:
-                continue
+        # only store it if it's of one of the possible filtered
+        if mtype not in self.possible:
+            return
 
-            # store it
-            self.all_messages.append((mtype, text))
-            antpos = self.text_position
-            self.text_position += len(text)
+        # store it
+        self.all_messages.append((mtype, text))
+        antpos = self.text_position
+        self.text_position += len(text)
 
-            if mtype in self.active_filter:
-                iterl = textbuff.get_end_iter()
-                colortag = self.bg_colors[mtype]
-                textbuff.insert_with_tags_by_name(iterl, text, colortag)
-                self.scroll_to_end()
-
-        yield False
+        if mtype in self.active_filter:
+            iterl = textbuff.get_end_iter()
+            colortag = self.bg_colors[mtype]
+            textbuff.insert_with_tags_by_name(iterl, text, colortag)
+            self.scroll_to_end()
 
     def scroll_to_end(self):
         if not self.freeze_scrollbar:
