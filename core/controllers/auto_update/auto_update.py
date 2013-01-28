@@ -37,7 +37,9 @@ def is_working_copy():
     '''
     Test whether current's w3af instance a svn working copy.
     '''
-    return SVNClientClass.is_working_copy(localpath=W3AF_LOCAL_PATH)
+    # TODO: Migrate all this code to use GIT, see:
+    # https://github.com/andresriancho/w3af/issues/6
+    return False
 
 
 def get_svn_version(path=W3AF_LOCAL_PATH):
