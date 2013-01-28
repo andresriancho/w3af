@@ -131,11 +131,16 @@ class BasicKnowledgeBase(object):
         @see: Shell.__reduce__ to understand why we need the w3af_core 
         @return: A list of all vulns reported by all plugins.
         '''
+        all_shells = []
+
         for shell in self.get_all_entries_of_class(Shell):
             if w3af_core is not None:
                 shell.set_url_opener(w3af_core.uri_opener)
                 shell.set_worker_pool(w3af_core.worker_pool)
-            yield shell
+
+            all_shells.append(shell)
+
+        return all_shells
 
     def _get_real_name(self, data):
         if isinstance(data, basestring):
