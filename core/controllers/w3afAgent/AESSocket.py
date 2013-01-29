@@ -28,8 +28,8 @@ raise Exception(msg)
 
 
 # If I wan't to continue to develop AESSocket, I should re-install pyrijndael.
-from extlib.pyrijndael.pyRijndael import DecryptData
-from extlib.pyrijndael.pyRijndael import EncryptData
+from pyrijndael.pyRijndael import DecryptData
+from pyrijndael.pyRijndael import EncryptData
 
 def makeAESSocket( key , sock ):
     '''
