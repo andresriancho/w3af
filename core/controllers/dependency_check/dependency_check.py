@@ -40,7 +40,7 @@ class PIPDependency(object):
         self.os_packages.extend(os_packages)
 
 PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
-                PIPDependency('git', 'GitPython'),
+                PIPDependency('git', 'GitPython', ['git']),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap', C_BUILD_PACKAGES),
                 PIPDependency('esmre', 'esmre'),
                 PIPDependency('sqlite3', 'pysqlite'),
