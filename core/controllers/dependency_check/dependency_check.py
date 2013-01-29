@@ -91,8 +91,12 @@ def dependency_check():
 
     failed_deps = []
     for w3af_dependency in PIP_PACKAGES:
-        if not lazy_load(w3af_dependency.module_name):
-            failed_deps.append(w3af_dependency)
+        try:
+            if not lazy_load(w3af_dependency.module_name):
+                failed_deps.append(w3af_dependency)
+        except KeyboardInterrupt:
+            print 'User exit with Ctrl+C.'
+            sys.exit(-1)
     
     if not failed_deps:
         return
