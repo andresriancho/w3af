@@ -46,7 +46,7 @@ class TestVariantIdentification(unittest.TestCase):
     def test_diff_domain_params(self):
         self.assertFalse(
             are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
-                         URL('http://rapid7.com/foo.php?id=1')))
+                         URL('http://w3af.org/foo.php?id=1')))
 
     def test_same_params_diff_values(self):
         self.assertTrue(
@@ -60,4 +60,4 @@ class TestVariantIdentification(unittest.TestCase):
     def test_raises(self):
         self.assertRaises(AttributeError, are_variants,
                           'http://w3af.com/foo.php?id=1',
-                          'http://rapid7.com/foo.php?id=1')
+                          'http://w3af.org/foo.php?id=1')
