@@ -53,7 +53,8 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('scapy.config', 'scapy-real'),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
-                PIPDependency('msgpack', 'msgpack-python', C_BUILD_PACKAGES),]
+                PIPDependency('msgpack', 'msgpack-python', C_BUILD_PACKAGES),
+                PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
     not_installed = 'is not installed and no info is available'
