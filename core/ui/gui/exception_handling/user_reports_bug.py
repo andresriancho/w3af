@@ -3,7 +3,7 @@ user_reports_bug.py
 
 Copyright 2009 Andres Riancho
 
-This file is part of w3af, w3af.Trac.net .
+This file is part of w3af, w3af.org .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 from core.ui.gui.exception_handling.common_windows import (
-    simple_base_window, trac_bug_report)
+    simple_base_window, github_bug_report)
 
 
-class user_reports_bug(simple_base_window, trac_bug_report):
+class user_reports_bug(simple_base_window, github_bug_report):
     '''
     This window covers the STRANGE case in which a user goes to the Help menu and
     clicks on "Report Bug".
@@ -33,7 +33,7 @@ class user_reports_bug(simple_base_window, trac_bug_report):
 
     def __init__(self):
         simple_base_window.__init__(self)
-        trac_bug_report.__init__(
+        github_bug_report.__init__(
             self, 'No traceback available on user bug report.')
 
         # We got here because of the user going to the Help menu and
@@ -93,4 +93,4 @@ class user_reports_bug(simple_base_window, trac_bug_report):
         self.butt_send.set_sensitive(False)
 
         # Report the bug
-        trac_bug_report.report_bug(self)
+        github_bug_report.report_bug(self)

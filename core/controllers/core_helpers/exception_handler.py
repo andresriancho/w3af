@@ -197,7 +197,7 @@ class ExceptionHandler(object):
         '''
         @return: A scan identifier to bind all bug reports together so that we
                  can understand them much better when looking at the individual
-                 Trac bug reports.
+                 Github bug reports.
 
                  Note that this will NOT leak any personal information to our
                  systems.

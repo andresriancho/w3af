@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.output_manager as om
 
-from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
-from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
+from core.controllers.easy_contribution.github_issues import GithubIssues
+from core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
 
@@ -129,19 +129,19 @@ class bug_report_menu(menu):
         '''
         Report one or more bugs to w3af's Trac, submit data to server.
         '''
-        sf = SourceforgeXMLRPC(DEFAULT_USER_NAME, DEFAULT_PASSWD)
-        if not sf.login():
-            om.out.console(
-                'Failed to contact Trac server. Please try again later.')
+        gh = GithubIssues(OAUTH_TOKEN)
+        if not gh.login():
+            msg = 'Failed to contact github.com. Please try again later.'
+            om.out.console(msg)
         else:
             traceback_str = edata.traceback_str
             desc = edata.get_summary()
             plugins = edata.enabled_plugins
             summary = str(edata.exception)
 
-            ticket_id, ticket_url = sf.report_bug(
-                summary, desc, tback=traceback_str,
-                plugins=plugins)
+            ticket_id, ticket_url = gh.report_bug(summary, desc,
+                                                  tback=traceback_str,
+                                                  plugins=plugins)
 
             if ticket_id is None:
                 msg = '    [%s/%s] Failed to report bug with id %s.' % (

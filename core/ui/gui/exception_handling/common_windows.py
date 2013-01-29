@@ -24,8 +24,8 @@ import Queue
 import threading
 import gobject
 
-from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
-from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
+from core.controllers.easy_contribution.github_issues import GithubIssues
+from core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
 from core.ui.gui.helpers import end_threads
 from core.ui.gui.entries import EmailEntry
@@ -240,14 +240,14 @@ class dlg_ask_credentials(gtk.MessageDialog):
 
     METHOD_ANON = 1
     METHOD_EMAIL = 2
-    METHOD_SF = 3
+    METHOD_GH = 3
 
     def __init__(self, invalid_login=False):
         '''
         @return: A tuple with the following information:
                     (user_exit, method, params)
 
-                Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_SF and,
+                Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_GH and,
                 params is the email or the sourceforge username and password,
                 in the anon case, the params are empty.
         '''
@@ -308,12 +308,12 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.vbox.pack_start(separator, True, True, 0)
 
         #
-        #    Sourceforge credentials
+        #    Github credentials
         #
-        sf_button = gtk.RadioButton(email_button, "Sourceforge credentials:")
-        self.vbox.pack_start(sf_button, True, True, 0)
+        gh_button = gtk.RadioButton(email_button, "GitHub credentials:")
+        self.vbox.pack_start(gh_button, True, True, 0)
 
-        sf_vbox = gtk.VBox()
+        gh_vbox = gtk.VBox()
 
         # Create the text input field
         user_entry = gtk.Entry()
@@ -323,7 +323,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         user_hbox = gtk.HBox()
         user_hbox.pack_start(gtk.Label("Username:  "), False, 5, 5)
         user_hbox.pack_end(user_entry)
-        sf_vbox.pack_start(user_hbox, True, True, 0)
+        gh_vbox.pack_start(user_hbox, True, True, 0)
 
         # Create the password entry
         passwd_entry = gtk.Entry()
@@ -334,27 +334,27 @@ class dlg_ask_credentials(gtk.MessageDialog):
         passwd_hbox = gtk.HBox()
         passwd_hbox.pack_start(gtk.Label("Password:  "), False, 5, 5)
         passwd_hbox.pack_end(passwd_entry)
-        sf_vbox.pack_start(passwd_hbox, True, True, 0)
+        gh_vbox.pack_start(passwd_hbox, True, True, 0)
 
         # Some secondary text
         warning_label = gtk.Label()
         warning = _("\nYour credentials won't be stored in your computer,\n"
                     "  and will only be sent over HTTPS connections.")
         warning_label.set_text(warning)
-        sf_vbox.pack_start(warning_label, True, True, 0)
-        sf_vbox.set_sensitive(False)
-        self.vbox.pack_start(sf_vbox, True, True, 0)
+        gh_vbox.pack_start(warning_label, True, True, 0)
+        gh_vbox.set_sensitive(False)
+        self.vbox.pack_start(gh_vbox, True, True, 0)
 
         separator = gtk.HSeparator()
         self.vbox.pack_start(separator, True, True, 0)
 
         # Handling of sensitiviness between the radio contents
         anon_button.connect("toggled", self._radio_callback_anon, [
-        ], [email_hbox, sf_vbox])
+        ], [email_hbox, gh_vbox])
         email_button.connect("toggled", self._radio_callback_email,
-                             [email_hbox, ], [sf_vbox, ])
-        sf_button.connect(
-            "toggled", self._radio_callback_sf, [sf_vbox, ], [email_hbox, ])
+                             [email_hbox, ], [gh_vbox, ])
+        gh_button.connect(
+            "toggled", self._radio_callback_gh, [gh_vbox, ], [email_hbox, ])
 
         # Go go go!
         self.show_all()
@@ -376,7 +376,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
             email = self.email_entry.get_text()
             params = (email,)
         elif 'sourceforge' in active_label:
-            method = self.METHOD_SF
+            method = self.METHOD_GH
             user = user_entry.get_text()
             passwd = passwd_entry.get_text()
             params = (user, passwd)
@@ -412,7 +412,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self._radio_callback(event, enable, disable)
         self._email_entry_changed(True, True)
 
-    def _radio_callback_sf(self, event, enable, disable):
+    def _radio_callback_gh(self, event, enable, disable):
         self._radio_callback(event, enable, disable)
         # re-enable the button in case it was disabled by an invalid email address entry
         ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
@@ -511,31 +511,31 @@ Please provide any additional information below:
         return False, summary, description
 
 
-class trac_bug_report(object):
+class github_bug_report(object):
     '''
-    Class that models user interaction with Trac to report ONE bug.
+    Class that models user interaction with Github to report ONE bug.
     '''
 
     def __init__(self, tback='', fname=None, plugins=''):
-        self.sf = None
+        self.gh = None
         self.tback = tback
         self.fname = fname
         self.plugins = plugins
         self.autogen = False
 
     def report_bug(self):
-        user_exit, sf, summary, userdesc, email = self._info_and_login()
+        user_exit, gh, summary, userdesc, email = self._info_and_login()
 
         if user_exit:
             return
 
-        rbsr = report_bug_show_result(self._report_bug_to_sf,
-                                      [(sf, summary, userdesc, email), ])
+        rbsr = report_bug_show_result(self._report_bug_to_github,
+                                      [(gh, summary, userdesc, email), ])
         rbsr.run()
 
     def _info_and_login(self):
         # Do the login
-        user_exit, sf, email = self._login_sf()
+        user_exit, gh, email = self._login_github()
 
         if user_exit:
             return user_exit, None, None, None, None
@@ -547,14 +547,14 @@ class trac_bug_report(object):
         if user_exit:
             return user_exit, None, None, None, None
 
-        return user_exit, sf, summary, userdesc, email
+        return user_exit, gh, summary, userdesc, email
 
-    def _report_bug_to_sf(self, sf, summary, userdesc, email):
+    def _report_bug_to_github(self, gh, summary, userdesc, email):
         '''
         Send bug to Trac.
         '''
         try:
-            ticket_url, ticket_id = sf.report_bug(
+            ticket_url, ticket_id = gh.report_bug(
                 summary, userdesc, self.tback,
                 self.fname, self.plugins, self.autogen,
                 email)
@@ -563,7 +563,7 @@ class trac_bug_report(object):
         else:
             return ticket_url, ticket_id
 
-    def _login_sf(self, retry=3):
+    def _login_github(self, retry=3):
         '''
         Perform user login.
         '''
@@ -582,46 +582,46 @@ class trac_bug_report(object):
             if user_exit:
                 return user_exit, None, None
 
-            if method == dlg_ask_credentials.METHOD_SF:
+            if method == dlg_ask_credentials.METHOD_GH:
                 user, password = params
 
             elif method == dlg_ask_credentials.METHOD_EMAIL:
                 # The user chose METHOD_ANON or METHOD_EMAIL with both these
                 # methods the framework actually logs in using our default
                 # credentials
-                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
+                user, password = (OAUTH_TOKEN, None)
                 email = params[0]
 
             else:
                 # The user chose METHOD_ANON or METHOD_EMAIL with both these
                 # methods the framework actually logs in using our default
                 # credentials
-                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
+                user, password = (OAUTH_TOKEN, None)
 
-            sf = SourceforgeXMLRPC(user, password)
-            login_result = sf.login()
+            gh = GithubIssues(user, password)
+            login_result = gh.login()
             invalid_login = not login_result
 
             if login_result:
                 break
 
-        return (False, sf, email)
+        return (False, gh, email)
 
 
-class trac_multi_bug_report(trac_bug_report):
+class github_multi_bug_report(github_bug_report):
     '''
-    Class that models user interaction with Trac to report ONE OR MORE bugs.
+    Class that models user interaction with Github to report ONE OR MORE bugs.
     '''
 
     def __init__(self, exception_list, scan_id):
-        trac_bug_report.__init__(self)
-        self.sf = None
+        github_bug_report.__init__(self)
+        self.gh = None
         self.exception_list = exception_list
         self.scan_id = scan_id
         self.autogen = False
 
     def report_bug(self):
-        user_exit, sf, email = self._login_sf()
+        user_exit, gh, email = self._login_github()
 
         if user_exit:
             return
@@ -630,20 +630,20 @@ class trac_multi_bug_report(trac_bug_report):
         for edata in self.exception_list:
             tback = edata.get_details()
             plugins = edata.enabled_plugins
-            bug_info_list.append((sf, tback, self.scan_id, email, plugins))
+            bug_info_list.append((gh, tback, self.scan_id, email, plugins))
 
-        rbsr = report_bug_show_result(self._report_bug_to_sf, bug_info_list)
+        rbsr = report_bug_show_result(self._report_bug_to_github, bug_info_list)
         rbsr.run()
 
-    def _report_bug_to_sf(self, sf, tback, scan_id, email, plugins):
+    def _report_bug_to_github(self, gh, tback, scan_id, email, plugins):
         '''
         Send bug to Trac.
         '''
-        userdesc = 'No user description was provided for this bug report given'
-        userdesc += ' that it was related to handled exceptions in scan with id'
-        userdesc += ' %s' % scan_id
+        userdesc = 'No user description was provided for this bug report given'\
+                   ' that it was related to handled exceptions in scan with id'\
+                   ' %s' % scan_id
         try:
-            ticket_url, ticket_id = sf.report_bug(None, userdesc, tback=tback,
+            ticket_url, ticket_id = gh.report_bug(None, userdesc, tback=tback,
                                                   plugins=plugins,
                                                   autogen=self.autogen,
                                                   email=email)
