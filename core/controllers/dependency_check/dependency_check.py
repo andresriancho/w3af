@@ -55,7 +55,27 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('cluster', 'cluster'),
                 PIPDependency('msgpack', 'msgpack-python', C_BUILD_PACKAGES),]
 
+def os_package_is_installed(package_name):
+    not_installed = 'is not installed and no info is available'
+    installed = 'Status: install ok installed'
+    
+    try:
+        p = subprocess.Popen(['dpkg', '-s', package_name], stdout=subprocess.PIPE,
+                                                           stderr=subprocess.PIPE)
+    except OSError:
+        # We're not on a debian based system
+        return None
+    else:
+        dpkg_output = p.stdout.read()
 
+        if not_installed in dpkg_output:
+            return False
+        elif installed in dpkg_output:
+            return True
+        else:
+            return None
+    
+    
 def verify_python_version():
     '''
     Check python version eq 2.6 or 2.7
@@ -121,6 +141,8 @@ def dependency_check():
     
     if pip_installed():
         os_packages.remove(PYTHON_PIP)
+    
+    os_packages = [pkg for pkg in os_packages if not os_package_is_installed(pkg)]
     
     if os_packages and 'linux' in curr_platform:
         msg = 'On Debian based systems please install the following operating'\
