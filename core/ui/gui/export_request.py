@@ -3,7 +3,7 @@ export_request.py
 
 Copyright 2008 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ from core.controllers.exceptions import w3afException
 export_request_example = """\
 GET http://localhost/script.php HTTP/1.0
 Host: www.some_host.com
-User-Agent: w3af.sf.net
+User-Agent: w3af.org
 Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """

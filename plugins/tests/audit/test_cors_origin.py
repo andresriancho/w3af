@@ -3,7 +3,7 @@ test_cors_origin.py
 
 Copyright 2012 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ class TestCORSOrigin(PluginTest):
 
     def test_allow_methods_no(self):
         allow_methods = 'GET, POST, Options'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
 
         vulns = self.co._allow_methods(self.request, self.url, self.origin,
@@ -96,7 +96,7 @@ class TestCORSOrigin(PluginTest):
     def test_allow_methods_strange(self):
 
         allow_methods = 'GET, POST, OPTIONS, FOO'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
 
         vulns = self.co._allow_methods(self.request, self.url, self.origin,
@@ -112,7 +112,7 @@ class TestCORSOrigin(PluginTest):
     def test_allow_methods_sensitive(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
 
         vulns = self.co._allow_methods(self.request, self.url, self.origin,
@@ -128,7 +128,7 @@ class TestCORSOrigin(PluginTest):
     def test_allow_methods_sensitive_strange(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
 
         vulns = self.co._allow_methods(self.request, self.url, self.origin,
@@ -145,7 +145,7 @@ class TestCORSOrigin(PluginTest):
     def test_allow_methods_sensitive_strange_analyze_server_response(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
         vulns = self.co._analyze_server_response(
             self.request, self.url, self.origin,
@@ -162,7 +162,7 @@ class TestCORSOrigin(PluginTest):
     def test_allow_methods_sensitive_strange_call_max(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
 
         for i in xrange(self.co.MAX_REPEATED_REPORTS + 1):
@@ -190,7 +190,7 @@ class TestCORSOrigin(PluginTest):
 
     def test_universal_allow_not(self):
         allow_methods = 'GET, POST, OPTIONS'
-        allow_origin = 'http://w3af.sf.net/'
+        allow_origin = 'http://w3af.org/'
         allow_credentials = 'false'
         vulns = self.co._analyze_server_response(
             self.request, self.url, self.origin,

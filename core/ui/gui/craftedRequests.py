@@ -3,7 +3,7 @@ craftedRequests.py
 
 Copyright 2007 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ ui_proxy_menu = """
 manual_request_example = """\
 GET http://localhost/script.php HTTP/1.0
 Host: www.some_host.com
-User-Agent: w3af.sf.net
+User-Agent: w3af.org
 Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
@@ -54,7 +54,7 @@ Content-Type: application/x-www-form-urlencoded
 fuzzy_request_example = """\
 GET http://localhost/$xrange(10)$ HTTP/1.0
 Host: www.some_host.com
-User-Agent: w3af.sf.net
+User-Agent: w3af.org
 Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """

@@ -3,7 +3,7 @@ opener_settings.py
 
 Copyright 2006 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ class OpenerSettings(Configurable):
         #    string in w3af:
         #
         user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0;'
-        user_agent += ' w3af.sf.net)'
+        user_agent += ' w3af.org)'
         #   which basically is the UA for IE8 running in Windows 7, plus our website :)
         self.header_list = [('User-Agent', user_agent)]
 
@@ -96,7 +96,7 @@ class OpenerSettings(Configurable):
             socket.setdefaulttimeout(cfg.get('timeout'))
             cfg.save('headers_file', '')
             cfg.save('cookie_jar_file', '')
-            cfg.save('user_agent', 'w3af.sourceforge.net')
+            cfg.save('user_agent', 'w3af.org')
 
             cfg.save('proxy_address', '')
             cfg.save('proxy_port', 8080)

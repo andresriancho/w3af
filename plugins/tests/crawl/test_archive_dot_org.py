@@ -3,7 +3,7 @@ test_archive_dot_org.py
 
 Copyright 2012 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 class TestArchiveDotOrg(PluginTest):
 
-    archive_url = 'http://w3af.sourceforge.net/'
+    archive_url = 'http://w3af.org/'
 
     _run_config = {
         'target': None,
@@ -41,10 +41,8 @@ class TestArchiveDotOrg(PluginTest):
         self._scan(self.archive_url, self._run_config['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = (
-            'oss.php', 'objectives.php', 'plugin-descriptions.php',
-            'videos/video-demos.php', 'videos/w3af-vs-wivet/w3af-vs-wivet.htm',
-            'documentation/epydoc/core.data.kb-module.html')
+        EXPECTED_URLS = ('download', 'take-a-tour', 'community', 'blog',
+                         'howtos', 'project-history')
 
         expected_set = set((self.archive_url + end) for end in EXPECTED_URLS)
         urls_as_strings = set([u.url_string for u in urls])
@@ -62,7 +60,7 @@ class TestArchiveDotOrg(PluginTest):
         self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)
 
     def test_raise_on_domain_not_in_archive(self):
-        url = URL('http://www.w3af.org/')
+        url = URL('http://www.w3af-scanner.org/')
         fr = FuzzableRequest(url, method='GET')
 
         ado = archive_dot_org()

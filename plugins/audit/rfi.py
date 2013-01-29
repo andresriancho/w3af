@@ -3,7 +3,7 @@ rfi.py
 
 Copyright 2006 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ class rfi(AuditPlugin):
                        ' and port (eg. 44449), or use the official w3af site as' \
                        ' the target server for remote inclusions.'
 
-    RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/rfi.html'
+    RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
     RFI_ERRORS = ('php_network_getaddresses: getaddrinfo',
                   'failed to open stream: Connection refused in'
@@ -379,9 +379,9 @@ class rfi(AuditPlugin):
             - use_w3af_site
 
         There are two ways of running this plugin, the most common one is to use
-        w3af's site (w3af.sf.net) as the URL to include. This is convenient and
+        w3af's site (w3af.org) as the URL to include. This is convenient and
         requires zero configuration but leaks information about vulnerable sites
-        to w3af.sf.net staff.
+        to w3af's staff.
 
         The second way to configure this plugin runs a webserver on the box
         running w3af on the IP address and port specified by "listen_address"

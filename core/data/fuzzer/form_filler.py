@@ -4,7 +4,7 @@ formFiller.py
 
 Copyright 2006 Andres Riancho
 
-This file is part of w3af, w3af.sourceforge.net .
+This file is part of w3af, http://w3af.org/ .
 
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ parameter_name_knowledge = {
                  u'contraseña', 'senha', 'key', 'hash', 'pword', 'passe'],
 
     'w3af@email.com': ['mail', 'email', 'e-mail', 'correo', 'correio', 'to', 'cc', 'bcc'],
-    'http://w3af.sf.net/': ['link', 'enlace', 'target', 'destino', 'website',
-                            'web', 'url', 'page', 'homepage'],
+    'http://www.w3af.org/': ['link', 'enlace', 'target', 'destino', 'website',
+                             'web', 'url', 'page', 'homepage'],
 
     'AK': ['state', 'estado'],
     'Argentina': ['location', 'country', 'pais', u'país', 'land'],
@@ -79,7 +79,7 @@ parameter_name_knowledge = {
 
     '127.0.0.1': ['ip', 'ipaddress', 'host', 'server', 'servidor'],
     '255.255.255.0': ['netmask', 'mask', 'mascara'],
-    'w3af.sf.net': ['domain', 'dominio']
+    'www.w3af.org': ['domain', 'dominio']
 
 }
 
