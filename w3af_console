@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import getopt
 import sys
 import os
@@ -23,6 +22,7 @@ dependency_check()
 
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
+from core.ui.console.console_ui import ConsoleUI
 import core.controllers.output_manager as om
 try:
     om.out.set_output_plugins( ['console'] )
@@ -60,8 +60,8 @@ Options:
         An update check will be made when starting. This option takes 
         precedence over the 'auto-update' setting in 'startup.conf' file.
      
-    -r <rev number> or --revision <rev number>
-    	Force to update to <rev number>.
+    -c <commit id> or --commit <commit id>
+    	Force to update to <commit id>.
     
     -p <profile> or --profile=<profile>
         Run with the selected <profile>
@@ -78,8 +78,8 @@ def usage():
 def main():
     try:
         long_options = ['script=', 'help', 'version', 'no-update',
-                        'force-update', 'profile=', 'revision=', 'profile-run']
-        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:r:", long_options)
+                        'force-update', 'profile=', 'commit=', 'profile-run']
+        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:c:", long_options)
     except getopt.GetoptError, e:
         # print help information and exit:
         usage()
@@ -88,7 +88,7 @@ def main():
     force_profile = None
     profile = None
     doupdate = None
-    rev = 0 # HEAD revision
+    commit_id = 'HEAD'
     
     for o, a in opts:
         if o == "-e":
@@ -116,20 +116,9 @@ def main():
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
-        if o in ('-r', '--revision'):
+        if o in ('-c', '--commit'):
             doupdate = True
-            a = a.upper()
-            if a in ('HEAD', 'PREV'):
-                rev = 0 if (a == 'HEAD') else -1
-            else:
-                try:
-                    rev = int(a)
-                except ValueError:
-                    om.out.error("Invalid revision number, integer expected.")
-                    return -3
-    
-    # console
-    from core.ui.console.console_ui import ConsoleUI
+            commit_id = a
     
     commands_to_run = []
     if script_file is not None:
@@ -151,7 +140,7 @@ def main():
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
-    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate, rev=rev)
+    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate, commit_id=commit_id)
     
     if not console.accept_disclaimer():
         return -4
