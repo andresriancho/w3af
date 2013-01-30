@@ -277,3 +277,13 @@ class TestDiskList(unittest.TestCase):
             result += c
         
         self.assertEqual(EXPECTED, result)
+    
+    def test_many_instances(self):
+        all_instances = []
+        amount = 200
+        
+        for _ in xrange(amount):
+            disk_list = DiskList()
+            all_instances.append(disk_list)
+        
+        self.assertEqual(len(all_instances), amount)
