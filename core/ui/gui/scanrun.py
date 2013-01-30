@@ -456,6 +456,10 @@ class URLsTree(gtk.TreeView):
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]
+            
+            # To make sure we return to the mainloop
+            yield True
+            
             self._insertNodes(None, parts, self.treeholder, 1)
 
             # TODO: Automatically sort after each insertion

@@ -105,6 +105,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         else:
             sever = None
         self.all_messages.append((mmseg, mtype, sever))
+        yield True
 
     def _redrawAll(self):
         '''Redraws all the graph.'''

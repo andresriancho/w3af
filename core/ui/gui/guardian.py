@@ -74,7 +74,7 @@ class FoundObjectsGuardian(gtk.HBox):
         self.pack_start(self.shll.label, False, False, padding=2)
 
         # go live
-        gobject.timeout_add(1000, self._update)
+        gobject.timeout_add(300, self._update)
         self.show_all()
 
     def _update(self):
@@ -82,15 +82,17 @@ class FoundObjectsGuardian(gtk.HBox):
         # shells
         shells = kb.kb.get_all_shells()
         self.shll.quant = len(shells)
-
+        yield True
+        
         # infos
         infos = kb.kb.get_all_infos()
         self.info.quant = len(infos)
-
+        yield True
+        
         # vulns
         vulns = kb.kb.get_all_vulns()
         self.vuln.quant = len(vulns)
-        return True
+        yield True
 
 
 class FoundExceptionsStatusBar(gtk.EventBox):

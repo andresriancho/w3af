@@ -107,8 +107,8 @@ class KBTree(gtk.TreeView):
 
         # get the knowledge base and go live
         self.fullkb = kb.kb.dump()
-        gobject.timeout_add(
-            500, self._update_tree, self.treestore, self.treeholder)
+        gobject.timeout_add(500, self._update_tree, self.treestore,
+                            self.treeholder)
         self.postcheck = False
 
         self.show()

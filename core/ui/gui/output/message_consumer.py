@@ -42,7 +42,7 @@ class MessageConsumer(object):
         self.messages.put(message)
 
     def _process_queue(self):
-        '''Adds a message to the textview.
+        '''Sends a message to the handle_message method.
 
         The message is read from the iterated queue.
 
@@ -60,7 +60,9 @@ class MessageConsumer(object):
                 if msg is None:
                     continue
                 
-                self.handle_message(msg)
+                keep_running = self.handle_message(msg)
+                while keep_running:
+                    yield True
 
     def handle_message(self, msg):
         '''
@@ -69,5 +71,5 @@ class MessageConsumer(object):
         if not isinstance(msg, Message):
             raise TypeError('Expected Message and got %s instead.' % type(msg))
         
-                        
+        yield True
         

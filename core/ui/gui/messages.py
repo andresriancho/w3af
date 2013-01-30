@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
-import gobject
-import Queue
 
 from core.ui.gui.output.gtk_output import GtkOutput
 from core.ui.gui.output.message_consumer import MessageConsumer
