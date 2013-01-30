@@ -284,6 +284,9 @@ class SQLiteExecutor(Process):
         while True:
             op_code, args, kwds, future = self._in_queue.get()
             
+            args = args or ()
+            kwds = kwds or {}
+            
             if self.DEBUG:
                 print '%s %s %s' % (op_code, args, kwds)
             
