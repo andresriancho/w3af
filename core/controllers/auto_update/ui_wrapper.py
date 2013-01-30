@@ -34,12 +34,11 @@ class UIUpdater(object):
     '''
 
     def __init__(self, force=False, ask=None, logger=None,
-                 commit=VersionMgr.HEAD, print_result=False):
+                 commit=VersionMgr.HEAD):
         self._force_upd = force
         self._ask = ask
         self._logger = logger
         self._target_commit = commit
-        self._print_res = print_result
         self._callbacks = {'callback_onupdate_confirm': ask}
         self._registries = {}
 
@@ -83,8 +82,7 @@ class UIUpdater(object):
             '''
 
     def _call_update(self):
-        return self._vmngr.update(self._force_upd,
-                                  self._target_commit, self._print_res)
+        return self._vmngr.update(self._force_upd, self._target_commit)
 
     def _handle_update_output(self, resp):
         raise NotImplementedError("Must be implemented by subclass")
