@@ -50,8 +50,9 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
     
     >>> [ref.name for ref in git.Repo('.').refs if \
          ref.commit.hexsha == git.Repo('.').head.commit.hexsha]
+         
     ['threading2', 'origin/threading2']
-    >>> 
+ 
     '''
     repo = git.Repo(path)
     names = [ref.name for ref in repo.refs if ref.commit.hexsha == get_latest_commit()]
