@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
-
 # Now that I know that I have them, import them!
 import gtk
 import gobject
@@ -38,8 +37,6 @@ import core.data.kb.config as cf
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc_settings import MiscSettings
-from core.controllers.auto_update.version_manager import VersionMgr
-from core.controllers.auto_update.ui_wrapper import UIUpdater
 from core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
 from core.controllers.exception_handling.helpers import pprint_plugins, get_versions
 from core.controllers.misc.homeDir import get_home_dir
@@ -50,6 +47,7 @@ from core.ui.gui.exception_handling import unhandled
 from core.ui.gui.exception_handling import user_reports_bug
 from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 from core.ui.gui.output.gtk_output import GtkOutput
+from core.ui.gui.auto_update.gui_updater import GUIUpdater
  
 from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from core.ui.gui import export_request
@@ -166,59 +164,6 @@ class WindowsCommunication(object):
         '''Enables the window.'''
         self.client = window
         self.callback = callback
-
-
-class GUIUpdater(UIUpdater):
-
-    def __init__(self, force, log):
-
-        def ask(msg):
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
-                                    gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
-            dlg.set_icon_from_file(W3AF_ICON)
-            opt = dlg.run()
-            dlg.destroy()
-            return opt == gtk.RESPONSE_YES
-
-        UIUpdater.__init__(self, force=force, ask=ask, logger=log)
-
-        #  Event registration
-        self._register(
-            VersionMgr.ON_ACTION_ERROR,
-            GUIUpdater.notify,
-            'Error occurred.'
-        )
-        self._register(
-            VersionMgr.ON_UPDATE_ADDED_DEP,
-            GUIUpdater.notify,
-            ('At least one new dependency was included in '
-             'w3af. Please update manually.')
-        )
-
-    @staticmethod
-    def notify(msg):
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
-                                gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK, msg)
-        dlg.set_icon_from_file(W3AF_ICON)
-        dlg.run()
-        dlg.destroy()
-
-    def _handle_update_output(self, upd_output):
-        if upd_output:
-            files, lrev, rrev = upd_output
-            if rrev:
-                tabnames = ("Updated Files", "Latest Changes")
-                dlg = entries.TextDialog("Update report",
-                                         tabnames=tabnames,
-                                         icon=W3AF_ICON)
-                dlg.add_message(str(files), page_num=0)
-                dlg.add_message(str(self._vmngr.show_summary(lrev, rrev)),
-                               page_num=1)
-                dlg.done()
-                dlg.dialog_run()
-
-    def _log(self, msg):
-        GUIUpdater.notify(msg)
 
 
 class MainApp(object):

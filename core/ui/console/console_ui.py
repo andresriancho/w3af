@@ -34,43 +34,16 @@ try:
     from core.ui.console.callbackMenu import callbackMenu
     from core.ui.console.util import commonPrefix
     from core.ui.console.history import historyTable
-
+    from core.ui.console.auto_update.auto_update import ConsoleUIUpdater
+    
     from core.data.constants.disclaimer import DISCLAIMER
     from core.data.db.startup_cfg import StartUpConfig
 
     from core.controllers.w3afCore import w3afCore
-    from core.controllers.auto_update.ui_wrapper import UIUpdater
     from core.controllers.exceptions import (w3afException,
                                              w3afMustStopException)
 except KeyboardInterrupt:
     sys.exit(0)
-
-
-class ConsoleUIUpdater(UIUpdater):
-
-    def __init__(self, force, rev):
-
-        # Output function
-        log = om.out.console
-        # Ask user function
-
-        def ask(msg):
-            return raw_input(msg + ' [y/N] ').lower() in ('y', 'yes')
-
-        UIUpdater.__init__(self, force=force, ask=ask,
-                           logger=log, rev=rev, print_result=True)
-
-        # Show revisions logs function
-        def show_log(msg, get_logs):
-            if ask(msg):
-                log(get_logs())
-        # Add callbacks
-        self._add_callback('callback_onupdate_confirm', ask)
-        self._add_callback('callback_onupdate_show_log', show_log)
-
-    def _handle_update_output(self, upd_output):
-        # Nothing special to do here.
-        pass
 
 
 class ConsoleUI(object):
@@ -81,7 +54,7 @@ class ConsoleUI(object):
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def __init__(self, commands=[], parent=None, do_upd=None, rev=0):
+    def __init__(self, commands=[], parent=None, do_upd=None, commit_id='HEAD'):
         self._commands = commands
         # the line which is being typed
         self._line = []
@@ -112,13 +85,13 @@ class ConsoleUI(object):
         if parent:
             self.__initFromParent(parent)
         else:
-            self.__initRoot(do_upd, rev)
+            self.__initRoot(do_upd, commit_id)
 
-    def __initRoot(self, do_upd, rev):
+    def __initRoot(self, do_upd, commit_id):
         '''
         Root menu init routine.
         '''
-        cons_upd = ConsoleUIUpdater(force=do_upd, rev=rev)
+        cons_upd = ConsoleUIUpdater(force=do_upd, commit_id=commit_id)
         cons_upd.update()
         # Core initialization
         self._w3af = w3afCore()

@@ -35,8 +35,9 @@ class GitClient(object):
     '''
     Our wrapper for performing actions on the git repository.
     '''
-    UPD_ERROR_MSG = ('A repeated error occurred while updating from the '
-                     'GIT Repo! Please update manually using "git pull".')
+    UPD_ERROR_MSG = ('An error occurred while fetching from the remote'
+                     ' Git repository! Please update manually using'
+                     ' "git pull".')
 
     def __init__(self, localpath):
         self._actionlock = threading.RLock()
@@ -46,14 +47,14 @@ class GitClient(object):
     def URL(self):
         return self._repo.remotes.origin.url
 
-    @retry(tries=3, delay=0.5, backoff=2,
-           exc_class=GitClientError,
+    @retry(tries=3, delay=0.5, backoff=2, exc_class=GitClientError,
            err_msg=UPD_ERROR_MSG)
-    def pull(self, rev=None):
+    def pull(self, commit_id=None):
         with self._actionlock:
             
             latest_before_pull = get_latest_commit()
             
+            # TODO: Use commit_id somewhere!
             self._repo.remotes.origin.pull()
 
             after_pull = get_latest_commit()
@@ -61,76 +62,40 @@ class GitClient(object):
             changelog = ChangeLog(latest_before_pull, after_pull)
             return changelog
 
-    def list(self, path_or_url=None, recurse=False):
-        with self._actionlock:
-            if not path_or_url:
-                path_or_url = self._localpath
-            entries = self._svnclient.list(path_or_url, recurse=recurse)
-            res = [(ent.path, None) for ent, _ in entries]
-            return SVNFilesList(res)
-
-    def diff(self, localpath, rev=None):
-        with self._actionlock:
-            path = os.path.join(self._localpath, localpath)
-            # If no rev is passed then compare to HEAD
-            if rev is None:
-                rev = pysvn.Revision(pysvn.opt_revision_kind.head)
-            tempfile = os.tempnam()
-            diff_str = self._svnclient.diff(tempfile, path, revision1=rev)
-            return diff_str
-
-    def log(self, start_rev, end_rev):
+    @retry(tries=3, delay=0.5, backoff=2, exc_class=GitClientError,
+           err_msg=UPD_ERROR_MSG)
+    def fetch(self, commit_id=None):
+        self._repo.remotes.origin.fetch()
+        return True
+    
+    def get_remote_head_id(self):
         '''
-        Return SVNLogList of log messages between `start_rev`  and `end_rev`
-        revisions.
-
-        @param start_rev: Revision object
-        @param end_rev: Revision object
+        @return: The ID for the latest commit in the REMOTE repo.
         '''
-        with self._actionlock:
-            # Expected by pysvn.Client.log method
-            _startrev = pysvn.Revision(pysvn.opt_revision_kind.number,
-                                       start_rev.number)
-            _endrev = pysvn.Revision(pysvn.opt_revision_kind.number,
-                                     end_rev.number)
-            logs = (l.message for l in self._svnclient.log(self._localpath,
-                                                           revision_start=_startrev, revision_end=_endrev))
-            rev = end_rev if (end_rev.number > start_rev.number) else start_rev
-            return SVNLogList(logs, rev)
+        # Get the latest changes from the remote end
+        self.fetch()
 
-    @staticmethod
-    def is_git_repo(localpath):
-        try:
-            pysvn.Client().status(localpath, recurse=False)
-        except Exception:
-            return False
-        else:
-            return True
-
-    def _get_repourl(self):
+        # TODO: How could we manage branches? If the user is sitting in a branch
+        # he expects to get updates from that branch, not from master, 'origin/master'
+        # should be replaced by the current branch
+        
+        all_refs = self._repo.remotes.origin.refs
+        origin_master = [ref for ref in all_refs if ref.name == 'origin/master'][0]
+        
+        return origin_master.commit.hexsha
+        
+    def get_local_head_id(self):
         '''
-        Get repo's URL.
+        @return: The ID for the latest commit in the LOCAL repo.
         '''
-        svninfo = self._get_svn_info(self._localpath)
-        return svninfo.URL
-
-    def _get_svn_info(self, path_or_url):
-        try:
-            return self._svnclient.info2(path_or_url, recurse=False)[0][1]
-        except pysvn.ClientError, ce:
-            raise SVNUpdateError(*ce.args)
-
-    def get_revision(self, local=True):
-        '''
-        Return Revision object.
-
-        @param local: If true return local's revision data; otherwise use
-        repo's.
-        '''
-        path_or_url = self._localpath if local else self._repourl
-        _rev = self._get_svn_info(path_or_url).rev
-        return Revision(_rev.number, _rev.date)
-
+        # TODO: How could we manage branches? If the user is sitting in a branch
+        # he expects to get updates from that branch, not from 'master'
+        
+        repo_refs = self._repo.refs
+        origin_master = [ref for ref in repo_refs if ref.name == 'master'][0]
+        
+        return origin_master.commit.hexsha
+        
     def _register(self, event):
         '''
         Callback method. Registers all events taking place during this action.

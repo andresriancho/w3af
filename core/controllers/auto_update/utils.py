@@ -22,6 +22,8 @@ import git
 
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
+def to_short_id(commit_id):
+    return commit_id[:10]
 
 def is_git_repo(path=W3AF_LOCAL_PATH):
     '''

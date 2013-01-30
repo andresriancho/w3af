@@ -71,16 +71,16 @@ class UIUpdater(object):
             except Exception, ex:
                 print('An error occurred while updating: %s' % str(ex.args))
 
-            # Try to convert to int => a valid revision number. Otherwise the
-            # code is inconsistent => more than one revision is checked out
-            try:
-                int(get_latest_commit())
-            except ValueError:
+            # TODO: Please read https://github.com/andresriancho/w3af/issues/6
+            # for more information on what's missing here
+            '''
+            if repo_has_conflicts():
                 self._log("Oops!... w3af can't be started. It seems that the "
                           "last auto update process was unsuccessful.\n\n"
                           "Please update manually by executing a regular 'git pull' "
                           "in the w3af installation directory.\n")
                 sys.exit(1)
+            '''
 
     def _call_update(self):
         return self._vmngr.update(self._force_upd,

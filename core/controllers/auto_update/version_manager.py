@@ -24,6 +24,7 @@ import core.controllers.output_manager as om
 
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.controllers.auto_update.git_client import GitClient, GitClientError
+from core.controllers.auto_update.utils import to_short_id
 from core.data.db.startup_cfg import StartUpConfig
 
 
@@ -69,7 +70,7 @@ class VersionMgr(object):
 
     # Revision constants
     HEAD = 'HEAD'
-    PREVIOUS = 'BACK'
+    BACK = 'BACK'
 
     def __init__(self, localpath=W3AF_LOCAL_PATH, log=None):
         '''
@@ -100,11 +101,11 @@ class VersionMgr(object):
         # Registered functions
         self._reg_funcs = {}
         
-        msg = ('Checking if a new version is available in our SVN repository.'
+        msg = ('Checking if a new version is available in our git repository.'
                ' Please wait...')
         self.register(VersionMgr.ON_UPDATE_CHECK, log, msg)
         
-        msg = 'w3af is updating from the official SVN server...'
+        msg = 'w3af is updating from github.com...'
         self.register(VersionMgr.ON_UPDATE, log, msg)
         
         msg = ('The third-party dependencies for w3af have changed, please'
@@ -115,85 +116,118 @@ class VersionMgr(object):
     def update(self, force=False, commit=HEAD, print_result=False):
         '''
         Perform code update if necessary. Return three elems tuple with the
-        ChangeLog of the changed files, the local and the repo's revision.
+        ChangeLog of the changed files, the local and the final commit id.
 
         @param force: Force update ignoring the startup config.
-        @param rev: Revision number. If != 'HEAD' then update will be forced.
-                    Also, if commit equals 'BACK' assume revision number is
-                    the last that worked.
+        @param commit: Commit id. If != 'HEAD' then update will be forced.
+                       Also, if commit equals 'BACK' assume revision number is
+                       the last that worked.
         @param print_result: If True print the result files using instance's
                              log function.
+                             
+        @return: (changelog: A ChangeLog instance,
+                  local_head_id: The local id before the update,
+                  commit_id: The commit id after the update)
+                  
         '''
         client = self._client
+        to_short_id
         
-        rev = int(rev)
-        localrev = client.get_revision(local=True)
-        files = SVNFilesList(rev=localrev)
-        # If revision is not HEAD then force = True
-        if rev != VersionMgr.HEAD:
-            if rev == -1:  # Use previous working revision
-                rev = self._start_cfg.last_commit_id
-            remrev = rev
-        else:
-            remrev = None
+        local_head_id = client.get_local_head_id()
+        short_local_head_id = to_short_id(local_head_id)
 
-        if force or self._has_to_update():
-            self._notify(VersionMgr.ON_UPDATE_CHECK)
-            remrev = (Revision(remrev, None) if remrev
-                      else client.get_revision(local=False))
+        if commit != VersionMgr.HEAD:
+            # If revision is not HEAD then force = True, the user knows what
+            # he wants and is overriding the startup configuration settings
+            force = True
+            
+            # Use previous working revision
+            if commit.lower() == VersionMgr.BACK.lower():
+                commit = self._start_cfg.last_commit_id
 
+        if not (force or self._has_to_update()):
+            # No need to update based on user preferences
+            return
+        
+        # Lets update!
+        self._notify(VersionMgr.ON_UPDATE_CHECK)
+        
+        # This performs a fetch() which takes time
+        remote_head_id = client.get_remote_head_id()
+        short_remote_head_id = to_short_id(remote_head_id)
+        
+        
+        if local_head_id == remote_head_id:
             # If local and repo's rev are the same => Nothing to do.
-            if localrev != remrev:
-                proceed_upd = True
-                callback = self.callback_onupdate_confirm
-                # Call callback function
-                if callback is not None:
-                    # pylint: disable=E1102
-                    # pylint: disable=E1103
-                    proceed_upd = callback(
-                        'Your current w3af installation is r%s. Do you want '
-                        'to update to r%s?' % (localrev.number, remrev.number))
+            return
+        
+        proceed_upd = True
+        callback = self.callback_onupdate_confirm
+        # Call callback function
+        if callback is not None:
+            # pylint: disable=E1102
+            # pylint: disable=E1103
+            proceed_upd = callback(
+                'Your current w3af installation is %s. Do you want '
+                'to update to %s?' % (short_local_head_id, short_remote_head_id))
 
-                if proceed_upd:
-                    self._notify(VersionMgr.ON_UPDATE)
-                    
-                    # Finally do the code update!
-                    try:
-                        changelog = client.pull(rev=remrev)
-                    except GitClientError, err:
-                        msg = 'An error occurred while updating:\n%s' % str(err.args)
-                        self._notify(VersionMgr.ON_ACTION_ERROR, msg)
-                        return (None, None, None)
-                    
-                    # Update last-rev.
-                    self._start_cfg.last_commit_id = min(localrev, remrev)
-                    # Reload all modules to make sure we have all the latest
-                    # versions of py files in memory.
-                    self.reload_all_modules()
-
-                    newdeps = self._added_new_dependencies(changelog)
-                    if newdeps:
-                        self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
-
+        if not proceed_upd:
+            # User said NO
+            return
+        
+        return self.__update_impl(client, commit, local_head_id,
+                                  remote_head_id, print_result)
+    
+    def __update_impl(self, client, target_commit, local_head_id,
+                      remote_head_id, print_result):
+        '''
+        Finally call the Git client's pull!
+        
+        @param client: The git client to use
+        @param target_commit: The target commit id to move to
+        @param local_head_id: The local id where we're standing before the
+                              pull()
+                              
+        @param remote_head_id: The local id where we're standing before the
+                               pull()
+        @param print_result: Should we print the result? True/False
+          
+        @return: (changelog, local_head_id, target_commit)
+        '''
+        self._notify(VersionMgr.ON_UPDATE)
+        
+        try:
+            changelog = client.pull(commit_id=target_commit)
+        except GitClientError, err:
+            msg = 'An error occurred while updating:\n%s' % str(err.args)
+            self._notify(VersionMgr.ON_ACTION_ERROR, msg)
+            return
+        else:
+            # Update last-rev.
             # Save today as last-update date and persist it.
+            self._start_cfg.last_commit_id = target_commit
             self._start_cfg.last_upd = date.today()
             self._start_cfg.save()
-
+            
+            # Reload all modules to make sure we have all the latest
+            # versions of py files in memory.
+            self.reload_all_modules()
+    
+            if self._added_new_dependencies(changelog):
+                self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
+    
             # Before returning perform some interaction with the user if
             # requested.
             if print_result:
                 self._log(str(changelog))
-
             
             callback = self.callback_onupdate_show_log
             
-            # Skip downgrades
-            if remrev > localrev and callback:
+            if callback:
                 changelog_str = lambda: str(changelog)
-                callback('Do you want to see a summary of the new code '
-                         'commits log messages?', changelog_str)
+                callback('Do you want to see a change log?', changelog_str)
                 
-        return (changelog, localrev, remrev)
+        return (changelog, local_head_id, target_commit)
 
     def reload_all_modules(self):
         '''
