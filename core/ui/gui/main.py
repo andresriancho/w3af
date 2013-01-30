@@ -38,7 +38,8 @@ import core.data.kb.config as cf
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc_settings import MiscSettings
-from core.controllers.auto_update import VersionMgr, UIUpdater
+from core.controllers.auto_update.version_manager import VersionMgr
+from core.controllers.auto_update.ui_wrapper import UIUpdater
 from core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
 from core.controllers.exception_handling.helpers import pprint_plugins, get_versions
 from core.controllers.misc.homeDir import get_home_dir

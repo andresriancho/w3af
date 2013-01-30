@@ -1,7 +1,7 @@
 '''
-get_w3af_version.py
+utils.py
 
-Copyright 2006 Andres Riancho
+Copyright 2013 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -17,18 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 '''
-from core.controllers.auto_update.utils import (is_git_repo,
-                                                get_latest_commit)
+import git
+
+from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
 
-def get_w3af_version():
+def is_git_repo(path=W3AF_LOCAL_PATH):
     '''
-    @return: A string with the w3af version.
+    Test whether current's w3af directory is a GIT repository.
     '''
-    rev = get_latest_commit() if is_git_repo() else 'unknown'
-    return ('w3af - Web Application Attack and Audit Framework\n'
-            'Version: 1.5\n'
-            'Revision: %s\n'
-            'Author: Andres Riancho and the w3af team.') % rev
+    try:
+        git.Repo(path)
+    except git.exc.InvalidGitRepositoryError:
+        return False
+    else:
+        return True
+    
+def get_latest_commit(path=W3AF_LOCAL_PATH):
+    '''
+    Summarize the local revision(s) of a `path`'s working copy.
+    '''
+    return git.Repo(path).head.commit.hexsha

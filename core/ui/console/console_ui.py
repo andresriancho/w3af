@@ -39,7 +39,7 @@ try:
     from core.data.db.startup_cfg import StartUpConfig
 
     from core.controllers.w3afCore import w3afCore
-    from core.controllers.auto_update import UIUpdater
+    from core.controllers.auto_update.ui_wrapper import UIUpdater
     from core.controllers.exceptions import (w3afException,
                                              w3afMustStopException)
 except KeyboardInterrupt:

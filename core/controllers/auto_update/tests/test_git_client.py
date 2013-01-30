@@ -1,7 +1,7 @@
 '''
-get_w3af_version.py
+test_git_client.py
 
-Copyright 2006 Andres Riancho
+Copyright 2013 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -17,18 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 '''
-from core.controllers.auto_update.utils import (is_git_repo,
-                                                get_latest_commit)
+import unittest
+
+from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from core.controllers.auto_update.git_client import GitClient
 
 
-def get_w3af_version():
-    '''
-    @return: A string with the w3af version.
-    '''
-    rev = get_latest_commit() if is_git_repo() else 'unknown'
-    return ('w3af - Web Application Attack and Audit Framework\n'
-            'Version: 1.5\n'
-            'Revision: %s\n'
-            'Author: Andres Riancho and the w3af team.') % rev
+class TestGitClient(unittest.TestCase):
+    def test_get_URL(self):
+        client = GitClient(W3AF_LOCAL_PATH)
+        self.assertEqual(client.URL, 'git@github.com:andresriancho/w3af.git')
