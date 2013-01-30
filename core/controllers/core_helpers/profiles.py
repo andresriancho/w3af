@@ -116,7 +116,7 @@ class w3af_core_profiles(object):
         # This might raise an exception (which we don't want to handle) when
         # the profile does not exist
         profile_inst = profile(profile_name, workdir)
-
+        
         # It exists, work with it!
 
         # Set the target settings of the profile to the core
@@ -157,9 +157,10 @@ class w3af_core_profiles(object):
         for plugin_type in self._w3af_core.plugins.get_plugin_types():
             plugin_names = profile_inst.get_enabled_plugins(plugin_type)
 
-            # Handle errors that might have been triggered from a possibly invalid profile
-            unknown_plugins = self._w3af_core.plugins.set_plugins(
-                plugin_names, plugin_type)
+            # Handle errors that might have been triggered from a possibly
+            # invalid profile
+            unknown_plugins = self._w3af_core.plugins.set_plugins(plugin_names,
+                                                                  plugin_type)
             for unknown_plugin in unknown_plugins:
                 msg = 'The profile references the "%s.%s" plugin which is unknown.'
                 error_messages.append(msg % (plugin_type, unknown_plugin))

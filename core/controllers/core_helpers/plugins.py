@@ -150,8 +150,8 @@ class w3af_core_plugins(object):
         known_plugin_names = self.get_plugin_list(plugin_type)
         for plugin_name in plugin_names:
             if plugin_name not in known_plugin_names \
-                and plugin_name.replace('!', '') not in known_plugin_names\
-                    and plugin_name != 'all':
+            and plugin_name.replace('!', '') not in known_plugin_names\
+            and plugin_name != 'all':
                 unknown_plugins.append(plugin_name)
 
         set_dict = {
@@ -354,5 +354,6 @@ class w3af_core_plugins(object):
         '''
         self._plugins_names_dict['evasion'] = evasion_plugins
         self.plugin_factory()
+
         self._w3af_core.uri_opener.set_evasion_plugins(
             self.plugins['evasion'])

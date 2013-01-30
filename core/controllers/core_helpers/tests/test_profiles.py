@@ -126,11 +126,10 @@ class TestCoreProfiles(unittest.TestCase):
         properly fixed after the change in how sqlite threads were managed.
         '''
         w3af_core = w3afCore()
-        valid, invalid = w3af_core.profiles.get_profile_list('.')
+        valid, _ = w3af_core.profiles.get_profile_list('.')
 
-        for i in xrange(10):
+        for _ in xrange(10):
             for profile_inst in valid:
                 profile_name = profile_inst.get_name()
 
                 w3af_core.profiles.use_profile(profile_name, workdir='.')
-
