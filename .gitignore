@@ -37,4 +37,7 @@ nose.cfg
 .mr.developer.cfg
 .project
 .pydevproject
+.settings/
+parser.out
+parsetab.py
 
