@@ -19,16 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.auto_update.utils import (is_git_repo,
-                                                get_latest_commit)
+from core.controllers.auto_update.utils import (is_git_repo, to_short_id,
+                                                get_latest_commit,
+                                                get_latest_commit_date,)
 
 
 def get_w3af_version():
     '''
     @return: A string with the w3af version.
     '''
-    rev = get_latest_commit() if is_git_repo() else 'unknown'
+    commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
+    cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''
+    
     return ('w3af - Web Application Attack and Audit Framework\n'
             'Version: 1.5\n'
-            'Revision: %s\n'
-            'Author: Andres Riancho and the w3af team.') % rev
+            'Revision: %s%s\n'
+            'Author: Andres Riancho and the w3af team.') % (commit,
+                                                            cdate)

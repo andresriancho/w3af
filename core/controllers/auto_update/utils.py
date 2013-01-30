@@ -19,11 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import git
+import time
 
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
+
 def to_short_id(commit_id):
     return commit_id[:10]
+
 
 def is_git_repo(path=W3AF_LOCAL_PATH):
     '''
@@ -35,12 +38,22 @@ def is_git_repo(path=W3AF_LOCAL_PATH):
         return False
     else:
         return True
+
     
 def get_latest_commit(path=W3AF_LOCAL_PATH):
     '''
-    Summarize the local revision(s) of a `path`'s working copy.
+    @return: A string (hex sha) that identifies the commit
     '''
     return git.Repo(path).head.commit.hexsha
+
+
+def get_latest_commit_date(path=W3AF_LOCAL_PATH):
+    '''
+    @return: The date for the latest commit
+    '''
+    cdate = git.Repo(path).head.commit.committed_date
+    return time.strftime("%d %b %Y %H:%M", time.gmtime(cdate)) 
+
 
 def get_current_branch(path=W3AF_LOCAL_PATH):
     '''
