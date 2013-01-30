@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import git
 
-from core.controllers.auto_update.utils import (is_git_repo, get_latest_commit)
+from core.controllers.auto_update.utils import (is_git_repo, get_latest_commit,
+                                                get_current_branch)
 
 
 class TestGitUtils(unittest.TestCase):
@@ -40,3 +41,7 @@ class TestGitUtils(unittest.TestCase):
         
     def test_get_latest_commit_negative(self):
         self.assertRaises(git.exc.InvalidGitRepositoryError, get_latest_commit, '/etc/')
+
+    def test_get_current_branch(self):
+        self.assertIn(get_current_branch(), ('threading2', 'master'))
+        

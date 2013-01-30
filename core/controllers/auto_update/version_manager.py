@@ -60,7 +60,8 @@ class VersionMgr(object):
     ON_UPDATE = 1
     ON_UPDATE_ADDED_DEP = 2
     ON_UPDATE_CHECK = 3
-    ON_ACTION_ERROR = 4
+    ON_ALREADY_LATEST = 4
+    ON_ACTION_ERROR = 5
     ON_COMMIT = 6
 
     # Callbacks
@@ -105,6 +106,9 @@ class VersionMgr(object):
                ' Please wait...')
         self.register(VersionMgr.ON_UPDATE_CHECK, log, msg)
         
+        msg = ('Your installation is already on the latest available version.')
+        self.register(VersionMgr.ON_ALREADY_LATEST, log, msg)
+        
         msg = 'w3af is updating from github.com...'
         self.register(VersionMgr.ON_UPDATE, log, msg)
         
@@ -130,10 +134,12 @@ class VersionMgr(object):
                   commit_id: The commit id after the update)
                   
         '''
-        client = self._client
-        to_short_id
+        # Save the latest update date, always, even when the update had errors
+        # or there was no update available
+        self._start_cfg.last_upd = date.today()
+        self._start_cfg.save()
         
-        local_head_id = client.get_local_head_id()
+        local_head_id = self._client.get_local_head_id()
         short_local_head_id = to_short_id(local_head_id)
 
         if commit != VersionMgr.HEAD:
@@ -153,12 +159,12 @@ class VersionMgr(object):
         self._notify(VersionMgr.ON_UPDATE_CHECK)
         
         # This performs a fetch() which takes time
-        remote_head_id = client.get_remote_head_id()
+        remote_head_id = self._client.get_remote_head_id()
         short_remote_head_id = to_short_id(remote_head_id)
-        
         
         if local_head_id == remote_head_id:
             # If local and repo's rev are the same => Nothing to do.
+            self._notify(VersionMgr.ON_ALREADY_LATEST)
             return
         
         proceed_upd = True
@@ -175,7 +181,7 @@ class VersionMgr(object):
             # User said NO
             return
         
-        return self.__update_impl(client, commit, local_head_id,
+        return self.__update_impl(self._client, commit, local_head_id,
                                   remote_head_id, print_result)
     
     def __update_impl(self, client, target_commit, local_head_id,

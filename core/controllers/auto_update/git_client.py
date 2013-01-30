@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import threading
 import git
-import os
 
 from core.controllers.misc.decorators import retry
-from core.controllers.auto_update.utils import get_latest_commit
 from core.controllers.auto_update.changelog import ChangeLog
+from core.controllers.auto_update.utils import (get_latest_commit,
+                                                get_current_branch)
 
 
 class GitClientError(Exception):
@@ -74,13 +74,10 @@ class GitClient(object):
         '''
         # Get the latest changes from the remote end
         self.fetch()
-
-        # TODO: How could we manage branches? If the user is sitting in a branch
-        # he expects to get updates from that branch, not from master, 'origin/master'
-        # should be replaced by the current branch
         
+        branch_origin = 'origin/%s' % get_current_branch()
         all_refs = self._repo.remotes.origin.refs
-        origin_master = [ref for ref in all_refs if ref.name == 'origin/master'][0]
+        origin_master = [ref for ref in all_refs if ref.name == branch_origin][0]
         
         return origin_master.commit.hexsha
         
@@ -88,11 +85,9 @@ class GitClient(object):
         '''
         @return: The ID for the latest commit in the LOCAL repo.
         '''
-        # TODO: How could we manage branches? If the user is sitting in a branch
-        # he expects to get updates from that branch, not from 'master'
-        
+        branch_name = get_current_branch()
         repo_refs = self._repo.refs
-        origin_master = [ref for ref in repo_refs if ref.name == 'master'][0]
+        origin_master = [ref for ref in repo_refs if ref.name == branch_name][0]
         
         return origin_master.commit.hexsha
         

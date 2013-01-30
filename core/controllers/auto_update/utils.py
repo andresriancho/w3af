@@ -41,3 +41,19 @@ def get_latest_commit(path=W3AF_LOCAL_PATH):
     Summarize the local revision(s) of a `path`'s working copy.
     '''
     return git.Repo(path).head.commit.hexsha
+
+def get_current_branch(path=W3AF_LOCAL_PATH):
+    '''
+    @return: The active branch for the repo at "path".
+    
+    Reminder about GitPython's output:
+    
+    >>> [ref.name for ref in git.Repo('.').refs if \
+         ref.commit.hexsha == git.Repo('.').head.commit.hexsha]
+    ['threading2', 'origin/threading2']
+    >>> 
+    '''
+    repo = git.Repo(path)
+    names = [ref.name for ref in repo.refs if ref.commit.hexsha == get_latest_commit()]
+    name = [name for name in names if '/' not in name][0]
+    return name
