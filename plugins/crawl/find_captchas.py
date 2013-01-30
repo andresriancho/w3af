@@ -156,6 +156,9 @@ class find_captchas(CrawlPlugin):
 
         return res
 
+    def end(self):
+        self._captchas_found.cleanup()
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

@@ -174,7 +174,8 @@ class generic(AuditPlugin):
                                      mutant)
         
                 self.kb_append_uniq(self, 'generic', v)
-                
+        
+        self._potential_vulns.cleanup()        
                 
     def get_options(self):
         '''

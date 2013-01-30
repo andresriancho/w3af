@@ -247,6 +247,9 @@ class path_disclosure(GrepPlugin):
         kb.kb.raw_write(self, 'list_files', remote_locations)
         kb.kb.raw_write(self, 'webroot', webroot)
 
+    def end(self):
+        self._already_added.cleanup()
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

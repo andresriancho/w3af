@@ -166,6 +166,9 @@ class ssi(AuditPlugin):
                                       filtered_freq_generator(self._freq_list),
                                       analyze_persistent,
                                       cache=False)
+        
+        self._expected_res_mutant.cleanup()
+        self._freq_list.cleanup()
 
     def get_long_desc(self):
         '''

@@ -69,7 +69,7 @@ class DiskList(object):
         self.db.create_index(self.table_name, ['eq_attrs'])
         self.db.commit()
 
-    def __del__(self):
+    def cleanup(self):
         self.db.drop_table(self.table_name)
 
     def _get_eq_attrs_values(self, obj):

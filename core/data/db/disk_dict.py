@@ -53,7 +53,7 @@ class DiskDict(object):
         self.db.create_index(self.table_name, ['key'])
         self.db.commit()
 
-    def __del__(self):
+    def cleanup(self):
         self.db.drop_table(self.table_name)
 
     def keys(self):

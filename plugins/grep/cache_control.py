@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from collections import namedtuple
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 import core.data.parsers.parser_cache as parser_cache
 
@@ -149,6 +148,9 @@ class cache_control(GrepPlugin):
                  severity.LOW, response_ids, self.get_name())
         
         self.kb_append_uniq(self, 'cache_control', v, 'URL')
+        
+        self._vulns.cleanup()
+        self._ids.cleanup()
 
     def get_long_desc(self):
         return '''\

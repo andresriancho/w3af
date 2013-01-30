@@ -175,6 +175,8 @@ class xss(AuditPlugin):
         '''
         if self._check_persistent_xss:
             self._identify_persistent_xss()
+        
+        self._xss_mutants.cleanup()
     
     def _identify_persistent_xss(self):
         '''

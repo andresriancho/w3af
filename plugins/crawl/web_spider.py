@@ -328,6 +328,8 @@ class web_spider(CrawlPlugin):
             for broken, where in unique_justseen(self._broken_links.ordered_iter()):
                 om.out.information('- %s [ referenced from: %s ]' %
                                    (broken, where))
+        
+        self._broken_links.cleanup()
 
     def _is_forward(self, reference):
         '''

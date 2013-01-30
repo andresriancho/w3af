@@ -150,6 +150,9 @@ class dir_bruter(CrawlPlugin):
         self.worker_pool.map_multi_args(self._send_and_check, arg_iter,
                                            chunksize=20)
 
+    def end(self):
+        self._already_tested.cleanup()
+
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.

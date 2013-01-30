@@ -362,6 +362,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     
     def remove(self):
         self.db.drop_table(self.table_name)
+        self.urls.cleanup()
+        self.fuzzable_requests.cleanup()
     
     def get_all_known_urls(self):
         '''

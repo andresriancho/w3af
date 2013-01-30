@@ -235,12 +235,13 @@ class w3af_core_plugins(object):
         plugin_inst.set_worker_pool(self._w3af_core.worker_pool)
         
         if plugin_name in self._plugins_options[plugin_type].keys():
-            plugin_inst.set_options(
-                self._plugins_options[plugin_type][plugin_name])
+            custom_options = self._plugins_options[plugin_type][plugin_name]
+            plugin_inst.set_options(custom_options)
 
         # This will init some plugins like mangle and output
         if plugin_type == 'attack' and not self.initialized:
             self.init_plugins()
+            
         return plugin_inst
 
     def plugin_factory(self):

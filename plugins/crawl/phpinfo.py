@@ -613,6 +613,9 @@ class phpinfo(CrawlPlugin):
 
         return res
 
+    def end(self):
+        self._analyzed_dirs.cleanup()
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

@@ -191,6 +191,8 @@ class html_comments(GrepPlugin):
             inform.sort()
             for i in inform:
                 om.out.information(i)
+        
+        self._comments.cleanup()
 
     def get_long_desc(self):
         '''
