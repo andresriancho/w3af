@@ -42,9 +42,7 @@ class TestStartUpConfig(unittest.TestCase):
 
         scfg.last_upd = date.today()
         scfg.accepted_disclaimer = True
-        revision = Mock()
-        revision.number = 3
-        scfg.last_rev = revision
+        scfg.last_commit_id = '3f4808082c1943f964669af1a1c94245bab09c61'
         scfg.save()
 
     def test_load_not_exist(self):
@@ -56,7 +54,7 @@ class TestStartUpConfig(unittest.TestCase):
 
         self.assertEqual(scfg.last_upd, date.today() - timedelta(days=31))
         self.assertEqual(scfg.accepted_disclaimer, False)
-        self.assertEqual(scfg.last_rev, 0)
+        self.assertEqual(scfg.last_commit_id, '')
         self.assertEqual(scfg.freq, 'D')
 
     def test_load_file_exists(self):
@@ -67,14 +65,12 @@ class TestStartUpConfig(unittest.TestCase):
         scfg = StartUpConfig(self.CFG_FILE)
         scfg.last_upd = date.today()
         scfg.accepted_disclaimer = True
-        revision = Mock()
-        revision.number = 3
-        scfg.last_rev = revision
+        scfg.last_commit_id = '3f4808082c1943f964669af1a1c94245bab09c61'
         scfg.save()
 
         # Load
         scfg = StartUpConfig(self.CFG_FILE)
         self.assertEqual(scfg.last_upd, date.today())
         self.assertEqual(scfg.accepted_disclaimer, True)
-        self.assertEqual(scfg.last_rev, 3)
+        self.assertEqual(scfg.last_commit_id, '3f4808082c1943f964669af1a1c94245bab09c61')
         self.assertEqual(scfg.freq, 'D')

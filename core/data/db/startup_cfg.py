@@ -40,7 +40,7 @@ class StartUpConfig(object):
     FREQ_MONTHLY = 'M'  # [M]onthly
     # DEFAULT VALUES
     DEFAULTS = {'auto-update': 'true', 'frequency': 'D',
-                'last-update': 'None', 'last-rev': 0,
+                'last-update': 'None', 'last-commit': '',
                 'accepted-disclaimer': 'false'}
 
     def __init__(self, cfg_file=CFG_FILE):
@@ -51,7 +51,7 @@ class StartUpConfig(object):
         self._config = ConfigParser.ConfigParser()
         configs = self._load_cfg()
 
-        (self._autoupd, self._freq, self._lastupd, self._lastrev,
+        (self._autoupd, self._freq, self._lastupd, self._last_commit_id,
          self._accepted_disclaimer) = configs
 
     ### METHODS #
@@ -82,12 +82,15 @@ class StartUpConfig(object):
         self._config.set(self._start_section, 'accepted-disclaimer',
                          value)
 
-    def get_last_rev(self):
-        return self._lastrev
+    def get_last_commit_id(self):
+        return self._last_commit_id
 
-    def set_last_rev(self, rev):
-        self._lastrev = rev.number
-        self._config.set(self._start_section, 'last-rev', self._lastrev)
+    def set_last_commit_id(self, commit_id):
+        if not isinstance(commit_id, basestring):
+            raise TypeError('Expected string got %s instead.' % type(commit_id))
+        
+        self._last_commit_id = commit_id
+        self._config.set(self._start_section, 'last-commit', self._last_commit_id)
 
     def get_freq(self):
         return self._freq
@@ -107,7 +110,7 @@ class StartUpConfig(object):
             config.set(startsection, 'auto-update', defaults['auto-update'])
             config.set(startsection, 'frequency', defaults['frequency'])
             config.set(startsection, 'last-update', defaults['last-update'])
-            config.set(startsection, 'last-rev', defaults['last-rev'])
+            config.set(startsection, 'last-commit', defaults['last-commit'])
             config.set(startsection, 'accepted-disclaimer',
                        defaults['accepted-disclaimer'])
 
@@ -141,7 +144,7 @@ class StartUpConfig(object):
             # Provide default value that enforces the update to happen
             lastupd = date.today() - timedelta(days=31)
         try:
-            lastrev = config.getint(startsection, 'last-rev')
+            lastrev = config.get(startsection, 'last-commit')
         except TypeError:
             lastrev = 0
         return (auto_upd, freq, lastupd, lastrev, accepted_disclaimer)
@@ -157,7 +160,7 @@ class StartUpConfig(object):
     
     freq = property(get_freq)
     auto_upd = property(get_auto_upd)
-    last_rev = property(get_last_rev, set_last_rev)
+    last_commit_id = property(get_last_commit_id, set_last_commit_id)
     accepted_disclaimer = property(get_accepted_disclaimer, set_accepted_disclaimer)
     last_upd = property(get_last_upd, set_last_upd)
     
