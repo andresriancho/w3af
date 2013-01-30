@@ -109,7 +109,7 @@ class VersionMgr(object):
         msg = ('Your installation is already on the latest available version.')
         self.register(VersionMgr.ON_ALREADY_LATEST, log, msg)
         
-        msg = 'w3af is updating from github.com...'
+        msg = 'w3af is updating from github.com ...'
         self.register(VersionMgr.ON_UPDATE, log, msg)
         
         msg = ('The third-party dependencies for w3af have changed, please'
@@ -117,7 +117,7 @@ class VersionMgr(object):
                ' and install any missing modules.')
         self.register(VersionMgr.ON_UPDATE_ADDED_DEP, log, msg)
 
-    def update(self, force=False, commit=HEAD, print_result=False):
+    def update(self, force=False, commit=HEAD):
         '''
         Perform code update if necessary. Return three elems tuple with the
         ChangeLog of the changed files, the local and the final commit id.
@@ -126,8 +126,6 @@ class VersionMgr(object):
         @param commit: Commit id. If != 'HEAD' then update will be forced.
                        Also, if commit equals 'BACK' assume revision number is
                        the last that worked.
-        @param print_result: If True print the result files using instance's
-                             log function.
                              
         @return: (changelog: A ChangeLog instance,
                   local_head_id: The local id before the update,
@@ -182,10 +180,10 @@ class VersionMgr(object):
             return
         
         return self.__update_impl(self._client, commit, local_head_id,
-                                  remote_head_id, print_result)
+                                  remote_head_id)
     
     def __update_impl(self, client, target_commit, local_head_id,
-                      remote_head_id, print_result):
+                      remote_head_id):
         '''
         Finally call the Git client's pull!
         
@@ -196,8 +194,6 @@ class VersionMgr(object):
                               
         @param remote_head_id: The local id where we're standing before the
                                pull()
-        @param print_result: Should we print the result? True/False
-          
         @return: (changelog, local_head_id, target_commit)
         '''
         self._notify(VersionMgr.ON_UPDATE)
@@ -222,16 +218,10 @@ class VersionMgr(object):
             if self._added_new_dependencies(changelog):
                 self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
     
-            # Before returning perform some interaction with the user if
-            # requested.
-            if print_result:
-                self._log(str(changelog))
-            
-            callback = self.callback_onupdate_show_log
-            
-            if callback:
+            if self.callback_onupdate_show_log:
                 changelog_str = lambda: str(changelog)
-                callback('Do you want to see a change log?', changelog_str)
+                self.callback_onupdate_show_log('Do you want to see a change log?',
+                                                changelog_str)
                 
         return (changelog, local_head_id, target_commit)
 

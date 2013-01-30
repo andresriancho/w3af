@@ -23,14 +23,16 @@ import core.controllers.output_manager as om
 
 from core.controllers.auto_update.ui_wrapper import UIUpdater
 
+
 def ask(msg):
     return raw_input(msg + ' [y/N] ').lower() in ('y', 'yes')
+
 
 class ConsoleUIUpdater(UIUpdater):
 
     def __init__(self, force, commit_id):
         UIUpdater.__init__(self, force=force, ask=ask, logger=om.out.console,
-                           commit=commit_id, print_result=True)
+                           commit=commit_id)
     
         # Show revisions logs function
         def show_log(msg, get_logs):
