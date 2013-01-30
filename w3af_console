@@ -140,7 +140,8 @@ def main():
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
-    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate, commit_id=commit_id)
+    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate,
+                        commit_id=commit_id)
     
     if not console.accept_disclaimer():
         return -4
