@@ -49,7 +49,6 @@ def notify(msg):
 class GUIUpdater(UIUpdater):
 
     def __init__(self, force, log):
-        print force
         UIUpdater.__init__(self, force=force, ask=ask, logger=log)
 
         #  Event registration
@@ -63,6 +62,36 @@ class GUIUpdater(UIUpdater):
             notify,
             ('New dependencies added, please restart w3af.')
         )
+        #
+        # I register to this event because it will get called once every time
+        # the git client has performed some progress, which is ideal for me to
+        # give the user some feedback on the download progress.
+        #
+        # Also, and given that the Splash window was coded in a kind of messy
+        # way, it's my chance to call the push method, which will call the
+        # window's mainloop and help me keep the window alive
+        #
+        self._register(
+            VersionMgr.ON_PROGRESS,
+            self._downloading,
+            (),
+        )
+    
+    def _downloading(self):
+        '''
+        @yield:
+            * Updating .
+            * Updating ..
+            * Updating ...
+            * Updating ....
+            
+        And then start again,
+        '''
+        while True:
+            for n in xrange(4):
+                message = 'Updating %s' % '.' * n
+                self._logger(message)
+                yield True
     
     def update(self):
         super(GUIUpdater, self).update()

@@ -64,6 +64,7 @@ class VersionMgr(object):
     ON_ALREADY_LATEST = 4
     ON_ACTION_ERROR = 5
     ON_COMMIT = 6
+    ON_PROGRESS = 7
 
     # Callbacks
     callback_onupdate_confirm = None
@@ -84,6 +85,7 @@ class VersionMgr(object):
         '''
         self._localpath = localpath
         self._client = GitClient(localpath)
+        self._client.add_observer(self._client_progress)
         
         log = log if log is not None else om.out.console
         self._log = log
@@ -93,6 +95,17 @@ class VersionMgr(object):
         # Startup configuration
         self._start_cfg = StartUpConfig()
     
+    def _client_progress(self, op_code, cur_count, max_count, message):
+        '''
+        The GitClient will call this method when it has progress to show
+        for fetch() and pull().
+        
+        Please note that because I don't need it at this moment, I'm simply
+        ignoring all parameters and just letting the observers know that this
+        event was triggered.
+        '''
+        self._notify(VersionMgr.ON_PROGRESS)
+        
     def register_default_events(self, log):
         '''
         Default events registration
@@ -204,8 +217,8 @@ class VersionMgr(object):
         
         try:
             changelog = client.pull(commit_id=target_commit)
-        except GitClientError, err:
-            msg = 'An error occurred while updating:\n%s' % str(err.args)
+        except GitClientError, exc:
+            msg = '%s' % exc
             self._notify(VersionMgr.ON_ACTION_ERROR, msg)
             return
         else:
