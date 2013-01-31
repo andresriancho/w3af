@@ -110,7 +110,7 @@ class GUIUpdater(UIUpdater):
         
         report = 'The following changes were applied to the local w3af'\
                  ' installation during the last update from %s (%s) to'\
-                 ' %s (%s):\n%s'
+                 ' %s (%s):\n\n%s'
         
         return report % (lshort, ldate, rshort, rdate, changelog)
     

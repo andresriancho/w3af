@@ -30,9 +30,8 @@ def ask(msg):
 
 class ConsoleUIUpdater(UIUpdater):
 
-    def __init__(self, force, commit_id):
-        UIUpdater.__init__(self, force=force, ask=ask, logger=om.out.console,
-                           commit=commit_id)
+    def __init__(self, force):
+        UIUpdater.__init__(self, force=force, ask=ask, logger=om.out.console)
     
         # Show revisions logs function
         def show_log(msg, get_logs):

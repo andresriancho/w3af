@@ -54,7 +54,7 @@ class ConsoleUI(object):
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def __init__(self, commands=[], parent=None, do_upd=None, commit_id='HEAD'):
+    def __init__(self, commands=[], parent=None, do_upd=None):
         self._commands = commands
         # the line which is being typed
         self._line = []
@@ -85,13 +85,13 @@ class ConsoleUI(object):
         if parent:
             self.__initFromParent(parent)
         else:
-            self.__initRoot(do_upd, commit_id)
+            self.__initRoot(do_upd)
 
-    def __initRoot(self, do_upd, commit_id):
+    def __initRoot(self, do_upd):
         '''
         Root menu init routine.
         '''
-        cons_upd = ConsoleUIUpdater(force=do_upd, commit_id=commit_id)
+        cons_upd = ConsoleUIUpdater(force=do_upd)
         cons_upd.update()
         # Core initialization
         self._w3af = w3afCore()

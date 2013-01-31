@@ -60,9 +60,6 @@ Options:
         An update check will be made when starting. This option takes 
         precedence over the 'auto-update' setting in 'startup.conf' file.
      
-    -c <commit id> or --commit <commit id>
-    	Force to update to <commit id>.
-    
     -p <profile> or --profile=<profile>
         Run with the selected <profile>
     
@@ -79,7 +76,7 @@ def main():
     try:
         long_options = ['script=', 'help', 'version', 'no-update',
                         'force-update', 'profile=', 'commit=', 'profile-run']
-        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:c:", long_options)
+        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:", long_options)
     except getopt.GetoptError, e:
         # print help information and exit:
         usage()
@@ -88,7 +85,6 @@ def main():
     force_profile = None
     profile = None
     doupdate = None
-    commit_id = 'HEAD'
     
     for o, a in opts:
         if o == "-e":
@@ -116,9 +112,6 @@ def main():
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
-        if o in ('-c', '--commit'):
-            doupdate = True
-            commit_id = a
     
     commands_to_run = []
     if script_file is not None:
@@ -140,8 +133,7 @@ def main():
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
-    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate,
-                        commit_id=commit_id)
+    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate)
     
     if not console.accept_disclaimer():
         return -4

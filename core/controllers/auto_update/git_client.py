@@ -58,7 +58,7 @@ class GitClient(object):
         return self._repo.remotes.origin.url
 
     @retry(tries=2, delay=0.5, backoff=2)
-    def pull(self, commit_id=None):
+    def pull(self):
         with self._actionlock:
             try:
                 latest_before_pull = get_latest_commit()
@@ -74,7 +74,7 @@ class GitClient(object):
                 return changelog
 
     #@retry(tries=2, delay=0.5, backoff=2)
-    def fetch(self, commit_id=None):
+    def fetch(self):
         with self._actionlock:
             try:
                 self._repo.remotes.origin.fetch(progress=self._progress)

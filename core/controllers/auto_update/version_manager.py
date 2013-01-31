@@ -131,16 +131,12 @@ class VersionMgr(object):
                ' and install any missing modules.')
         self.register(VersionMgr.ON_UPDATE_ADDED_DEP, log, msg)
 
-    def update(self, force=False, commit=HEAD):
+    def update(self, force=False):
         '''
         Perform code update if necessary. Return three elems tuple with the
         ChangeLog of the changed files, the local and the final commit id.
 
         @param force: Force update ignoring the startup config.
-        @param commit: Commit id. If != 'HEAD' then update will be forced.
-                       Also, if commit equals 'BACK' assume revision number is
-                       the last that worked.
-                             
         @return: (changelog: A ChangeLog instance,
                   local_head_id: The local id before the update,
                   commit_id: The commit id after the update)
@@ -154,16 +150,7 @@ class VersionMgr(object):
         local_head_id = self._client.get_local_head_id()
         short_local_head_id = to_short_id(local_head_id)
 
-        if commit != VersionMgr.HEAD:
-            # If revision is not HEAD then force = True, the user knows what
-            # he wants and is overriding the startup configuration settings
-            force = True
-            
-            # Use previous working revision
-            if commit.lower() == VersionMgr.BACK.lower():
-                commit = self._start_cfg.last_commit_id
-
-        if not (force or self._has_to_update()):
+        if not force and not self._has_to_update():
             # No need to update based on user preferences
             return
         
@@ -179,10 +166,12 @@ class VersionMgr(object):
             self._notify(VersionMgr.ON_ALREADY_LATEST)
             return
         
-        proceed_upd = True
-        callback = self.callback_onupdate_confirm
+        
         # Call callback function
-        if callback is not None:
+        if self.callback_onupdate_confirm is not None:
+            
+            callback = self.callback_onupdate_confirm
+            
             # pylint: disable=E1102
             # pylint: disable=E1103
             msg = 'Your current w3af installation is %s (%s). Do you want '\
@@ -192,31 +181,22 @@ class VersionMgr(object):
                                           short_remote_head_id,
                                           get_commit_id_date(remote_head_id)))
             
-        if not proceed_upd:
-            # User said NO
-            return
+            if not proceed_upd:
+                # User said NO
+                return
         
-        return self.__update_impl(self._client, commit, local_head_id,
-                                  remote_head_id)
+        return self.__update_impl(local_head_id, remote_head_id)
     
-    def __update_impl(self, client, target_commit, local_head_id,
-                      remote_head_id):
+    def __update_impl(self):
         '''
         Finally call the Git client's pull!
         
-        @param client: The git client to use
-        @param target_commit: The target commit id to move to
-        @param local_head_id: The local id where we're standing before the
-                              pull()
-                              
-        @param remote_head_id: The local id where we're standing before the
-                               pull()
         @return: (changelog, local_head_id, target_commit)
         '''
         self._notify(VersionMgr.ON_UPDATE)
         
         try:
-            changelog = client.pull(commit_id=target_commit)
+            changelog = self._client.pull()
         except GitClientError, exc:
             msg = '%s' % exc
             self._notify(VersionMgr.ON_ACTION_ERROR, msg)
@@ -224,7 +204,7 @@ class VersionMgr(object):
         else:
             # Update last-rev.
             # Save today as last-update date and persist it.
-            self._start_cfg.last_commit_id = target_commit
+            self._start_cfg.last_commit_id = changelog.end
             self._start_cfg.last_upd = date.today()
             self._start_cfg.save()
             
@@ -240,7 +220,7 @@ class VersionMgr(object):
                 self.callback_onupdate_show_log('Do you want to see a change log?',
                                                 changelog_str)
                 
-        return (changelog, local_head_id, target_commit)
+        return (changelog, changelog.start, changelog.end)
 
     def reload_all_modules(self):
         '''

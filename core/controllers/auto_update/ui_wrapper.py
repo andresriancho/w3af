@@ -31,12 +31,10 @@ class UIUpdater(object):
     Base class that provides an API for UI update workers.
     '''
 
-    def __init__(self, force=False, ask=None, logger=None,
-                 commit=VersionMgr.HEAD):
+    def __init__(self, force=False, ask=None, logger=None):
         self._force_upd = force
         self._ask = ask
         self._logger = logger
-        self._target_commit = commit
         self._callbacks = {'callback_onupdate_confirm': ask}
         self._registries = {}
 
@@ -80,7 +78,7 @@ class UIUpdater(object):
             '''
 
     def _call_update(self):
-        return self._vmngr.update(self._force_upd, self._target_commit)
+        return self._vmngr.update(self._force_upd)
 
     def _handle_update_output(self, resp):
         raise NotImplementedError("Must be implemented by subclass")
