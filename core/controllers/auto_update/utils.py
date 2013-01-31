@@ -50,7 +50,9 @@ def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
     '''
     @return: The date for the @commit_id
     '''
-    for commit in git.Repo(path).head.commit.iter_parents():
+    heads = [ref.commit for ref in git.Repo(path).refs]
+    
+    for commit in heads:
         if commit.hexsha == commit_id:
             cdate = commit.committed_date
             return time.strftime("%d %b %Y %H:%M", time.gmtime(cdate))
