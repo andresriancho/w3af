@@ -63,7 +63,7 @@ class GitClient(object):
             try:
                 latest_before_pull = get_latest_commit()
             
-                # TODO: Use commit_id somewhere!
+                # TODO: Use commit_id somewhere! 
                 self._repo.remotes.origin.pull(progress=self._progress)
 
                 after_pull = get_latest_commit()
