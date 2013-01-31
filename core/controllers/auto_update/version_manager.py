@@ -185,7 +185,7 @@ class VersionMgr(object):
                 # User said NO
                 return
         
-        return self.__update_impl(local_head_id, remote_head_id)
+        return self.__update_impl()
     
     def __update_impl(self):
         '''
