@@ -104,4 +104,4 @@ class GitClient(object):
 class GitRemoteProgress(RemoteProgress):
     def update(self, op_code, cur_count, max_count=None, message=''):
         print op_code, cur_count, max_count, message
-        
+    
