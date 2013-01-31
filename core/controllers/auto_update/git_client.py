@@ -102,6 +102,10 @@ class GitClient(object):
         
         
 class GitRemoteProgress(RemoteProgress):
+    def _parse_progress_line(self, line):
+        print line
+        super(GitRemoteProgress, self)._parse_progress_line(line)
+        
     def update(self, op_code, cur_count, max_count=None, message=''):
         print op_code, cur_count, max_count, message
     
