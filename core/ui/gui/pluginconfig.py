@@ -259,16 +259,6 @@ class PluginTree(gtk.TreeView):
         self.connect('button-release-event', self.popup_menu)
         self.connect('button-press-event', self._doubleClick)
 
-        # create a TreeViewColumn for the text and icon
-        tvcolumn = gtk.TreeViewColumn(col_title)
-        cell = gtk.CellRendererPixbuf()
-        tvcolumn.pack_start(cell, expand=False)
-        tvcolumn.add_attribute(cell, "pixbuf", 4)
-        cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, True)
-        tvcolumn.add_attribute(cell, 'markup', 0)
-        self.append_column(tvcolumn)
-
         # create a TreeViewColumn for the checkbox
         tvcolumn = gtk.TreeViewColumn(_('Active'))
         cell = gtk.CellRendererToggle()
@@ -277,6 +267,16 @@ class PluginTree(gtk.TreeView):
         tvcolumn.pack_start(cell, False)
         tvcolumn.add_attribute(cell, 'active', 1)
         tvcolumn.add_attribute(cell, 'inconsistent', 2)
+        self.append_column(tvcolumn)
+
+        # create a TreeViewColumn for the text and icon
+        tvcolumn = gtk.TreeViewColumn(col_title)
+        cell = gtk.CellRendererPixbuf()
+        tvcolumn.pack_start(cell, expand=False)
+        tvcolumn.add_attribute(cell, "pixbuf", 4)
+        cell = gtk.CellRendererText()
+        tvcolumn.pack_start(cell, True)
+        tvcolumn.add_attribute(cell, 'markup', 0)
         self.append_column(tvcolumn)
 
         self.show()
@@ -625,7 +625,7 @@ class PluginConfigBody(gtk.VBox):
         '''Builds the panel.'''
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
         leftpan = entries.RememberingVPaned(
-            self.w3af, "pane-plugconfigleft", 280)
+            self.w3af, "pane-plugconfigleft", 320)
         self.config_panel = ConfigPanel(profileDescription)
 
         # upper left
