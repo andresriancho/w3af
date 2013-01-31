@@ -26,56 +26,78 @@ from core.ui.gui import entries
 
 from core.controllers.auto_update.version_manager import VersionMgr
 from core.controllers.auto_update.ui_wrapper import UIUpdater
+from core.controllers.auto_update.utils import to_short_id, get_commit_id_date
 
+
+def ask(msg):
+    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                            gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+    dlg.set_icon_from_file(W3AF_ICON)
+    opt = dlg.run()
+    dlg.destroy()
+    return opt == gtk.RESPONSE_YES
+
+
+def notify(msg):
+    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                            gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK, msg)
+    dlg.set_icon_from_file(W3AF_ICON)
+    dlg.run()
+    dlg.destroy()
+        
 
 class GUIUpdater(UIUpdater):
 
     def __init__(self, force, log):
-
-        def ask(msg):
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
-                                    gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
-            dlg.set_icon_from_file(W3AF_ICON)
-            opt = dlg.run()
-            dlg.destroy()
-            return opt == gtk.RESPONSE_YES
-
+        print force
         UIUpdater.__init__(self, force=force, ask=ask, logger=log)
 
         #  Event registration
         self._register(
             VersionMgr.ON_ACTION_ERROR,
-            GUIUpdater.notify,
-            'Error occurred.'
+            notify,
+            'Update error, please update manually.'
         )
         self._register(
             VersionMgr.ON_UPDATE_ADDED_DEP,
-            GUIUpdater.notify,
-            ('At least one new dependency was included in '
-             'w3af. Please update manually.')
+            notify,
+            ('New dependencies added, please restart w3af.')
         )
+    
+    def update(self):
+        super(GUIUpdater, self).update()
+    
+    def _generate_report(self, changelog, local_commit_id, remote_commit_id):
+        '''
+        @return: A string with a report of the latest update from local commit
+                 to remote commit which changes stuff in changelog.
+        '''
+        lshort = to_short_id(local_commit_id)
+        rshort = to_short_id(remote_commit_id)
+        ldate = get_commit_id_date(local_commit_id)
+        rdate = get_commit_id_date(remote_commit_id)
         
-    @staticmethod
-    def notify(msg):
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
-                                gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK, msg)
-        dlg.set_icon_from_file(W3AF_ICON)
-        dlg.run()
-        dlg.destroy()
-
+        report = 'The following changes were applied to the local w3af'\
+                 ' installation during the last update from %s (%s) to'\
+                 ' %s (%s):\n%s'
+        
+        return report % (lshort, ldate, rshort, rdate, changelog)
+    
     def _handle_update_output(self, upd_output):
         if upd_output is not None:
-            files, lrev, rrev = upd_output
-            if rrev:
-                tabnames = ("Updated Files", "Latest Changes")
+            
+            changelog, local_commit_id, remote_commit_id = upd_output
+            
+            if changelog.get_changes():
+
                 dlg = entries.TextDialog("Update report",
-                                         tabnames=tabnames,
                                          icon=W3AF_ICON)
-                dlg.add_message(str(files), page_num=0)
-                dlg.add_message(str(self._vmngr.show_summary(lrev, rrev)),
-                               page_num=1)
+                dlg.add_message(self._generate_report(changelog,
+                                                      local_commit_id,
+                                                      remote_commit_id))
                 dlg.done()
                 dlg.dialog_run()
 
     def _log(self, msg):
         GUIUpdater.notify(msg)
+

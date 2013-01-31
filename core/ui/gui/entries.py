@@ -516,7 +516,7 @@ class EntryDialog(gtk.Dialog):
 
 
 class TextDialog(gtk.Dialog):
-    '''A dialog with  a textview, fillable from outside
+    '''A dialog with a textview, fillable from outside
 
     @param title: The title of the window
 

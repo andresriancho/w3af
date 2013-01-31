@@ -42,7 +42,8 @@ class GitClient(object):
     def __init__(self, localpath):
         self._actionlock = threading.RLock()
         self._repo = git.Repo(localpath)
-
+        self._progress = GitRemoteProgress()
+        
     @property
     def URL(self):
         return self._repo.remotes.origin.url
@@ -55,7 +56,7 @@ class GitClient(object):
             latest_before_pull = get_latest_commit()
             
             # TODO: Use commit_id somewhere!
-            self._repo.remotes.origin.pull()
+            self._repo.remotes.origin.pull(progress=self._progress)
 
             after_pull = get_latest_commit()
 
@@ -65,7 +66,7 @@ class GitClient(object):
     @retry(tries=3, delay=0.5, backoff=2, exc_class=GitClientError,
            err_msg=UPD_ERROR_MSG)
     def fetch(self, commit_id=None):
-        self._repo.remotes.origin.fetch()
+        self._repo.remotes.origin.fetch(progress=self._progress)
         return True
     
     def get_remote_head_id(self):
@@ -96,3 +97,9 @@ class GitClient(object):
         Callback method. Registers all events taking place during this action.
         '''
         self._events.append(event)
+        
+        
+class GitRemoteProgress(git.util.RemoteProgress):
+    def update(self, op_code, cur_count, max_count=None, message=''):
+        print op_code, cur_count, max_count, message
+        
