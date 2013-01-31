@@ -19,13 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
-import sys
 
 from core.controllers.misc.homeDir import (verify_dir_has_perm,
                                            W3AF_LOCAL_PATH)
 from core.controllers.auto_update.version_manager import VersionMgr
-from core.controllers.auto_update.utils import (get_latest_commit,
-                                                is_git_repo)
+from core.controllers.auto_update.utils import is_git_repo
 
 
 class UIUpdater(object):

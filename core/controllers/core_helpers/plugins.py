@@ -216,7 +216,7 @@ class w3af_core_plugins(object):
                         if os.path.isdir(os.path.join('plugins', d))]
         rem_from_list('attack', plugin_types)
         rem_from_list('tests', plugin_types)
-        rem_from_list('.svn', plugin_types)
+        rem_from_list('.git', plugin_types)
         return plugin_types
 
     def get_plugin_list(self, plugin_type):

@@ -48,7 +48,7 @@ class test_questions(object):
         for filename in os.listdir('core/controllers/wizard/questions/'):
             question_id, ext = os.path.splitext(filename)
 
-            if question_id in ('__init__', '.svn') or ext == '.pyc':
+            if question_id in ('__init__', '.git') or ext == '.pyc':
                 continue
 
             klass = mod % question_id

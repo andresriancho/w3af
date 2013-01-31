@@ -92,8 +92,8 @@ def verify_dir_has_perm(path, perm, levels=0):
         currentlevel = len(root.split(os.path.sep)) - pdepth
         if currentlevel > levels:
             break
-        elif ".svn" in dirs:
-            dirs.remove(".svn")
+        elif ".git" in dirs:
+            dirs.remove(".git")
         if not all(map(lambda p: os.access(p, perm),
                        (os.path.join(root, f) for f in dirs + files))):
             return False

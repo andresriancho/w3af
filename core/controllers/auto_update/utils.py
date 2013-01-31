@@ -46,6 +46,16 @@ def get_latest_commit(path=W3AF_LOCAL_PATH):
     '''
     return git.Repo(path).head.commit.hexsha
 
+def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
+    '''
+    @return: The date for the @commit_id
+    '''
+    for commit in git.Repo(path).head.commit.iter_parents():
+        if commit.hexsha == commit_id:
+            cdate = commit.committed_date
+            return time.strftime("%d %b %Y %H:%M", time.gmtime(cdate))
+        
+    return None
 
 def get_latest_commit_date(path=W3AF_LOCAL_PATH):
     '''

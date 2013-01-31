@@ -54,7 +54,7 @@ class GUIUpdater(UIUpdater):
             ('At least one new dependency was included in '
              'w3af. Please update manually.')
         )
-
+        
     @staticmethod
     def notify(msg):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
