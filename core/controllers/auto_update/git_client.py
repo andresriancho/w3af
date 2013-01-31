@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import git
 
+from git.util import RemoteProgress
+
 from core.controllers.misc.decorators import retry
 from core.controllers.auto_update.changelog import ChangeLog
 from core.controllers.auto_update.utils import (get_latest_commit,
@@ -99,7 +101,7 @@ class GitClient(object):
         self._events.append(event)
         
         
-class GitRemoteProgress(git.util.RemoteProgress):
+class GitRemoteProgress(RemoteProgress):
     def update(self, op_code, cur_count, max_count=None, message=''):
         print op_code, cur_count, max_count, message
         
