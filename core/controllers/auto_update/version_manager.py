@@ -176,8 +176,8 @@ class VersionMgr(object):
                   'to update to %s (s)?'
             proceed_upd = callback(msg % (short_local_head_id,
                                           get_commit_id_date(local_head_id),
-                                          short_remote_head_id),
-                                          get_commit_id_date(remote_head_id),)
+                                          short_remote_head_id,
+                                          get_commit_id_date(remote_head_id)))
 
         if not proceed_upd:
             # User said NO
