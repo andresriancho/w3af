@@ -173,7 +173,7 @@ class VersionMgr(object):
             # pylint: disable=E1102
             # pylint: disable=E1103
             msg = 'Your current w3af installation is %s (%s). Do you want '\
-                  'to update to %s (s)?'
+                  'to update to %s (%s)?'
             proceed_upd = callback(msg % (short_local_head_id,
                                           get_commit_id_date(local_head_id),
                                           short_remote_head_id,
