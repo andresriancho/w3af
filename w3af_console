@@ -69,7 +69,7 @@ Options:
     -P <profile> or --profile-run=<profile>
         Run with the selected <profile> in batch mode
 
-For more info visit http://w3af.sourceforge.net/
+For more info visit http://w3af.org/
 '''
 
 def usage():

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-
 import getopt
 import sys
 import os
 import gettext
 import base64
 
-# First of all, we need to change the working directory to the directory of w3af.
+# First of all, we need to change the working directory to the
+# directory of w3af
 current_dir = os.getcwd()
 script_dir = os.path.dirname(sys.argv[0]) or '.'
 os.chdir( script_dir )
@@ -61,7 +61,7 @@ Options:
     -p <profile> or --profile=<profile>
         Run with the selected <profile>
 
-For more info visit http://w3af.sourceforge.net/
+For more info visit http://w3af.org/
 '''    
 
 def usage():
@@ -109,4 +109,3 @@ if __name__ == "__main__":
     err_code = main()
     back_to_current_dir()
     sys.exit(err_code)
-
