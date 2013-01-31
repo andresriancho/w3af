@@ -178,7 +178,7 @@ class VersionMgr(object):
                                           get_commit_id_date(local_head_id),
                                           short_remote_head_id,
                                           get_commit_id_date(remote_head_id)))
-
+            
         if not proceed_upd:
             # User said NO
             return
