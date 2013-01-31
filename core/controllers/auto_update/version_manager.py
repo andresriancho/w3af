@@ -166,7 +166,17 @@ class VersionMgr(object):
             self._notify(VersionMgr.ON_ALREADY_LATEST)
             return
         
+        if self._user_confirmed_update(short_local_head_id, local_head_id,
+                                       short_remote_head_id, remote_head_id):
+            return self.__update_impl()
+
+    def _user_confirmed_update(self, short_local_head_id, local_head_id,
+                                short_remote_head_id, remote_head_id):
+        '''
+        Ask the user if he wants to update or not.
         
+        @return: True if the user wants to update.
+        ''' 
         # Call callback function
         if self.callback_onupdate_confirm is not None:
             
@@ -181,11 +191,7 @@ class VersionMgr(object):
                                           short_remote_head_id,
                                           get_commit_id_date(remote_head_id)))
             
-            if not proceed_upd:
-                # User said NO
-                return
-        
-        return self.__update_impl()
+            return proceed_upd
     
     def __update_impl(self):
         '''
