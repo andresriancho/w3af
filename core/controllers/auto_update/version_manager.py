@@ -270,8 +270,10 @@ class VersionMgr(object):
         '''
         Call registered function for event. If `msg` is not empty use it.
         '''
-        f, _msg = self._reg_funcs.get(event)
-        f(msg or _msg)
+        observer_data = self._reg_funcs.get(event, None)
+        if observer_data is not None:      
+            f, _msg = observer_data
+            f(msg or _msg)
 
     def _added_new_dependencies(self, changelog):
         '''

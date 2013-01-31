@@ -189,6 +189,10 @@ class MainApp(object):
         # Now we start the error handling
         unhandled.set_except_hook(w3af_core)
 
+        # Please note that this doesn't block the Splash window since it will
+        # (hopefully) call splash.push once every time it has made some
+        # progress, thus calling the splash window mainloop() and handling any
+        # pending events
         gui_upd = GUIUpdater(do_upd, splash.push)
         gui_upd.update()
 

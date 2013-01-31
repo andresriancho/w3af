@@ -60,10 +60,6 @@ class GitClient(object):
     @retry(tries=2, delay=0.5, backoff=2)
     def pull(self, commit_id=None):
         with self._actionlock:
-            for i in xrange(10):
-                import time
-                time.sleep(1)
-                self._progress.update(1, 2, 3, 4)            
             try:
                 latest_before_pull = get_latest_commit()
             
@@ -80,11 +76,6 @@ class GitClient(object):
     #@retry(tries=2, delay=0.5, backoff=2)
     def fetch(self, commit_id=None):
         with self._actionlock:
-            for i in xrange(10):
-                import time
-                time.sleep(1)
-                self._progress.update(1, 2, 3, 4)
-                
             try:
                 self._repo.remotes.origin.fetch(progress=self._progress)
             except Exception:

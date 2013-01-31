@@ -50,7 +50,8 @@ class GUIUpdater(UIUpdater):
 
     def __init__(self, force, log):
         UIUpdater.__init__(self, force=force, ask=ask, logger=log)
-
+        self._dot_counter = 1
+        
         #  Event registration
         self._register(
             VersionMgr.ON_ACTION_ERROR,
@@ -62,6 +63,7 @@ class GUIUpdater(UIUpdater):
             notify,
             ('New dependencies added, please restart w3af.')
         )
+        
         #
         # I register to this event because it will get called once every time
         # the git client has performed some progress, which is ideal for me to
@@ -74,12 +76,12 @@ class GUIUpdater(UIUpdater):
         self._register(
             VersionMgr.ON_PROGRESS,
             self._downloading,
-            (),
+            None,
         )
     
-    def _downloading(self):
+    def _downloading(self, ignored_param):
         '''
-        @yield:
+        @return:
             * Updating .
             * Updating ..
             * Updating ...
@@ -87,11 +89,11 @@ class GUIUpdater(UIUpdater):
             
         And then start again,
         '''
-        while True:
-            for n in xrange(4):
-                message = 'Updating %s' % '.' * n
-                self._logger(message)
-                yield True
+        d = self._dot_counter
+        self._dot_counter = d + 1 if d < 3 else 1
+        
+        message = 'Updating %s' % ('.' * self._dot_counter)
+        self._logger(message)
     
     def update(self):
         super(GUIUpdater, self).update()
