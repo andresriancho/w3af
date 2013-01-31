@@ -67,7 +67,7 @@ class UIUpdater(object):
                 self._logger('An error occurred while updating: "%s"' % ex)
 
             # TODO: Please read https://github.com/andresriancho/w3af/issues/6
-            # for more information on what's missing here
+            # for more information on what's missing here 
             '''
             if repo_has_conflicts():
                 self._log("Oops!... w3af can't be started. It seems that the "
