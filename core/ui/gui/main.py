@@ -43,6 +43,7 @@ from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
 
 from core.ui.gui.splash import Splash
+from core.ui.gui.disclaimer import DisclaimerController
 from core.ui.gui.exception_handling import unhandled
 from core.ui.gui.exception_handling import user_reports_bug
 from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
@@ -173,6 +174,10 @@ class MainApp(object):
     '''
 
     def __init__(self, profile, do_upd):
+        disclaimer = DisclaimerController()
+        if not disclaimer.accept_disclaimer():
+            return
+    
         # First of all, create the nice splash screen so we can show something
         # to the user while all the hard work is done on the background
         splash = Splash()
