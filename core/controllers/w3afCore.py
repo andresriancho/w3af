@@ -99,7 +99,7 @@ class w3afCore(object):
         
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
-                
+
     def scan_start_hook(self):
         '''
         Create directories, threads and consumers required to perform a w3af
@@ -108,6 +108,17 @@ class w3afCore(object):
         
         @return: None
         '''
+        # End the ExtendedUrllib (clear the cache and close connections), this
+        # is only useful if there was a previous scan and the user is starting
+        # a new one.
+        #
+        # Please note that I'm not putting this end() thing in scan_end_hook
+        # because I want to be able to access the History() item even after the
+        # scan has finished to give the user access to the HTTP request and
+        # response associated with a vulnerability
+        self.uri_opener.end()
+        self.uri_opener = ExtendedUrllib()
+        
         # If this is not the first scan, I want to clear the old bug data that
         # might be stored in the exception_handler.
         self.exception_handler.clear()
@@ -338,12 +349,6 @@ class w3afCore(object):
             # from the history in their end() method. 
             om.out.end_output_plugins()
             
-            # End the ExtendedUrllib (clear the cache and close connections)
-            #
-            # A new instance will be created at exploit_phase_prerequisites so that
-            # we can perform some exploitation.
-            self.uri_opener.end()
-            
         except Exception:
             raise
 
@@ -372,7 +377,6 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         '''
-        self.uri_opener = ExtendedUrllib()
         self._create_worker_pool()
 
     def _home_directory(self):

@@ -33,5 +33,11 @@ class TestHistoryAccess(CountTestMixin):
         self.count_plugin.loops = 1
         self.w3afcore.start()
         
-        print HistoryItem().load(1)
+        history_item = HistoryItem() 
+        self.assertTrue(history_item.load(1))
+        self.assertEqual(history_item.id, 1)
+        self.assertEqual(history_item.get_request().get_uri().url_string,
+                         'http://moth/')
+        self.assertEqual(history_item.get_response().get_uri().url_string,
+                         'http://moth/')
         
