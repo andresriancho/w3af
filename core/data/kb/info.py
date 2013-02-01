@@ -267,6 +267,29 @@ class Info(dict):
     def __repr__(self):
         return '<info object for issue: "' + self._desc + '">'
     
+    def get_uniq_id(self):
+        '''
+        @return: A uniq identifier for this info object. Since info objects are
+                 persisted to SQLite and then re-generated for showing them to
+                 the user, we can't use id() to know if two info objects are
+                 the same or not.
+                 
+                 Also, for some special cases it's not enough to be able to use
+                 __eq__ since the code was already designed to use id().
+                 
+                 This method was added as part of the KB to SQLite migration
+                 and might disappear in the future. If possible use __eq__
+                 to verify if two instances are the same.
+        '''
+        concat_all = ''
+        
+        for functor in (self.get_uri, self.get_method, self.get_var,
+                        self.get_dc, self.get_id, self.get_name, self.get_desc,
+                        self.get_plugin_name):
+            concat_all += str(functor())
+            
+        return str(hash(concat_all))
+    
     def __eq__(self, other):
         return self.get_uri() == other.get_uri() and\
                self.get_method() == other.get_method() and\
