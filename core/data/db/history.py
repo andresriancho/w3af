@@ -359,4 +359,6 @@ class HistoryItem(object):
         # at the same time as we, so we simply ignore errors here
         rmtree(self._session_dir, ignore_errors=True)
         
+        self.init()
+        
         return True

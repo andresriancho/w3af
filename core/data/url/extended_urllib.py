@@ -820,7 +820,7 @@ class ExtendedUrllib(object):
         domain = url_instance.get_domain()
 
         if self._grep_queue_put is not None and\
-                domain in cf.cf.get('target_domains'):
+        domain in cf.cf.get('target_domains'):
 
             # Create a fuzzable request based on the urllib2 request object
             headers_inst = Headers(request.headers.items())

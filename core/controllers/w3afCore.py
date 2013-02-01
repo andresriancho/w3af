@@ -117,7 +117,6 @@ class w3afCore(object):
         # scan has finished to give the user access to the HTTP request and
         # response associated with a vulnerability
         self.uri_opener.end()
-        self.uri_opener = ExtendedUrllib()
         
         # If this is not the first scan, I want to clear the old bug data that
         # might be stored in the exception_handler.

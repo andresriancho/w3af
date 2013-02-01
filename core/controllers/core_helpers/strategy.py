@@ -315,8 +315,8 @@ class w3af_core_strategy(object):
 
         if grep_plugins:
             self._grep_consumer = grep(grep_plugins, self._w3af_core)
-            self._w3af_core.uri_opener.set_grep_queue_put(
-                self._grep_consumer.in_queue_put)
+            grep_qput = self._grep_consumer.in_queue_put
+            self._w3af_core.uri_opener.set_grep_queue_put(grep_qput)
             self._grep_consumer.start()
 
     def _teardown_grep(self):
