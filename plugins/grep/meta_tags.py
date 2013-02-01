@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.parsers.parser_cache as parser_cache
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
