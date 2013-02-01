@@ -166,11 +166,11 @@ class error_pages(GrepPlugin):
             i.set_url(response.get_url())
             i.add_to_highlight(msg)
             
-            self.kb_append(self, 'error_page', i)
+            self.kb_append_uniq(self, 'error_page', i, 'URL')
 
             # There is no need to report more than one info for the same result,
-            # the user will read the info object and analyze it even if we report it
-            # only once. If we report it twice, he'll get mad ;)
+            # the user will read the info object and analyze it even if we 
+            # report it only once. If we report it twice, he'll get mad ;)
             break
 
     def find_version_numbers(self, request, response):
