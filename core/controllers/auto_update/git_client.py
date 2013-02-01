@@ -137,12 +137,6 @@ class GitClient(object):
         
         return origin_master.commit.hexsha
         
-    def _register(self, event):
-        '''
-        Callback method. Registers all events taking place during this action.
-        '''
-        self._events.append(event)
-        
         
 class GitRemoteProgress(RemoteProgress):
     '''
