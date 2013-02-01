@@ -40,7 +40,7 @@ class TestCacheControl(unittest.TestCase):
         self.plugin = cache_control()
 
     def tearDown(self):
-        self.plugin.end()
+        kb.kb.cleanup()
 
     def test_cache_control_http(self):
         '''
