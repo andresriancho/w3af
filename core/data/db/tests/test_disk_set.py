@@ -177,6 +177,6 @@ class test_DiskSet(unittest.TestCase):
         
         self.assertTrue(db.table_exists(table_name))
 
-        del disk_set
+        disk_set.cleanup()
         
         self.assertFalse(db.table_exists(table_name))

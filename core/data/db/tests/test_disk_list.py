@@ -262,7 +262,7 @@ class TestDiskList(unittest.TestCase):
         
         self.assertTrue(db.table_exists(table_name))
         
-        del disk_list
+        disk_list.cleanup()
         
         self.assertFalse(db.table_exists(table_name))
 

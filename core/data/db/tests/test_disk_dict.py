@@ -91,6 +91,6 @@ class TestDiskDict(unittest.TestCase):
         
         self.assertTrue(db.table_exists(table_name))
         
-        del disk_dict
+        disk_dict.cleanup()
         
         self.assertFalse(db.table_exists(table_name))
