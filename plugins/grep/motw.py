@@ -26,12 +26,10 @@ import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
 from core.data.kb.info import Info
 
 
-class motw (GrepPlugin):
+class motw(GrepPlugin):
     """
     Identify whether the page is compliant to mark of the web.
     @author: Sharad Ganapathy sharadgana |at| gmail.com
@@ -57,31 +55,33 @@ class motw (GrepPlugin):
         if not response.is_text_or_html():
             return
         
-        if not is_404(response):
-            motw_match = self._motw_re.search(response.get_body())
+        if is_404(response):
+            return
+        
+        motw_match = self._motw_re.search(response.get_body())
 
-            # Act based on finding/non-finding
-            if motw_match:
+        # Act based on finding/non-finding
+        if motw_match:
 
-                # This int() can't fail because the regex validated
-                # the data before
-                url_length_indicated = int(motw_match.group(1))
-                url_length_actual = len(motw_match.group(2))
+            # This int() can't fail because the regex validated
+            # the data before
+            url_length_indicated = int(motw_match.group(1))
+            url_length_actual = len(motw_match.group(2))
+            
+            if (url_length_indicated <= url_length_actual):
+                desc = 'The URL: "%s" contains a valid mark of the web.'
+                desc = desc % response.get_url()
+                i = self.create_info(desc, response, motw_match)
+
+            else:
+                desc = 'The URL: "%s" will be executed in Local Machine'\
+                       ' Zone security context because the indicated length'\
+                       ' is greater than the actual URL length.'
+                desc = desc % response.get_url() 
+                i = self.create_info(desc, response, motw_match)
+                i['local_machine'] = True
                 
-                if (url_length_indicated <= url_length_actual):
-                    desc = 'The URL: "%s" contains a valid mark of the web.'
-                    desc = desc % response.get_url()
-                    i = self.create_info(desc, response, motw_match)
-
-                else:
-                    desc = 'The URL: "%s" will be executed in Local Machine'\
-                           ' Zone security context because the indicated length'\
-                           ' is greater than the actual URL length.'
-                    desc = desc % response.get_url() 
-                    i = self.create_info(desc, response, motw_match)
-                    i['local_machine'] = True
-                    
-                kb.kb.append(self, 'motw', i)
+            kb.kb.append(self, 'motw', i)
 
     def create_info(self, desc, response, motw_match):
         i = Info('Mark of the web', desc, response.id, self.get_name())
