@@ -24,7 +24,7 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')
-class TestErrorPages(PluginTest):
+class TestCrossDomainJS(PluginTest):
 
     target_url = 'http://moth/w3af/grep/cross_domain_js/'
 
