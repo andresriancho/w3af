@@ -192,8 +192,7 @@ class TestBasic(unittest.TestCase):
                            'evasion': ['get_priority', 'modify_request'],
                            'grep': ['grep'],
                            'infrastructure': ['discover',],
-                           'mangle': ['mangle_request', 'mangle_response',
-                                      'get_priority'],
+                           'mangle': ['mangle_request', 'mangle_response'],
                            'output': ['debug', 'information', 'error',
                                       'vulnerability', 'console']}
         
