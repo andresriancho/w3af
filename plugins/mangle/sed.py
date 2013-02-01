@@ -41,14 +41,11 @@ class sed(ManglePlugin):
 
     def __init__(self):
         ManglePlugin.__init__(self)
-        self._req_body_manglers = []
-        self._req_head_manglers = []
-        self._res_body_manglers = []
-        self._res_head_manglers = []
-
+        self._manglers = {'q': {'b': set(), 'h': set()},
+                          's': {'b': set(), 'h': set()},}
+        
         # User options
         self._user_option_fix_content_len = True
-        self._priority = 20
         self._expressions = ''
 
     def mangle_request(self, request):
@@ -59,18 +56,18 @@ class sed(ManglePlugin):
         @return: A mangled version of the request.
         '''
         data = request.get_data()
-        for regex, string in self._req_body_manglers:
+        for regex, string in self._manglers['q']['b']:
             data = regex.sub(string, data)
 
         header_string = str(request.get_headers())
         
-        for regex, string in self._req_head_manglers:
+        for regex, string in self._manglers['q']['h']:
             header_string = regex.sub(string, header_string)
         
         headers_inst = Headers.from_string(header_string)
 
         return create_fuzzable_request_from_parts(
-                                                  request.get_url(),
+                                                  request.get_uri(),
                                                   request.get_method(),
                                                   data, headers_inst
                                                   )
@@ -84,27 +81,27 @@ class sed(ManglePlugin):
         '''
         body = response.get_body()
 
-        for regex, string in self._res_body_manglers:
+        for regex, string in self._manglers['s']['b']:
             body = regex.sub(string, body)
 
         response.set_body(body)
 
         header_string = str(response.get_headers())
 
-        for regex, string in self._res_head_manglers:
+        for regex, string in self._manglers['s']['h']:
             header_string = regex.sub(string, header_string)
 
         try:
             mangled_header = Headers.from_string(header_string)
         except ValueError:
-            error = 'Your header modifications created an invalid header string'\
-                    ' that could NOT be parsed back to a Header object.'
+            error = 'Your header modifications created an invalid header'\
+                    ' string that could NOT be parsed back to a Header object.'
             om.out.error(error)
         else:
             response.set_headers(mangled_header)
 
-        if self._res_body_manglers and self._user_option_fix_content_len:
-            response = self._fixContentLen(response)
+        if self._user_option_fix_content_len:
+            response = self._fix_content_len(response)
 
         return response
 
@@ -120,79 +117,68 @@ class sed(ManglePlugin):
         @return: No value is returned.
         '''
         self._user_option_fix_content_len = option_list[
-            'fixContentLen'].get_value()
-        self._priority = option_list['priority'].get_value()
+            'fix_content_len'].get_value()
 
         self._expressions = ','.join(option_list['expressions'].get_value())
-        self._expressions = re.findall(
-            '([qs])([bh])/(.*?)/(.*?)/;?', self._expressions)
+        self._expressions = re.findall('([qs])([bh])/(.*?)/(.*?)/;?',
+                                       self._expressions)
 
         if len(self._expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
             raise w3afException('The user specified expression is invalid.')
 
         for exp in self._expressions:
-            if exp[0] not in ['q', 's']:
-                msg = 'The first letter of the sed expression should be q(reQuest) or s(reSponse).'
-                raise w3afException(msg)
+            req_res, body_header, regex_str, target_str = exp
+            
+            if req_res not in ('q', 's'):
+                msg = 'The first letter of the sed expression should be "q"'\
+                      ' for indicating request or "s" for response, got "%s"'\
+                      ' instead.'
+                raise w3afException(msg % req_res)
 
-            if exp[1] not in ['b', 'h']:
-                msg = 'The second letter of the sed expression should be b(body) or h(header).'
-                raise w3afException(msg)
+            if body_header not in ('b', 'h'):
+                msg = 'The second letter of the expression should be "b"'\
+                      ' for body or "h" for header, got "%s" instead.'
+                raise w3afException(msg % body_header)
 
             try:
-                regex = re.compile(exp[2])
-            except:
-                raise w3afException(
-                    'Invalid regular expression in sed plugin.')
+                regex = re.compile(regex_str)
+            except re.error, re_err:
+                msg = 'Regular expression compilation error at "%s", the'\
+                      ' original exception was "%s".'
+                raise w3afException(msg % (regex_str, re_err))
 
-            if exp[0] == 'q':
-                # The expression mangles the request
-                if exp[1] == 'b':
-                    self._req_body_manglers.append((regex, exp[3]))
-                else:
-                    self._req_head_manglers.append((regex, exp[3]))
-            else:
-                # The expression mangles the response
-                if exp[1] == 'b':
-                    self._res_body_manglers.append((regex, exp[3]))
-                else:
-                    self._res_head_manglers.append((regex, exp[3]))
+            self._manglers[req_res][body_header].add((regex, target_str))
 
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Stream edition expressions'
-        h1 = 'Stream edition expressions are strings that tell the sed plugin what to change.'
-        h1 += ' Sed plugin uses regular expressions, some examples: \n - qh/User/NotLuser/ ;'
-        h1 += ' This will make sed search in the the re[q]uest [h]eader for the string User'
-        h1 += ' and replace it with NotLuser.\n - sb/[fF]orm/form ; This will make sed search'
-        h1 += ' in the re[s]ponse [b]ody for the strings form or Form and replace it with form.'
-        h1 += ' Multiple expressions can be specified separated by commas.'
-        o1 = opt_factory('expressions', self._expressions, d1, 'list', help=h1)
-
-        d2 = 'Fix the content length header after mangling'
-        o2 = opt_factory(
-            'fixContentLen', self._user_option_fix_content_len, d2, 'boolean')
-
-        d3 = 'Plugin execution priority'
-        h3 = 'Mangle plugins are ordered using the priority parameter'
-        o3 = opt_factory('priority', self._priority, d3, 'integer', help=h3)
-
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
+        
+        d = 'Stream edition expressions'
+        h = ('Stream edition expressions are strings that tell the sed plugin'
+             ' which transformations to apply to the HTTP requests and'
+             ' responses. The sed plugin uses regular expressions, some'
+             ' examples:\n'
+             '\n'
+             '    - qh/User/NotLuser/\n'
+             '      This will make sed search in the the re[q]uest [h]eader'
+             ' for the string User and replace it with NotLuser.\n'
+             '\n'
+             '    - sb/[fF]orm/form\n'
+             '      This will make sed search in the re[s]ponse [b]ody for'\
+             ' the strings form or Form and replace it with form.\n'
+             '\n'
+             'Multiple expressions can be specified separated by commas.')
+        o = opt_factory('expressions', self._expressions, d, 'list', help=h)
+        ol.add(o)
+        
+        d = 'Fix the content length header after mangling'
+        o = opt_factory('fix_content_len', self._user_option_fix_content_len,
+                        d, 'boolean')
+        ol.add(o)
+        
         return ol
-
-    def get_priority(self):
-        '''
-        This function is called when sorting mangle plugins.
-        Each mangle plugin should implement this.
-
-        @return: An integer specifying the priority. 100 is run first, 0 last.
-        '''
-        return self._priority
 
     def get_long_desc(self):
         '''
@@ -201,20 +187,21 @@ class sed(ManglePlugin):
         return '''
         This plugin is a stream editor for web requests and responses.
 
-        Three configurable parameters exist:
-            - priority
+        Two configurable parameters exist:
             - expressions
-            - fixContentLen
+            - fix_content_len
 
-        Stream edition expressions are strings that tell the sed plugin what to change. Sed plugin
-        uses regular expressions, some examples:
+        Stream edition expressions are strings that tell the sed plugin which
+        transformations to apply to the HTTP requests and responses. The sed
+        plugin uses regular expressions, some examples:
+        
             - qh/User/NotLuser/
-                This will make sed search in the the re[q]uest [h]eader for the string User and
-                replace it with NotLuser.
-
+            This will make sed search in the the re[q]uest [h]eader for the
+            string User and replace it with NotLuser.
+            
             - sb/[fF]orm/form
-                This will make sed search in the re[s]ponse [b]ody for the strings form or Form
-                and replace it with form.
-
+            This will make sed search in the re[s]ponse [b]ody for the strings
+            form or Form and replace it with form.
+        
         Multiple expressions can be specified separated by commas.
         '''

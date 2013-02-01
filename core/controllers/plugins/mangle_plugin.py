@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.plugin import Plugin
-import core.controllers.output_manager as om
 
 
 class ManglePlugin(Plugin):
@@ -39,6 +38,7 @@ class ManglePlugin(Plugin):
 
     def __init__(self):
         Plugin.__init__(self)
+        self._priority = 20
 
     def mangle_request(self, request):
         '''
@@ -96,16 +96,16 @@ class ManglePlugin(Plugin):
 
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        raise NotImplementedError
+        return self._priority
 
-    def _fixContentLen(self, response):
+    def _fix_content_len(self, response):
         '''
         If the content-length header is present, calculate the new len and
         update the header.
         '''
         cl = 'Content-Length'
         for i in response.get_headers():
-            if i.lower() == 'Content-length'.lower():
+            if i.lower() == 'content-length':
                 cl = i
                 break
 

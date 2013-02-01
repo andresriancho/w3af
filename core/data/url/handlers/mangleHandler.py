@@ -109,7 +109,7 @@ class mangleHandler(urllib2.BaseHandler):
 
         return response
 
-    def _HTTPResponse2httplib(self, originalResponse, mangledResponse):
+    def _HTTPResponse2httplib(self, originalResponse, mangled_response):
         '''
         Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse
         subclass that I created in keepalive.
@@ -117,16 +117,16 @@ class mangleHandler(urllib2.BaseHandler):
         @param HTTPResponse: HTTPResponse.HTTPResponse object
         @return: httplib.httpresponse subclass
         '''
-        kaRes = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
+        ka_resp = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
                                strict=0, method=None)
-        kaRes.set_body(mangledResponse.get_body())
-        kaRes.headers = mangledResponse.get_headers()
-        kaRes.code = mangledResponse.get_code()
-        kaRes._url = mangledResponse.get_uri().url_string
-        kaRes.msg = originalResponse.msg
-        kaRes.id = originalResponse.id
-        kaRes.encoding = mangledResponse.charset
-        return kaRes
+        ka_resp.set_body(mangled_response.get_body())
+        ka_resp.headers = mangled_response.get_headers()
+        ka_resp.code = mangled_response.get_code()
+        ka_resp._url = mangled_response.get_uri().url_string
+        ka_resp.msg = originalResponse.msg
+        ka_resp.id = originalResponse.id
+        ka_resp.encoding = mangled_response.charset
+        return ka_resp
 
     https_request = http_request
     https_response = http_response
