@@ -26,7 +26,8 @@ from git.util import RemoteProgress
 from core.controllers.misc.decorators import retry
 from core.controllers.auto_update.changelog import ChangeLog
 from core.controllers.auto_update.utils import (get_latest_commit,
-                                                get_current_branch)
+                                                get_current_branch,
+                                                repo_has_conflicts)
 
 
 class GitClientError(Exception):
@@ -41,9 +42,9 @@ class GitClient(object):
                      ' Git repository! Please update manually using'
                      ' "git pull".')
 
-    def __init__(self, localpath):
+    def __init__(self, path):
         self._actionlock = threading.RLock()
-        self._repo = git.Repo(localpath)
+        self._repo = git.Repo(path)
         self._progress = GitRemoteProgress()
     
     def add_observer(self, observer):
@@ -63,13 +64,20 @@ class GitClient(object):
             try:
                 latest_before_pull = get_latest_commit()
             
-                # TODO: Use commit_id somewhere! 
                 self._repo.remotes.origin.pull(progress=self._progress)
 
                 after_pull = get_latest_commit()
+            
+            # The developers at the mailing list were unable to tell me
+            # if the pull() would raise an exception on merge conflicts
+            # or which exception would be raised. So I'm catching all and
+            # verifying if there are conflicts in an exception and in the
+            # case were no exceptions were raised
             except Exception:
+                self.handle_conflicts(latest_before_pull)
                 raise GitClientError(self.UPD_ERROR_MSG)
             else:
+                self.handle_conflicts(latest_before_pull)
                 changelog = ChangeLog(latest_before_pull, after_pull)
                 return changelog
 
@@ -83,6 +91,29 @@ class GitClient(object):
 
         return True
     
+    def handle_conflicts(self, reset_commit_id):
+        '''
+        This method verifies if the repository is in conflict and resolved it
+        by performing a reset() to the previous commit-id.
+        
+        @param reset_commit_id: The commit id to reset to
+        @raise GitClientError: To let the user know that the update failed
+        '''
+        if repo_has_conflicts():
+            self.reset_to_previous_state(reset_commit_id)
+            raise GitClientError('A merge conflict was generated while trying'
+                                 ' to update to the latest w3af version, please'
+                                 ' update manually by using a git client.')
+    
+    def reset_to_previous_state(self, reset_commit_id):
+        '''
+        Does a "git reset --hard <reset_commit_id>".
+        
+        @param reset_commit_id: The commit id to reset to
+        '''
+        self._repo.head.reset(commit=reset_commit_id, index=True,
+                              working_tree=True)
+        
     def get_remote_head_id(self):
         '''
         @return: The ID for the latest commit in the REMOTE repo.

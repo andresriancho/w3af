@@ -83,3 +83,13 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
     names = [ref.name for ref in repo.refs if ref.commit.hexsha == get_latest_commit()]
     name = [name for name in names if '/' not in name][0]
     return name
+
+
+def repo_has_conflicts(path=W3AF_LOCAL_PATH):
+    '''
+    @return: True if there was any merge conflict with the last pull()
+    '''
+    for stage, _ in git.Repo(path).index.iter_blobs():
+        if stage != 0:
+            return True
+    return False
