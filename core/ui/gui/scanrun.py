@@ -166,9 +166,8 @@ class KBBrowser(entries.RememberingHPaned):
             self.filters[signal] = initial
             but.show()
             filterbox.pack_start(but, expand=False, fill=False, padding=2)
-        make_but("Vuln", "vuln", True)
-        make_but("Info", "info", True)
-        make_but("Misc", "misc", False)
+        make_but("Vulnerabilities", "vuln", True)
+        make_but("Informations", "info", True)
         filterbox.show()
 
         # the kb tree

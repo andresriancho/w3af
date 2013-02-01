@@ -27,8 +27,8 @@ import core.data.kb
 from core.ui.gui import helpers, exploittab
 
 TYPES_OBJ = {
-    core.data.kb.vuln: "vuln",
-    core.data.kb.info: "info",
+    core.data.kb.vuln.Vuln: "vuln",
+    core.data.kb.info.Info: "info",
 }
 
 
@@ -105,8 +105,7 @@ class KBTree(gtk.TreeView):
         self.connect("query-tooltip", self._showToolTips)
 ##        self.connect("motion-notify-event", self._changeButtonStyle)
 
-        # get the knowledge base and go live
-        self.fullkb = kb.kb.dump()
+        # make sure we update the knowledge base
         gobject.timeout_add(500, self._update_tree, self.treestore,
                             self.treeholder)
         self.postcheck = False
@@ -149,7 +148,7 @@ class KBTree(gtk.TreeView):
         filteredkb = {}
 
         # iterate the first layer, plugin names
-        for pluginname, plugvalues in self.fullkb.items():
+        for pluginname, plugvalues in kb.kb.dump().iteritems():
             holdplugin = {}
             maxpluginlevel = 0
 
@@ -161,39 +160,28 @@ class KBTree(gtk.TreeView):
                 # iterate the third layer, the variable objects
                 if isinstance(variabobjects, list):
                     for obj in variabobjects:
-                        idobject = self._getBestObjName(obj)
-                        type_obj = TYPES_OBJ.get(type(obj), "misc")
-                        if type_obj == "vuln":
-                            severity = obj.get_severity()
-                        else:
-                            severity = None
-                        colorlevel = helpers.KB_COLOR_LEVEL.get(
-                            (type_obj, severity), 0)
+                        obj_name = obj.get_name()
+                        obj_severity = obj.get_severity()
+                        
+                        type_obj = TYPES_OBJ.get(type(obj))
+                        color_tuple = (type_obj, obj_severity)
+                        colorlevel = helpers.KB_COLOR_LEVEL.get(color_tuple, 0)
                         maxvariablevel = max(maxvariablevel, colorlevel)
+                        
                         # the type must be in the filter, and be in True
                         if self.filter.get(type_obj, False):
-                            holdvariab.append(
-                                (idobject, obj, type_obj, severity,
-                                 helpers.KB_COLORS[colorlevel]))
-                else:
-                    # Not a list, try to show it anyway
-                    # This is an ugly hack, because these structures in the core
-                    # are not as clean as should be
-                    # Use this strict parameter to decide if you will show as much
-                    # as possible, or want to be strict regarding the type here
-                    if not self.strict:
-                        idobject = self._getBestObjName(variabobjects)
-                        if self.filter["misc"]:
-                            holdvariab.append((idobject, variabobjects,
-                                              "misc", None, "black"))
+                            data = (obj_name, obj, type_obj, obj_severity,
+                                    helpers.KB_COLORS[colorlevel])
+                            holdvariab.append(data)
 
                 if holdvariab:
-                    holdplugin[variabname] = (
-                        holdvariab, helpers.KB_COLORS[maxvariablevel])
+                    holdplugin[variabname] = (holdvariab,
+                                              helpers.KB_COLORS[maxvariablevel])
                     maxpluginlevel = max(maxpluginlevel, maxvariablevel)
+                    
             if holdplugin:
-                filteredkb[pluginname] = (
-                    holdplugin, helpers.KB_COLORS[maxpluginlevel])
+                filteredkb[pluginname] = (holdplugin,
+                                          helpers.KB_COLORS[maxpluginlevel])
         return filteredkb
 
     def set_filter(self, active):
@@ -202,8 +190,8 @@ class KBTree(gtk.TreeView):
         @param active: which types should be shown.
         '''
         self.filter = active
-        new_treestore = gtk.TreeStore(
-            gtk.gdk.Pixbuf, str, str, gtk.gdk.Pixbuf, int, str, str)
+        new_treestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, str,
+                                      gtk.gdk.Pixbuf, int, str, str)
         # Sort
         # remember that the 4 is just a number that is then used in
         # set_sort_column_id
@@ -215,21 +203,6 @@ class KBTree(gtk.TreeView):
         self.treestore = new_treestore
         self.treeholder = new_treeholder
         self.exploit_vulns = {}
-
-    def _getBestObjName(self, obj):
-        '''Gets the best possible name for the object.
-
-        @return: The best obj name possible
-        '''
-        if hasattr(obj, 'get_name'):
-            try:
-                name = obj.get_name()
-            except:
-                name = repr(obj)
-        else:
-            name = repr(obj)
-
-        return name
 
     def _update_tree(self, treestore, treeholder):
         '''Updates the GUI with the KB.
@@ -296,18 +269,25 @@ class KBTree(gtk.TreeView):
 
                 # iterate the third layer, the variable objects
                 for name, instance, obtype, severity, color in variabobjects:
-                    idinstance = str(id(instance))
+                    
+                    # Note that I can't use id(instance) here since the
+                    # instances that come here are created from the SQLite DB
+                    # and have different instances, even though they hold the
+                    # same information.
+                    idinstance = instance.get_uniq_id()
+                    
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
+                        
                         icon = helpers.KB_ICONS.get((obtype, severity))
                         if icon is not None:
                             icon = icon.get_pixbuf()
 
                         iconExploit = helpers.loadIcon('STOCK_EXECUTE') if \
-                            self._isExploitable(instance) else None
+                                      self._isExploitable(instance) else None
 
-                        treestore.append(
-                            treevariab, [iconExploit, name, idinstance,
+                        treestore.append(treevariab,
+                                         [iconExploit, name, idinstance,
                                          icon, 0, color, ''])
                         self.instances[idinstance] = instance
                         self._mapExploitsToVuln(instance)
@@ -378,7 +358,7 @@ class KBTree(gtk.TreeView):
 
             # Is the cursor over an 'exploit' icon?
             if vuln is not None and self._isExploitable(vuln) \
-                    and 0 <= x_cell <= 18:
+            and 0 <= x_cell <= 18:
                 tooltip.set_text(_("Exploit this vulnerability!"))
                 self.set_tooltip_cell(tooltip, path, tv_column, None)
                 return True
@@ -398,7 +378,7 @@ class KBTree(gtk.TreeView):
             vuln = self.get_instance(path)
 
             if vuln is not None and self._isExploitable(vuln) \
-                    and 0 <= x_cell <= 18:
+            and 0 <= x_cell <= 18:
                 # Move to Exploit Tab
                 self.w3af.mainwin.nb.set_current_page(3)
                 # Exec the exploits for this vuln

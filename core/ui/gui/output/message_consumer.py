@@ -60,8 +60,10 @@ class MessageConsumer(object):
                 if msg is None:
                     continue
                 
-                keep_running = self.handle_message(msg)
-                while keep_running:
+                # Given that in some cases the handle_message takes some
+                # time to run, we've implemented this loop to give the method
+                # the opportunity to give the control back to the mainloop
+                for _ in self.handle_message(msg):
                     yield True
 
     def handle_message(self, msg):

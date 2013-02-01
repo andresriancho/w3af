@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
 
-from core.ui.gui.output.gtk_output import GtkOutput
 from core.ui.gui.output.message_consumer import MessageConsumer
 from core.ui.gui import entries
 from core.ui.gui.common.searchable import Searchable
@@ -84,10 +83,8 @@ class _LineScroller(gtk.TextView, MessageConsumer):
     def handle_message(self, msg):
         '''Adds a message to the textview.
 
-        The message is read from the iterated queue.
-
-        @returns: True to gobject to keep calling it, and False when all
-                  it's done.
+        @param msg: The message to add to the textview
+        @returns: None
         '''
         super(_LineScroller, self).handle_message(msg)
         textbuff = self.textbuffer
@@ -97,7 +94,7 @@ class _LineScroller(gtk.TextView, MessageConsumer):
 
         # only store it if it's of one of the possible filtered
         if mtype not in self.possible:
-            return
+            yield False
 
         # store it
         self.all_messages.append((mtype, text))

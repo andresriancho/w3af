@@ -71,7 +71,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         self.timeBase = int(time.time() * 1000)
         self.realLeftMargin = MIZQ
         self.gc = None
-        self._redrawGen = None
+        self._redraw_gen = None
 
         # Go live!
         self.connect("expose-event", self.area_expose_cb)
@@ -90,11 +90,15 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             
             # no more new messages
             if self.flags() & gtk.MAPPED:
-                if self._redrawGen is None:
-                    self._redrawGen = self._redrawAll()
-                reset = self._redrawGen.next()
-                if reset:
-                    self._redrawGen = None
+                
+                if self._redraw_gen is None:
+                    self._redraw_gen = self._redraw_all()
+                
+                for redraw_opcode in self._redraw_gen:
+                    if redraw_opcode:
+                        self._redraw_gen = None
+                        break
+                    yield
 
         mmseg = int(msg.get_real_time() * 1000)
         mtype = msg.get_type()
@@ -103,9 +107,8 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         else:
             sever = None
         self.all_messages.append((mmseg, mtype, sever))
-        yield True
 
-    def _redrawAll(self):
+    def _redraw_all(self):
         '''Redraws all the graph.'''
         if self.gc is None:
             # sorry, not exposed yet...
@@ -176,15 +179,16 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             self.window.draw_line(self.gc, lm - 5, posy, lm, posy)
             self.pangolayout.set_text(txt)
             (tw, th) = self.pangolayout.get_pixel_size()
-            self.window.draw_layout(
-                self.gc, lm - tw - 8, posy - th // 2, self.pangolayout)
+            self.window.draw_layout(self.gc, lm - tw - 8, posy - th // 2,
+                                    self.pangolayout)
 
         # draw the info
         countingPixel = 0
         pixelQuant = 0
         mesind = 0
         while True:
-            for (mmseg, mtype, sever) in itertools.islice(self.all_messages, mesind, None, None):
+            for (mmseg, mtype, sever) in itertools.islice(self.all_messages,
+                                                          mesind, None, None):
                 mesind += 1
                 pixel = (mmseg - self.timeBase) // self.timeGrouping
                 posx = self.realLeftMargin + pixel
@@ -235,7 +239,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
     def area_expose_cb(self, area, event):
         style = self.get_style()
         self.gc = style.fg_gc[gtk.STATE_NORMAL]
-        self._redrawGen = self._redrawAll()
+        self._redraw_gen = self._redraw_all()
         return True
 
     def _calculateXTicks(self, width):
