@@ -45,7 +45,7 @@ class TestErrorPages(PluginTest):
         infos = self.kb.get('error_pages', 'error_page')
         info = infos[0]
 
-        self.assertEquals(1, len(infos))
+        self.assertEquals(1, len(infos), infos)
         self.assertEquals(self.target_url, str(info.get_url()))
         self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertTrue(info.get_name().startswith('Descriptive error page'))
