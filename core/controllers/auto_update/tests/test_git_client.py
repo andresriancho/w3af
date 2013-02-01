@@ -19,11 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import subprocess
 
 from mock import MagicMock
 
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.controllers.auto_update.git_client import GitClient
+from core.controllers.auto_update.utils import get_current_branch
 
 
 class TestGitClient(unittest.TestCase):
@@ -39,6 +41,14 @@ class TestGitClient(unittest.TestCase):
         self.assertEqual(len(local_head), 40)
         self.assertIsInstance(local_head, basestring)
         
+        # Get the ID using an alternative way for double checking
+        proc = subprocess.Popen(['git', 'log', '-n', '1'], stdout=subprocess.PIPE)
+        commit_id_line = proc.stdout.readline()
+        commit_id_line = commit_id_line.strip()
+        _, commit_id = commit_id_line.split(' ')              
+        
+        self.assertEqual(local_head, commit_id)
+        
     def test_get_remote_head_id(self):
         client = GitClient(W3AF_LOCAL_PATH)
         # I don't really want to wait for the local repo to update itself
@@ -46,11 +56,17 @@ class TestGitClient(unittest.TestCase):
         client.fetch = MagicMock()
         
         remote_head = client.get_remote_head_id()
-        
+        client.fetch.assert_called_once_with()
+                
         self.assertEqual(len(remote_head), 40)
         self.assertIsInstance(remote_head, basestring)
         
-        local_head = client.get_local_head_id()
-        self.assertEqual(local_head, remote_head)
+        # Get the ID using an alternative way for double checking
+        branch = 'refs/remotes/origin/%s' % get_current_branch()
+        proc = subprocess.Popen(['git', 'for-each-ref', branch], stdout=subprocess.PIPE)
+        commit_id_line = proc.stdout.readline()
+        commit_id_line = commit_id_line.strip()
+        commit_id, _ = commit_id_line.split(' ')
         
-        client.fetch.assert_called_once_with()
+        self.assertEqual(remote_head, commit_id)
+        
