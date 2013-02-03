@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-class delay(object):
+class Delay(object):
     '''
     A simple representation of a delay string like "sleep(%s)"
     '''
