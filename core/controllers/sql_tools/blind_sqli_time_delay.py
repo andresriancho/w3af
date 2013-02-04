@@ -24,7 +24,7 @@ import core.data.constants.severity as severity
 
 from core.data.kb.vuln import Vuln
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import delay
+from core.controllers.delay_detection.delay import Delay
 
 
 class blind_sqli_time_delay(object):
@@ -77,20 +77,20 @@ class blind_sqli_time_delay(object):
         res = []
 
         # MSSQL
-        res.append(delay("1;waitfor delay '0:0:%s'--"))
-        res.append(delay("1);waitfor delay '0:0:%s'--"))
-        res.append(delay("1));waitfor delay '0:0:%s'--"))
-        res.append(delay("1';waitfor delay '0:0:%s'--"))
-        res.append(delay("1');waitfor delay '0:0:%s'--"))
-        res.append(delay("1'));waitfor delay '0:0:%s'--"))
+        res.append(Delay("1;waitfor delay '0:0:%s'--"))
+        res.append(Delay("1);waitfor delay '0:0:%s'--"))
+        res.append(Delay("1));waitfor delay '0:0:%s'--"))
+        res.append(Delay("1';waitfor delay '0:0:%s'--"))
+        res.append(Delay("1');waitfor delay '0:0:%s'--"))
+        res.append(Delay("1'));waitfor delay '0:0:%s'--"))
 
         # MySQL 5
         #
         # Thank you guys for adding sleep(seconds) !
         #
-        res.append(delay("1 or SLEEP(%s)"))
-        res.append(delay("1' or SLEEP(%s) and '1'='1"))
-        res.append(delay('1" or SLEEP(%s) and "1"="1'))
+        res.append(Delay("1 or SLEEP(%s)"))
+        res.append(Delay("1' or SLEEP(%s) and '1'='1"))
+        res.append(Delay('1" or SLEEP(%s) and "1"="1'))
 
         # MySQL 4
         #
@@ -114,9 +114,9 @@ class blind_sqli_time_delay(object):
         #res.append( delay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
 
         # PostgreSQL
-        res.append(delay("1 or pg_sleep(%s)"))
-        res.append(delay("1' or pg_sleep(%s) and '1'='1"))
-        res.append(delay('1" or pg_sleep(%s) and "1"="1'))
+        res.append(Delay("1 or pg_sleep(%s)"))
+        res.append(Delay("1' or pg_sleep(%s) and '1'='1"))
+        res.append(Delay('1" or pg_sleep(%s) and "1"="1'))
 
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
