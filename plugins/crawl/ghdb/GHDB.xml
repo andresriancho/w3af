@@ -763,4 +763,15 @@ The information in this email is confidential and may be legally privileged. It 
 ***********************************************************************
 
 
-</textualDescription></signature></searchEngineSignature>
+</textualDescription></signature><signature><signatureReferenceNumber>3824</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3824/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:admin intext:username= AND email= AND password= OR pass= filetype:xls</querystring><shortDescription>inurl:admin intext:username= AND email= AND password= OR pass= filetype:xls</shortDescription><textualDescription>-- 
+nitish mehta
+</textualDescription></signature><signature><signatureReferenceNumber>3825</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3825/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=you really should fix this security hole by setting a password for user '.root'. inurl:/phpmyadmin intitle:localhost</querystring><shortDescription>you really should fix this security hole by setting a password for user '.root'. inurl:/phpmyadmin intitle:localhost</shortDescription><textualDescription>Gives sites with default username root and no password
+-- 
+nitish mehta
+</textualDescription></signature><signature><signatureReferenceNumber>3826</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3826/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=intext:SQL syntax &amp; inurl:index.php?=id &amp; inurl:gov &amp; inurl:gov</querystring><shortDescription>intext:SQL syntax &amp; inurl:index.php?=id &amp; inurl:gov &amp; inurl:gov</shortDescription><textualDescription># Exploit Title: SQLI Exploit
+# Google Dork: intext:SQL syntax &amp; inurl:index.php?=id &amp; inurl:gov &amp;
+inurl:gov
+# Date: 25/December/2012
+# Exploit Author: BeastarStealacar
+# Vendor Homepage: http://devil-zone.net/
+</textualDescription></signature><signature><signatureReferenceNumber>3827</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3827/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:/wp-content/w3tc/dbcache/</querystring><shortDescription>inurl:/wp-content/w3tc/dbcache/</shortDescription><textualDescription>- Jay Townsend</textualDescription></signature></searchEngineSignature>
