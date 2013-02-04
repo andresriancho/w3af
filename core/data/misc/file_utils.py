@@ -50,8 +50,13 @@ def get_days_since_file_update(filename):
     '''
     repo = Repo(".")
 
-    for c in repo.head.commit.iter_parents(paths=filename):
-
+    # Note that before I used repo.head.commit.iter_parents , but that had
+    # the side-effect of skipping the first commit, which is exactly the one
+    # I need!
+    commits_iter = repo.head.commit.iter_items(repo, repo.head, paths=filename)
+    
+    for c in commits_iter:
+        
         last_commit_time = datetime.datetime.fromtimestamp(c.authored_date)
         last_commit_date = last_commit_time.date()
                 
