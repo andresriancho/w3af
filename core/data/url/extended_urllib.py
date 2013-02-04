@@ -150,6 +150,9 @@ class ExtendedUrllib(object):
         self.settings.clear_cache()
         self.settings.close_connections()
 
+    def restart(self):
+        self.end()
+
     def _init(self):
         if self.settings.need_update or self._opener is None:
             self.settings.need_update = False
