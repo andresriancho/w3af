@@ -103,5 +103,7 @@ class TestPhishtank(PluginTest):
                   'cd plugins/crawl/phishtank/\n'\
                   'wget http://data.phishtank.com/data/online-valid/\n'\
                   'mv index.html index.xml\n'\
+                  'git commit -m "Updating phishtank database." index.xml\n'\
+                  'git push\n'\
                   'cd -\n'
             self.assertTrue(time_delta.days < 30, msg)

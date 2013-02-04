@@ -162,7 +162,8 @@ class TestNiktoTestParser(PluginTest):
               ' to be run in order to update it:\n'\
               'cd plugins/crawl/pykto/\n'\
               'python update_scan_db.py\n'\
-              'svn commit -m "Updating scan_database.db file." scan_database.db\n'\
+              'git commit -m "Updating scan_database.db file." scan_database.db\n'\
+              'git push\n'\
               'cd -'
         self.assertFalse(is_older, msg)
     

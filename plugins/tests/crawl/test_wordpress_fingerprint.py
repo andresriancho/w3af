@@ -99,7 +99,8 @@ class Testwordpress_fingerprint(PluginTest):
               ' to be run in order to update it:\n'\
               'cd plugins/crawl/wordpress_fingerprint/\n'\
               'wget %s -O wp_versions.xml\n'\
-              'svn commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
+              'git commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
+              'git push\n'\
               'cd -'
         self.assertFalse(is_older, msg % url)
         
@@ -115,6 +116,7 @@ class Testwordpress_fingerprint(PluginTest):
               ' to be run in order to update it:\n'\
               'cd plugins/crawl/wordpress_fingerprint/\n'\
               'python generate_release_db.py\n'\
-              'svn commit -m "Updating wordpress release.db file." release.db\n'\
+              'git commit -m "Updating wordpress release.db file." release.db\n'\
+              'git push\n'\
               'cd -'
         self.assertFalse(is_older, msg)
