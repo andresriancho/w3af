@@ -45,7 +45,7 @@ class TestPhishtank(PluginTest):
         for line in file(phishtank_inst.PHISHTANK_DB):
             # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
             match = re.search('<url>(.*?)</url>', line)
-            if match:
+            if match and 'CDATA' not in line:
                 return match.group(1)
 
     def test_phishtank_match(self):
@@ -101,8 +101,7 @@ class TestPhishtank(PluginTest):
             msg = 'The phishtank database is too old, in order to update it'\
                   ' please follow these steps:\n'\
                   'cd plugins/crawl/phishtank/\n'\
-                  'wget http://data.phishtank.com/data/online-valid/\n'\
-                  'mv index.html index.xml\n'\
+                  'wget -q -O- --header\="Accept-Encoding: gzip" http://data.phishtank.com/data/online-valid/ | gunzip > index.xml\n'\
                   'git commit -m "Updating phishtank database." index.xml\n'\
                   'git push\n'\
                   'cd -\n'
