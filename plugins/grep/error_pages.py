@@ -181,7 +181,7 @@ class error_pages(GrepPlugin):
         if response.get_code() > 400 and\
         response.get_code() < 600:
 
-            for match, regex_str, regex_comp, server in self._multi_re.query(response.body):
+            for match, _, _, server in self._multi_re.query(response.body):
                 match_string = match.group(0)
                 if match_string not in self._already_reported_versions:
                     # Save the info obj
@@ -194,7 +194,7 @@ class error_pages(GrepPlugin):
                     i.add_to_highlight(match_string)
                     
                     kb.kb.append(self, 'server', i)
-                    kb.kb.append(self, 'server', match_string)
+                    kb.kb.raw_write(self, 'server', match_string)
                     
                     self._already_reported_versions.append(match_string)
 
