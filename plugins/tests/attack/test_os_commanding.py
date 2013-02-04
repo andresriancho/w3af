@@ -19,6 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.attack.os_commanding import (FullPathExploitStrategy,
+                                          CmdsInPathExploitStrategy,
+                                          BasicExploitStrategy)
 
 
 class TestOSCommandingShell(PluginTest):
@@ -73,28 +76,35 @@ class TestOSCommandingShell(PluginTest):
         plugin = self.w3afcore.plugins.get_plugin_inst(
             'attack', 'os_commanding')
 
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertGreaterEqual(len(exploit_result), 1)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'])
-
-        self.assertTrue('root' in etc_passwd)
-
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
-
-        payload = shell.generic_user_input(
-            'payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
-        
-        _help = shell.help(None)
-        self.assertIn('execute', _help)
-        self.assertIn('upload', _help)
-        
+        for strategy in (FullPathExploitStrategy, CmdsInPathExploitStrategy,
+                         BasicExploitStrategy):
+    
+            # Test one strategy in each loop
+            plugin.EXPLOIT_STRATEGIES = [strategy,]
+    
+            self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
+    
+            exploit_result = plugin.exploit(vuln_to_exploit_id)
+    
+            msg = 'Exploitation failed with strategy %s.' % strategy
+            self.assertGreaterEqual(len(exploit_result), 1, msg)
+    
+            #
+            # Now I start testing the shell itself!
+            #
+            shell = exploit_result[0]
+            etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'])
+    
+            self.assertTrue('root' in etc_passwd)
+    
+            lsp = shell.generic_user_input('lsp', [])
+            self.assertTrue('apache_config_directory' in lsp)
+    
+            payload = shell.generic_user_input('payload',
+                                               ['apache_config_directory'])
+            self.assertTrue(payload is None)
+            
+            _help = shell.help(None)
+            self.assertIn('execute', _help)
+            self.assertIn('upload', _help)
+            

