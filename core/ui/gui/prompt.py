@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import gobject
 import pango
-import Queue
 
 from core.ui.gui.output.message_consumer import MessageConsumer
 
@@ -83,7 +82,7 @@ class PromptView(gtk.TextView, MessageConsumer):
 
         @return: True to keep running
         '''
-        super(_LineScroller, self).handle_message(msg)
+        super(PromptView, self).handle_message(msg)
         
         if msg.get_type() != 'console':
             return
