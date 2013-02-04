@@ -126,7 +126,7 @@ class GtkOutput(OutputPlugin):
         observers.add(observer)
 
     def unsubscribe(self, observer):
-        if observer in self._observers:
+        if observer in observers:
             observers.remove(observer)
 
     def end(self):
