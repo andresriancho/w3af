@@ -116,6 +116,9 @@ class crawl_infrastructure(BaseConsumer):
             if plugin in self._disabled_plugins:
                 continue
 
+            if not self._running:
+                return
+            
             om.out.debug('%s plugin is testing: "%s"' % (
                 plugin.get_name(), work_unit))
 
@@ -158,15 +161,8 @@ class crawl_infrastructure(BaseConsumer):
                 fuzzable_request = plugin.output_queue.get_nowait()
             except Queue.Empty:
                 break
+            
             else:
-                # Should I continue with the crawl phase? If not, simply loop
-                # through all these results and ignore them, which will by
-                # itself cut the input to the consumer and stop producing
-                # more fuzzable requests
-                if self._should_stop_discovery():
-                    continue
-
-                
                 # The plugin has finished and now we need to analyze which of
                 # the returned fuzzable_request_list are new and should be put in the
                 # input_queue again.
@@ -177,7 +173,28 @@ class crawl_infrastructure(BaseConsumer):
 
                     self._out_queue.put((plugin.get_name(), None,
                                          fuzzable_request))
+            finally:
+                # Should I continue with the crawl phase? If not, simply call
+                # terminate() to clear the input queue and put a POISION_PILL
+                # in the output queue
+                if self._should_stop_discovery():
+                    self._running = False
+                    self._force_end()
+                    break
 
+    def _force_end(self):
+        '''
+        I had to create this method in order to be able to quickly end the
+        discovery phase from within the same thread.
+        '''
+        # Clear all items in the input queue so no more work is performed
+        while not self.in_queue.empty():
+            self.in_queue.get()
+            self.in_queue.task_done()
+
+        # Let the client know that I finished
+        self.out_queue.put(POISON_PILL)
+                    
     def join(self):
         super(crawl_infrastructure, self).join()
         self.cleanup()
