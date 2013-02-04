@@ -221,6 +221,7 @@ class VersionMgr(object):
             if self._added_new_dependencies(changelog):
                 self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
     
+            # pylint: disable=E1102
             if self.callback_onupdate_show_log:
                 changelog_str = lambda: str(changelog)
                 self.callback_onupdate_show_log('Do you want to see a change log?',
