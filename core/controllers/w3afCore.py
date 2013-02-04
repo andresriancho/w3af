@@ -99,6 +99,9 @@ class w3afCore(object):
         
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
+        
+        # Keep track of first scan to call cleanup or not
+        self._first_scan = True
 
     def scan_start_hook(self):
         '''
@@ -108,29 +111,17 @@ class w3afCore(object):
         
         @return: None
         '''
-        # End the ExtendedUrllib (clear the cache and close connections), this
-        # is only useful if there was a previous scan and the user is starting
-        # a new one.
-        #
-        # Please note that I'm not putting this end() thing in scan_end_hook
-        # because I want to be able to access the History() item even after the
-        # scan has finished to give the user access to the HTTP request and
-        # response associated with a vulnerability
-        self.uri_opener.end()
+        if not self._first_scan:
+            self.cleanup()
         
-        # If this is not the first scan, I want to clear the old bug data that
-        # might be stored in the exception_handler.
-        self.exception_handler.clear()
-        
-        self.cleanup()
-        
-        # Create some directories, do this every time before starting a new
-        # scan and before doing any other core init because these are widely
-        # used
-        self._home_directory()
-        self._tmp_directory()
-        
-        enable_dns_cache()
+        else:
+            # Create some directories, do this every time before starting a new
+            # scan and before doing any other core init because these are
+            # widely used
+            self._home_directory()
+            self._tmp_directory()
+            
+            enable_dns_cache()
         
         # Reset global sequence number generator
         consecutive_number_generator.reset()
@@ -179,7 +170,8 @@ class w3afCore(object):
                                    self.plugins.get_all_plugin_options())
 
         self.status.start()
-
+        self._first_scan = False
+        
         try:
             self.strategy.start()
         except MemoryError:
@@ -251,6 +243,20 @@ class w3afCore(object):
 
         @return: None
         '''
+        # End the ExtendedUrllib (clear the cache and close connections), this
+        # is only useful if there was a previous scan and the user is starting
+        # a new one.
+        #
+        # Please note that I'm not putting this end() thing in scan_end_hook
+        # because I want to be able to access the History() item even after the
+        # scan has finished to give the user access to the HTTP request and
+        # response associated with a vulnerability
+        self.uri_opener.restart()
+    
+        # If this is not the first scan, I want to clear the old bug data
+        # that might be stored in the exception_handler.
+        self.exception_handler.clear()
+        
         # Clean all data that is stored in the kb
         kb.cleanup()
 
@@ -286,7 +292,8 @@ class w3afCore(object):
         loop_delay = 0.5
         for _ in xrange(int(wait_max/loop_delay)):
             if not self.status.is_running():
-                msg = '%s were needed to stop the core.' % epoch_to_string(stop_start_time)
+                core_stop_time = epoch_to_string(stop_start_time)
+                msg = '%s were needed to stop the core.' % core_stop_time
                 break
             
             try:
@@ -306,6 +313,7 @@ class w3afCore(object):
         The user wants to exit w3af ASAP, so we stop the scan and exit.
         '''
         self.stop()
+        self.uri_opener.end()
         remove_temp_dir(ignore_errors=True)
         
     def pause(self, pause_yes_no):
@@ -347,6 +355,15 @@ class w3afCore(object):
             # in uri_opener because some plugins (namely xml_output) use the data
             # from the history in their end() method. 
             om.out.end_output_plugins()
+            
+            # Note that running "self.uri_opener.end()" here is a bad idea
+            # since it will clear all the history items from the DB and remove
+            # any cookies I've stored.
+            #
+            # History items are required for the GUI to show vulnerability data
+            # and logs.
+            #
+            # Cookies could be used by attack plugins
             
         except Exception:
             raise
