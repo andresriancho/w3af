@@ -130,5 +130,5 @@ class GUIUpdater(UIUpdater):
                 dlg.dialog_run()
 
     def _log(self, msg):
-        GUIUpdater.notify(msg)
+        notify(msg)
 
