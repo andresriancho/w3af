@@ -128,10 +128,16 @@ class shared_hosting(InfrastructurePlugin):
                        ' hosting. This list of domains, and the domain of the ' \
                        ' web application under test, all point to the same IP' \
                        ' address (%s):\n' % ip_address
+                
+                domain_list = kb.kb.raw_read(self, 'domains')
+                
                 for url in results:
                     domain = url.get_domain()
-                    desc += '- %s\n' % url
-                    kb.kb.append(self, 'domains', domain)
+                    desc += '- %s\n' % domain
+                    
+                    domain_list.append(domain)
+                    
+                kb.kb.raw_write(self, 'domains', domain_list)
                     
                 v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM, 1,
                                  self.get_name(), fuzzable_request)
