@@ -1,4 +1,6 @@
 '''
+history.py
+
 Copyright 2009 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
@@ -99,10 +101,14 @@ class HistoryItem(object):
         '''
         with self.history_lock:
             tablename = self.get_table_name()
-            self._db.create_table(tablename,
-                                  self.get_columns(),
-                                  self.get_primary_key_columns()).result()
-            self._db.create_index(tablename, self.get_index_columns()).result()
+            if not self._db.table_exists(tablename):
+                
+                pk_cols = self.get_primary_key_columns()
+                idx_cols = self.get_index_columns()
+                
+                self._db.create_table(tablename, self.get_columns(),
+                                      pk_cols).result()
+                self._db.create_index(tablename, idx_cols).result()
             
     def get_response(self):
         resp = self._response
@@ -260,10 +266,10 @@ class HistoryItem(object):
         return True
 
     @verify_has_db
-    def read(self, id, full=True):
+    def read(self, _id, full=True):
         '''Return item by ID.'''
         result_item = self.__class__()
-        result_item.load(id, full)
+        result_item.load(_id, full)
         return result_item
 
     def save(self):
@@ -356,7 +362,7 @@ class HistoryItem(object):
         # before removing it in order to allow clear() to be called more than
         # once in a consecutive way 
         if self._db.table_exists(self.get_table_name()):
-            self._db.drop_table(self.get_table_name()).result()
+            self._db.clear_table(self.get_table_name()).result()
             
         self._db = None
         

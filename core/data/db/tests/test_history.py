@@ -185,8 +185,9 @@ class TestHistoryItem(unittest.TestCase):
         self.assertFalse(os.path.exists(h1._session_dir),
                          '%s exists.' % h1._session_dir)
         
-        
-        self.assertFalse(db.table_exists(table_name))        
+        # Changed the meaning of clear a little bit... now it simply removes
+        # all rows from the table, not the table itself
+        self.assertTrue(db.table_exists(table_name))        
 
     def test_clear_clear(self):
         
@@ -203,6 +204,11 @@ class TestHistoryItem(unittest.TestCase):
         
         h1.clear()
         h1.clear()
+
+    def test_init_init(self):
+        # No exceptions should be raised
+        HistoryItem().init()
+        HistoryItem().init()
 
     def test_tag(self):
         tag_id = random.randint(501, 999)
