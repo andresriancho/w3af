@@ -188,6 +188,9 @@ class DiskList(object):
             yield obj
 
     def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self._slice_list(key)
+        
         # I need to add 1 to this key because the autoincrement in SQLITE
         # starts counting from 1 instead of 0
         if key >= 0:
@@ -206,7 +209,24 @@ class DiskList(object):
             raise IndexError('list index out of range')
         else:
             return obj
-
+    
+    def _slice_list(self, slice_inst):
+        start = slice_inst.start or 0
+        stop = slice_inst.stop or len(self)
+        step = slice_inst.step or 1
+        
+        copy = DiskList()
+        
+        # TODO: This piece of code is VERY SLOW and can be improved. Please
+        # note that for each element that's selected by the xrange/step, we'll
+        # SELECT on the original list and INSERT on the copy.
+        #
+        # We could find ways to make this in only one SELECT/INSERT 
+        for i in xrange(start, stop, step):
+            copy.append(self[i])
+        
+        return copy
+            
     def __len__(self):
         query = 'SELECT count(*) FROM %s' % self.table_name
         r = self.db.select_one(query)

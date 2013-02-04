@@ -287,3 +287,24 @@ class TestDiskList(unittest.TestCase):
             all_instances.append(disk_list)
         
         self.assertEqual(len(all_instances), amount)
+    
+    def test_slice_all(self):
+        disk_list = DiskList()
+        disk_list.append('1')
+        disk_list.append('2')
+        
+        dl_copy = disk_list[:]
+        self.assertIn('1', dl_copy)
+        self.assertIn('2', dl_copy)
+
+    def test_slice_first_N(self):
+        disk_list = DiskList()
+        disk_list.append('1')
+        disk_list.append('2')
+        disk_list.append('3')
+        
+        dl_copy = disk_list[:1]
+        self.assertIn('1', dl_copy)
+        self.assertNotIn('2', dl_copy)
+        self.assertNotIn('3', dl_copy)
+        
