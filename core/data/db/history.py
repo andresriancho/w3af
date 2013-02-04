@@ -101,9 +101,9 @@ class HistoryItem(object):
             tablename = self.get_table_name()
             self._db.create_table(tablename,
                                   self.get_columns(),
-                                  self.get_primary_key_columns())
-            self._db.create_index(tablename, self.get_index_columns())
-
+                                  self.get_primary_key_columns()).result()
+            self._db.create_index(tablename, self.get_index_columns()).result()
+            
     def get_response(self):
         resp = self._response
         if not resp and self.id:
@@ -206,33 +206,34 @@ class HistoryItem(object):
         return (request, response)
 
     @verify_has_db
-    def delete(self, id=None):
+    def delete(self, _id=None):
         '''Delete data from DB by ID.'''
-        if not id:
-            id = self.id
+        if _id is None:
+            _id = self.id
             
         sql = 'DELETE FROM ' + self._DATA_TABLE + ' WHERE id = ? '
-        self._db.execute(sql, (id,))
+        self._db.execute(sql, (_id,))
+        
+        fname = self._get_fname_for_id(_id)
         
         try:
-            fname = self._get_fname_for_id(id)
             os.remove(fname)
         except OSError:
             pass
 
     @verify_has_db
-    def load(self, id=None, full=True, retry=True):
+    def load(self, _id=None, full=True, retry=True):
         '''Load data from DB by ID.'''
-        if not id:
-            id = self.id
+        if not _id:
+            _id = self.id
 
         sql = 'SELECT * FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         try:
-            row = self._db.select_one(sql, (id,))
+            row = self._db.select_one(sql, (_id,))
         except DBException, dbe:
             msg = 'An unexpected error occurred while searching for id "%s"'\
                   ' in table "%s". Original exception: "%s".'
-            raise DBException(msg % (id, self._DATA_TABLE, dbe))
+            raise DBException(msg % (_id, self._DATA_TABLE, dbe))
         else:
             if row is not None:
                 self._load_from_row(row, full)
@@ -248,12 +249,12 @@ class HistoryItem(object):
                     #    but it can degrade performance due to disk IO
                     #
                     self._db.commit()
-                    self.load(id=id, full=full, retry=False)
+                    self.load(_id=_id, full=full, retry=False)
                 else:
                     # This is the second time load() is called and we end up here,
                     # raise an exception and finish our pain.
                     msg = ('An internal error occurred while searching for '
-                           'id "%s", even after commit/retry' % id)
+                           'id "%s", even after commit/retry' % _id)
                     raise DBException(msg)
 
         return True
@@ -350,15 +351,17 @@ class HistoryItem(object):
         '''Clear history and delete all trace files.'''
         if self._db is None:
             return
-        
-        # Get the DB filename 
-        self._db.drop_table(self.get_table_name())
+
+        # Remove the table if it still exists, I verify if it exists
+        # before removing it in order to allow clear() to be called more than
+        # once in a consecutive way 
+        if self._db.table_exists(self.get_table_name()):
+            self._db.drop_table(self.get_table_name()).result()
+            
         self._db = None
         
         # It might be the case that another thread removes the session dir
         # at the same time as we, so we simply ignore errors here
         rmtree(self._session_dir, ignore_errors=True)
-        
-        self.init()
         
         return True
