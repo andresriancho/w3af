@@ -260,7 +260,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         result = self.get(location_a, location_b)
         
         if len(result) > 1:
-            msg = 'Incorrect use of raw_write/raw_read, found %s.'
+            msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
             raise RuntimeError(msg % result)
         elif len(result) == 0:
             return []
