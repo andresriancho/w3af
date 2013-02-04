@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import socket
 
-from core.controllers.exceptions import w3afException
-
 
 def is_private_site(domain_or_IP_address):
     '''
@@ -40,8 +38,8 @@ def is_private_site(domain_or_IP_address):
         try:
             addrinfo = socket.getaddrinfo(domain_or_IP_address, 0)
         except socket.gaierror:
-            error = 'Could not resolve hostname: %s.' % domain_or_IP_address
-            raise w3afException(error)
+            # If I can't resolve this DNS name, then it's a private domain
+            return True
         else:
             ip_address_list = [info[4][0] for info in addrinfo]
             for ip_address in ip_address_list:

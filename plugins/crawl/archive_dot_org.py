@@ -69,8 +69,8 @@ class archive_dot_org(CrawlPlugin):
         domain = fuzzable_request.get_url().get_domain()
 
         if is_private_site(domain):
-            msg = 'There is no point in searching archive.org for "%s"'
-            msg += ' because it is a private site that will never be indexed.'
+            msg = 'There is no point in searching archive.org for "%s"'\
+                  ' because it is a private site that will never be indexed.'
             om.out.information(msg % domain)
             raise w3afRunOnce(msg)
 
