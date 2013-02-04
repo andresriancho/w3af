@@ -357,8 +357,13 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         Cleanup internal data.
         '''
         self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
-        self.urls.clear()
-        self.fuzzable_requests.clear()
+        
+        # Remove the old, create new.
+        self.urls.cleanup()
+        self.urls = DiskSet()
+        
+        self.fuzzable_requests.cleanup()
+        self.fuzzable_requests = DiskSet()
     
     def remove(self):
         self.db.drop_table(self.table_name)
