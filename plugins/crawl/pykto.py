@@ -167,7 +167,6 @@ class pykto(CrawlPlugin):
             v.set_method(nikto_test.method)
 
             kb.kb.append(self, 'vuln', v)
-            kb.kb.append(self, 'url', http_response.get_url())
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
             fr_list = self._create_fuzzable_requests(http_response)
