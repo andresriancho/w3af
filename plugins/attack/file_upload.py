@@ -29,7 +29,7 @@ from core.data.kb.exec_shell import ExecShell
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.plugins.attack_plugin import AttackPlugin
-
+from core.controllers.misc.io import NamedStringIO
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
@@ -91,8 +91,9 @@ class file_upload(AttackPlugin):
         # Create a file that will be uploaded
         extension = url.get_extension()
         path, file_name = self._create_file(extension)
-        file_handler = open(os.path.join(path, file_name), "r")
-
+        file_content = open(os.path.join(path, file_name), "r").read()
+        file_handler = NamedStringIO(file_content, file_name)
+        
         #   If there are files,
         if 'file_vars' in vuln_obj:
             #
