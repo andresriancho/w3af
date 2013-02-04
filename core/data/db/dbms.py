@@ -22,7 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import sys
+import os
 import sqlite3
+
+from functools import wraps
 
 from concurrent.futures import Future
 from multiprocessing.dummy import Queue, Process
@@ -37,6 +40,17 @@ QUERY = 'QUERY'
 SELECT = 'SELECT'
 COMMIT = 'COMMIT'
 POISON = 'POISON'
+
+
+def verify_started(meth):
+    
+    @wraps(meth)
+    def inner_verify_started(self, *args, **kwds):
+        msg = 'No calls to SQLiteDBMS can be made after stop().'
+        assert self.sql_executor.is_alive(), msg
+        return meth(self, *args, **kwds)
+    
+    return inner_verify_started
 
 
 class SQLiteDBMS(object):
@@ -68,7 +82,8 @@ class SQLiteDBMS(object):
         
         self.filename = filename
         self.autocommit = autocommit
-
+    
+    @verify_started
     def execute(self, query, parameters=(), commit=False):
         """
         `execute` calls are non-blocking: just queue up the request and
@@ -81,6 +96,7 @@ class SQLiteDBMS(object):
             
         return fr
 
+    @verify_started
     def select(self, query, parameters=()):
         '''
         I can't think about any non-blocking use of calling select()
@@ -88,6 +104,7 @@ class SQLiteDBMS(object):
         future = self.sql_executor.select(query, parameters)
         return future.result()
 
+    @verify_started
     def select_one(self, query, parameters=()):
         """
         @return: Only the first row of the SELECT, or None if there are no
@@ -98,9 +115,11 @@ class SQLiteDBMS(object):
         except IndexError:
             return None
 
+    @verify_started
     def commit(self):
         self.sql_executor.commit()
 
+    @verify_started
     def close(self):
         self.commit()
         self.sql_executor.stop()
@@ -111,6 +130,13 @@ class SQLiteDBMS(object):
     
     def drop_table(self, name):
         query = 'DROP TABLE %s' % name
+        return self.execute(query, commit=True)
+    
+    def clear_table(self, name):
+        '''
+        Remove all rows from a table.
+        '''
+        query = 'DELETE FROM %s WHERE 1=1' % name
         return self.execute(query, commit=True)
     
     def create_table(self, name, columns, pk_columns=()):
@@ -314,6 +340,14 @@ class SQLiteExecutor(Process):
 
 
 temp_default_db = None
+
+def clear_default_temp_db_instance():
+    global temp_default_db
+    
+    if temp_default_db is not None:
+        temp_default_db.close()
+        temp_default_db = None
+        os.unlink('%s/main.db' % get_temp_dir())
 
 def get_default_temp_db_instance():
     global temp_default_db
