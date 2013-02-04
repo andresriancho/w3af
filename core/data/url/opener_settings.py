@@ -86,7 +86,7 @@ class OpenerSettings(Configurable):
         self.header_list = [('User-Agent', user_agent)]
 
         # By default, dont mangle any request/responses
-        self._manglePlugins = []
+        self._mangle_plugins = []
 
         # User configured variables
         if cfg.get('timeout') is None:
@@ -340,7 +340,7 @@ class OpenerSettings(Configurable):
                         MultipartPostHandler.MultipartPostHandler,
                         self._kAHTTP, self._kAHTTPS, LogHandler,
                         HTTPErrorHandler, HTTP30XHandler,
-                        mangleHandler.mangleHandler(self._manglePlugins),
+                        mangleHandler.mangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
                         self._cache_hdler]:
             if handler:
@@ -376,10 +376,10 @@ class OpenerSettings(Configurable):
 
         @param mp: A list of mangle plugin instances.
         '''
-        self._manglePlugins = mp
+        self._mangle_plugins = mp
 
     def get_mangle_plugins(self):
-        return self._manglePlugins
+        return self._mangle_plugins
 
     def get_max_file_size(self):
         return cfg.get('max_file_size')
