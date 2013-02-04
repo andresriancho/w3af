@@ -1,18 +1,41 @@
-import pygtk
+'''
+speedometer.py
+
+Copyright 2007 Andres Riancho
+
+This file is part of w3af, http://w3af.org/ .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+'''
 import gtk
 import gobject
 import cairo
-from gtk import gdk
 import pango
 import random
+
 
 MIN_SPEED = 0
 MAX_SPEED = 400
 
 
-class speedometer(gtk.DrawingArea):
+class Speedometer(gtk.DrawingArea):
+    
+    # pylint: disable-msg=E1101
+    
     def __init__(self):
-        super(speedometer, self).__init__()
+        super(Speedometer, self).__init__()
         self.connect("expose_event", self.do_expose_event)
 
         # x,y is where I'm at
@@ -175,4 +198,6 @@ def run(Widget):
     window.present()
     gtk.main()
 
-run(speedometer)
+if __name__ == '__main__':
+    run(Speedometer)
+    
