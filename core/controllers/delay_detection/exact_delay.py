@@ -1,5 +1,5 @@
 '''
-ExactDelay.py
+exact_delay.py
 
 Copyright 2012 Andres Riancho
 
@@ -71,9 +71,12 @@ class ExactDelay(object):
         in place.
         '''
         responses = []
+        
+        #    Setup
+        original_wait_time = self.get_original_time()
 
         for delay in self.DELAY_SECONDS:
-            success, response = self.delay_for(delay)
+            success, response = self.delay_for(delay, original_wait_time)
             if success:
                 responses.append(response)
             else:
@@ -81,18 +84,18 @@ class ExactDelay(object):
 
         return True, responses
 
-    def delay_for(self, seconds):
+    def delay_for(self, seconds, original_wait_time):
         '''
         Sends a request to the remote end that "should" delay the response in
         @param seconds.
+
+        @param original_wait_time: The time that it takes to perform the
+                                   request without adding any delays.
 
         @return: (True, response) if there was a delay. In order to make
                  things right we first send some requests to measure the
                  original wait time.
         '''
-        #    Setup
-        original_wait_time = self.get_original_time()
-
         delay_str = self.delay_obj.get_string_for_delay(seconds)
         mutant = self.mutant.copy()
         mutant.set_mod_value(delay_str)
@@ -101,7 +104,8 @@ class ExactDelay(object):
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         #    Test
-        if response.get_wait_time() > (original_wait_time + seconds - 0.5):
+        delta = original_wait_time / 1.5
+        if response.get_wait_time() > (original_wait_time + seconds - delta):
                 return True, response
 
         return False, response
@@ -110,8 +114,8 @@ class ExactDelay(object):
         original_wait_times = []
 
         for _ in xrange(rep):
-            time = self.uri_opener.send_mutant(
-                self.mutant, cache=False).get_wait_time()
+            time = self.uri_opener.send_mutant(self.mutant,
+                                               cache=False).get_wait_time()
             original_wait_times.append(time)
-
+            
         return float(sum(original_wait_times)) / len(original_wait_times)

@@ -187,6 +187,11 @@ class MainApp(object):
         self.window.set_icon_from_file(W3AF_ICON)
         self.window.connect("delete_event", self.quit)
         self.window.connect('key_press_event', self.help_f1)
+        
+        # This is the way we track if the window is currently maximize or not
+        self.is_maximized = False
+        self.window.connect("window-state-event", self.on_window_state_event)
+        
         splash.push(_("Loading..."))
 
         self.w3af = w3af_core = w3afCore()
@@ -203,19 +208,21 @@ class MainApp(object):
 
         # title and positions
         self.window.set_title(MAIN_TITLE)
-        genconfigfile = os.path.join(get_home_dir(), "generalconfig.pkl")
+        genconfigfile = os.path.join(get_home_dir(), "gui_config.pkl")
         try:
             self.generalconfig = shelve.open(genconfigfile)
         except Exception, e:
-            print "WARNING: something bad happened when trying to open the general config!"
-            print "    File: %r" % genconfigfile
-            print "    Problem:", e
-            print
+            print ("WARNING: something bad happened when trying to open the"
+                   " general config! File: %s. Problem: %s" % (genconfigfile, e))
             self.generalconfig = FakeShelve()
+        
         self.window.resize(
-            *self.generalconfig.get("mainwindow-size", (800, 600)))
+            *self.generalconfig.get("mainwindow-size", (1024, 768)))
         self.window.move(
-            *self.generalconfig.get("mainwindow-position", (50, 50)))
+            *self.generalconfig.get("mainwindow-position", (0, 0)))
+
+        should_maximize = self.generalconfig.get("should-maximize", True)
+        if should_maximize: self.window.maximize()
 
         mainvbox = gtk.VBox()
         self.window.add(mainvbox)
@@ -468,6 +475,10 @@ class MainApp(object):
         '''
         self.pcbody.edit_selected_plugin()
 
+    def on_window_state_event(self, widget, event, data=None):
+        mask = gtk.gdk.WINDOW_STATE_MAXIMIZED
+        self.is_maximized = widget.get_window().get_state() & mask == mask
+    
     def quit(self, widget, event, data=None):
         '''Main quit.
 
@@ -488,9 +499,10 @@ class MainApp(object):
 
         try:
             # saving windows config
-            self.generalconfig["mainwindow-size"] = self.window.get_size()
-            self.generalconfig[
-                "mainwindow-position"] = self.window.get_position()
+            w = self.window
+            self.generalconfig["should-maximize"] = self.is_maximized
+            self.generalconfig["mainwindow-size"] = w.get_size()
+            self.generalconfig["mainwindow-position"] = w.get_position()
             self.generalconfig.close()
         finally:
             gtk.main_quit()

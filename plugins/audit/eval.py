@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import delay
+from core.controllers.delay_detection.delay import Delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
 from core.data.kb.vuln import Vuln
@@ -57,19 +57,19 @@ class eval(AuditPlugin):
     WAIT_OBJ = (
         # PHP http://php.net/sleep
         # Perl http://perldoc.perl.org/functions/sleep.html
-        delay("sleep(%s);"),
+        Delay("sleep(%s);"),
         # Python http://docs.python.org/library/time.html#time.sleep
-        delay("import time;time.sleep(%s);"),
+        Delay("import time;time.sleep(%s);"),
         # It seems that ASP doesn't support sleep! A language without sleep...
         # is not a language!
         # http://classicasp.aspfaq.com/general/how-do-i-make-my-asp-page-pause-or-sleep.html
         # JSP takes the amount in miliseconds
         # http://java.sun.com/j2se/1.4.2/docs/api/java/lang/Thread.html#sleep(long)
-        delay("Thread.sleep(%s);", mult=1000),
+        Delay("Thread.sleep(%s);", mult=1000),
         # ASP.NET also uses miliseconds
         # http://msdn.microsoft.com/en-us/library/d00bd51t.aspx
         # Note: The Sleep in ASP.NET is uppercase
-        delay("Thread.Sleep(%s);", mult=1000)
+        Delay("Thread.Sleep(%s);", mult=1000)
     )
 
     def __init__(self):

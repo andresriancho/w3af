@@ -39,6 +39,11 @@ class redos(AuditPlugin):
     @author: Sebastien Duquette ( sebastien.duquette@gmail.com )
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+    
+    DELAY_PATTERNS = ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaX!',
+                      'a@a.aaaaaaaaaaaaaaaaaaaaaaX!'
+                      '1111111111111111111111111111111119!']
+    
     def __init__(self):
         AuditPlugin.__init__(self)
 
@@ -72,8 +77,7 @@ class redos(AuditPlugin):
         self._original_wait_time = orig_response.get_wait_time()
 
         # Prepare the strings to create the mutants
-        patterns_list = self._get_wait_patterns(run=1)
-        mutants = create_mutants(freq, patterns_list)
+        mutants = create_mutants(freq, self.DELAY_PATTERNS)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -81,74 +85,60 @@ class redos(AuditPlugin):
 
     def _analyze_wait(self, mutant, response):
         '''
-        Analyze results of the _send_mutant method that was sent in the audit method.
+        Analyze results of the _send_mutant method that was sent in the audit
+        method.
         '''
-        #
-        #   I will only report the vulnerability once.
-        #
-        if self._has_no_bug(mutant, pname='preg_replace',
-                            kb_varname='preg_replace'):
+        if self._has_bug(mutant, pname='preg_replace',
+                         kb_varname='preg_replace'):
+            return
 
-            if response.get_wait_time() > (self._original_wait_time + self._wait_time):
+        if response.get_wait_time() > (self._original_wait_time + self._wait_time):
 
-                # This could be because of a ReDoS vuln, an error that generates a delay in the
-                # response or simply a network delay; so I'll resend changing the length and see
-                # what happens.
+            # This could be because of a ReDoS vuln, an error that generates a
+            # delay in the response or simply a network delay; so I'll re-send
+            # changing the length and see what happens.
 
-                first_wait_time = response.get_wait_time()
+            first_wait_time = response.get_wait_time()
 
-                # Replace the old pattern with the new one:
-                original_wait_param = mutant.get_mod_value()
-                more_wait_param = original_wait_param.replace('X', 'XX')
-                more_wait_param = more_wait_param.replace('9', '99')
-                mutant.set_mod_value(more_wait_param)
+            # Replace the old pattern with the new one:
+            original_wait_param = mutant.get_mod_value()
+            more_wait_param = original_wait_param.replace('X', 'XX')
+            more_wait_param = more_wait_param.replace('9', '99')
+            mutant.set_mod_value(more_wait_param)
 
-                # send
-                response = self._uri_opener.send_mutant(mutant)
+            # send
+            response = self._uri_opener.send_mutant(mutant)
 
-                # compare the times
-                if response.get_wait_time() > (first_wait_time * 1.5):
-                    # Now I can be sure that I found a vuln, I control the
-                    # time of the response.
-                    desc = 'ReDoS was found at: %s' % mutant.found_at()
-                    
-                    v = Vuln.from_mutant('ReDoS vulnerability', desc,
-                                         severity.MEDIUM, response.id,
-                                         self.get_name(), mutant)
-                    
-                    self.kb_append_uniq(self, 'redos', v)
+            # compare the times
+            if response.get_wait_time() > (first_wait_time * 1.5):
+                # Now I can be sure that I found a vuln, I control the
+                # time of the response.
+                desc = 'ReDoS was found at: %s' % mutant.found_at()
+                
+                v = Vuln.from_mutant('ReDoS vulnerability', desc,
+                                     severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
+                
+                self.kb_append_uniq(self, 'redos', v)
 
-                else:
-                    # The first delay existed... I must report something...
-                    desc = 'A potential ReDoS was found at: %s. Please review'\
-                           ' manually.'
-                    desc = desc % mutant.found_at()
-                    
-                    i = Info('Potential ReDoS vulnerability', desc,
-                             response.id, self.get_name())
+            else:
+                # The first delay existed... I must report something...
+                desc = 'A potential ReDoS was found at: %s. Please review'\
+                       ' manually.'
+                desc = desc % mutant.found_at()
+                
+                i = Info('Potential ReDoS vulnerability', desc,
+                         response.id, self.get_name())
 
-                    # Just printing to the debug log, we're not sure about this
-                    # finding and we don't want to clog the report with false
-                    # positives
-                    om.out.debug(str(i))
-
-    def _get_wait_patterns(self, run):
-        '''
-        @return: This method returns a list of commands to try to execute in order
-        to introduce a time delay.
-        '''
-        patterns = []
-
-        patterns.append('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaX!')
-        patterns.append('a@a.aaaaaaaaaaaaaaaaaaaaaaX!')
-        patterns.append('1111111111111111111111111111111119!')
-
-        return patterns
+                # Just printing to the debug log, we're not sure about this
+                # finding and we don't want to clog the report with false
+                # positives
+                om.out.debug(str(i))
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+                 the current one.
         '''
         return ['infrastructure.server_header']
 
@@ -159,5 +149,5 @@ class redos(AuditPlugin):
         return '''
         This plugin finds ReDoS (regular expression DoS) vulnerabilities as
         explained here:
-                    - http://en.wikipedia.org/wiki/ReDoS
+            - http://en.wikipedia.org/wiki/ReDoS
         '''

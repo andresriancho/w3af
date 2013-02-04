@@ -26,7 +26,7 @@ import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import delay
+from core.controllers.delay_detection.delay import Delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 from core.data.constants.file_patterns import FILE_PATTERNS
@@ -280,8 +280,8 @@ class base_command:
         return self._sep
 
 
-class ping_delay(base_command, delay):
+class ping_delay(base_command, Delay):
     def __init__(self, delay_fmt, os, sep):
         base_command.__init__(self, delay_fmt, os, sep)
-        delay.__init__(self, delay_fmt)
+        Delay.__init__(self, delay_fmt)
         self._delay_delta = 1
