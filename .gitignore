@@ -38,6 +38,10 @@ nose.cfg
 .project
 .pydevproject
 .settings/
+
+# w3af stuff
 parser.out
 parsetab.py
+output-http.txt
+output.txt
 
