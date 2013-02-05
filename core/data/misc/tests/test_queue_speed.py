@@ -59,7 +59,23 @@ class TestQueueSpeed(unittest.TestCase):
         for _ in xrange(10):
             self.assertEqual(None, q.get_input_rpm())
             self.assertEqual(None, q.get_output_rpm())
+    
+    def test_many_items(self):
+        q = QueueSpeed()
+
+        self.assertEqual(len(q._input_data), 0)
         
+        for _ in xrange(q.MAX_SIZE * 2):
+            q.put(None)
+        
+        self.assertEqual(len(q._input_data), q.MAX_SIZE - 1)
+        self.assertEqual(len(q._output_data), 0)
+        
+        for _ in xrange(q.MAX_SIZE * 2):
+            q.get()
+
+        self.assertEqual(len(q._output_data), q.MAX_SIZE - 1)
+    
     def test_exceptions(self):
         q = QueueSpeed(4)
         
