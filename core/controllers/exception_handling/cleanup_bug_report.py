@@ -26,24 +26,9 @@ import core.data.kb.config as cf
 
 def cleanup_bug_report(_input):
     '''
-    @return: A string that contains a "clean" bug report. The function will remove
-             all references to the target site, operating system user name, etc.
-
-    >>> cleanup_bug_report( 'foo' )
-    'foo'
-
-    >>> cleanup_bug_report( 'start /home/nsa/w3af/ end' )
-    'start /home/user/w3af/ end'
-
-    >>> cleanup_bug_report( 'start C:\\Documents and Settings\\CIA\\ end' )
-    'start C:/user/ end'
-
-    >>> from core.data.parsers.url import URL
-    >>> target_url = URL('http://www.target.com/')
-    >>> cf.cf.save('targets', [target_url,] )
-    >>> cleanup_bug_report( 'start http://www.target.com/ end' )
-    'start http://domain/ end'
-
+    @return: A string that contains a "clean" bug report. The function will
+             remove all references to the target site, operating system user
+             name, etc.
     '''
     user_re = '/home/(.*?)/'
     user_re_win = 'C:\\\\Documents and Settings\\\\(.*?)\\\\'
@@ -54,8 +39,8 @@ def cleanup_bug_report(_input):
     targets = cf.cf.get('targets')
     if targets is not None:
         domains = [url.get_domain() for url in targets]
-        paths = [url.get_path() for url in targets if url.get_path() != '/']
-
+        paths = [url.get_path() for url in targets if len(url.get_path()) >= 3]
+        
         for domain in domains:
             _input = _input.replace(domain, 'domain')
 
