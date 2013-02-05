@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from nose.plugins.attrib import attr
 
 from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
+from core.data.kb.vuln_templates.rfi_template import RFITemplate
 
 
 @attr('smoke')
@@ -53,4 +54,16 @@ class TestRFI(PluginTest, ExecExploitTest):
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')
     
     def test_from_template(self):
-        self.assertTrue(False)
+        rfit = RFITemplate()
+        
+        options = rfit.get_options()
+        options['url'].set_value('http://moth/w3af/audit/rfi/vulnerable.php')
+        options['data'].set_value('file=section.php')
+        options['vulnerable_parameter'].set_value('file')
+        rfit.set_options(options)
+
+        rfit.store_in_kb()
+        vuln = self.kb.get(*rfit.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+        
+        self._exploit_vuln(vuln_to_exploit_id, 'rfi')
