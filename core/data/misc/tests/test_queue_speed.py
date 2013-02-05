@@ -52,6 +52,13 @@ class TestQueueSpeed(unittest.TestCase):
         self.assertGreater(q.get_output_rpm(), 59)
         self.assertLess(q.get_output_rpm(), 60)
         self.assertEqual(q.qsize(), 0)
+
+    def test_no_data(self):
+        q = QueueSpeed()
+        
+        for _ in xrange(10):
+            self.assertEqual(None, q.get_input_rpm())
+            self.assertEqual(None, q.get_output_rpm())
         
     def test_exceptions(self):
         q = QueueSpeed(4)
