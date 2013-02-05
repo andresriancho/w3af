@@ -96,11 +96,12 @@ class Mutant(DiskItem):
         '''
         try:
             self._freq._dc[self.get_var()][self._index] = val
-        except Exception:
+        except Exception, e:
             msg = 'The mutant object wasn\'t correctly initialized. Either' \
-                  ' the variable to be modified, or the index of that variable' \
-                  ' are incorrect. This error was found in mutant.set_mod_value()'
-            raise ValueError(msg)
+                  ' the variable to be modified, or the index of that variable'\
+                  ' are incorrect. This error was found in set_mod_value() the'\
+                  ' data original exception was: "%s".'
+            raise ValueError(msg % e)
 
     def get_mod_value(self):
         '''
