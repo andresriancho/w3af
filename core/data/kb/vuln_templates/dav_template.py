@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.kb.vuln_templates.base_template import BaseTemplate
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
+from core.data.parsers.url import URL
 
 
 class DAVTemplate(BaseTemplate):
@@ -29,8 +30,10 @@ class DAVTemplate(BaseTemplate):
     Vulnerability template for DAV vulnerability.
     '''
     def __init__(self):
+        super(DAVTemplate, self).__init__()
+        
         self.name = ''
-        self.url = 'http://host.tld/'
+        self.url = URL('http://host.tld/')
 
     def get_options(self):
         '''

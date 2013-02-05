@@ -42,11 +42,13 @@ This is the central help file for the consoleUi
             <item name="misc-settings">Configure w3af misc settings.</item>
             <item name="target">Configure the target URL.</item>
         </category>
+        <category name="results">
+            <item name="kb">Browse the vulnerabilities stored in the Knowledge Base</item>
+         </category>
         <category name="information">
             <item name="help">Display help. Issuing: help [command] , prints more specific help about "command"</item>
             <item name="version">Show w3af version information.  </item>
             <item name="keys">Display key shortcuts. </item>
-            
          </category>
     </topic>
     <topic name="keys">
@@ -154,6 +156,13 @@ Example: fastexploit sqlmap]]></body>
 where {type} is one of: vulns, info, shells
 ]]></body>
             </item>
+            <item name="add">
+                <head>Add a vulnerability to the KB</head>
+		<body><![CDATA[Syntax: add {type}
+Manually adding vulnerabilities to the KB is used by advanced users to give attack
+plugins the required information about vulnerabilities they want to exploit. 
+]]></body>
+            </item>            
        </category>
     </topic>
     <topic name="bug-report">

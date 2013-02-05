@@ -18,10 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
+from core.data.kb.vuln_templates.file_upload_template import FileUploadTemplate
 
 
-class TestFileUploadShell(PluginTest):
+class TestFileUploadShell(PluginTest, ExecExploitTest):
 
     file_upload_url = 'http://moth/w3af/audit/file_upload/'
 
@@ -52,30 +53,22 @@ class TestFileUploadShell(PluginTest):
         self.assertEquals("Insecure file upload", vuln.get_name())
 
         vuln_to_exploit_id = vuln.get_id()
+        self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
 
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'file_upload')
-
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertGreaterEqual(len(exploit_result), 1)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
+    def test_from_template(self):
+        fut = FileUploadTemplate()
         
-        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
-        self.assertTrue('root' in etc_passwd)
-        self.assertTrue('/bin/bash' in etc_passwd)
-        
-        etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd',])
-        self.assertTrue('root' in etc_passwd)
-        self.assertTrue('/bin/bash' in etc_passwd)
-        
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
+        options = fut.get_options()
+        options['url'].set_value('http://moth/w3af/audit/file_upload/uploader.php')
+        options['data'].set_value('uploadedfile=&MAX_FILE_SIZE=10000000')
+        options['file_vars'].set_value('uploadedfile')
+        options['file_dest'].set_value('http://moth/w3af/audit/file_upload/uploads/')
+        options['vulnerable_parameter'].set_value('uploadedfile')
+        fut.set_options(options)
 
-        payload = shell.generic_user_input('payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
+        fut.store_in_kb()
+        vuln = self.kb.get(*fut.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+        
+        self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
+        

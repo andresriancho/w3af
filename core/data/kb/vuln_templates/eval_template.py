@@ -46,5 +46,5 @@ class EvalTemplate(BaseTemplate):
         return 'Eval() code execution'
 
     def get_vulnerability_desc(self):
-        return 'Code execution vulnerabiliti through injection in eval()'\
+        return 'Code execution vulnerability through injection in eval()'\
                ' functions.'

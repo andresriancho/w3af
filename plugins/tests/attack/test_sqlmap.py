@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig, ReadExploitTest
 
 
-class TestSQLMapShell(PluginTest):
+class TestSQLMapShell(PluginTest, ReadExploitTest):
 
     SQLI = 'http://moth/w3af/audit/sql_injection/select/'\
            'sql_injection_string.php?name=andres'
@@ -80,28 +80,8 @@ class TestSQLMapShell(PluginTest):
 
         vuln_to_exploit_id = [v.get_id() for v in vulns
                               if v.get_url().get_file_name() == EXPECTED[0][0]][0]
-
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'sqlmap')
-
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertGreaterEqual(len(exploit_result), 1)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
-
-        self.assertTrue('root' in etc_passwd)
-
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
-
-        payload = shell.generic_user_input('payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
+        
+        self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
     def test_found_exploit_sqlmap_blind_sqli(self):
         # Run the scan
@@ -119,25 +99,7 @@ class TestSQLMapShell(PluginTest):
         self.assertEquals('data_receptor.php', vuln.get_url().get_file_name())
         
         vuln_to_exploit_id = vuln.get_id()
+        self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'sqlmap')
-
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertGreaterEqual(len(exploit_result), 1)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
-
-        self.assertTrue('root' in etc_passwd)
-
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
-
-        payload = shell.generic_user_input('payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
+    def test_from_template(self):
+        self.assertTrue(False)

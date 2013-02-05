@@ -52,19 +52,39 @@ class ExecShell(Shell):
         '''
         Handle the help command.
         '''
-        _help = '''\
-        Available commands:
-            help                            Display this information
-            lsp                             List payloads
-            payload <payload>               Execute "payload" and get the result
-            read <file>                     Read the remote server <file> and echo to this console
-            write <file> <content>          Write <content> to the remote <file>
-            upload <local> <remote>         Upload <local> file to <remote> location
-            execute <cmd>                   
-            exec <cmd>                      
-            e <cmd>                         Run <cmd> on the remote operating system
-            exit                            Exit this shell session
-        '''
+        if command == 'read':
+            _help = '''\
+            read:
+                The read command echoes the content of a file to the console. The
+                command takes only one parameter: the full path of the file to 
+                read.
+            
+            Examples:
+                read /etc/passwd
+            '''
+        elif command == 'download':
+            _help = '''\
+            download:
+                The download command reads a file in the remote system and saves
+                it to the local filesystem.
+            
+            Examples:
+                download /etc/passwd /tmp/passwd
+            '''
+        else:        
+            _help = '''\
+            Available commands:
+                help                            Display this information
+                lsp                             List payloads
+                payload <payload>               Execute "payload" and get the result
+                read <file>                     Read the remote server <file> and echo to this console
+                write <file> <content>          Write <content> to the remote <file>
+                upload <local> <remote>         Upload <local> file to <remote> location
+                execute <cmd>                   
+                exec <cmd>                      
+                e <cmd>                         Run <cmd> on the remote operating system
+                exit                            Exit this shell session
+            '''
         return textwrap.dedent(_help)
 
     @download_debug

@@ -35,6 +35,7 @@ from core.controllers.misc.decorators import retry
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import LIST
 from core.data.options.option_list import OptionList
+from core.data.kb.read_shell import ReadShell 
 
 os.chdir(W3AF_LOCAL_PATH)
 
@@ -154,7 +155,62 @@ class PluginConfig(object):
     def options(self):
         return self._options
 
+class ReadExploitTest(object):
+    def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack', exploit_plugin)
 
+        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
+
+        exploit_result = plugin.exploit(vuln_to_exploit_id)
+
+        self.assertEqual(len(exploit_result), 1, exploit_result)
+
+        #
+        # Now I start testing the shell itself!
+        #
+        shell = exploit_result[0]
+        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
+        self.assertTrue('root' in etc_passwd)
+        self.assertTrue('/bin/bash' in etc_passwd)
+        
+        lsp = shell.generic_user_input('lsp', [])
+        self.assertTrue('apache_config_directory' in lsp)
+
+        payload = shell.generic_user_input('payload',
+                                           ['apache_config_directory'])
+        self.assertTrue(payload is None)
+        
+        if isinstance(shell, ReadShell):
+            _help = shell.help(None)
+            self.assertNotIn('execute', _help)
+            self.assertNotIn('upload', _help)
+            self.assertIn('read', _help)
+            
+            _help = shell.help('read')
+            self.assertIn('read', _help)
+            self.assertIn('/etc/passwd', _help)
+        
+        return shell
+        
+class ExecExploitTest(ReadExploitTest):
+    def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
+        shell = super(ExecExploitTest, self)._exploit_vuln(vuln_to_exploit_id,
+                                                           exploit_plugin)
+        
+        etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd',])
+        self.assertTrue('root' in etc_passwd)
+        self.assertTrue('/bin/bash' in etc_passwd)
+        
+        _help = shell.help(None)
+        self.assertIn('execute', _help)
+        self.assertIn('upload', _help)
+        self.assertIn('read', _help)
+        
+        _help = shell.help('read')
+        self.assertIn('read', _help)
+        self.assertIn('/etc/passwd', _help)
+
+        
 @attr('root')
 def onlyroot(meth):
     '''

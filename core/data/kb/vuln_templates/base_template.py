@@ -27,6 +27,7 @@ from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import parse_qs
+from core.data.parsers.url import URL
 from core.data.kb.vuln import Vuln
 
 
@@ -41,7 +42,7 @@ class BaseTemplate(Configurable):
     '''
     def __init__(self):
         self.name = ''
-        self.url = 'http://host.tld/'
+        self.url = URL('http://host.tld/')
         self.data = ''
         self.method = 'GET'
         self.vulnerable_parameter = ''
@@ -137,6 +138,18 @@ class BaseTemplate(Configurable):
 
         return v
 
+    def get_short_name(self):
+        return self.get_kb_location()[0]
+
+    def get_uri(self):
+        return self.url
+
+    def get_method(self):
+        return self.method
+    
+    def get_var(self):
+        return self.vulnerable_parameter
+    
     def get_kb_location(self):
         '''
         @return: A tuple with the location where the vulnerability will be saved,

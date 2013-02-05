@@ -168,6 +168,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             fmt = 'No %s vulnerabilities have been found.'
             raise w3afException(fmt % ' or '.join(self.get_kb_location()))
 
+        generated_shells = []
+
         for vuln in self.get_exploitable_vulns():
 
             if vuln_to_exploit is not None:
@@ -188,8 +190,6 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                       ' it doesn\'t have an HTTP method.'
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
-
-            generated_shells = []
 
             # Try to get a shell using a vuln
             s = self._generate_shell(vuln)

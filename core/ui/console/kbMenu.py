@@ -22,8 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
+from core.data.kb.vuln_templates.utils import (get_all_templates,
+                                               get_template_names,
+                                               get_template_by_name)
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
+from core.ui.console.config import configMenu
 
 
 class kbMenu(menu):
@@ -75,7 +79,7 @@ class kbMenu(menu):
                 else:
                     om.out.console('Type %s is unknown' % p)
         else:
-            om.out.console('Parameter type is missed, see the help:')
+            om.out.console('Parameter type is missing, see the help:')
             self._cmd_help(['list'])
 
     def _para_list(self, params, part):
@@ -83,3 +87,34 @@ class kbMenu(menu):
             return []
 
         return suggest(self.__getters.keys(), part)
+
+    def _cmd_add(self, params):
+        if len(params) == 0:
+            om.out.console('Parameter type is missing, see the help:')
+            self._cmd_help(['add'])
+            return
+        
+        if len(params) > 1:
+            om.out.console('Only one parameter is accepted, see the help:')
+            self._cmd_help(['add'])
+            return
+        
+        template_name = params[0]
+        if template_name not in get_template_names():
+            om.out.console('Type %s is unknown' % template_name)
+            return
+        
+        # Now we use the fact that templates are configurable just like
+        # plugins, misc-settings, etc.
+        template_inst = get_template_by_name(template_name)
+        template_menu = configMenu(template_name, self._console, self._w3af,
+                                   self, template_inst)
+        
+        # TODO: Where, how, do I store the template_inst into memory?
+        return template_menu
+
+    def _para_add(self, params, part):
+        if len(params):
+            return []
+
+        return suggest(get_template_names(), part)

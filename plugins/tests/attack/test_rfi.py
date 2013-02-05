@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
-from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
 
 
 @attr('smoke')
-class TestRFI(PluginTest):
+class TestRFI(PluginTest, ExecExploitTest):
 
     target_url = 'http://moth/w3af/audit/rfi/vulnerable.php'
 
@@ -50,26 +50,7 @@ class TestRFI(PluginTest):
         self.assertEquals(vuln.get_url().url_string, self.target_url)
 
         vuln_to_exploit_id = vuln.get_id()
-
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'rfi')
-
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertGreaterEqual(len(exploit_result), 1)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'])
-
-        self.assertTrue('root' in etc_passwd)
-
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
-
-        payload = shell.generic_user_input(
-            'payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
+        self._exploit_vuln(vuln_to_exploit_id, 'rfi')
+    
+    def test_from_template(self):
+        self.assertTrue(False)

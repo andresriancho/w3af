@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig, ReadExploitTest
 
 
-class TestFileReadShell(PluginTest):
+class TestFileReadShell(PluginTest, ReadExploitTest):
 
     target_url = 'http://moth/w3af/audit/local_file_inclusion/'
 
@@ -54,34 +54,7 @@ class TestFileReadShell(PluginTest):
         self.assertEquals(vuln.get_name(), "Local file inclusion vulnerability")
         
         vuln_to_exploit_id = vuln.get_id()
+        self._exploit_vuln(vuln_to_exploit_id, 'local_file_reader')
 
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'local_file_reader')
-
-        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-
-        exploit_result = plugin.exploit(vuln_to_exploit_id)
-
-        self.assertEqual(len(exploit_result), 1, exploit_result)
-
-        #
-        # Now I start testing the shell itself!
-        #
-        shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('read', ['/etc/passwd'])
-        self.assertTrue('root' in etc_passwd)
-
-        lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue('apache_config_directory' in lsp)
-
-        payload = shell.generic_user_input('payload', ['apache_config_directory'])
-        self.assertTrue(payload is None)
-
-        _help = shell.help(None)
-        self.assertNotIn('execute', _help)
-        self.assertNotIn('upload', _help)
-        self.assertIn('read', _help)
-        
-        _help = shell.help('read')
-        self.assertIn('read', _help)
-        self.assertIn('/etc/passwd', _help)
-        
+    def test_from_template(self):
+        self.assertTrue(False)

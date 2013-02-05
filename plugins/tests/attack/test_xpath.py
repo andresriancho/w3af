@@ -83,4 +83,5 @@ class TestXPathShell(PluginTest):
         self.assertNotIn('upload', _help)
         self.assertIn('getxml', _help)
         
-        
+    def test_from_template(self):
+        self.assertTrue(False)        
