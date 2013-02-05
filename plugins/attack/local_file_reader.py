@@ -65,7 +65,8 @@ class local_file_reader(AttackPlugin):
     def _generate_shell(self, vuln_obj):
         '''
         @param vuln_obj: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed as a parameter.
+        @return: The shell object based on the vulnerability that was passed
+                 as a parameter.
         '''
         if self._verify_vuln(vuln_obj):
 
@@ -170,10 +171,10 @@ class local_file_reader(AttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits local file inclusion and let's you "cat" every file you want.
-        Remember, if the file in being read with an "include()" statement, you wont be able
-        to read the source code of the script file, you will end up reading the result of the
-        script interpretation.
+        This plugin exploits local file inclusion and let's you "cat" every
+        file you want. Remember, if the file in being read with an "include()"
+        statement, you wont be able to read the source code of the script file,
+        you will end up reading the result of the script interpretation.
         '''
 
 PERMISSION_DENIED = 'Permission denied.'
