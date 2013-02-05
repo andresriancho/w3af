@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from core.data.kb.vuln_templates.os_commanding_template import OSCommandingTemplate
 from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
 from plugins.attack.os_commanding import (FullPathExploitStrategy,
                                           CmdsInPathExploitStrategy,
@@ -73,8 +74,8 @@ class TestOSCommandingShell(PluginTest, ExecExploitTest):
         vuln_to_exploit_id = [v.get_id() for v in vulns
                               if v.get_url().get_file_name() == 'simple_osc.php'][0]
 
-        plugin = self.w3afcore.plugins.get_plugin_inst(
-            'attack', 'os_commanding')
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack',
+                                                       'os_commanding')
 
         for strategy in (FullPathExploitStrategy, CmdsInPathExploitStrategy,
                          BasicExploitStrategy):
@@ -109,4 +110,18 @@ class TestOSCommandingShell(PluginTest, ExecExploitTest):
             self.assertIn('upload', _help)
     
     def test_from_template(self):
-        self.assertTrue(False)
+        osct = OSCommandingTemplate()
+        
+        options = osct.get_options()
+        options['url'].set_value('http://moth/w3af/audit/os_commanding/simple_osc.php')
+        options['data'].set_value('cmd=ls')
+        options['vulnerable_parameter'].set_value('cmd')
+        options['operating_system'].set_value('linux')
+        options['separator'].set_value('')
+        osct.set_options(options)
+
+        osct.store_in_kb()
+        vuln = self.kb.get(*osct.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+        
+        self._exploit_vuln(vuln_to_exploit_id, 'os_commanding')

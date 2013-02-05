@@ -120,7 +120,10 @@ class FullPathExploitStrategy(ExploitStrategy):
                                   command, shell_handler.SHELL_IDENTIFIER_2)
     
     def extract_result(self, http_response):
-        return shell_handler.extract_result(http_response.get_body())
+        try:
+            return shell_handler.extract_result(http_response.get_body())
+        except w3afException:
+            return None
 
 class CmdsInPathExploitStrategy(FullPathExploitStrategy):
     '''
