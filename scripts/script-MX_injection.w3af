@@ -14,6 +14,6 @@ back
 
 start
 
-assert len( kb.kb.get('mx_injection', 'mx_injection') ) == 1
+
 
 exit

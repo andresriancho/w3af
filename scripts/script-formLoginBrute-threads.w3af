@@ -24,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.get('form_auth','auth')) == 1
+
 
 exit

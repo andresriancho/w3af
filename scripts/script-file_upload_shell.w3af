@@ -19,7 +19,7 @@ back
 
 start
 
-assert len( kb.kb.get('file_upload', 'file_upload') ) == 1
+
 
 exploit
 exploit file_upload
@@ -36,6 +36,6 @@ exit
 
 back
 
-assert len( kb.kb.get('file_upload', 'shell') ) == 1
+
 
 exit

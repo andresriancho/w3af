@@ -20,7 +20,7 @@ set target http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php?id=1, ht
 back
 start
 
-assert len( kb.kb.get('blind_sqli', 'blind_sqli') ) == 3
+
 
 exit
 

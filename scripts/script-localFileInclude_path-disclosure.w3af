@@ -34,8 +34,8 @@ list
 exit
 back
 
-assert len(kb.kb.get('lfi','lfi')) == 3
-assert len(kb.kb.get('local_file_reader','shell')) == 1
-assert len(kb.kb.get('path_disclosure','listFiles')) > 2
+
+
+
 
 exit

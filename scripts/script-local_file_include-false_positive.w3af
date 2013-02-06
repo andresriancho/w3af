@@ -16,6 +16,6 @@ back
 
 start
 
-assert len(kb.kb.get('lfi','lfi')) == 0
+
 
 exit

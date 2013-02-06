@@ -18,7 +18,7 @@ back
 
 start
 
-assert len( kb.kb.get('allowed_methods', 'methods') ) == 1
-assert len( kb.kb.get('allowed_methods', 'dav-methods') ) == 0
+
+
 
 exit

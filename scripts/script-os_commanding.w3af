@@ -26,6 +26,6 @@ set target http://moth/w3af/audit/os_commanding/
 back
 start
 
-assert len(kb.kb.get('os_commanding','os_commanding')) == 3
+
 
 exit

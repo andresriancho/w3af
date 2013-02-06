@@ -212,38 +212,6 @@ class menu(object):
             output = pp.pformat(res)
             om.out.console(output)
 
-    def _cmd_assert(self, params):
-        if not len(params):
-            raise w3afException('Expression is expected')
-
-        small_locals = {'kb': kb, 'w3af_core': self._w3af}
-        small_globals = {}
-
-        assert_command = 'assert '
-        assert_command += ' '.join(params)
-        try:
-            exec(assert_command, small_globals, small_locals)
-        except AssertionError, ae:
-            msg = 'Assert **FAILED**'
-
-            aRes = ''
-            try:
-                # Get the value of the first argument
-                a = params[0]
-                exec('aRes = ' + a, small_globals, small_locals)
-            except:
-                pass
-            else:
-                msg += ' : ' + a + ' == ' + str(aRes)
-            om.out.error(msg)
-        except Exception, e:
-            om.out.error('An unexpected exception was raised during assertion: ' + str(e))
-            om.out.error('The executed command was: ' + assert_command)
-        else:
-            om.out.console('Assert succeded.')
-
-        return None
-
     def _para_help(self, params, part):
         if len(params) == 0:
             return suggest(self._help.get_items(), part)

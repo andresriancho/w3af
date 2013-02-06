@@ -21,7 +21,7 @@ back
 
 start
 
-assert len(kb.kb.get('eval','eval')) == 1
+
 
 exploit
 exploit eval
@@ -36,6 +36,6 @@ payload interesting_files
 
 exit
 
-assert len(kb.kb.get('eval','shell')) == 1
+
 
 exit

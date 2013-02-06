@@ -20,7 +20,7 @@ set target http://moth/w3af/audit/os_commanding/simple_osc.php?cmd=fas
 back
 start
 
-assert len(kb.kb.get('os_commanding','os_commanding')) == 1
+
 
 exploit
 exploit os_commanding

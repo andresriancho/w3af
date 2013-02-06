@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.get('mails','mails')) >= 20
+
 
 exit

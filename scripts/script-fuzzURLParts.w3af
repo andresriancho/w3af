@@ -19,5 +19,5 @@ target
 set target http://moth/w3af/core/fuzzURLParts/article/1
 back
 start
-assert len( kb.kb.get('xss', 'xss') ) > 0
+
 exit

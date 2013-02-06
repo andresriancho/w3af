@@ -14,7 +14,7 @@ back
 
 start
 
-assert len(kb.kb.get('lfi','lfi')) == 1 
+
 
 exploit
 exploit local_file_reader
@@ -28,7 +28,7 @@ exit
 exit
 back
 
-assert len(kb.kb.get('xss','xss')) == 2
+
 
 exit
 exit

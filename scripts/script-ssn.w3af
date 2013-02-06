@@ -23,6 +23,6 @@ back
 
 start
 
-assert len(kb.kb.get('ssn','ssn')) == 1
+
 
 exit

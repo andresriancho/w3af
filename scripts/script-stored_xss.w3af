@@ -19,7 +19,7 @@ back
 
 start
 
-assert len(kb.kb.get('xss','xss')) == 1
+
 
 exit
 

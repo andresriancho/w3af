@@ -19,6 +19,6 @@ back
 
 start
 
-assert len( kb.kb.get('rfi', 'rfi') ) == 1
+
 
 exit

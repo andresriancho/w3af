@@ -20,7 +20,7 @@ back
 
 start
 
-assert len( kb.kb.get('rfi', 'rfi') ) == 1
+
 
 exploit
 exploit config rfi
@@ -37,6 +37,6 @@ payload tcp
 
 exit
 
-assert len( kb.kb.get('rfi', 'shell') ) == 1
+
 
 exit

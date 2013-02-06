@@ -23,6 +23,6 @@ set target http://moth/w3af/audit/xss/simple_xss_no_js.php?text=1
 back
 start
 
-assert len( kb.kb.get('xss', 'xss') ) == 1
+
 
 exit

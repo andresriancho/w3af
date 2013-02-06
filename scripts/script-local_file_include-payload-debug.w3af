@@ -20,7 +20,7 @@ back
 
 start
 
-assert len(kb.kb.get('lfi','lfi')) == 1 
+
 
 exploit
 exploit local_file_reader

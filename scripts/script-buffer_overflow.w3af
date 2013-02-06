@@ -20,6 +20,6 @@ back
 start
 
 # New versions of apache don't show errors, my lab stopped showing them!
-assert len( kb.kb.get('buffer_overflow', 'buffer_overflow') ) == 0
+
 
 exit

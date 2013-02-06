@@ -14,6 +14,6 @@ set target http://moth/w3af/audit/csrf/csrf.php?abc=2
 back
 start
 
-assert len(kb.kb.get('csrf','get_csrf')) == 1
+
 
 exit

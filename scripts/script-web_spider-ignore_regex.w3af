@@ -23,6 +23,6 @@ back
 
 start
 
-assert len(kb.kb.get('urls','url_objects')) == 3
+
 
 exit

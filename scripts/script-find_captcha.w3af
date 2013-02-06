@@ -18,6 +18,6 @@ back
 
 start
 
-assert len(kb.kb.get('find_captchas','find_captchas')) == 2
+
 
 exit

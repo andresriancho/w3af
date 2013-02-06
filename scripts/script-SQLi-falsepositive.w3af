@@ -17,6 +17,6 @@ set target http://moth/w3af/sqli/sqli-falsepositive.php?tabla=agenda
 back
 start
 
-assert len( kb.kb.get('sqli', 'sqli') ) == 0
+
 
 exit

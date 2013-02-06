@@ -22,7 +22,7 @@ back
 
 start
 
-assert len( kb.kb.get( 'finger_google', 'mails' ) ) > 3
+
 
 exit
 

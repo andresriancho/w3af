@@ -33,7 +33,7 @@ payload tcp
 
 exit
 back
-assert len(kb.kb.get('dav','shell')) == 1
+
 
 exit
 

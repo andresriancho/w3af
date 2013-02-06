@@ -20,6 +20,6 @@ back
 
 start
 
-assert len(w3af_core._fuzzableRequestList[1].getDc()) == 1
+
 
 exit

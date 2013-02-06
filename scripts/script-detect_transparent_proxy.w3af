@@ -19,8 +19,8 @@ back
 
 start
 
-# I can't assert anything, because this depends on the loca internet connection
+# I can't 
 # I add this line to see if the plugin runs ok: without any stack traces.
-assert 1 == 1
+
 
 exit

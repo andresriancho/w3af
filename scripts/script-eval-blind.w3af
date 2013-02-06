@@ -21,6 +21,6 @@ back
 
 start
 
-assert len(kb.kb.get('eval','eval')) == 1
+
 
 exit

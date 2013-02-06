@@ -24,6 +24,6 @@ back
 
 start
 
-assert 1 == 1
+
 
 exit

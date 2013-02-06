@@ -8,7 +8,7 @@ set target http://moth
 back
 start
 
-assert len( kb.kb.get('ria_enumerator', 'vuln') ) == 1
-assert len( kb.kb.get('ria_enumerator', 'info') ) == 2
+
+
 
 exit
