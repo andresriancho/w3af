@@ -123,17 +123,22 @@ class kbMenu(menu):
 
 class StoreOnBackConfigMenu(configMenu):
     def _cmd_back(self, tokens):
+        try:
+            self._cmd_save(tokens)
+        except w3afException, e:
+            om.out.error(str(e))
+            return self._console.back
         
-        msg = 'Storing "%s" vulnerability in KB.'
-        om.out.console(msg % self._configurable.get_vulnerability_name())
+        vuln_name = self._configurable.get_vulnerability_name()
         
         try:
             self._configurable.store_in_kb()
         except Exception, e:
-            msg = 'Failed because of a configuration error at: "%s".'
-            om.out.console(msg % e)
+            msg = 'Failed to store "%s" in the knowledge base because of a'\
+                  ' configuration error at: "%s".'
+            om.out.console(msg % (vuln_name, e))
         else:
-            om.out.console('Success')
+            om.out.console('Stored "%s" in the knowledge base.' % vuln_name)
             
         return self._console.back
     

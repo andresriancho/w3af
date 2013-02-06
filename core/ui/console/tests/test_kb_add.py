@@ -44,10 +44,10 @@ class TestKBAdd(ConsoleTestHelper):
         expected = ('w3af>>> ',
                     'w3af/kb>>> ',
                     'w3af/kb/config:dav>>> ',
-                    'Storing "DAV Misconfiguration" vulnerability in KB.\r\n',
-                    'Success\r\n')
+                    'Stored "DAV Misconfiguration" in the knowledge base.',
+                    '| DAV              | This vulnerability was added to the knowledge')
         
-        self.assertTrue(self.all_expected_in_output(expected),
+        self.assertTrue(self.startswith_expected_in_output(expected),
                         self._mock_stdout.messages)
     
     def test_kb_add_with_errors(self):
