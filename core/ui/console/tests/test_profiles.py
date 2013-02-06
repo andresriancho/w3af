@@ -44,8 +44,8 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
@@ -58,5 +58,5 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)

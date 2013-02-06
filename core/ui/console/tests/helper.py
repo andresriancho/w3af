@@ -21,8 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 import unittest
+import pprint
 
 from mock import MagicMock
+
+import core.data.kb.knowledge_base as kb
 
 
 class mock_stdout(object):
@@ -47,6 +50,7 @@ class ConsoleTestHelper(unittest.TestCase):
     OUTPUT_HTTP_FILE = 'output-w3af-unittest-http.txt'
 
     def setUp(self):
+        kb.kb.cleanup()
         self.mock_sys()
 
     def tearDown(self):
@@ -88,16 +92,16 @@ class ConsoleTestHelper(unittest.TestCase):
                 if sys_line.startswith(line):
                     break
             else:
-                return False
+                return False, self.generate_msg(line)
         else:
-            return True
+            return True, 'OK'
 
     def all_expected_in_output(self, expected):
         for line in expected:
             if line not in self._mock_stdout.messages:
-                return False
+                return False, self.generate_msg(line)
         else:
-            return True
+            return True, 'OK'
 
     def error_in_output(self, errors):
         for line in self._mock_stdout.messages:
@@ -106,3 +110,7 @@ class ConsoleTestHelper(unittest.TestCase):
                     return True
 
         return False
+    
+    def generate_msg(self, line):
+        msg = '"%s" was not found in:\n%s'
+        return msg % (line, ''.join(self._mock_stdout.messages))

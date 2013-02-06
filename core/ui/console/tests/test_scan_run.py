@@ -58,8 +58,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
         found_errors = self.error_in_output(['No such file or directory',
                                              'Exception'])
@@ -121,11 +121,11 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=scan_commands, do_upd=False)
         self.console.sh()
 
-        self.assertTrue(self.startswith_expected_in_output(expected_1),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected_1)
+        self.assertTrue(assert_result, msg)
 
-        self.assertTrue(self.startswith_expected_in_output(expected_2),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected_2)
+        self.assertTrue(assert_result, msg)
 
         found_errors = self.error_in_output(['No such file or directory',
                                              'Exception'])

@@ -96,8 +96,8 @@ class TestConsoleBugReport(ConsoleTestHelper):
         caught_exceptions = self.console._w3af.exception_handler.get_all_exceptions()
         self.assertEqual(len(caught_exceptions), 1)
         
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
         found_errors = self.error_in_output(['No such file or directory',
                                              'Exception'])

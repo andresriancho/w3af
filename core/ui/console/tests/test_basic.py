@@ -36,8 +36,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.console.sh()
 
         expected = ('w3af>>> ', 'w3af/config:misc-settings>>> ')
-        self.assertTrue(self.all_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.all_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
     def test_menu_browse_http(self):
         commands_to_run = ['http-settings', 'back', 'exit']
@@ -46,8 +46,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.console.sh()
 
         expected = ('w3af>>> ', 'w3af/config:http-settings>>> ')
-        self.assertTrue(self.all_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.all_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
     def test_menu_browse_target(self):
         commands_to_run = ['target', 'back', 'exit']
@@ -56,8 +56,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.console.sh()
 
         expected = ('w3af>>> ', 'w3af/config:target>>> ')
-        self.assertTrue(self.all_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.all_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
 
     def test_menu_plugin_desc(self):
         commands_to_run = ['plugins',
@@ -72,5 +72,5 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)

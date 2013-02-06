@@ -47,8 +47,8 @@ class TestKBAdd(ConsoleTestHelper):
                     'Stored "DAV Misconfiguration" in the knowledge base.',
                     '| DAV              | This vulnerability was added to the knowledge')
         
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
     
     def test_kb_add_with_errors(self):
         commands_to_run = ['kb',
@@ -67,6 +67,6 @@ class TestKBAdd(ConsoleTestHelper):
                     'Type foobar is unknown',
                     'Only one parameter is accepted,')
         
-        self.assertTrue(self.startswith_expected_in_output(expected),
-                        self._mock_stdout.messages)
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
         
