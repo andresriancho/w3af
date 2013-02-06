@@ -22,6 +22,7 @@ from mock import MagicMock
 from nose.plugins.attrib import attr
 
 from plugins.tests.helper import PluginTest, PluginConfig
+from core.data.kb.vuln_templates.xpath_template import XPathTemplate
 
 
 @attr('slow')
@@ -52,7 +53,24 @@ class TestXPathShell(PluginTest):
         self.assertEquals(vuln.get_name(), "XPATH injection vulnerability")
         
         vuln_to_exploit_id = vuln.get_id()
+        self._exploit_xpath(vuln_to_exploit_id)
+        
+    def test_from_template(self):
+        xt = XPathTemplate()
+        
+        options = xt.get_options()
+        options['url'].set_value('http://moth/w3af/audit/xpath/xpath-attr-single.php')
+        options['data'].set_value('input=1')
+        options['vulnerable_parameter'].set_value('input')
+        xt.set_options(options)
 
+        xt.store_in_kb()
+        vuln = self.kb.get(*xt.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+        
+        self._exploit_xpath(vuln_to_exploit_id)
+        
+    def _exploit_xpath(self, vuln_to_exploit_id):
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'xpath')
 
         self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
@@ -83,5 +101,3 @@ class TestXPathShell(PluginTest):
         self.assertNotIn('upload', _help)
         self.assertIn('getxml', _help)
         
-    def test_from_template(self):
-        self.assertTrue(False)        
