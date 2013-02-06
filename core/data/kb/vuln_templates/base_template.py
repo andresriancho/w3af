@@ -92,6 +92,9 @@ class BaseTemplate(Configurable):
         self.vulnerable_parameter = options_list[
             'vulnerable_parameter'].get_value()
 
+        if not self.data:
+            raise ValueError('This vulnerability requires data to be configured.')
+
         if self.vulnerable_parameter not in self.data:
             msg = 'The vulnerable parameter was not found in the configured data'\
                   ' field. Please enter one of the following values: %s.'
