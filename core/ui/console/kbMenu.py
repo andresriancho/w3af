@@ -23,8 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 from core.controllers.exceptions import w3afException
-from core.data.kb.vuln_templates.utils import (get_all_templates,
-                                               get_template_names,
+from core.data.kb.vuln_templates.utils import (get_template_names,
                                                get_template_by_name)
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
