@@ -24,7 +24,7 @@ from core.data.kb.vuln_templates.base_template import BaseTemplate
 
 class RFITemplate(BaseTemplate):
     '''
-    Vulnerability template for eval vulnerability.
+    Vulnerability template for RFI vulnerability.
     '''
     def __init__(self):
         super(RFITemplate, self).__init__()
