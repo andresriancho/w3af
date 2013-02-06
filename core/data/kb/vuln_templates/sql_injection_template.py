@@ -69,7 +69,7 @@ class SQLiTemplate(BaseTemplate):
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
         '''
-        return '(Blind) SQL injection vulnerability.'
+        return '(Blind) SQL injection vulnerability'
 
     def get_vulnerability_desc(self):
         return 'Blind and error based SQL injection vulnerability.'

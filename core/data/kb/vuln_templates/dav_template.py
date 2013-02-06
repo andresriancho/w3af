@@ -32,7 +32,7 @@ class DAVTemplate(BaseTemplate):
     def __init__(self):
         super(DAVTemplate, self).__init__()
         
-        self.name = ''
+        self.name = self.get_vulnerability_name()
         self.url = URL('http://host.tld/')
 
     def get_options(self):

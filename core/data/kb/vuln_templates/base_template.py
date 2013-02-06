@@ -43,7 +43,7 @@ class BaseTemplate(Configurable):
     def __init__(self):
         self.name = ''
         self.url = URL('http://host.tld/')
-        self.data = ''
+        self.data = parse_qs('')
         self.method = 'GET'
         self.vulnerable_parameter = ''
 
