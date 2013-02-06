@@ -92,8 +92,8 @@ class SQLMapWrapper(object):
         if self.NOT_VULN_STR in stdout and self.VULN_STR not in stdout:
             return False 
         
-        fmt = 'Unexpected answer found in sqlmap output for command "%s".'
-        raise NotImplementedError(fmt % full_command)
+        fmt = 'Unexpected answer found in sqlmap output for command "%s": "%s"'
+        raise NotImplementedError(fmt % (full_command, stdout))
     
     def _run(self, custom_params):
         '''

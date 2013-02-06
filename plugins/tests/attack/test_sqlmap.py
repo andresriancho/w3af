@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig, ReadExploitTest
+from core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 
 
 class TestSQLMapShell(PluginTest, ReadExploitTest):
@@ -102,4 +103,17 @@ class TestSQLMapShell(PluginTest, ReadExploitTest):
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
     def test_from_template(self):
-        self.assertTrue(False)
+        sqlit = SQLiTemplate()
+        
+        options = sqlit.get_options()
+        options['url'].set_value('http://moth/w3af/audit/sql_injection/select/'
+                                 'sql_injection_string.php')
+        options['data'].set_value('name=andres')
+        options['vulnerable_parameter'].set_value('name')
+        sqlit.set_options(options)
+
+        sqlit.store_in_kb()
+        vuln = self.kb.get(*sqlit.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+        
+        self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
