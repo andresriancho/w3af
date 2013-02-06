@@ -122,7 +122,8 @@ class EchoWindows(BasePayloadTransfer):
 
         # Now, I transform the text file into a exe
         # this trick was taken from sqlninja!
-        om.out.debug('Transforming the text file into a binary file. Thanks to icesurfer and sqlninja for this technique!')
+        om.out.debug('Transforming the text file into a binary file. Thanks'
+                     ' to icesurfer and sqlninja for this technique!')
         res = self._exec_method('debug < ' + self._filename)
         if 'file creation error' in res.lower():
             raise w3afException('Error in remote debug.exe command.')
@@ -131,7 +132,7 @@ class EchoWindows(BasePayloadTransfer):
         res = self._exec_method('move ' + self._filename + '._ ' +
                                 self._filename + '.' + extension)
 
-    om.out.debug('Finished file upload.')
+        om.out.debug('Finished file upload.')
 
     def _get_extension(self, filename):
         if len(filename.split('.')) != 1:
