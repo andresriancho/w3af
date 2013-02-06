@@ -144,7 +144,11 @@ Example: fastexploit sqlmap]]></body>
             </item>
             <item name="set">
                 <head>Set a parameter value.</head>
-                <body>Syntax: {parameter} {value}</body>
+                <body>Syntax: set {parameter} {value}</body>
+            </item>
+            <item name="save">
+                <head>Save the configured settings.</head>
+                <body>Syntax: save</body>
             </item>
         </category>
     </topic>

@@ -80,29 +80,56 @@ class configMenu(menu):
         if len(params) < 2:
             om.out.console('Invalid call to set, please see the help:')
             self._cmd_help(['set'])
+            
         elif params[0] not in self._options:
-            raise w3afException('Unknown option: ' + params[0])
+            raise w3afException('Unknown option: "%s".' % params[0])
+        
         else:
             name = params[0]
             value = ' '.join(params[1:])
+            
+            # This set_value might raise a w3afException, for example this
+            # might happen when the configuration parameter is an integer and
+            # the user sets it to 'abc'
+            try:
+                self._options[name].set_value(value)
+                self._plainOptions[name] = value
+            except w3afException, e:
+                om.out.error(str(e))
+            else:
+                if value not in self._memory[name]:
+                    self._memory[name].append(value)
 
-            self._options[name].set_value(value)
-            self._plainOptions[name] = value
-
+            # All the options are set to the configurable on "back", this is
+            # to handle the issue of configuration parameters which depend on
+            # each other: https://github.com/andresriancho/w3af/issues/108
+            # @see: _cmd_back()
+    
+    def _cmd_save(self, tokens):
+        try:
+            # Save the options using the corresponding setter
             if isinstance(self._configurable, Plugin):
                 self._w3af.plugins.set_plugin_options(
                     self._configurable.get_type(),
                     self._configurable.get_name(),
                     self._options)
-                if value not in self._memory[name]:
-                    self._memory[name].append(value)
             else:
-                try:
-                    self._configurable.set_options(self._options)
-                    if value not in self._memory[name]:
-                        self._memory[name].append(value)
-                except w3afException, w3:
-                    om.out.error(str(w3))
+                self._configurable.set_options(self._options)
+                
+        except Exception, e:
+            msg = 'Identified an error with the user-defined settings, "%s",'\
+                  ' no information has been saved.'
+            raise w3afException(msg % e)
+        else:
+            om.out.console('The configuration has been saved.')
+    
+    def _cmd_back(self, tokens):
+        try:
+            self._cmd_save(tokens)
+        except w3afException, e:
+            om.out.error(str(e))
+
+        return self._console.back
 
     def _para_set(self, params, part):
         if len(params) == 0:
