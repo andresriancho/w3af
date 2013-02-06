@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
+from core.controllers.exceptions import w3afException
 from core.data.kb.vuln_templates.utils import (get_all_templates,
                                                get_template_names,
                                                get_template_by_name)
@@ -46,13 +47,13 @@ class kbMenu(menu):
         self.__getters = {
             'vulns': (
                 kb.kb.get_all_vulns,
-                ['Vulnerabilities'],),
+                ['Vulnerability', 'Description'],),
             'info': (
                 kb.kb.get_all_infos,
-                ['Info'],),
+                ['Info', 'Description'],),
             'shells': (
                 kb.kb.get_all_shells,
-                ['Shells'],)
+                ['Shells', 'Description'],)
         }
 
     def _list_objects(self, descriptor, objs):
@@ -107,14 +108,32 @@ class kbMenu(menu):
         # Now we use the fact that templates are configurable just like
         # plugins, misc-settings, etc.
         template_inst = get_template_by_name(template_name)
-        template_menu = configMenu(template_name, self._console, self._w3af,
-                                   self, template_inst)
+        template_menu = StoreOnBackConfigMenu(template_name, self._console,
+                                              self._w3af, self, template_inst)
         
-        # TODO: Where, how, do I store the template_inst into memory?
+        # Note: The data is stored in the KB when the user does a "back"
+        #       see the StoreOnBackConfigMenu implementation
         return template_menu
-
+    
     def _para_add(self, params, part):
         if len(params):
             return []
 
         return suggest(get_template_names(), part)
+
+class StoreOnBackConfigMenu(configMenu):
+    def _cmd_back(self, tokens):
+        
+        msg = 'Storing "%s" vulnerability in KB.'
+        om.out.console(msg % self._configurable.get_vulnerability_name())
+        
+        try:
+            self._configurable.store_in_kb()
+        except Exception, e:
+            msg = 'Failed because of a configuration error at: "%s".'
+            om.out.console(msg % e)
+        else:
+            om.out.console('Success')
+            
+        return self._console.back
+    
