@@ -30,7 +30,9 @@ class XPathTemplate(BaseTemplate):
     '''
     def __init__(self):
         super(XPathTemplate, self).__init__()
-    
+        
+        self.name = self.get_vulnerability_name()
+        
     def create_vuln(self):
         v = super(XPathTemplate, self).create_vuln()
         

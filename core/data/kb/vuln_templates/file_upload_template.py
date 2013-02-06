@@ -31,6 +31,7 @@ class FileUploadTemplate(BaseTemplate):
     def __init__(self):
         super(FileUploadTemplate, self).__init__()
         
+        self.name = self.get_vulnerability_name()
         self.file_vars = []
         self.file_dest = URL('http://host.tld/uploads/file.ext')
         self.method = 'POST'

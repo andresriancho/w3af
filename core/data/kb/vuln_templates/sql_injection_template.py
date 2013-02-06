@@ -30,7 +30,9 @@ class SQLiTemplate(BaseTemplate):
     '''
     def __init__(self):
         super(SQLiTemplate, self).__init__()
-
+        
+        self.name = self.get_vulnerability_name()
+        
     def create_vuln(self):
         v = self.create_base_vuln()
 

@@ -31,6 +31,8 @@ class LocalFileReadTemplate(BaseTemplate):
     '''
     def __init__(self):
         super(LocalFileReadTemplate, self).__init__()
+        
+        self.name = self.get_vulnerability_name()
         self.payload = '/etc/passwd'
         self.file_pattern = 'root:x:0:0:'
         

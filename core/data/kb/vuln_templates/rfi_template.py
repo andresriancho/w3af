@@ -29,6 +29,8 @@ class RFITemplate(BaseTemplate):
     def __init__(self):
         super(RFITemplate, self).__init__()
         
+        self.name = self.get_vulnerability_name()
+        
     def get_kb_location(self):
         '''
         @return: A tuple with the location where the vulnerability will be saved,

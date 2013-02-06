@@ -29,6 +29,8 @@ class OSCommandingTemplate(BaseTemplate):
     '''
     def __init__(self):
         super(OSCommandingTemplate, self).__init__()
+        
+        self.name = self.get_vulnerability_name()
         self.operating_system = 'linux'
         self.separator = '&'
         
