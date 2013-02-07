@@ -28,7 +28,7 @@ from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.form import Form
-from core.data.dc.query_string import QueryString
+from core.data.parsers.url import parse_qs
 from core.data.url.extended_urllib import ExtendedUrllib
 
 
@@ -194,28 +194,28 @@ class TestCSRF(PluginTest):
 
     def test_find_csrf_token_true_simple(self):
         url = URL('http://moth/w3af/audit/csrf/')
-        query_string = QueryString([('secret','f842eb01b87a8ee18868d3bf80a558f3')])
+        query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        token_dc = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIn('secret', token_dc)
+        tokens = self.csrf_plugin._find_csrf_token(freq)
+        self.assertIn('secret', tokens)
 
     def test_find_csrf_token_true_repeated(self):
         url = URL('http://moth/w3af/audit/csrf/')
-        query_string = QueryString([('secret',['f842eb01b87a8ee18868d3bf80a558f3',
-                                               'not a token'])])
+        query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3'
+                                '&secret=not a token')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        token_dc = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIn('secret', token_dc)
+        tokens = self.csrf_plugin._find_csrf_token(freq)
+        self.assertIn('secret', tokens)
 
     def test_find_csrf_token_false(self):
         url = URL('http://moth/w3af/audit/csrf/')
-        query_string = QueryString([('secret','not a csrf token')])
+        query_string = parse_qs('secret=not a token')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        token_dc = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIn('secret', token_dc)
+        tokens = self.csrf_plugin._find_csrf_token(freq)
+        self.assertNotIn('secret', tokens)
         
     def test_found_csrf(self):
         raise SkipTest('Still need to work on this in order to make it work')

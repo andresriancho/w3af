@@ -75,8 +75,8 @@ class csrf(AuditPlugin):
             return
 
         # Does the request have CSRF token in query string or POST payload?
-        token = self._find_csrf_token(freq)
-        if token and self._is_token_checked(freq, token, orig_response):
+        tokens = self._find_csrf_token(freq)
+        if tokens and self._is_token_checked(freq, tokens, orig_response):
             om.out.debug('Token for %s is exist and checked' % freq.get_url())
             return
 
@@ -143,23 +143,27 @@ class csrf(AuditPlugin):
 
     def _find_csrf_token(self, freq):
         '''
-        @return: A data container with 
+        @return: A dict with the identified token(s) 
         '''
-        result = DataContainer()
+        result = {}
         dc = freq.get_dc()
         
         for param_name in dc:
-            value = dc[param_name]
+            for element_index, element_value in enumerate(dc[param_name]):
             
-            if self.is_csrf_token(param_name, value):
-                result[param_name] = value
-                
-                msg = 'Found CSRF token %s in parameter %s for URL %s.'
-                om.out.debug(msg % (value,
-                                    param_name,
-                                    freq.get_url()))
-                
-                break
+                if self.is_csrf_token(param_name, element_value):
+                    
+                    if param_name not in result:
+                        result[param_name] = {}
+                    
+                    result[param_name][element_index] = element_value
+                    
+                    msg = 'Found CSRF token %s in parameter %s for URL %s.'
+                    om.out.debug(msg % (element_value,
+                                        param_name,
+                                        freq.get_url()))
+                    
+                    break
         
         return result
 
