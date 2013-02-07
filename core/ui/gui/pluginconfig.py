@@ -24,10 +24,11 @@ import os
 
 from core.ui.gui import confpanel, entries, helpers
 from core.ui.gui.pluginEditor import pluginEditor
+from core.ui.gui.misc.text_wrap_label import WrapLabel
 
 from core.controllers.misc.homeDir import get_home_dir
 
-
+            
 class OptionsPanel(gtk.VBox):
     '''Panel with options for configuration.
 
@@ -56,7 +57,7 @@ class OptionsPanel(gtk.VBox):
         self.pack_start(titl)
 
         # The long description of the plugin
-        longLabel = gtk.Label()
+        longLabel = WrapLabel()
         longLabel.set_text(longdesc)
         longLabel.set_alignment(0.0, 0.5)
         longLabel.show()
@@ -74,8 +75,8 @@ class OptionsPanel(gtk.VBox):
         self.pack_end(hbox, expand=False, fill=False)
 
         # middle (the heart of the panel)
-        self.options = confpanel.OnlyOptions(
-            self, self.plugin_tree.w3af, plugin, save_btn, rvrt_btn)
+        self.options = confpanel.OnlyOptions(self, self.plugin_tree.w3af,
+                                             plugin, save_btn, rvrt_btn)
         self.pack_start(self.options, expand=True, fill=False)
 
         self.show()
@@ -201,7 +202,9 @@ class PluginTree(gtk.TreeView):
         # 3. checkbox status, inconsistant or not
         # 4. the plugin name, just to store and bold it or not
         # 5. a image to show if the plugin is configurable
-        self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, str, gtk.gdk.Pixbuf)
+        self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN,
+                                       gobject.TYPE_BOOLEAN, str,
+                                       gtk.gdk.Pixbuf)
 
         # decide which type in function of style
         if style == "standard":
