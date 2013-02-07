@@ -416,17 +416,17 @@ class MainApp(object):
         
         self.notetabs = {}
         
-        label = gtk.Label(_("Exploit"))
-        exploit_tab_body = exploittab.ExploitBody(self.w3af)
-        self.nb.append_page(exploit_tab_body, label)
-        self.notetabs[_("Exploit")] = exploit_tab_body
-        
         # dummy tabs creation for notebook, real ones are done in set_tabs
         for title in (_("Log"), _("Results")):
             dummy = gtk.Label("dummy")
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
         self.set_tabs(False)
+
+        label = gtk.Label(_("Exploit"))
+        exploit_tab_body = exploittab.ExploitBody(self.w3af)
+        self.nb.append_page(exploit_tab_body, label)
+        self.notetabs[_("Exploit")] = exploit_tab_body
 
         # status bar
         mainvbox.pack_start(self.sb, False)
