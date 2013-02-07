@@ -44,27 +44,30 @@ class TestExactDelay(unittest.TestCase):
     
     TEST_SUITE = [
                   # Basic, very easy to pass
-                  (True, (0.1, 0.1, 0.1, 3.5, 1.5, 6.1, 1.1)),
+                  (True, (0.1, 0.1, 0.1, 3.5, 1.5, 6.1, 1.1, 3.4)),
                   
                   # Basic with a +0.1 delta
-                  (True, (0.1, 0.1, 0.1, 3.1, 1.1, 6.1, 1.1)),
+                  (True, (0.1, 0.1, 0.1, 3.1, 1.1, 6.1, 1.1, 3.1)),
                   
                   # Basic without controlled delays
-                  (False, (0, 0, 0, 0, 0, 0, 0)),
+                  (False, (0, 0, 0, 0, 0, 0, 0, 0)),
 
                   # Basic with server under heavy load after setup
-                  (False, (0, 0, 0, 5, 5, 5, 5)),
+                  (False, (0, 0, 0, 5, 5, 5, 5, 5)),
 
                   # Basic with server under random heavy load after setup
-                  (False, (0, 0, 0, 5, 2, 2, 5)),
+                  (False, (0, 0, 0, 5, 2, 2, 5, 7)),
 
                   # Basic with server under random heavy load after setup
-                  (False, (0.1, 0.2, 0.2, 5, 2, 2, 2)),
+                  (False, (0.1, 0.2, 0.2, 5, 2, 2, 2, 2)),
+
+                  # Basic with server under random heavy load after setup
+                  (False, (0.1, 0.2, 0.2, 7, 7, 7, 7, 7)),
                   
                   # With various delays in the setup phase
-                  (True, (0, 0.2, 0, 3.1, 1.1, 6.1, 1.1)),
-                  (True, (0.1, 0.2, 0.1, 3.1, 1.1, 6.1, 1.1)),
-                  (True, (0.2, 0.2, 0.2, 3.2, 1.2, 6.2, 1.2)),
+                  (True, (0, 0.2, 0, 3.1, 1.1, 6.1, 1.1, 3.1)),
+                  (True, (0.1, 0.2, 0.1, 3.1, 1.1, 6.1, 1.1, 3.1)),
+                  (True, (0.2, 0.2, 0.2, 3.2, 1.2, 6.2, 1.2, 3.2)),
                   
                   ]
     

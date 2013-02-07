@@ -36,11 +36,11 @@ class ExactDelay(object):
 
     #
     #    Note that these delays are applied ONLY if all the previous delays worked
-    #    so adding more here will only increase accurancy and not performance since
+    #    so adding more here will only increase accuracy and not performance since
     #    you'll only get slower scans when there is a vulnerability, which is not
     #    the most common case
     #
-    DELAY_SECONDS = [3, 1, 6, 1]
+    DELAY_SECONDS = [3, 1, 6, 1, 3]
 
     def __init__(self, mutant, delay_obj, uri_opener):
         '''
@@ -107,7 +107,8 @@ class ExactDelay(object):
         delta = original_wait_time / 1.5
         current_response_wait_time = response.get_wait_time()
 
-        if current_response_wait_time > (original_wait_time + seconds - delta):
+        if current_response_wait_time > (original_wait_time + seconds - delta)\
+        and current_response_wait_time < seconds * 2:
                 return True, response
 
         return False, response
