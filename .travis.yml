@@ -5,27 +5,10 @@ python:
 
 install:
   # Install w3af dependencies
-  - pip install -q --use-mirrors --upgrade PyGithub
-  - pip install -q --use-mirrors --upgrade GitPython
-  - pip install -q --use-mirrors --upgrade pybloomfiltermmap
-  - pip install -q --use-mirrors --upgrade esmre
-  - pip install -q --use-mirrors --upgrade pysqlite
-  - pip install -q --use-mirrors --upgrade nltk
-  - pip install -q --use-mirrors --upgrade chardet
-  - pip install -q --use-mirrors --upgrade pdfminer
-  - pip install -q --use-mirrors --upgrade futures
-  - pip install -q --use-mirrors --upgrade pyOpenSSL
-  - pip install -q --use-mirrors --upgrade lxml
-  - pip install -q --use-mirrors --upgrade scapy-real
-  - pip install -q --use-mirrors --upgrade guess-language
-  - pip install -q --use-mirrors --upgrade cluster
-  - pip install -q --use-mirrors --upgrade msgpack-python
-  - pip install -q --use-mirrors --upgrade python-ntlm
+  - pip install -q --use-mirrors --upgrade PyGithub GitPython pybloomfiltermmap esmre pysqlite nltk chardet pdfminer futures pyOpenSSL lxml scapy-real guess-language cluster msgpack-python python-ntlm
 
   # Install test dependencies
-  - pip install -q --use-mirrors --upgrade pylint
-  - pip install -q --use-mirrors --upgrade nose-exclude
-  - pip install -q --use-mirrors --upgrade psutil
+  - pip install -q --use-mirrors --upgrade pylint nose-exclude psutil SOAPpy
   - pip install -q --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
 
 script:

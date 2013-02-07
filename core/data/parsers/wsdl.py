@@ -19,22 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import SOAPpy
+import xml.parsers.expat as expat
+
 import core.controllers.output_manager as om
 
 from core.controllers.exceptions import w3afException
 from core.data.parsers.url import URL
-
-try:
-    import extlib.SOAPpy.SOAPpy as SOAPpy
-    om.out.debug('wsdlParser is using the bundled SOAPpy library')
-except ImportError:
-    try:
-        import SOAPpy
-        om.out.debug('wsdlParser is using the systems SOAPpy library')
-    except ImportError:
-        raise w3afException('You have to install SOAPpy lib.')
-
-import xml.parsers.expat as expat
 
 
 class WSDLParser(object):
@@ -50,8 +41,8 @@ class WSDLParser(object):
     def is_WSDL(self, data):
         '''
         This is not a 100% accurate test, the real WSDL parsing is performed
-        in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to enhance
-        framework's performance.
+        in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to
+        enhance framework's performance.
 
         @param data: A string that might represent a WSDL
         @return: True if the data parameter is a WSDL document.
@@ -64,7 +55,8 @@ class WSDLParser(object):
 
     def set_wsdl(self, xmlData):
         '''
-        @param xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
+        @param xmlData: The WSDL to parse. At this point, we really don't know
+                        if it really is a WSDL document.
         '''
         if not self.is_WSDL(xmlData):
             raise w3afException('The body content is not a WSDL.')
