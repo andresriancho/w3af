@@ -105,7 +105,9 @@ class ExactDelay(object):
 
         #    Test
         delta = original_wait_time / 1.5
-        if response.get_wait_time() > (original_wait_time + seconds - delta):
+        current_response_wait_time = response.get_wait_time()
+
+        if current_response_wait_time > (original_wait_time + seconds - delta):
                 return True, response
 
         return False, response

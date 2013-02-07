@@ -53,7 +53,7 @@ class csrf(AuditPlugin):
         AuditPlugin.__init__(self)
 
         self._strict_mode = False
-        self._equal_limit = 0.95
+        self._equal_limit = 0.90
 
     def audit(self, freq, orig_response):
         '''
@@ -78,8 +78,7 @@ class csrf(AuditPlugin):
             return
 
         # Does the request have CSRF token in query string or POST payload?
-        token = self._find_csrf_token(freq)
-        if token and self._is_token_checked(freq, token, orig_response):
+        if self._find_csrf_token(freq):
             om.out.debug('Token for %s exists and was checked' % freq.get_url())
             return
 
@@ -111,6 +110,10 @@ class csrf(AuditPlugin):
 
         @return: True if the request can have a CSRF vulnerability
         '''
+        # Does the application send cookies?
+        #
+        # By checking like this we're loosing the opportunity to detect any
+        # CSRF vulnerabilities in non-authenticated parts of the application
         for cookie in self._uri_opener.get_cookies():
             if freq.get_url().get_domain() in cookie.domain:
                 break
@@ -123,7 +126,7 @@ class csrf(AuditPlugin):
 
         # Does the request have a payload?
         #
-        # By checking like this we're loosing the oportunity to find CSRF vulns
+        # By checking like this we're loosing the opportunity to find CSRF vulns
         # in applications that use mod_rewrite. Example: A CSRF in this URL:
         # http://host.tld/users/remove/id/123
         if not freq.get_uri().has_query_string() and not freq.get_dc():
@@ -174,6 +177,10 @@ class csrf(AuditPlugin):
 
     def _is_token_checked(self, freq, token, orig_response):
         '''
+        Please note that this method generates lots of false positives and
+        negatives. Read the github issue for more information.
+        
+        @see: https://github.com/andresriancho/w3af/issues/120
         @return: True if the CSRF token is NOT verified by the web application
         '''
         token_pname_lst = token.keys()
@@ -198,17 +205,18 @@ class csrf(AuditPlugin):
     def is_csrf_token(self, key, value):
         # Entropy based algoritm
         # http://en.wikipedia.org/wiki/Password_strength
-        min_length = 4
+        min_length = 6
         min_entropy = 36
-        
-        # Check for common CSRF token names
-        if key in COMMON_CSRF_NAMES and value:
-            return True
-        
+
         # Check length
         if len(value) < min_length:
             return False
         
+        # Check for common CSRF token names
+        for common_csrf_name in COMMON_CSRF_NAMES:
+            if common_csrf_name in key:
+                return True
+    
         # Calculate entropy
         total = 0
         total_digit = False
