@@ -37,7 +37,7 @@ class Delay(object):
         '''
         Applies @param seconds to self._delay_fmt
 
-        >>> d = delay('sleep(%s)')
+        >>> d = Delay('sleep(%s)')
         >>> d.get_string_for_delay( 3 )
         'sleep(3)'
         '''
@@ -49,7 +49,7 @@ class Delay(object):
         Some commands are strange... if you want to delay for 5 seconds you
         need to set the value to 6; or 4... This value is added to the seconds:
 
-        >>> d = delay('sleep(%s)')
+        >>> d = Delay('sleep(%s)')
 
         >>> d.get_string_for_delay( 3 )
         'sleep(3)'
@@ -66,7 +66,7 @@ class Delay(object):
         Some delays are expressed in miliseconds, so we need to take that into
         account and let the user define a specific delay with 1000 as multiplier
 
-        >>> d = delay('sleep(%s)', mult=1000)
+        >>> d = Delay('sleep(%s)', mult=1000)
 
         >>> d.get_string_for_delay( 3 )
         'sleep(3000)'
