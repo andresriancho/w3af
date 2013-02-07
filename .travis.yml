@@ -5,27 +5,28 @@ python:
 
 install:
   # Install w3af dependencies
-  - pip install --use-mirrors --upgrade PyGithub
-  - pip install --use-mirrors --upgrade GitPython
-  - pip install --use-mirrors --upgrade pybloomfiltermmap
-  - pip install --use-mirrors --upgrade esmre
-  - pip install --use-mirrors --upgrade pysqlite
-  - pip install --use-mirrors --upgrade nltk
-  - pip install --use-mirrors --upgrade chardet
-  - pip install --use-mirrors --upgrade pdfminer
-  - pip install --use-mirrors --upgrade futures
-  - pip install --use-mirrors --upgrade pyOpenSSL
-  - pip install --use-mirrors --upgrade lxml
-  - pip install --use-mirrors --upgrade scapy-real
-  - pip install --use-mirrors --upgrade guess-language
-  - pip install --use-mirrors --upgrade cluster
-  - pip install --use-mirrors --upgrade msgpack-python
-  - pip install --use-mirrors --upgrade python-ntlm
+  - pip install -q --use-mirrors --upgrade PyGithub
+  - pip install -q --use-mirrors --upgrade GitPython
+  - pip install -q --use-mirrors --upgrade pybloomfiltermmap
+  - pip install -q --use-mirrors --upgrade esmre
+  - pip install -q --use-mirrors --upgrade pysqlite
+  - pip install -q --use-mirrors --upgrade nltk
+  - pip install -q --use-mirrors --upgrade chardet
+  - pip install -q --use-mirrors --upgrade pdfminer
+  - pip install -q --use-mirrors --upgrade futures
+  - pip install -q --use-mirrors --upgrade pyOpenSSL
+  - pip install -q --use-mirrors --upgrade lxml
+  - pip install -q --use-mirrors --upgrade scapy-real
+  - pip install -q --use-mirrors --upgrade guess-language
+  - pip install -q --use-mirrors --upgrade cluster
+  - pip install -q --use-mirrors --upgrade msgpack-python
+  - pip install -q --use-mirrors --upgrade python-ntlm
 
   # Install test dependencies
-  - pip install --use-mirrors --upgrade pylint
-  - pip install --use-mirrors --upgrade nose-exclude
-  - pip install --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
+  - pip install -q --use-mirrors --upgrade pylint
+  - pip install -q --use-mirrors --upgrade nose-exclude
+  - pip install -q --use-mirrors --upgrade psutil
+  - pip install -q --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
 
 script:
   - nosetests -v -s --with-doctest --doctest-tests --with-timer -a smoke core/data/
