@@ -205,17 +205,18 @@ class csrf(AuditPlugin):
     def is_csrf_token(self, key, value):
         # Entropy based algoritm
         # http://en.wikipedia.org/wiki/Password_strength
-        min_length = 4
+        min_length = 6
         min_entropy = 36
-        
-        # Check for common CSRF token names
-        if key in COMMON_CSRF_NAMES and value:
-            return True
-        
+
         # Check length
         if len(value) < min_length:
             return False
         
+        # Check for common CSRF token names
+        for common_csrf_name in COMMON_CSRF_NAMES:
+            if common_csrf_name in key:
+                return True
+    
         # Calculate entropy
         total = 0
         total_digit = False
