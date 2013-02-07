@@ -57,6 +57,27 @@ class TestCSRF(PluginTest):
         self.uri_opener = ExtendedUrllib()
         self.csrf_plugin.set_url_opener(self.uri_opener)
 
+    def test_found_csrf(self):
+        EXPECTED = [
+            ('/w3af/audit/csrf/vulnerable/buy.php'),
+            ('/w3af/audit/csrf/vulnerable-rnd/buy.php'),
+            #@see: https://github.com/andresriancho/w3af/issues/120
+            #('/w3af/audit/csrf/vulnerable-token-ignored/buy.php'),
+            ('/w3af/audit/csrf/link-vote/vote.php')
+        ]
+        
+        # Run the scan
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('csrf', 'csrf')
+        
+        self.assertEquals(set(EXPECTED),
+                          set([v.get_url().get_path() for v in vulns]))
+        self.assertTrue(
+            all(['CSRF vulnerability' == v.get_name() for v in vulns]))
+
     def test_resp_is_equal(self):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
@@ -260,22 +281,3 @@ class TestCSRF(PluginTest):
         checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
         self.assertFalse(checked)
     
-    def test_found_csrf(self):
-        EXPECTED = [
-            ('/w3af/audit/csrf/vulnerable/buy.php'),
-            ('/w3af/audit/csrf/vulnerable-rnd/buy.php'),
-            ('/w3af/audit/csrf/vulnerable-token-ignored/buy.php'),
-            ('/w3af/audit/csrf/link-vote/vote.php')
-        ]
-        
-        # Run the scan
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
-
-        # Assert the general results
-        vulns = self.kb.get('csrf', 'csrf')
-        
-        self.assertEquals(set(EXPECTED),
-                          set([v.get_url().get_path() for v in vulns]))
-        self.assertTrue(
-            all(['CSRF vulnerability' == v.get_name() for v in vulns]))
