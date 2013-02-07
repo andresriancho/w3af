@@ -50,9 +50,11 @@ parameter_name_knowledge = {
 
     '90210': ['postal', 'zip', 'postleitzahl', 'plz', 'postais'],
     '3419': ['pin', 'id', 'suffix'],
-    '22': ['floor', 'age', 'piso', 'edad', 'stock', 'alter', 'port', 'puerto'],
+    '22': ['floor', 'age', 'piso', 'edad', 'stock', 'alter', 'port', 'puerto',
+           'number', 'numero', u'número', 'int', 'integer', 'entero'],
+    '7.8': ['float', 'long', 'decimal'],
     '555': ['area', 'prefijo', 'prefix'],
-    '55550178': ['phone', 'fax', 'code', 'number', 'telefono', 'numero', u'número',
+    '55550178': ['phone', 'fax', 'code', 'telefono',
                  u'código', 'codigo', 'telefon', 'tel', 'code', 'nummer', 'call',
                  'llamar', 'passport', 'pasaporte'],
     '987654320': ['ssn', 'social'],
