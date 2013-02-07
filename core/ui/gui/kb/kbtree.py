@@ -22,13 +22,14 @@ import gtk
 import gobject
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 from core.ui.gui import helpers, exploittab
 
 TYPES_OBJ = {
-    core.data.kb.vuln.Vuln: "vuln",
-    core.data.kb.info.Info: "info",
+    Vuln: "vuln",
+    Info: "info",
 }
 
 
@@ -160,6 +161,10 @@ class KBTree(gtk.TreeView):
                 # iterate the third layer, the variable objects
                 if isinstance(variabobjects, list):
                     for obj in variabobjects:
+                        
+                        if not isinstance(obj, Info):
+                            continue
+                        
                         obj_name = obj.get_name()
                         obj_severity = obj.get_severity()
                         
