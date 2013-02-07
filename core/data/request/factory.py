@@ -32,7 +32,6 @@ from core.controllers.exceptions import w3afException
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
-from core.data.request.WebServiceRequest import WebServiceRequest
 from core.data.request.XMLRPCRequest import XMLRPCRequest
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
@@ -40,6 +39,7 @@ from core.data.dc.headers import Headers
 from core.data.parsers.url import URL, parse_qs
 #TODO: Rewrite web service support
 #from core.data.parsers.wsdl import WSDLParser
+#from core.data.request.WebServiceRequest import WebServiceRequest
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.misc.encoding import smart_unicode
 

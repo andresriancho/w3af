@@ -1,0 +1,25 @@
+language: python
+
+python:
+  - "2.7"
+
+install:
+  # Some unittests were not passing without this encoding setting
+  - export PYTHONIOENCODING=UTF8
+
+  # Install w3af dependencies
+  - pip install -q --use-mirrors --upgrade PyGithub GitPython pybloomfiltermmap esmre pysqlite nltk chardet pdfminer futures pyOpenSSL lxml scapy-real guess-language cluster msgpack-python python-ntlm
+
+  # Install test dependencies
+  - pip install -q --use-mirrors --upgrade pylint nose-exclude psutil SOAPpy
+  - pip install -q --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
+
+script:
+  - nosetests -v -s --with-doctest --doctest-tests --with-timer -a smoke core/data/
+
+notifications:
+  irc:
+    channels: "irc.freenode.org#w3af"
+    on_success: change
+    on_failure: change
+  email: true
