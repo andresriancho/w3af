@@ -4,6 +4,9 @@ python:
   - "2.7"
 
 install:
+  # Some unittests were not passing without this encoding setting
+  - export PYTHONIOENCODING=UTF8
+
   # Install w3af dependencies
   - pip install -q --use-mirrors --upgrade PyGithub GitPython pybloomfiltermmap esmre pysqlite nltk chardet pdfminer futures pyOpenSSL lxml scapy-real guess-language cluster msgpack-python python-ntlm
 
