@@ -30,11 +30,15 @@ from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from core.data.kb.vuln import Vuln
 
-COMMON_CSRF_NAMES = [
+COMMON_CSRF_NAMES = (
     'csrf_token',
+    'CSRFName',                   # OWASP CSRF_Guard
+    'CSRFToken',                  # OWASP CSRF_Guard
+    'anticsrf',                   # AntiCsrfParam.java
+    '__RequestVerificationToken', # AntiCsrfParam.java
     'token',
     'csrf'
-]
+)
 
 
 class csrf(AuditPlugin):
