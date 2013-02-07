@@ -119,7 +119,9 @@ class FullKBTree(KBTree):
 
                             success = True
                         else:
-                            om.out.error(_('Failed to find request/response with id: ') + str(instance.get_id()) + _(' in the database.'))
+                            msg = _('Failed to find request/response with id'
+                                    '%s in the database.' % instance.get_id())
+                            om.out.error(msg)
                 else:
                     # There are MORE THAN ONE ids related to the object
                     # This is 2)
