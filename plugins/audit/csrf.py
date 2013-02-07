@@ -33,14 +33,17 @@ from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
     'csrf_token',
-    'token'
+    'token',
+    'csrf'
 ]
 
 
 class csrf(AuditPlugin):
     '''
     Identify Cross-Site Request Forgery vulnerabilities.
+    
     @author: Taras (oxdef@oxdef.info)
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -51,21 +54,28 @@ class csrf(AuditPlugin):
 
     def audit(self, freq, orig_response):
         '''
-        Tests an URL for csrf vulnerabilities.
+        Tests a URL for csrf vulnerabilities.
 
         @param freq: A FuzzableRequest
         '''
-        suitable, orig_response = self._is_suitable(freq)
-        if not suitable:
+        if not self._is_suitable(freq):
             return
 
         # Referer/Origin check
+        #
+        # IMPORTANT NOTE: I'm aware that checking for the referer header does
+        # NOT protect the application against all cases of CSRF, but it's a
+        # very good first step. In order to exploit a CSRF in an application
+        # that protects using this method an intruder would have to identify
+        # other vulnerabilities such as XSS or open redirects.
+        #
+        # TODO: This algorithm has lots of room for improvement
         if self._is_origin_checked(freq, orig_response):
             om.out.debug('Origin for %s is checked' % freq.get_url())
             return
 
-        # Does request has CSRF token in query string or POST payload?
-        token = self._find_csrf_token(freq, orig_response)
+        # Does the request have CSRF token in query string or POST payload?
+        token = self._find_csrf_token(freq)
         if token and self._is_token_checked(freq, token, orig_response):
             om.out.debug('Token for %s is exist and checked' % freq.get_url())
             return
@@ -98,53 +108,59 @@ class csrf(AuditPlugin):
         @return: True if the request can have a CSRF vulnerability
         '''
         for cookie in self._uri_opener.get_cookies():
-            if cookie.domain == freq.get_url().get_domain():
+            if freq.get_url().get_domain() in cookie.domain:
                 break
         else:
-            return False, None
+            return False
 
         # Strict mode on/off - do we need to audit GET requests? Not always...
-        if freq.get_method() == 'GET' and not self._strict_mode:
-            return False, None
+        if freq.get_method() == 'GET' and self._strict_mode:
+            return False
 
         # Payload?
-        if not ((freq.get_method() == 'GET' and freq.get_uri().has_query_string())
-                or (freq.get_method() == 'POST' and len(freq.get_dc()))):
-                return False, None
+        if not freq.get_uri().has_query_string() and not freq.get_dc():
+            return False
 
-        # Send the same request twice and analyze if we get the same responses
-        # TODO: Ask Taras about these lines, I don't really understand.
-        response1 = self._uri_opener.send_mutant(freq)
-        response2 = self._uri_opener.send_mutant(freq)
-        if not self._is_resp_equal(response1, response2):
-            return False, None
-
-        orig_response = response1
         om.out.debug('%s is suitable for CSRF attack' % freq.get_url())
-        return True, orig_response
+        return True
 
     def _is_origin_checked(self, freq, orig_response):
-        om.out.debug('Testing %s for Referer/Origin checks' % freq.get_url())
+        '''
+        @return: True if the remote web application verifies the Referer before
+                 processing the HTTP request.
+        '''
         fake_ref = 'http://www.w3af.org/'
         mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
         mutant.set_original_value(freq.get_referer())
         mutant.set_mod_value(fake_ref)
         mutant_response = self._uri_opener.send_mutant(mutant)
+        
         if not self._is_resp_equal(orig_response, mutant_response):
             return True
+        
         return False
 
-    def _find_csrf_token(self, freq, orig_response):
-        om.out.debug('Testing for token in %s' % freq.get_url())
+    def _find_csrf_token(self, freq):
+        '''
+        @return: A data container with 
+        '''
         result = DataContainer()
         dc = freq.get_dc()
-        for k in dc:
-            if self.is_csrf_token(k, dc[k][0]):
-                result[k] = dc[k]
-                om.out.debug(
-                    'Found token %s for %s: ' % (freq.get_url(), str(result)))
+        
+        for param_name in dc:
+            value = dc[param_name]
+            
+            if self.is_csrf_token(param_name, value):
+                result[param_name] = value
+                
+                msg = 'Found CSRF token %s in parameter %s for URL %s.'
+                om.out.debug(msg % (value,
+                                    param_name,
+                                    freq.get_url()))
+                
                 break
+        
         return result
 
     def _is_token_checked(self, freq, token, orig_response):
@@ -161,12 +177,15 @@ class csrf(AuditPlugin):
         # http://en.wikipedia.org/wiki/Password_strength
         min_length = 4
         min_entropy = 36
+        
         # Check for common CSRF token names
         if key in COMMON_CSRF_NAMES and value:
             return True
+        
         # Check length
         if len(value) < min_length:
             return False
+        
         # Calculate entropy
         total = 0
         total_digit = False
