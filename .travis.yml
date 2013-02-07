@@ -28,7 +28,7 @@ install:
   - pip install --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
 
 script:
-  - nosetests --with-doctest --doctest-tests --with-timer -a smoke core/data/
+  - nosetests -v -s --with-doctest --doctest-tests --with-timer -a smoke core/data/
 
 notifications:
   irc:
