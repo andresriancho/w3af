@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
-from nose.plugins.skip import SkipTest
 
 from plugins.audit.csrf import csrf
 
@@ -27,6 +26,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.request.factory import create_fuzzable_requests
 from core.data.dc.form import Form
 from core.data.parsers.url import parse_qs
 from core.data.url.extended_urllib import ExtendedUrllib
@@ -197,8 +197,8 @@ class TestCSRF(PluginTest):
         query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        tokens = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIn('secret', tokens)
+        token = self.csrf_plugin._find_csrf_token(freq)
+        self.assertIn('secret', token)
 
     def test_find_csrf_token_true_repeated(self):
         url = URL('http://moth/w3af/audit/csrf/')
@@ -206,34 +206,76 @@ class TestCSRF(PluginTest):
                                 '&secret=not a token')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        tokens = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIn('secret', tokens)
+        token = self.csrf_plugin._find_csrf_token(freq)
+        self.assertIn('secret', token)
 
     def test_find_csrf_token_false(self):
         url = URL('http://moth/w3af/audit/csrf/')
         query_string = parse_qs('secret=not a token')
         freq = FuzzableRequest(url, method='GET', dc=query_string)
         
-        tokens = self.csrf_plugin._find_csrf_token(freq)
-        self.assertNotIn('secret', tokens)
+        token = self.csrf_plugin._find_csrf_token(freq)
+        self.assertNotIn('secret', token)
+    
+    def test_is_token_checked_true(self):
+        generator = URL('http://moth/w3af/audit/csrf/secure-replay-allowed/')
+        http_response = self.uri_opener.GET(generator)
         
-    def test_found_csrf(self):
-        raise SkipTest('Still need to work on this in order to make it work')
+        # Please note that this freq holds a fresh/valid CSRF token
+        freq_lst = create_fuzzable_requests(http_response, add_self=False)
+        self.assertEqual(len(freq_lst), 1)
+        
+        freq = freq_lst[0]
 
+        # FIXME:
+        # And I use this token here to get the original response, and if the
+        # application is properly developed, that token will be invalidated
+        # and that's where this algorithm fails.
+        original_response = self.uri_opener.send_mutant(freq)
+        
+        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
+        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
+        self.assertTrue(checked)
+    
+    def test_is_token_checked_false(self):
+        '''
+        This covers the case where there is a token but for some reason it
+        is NOT verified by the web application.
+        '''
+        generator = URL('http://moth/w3af/audit/csrf/vulnerable-token-ignored/')
+        http_response = self.uri_opener.GET(generator)
+        
+        # Please note that this freq holds a fresh/valid CSRF token
+        freq_lst = create_fuzzable_requests(http_response, add_self=False)
+        self.assertEqual(len(freq_lst), 1)
+        
+        freq = freq_lst[0]
+        # FIXME:
+        # And I use this token here to get the original response, and if the
+        # application is properly developed, that token will be invalidated
+        # and that's where this algorithm fails.
+        original_response = self.uri_opener.send_mutant(freq)
+        
+        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
+        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
+        self.assertFalse(checked)
+    
+    def test_found_csrf(self):
+        EXPECTED = [
+            ('/w3af/audit/csrf/vulnerable/buy.php'),
+            ('/w3af/audit/csrf/vulnerable-rnd/buy.php'),
+            ('/w3af/audit/csrf/vulnerable-token-ignored/buy.php'),
+            ('/w3af/audit/csrf/link-vote/vote.php')
+        ]
+        
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('csrf', 'csrf')
-        self.assertEquals(2, len(vulns))
-
-        EXPECTED = [
-            ('vulnerable/buy.php'),
-            ('vulnerable-rnd/buy.php'),
-        ]
-
+        
         self.assertEquals(set(EXPECTED),
-                          set([v.get_url().get_file_name() for v in vulns]))
+                          set([v.get_url().get_path() for v in vulns]))
         self.assertTrue(
             all(['CSRF vulnerability' == v.get_name() for v in vulns]))

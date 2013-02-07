@@ -29,7 +29,6 @@ from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from core.data.kb.vuln import Vuln
-from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
     'csrf_token',
@@ -75,9 +74,9 @@ class csrf(AuditPlugin):
             return
 
         # Does the request have CSRF token in query string or POST payload?
-        tokens = self._find_csrf_token(freq)
-        if tokens and self._is_token_checked(freq, tokens, orig_response):
-            om.out.debug('Token for %s is exist and checked' % freq.get_url())
+        token = self._find_csrf_token(freq)
+        if token and self._is_token_checked(freq, token, orig_response):
+            om.out.debug('Token for %s exists and was checked' % freq.get_url())
             return
 
         # Ok, we have found vulnerable to CSRF attack request
@@ -95,7 +94,8 @@ class csrf(AuditPlugin):
         if res1.get_code() != res2.get_code():
             return False
 
-        if not relative_distance_boolean(res1.body, res2.body, self._equal_limit):
+        if not relative_distance_boolean(res1.body, res2.body,
+                                         self._equal_limit):
             return False
 
         return True
@@ -117,7 +117,11 @@ class csrf(AuditPlugin):
         if freq.get_method() == 'GET' and self._strict_mode:
             return False
 
-        # Payload?
+        # Does the request have a payload?
+        #
+        # By checking like this we're loosing the oportunity to find CSRF vulns
+        # in applications that use mod_rewrite. Example: A CSRF in this URL:
+        # http://host.tld/users/remove/id/123
         if not freq.get_uri().has_query_string() and not freq.get_dc():
             return False
 
@@ -143,7 +147,7 @@ class csrf(AuditPlugin):
 
     def _find_csrf_token(self, freq):
         '''
-        @return: A dict with the identified token(s) 
+        @return: A dict with the first identified token
         '''
         result = {}
         dc = freq.get_dc()
@@ -153,27 +157,38 @@ class csrf(AuditPlugin):
             
                 if self.is_csrf_token(param_name, element_value):
                     
-                    if param_name not in result:
-                        result[param_name] = {}
-                    
-                    result[param_name][element_index] = element_value
+                    result[param_name] = element_value
                     
                     msg = 'Found CSRF token %s in parameter %s for URL %s.'
                     om.out.debug(msg % (element_value,
                                         param_name,
                                         freq.get_url()))
                     
-                    break
+                    return result
         
         return result
 
     def _is_token_checked(self, freq, token, orig_response):
-        om.out.debug('Testing for validation of token in %s' % freq.get_url())
-        mutants = create_mutants(freq, ['123'], False, token.keys())
+        '''
+        @return: True if the CSRF token is NOT verified by the web application
+        '''
+        token_pname_lst = token.keys()
+        token_value = token[token_pname_lst[0]]
+        
+        # This will generate mutants for the original fuzzable request using
+        # the reversed token value as a CSRF-token (this is a feature: we want
+        # to make sure it has the same length as the original token and that
+        # it has the same type: digits, hash, etc. in order to pass the first
+        # trivial validations)
+        #
+        # Only create mutants that modify the token parameter name 
+        mutants = create_mutants(freq, [token_value[::-1],], False, token_pname_lst)
+        
         for mutant in mutants:
-            mutant_response = self._uri_opener.send_mutant(mutant, analyze=False)
+            mutant_response = self._uri_opener.send_mutant(mutant)
             if not self._is_resp_equal(orig_response, mutant_response):
                 return True
+            
         return False
 
     def is_csrf_token(self, key, value):
