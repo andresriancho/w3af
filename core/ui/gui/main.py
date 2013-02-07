@@ -363,7 +363,7 @@ class MainApp(object):
         self.exploitallsens = helpers.SensitiveAnd(
             exploitall, ("stopstart", "tabinfo"))
 
-        # tab dependant widgets
+        # tab dependent widgets
         self.tabDependant = [(
             lambda x: self.exploitallsens.set_sensitive(
                 x, "tabinfo"), ('Exploit',)),
@@ -413,10 +413,16 @@ class MainApp(object):
         label = gtk.Label(_("Scan config"))
         self.nb.append_page(pan, label)
         self.viewSignalRecipient = self.pcbody
-
-        # dummy tabs creation for notebook, real ones are done in set_tabs
+        
         self.notetabs = {}
-        for title in (_("Log"), _("Results"), _("Exploit")):
+        
+        label = gtk.Label(_("Exploit"))
+        exploit_tab_body = exploittab.ExploitBody(self.w3af)
+        self.nb.append_page(exploit_tab_body, label)
+        self.notetabs[_("Exploit")] = exploit_tab_body
+        
+        # dummy tabs creation for notebook, real ones are done in set_tabs
+        for title in (_("Log"), _("Results")):
             dummy = gtk.Label("dummy")
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
@@ -738,7 +744,6 @@ class MainApp(object):
         # ok, the tabs, :p
         self._setTab(sensit, _("Log"), logtab.LogBody)
         self._setTab(sensit, _("Results"), scanrun.ScanRunBody)
-        self._setTab(sensit, _("Exploit"), exploittab.ExploitBody)
 
     def _setTab(self, sensit, title, realWidget):
         # create title and window/label
@@ -761,8 +766,8 @@ class MainApp(object):
     def menu_config_http(self, action):
         '''Configure HTTP options.'''
         configurable = self.w3af.uri_opener.settings
-        confpanel.ConfigDialog(
-            _("Configure HTTP settings"), self.w3af, configurable)
+        confpanel.ConfigDialog(_("Configure HTTP settings"), self.w3af,
+                               configurable)
 
     def menu_config_misc(self, action):
         '''Configure Misc options.'''

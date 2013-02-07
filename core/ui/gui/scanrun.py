@@ -29,7 +29,8 @@ import xdot
 
 from multiprocessing.dummy import Process, Event
 
-from core.ui.gui import kbtree, httpLogTab, reqResViewer, craftedRequests, entries
+from core.ui.gui import httpLogTab, reqResViewer, craftedRequests, entries
+from core.ui.gui.kb.kbtree import KBTree
 from core.data.db.history import HistoryItem
 
 import core.data.kb.knowledge_base as kb
@@ -39,7 +40,7 @@ RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
 
 
-class FullKBTree(kbtree.KBTree):
+class FullKBTree(KBTree):
     '''A tree showing all the info.
 
     This also gives a long description of the element when clicked.
