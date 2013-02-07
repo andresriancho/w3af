@@ -25,7 +25,7 @@ import unittest
 from nose.plugins.skip import SkipTest
 
 from core.data.parsers.url import URL, parse_qs
-from core.data.dc.queryString import QueryString
+from core.data.dc.query_string import QueryString
 
 
 class TestURLParser(unittest.TestCase):

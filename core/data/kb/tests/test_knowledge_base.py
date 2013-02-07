@@ -28,7 +28,7 @@ from core.data.kb.knowledge_base import kb, DBKnowledgeBase
 from core.data.kb.tests.test_info import MockInfo
 from core.data.kb.tests.test_vuln import MockVuln
 from core.data.kb.shell import Shell
-from core.data.dc.queryString import QueryString
+from core.data.dc.query_string import QueryString
 from core.data.db.dbms import get_default_persistent_db_instance
 from core.data.url.extended_urllib import ExtendedUrllib
 

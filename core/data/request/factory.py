@@ -34,7 +34,7 @@ from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
 from core.data.request.XMLRPCRequest import XMLRPCRequest
 from core.data.dc.cookie import Cookie
-from core.data.dc.queryString import QueryString
+from core.data.dc.query_string import QueryString
 from core.data.dc.headers import Headers
 from core.data.parsers.url import URL, parse_qs
 #TODO: Rewrite web service support

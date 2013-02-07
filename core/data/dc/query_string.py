@@ -1,5 +1,5 @@
 '''
-queryString.py
+query_string.py
 
 Copyright 2006 Andres Riancho
 

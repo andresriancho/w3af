@@ -28,7 +28,7 @@ from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.form import Form
-from core.data.dc.queryString import QueryString
+from core.data.dc.query_string import QueryString
 from core.data.url.extended_urllib import ExtendedUrllib
 
 

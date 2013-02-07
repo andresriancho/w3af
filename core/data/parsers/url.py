@@ -34,7 +34,7 @@ from core.data.misc.encoding import is_known_encoding
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
 from core.data.dc.data_container import DataContainer
-from core.data.dc.queryString import QueryString
+from core.data.dc.query_string import QueryString
 from core.data.db.disk_item import DiskItem
 
 
