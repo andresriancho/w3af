@@ -257,7 +257,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         This method reads the value from (location_a,location_b)
         '''
         location_a = self._get_real_name(location_a)
-        result = self.get(location_a, location_b)
+        result = self.get(location_a, location_b, check_types=False)
         
         if len(result) > 1:
             msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
@@ -284,7 +284,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         query = "INSERT INTO %s VALUES (?, ?, ?)" % self.table_name
         self.db.execute(query, t)
 
-    def get(self, location_a, location_b):
+    def get(self, location_a, location_b, check_types=True):
         '''
         @param location_a: The plugin that saved the data to the
                            kb.info Typically the name of the plugin,
@@ -314,6 +314,11 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         results = self.db.select(query % self.table_name, params)
         for r in results:
             obj = cPickle.loads(r[0])
+            
+            if check_types and not isinstance(obj, Info):
+                raise TypeError('Use raw_write and raw_read to query the'
+                                ' knowledge base for non-Info objects')
+            
             result_lst.append(obj)
         
         return result_lst
