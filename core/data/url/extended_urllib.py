@@ -561,7 +561,7 @@ class ExtendedUrllib(object):
             # also possible when auth credentials are wrong for the URI
 
             # Timeouts are not intended to increment the global error counter.
-            # They are part of the expected behaviour.
+            # They are part of the expected behavior.
             if not isinstance(e, URLTimeoutError):
                 self._increment_global_error_count(e)
             try:
