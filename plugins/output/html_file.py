@@ -44,7 +44,7 @@ TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 HTML_HEADER = Template('<!DOCTYPE html>\n<html>\n<head>\n<title>$title</title>\n'
                        '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n'
                        '<style type="text/css">\n<!--\n$css-->\n</style>\n</head>\n'
-                       '<body bgcolor=white>\n')
+                       '<body bgcolor="white">\n')
 
 
 class html_file(OutputPlugin):
@@ -167,7 +167,7 @@ class html_file(OutputPlugin):
                                 enabled plugins for that type of plugin.
         @param optionsDict: A dict with the options for every plugin.
         '''
-        to_print = ''
+        to_print = '<pre>'
 
         for plugin_type in plugins_dict:
             to_print += self._create_plugin_info(plugin_type,
@@ -181,9 +181,7 @@ class html_file(OutputPlugin):
         to_print += '    back'
 
         to_print += '\n'
-        to_print = to_print.replace('\n', '<br />')
-        to_print = to_print.replace(' ', '&nbsp;')
-
+        to_print += '</pre>'
         self._add_to_debug_table('<i>Enabled plugins</i>:\n <br /><br />' +
                                  to_print + '\n', 'debug')
 
@@ -197,8 +195,9 @@ class html_file(OutputPlugin):
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
 
-        msg = '<tr><td class=content>%s</td><td class=content>%s</td>' \
-              '<td class=content>%s</td></tr>'
+        msg = '<tr><td class="content">%s</td>\n'\
+              '    <td class="content">%s</td>\n' \
+              '    <td class="content">%s</td></tr>'
         self._aditional_info.append(msg % (the_time, msg_type, message))
 
     def set_options(self, option_list):
@@ -237,14 +236,14 @@ class html_file(OutputPlugin):
         self._init()
 
         self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding=0 cellspacing=0 border=0 width="30%">',
+            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="30%">',
             '<tbody>',
             '<tr><td>',
-            '<table cellpadding=2 cellspacing=1 border=0 width="100%">',
-            '<tr><td class=title colspan=3>w3af target URL\'s</td></tr>',
-            '<tr><td class=sub width="100%">URL</td></tr>')
+            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
+            '<tr><td class="title" colspan="3">w3af target URL\'s</td></tr>',
+            '<tr><td class="sub" width="100%">URL</td></tr>')
 
-        target_html = '<tr><td class=default width="100%%">%s</td></tr>'
+        target_html = '<tr><td class="default" width="100%%">%s</td></tr>'
 
         for t in cf.cf.get('targets'):
             self._write_to_file(target_html % cgi.escape(t.url_string))
@@ -255,14 +254,14 @@ class html_file(OutputPlugin):
         # Write info and vulns
         #
         self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding=0 cellspacing=0 border=0 width="75%">',
+            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="75%">',
             '<tbody> <tr><td>',
-            '<table cellpadding=2 cellspacing=1 border=0 width="100%">',
-            '<tr><td class=title colspan=3>Security Issues</td></tr>',
+            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
+            '<tr><td class="title" colspan="3">Security Issues</td></tr>',
             '<tr>',
-            '<td class=sub width="10%">Type</td>',
-            '<td class=sub width="10%">Port</td>',
-            '<td class=sub width="80%">Issue </td>',
+            '<td class="sub" width="10%">Type</td>',
+            '<td class="sub" width="10%">Port</td>',
+            '<td class="sub" width="80%">Issue </td>',
             '</tr>')
 
         # Writes the vulnerabilities and informations to the results table
@@ -289,13 +288,13 @@ class html_file(OutputPlugin):
                 color = 'blue'
                 i_class = 'Information'
 
-            information_row = '<tr><td valign=top class=default width="10%%">' \
-                              '<font color=%s>%s</font></td>'\
-                              '<td valign=top class=default width="10%%">%s</td>' \
-                              '<td class=default width="80%%">%s<br /><br />'\
-                              '<b>URL:</b> %s<br />'\
-                              '<b>Severity:</b> %s<br />'\
-                              '</td></tr>'
+            information_row = '<tr><td valign="top" class="default" width="10%%">\n' \
+                              '<font color="%s">%s</font></td>\n'\
+                              '<td valign="top" class="default" width="10%%">%s</td>\n' \
+                              '<td class="default" width="80%%">%s<br /><br />\n'\
+                              '<b>URL:</b> %s<br />\n'\
+                              '<b>Severity:</b> %s<br />\n'\
+                              '</td></tr>\n'
 
             self._write_to_file(information_row % (color, i_class,
                                                    port,
@@ -308,14 +307,14 @@ class html_file(OutputPlugin):
 
         # Write debug information
         self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding=0 cellspacing=0 border=0 width="75%">'
-            '<tbody> <tr><td>'
-            '<table cellpadding=2 cellspacing=1 border=0 width="100%">'
-            '<tr><td class=title colspan=3>Security Issues</td></tr>'
-            '<tr>'
-            '<td class=sub width="25%">Time</td>'
-            '<td class=sub width="10%">Type</td>'
-            '<td class=sub width="65%">Message</td>'
+            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="75%">',
+            '<tbody> <tr><td>',
+            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
+            '<tr><td class="title" colspan="3">Security Issues</td></tr>',
+            '<tr>',
+            '<td class="sub" width="25%">Time</td>',
+            '<td class="sub" width="10%">Type</td>',
+            '<td class="sub" width="65%">Message</td>',
             '</tr>')
 
         for line in self._aditional_info:
