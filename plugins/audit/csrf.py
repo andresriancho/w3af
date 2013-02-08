@@ -37,7 +37,9 @@ COMMON_CSRF_NAMES = (
     'anticsrf',                   # AntiCsrfParam.java
     '__RequestVerificationToken', # AntiCsrfParam.java
     'token',
-    'csrf'
+    'csrf',
+    'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
+    'yii_anticsrf'                # http://www.yiiframework.com/
 )
 
 
@@ -214,7 +216,7 @@ class csrf(AuditPlugin):
         
         # Check for common CSRF token names
         for common_csrf_name in COMMON_CSRF_NAMES:
-            if common_csrf_name in key:
+            if common_csrf_name.lower() in key.lower():
                 return True
     
         # Calculate entropy
