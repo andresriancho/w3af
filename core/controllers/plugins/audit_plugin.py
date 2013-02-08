@@ -164,10 +164,11 @@ class AuditPlugin(Plugin):
             vulns = kb.kb.get(pname, kb_varname)
 
             for vuln in vulns:
-                if (vuln.get_var() == varname and
-                    fuzz_req.get_dc().keys() == vuln.get_dc().keys() and
-                        are_variants(vuln.get_uri(), fuzz_req.get_uri())):
+                if vuln.get_var() == varname and\
+                fuzz_req.get_dc().keys() == vuln.get_dc().keys() and\
+                are_variants(vuln.get_uri(), fuzz_req.get_uri()):
                     return False
+                
             return True
 
     def get_type(self):
