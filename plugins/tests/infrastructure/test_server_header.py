@@ -39,9 +39,19 @@ class TestServerHeader(PluginTest):
 
         server = self.kb.get('server_header', 'server')
         pow_by = self.kb.get('server_header', 'powered_by')
-
+        pow_by_str_lst = self.kb.raw_read('server_header', 'powered_by_string')
+        
         self.assertEqual(len(server), 1, server)
         self.assertEqual(len(pow_by), 1, pow_by)
 
         self.assertEqual(server[0].get_name(), 'Server header')
         self.assertEqual(pow_by[0].get_name(), 'Powered-by header')
+        
+        self.assertEqual(len(pow_by_str_lst), 1, pow_by_str_lst)
+        self.assertIsInstance(pow_by_str_lst, list)
+        
+        pow_by_str = pow_by_str_lst[0]
+        self.assertIsInstance(pow_by_str, basestring)
+        self.assertIn('PHP', pow_by_str)
+        self.assertIn('ubuntu', pow_by_str)
+        

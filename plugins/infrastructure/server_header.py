@@ -138,16 +138,12 @@ class server_header(InfrastructurePlugin):
                         #     kb.kb.raw_write( self , 'powered_by' , powered_by )
                         # But I have seen an IIS server with PHP that returns
                         # both the ASP.NET and the PHP headers
-                        pow_by_kb = kb.kb.get('server_header', 'powered_by')
-                        powered_by_in_kb = [j['powered_by'] for j in pow_by_kb]
-
-                        if powered_by not in powered_by_in_kb:
-                            kb.kb.append(self, 'powered_by', i)
-                            
-                            # Update the list and save it,
-                            powered_by_in_kb.append(powered_by)
-                            kb.kb.raw_write(self, 'powered_by_string',
-                                            powered_by_in_kb)
+                        kb.kb.append(self, 'powered_by', i)
+                        
+                        # Update the list and save it,
+                        powered_by_in_kb.append(powered_by)
+                        kb.kb.raw_write(self, 'powered_by_string',
+                                        powered_by_in_kb)
 
     def get_long_desc(self):
         '''
