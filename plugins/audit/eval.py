@@ -25,8 +25,8 @@ import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import Delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
 from core.data.kb.vuln import Vuln
@@ -57,19 +57,19 @@ class eval(AuditPlugin):
     WAIT_OBJ = (
         # PHP http://php.net/sleep
         # Perl http://perldoc.perl.org/functions/sleep.html
-        Delay("sleep(%s);"),
+        ExactDelay("sleep(%s);"),
         # Python http://docs.python.org/library/time.html#time.sleep
-        Delay("import time;time.sleep(%s);"),
+        ExactDelay("import time;time.sleep(%s);"),
         # It seems that ASP doesn't support sleep! A language without sleep...
         # is not a language!
         # http://classicasp.aspfaq.com/general/how-do-i-make-my-asp-page-pause-or-sleep.html
         # JSP takes the amount in miliseconds
         # http://java.sun.com/j2se/1.4.2/docs/api/java/lang/Thread.html#sleep(long)
-        Delay("Thread.sleep(%s);", mult=1000),
+        ExactDelay("Thread.sleep(%s);", mult=1000),
         # ASP.NET also uses miliseconds
         # http://msdn.microsoft.com/en-us/library/d00bd51t.aspx
         # Note: The Sleep in ASP.NET is uppercase
-        Delay("Thread.Sleep(%s);", mult=1000)
+        ExactDelay("Thread.Sleep(%s);", mult=1000)
     )
 
     def __init__(self):
@@ -125,7 +125,7 @@ class eval(AuditPlugin):
 
         for delay_obj in self.WAIT_OBJ:
 
-            ed_inst = ExactDelay(mutant, delay_obj, self._uri_opener)
+            ed_inst = ExactDelayController(mutant, delay_obj, self._uri_opener)
             success, responses = ed_inst.delay_is_controlled()
 
             if success:

@@ -24,8 +24,8 @@ import random
 
 from mock import MagicMock, Mock
 
+from core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import Delay
 from core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
@@ -78,7 +78,7 @@ class TestExactDelay(unittest.TestCase):
             mock_uri_opener = Mock()
             side_effect = generate_delays(delays)
             mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
-            delay_obj = Delay('sleep(%s)')
+            delay_obj = ExactDelay('sleep(%s)')
             
             url = URL('http://moth/?id=1')
             req = FuzzableRequest(url)
@@ -86,7 +86,7 @@ class TestExactDelay(unittest.TestCase):
             mutant.set_dc(url.querystring)
             mutant.set_var('id', 0)
             
-            ed = ExactDelay(mutant, delay_obj, mock_uri_opener)
+            ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()
             self.assertEqual(expected_result, controlled, delays)
     
@@ -96,7 +96,7 @@ class TestExactDelay(unittest.TestCase):
             mock_uri_opener = Mock()
             side_effect = generate_delays(delays, rand_range=(0,2))
             mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
-            delay_obj = Delay('sleep(%s)')
+            delay_obj = ExactDelay('sleep(%s)')
             
             url = URL('http://moth/?id=1')
             req = FuzzableRequest(url)
@@ -104,7 +104,7 @@ class TestExactDelay(unittest.TestCase):
             mutant.set_dc(url.querystring)
             mutant.set_var('id', 0)
             
-            ed = ExactDelay(mutant, delay_obj, mock_uri_opener)
+            ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()
             
             # This is where we change from test_delay_controlled, the basic

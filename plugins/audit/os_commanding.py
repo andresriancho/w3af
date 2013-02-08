@@ -25,8 +25,8 @@ import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from core.controllers.delay_detection.exact_delay import ExactDelay
-from core.controllers.delay_detection.delay import Delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 from core.data.constants.file_patterns import FILE_PATTERNS
@@ -149,7 +149,7 @@ class os_commanding(AuditPlugin):
 
             for delay_obj in self._get_wait_commands():
 
-                ed = ExactDelay(mutant, delay_obj, self._uri_opener)
+                ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
                 success, responses = ed.delay_is_controlled()
 
                 if success:
@@ -174,16 +174,16 @@ class os_commanding(AuditPlugin):
         for special_char in self._special_chars:
             # Unix
             cmd_string = special_char + "/bin/cat /etc/passwd"
-            commands.append(base_command(cmd_string, 'unix', special_char))
+            commands.append(Command(cmd_string, 'unix', special_char))
             # Windows
             cmd_string = special_char + "type %SYSTEMROOT%\\win.ini"
-            commands.append(base_command(cmd_string, 'windows', special_char))
+            commands.append(Command(cmd_string, 'windows', special_char))
 
         # Execution quotes
-        commands.append(base_command("`/bin/cat /etc/passwd`", 'unix', '`'))
+        commands.append(Command("`/bin/cat /etc/passwd`", 'unix', '`'))
         # FoxPro uses run to run os commands. I found one of this vulns !!
         commands.append(
-            base_command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
+            Command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
@@ -252,7 +252,7 @@ class os_commanding(AuditPlugin):
         '''
 
 
-class base_command:
+class Command(object):
     '''
     Defines a command that is going to be sent to the remote web app.
     '''
@@ -280,8 +280,8 @@ class base_command:
         return self._sep
 
 
-class ping_delay(base_command, Delay):
+class ping_delay(Command, ExactDelay):
     def __init__(self, delay_fmt, os, sep):
-        base_command.__init__(self, delay_fmt, os, sep)
-        Delay.__init__(self, delay_fmt)
+        Command.__init__(self, delay_fmt, os, sep)
+        ExactDelay.__init__(self, delay_fmt)
         self._delay_delta = 1
