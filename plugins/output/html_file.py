@@ -288,13 +288,16 @@ class html_file(OutputPlugin):
                 color = 'blue'
                 i_class = 'Information'
 
-            information_row = '<tr><td valign="top" class="default" width="10%%">\n' \
-                              '<font color="%s">%s</font></td>\n'\
-                              '<td valign="top" class="default" width="10%%">%s</td>\n' \
-                              '<td class="default" width="80%%">%s<br /><br />\n'\
-                              '<b>URL:</b> %s<br />\n'\
-                              '<b>Severity:</b> %s<br />\n'\
-                              '</td></tr>\n'
+            information_row = '<tr>\n'\
+                              '    <td valign="top" class="default" width="10%%">\n'\
+                              '        <font color="%s">%s</font>\n'\
+                              '    </td>\n'\
+                              '    <td valign="top" class="default" width="10%%">%s</td>\n'\
+                              '    <td class="default" width="80%%">%s<br /><br />\n'\
+                              '        <b>URL:</b> %s<br />\n'\
+                              '        <b>Severity:</b> %s<br />\n'\
+                              '    </td>\n'\
+                              '</tr>\n'
 
             self._write_to_file(information_row % (color, i_class,
                                                    port,
