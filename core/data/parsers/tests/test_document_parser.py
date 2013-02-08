@@ -47,6 +47,9 @@ class TestDocumentParserFactory(unittest.TestCase):
 
     PDF_FILE = os.path.join('core', 'data', 'parsers', 'tests', 'data',
                             'links.pdf')
+    
+    HTML_FILE = os.path.join('core', 'data', 'parsers', 'tests', 'data',
+                            'sharepoint-pl.html')
 
     def test_html(self):
         parser = document_parser_factory(_build_http_response('', 'text/html'))
@@ -65,3 +68,29 @@ class TestDocumentParserFactory(unittest.TestCase):
     def test_no_parser(self):
         response = _build_http_response('%!23', 'application/bar')
         self.assertRaises(w3afException, document_parser_factory, response)
+
+    def test_issue_106_invalid_url(self):
+        '''
+        Issue to verify https://github.com/andresriancho/w3af/issues/106
+        '''
+        sharepoint_pl = file(self.HTML_FILE).read()
+        parser = document_parser_factory(_build_http_response(sharepoint_pl,
+                                                              'text/html'))
+
+        self.assertIsInstance(parser, DocumentParser)
+        self.assertIsInstance(parser._parser, HTMLParser)
+        
+        paths = []
+        paths.extend(url.get_path_qs() for url in parser.get_references()[0])
+        paths.extend(url.get_path_qs() for url in parser.get_references()[1])
+        
+        expected_paths = set(['/szukaj/_vti_bin/search.asmx',
+                              '/_vti_bin/search.asmx?disco=',
+                              '/_vti_bin/search.asmx',
+                              '/2003/05/soap-envelope',
+                              '/soap/envelope/',
+                              '/2001/XMLSchema',
+                              '/2001/XMLSchema-instance'])
+        
+        self.assertEqual(expected_paths, set(paths))
+        
