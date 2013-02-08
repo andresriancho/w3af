@@ -25,7 +25,8 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.delay_detection.aprox_delay_controller import AproxDelayController
+from core.controllers.delay_detection.aprox_delay_controller import (AproxDelayController,
+                                                                     EXPONENTIALLY)
 from core.controllers.delay_detection.aprox_delay import AproxDelay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.kb.vuln import Vuln
@@ -52,10 +53,11 @@ class redos(AuditPlugin):
 
         fake_mutants = create_mutants(freq, ['', ])
 
-        for delay_obj in self.get_delays():
-            for mutant in fake_mutants:
+        for mutant in fake_mutants:
+            for delay_obj in self.get_delays():
                 
-                adc = AproxDelayController(mutant, delay_obj, self._uri_opener)
+                adc = AproxDelayController(mutant, delay_obj, self._uri_opener,
+                                           delay_setting=EXPONENTIALLY)
                 success, responses = adc.delay_is_controlled()
     
                 if success:
@@ -77,9 +79,9 @@ class redos(AuditPlugin):
         IMPORTANT NOTE: I need different instances of the delay objects in
                         order to avoid any threading issues. 
         '''
-        return [ AproxDelay('%sX!',     'a', 22),
-                 AproxDelay('a@a.%sX!', 'a', 22),
-                 AproxDelay('%s9!',     '1', 22)]
+        return [ AproxDelay('%sX!',     'a', 10),
+                 AproxDelay('a@a.%sX!', 'a', 10),
+                 AproxDelay('%s9!',     '1', 10)]
                 
     def ignore_this_request(self, freq):
         '''

@@ -24,7 +24,7 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 class TestREDoS(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/'
+    target_url = 'http://moth:8080/puzzlemall/login-premium.jsp'
 
     _run_configs = {
         'cfg': {
@@ -36,4 +36,13 @@ class TestREDoS(PluginTest):
     }
 
     def test_found_redos(self):
-        self.assertTrue(False)
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('redos', 'redos')
+        
+        self.assertEquals(2, len(vulns), vulns)
+        
+        expected_parameters = set(['username', 'password'])
+        vuln_parameters = set([v.get_var() for v in vulns])
+        
+        self.assertEqual(expected_parameters, vuln_parameters)

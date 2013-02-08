@@ -1,5 +1,5 @@
 '''
-aprox_delay.py
+aprox_delay_controller.py
 
 Copyright 2012 Andres Riancho
 
@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.controllers.delay_detection.aprox_delay import AproxDelay
 from core.controllers.delay_detection.delay_mixin import DelayMixIn
+
+LINEARLY = 1
+EXPONENTIALLY = 2
 
 
 class AproxDelayController(DelayMixIn):
@@ -52,12 +55,13 @@ class AproxDelayController(DelayMixIn):
     was delayed at least multiplier * original_time to continue with the
     next step
     '''
-
     DELTA = 0.5
 
-    DELAY_MULTIPLIER = [2, 4, 6, 8, 1, 2, 4]
+    DELAY_SETTINGS = {LINEARLY: [1, 10, 100, 500],
+                      EXPONENTIALLY: [1, 2, 3, 4],
+                      }
 
-    def __init__(self, mutant, delay_obj, uri_opener):
+    def __init__(self, mutant, delay_obj, uri_opener, delay_setting=LINEARLY):
         '''
         @param mutant: The mutant that will be sent (one or more times) to the
                        remote server in order to detect the time delay.
@@ -68,12 +72,17 @@ class AproxDelayController(DelayMixIn):
         '''
         if not isinstance(delay_obj, AproxDelay):
             raise TypeError('ExactDelayController requires ExactDelay as input')
+        
+        if delay_setting not in (LINEARLY, EXPONENTIALLY):
+            raise TypeError('delay_increases needs to be one of LINEARLY'
+                            ' or EXPONENTIALLY')
 
         self.mutant = mutant
         self.mutant.set_mod_value(self.mutant.get_original_value())
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
+        self.delay_setting = delay_setting
 
     def delay_is_controlled(self):
         '''
@@ -93,35 +102,33 @@ class AproxDelayController(DelayMixIn):
         '''
         responses = []
         
-        #    Setup
-        original_wait_time = self.get_original_time()
+        multipliers_that_delay = []
         
-        for multiplier in [1, 10, 100, 500]:
+        for _ in xrange(3):
+            
+            original_wait_time = self.get_original_time()
+            
+            multiplier = self.find_delay_multiplier(original_wait_time,
+                                                    responses)
+            if multiplier is None:
+                return False, responses
+            else:
+                multipliers_that_delay.append(multiplier)
+                if len(set(multipliers_that_delay)) != 1:
+                    return False, responses
+        
+        return True, responses
+    
+    def find_delay_multiplier(self, original_wait_time, responses):
+        for multiplier in self.DELAY_SETTINGS[self.delay_setting]:
             delays, resp = self.multiplier_delays_response(multiplier,
                                                            original_wait_time)
+            responses.append(resp)
             if delays:
-                break
-        else:
-            return False, []
+                return multiplier
         
-        # This is the multiplier we know will add a delay to the remote end.
-        # At this point we could report a vulnerability, but because we want to
-        # reduce false positives, we perform the verification with the delay
-        # multipliers
-        base_multiplier = multiplier
-        base_delay = resp.get_wait_time() - original_wait_time
-        self.delay_obj.set_base_multiplier(multiplier)
-        
-        for multiplier in self.DELAY_MULTIPLIER:
-            success, response = self.delay_controlled_by_mult(multiplier,
-                                                              base_delay,
-                                                              original_wait_time)
-            if success:
-                responses.append(response)
-            else:
-                return False, []
-
-        return True, responses
+        # No multiplier was able to make an impact in the delay
+        return None
     
     def multiplier_delays_response(self, multiplier, original_wait_time):
         '''
@@ -137,32 +144,7 @@ class AproxDelayController(DelayMixIn):
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         #    Test
-        if response.get_wait_time() > (original_wait_time * 2):
+        if response.get_wait_time() > (original_wait_time * 2.5):
                 return True, response
 
         return False, response
-
-    def delay_controlled_by_mult(self, multiplier, base_delay, original_wait_time):
-        '''
-        @return: (True if the multiplier delays the response when compared
-                  with the base_delay,
-                  The HTTP response)
-        '''
-        delay_str = self.delay_obj.get_string_for_multiplier(multiplier)
-
-        mutant = self.mutant.copy()
-        mutant.set_mod_value(delay_str)
-
-        #    Send
-        response = self.uri_opener.send_mutant(mutant, cache=False)
-
-        #    Test
-        delta = 0.3
-        lower_limit = (original_wait_time + base_delay) * multiplier * (1 - delta)
-        upper_limit = (original_wait_time + base_delay) * multiplier * (1 + delta)
-        
-        if lower_limit <= response.get_wait_time() <= upper_limit:
-                return True, response
-
-        return False, response
-
