@@ -39,7 +39,8 @@ def create_temp_dir():
     '''
     Create the temp directory for w3af to work inside.
 
-    @return: A string that contains the temp directory to use, in Linux: "~/.w3af/tmp/<pid>"
+    @return: A string that contains the temp directory to use,
+             in Linux: "~/.w3af/tmp/<pid>"
     '''
     complete_dir = get_temp_dir()
     if not os.path.exists(complete_dir):

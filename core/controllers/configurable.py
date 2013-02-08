@@ -24,8 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class Configurable(object):
     '''
     This is mostly "an interface", this "interface" states that all
-    classes that implement it, should
-    implement the following methods :
+    classes that implement it, should implement the following methods:
         1. set_options( options_list )
         2. get_options()
 

@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import os
 import re
+
+from lxml import etree
 
 from core.data.kb.tests.test_vuln import MockVuln
 from core.data.parsers.url import URL
@@ -69,6 +70,8 @@ class TestHTMLOutput(PluginTest):
             set(sorted([v.get_url() for v in xss_vulns])),
             set(sorted([v.get_url() for v in file_vulns]))
         )
+        
+        self._validate_xhtml()
 
     def _from_html_get_vulns(self):
         vuln_url_re = re.compile('<b>URL:</b> (.*?)<br />')
@@ -85,6 +88,25 @@ class TestHTMLOutput(PluginTest):
 
         return vulns
 
+    def _validate_xhtml(self):
+        parser = etree.XMLParser()
+
+        def generate_msg(parser):
+            msg = 'XHTML parsing errors:\n'
+            for error in parser.error_log:
+                msg += '\n    %s (line: %s, column: %s)' % (error.message,
+                                                            error.line,
+                                                            error.column)
+            return msg
+
+        try:
+            parser = etree.XML(file(self.OUTPUT_FILE).read(), parser)
+        except etree.XMLSyntaxError:
+            self.assertTrue(False, generate_msg(parser))
+        else:
+            if hasattr(parser, 'error_log'):
+                self.assertFalse(len(parser.error_log), generate_msg(parser))
+        
     def tearDown(self):
         super(TestHTMLOutput, self).tearDown()
         try:
