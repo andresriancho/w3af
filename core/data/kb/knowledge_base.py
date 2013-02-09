@@ -315,7 +315,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         for r in results:
             obj = cPickle.loads(r[0])
             
-            if check_types and not isinstance(obj, Info):
+            if check_types and not isinstance(obj, (Info, Shell)):
                 raise TypeError('Use raw_write and raw_read to query the'
                                 ' knowledge base for non-Info objects')
             
