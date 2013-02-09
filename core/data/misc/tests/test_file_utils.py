@@ -34,7 +34,7 @@ class TestFileUtils(unittest.TestCase):
 
     def test_days_since_file_update_not_exists(self):
         filename = os.path.join('core', 'data', 'misc', 'notexists.py')
-        self.assertRaises(Exception, days_since_file_update, filename, 0)
+        self.assertRaises(ValueError, days_since_file_update, filename, 0)
         
     def test_days_since_file_update_false(self):
         filename = os.path.join('core', 'data', 'misc', 'file_utils.py')

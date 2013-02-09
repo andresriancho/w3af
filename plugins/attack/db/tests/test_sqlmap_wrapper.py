@@ -22,11 +22,14 @@ import os
 import shutil
 import unittest
 
+from nose.plugins.attrib import attr
+
 from plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
 from core.data.parsers.url import URL
 from core.data.url.extended_urllib import ExtendedUrllib
 
 
+@attr('moth')
 class TestSQLMapWrapper(unittest.TestCase):
     
     SQLI_GET = 'http://moth/w3af/audit/sql_injection/select/'\
