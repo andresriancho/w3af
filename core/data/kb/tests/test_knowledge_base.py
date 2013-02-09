@@ -184,14 +184,15 @@ class TestKnowledgeBase(unittest.TestCase):
         Although calling raw_write and then append is highly discouraged,
         someone would want to use it.
         '''
-        kb.raw_write('a', 'b', 1)
+        i0 = MockInfo()
+        self.assertRaises(TypeError, kb.raw_write, 'a', 'b', i0)
         
         i1 = MockInfo()
         i2 = MockInfo()
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i2)
         
-        self.assertEqual(kb.get('a', 'b'), [1, i1, i2])
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
     def test_all_of_klass(self):
         kb.raw_write('a', 'b', 1)

@@ -27,6 +27,7 @@ import psutil
 import os
 
 from mock import MagicMock, Mock
+from nose.plugins.attrib import attr
 
 from core.controllers.exceptions import w3afException, w3afMustStopException
 from core.data.url.handlers.keepalive import (KeepAliveHandler,
@@ -36,6 +37,7 @@ from core.data.url.handlers.keepalive import (KeepAliveHandler,
                                               HTTPHandler, HTTPSHandler)
 
 
+@attr('moth')
 class TestKeepalive(unittest.TestCase):
 
     def setUp(self):

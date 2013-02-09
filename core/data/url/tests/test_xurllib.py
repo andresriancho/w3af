@@ -35,6 +35,7 @@ from core.controllers.exceptions import (w3afMustStopByUserRequest,
                                          w3afMustStopOnUrlError)
 
 
+@attr('moth')
 @attr('smoke')
 class TestXUrllib(unittest.TestCase):
 

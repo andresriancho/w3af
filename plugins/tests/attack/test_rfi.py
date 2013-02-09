@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
-from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
+from plugins.tests.helper import PluginConfig, ExecExploitTest
 from core.data.kb.vuln_templates.rfi_template import RFITemplate
 
 
 @attr('smoke')
-class TestRFI(PluginTest, ExecExploitTest):
+class TestRFI(ExecExploitTest):
 
     target_url = 'http://moth/w3af/audit/rfi/vulnerable.php'
 

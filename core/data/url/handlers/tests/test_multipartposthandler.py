@@ -24,10 +24,13 @@ import tempfile
 import unittest
 import urllib2
 
+from nose.plugins.attrib import attr
+
 from core.data.url.handlers.MultipartPostHandler import MultipartPostHandler, multipart_encode
 from core.controllers.misc.io import NamedStringIO
 
 
+@attr('moth')
 class TestMultipartPostHandler(unittest.TestCase):
 
     MOTH_FILE_UP_URL = 'http://moth/w3af/audit/file_upload/uploader.php'
@@ -63,7 +66,8 @@ class TestMultipartPostHandler(unittest.TestCase):
     def test_encode_vars(self):
         _, encoded = multipart_encode(
             [('a', 'b')], {}, boundary='fakeboundary')
-        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
+        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"'\
+                   '\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)
 
     def test_encode_vars_files(self):

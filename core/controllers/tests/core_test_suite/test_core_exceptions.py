@@ -23,6 +23,7 @@ import os
 import shutil
 
 from mock import patch, call
+from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.exceptions import (w3afMustStopException,
@@ -31,8 +32,12 @@ from core.controllers.exceptions import (w3afMustStopException,
 from plugins.tests.helper import create_target_option_list
 
 
+@attr('moth')
 class TestCoreExceptions(unittest.TestCase):
-
+    '''
+    TODO: Think about mocking all calls to ExtendedUrllib in order to avoid
+          being tagged as 'moth'.
+    '''
     def setUp(self):
         '''
         This is a rather complex setUp since I need to move the

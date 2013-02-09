@@ -21,11 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.data.url.opener_settings import OpenerSettings
 from core.data.url.extended_urllib import ExtendedUrllib
 from core.data.parsers.url import URL
 
 
+@attr('moth')
 class TestXUrllibIntegration(unittest.TestCase):
 
     MOTH_MESSAGE = 'Welcome to the moth homepage!'

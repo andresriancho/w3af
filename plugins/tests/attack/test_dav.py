@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
-from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
+from plugins.tests.helper import PluginConfig, ExecExploitTest
 from core.data.kb.vuln_templates.dav_template import DAVTemplate
  
 
 @attr('smoke')
-class TestDAVShell(PluginTest, ExecExploitTest):
+class TestDAVShell(ExecExploitTest):
 
     target_url = 'http://moth/w3af/audit/dav/write-all/'
 

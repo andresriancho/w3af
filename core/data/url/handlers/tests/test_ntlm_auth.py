@@ -21,9 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib2
 
+from nose.plugins.attrib import attr
+
 from core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 
 
+@attr('moth')
 class TestNTLMHandler(unittest.TestCase):
     
     def test_auth_valid_creds(self):
