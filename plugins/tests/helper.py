@@ -40,6 +40,7 @@ from core.data.kb.read_shell import ReadShell
 os.chdir(W3AF_LOCAL_PATH)
 
 
+@attr('moth')
 class PluginTest(unittest.TestCase):
     '''
     Remember that nosetests can't find test generators in unittest.TestCase,
