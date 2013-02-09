@@ -17,6 +17,13 @@ install:
 script:
   - nosetests -v -s --with-doctest --doctest-tests --with-timer -a smoke core/data/
 
+branches:
+  only:
+    - master
+    - develop
+    - /^release.*$/
+    - /^hotfix.*$/
+
 notifications:
   irc:
     channels: "irc.freenode.org#w3af"
