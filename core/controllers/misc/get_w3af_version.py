@@ -19,9 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
+
 from core.controllers.auto_update.utils import (is_git_repo, to_short_id,
                                                 get_latest_commit,
                                                 get_latest_commit_date,)
+
+VERSION_FILE = os.path.join('core', 'data', 'constants', 'version.txt')
 
 
 def get_w3af_version():
@@ -31,8 +35,10 @@ def get_w3af_version():
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
     cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''
     
+    vnumber = file(VERSION_FILE).read().strip()
+    
     return ('w3af - Web Application Attack and Audit Framework\n'
-            'Version: 1.5\n'
+            'Version: %s\n'
             'Revision: %s%s\n'
-            'Author: Andres Riancho and the w3af team.') % (commit,
+            'Author: Andres Riancho and the w3af team.') % (vnumber, commit,
                                                             cdate)
