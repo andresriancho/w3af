@@ -25,6 +25,7 @@ branches:
     - develop
     - /^release.*$/
     - /^hotfix.*$/
+    - threading2
 
 notifications:
   irc:
