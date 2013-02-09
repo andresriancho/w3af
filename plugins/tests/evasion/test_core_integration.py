@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from mock import MagicMock
+from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from plugins.tests.helper import create_target_option_list
 
 
+@attr('moth')
 class TestCoreIntegration(unittest.TestCase):
     
     def setUp(self):
