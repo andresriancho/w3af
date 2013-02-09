@@ -69,7 +69,6 @@ listen_port = 44449
 use_w3af_site = True
 
 [audit.frontpage]
-stopOnFirst = True
 
 [crawl.spider_man]
 
