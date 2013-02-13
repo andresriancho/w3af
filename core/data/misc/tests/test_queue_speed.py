@@ -106,4 +106,15 @@ class TestQueueSpeed(unittest.TestCase):
         self.assertGreater(q.get_output_rpm(), 59)
         self.assertLess(q.get_output_rpm(), 60)
         self.assertEqual(q.qsize(), 0)
+    
+    def test_wrapper(self):
+        q = QueueSpeed(4)
+        self.assertEqual(q.qsize(), 0)
         
+        q.put(None)
+        
+        self.assertEqual(q.qsize(), 1)
+        
+        q.get()
+        
+        self.assertEqual(q.qsize(), 0)
