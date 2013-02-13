@@ -217,7 +217,6 @@ class KBTree(gtk.TreeView):
 
         @return: True to keep being called by gobject.
         '''
-        print 'aaaaaa'
         # if the core is not running, don't have anything to update
         if not self.w3af.status.is_running():
             if self.lastcheck:
