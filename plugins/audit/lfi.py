@@ -215,9 +215,9 @@ class lfi(AuditPlugin):
         @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
-        res = []
+        res = set()
         for file_pattern_match in self._multi_in.query(response.get_body()):
-            res.append(file_pattern_match)
+            res.add(file_pattern_match)
 
         if len(res) == 1:
             msg = 'A file fragment was found. The section where the file is'\
@@ -232,8 +232,8 @@ class lfi(AuditPlugin):
             for file_pattern_match in res:
                 msg += '- "' + file_pattern_match + '" \n'
             msg += 'This is just an informational message, which might be' \
-                   ' related to a vulnerability and was found on response' \
-                   'with id %s.' % response.id 
+                   ' related to a vulnerability and was found in response' \
+                   ' with id %s.' % response.id 
             om.out.debug(msg)
         
         return res
