@@ -36,7 +36,7 @@ class MessageConsumer(object):
         # get the messages
         subscribe_to_messages(self._message_observer)
         self.messages = Queue.Queue()
-        gobject.timeout_add(500, self._process_queue().next)
+        gobject.idle_add(self._process_queue().next)
         
     def _message_observer(self, message):
         self.messages.put(message)
@@ -59,6 +59,8 @@ class MessageConsumer(object):
             else:
                 if msg is None:
                     continue
+                
+                self.handle_message(msg)
                 
                 # Given that in some cases the handle_message takes some
                 # time to run, we've implemented this loop to give the method

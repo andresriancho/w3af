@@ -86,26 +86,26 @@ class _LineScroller(gtk.TextView, MessageConsumer):
         @param msg: The message to add to the textview
         @returns: None
         '''
-        super(_LineScroller, self).handle_message(msg)
+        yield super(_LineScroller, self).handle_message(msg)
+
         textbuff = self.textbuffer
                 
         text = "[%s] %s\n" % (msg.get_time(), msg.get_msg())
         mtype = msg.get_type()
 
         # only store it if it's of one of the possible filtered
-        if mtype not in self.possible:
-            yield False
+        if mtype in self.possible:
 
-        # store it
-        self.all_messages.append((mtype, text))
-        antpos = self.text_position
-        self.text_position += len(text)
-
-        if mtype in self.active_filter:
-            iterl = textbuff.get_end_iter()
-            colortag = self.bg_colors[mtype]
-            textbuff.insert_with_tags_by_name(iterl, text, colortag)
-            self.scroll_to_end()
+            # store it
+            self.all_messages.append((mtype, text))
+            antpos = self.text_position
+            self.text_position += len(text)
+    
+            if mtype in self.active_filter:
+                iterl = textbuff.get_end_iter()
+                colortag = self.bg_colors[mtype]
+                textbuff.insert_with_tags_by_name(iterl, text, colortag)
+                self.scroll_to_end()
 
     def scroll_to_end(self):
         if not self.freeze_scrollbar:

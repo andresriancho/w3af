@@ -75,31 +75,32 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
 
         # Go live!
         self.connect("expose-event", self.area_expose_cb)
+        gobject.timeout_add(500, self.draw_handler)
         self.show()
     
+    def draw_handler(self):
+        '''
+        Draws the graph.
+        '''
+        # gtk.MAPPED: the widget can be displayed on the screen.
+        # flags: http://pygtk.org/docs/pygtk/class-gtkobject.html#method-gtkobject--flags
+        if self.flags() & gtk.MAPPED:
+            if self._redraw_gen is None:
+                self._redraw_gen = self._redraw_all()
+            reset = self._redraw_gen.next()
+            if reset:
+                self._redraw_gen = None
+        
+        return True
+    
     def handle_message(self, msg):
-        '''Adds a message to the graph.
+        '''Adds a message to the all_messages DiskList which is then used as
+        a source for drawing the graph.
 
         @returns: True to keep calling it, and False when all it's done.
         '''
-        super(LogGraph, self).handle_message(msg)
+        yield super(LogGraph, self).handle_message(msg)
         
-        self._need_redraw += 1
-        
-        if self._need_redraw % 5 == 0:
-            
-            # no more new messages
-            if self.flags() & gtk.MAPPED:
-                
-                if self._redraw_gen is None:
-                    self._redraw_gen = self._redraw_all()
-                
-                for redraw_opcode in self._redraw_gen:
-                    if redraw_opcode:
-                        self._redraw_gen = None
-                        break
-                    yield
-
         mmseg = int(msg.get_real_time() * 1000)
         mtype = msg.get_type()
         if mtype == "vulnerability":
@@ -109,6 +110,9 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         self.all_messages.append((mmseg, mtype, sever))
 
     def _redraw_all(self):
+        '''
+        Redraws all the graph.
+        '''
         '''Redraws all the graph.'''
         if self.gc is None:
             # sorry, not exposed yet...
@@ -128,7 +132,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         if tspan > usableWidth:
             self.timeGrouping *= int(tspan / usableWidth) + 1
             tspan = pan / self.timeGrouping
-        elif tspan < usableWidth // 2 and self.timeGrouping > 1:
+        elif tspan < usableWidth // 2 and self.timeGrouping>1:
             self.timeGrouping //= 2
             tspan = pan / self.timeGrouping
 
@@ -140,47 +144,43 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             (tw, th) = self.pangolayout.get_pixel_size()
             if tw > maxw:
                 maxw = tw
-        lm = self.realLeftMargin = int(
-            maxw) + MIZQ + 8  # 5 for the tick, 3 separating
+        # 5 for the tick, 3 separating
+        lm = self.realLeftMargin = int(maxw) + MIZQ + 8
 
         # the axis
         self.gc.set_rgb_fg_color(colors.whitesmoke)
-        self.window.draw_rectangle(
-            self.gc, True, lm, MSUP, w - MDER - lm, h - MINF - MSUP)
+        self.window.draw_rectangle(self.gc, True, lm, MSUP, w-MDER-lm, h-MINF-MSUP)
         self.gc.set_rgb_fg_color(colors.black)
-        self.window.draw_line(self.gc, lm, MSUP, lm, h - MINF + 10)
-        self.window.draw_line(self.gc, lm, h - MINF, w - MDER, h - MINF)
+        self.window.draw_line(self.gc, lm, MSUP, lm, h-MINF+10)
+        self.window.draw_line(self.gc, lm, h-MINF, w-MDER, h-MINF)
 
         # small horizontal ticks
-        for x, timepoint in self._calculateXTicks(w - lm - MDER):
-            posx = x + lm
-            self.window.draw_line(self.gc, posx, h - MINF + 5, posx, h - MINF)
+        for x,timepoint in self._calculateXTicks(w-lm-MDER):
+            posx = x + lm 
+            self.window.draw_line(self.gc, posx, h-MINF+5, posx, h-MINF)
             self.pangolayout.set_text(timepoint)
             (tw, th) = self.pangolayout.get_pixel_size()
-            self.window.draw_layout(
-                self.gc, posx - tw // 2, h - MINF + 10, self.pangolayout)
+            self.window.draw_layout(self.gc, posx-tw//2, h-MINF+10, self.pangolayout)
         self.pangolayout.set_text("[s]")
         (tw, th) = self.pangolayout.get_pixel_size()
-        self.window.draw_layout(
-            self.gc, w - MDER + 5, h - MINF - th // 2, self.pangolayout)
+        self.window.draw_layout(self.gc, w-MDER+5, h-MINF-th // 2, self.pangolayout)
 
         # small vertical ticks and texts
-        sep = (h - MSUP - MINF) / 4
+        sep = (h-MSUP-MINF) / 4
         self.posHorizItems = {}
         self.maxItemHeight = {}
         posyant = MSUP
-        for i, txt in enumerate(txts):
+        for i,txt in enumerate(txts):
             if not txt:
                 continue
-            posy = int(MSUP + i * sep)
+            posy = int(MSUP + i*sep)
             self.posHorizItems[txt] = posy
             self.maxItemHeight[txt] = posy - posyant - 1
             posyant = posy
-            self.window.draw_line(self.gc, lm - 5, posy, lm, posy)
+            self.window.draw_line(self.gc, lm-5, posy, lm, posy)
             self.pangolayout.set_text(txt)
-            (tw, th) = self.pangolayout.get_pixel_size()
-            self.window.draw_layout(self.gc, lm - tw - 8, posy - th // 2,
-                                    self.pangolayout)
+            (tw,th) = self.pangolayout.get_pixel_size()
+            self.window.draw_layout(self.gc, lm-tw-8, posy-th//2, self.pangolayout)
 
         # draw the info
         countingPixel = 0
@@ -194,7 +194,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
                 posx = self.realLeftMargin + pixel
 
                 # if out of bound, restart draw
-                if posx > (w - MDER):
+                if posx > (w-MDER):
                     yield True
 
                 if mtype == "debug":
@@ -208,8 +208,9 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
                     self._drawItem_info(posx)
                 elif mtype == "vulnerability":
                     self._drawItem_vuln(posx, sever)
+                    
             yield False
-
+            
     def _drawItem_debug(self, posx, quant):
         posy = self.posHorizItems["Debug"] - 1
         quant = min(quant, self.maxItemHeight["Debug"])
@@ -321,11 +322,8 @@ class LogBody(entries.RememberingVPaned):
         '''
         core_status = self.w3af.status.get_status()
 
-        # Fixing
-        # https://sourceforge.net/tracker/?func=detail&aid=2680683&group_id=170274&atid=853652
-        #
-        #   TypeError: GtkLabel.set_text() argument 1 must be string without null bytes, not str
-        #
+        # Fixing: TypeError: GtkLabel.set_text() argument 1 must be string
+        #         without null bytes, not str
         core_status = core_status.replace('\0', '')
 
         self._what_is_being_run.set_text(core_status)
