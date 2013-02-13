@@ -27,11 +27,13 @@ import pprint
 
 from multiprocessing.dummy import Process
 from mock import MagicMock
+from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from plugins.tests.helper import create_target_option_list
 
 
+@attr('moth')
 class CountTestMixin(unittest.TestCase):
     def setUp(self):
         '''

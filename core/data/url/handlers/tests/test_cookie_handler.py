@@ -22,12 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib2
 
+from nose.plugins.attrib import attr
+
 from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.parsers.url import URL
 from core.data.url.extended_urllib import ExtendedUrllib
 
 
+@attr('moth')
 class TestCookieHandler(unittest.TestCase):
 
     URL_SENDS_COOKIE = URL(

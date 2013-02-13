@@ -32,6 +32,7 @@ class NamedStringIO(StringIO, str):
         super(NamedStringIO, self).__init__(thestr)
         self._name = name
 
+    # pylint: disable=E0202
     @property
     def name(self):
         return self._name

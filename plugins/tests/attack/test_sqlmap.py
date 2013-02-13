@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from plugins.tests.helper import PluginTest, PluginConfig, ReadExploitTest
+from plugins.tests.helper import PluginConfig, ReadExploitTest
 from core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 
 
-class TestSQLMapShell(PluginTest, ReadExploitTest):
+class TestSQLMapShell(ReadExploitTest):
 
     SQLI = 'http://moth/w3af/audit/sql_injection/select/'\
            'sql_injection_string.php?name=andres'

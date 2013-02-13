@@ -1,7 +1,6 @@
 [crawl.phpinfo]
 
 [audit.frontpage]
-stopOnFirst = True
 
 [audit.eval]
 use_time_delay = True

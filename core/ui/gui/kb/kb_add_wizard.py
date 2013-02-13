@@ -32,7 +32,10 @@ class KBAddWizard(object):
         pass
     
     def start_wizard(self):
+        '''
         get_template_names()
         
         template = get_template_by_name(chosen_template)
         ConfigDialog(_("Vulnerability settings"), self.w3af, template)
+        '''
+        pass

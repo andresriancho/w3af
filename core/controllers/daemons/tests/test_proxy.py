@@ -22,11 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.data.url.extended_urllib import ExtendedUrllib
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 
 
+@attr('moth')
 class TestProxy(unittest.TestCase):
 
     IP = '127.0.0.1'

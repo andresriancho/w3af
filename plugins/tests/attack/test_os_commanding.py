@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.kb.vuln_templates.os_commanding_template import OSCommandingTemplate
-from plugins.tests.helper import PluginTest, PluginConfig, ExecExploitTest
+from plugins.tests.helper import PluginConfig, ExecExploitTest
 from plugins.attack.os_commanding import (FullPathExploitStrategy,
                                           CmdsInPathExploitStrategy,
                                           BasicExploitStrategy)
 
 
-class TestOSCommandingShell(PluginTest, ExecExploitTest):
+class TestOSCommandingShell(ExecExploitTest):
 
     target_url = 'http://moth/w3af/audit/os_commanding/'
 

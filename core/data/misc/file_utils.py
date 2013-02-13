@@ -66,7 +66,7 @@ def get_days_since_file_update(filename):
         
         return time_delta.days
     
-    raise Exception('"%s" is not in tracked by this repository.' % filename)
+    raise ValueError('"%s" is not in tracked by this repository.' % filename)
     
 def days_since_newest_file_update(path):
     '''

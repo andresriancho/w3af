@@ -40,6 +40,7 @@ from core.data.kb.read_shell import ReadShell
 os.chdir(W3AF_LOCAL_PATH)
 
 
+@attr('moth')
 class PluginTest(unittest.TestCase):
     '''
     Remember that nosetests can't find test generators in unittest.TestCase,
@@ -155,7 +156,7 @@ class PluginConfig(object):
     def options(self):
         return self._options
 
-class ReadExploitTest(object):
+class ReadExploitTest(PluginTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', exploit_plugin)
 

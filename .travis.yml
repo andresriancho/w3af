@@ -15,7 +15,17 @@ install:
   - pip install -q --use-mirrors --upgrade -e git+git://github.com/andresriancho/nose-timer.git#egg=nose-timer
 
 script:
-  - nosetests -v -s --with-doctest --doctest-tests --with-timer -a smoke core/data/
+  - nosetests -v -s --with-doctest --doctest-tests --with-timer -A "not moth and not internet" core/data/
+  - nosetests -v -s --with-doctest --doctest-tests --with-timer -A "not moth and not internet" core/controllers/
+  - nosetests -v -s --with-doctest --doctest-tests --with-timer -A "not moth and not internet" plugins/
+
+branches:
+  only:
+    - master
+    - develop
+    - /^release.*$/
+    - /^hotfix.*$/
+    #- threading2
 
 notifications:
   irc:

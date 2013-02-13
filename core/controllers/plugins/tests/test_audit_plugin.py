@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.data.kb.knowledge_base import kb
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.parsers.url import URL
@@ -28,6 +30,7 @@ from core.data.parsers.url import URL
 from core.controllers.w3afCore import w3afCore
 
 
+@attr('moth')
 class TestAuditPlugin(unittest.TestCase):
 
     def setUp(self):
