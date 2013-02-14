@@ -35,10 +35,13 @@ from core.ui.console.exploit import exploit
 from core.ui.console.config import configMenu
 from core.ui.console.kbMenu import kbMenu
 from core.ui.console.bug_report import bug_report_menu
+from core.ui.console.util import mapDict
+from core.ui.console.tables import table
+
 from core.controllers.exceptions import w3afException, w3afMustStopException
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.controllers.misc_settings import MiscSettings
-from core.ui.console.util import mapDict
+
 
 
 class rootMenu(menu):
@@ -159,19 +162,11 @@ class rootMenu(menu):
                 # change back to the previous state
                 hitted_enter = False
 
-                # Get the information
-                progress = self._w3af.progress.get_progress()
-                eta = self._w3af.progress.get_eta()
-
-                # Create the message to print
-                progress = str(progress * 100)
-                progress = progress[:5] + ' ' + '%'
-                msg = 'Status: ' + self._w3af.status.get_status() + '\n'
-                msg += 'Current phase status: ' + \
-                    progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
-
-                # Print
-                om.out.console(msg, new_line=True)
+                # Get the information and print it to the user
+                status_information_str = self._w3af.status.get_long_status()
+                t = table([(status_information_str,)])
+                t.draw()
+                om.out.console('')
 
     def _cmd_version(self, params):
         '''

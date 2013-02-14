@@ -86,11 +86,11 @@ class bruteforce(BaseConsumer):
         res = set()
 
         # Status
-        om.out.debug('Called _bruteforce(%s,%s)' % (
-            plugin.get_name(), fuzzable_request))
-        self._w3af_core.status.set_phase('bruteforce')
-        self._w3af_core.status.set_running_plugin(plugin.get_name())
-        self._w3af_core.status.set_current_fuzzable_request(fuzzable_request)
+        om.out.debug('Called _bruteforce(%s,%s)' %
+                      (plugin.get_name(), fuzzable_request))
+        self._w3af_core.status.set_running_plugin('bruteforce', plugin.get_name())
+        self._w3af_core.status.set_current_fuzzable_request('bruteforce',
+                                                            fuzzable_request)
 
         # TODO: Report progress to the core.
 

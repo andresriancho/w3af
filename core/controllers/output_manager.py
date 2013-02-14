@@ -217,10 +217,10 @@ class output_manager(Process):
                 class fake_status(w3af_core_status):
                     pass
 
-                status = fake_status()
-                status.set_running_plugin(o_plugin.get_name(), log=False)
-                status.set_phase('output')
-                status.set_current_fuzzable_request('n/a')
+                status = fake_status(self._w3af_core)
+                status.set_current_fuzzable_request('output', 'n/a')
+                status.set_running_plugin('output', o_plugin.get_name(),
+                                          log=False)
 
                 exec_info = sys.exc_info()
                 enabled_plugins = 'n/a'

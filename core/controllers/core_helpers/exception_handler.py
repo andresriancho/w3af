@@ -229,12 +229,11 @@ class ExceptionData(object):
         self.traceback_str = ''.join(traceback.format_tb(tb))
         self.traceback_str = cleanup_bug_report(self.traceback_str)
         
-        self.plugin = current_status.get_running_plugin()
-        self.phase = current_status.get_phase()
+        self.phase, self.plugin = current_status.latest_running_plugin()
         self.status = current_status
         self.enabled_plugins = enabled_plugins
 
-        self.fuzzable_request = current_status.get_current_fuzzable_request()
+        self.fuzzable_request = current_status.get_current_fuzzable_request(self.phase)
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
 
     def _get_last_call_info(self, tb):

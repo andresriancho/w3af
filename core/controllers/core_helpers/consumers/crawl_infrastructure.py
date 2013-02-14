@@ -66,8 +66,6 @@ class crawl_infrastructure(BaseConsumer):
         '''
         Consume the queue items, sending them to the plugins which are then going
         to find vulnerabilities, new URLs, etc.
-
-        TODO: Report progress to w3afCore somehow.
         '''
 
         while True:
@@ -136,9 +134,6 @@ class crawl_infrastructure(BaseConsumer):
             return
         
         self._route_plugin_results(plugin)
-
-        # Finished one fuzzable_request, inc!
-        self._w3af_core.progress.inc()
 
     def _route_all_plugin_results(self):
         for plugin in self._consumer_plugins:
@@ -252,7 +247,7 @@ class crawl_infrastructure(BaseConsumer):
         if not self._running:
             return True
         
-        if self._w3af_core.get_run_time() > self._max_discovery_time:
+        if self._w3af_core.status.get_run_time() > self._max_discovery_time:
             if self._report_max_time:
                 self._report_max_time = False                
                 msg = 'Maximum crawl time limit hit, no new URLs will be'\
@@ -382,9 +377,8 @@ class crawl_infrastructure(BaseConsumer):
 
         # Status reporting
         status = self._w3af_core.status
-        status.set_phase('crawl')
-        status.set_running_plugin(plugin.get_name())
-        status.set_current_fuzzable_request(fuzzable_request)
+        status.set_running_plugin('crawl', plugin.get_name())
+        status.set_current_fuzzable_request('crawl', fuzzable_request)
         om.out.debug('%s is testing "%s"' % (plugin.get_name(),
                      fuzzable_request.get_uri()))
 

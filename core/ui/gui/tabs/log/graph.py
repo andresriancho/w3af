@@ -1,5 +1,5 @@
 '''
-logtab.py
+graph.py
 
 Copyright 2007 Andres Riancho
 
@@ -23,12 +23,10 @@ from __future__ import division
 import gtk
 import gobject
 import time
-import pango
 import itertools
 
 import core.data.constants.severity as severity
 
-from core.ui.gui import messages, entries
 from core.ui.gui.output.message_consumer import MessageConsumer
 from core.data.db.disk_list import DiskList
 
@@ -251,80 +249,3 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             label = "%.2f" % (punto * self.timeGrouping / 1000)
             yield punto, label
 
-
-class LogBody(entries.RememberingVPaned):
-    '''Body of the log tab.
-
-    @param w3af: the Core instance.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, w3af):
-        super(LogBody, self).__init__(w3af, "pane-logbody")
-        self.w3af = w3af
-
-        # top vpan
-        top_vbox = gtk.VBox()
-
-        # Content of top vbox
-        self._what_is_being_run = gtk.Label()
-        self._what_is_being_run.set_max_width_chars(90)
-        self._what_is_being_run.set_ellipsize(pango.ELLIPSIZE_END)
-        # and the progress bar
-        self._progress_bar = gtk.ProgressBar()
-        self._progress_bar.show()
-
-        # Refresh the content
-        gobject.timeout_add(1500, self._set_what_is_running)
-        gobject.timeout_add(1500, self._update_progress)
-        self._what_is_being_run.show()
-
-        messag = messages.Messages()
-        messag.show()
-
-        # Add the widgets to the top vbox
-        top_vbox.pack_start(messag, True, True)
-        top_vbox.pack_start(self._progress_bar, False, True)
-        top_vbox.pack_start(self._what_is_being_run, False, False)
-        top_vbox.show()
-
-        # bottom widget
-        # The log visualization
-        graph = LogGraph(w3af)
-
-        # Add to the main vpan
-        self.pack1(top_vbox)
-        self.pack2(graph)
-
-        self.show()
-
-    def _update_progress(self):
-        '''
-        This method is called every 500ms to update the w3af core
-        scanning progress bar.
-
-        @return: Always True because I want to run once again
-        '''
-        progress = self.w3af.progress.get_progress()
-        self._progress_bar.set_fraction(progress)
-
-        # Create text
-        text = self.w3af.status.get_phase().title(
-        ) + ' progress: ' + str(progress * 100)[:5] + ' ' + '%' + ' - '
-        eta = self.w3af.progress.get_eta()
-        text += 'ETA: %.2dd %.2dh %.2dm %.2ds' % eta
-        self._progress_bar.set_text(text)
-        return True
-
-    def _set_what_is_running(self):
-        '''
-        @return: True so the timeout_add keeps calling it.
-        '''
-        core_status = self.w3af.status.get_status()
-
-        # Fixing: TypeError: GtkLabel.set_text() argument 1 must be string
-        #         without null bytes, not str
-        core_status = core_status.replace('\0', '')
-
-        self._what_is_being_run.set_text(core_status)
-        return True

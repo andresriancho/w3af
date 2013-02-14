@@ -52,8 +52,9 @@ from core.ui.gui.auto_update.gui_updater import GUIUpdater
  
 from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from core.ui.gui import export_request
-from core.ui.gui import entries, encdec, logtab, pluginconfig, confpanel
+from core.ui.gui import entries, encdec, pluginconfig, confpanel
 from core.ui.gui import wizard, guardian, proxywin
+from core.ui.gui.tabs.log.main_body import LogBody
 
 # This is just general info, to help people know their system and report more
 # complete bugs
@@ -742,10 +743,10 @@ class MainApp(object):
         self.is_running = sensit
 
         # ok, the tabs, :p
-        self._setTab(sensit, _("Log"), logtab.LogBody)
-        self._setTab(sensit, _("Results"), scanrun.ScanRunBody)
+        self._set_tab(sensit, _("Log"), LogBody)
+        self._set_tab(sensit, _("Results"), scanrun.ScanRunBody)
 
-    def _setTab(self, sensit, title, realWidget):
+    def _set_tab(self, sensit, title, realWidget):
         # create title and window/label
         label = gtk.Label(title)
         if sensit:

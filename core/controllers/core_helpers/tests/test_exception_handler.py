@@ -36,10 +36,10 @@ class TestExceptionHandler(unittest.TestCase):
         self.exception_handler = ExceptionHandler()
         self.exception_handler.clear()
 
-        self.status = fake_status()
-        self.status.set_running_plugin('plugin')
-        self.status.set_phase('phase')
-        self.status.set_current_fuzzable_request('http://www.w3af.org/')
+        self.status = fake_status(None)
+        self.status.set_running_plugin('phase', 'plugin')
+        self.status.set_current_fuzzable_request('phase',
+                                                 'http://www.w3af.org/')
 
     @attr('smoke')
     def test_handle_one(self):

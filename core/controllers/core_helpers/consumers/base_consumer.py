@@ -29,6 +29,7 @@ from core.controllers.core_helpers.exception_handler import ExceptionData
 from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.threads.threadpool import Pool
+from core.data.misc.queue_speed import QueueSpeed
 
 
 class BaseConsumer(Process):
@@ -41,13 +42,14 @@ class BaseConsumer(Process):
     def __init__(self, consumer_plugins, w3af_core, thread_name='Consumer',
                  create_pool=True):
         '''
-        @param in_queue: The input queue that will feed the base_consumer plugins
         @param base_consumer_plugins: Instances of base_consumer plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
+        @param thread_name: How to name the current thread
+        @param create_pool: True to create a worker pool for this consumer
         '''
         super(BaseConsumer, self).__init__()
 
-        self.in_queue = Queue.Queue()
+        self.in_queue = QueueSpeed()
         self._out_queue = Queue.Queue()
         
         self._consumer_plugins = consumer_plugins
@@ -62,8 +64,6 @@ class BaseConsumer(Process):
         '''
         Consume the queue items, sending them to the plugins which are then going
         to find vulnerabilities, new URLs, etc.
-
-        TODO: Report progress to w3afCore somehow.
         '''
 
         while True:
@@ -209,10 +209,9 @@ class BaseConsumer(Process):
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)
 
-        status = w3af_core_status()
-        status.set_running_plugin(plugin_name, log=False)
-        status.set_phase(phase)
-        status.set_current_fuzzable_request(fuzzable_request)
+        status = w3af_core_status(self._w3af_core)
+        status.set_running_plugin(phase, plugin_name, log=False)
+        status.set_current_fuzzable_request(phase, fuzzable_request)
 
         exception_data = ExceptionData(status, _exception, tb,
                                        enabled_plugins)

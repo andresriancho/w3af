@@ -27,7 +27,6 @@ import traceback
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
 
-from core.controllers.core_helpers.progress import progress
 from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.core_helpers.profiles import w3af_core_profiles
 from core.controllers.core_helpers.plugins import w3af_core_plugins
@@ -85,9 +84,8 @@ class w3afCore(object):
         # scan.
         self.profiles = w3af_core_profiles(self)
         self.plugins = w3af_core_plugins(self)
-        self.status = w3af_core_status()
+        self.status = w3af_core_status(self)
         self.target = w3af_core_target()
-        self.progress = progress()
         self.strategy = w3af_core_strategy(self)
         
         self._create_worker_pool()
@@ -131,9 +129,8 @@ class w3afCore(object):
         # one  
         self.strategy = w3af_core_strategy(self)
         
-        # And create these two again just to clear their internal states
-        self.status = w3af_core_status()
-        self.progress = progress()
+        # And create this again just to clear the internal states
+        self.status = w3af_core_status(self)
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -144,16 +141,15 @@ class w3afCore(object):
         '''
         The user interfaces call this method to start the whole scanning
         process.
-        This method raises almost every possible exception, so please do your
-        error handling!
+        
+        @raise: This method raises almost every possible exception, so please
+                do your error handling!
         '''
         om.out.debug('Called w3afCore.start()')
-
-        self.scan_start_hook()
         
-        # This will help identify the total scan time
-        self._start_time_epoch = time.time()
-
+        self.scan_start_hook()
+        self.status.start()
+        
         try:
             # Just in case the GUI / Console forgot to do this...
             self.verify_environment()
@@ -169,7 +165,6 @@ class w3afCore(object):
         om.out.log_enabled_plugins(self.plugins.get_all_enabled_plugins(),
                                    self.plugins.get_all_plugin_options())
 
-        self.status.start()
         self._first_scan = False
         
         try:
@@ -204,8 +199,8 @@ class w3afCore(object):
         finally:
 
             self.status.scan_finished()
-
-            time_spent = epoch_to_string(self._start_time_epoch)
+            time_spent = self.status.get_scan_time()
+            
             msg = 'Scan finished in %s' % time_spent
             
             try:
@@ -218,7 +213,6 @@ class w3afCore(object):
                 print msg
 
             self.strategy.stop()
-            self.progress.stop()
         
             self.scan_end_hook()
 
@@ -226,15 +220,6 @@ class w3afCore(object):
         self.worker_pool = Pool(self.WORKER_THREADS,
                                 worker_names='WorkerThread')
         
-    def get_run_time(self):
-        '''
-        @return: The time (in minutes) between now and the call to start().
-        '''
-        now = time.time()
-        diff = now - self._start_time_epoch
-        run_time = diff / 60
-        return run_time
-
     def cleanup(self):
         '''
         The GTK user interface calls this when a scan has been stopped
@@ -377,7 +362,6 @@ class w3afCore(object):
             #self.worker_pool.join()
             
             self.status.stop()
-            self.progress.stop()
 
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()

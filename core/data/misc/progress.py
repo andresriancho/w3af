@@ -21,13 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import time
 
-import core.controllers.output_manager as om
 
-
-class progress(object):
+class Progress(object):
     """
-    This class keeps track of the progress of something. Mostly used to keeps
-    track of the progress of the w3afCore tests (discovery/audit/etc).
+    This class keeps track of the progress and calculate an ETA when you
+    know the total amount of items to process and know when one of them is
+    successfully processed.
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -49,7 +48,7 @@ class progress(object):
     def inc(self):
         '''
         Add 1 unit to the current value.
-        >>> p = progress()
+        >>> p = Progress()
         >>> p.set_total_amount(100)
         >>> p.inc()
         >>> p.get_progress()
@@ -87,7 +86,7 @@ class progress(object):
         '''
         @return: The % done.
 
-        >>> p = progress()
+        >>> p = Progress()
         >>> p.get_progress()
         0.0
 

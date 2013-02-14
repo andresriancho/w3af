@@ -88,10 +88,10 @@ class audit(BaseConsumer):
             # plugin result was JUST taken from the Queue. The good thing is
             # that the "client" reads the status once every 500ms so the user
             # will see things "moving" and will be happy
-            self._w3af_core.status.set_phase('audit')
-            self._w3af_core.status.set_running_plugin(plugin.get_name())
-            self._w3af_core.status.set_current_fuzzable_request(
-                fuzzable_request)
+            self._w3af_core.status.set_running_plugin('audit',
+                                                      plugin.get_name())
+            self._w3af_core.status.set_current_fuzzable_request('audit',
+                                                                fuzzable_request)
 
             self._threadpool.apply_async(self._audit,
                                         (plugin, fuzzable_request, orig_resp))
