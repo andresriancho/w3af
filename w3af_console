@@ -100,7 +100,6 @@ def main():
             profile = a
         if o in ('-p', '--profile'):
             # selected profile
-            print a
             profile = a
         if o in ('-h', '--help'):
             usage()
