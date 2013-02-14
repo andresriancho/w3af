@@ -65,7 +65,7 @@ This is the central help file for the consoleUi
             <item name="use">
                <head>Use a profile.</head>
                <body><![CDATA[Syntax: use {profile-name}                
-Example: use fastScan]]></body>
+Example: use fast_scan]]></body>
             </item>
             <item name="list">
                <head>List available profiles.</head>
