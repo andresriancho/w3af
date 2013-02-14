@@ -40,6 +40,8 @@ COMMON_CSRF_NAMES = (
     'csrf',
     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
     'yii_anticsrf'                # http://www.yiiframework.com/
+    '[_token]',                   # Symfony 2.x
+    '_csrf_token',                # Symfony 1.4
 )
 
 
