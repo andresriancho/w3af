@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 
+from core.ui.console.io.console import terminal_width
 from core.ui.console.util import formatParagraph
 
 
@@ -40,7 +41,7 @@ class table(object):
         self._colsRange = range(self._colsNum)
         self._separator = '|'
 
-    def draw(self, termWidth, header=False, group=None, transf=None):
+    def draw(self, termWidth=terminal_width(), header=False, group=None, transf=None):
         if len(self._rows) == 0:
             return
 

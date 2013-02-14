@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.output_manager as om
 import sys
 import os
 
@@ -30,6 +28,7 @@ import os
 #import termios
 
 #from ecma48 import *
+import core.controllers.output_manager as om
 
 from core.controllers.exceptions import w3afException
 
@@ -142,6 +141,9 @@ def terminal_size():
             cr = (25, 80)
     # reverse rows, cols
     return int(cr[1]), int(cr[0])
+
+def terminal_width():
+    return terminal_size()[0]
 
 
 try:
