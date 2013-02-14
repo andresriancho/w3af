@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from mock import Mock
+
 from core.controllers.threads.threadpool import Pool
 
 from core.data.parsers.url import URL
@@ -233,6 +235,64 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.remove()
         
         self.assertFalse(db.table_exists(table_name))
+    
+    def test_observer_all(self):
+        observer = Mock()
+        
+        kb.add_observer(None, None, observer)
+        kb.raw_write('a', 'b', 1)
+        
+        observer.assert_called_once_with('a', 'b', 1)
+        observer.reset_mock()
+        
+        i = MockInfo()
+        kb.append('a', 'c', i)
+        observer.assert_called_with('a', 'c', i)
+        
+    def test_observer_location_a(self):
+        observer = Mock()
+        
+        kb.add_observer('a', None, observer)
+        kb.raw_write('a', 'b', 1)
+        
+        observer.assert_called_once_with('a', 'b', 1)
+        observer.reset_mock()
+        
+        # Shouldn't call the observer
+        kb.raw_write('xyz', 'b', 1)
+        self.assertFalse(observer.called)
+        
+        i = MockInfo()
+        kb.append('a', 'c', i)
+        observer.assert_called_with('a', 'c', i)
+        
+    def test_observer_location_b(self):
+        observer = Mock()
+        
+        kb.add_observer('a', 'b', observer)
+        kb.raw_write('a', 'b', 1)
+        
+        observer.assert_called_once_with('a', 'b', 1)
+        observer.reset_mock()
+        
+        # Shouldn't call the observer
+        kb.raw_write('a', 'xyz', 1)
+        self.assertFalse(observer.called)
+        
+        i = MockInfo()
+        kb.append('a', 'b', i)
+        observer.assert_called_with('a', 'b', i)
+
+    def test_observer_multiple_observers(self):
+        observer1 = Mock()
+        observer2 = Mock()
+        
+        kb.add_observer(None, None, observer1)
+        kb.add_observer(None, None, observer2)
+        kb.raw_write('a', 'b', 1)
+
+        observer1.assert_called_once_with('a', 'b', 1)
+        observer2.assert_called_once_with('a', 'b', 1)
         
     def test_pickleable_info(self):
         original_info = MockInfo()

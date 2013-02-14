@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import threading
 import cPickle
+import types
 
 from core.data.fuzzer.utils import rand_alpha
 from core.data.db.dbms import get_default_persistent_db_instance
@@ -30,6 +31,7 @@ from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
 from core.data.kb.shell import Shell
+from weakref import WeakValueDictionary
 
 
 class BasicKnowledgeBase(object): 
@@ -231,6 +233,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.db.create_table(self.table_name, columns)
         self.db.create_index(self.table_name, ['location_a', 'location_b'])
         self.db.commit()
+        
+        self.observers = WeakValueDictionary()
+        self._observer_id = 0
 
     def clear(self, location_a, location_b):
         location_a = self._get_real_name(location_a)
@@ -283,6 +288,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         query = "INSERT INTO %s VALUES (?, ?, ?)" % self.table_name
         self.db.execute(query, t)
+        self._notify(location_a, location_b, value)
 
     def get(self, location_a, location_b, check_types=True):
         '''
@@ -322,6 +328,54 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             result_lst.append(obj)
         
         return result_lst
+
+    def add_observer(self, location_a, location_b, observer):
+        '''
+        Add the observer function to the observer list. The function will be
+        called when there is a change in (location_a, location_b).
+        
+        You can use None in location_a or location_b as wildcards.
+        
+        The observer function needs to be a function which takes three params:
+            * location_a
+            * location_b
+            * value that's added to the kb location
+        
+        @return: None
+        '''
+        if not isinstance(location_a, (basestring, types.NoneType)) or \
+        not isinstance(location_a, (basestring, types.NoneType)):
+            raise TypeError('Observer locations need to be strings or None.')
+        
+        observer_id = self.get_observer_id()
+        self.observers[(location_a, location_b, observer_id)] = observer
+    
+    def get_observer_id(self):
+        self._observer_id += 1
+        return self._observer_id
+    
+    def _notify(self, location_a, location_b, value):
+        '''
+        Call the observer if the location_a/location_b matches with the
+        configured observers.
+        
+        @return: None
+        '''
+        # Note that I copy the items list in order to iterate though it without
+        # any issues like the size changing
+        for (obs_loc_a, obs_loc_b, _), observer in self.observers.items()[:]:
+            
+            if obs_loc_a is None and obs_loc_b is None:
+                observer(location_a, location_b, value)
+                continue
+
+            if obs_loc_a == location_a and obs_loc_b is None:
+                observer(location_a, location_b, value)
+                continue
+            
+            if obs_loc_a == location_a and obs_loc_b == location_b:
+                observer(location_a, location_b, value)
+                continue
 
     def get_all_entries_of_class(self, klass):
         '''
