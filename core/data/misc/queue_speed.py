@@ -68,7 +68,7 @@ class QueueSpeed(object):
         time_delta = last_item_time - first_item_time 
         
         # Calculate RPM and return it
-        return 60 * all_items / time_delta
+        return 60.0 * all_items / time_delta
 
     def get_input_rpm(self):
         self._add(False, self._input_data)
