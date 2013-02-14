@@ -44,7 +44,7 @@ class profilesMenu(menu):
     def _cmd_use(self, params):
         '''
         @param params: A two-elems list containing the name of the profile to
-            load and the original working directory.
+                       load and the original working directory.
         '''
         if not params:
             om.out.console('Parameter missing, please see the help:')
