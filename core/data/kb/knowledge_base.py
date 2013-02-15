@@ -234,7 +234,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.db.create_index(self.table_name, ['location_a', 'location_b'])
         self.db.commit()
         
-        self.observers = WeakValueDictionary()
+        # TODO: Why doesn't this work with a WeakValueDictionary?
+        self.observers = {} #WeakValueDictionary()
         self._observer_id = 0
 
     def clear(self, location_a, location_b):
@@ -423,11 +424,14 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         self.fuzzable_requests.cleanup()
         self.fuzzable_requests = DiskSet()
+        
+        self.observers.clear()
     
     def remove(self):
         self.db.drop_table(self.table_name)
         self.urls.cleanup()
         self.fuzzable_requests.cleanup()
+        self.observers.clear()
     
     def get_all_known_urls(self):
         '''
