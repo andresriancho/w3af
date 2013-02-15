@@ -41,8 +41,8 @@ class xpath(AttackPlugin):
     '''
     Exploit XPATH injections with the objective of retrieving the complete XML text.
 
-    @author: Nahuel Sanchez
-    @author: Andres Riancho
+    :author: Nahuel Sanchez
+    :author: Andres Riancho
     '''
     def __init__(self):
         AttackPlugin.__init__(self)
@@ -52,13 +52,13 @@ class xpath(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -85,9 +85,9 @@ class xpath(AttackPlugin):
 
     def _generate_shell(self, vuln):
         '''
-        @param vuln: The vulnerability to exploit
+        :param vuln: The vulnerability to exploit
 
-        @return: A shell object that allows the user to dump
+        :return: A shell object that allows the user to dump
         the full XML using an xpath injection vulnerability.
         '''
         #
@@ -107,7 +107,7 @@ class xpath(AttackPlugin):
 
     def _verify_vuln(self, vuln):
         '''
-        @return: True if the vulnerability can be exploited.
+        :return: True if the vulnerability can be exploited.
         '''
         #    Check if I should difflib or not for this vulnerability
         is_error_resp = self._configure_is_error_function(vuln, 5)
@@ -152,7 +152,7 @@ class xpath(AttackPlugin):
 
     def _get_delimiter(self, vuln, is_error_resp):
         '''
-        @return: The delimiter to be used to terminate strings, one of
+        :return: The delimiter to be used to terminate strings, one of
         single quote or double quote. If an error is found, None is returned.
         '''
         exploit_dc = vuln.get_dc()
@@ -192,7 +192,7 @@ class xpath(AttackPlugin):
         This function determines if we can use DiffLib to evaluate responses
         If not possible Error base detection will be used.
 
-        @return: The function that should be used to compare responses. This
+        :return: The function that should be used to compare responses. This
                  function will return True when the response body passed as
                  parameter contains an XPATH error.
         '''
@@ -225,7 +225,7 @@ class xpath(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits XPATH injections. The exploit result is the full
@@ -277,9 +277,9 @@ class XPathReader(Shell):
         Before calling this method, the framework calls the generic_user_input method
         from the shell class.
 
-        @param command: The command to handle ( ie. "read", "exec", etc ).
-        @param parameters: The parameters for @command.
-        @return: The result of the command.
+        :param command: The command to handle ( ie. "read", "exec", etc ).
+        :param parameters: The parameters for @command.
+        :return: The result of the command.
         '''
         if command.strip() == 'getxml':
             return self.getxml()
@@ -289,8 +289,8 @@ class XPathReader(Shell):
         This method executes a command in the remote operating system by
         exploiting the vulnerability.
 
-        @param command: The command to handle ( ie. "ls", "whoami", etc ).
-        @return: The result of the command.
+        :param command: The command to handle ( ie. "ls", "whoami", etc ).
+        :return: The result of the command.
         '''
         try:
             data_len = self._get_data_len()
@@ -307,7 +307,7 @@ class XPathReader(Shell):
 
     def _get_data_len(self):
         '''
-        @return: The length of the data to retrieve or self.max_data_len if the
+        :return: The length of the data to retrieve or self.max_data_len if the
         XML is too long. In the case of an error, None is returned.
         '''
         om.out.debug("Finding XML data length (max: %s)" % self.max_data_len)
@@ -340,7 +340,7 @@ class XPathReader(Shell):
             - True condition
         
         Generate the XPATH, send it to the remote server and
-        @return: True when the response does NOT contain an XPATH error.
+        :return: True when the response does NOT contain an XPATH error.
         '''
         exploit_dc = self.get_dc()
         function_ptr = getattr(self._uri_opener, self.get_method())
@@ -359,22 +359,22 @@ class XPathReader(Shell):
         
     def _verify_data_len_lt(self, str_len):
         '''
-        @return: True if the string data length is LESS THAN @str_len 
+        :return: True if the string data length is LESS THAN @str_len 
         '''
         xpath_fmt = "%s%s and string-length(%s)<%i %s"
         return self._fill_xpath_and_eval(xpath_fmt, str_len)
     
     def _verify_data_len_eq(self, str_len):
         '''
-        @return: True if the string data length is @str_len 
+        :return: True if the string data length is @str_len 
         '''
         xpath_fmt = "%s%s and string-length(%s)=%i %s"
         return self._fill_xpath_and_eval(xpath_fmt, str_len)
         
     def get_data(self, data_len):
         '''
-        @param data_len: The data length to retrieve
-        @return: A string with the XML data!
+        :param data_len: The data length to retrieve
+        :return: A string with the XML data!
 
         HTTP library exceptions are not handled in order to make the code clearer.
         '''
@@ -403,7 +403,7 @@ class XPathReader(Shell):
     
     def get_char_in_pos(self, pos):
         '''
-        @return: The character for position @pos in the XML.
+        :return: The character for position @pos in the XML.
         '''
         exploit_dc = self.get_dc()
         function_ptr = getattr(self._uri_opener, self.get_method())
@@ -452,7 +452,7 @@ class IsErrorResponse(object):
         '''
         This functions checks which method must be used to check Responses
     
-        @return: True if the res_body is ERROR and FALSE if Not
+        :return: True if the res_body is ERROR and FALSE if Not
         '''
         # FIXME: See FIXME above where I disable the use of difflib.
         if self.use_difflib:

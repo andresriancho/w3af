@@ -1127,7 +1127,7 @@ def __setHTTPExtraHeaders():
 
 def __defaultHTTPUserAgent():
     """
-    @return: default sqlmap HTTP User-Agent header
+    :return: default sqlmap HTTP User-Agent header
     @rtype: C{str}
     """
 
@@ -1720,7 +1720,7 @@ def __mergeOptions(inputOptions, overrideOptions):
     """
     Merge command line options with configuration file and default options.
 
-    @param inputOptions: optparse object with command line options.
+    :param inputOptions: optparse object with command line options.
     @type inputOptions: C{instance}
     """
 

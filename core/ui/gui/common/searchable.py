@@ -28,10 +28,10 @@ class Searchable(object):
 
     Just inheritate it from the box that has the textview to extend.
 
-    @param textview: the textview to extend
-    @param small: True if the buttons will only have the icons
+    :param textview: the textview to extend
+    :param small: True if the buttons will only have the icons
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, textview, small=False):
         self.textview = textview

@@ -35,7 +35,7 @@ class Form(DataContainer):
     '''
     This class represents a HTML form.
 
-    @author: Andres Riancho (andres.riancho@gmail.com) |
+    :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
     '''
     # Max
@@ -67,7 +67,7 @@ class Form(DataContainer):
 
     def get_action(self):
         '''
-        @return: The Form action.
+        :return: The Form action.
         '''
         return self._action
 
@@ -91,7 +91,7 @@ class Form(DataContainer):
 
     def get_method(self):
         '''
-        @return: The Form method.
+        :return: The Form method.
         '''
         return self._method
 
@@ -112,7 +112,7 @@ class Form(DataContainer):
     def add_file_input(self, attrs):
         '''
         Adds a file input to the Form
-        @param attrs: attrs=[("class", "screen")]
+        :param attrs: attrs=[("class", "screen")]
         '''
         name = ''
 
@@ -143,7 +143,7 @@ class Form(DataContainer):
         others will be lost.
 
         @see: Unittest in test_form.py
-        @return: string representation of the Form object.
+        :return: string representation of the Form object.
         '''
         d = dict(self)
         d.update(self._submit_map)
@@ -171,7 +171,7 @@ class Form(DataContainer):
             <INPUT type="text" name="email"><BR>
             <INPUT type="radio" name="sex" value="Male"> Male<BR>
 
-        @param attrs: attrs=[("class", "screen")]
+        :param attrs: attrs=[("class", "screen")]
         '''
         # Set the default input type to text.
         attr_type = self.INPUT_TYPE_TEXT
@@ -413,9 +413,9 @@ class Form(DataContainer):
         Diego Buthay (dbuthay@gmail.com) made a significant contribution to
         the used algorithm.
 
-        @param path: integer
-        @param matrix: list of lists
-        @return: Tuple of integers
+        :param path: integer
+        :param matrix: list of lists
+        :return: Tuple of integers
         '''
         # Hack to make the algorithm work.
         matrix.append([1])
@@ -436,8 +436,8 @@ class Form(DataContainer):
     def _get_variantsCount(self, matrix, mode):
         '''
 
-        @param matrix:
-        @param tmb:
+        :param matrix:
+        :param tmb:
         '''
         if mode in ["t", "b"]:
             return 1

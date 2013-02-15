@@ -57,8 +57,8 @@ class payload_transfer_factory(object):
         files to the remote end. If the caller sends an inbound_port, don't perform
         an extrusion scan, just trust him and use that port.
 
-        @param inbound_port: The port that we should use for reverse connections
-        @return: An object with a "transfer" method, which can be called by the user
+        :param inbound_port: The port that we should use for reverse connections
+        :return: An object with a "transfer" method, which can be called by the user
         in order to upload files.
         '''
         os = os_detection_exec(self._exec_method)

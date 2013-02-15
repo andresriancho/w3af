@@ -49,7 +49,7 @@ class GitClient(object):
     
     def add_observer(self, observer):
         '''
-        @param observer: Function which takes four parameters,
+        :param observer: Function which takes four parameters,
                             op_code, cur_count, max_count, message
         '''
         self._progress.add_observer(observer)
@@ -96,7 +96,7 @@ class GitClient(object):
         This method verifies if the repository is in conflict and resolved it
         by performing a reset() to the previous commit-id.
         
-        @param reset_commit_id: The commit id to reset to
+        :param reset_commit_id: The commit id to reset to
         @raise GitClientError: To let the user know that the update failed
         '''
         if repo_has_conflicts():
@@ -109,14 +109,14 @@ class GitClient(object):
         '''
         Does a "git reset --hard <reset_commit_id>".
         
-        @param reset_commit_id: The commit id to reset to
+        :param reset_commit_id: The commit id to reset to
         '''
         self._repo.head.reset(commit=reset_commit_id, index=True,
                               working_tree=True)
         
     def get_remote_head_id(self):
         '''
-        @return: The ID for the latest commit in the REMOTE repo.
+        :return: The ID for the latest commit in the REMOTE repo.
         '''
         # Get the latest changes from the remote end
         self.fetch()
@@ -129,7 +129,7 @@ class GitClient(object):
         
     def get_local_head_id(self):
         '''
-        @return: The ID for the latest commit in the LOCAL repo.
+        :return: The ID for the latest commit in the LOCAL repo.
         '''
         branch_name = get_current_branch()
         repo_refs = self._repo.refs

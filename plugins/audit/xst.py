@@ -34,8 +34,8 @@ class xst(AuditPlugin):
     '''
     Find Cross Site Tracing vulnerabilities.
 
-    @author: Josh Summitt (ascetik@gmail.com)
-    @author: Andres Riancho (andres@gmail.com) - Rewrite 27 Jul 2012
+    :author: Josh Summitt (ascetik@gmail.com)
+    :author: Andres Riancho (andres@gmail.com) - Rewrite 27 Jul 2012
     '''
 
     def __init__(self):
@@ -86,7 +86,7 @@ class xst(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds the Cross Site Tracing (XST) vulnerability.

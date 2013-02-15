@@ -32,7 +32,7 @@ from core.data.kb.vuln import Vuln
 class format_string(AuditPlugin):
     '''
     Find format string vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     ERROR_STRINGS = (
         # TODO: Add more error strings here
@@ -46,7 +46,7 @@ class format_string(AuditPlugin):
         '''
         Tests an URL for format string vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         string_list = self._get_string_list()
         mutants = create_mutants(freq, string_list, orig_resp=orig_response)
@@ -84,7 +84,7 @@ class format_string(AuditPlugin):
 
     def _get_string_list(self):
         '''
-        @return: This method returns a list of format strings.
+        :return: This method returns a list of format strings.
         '''
         strings = []
         lengths = [1, 10, 25, 100]
@@ -94,14 +94,14 @@ class format_string(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before
+        :return: A list with the names of the plugins that should be run before
                  the current one.
         '''
         return ['grep.error_500']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds format string bugs.

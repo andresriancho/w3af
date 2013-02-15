@@ -57,8 +57,8 @@ class reqResViewer(gtk.VBox):
     '''
     A widget with the request and the response inside.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
-    @author: Facundo Batista ( facundo@taniquetil.com.ar )
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Facundo Batista ( facundo@taniquetil.com.ar )
 
     '''
     def __init__(
@@ -200,10 +200,10 @@ class reqResViewer(gtk.VBox):
         """
         Audit a request using one or more plugins.
 
-        @param menuItem: The name of the audit plugin, or the 'All audit plugins' wildcard
-        @param plugin_name: The name of the plugin
-        @param plugin_type: The type of plugin
-        @return: None
+        :param menuItem: The name of the audit plugin, or the 'All audit plugins' wildcard
+        :param plugin_name: The name of the plugin
+        :param plugin_type: The type of plugin
+        :return: None
         """
         # We show a throbber, and start it
         self.throbber.show()
@@ -263,7 +263,7 @@ class reqResViewer(gtk.VBox):
     def _send_request(self, widg, func):
         """Sends the texts to the manual or fuzzy request.
 
-        @param func: where to send the request.
+        :param func: where to send the request.
         """
         headers, data = self.request.get_both_texts()
         func(self.w3af, (headers, data))

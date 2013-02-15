@@ -26,7 +26,7 @@ class ExactDelay(object):
     '''
     def __init__(self, delay_fmt, delta=0, mult=1):
         '''
-        @param delay_fmt: The format that should be use to generate the delay string.
+        :param delay_fmt: The format that should be use to generate the delay string.
                           Example: "sleep(%s)".
         '''
         self._delay_fmt = delay_fmt
@@ -35,7 +35,7 @@ class ExactDelay(object):
 
     def get_string_for_delay(self, seconds):
         '''
-        Applies @param seconds to self._delay_fmt
+        Applies :param seconds to self._delay_fmt
 
         >>> d = ExactDelay('sleep(%s)')
         >>> d.get_string_for_delay( 3 )

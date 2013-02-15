@@ -34,7 +34,7 @@ class phishing_vector(AuditPlugin):
     '''
     Find phishing vectors.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -55,7 +55,7 @@ class phishing_vector(AuditPlugin):
         '''
         Find those phishing vectors!
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         mutants = create_mutants(freq, self._test_urls)
 
@@ -99,7 +99,7 @@ class phishing_vector(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugins finds phishing vectors in web applications, for example,

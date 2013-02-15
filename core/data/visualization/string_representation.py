@@ -30,15 +30,15 @@ class StringRepresentation(object):
 
     def __init__(self, instr, width=60, height=40):
         '''
-        @param instr: The input string to represent.
+        :param instr: The input string to represent.
         '''
         self.parsed_instr = {}
         self.gen_representation(instr, width, height)
 
     def gen_representation(self, instr, width, height):
         '''
-        @param width: The width of the string to generate
-        @param height: The width of the string to generate
+        :param width: The width of the string to generate
+        :param height: The width of the string to generate
         '''
         linecount = lambda ln: sum(map(ord, (char for char in ln)))
         split = instr.split('\n')

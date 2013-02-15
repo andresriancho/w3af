@@ -33,7 +33,7 @@ class dav(AuditPlugin):
     '''
     Verify if the WebDAV module is properly configured.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -46,7 +46,7 @@ class dav(AuditPlugin):
         '''
         Searches for file upload vulns using PUT method.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         # Start
         domain_path = freq.get_url().get_domain_path()
@@ -183,7 +183,7 @@ class dav(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before
+        :return: A list with the names of the plugins that should be run before
                  the current one.
         '''
         return ['infrastructure.allowed_methods',
@@ -191,7 +191,7 @@ class dav(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds WebDAV configuration errors. These errors are generally

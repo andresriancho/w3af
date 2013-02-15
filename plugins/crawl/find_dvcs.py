@@ -37,8 +37,8 @@ class find_dvcs(CrawlPlugin):
     Search Git, Mercurial (HG), Bazaar (BZR), Subversion (SVN) and CVS
     repositories and checks for files containing
 
-    @author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
-    @author: Tomas Velazquez (tomas.velazquezz - gmail.com)
+    :author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
+    :author: Tomas Velazquez (tomas.velazquezz - gmail.com)
     '''
 
     def __init__(self):
@@ -94,7 +94,7 @@ class find_dvcs(CrawlPlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.get_url().get_domain_path()
@@ -111,7 +111,7 @@ class find_dvcs(CrawlPlugin):
         Based on different URLs with directories, generate the URLs that need
         to be tested.
 
-        @return: URLs
+        :return: URLs
         '''
         for repo in self._dvcs.keys():
             repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
@@ -122,7 +122,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Filter some characters from filenames.
 
-        @return: A clear list of filenames.
+        :return: A clear list of filenames.
         '''
         resources = set()
 
@@ -142,7 +142,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Check if a repository index exists in the domain_path.
 
-        @return: None, everything is saved to the self.out_queue.
+        :return: None, everything is saved to the self.out_queue.
         '''
         http_response = self.http_get_and_parse(repo_url)
 
@@ -177,8 +177,8 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the Git index and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
         signature = 'DIRC'
@@ -213,8 +213,8 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the HG dirstate and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
         offset = 53
@@ -234,8 +234,8 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the BZR dirstate and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
         header = '#bazaar dirstate flat format '
@@ -262,8 +262,8 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the SVN entries and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
         lines = body.split('\n')
@@ -285,8 +285,8 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the CVS entries and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
 
@@ -304,8 +304,8 @@ class find_dvcs(CrawlPlugin):
         Analyze the possible regexp contents and extract filenames or
         directories without regexp.
 
-        @param line: A regexp filename or directory.
-        @return: A real filename or directory.
+        :param line: A regexp filename or directory.
+        :return: A real filename or directory.
         '''
         special_characters = ['*', '?', '[', ']', ':']
 
@@ -325,8 +325,8 @@ class find_dvcs(CrawlPlugin):
         Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file
         and extract filenames.
 
-        @param body: The contents of the file to analyze.
-        @return: A list of filenames found.
+        :param body: The contents of the file to analyze.
+        :return: A list of filenames found.
         '''
         filenames = set()
         for line in body.split('\n'):
@@ -351,7 +351,7 @@ class find_dvcs(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin search git, hg, bzr, svn or cvs repositories and checks for files containing.

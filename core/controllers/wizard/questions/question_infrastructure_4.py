@@ -43,7 +43,7 @@ class question_infrastructure_4(question):
 
     def _get_option_objects(self):
         '''
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
 
         self._d1 = 'Is the target web application reachable from the Internet?'

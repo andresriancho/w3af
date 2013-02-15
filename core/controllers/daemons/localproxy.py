@@ -145,7 +145,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             - self._trap
 
         If the request needs to be trapped or not.
-        @param fuzzable_request: The request to analyze.
+        :param fuzzable_request: The request to analyze.
         '''
         if not self.server.w3afLayer._trap:
             return False
@@ -172,13 +172,13 @@ class LocalProxy(Proxy):
     def __init__(self, ip, port, urlOpener=ExtendedUrllib(),
                  proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
-        @param ip: IP address to bind
-        @param port: Port to bind
-        @param urlOpener: The urlOpener that will be used to open the requests
+        :param ip: IP address to bind
+        :param port: Port to bind
+        :param urlOpener: The urlOpener that will be used to open the requests
                           that arrive from the browser
-        @param proxyHandler: A class that will know how to handle requests
+        :param proxyHandler: A class that will know how to handle requests
                              from the browser
-        @param proxy_cert: Proxy certificate to use, this is needed for
+        :param proxy_cert: Proxy certificate to use, this is needed for
                            proxying SSL connections.
         '''
         Proxy.__init__(self, ip, port, urlOpener, w3afLocalProxyHandler,
@@ -199,7 +199,7 @@ class LocalProxy(Proxy):
     def get_trapped_request(self):
         '''
         To be called by the gtk user interface every 400ms.
-        @return: A fuzzable request object, or None if the queue is empty.
+        :return: A fuzzable request object, or None if the queue is empty.
         '''
         try:
             return self._request_queue.get(block=False)
@@ -231,7 +231,7 @@ class LocalProxy(Proxy):
 
     def set_trap(self, trap):
         '''
-        @param trap: True if we want to trap requests.
+        :param trap: True if we want to trap requests.
         '''
         self._trap = trap
 

@@ -38,7 +38,7 @@ from core.data.kb.info import Info
 class php_eggs(InfrastructurePlugin):
     '''
     Fingerprint the PHP version using documented easter eggs that exist in PHP.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     PHP_EGGS = [('?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000', 'PHP Credits'),
                 ('?=PHPE9568F34-D428-11d2-A769-00AA001ACF42', 'PHP Logo'),
@@ -231,7 +231,7 @@ class php_eggs(InfrastructurePlugin):
         Nothing strange, just do some GET requests to the eggs and analyze the
         response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # Get the extension of the URL (.html, .php, .. etc)
@@ -258,7 +258,7 @@ class php_eggs(InfrastructurePlugin):
     def _GET_php_eggs(self, fuzzable_request, ext):
         '''
         HTTP GET the URLs for PHP Eggs
-        @return: A list with the HTTP response objects
+        :return: A list with the HTTP response objects
         '''
         def http_get(fuzzable_request, (egg_url, egg_desc)):
             egg_URL = fuzzable_request.get_url().uri2url().url_join(egg_url)
@@ -386,14 +386,14 @@ class php_eggs(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.server_header']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin tries to find the documented easter eggs that exist in PHP

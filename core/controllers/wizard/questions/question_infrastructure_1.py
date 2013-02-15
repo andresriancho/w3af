@@ -43,7 +43,7 @@ class question_infrastructure_1(question):
 
     def _get_option_objects(self):
         '''
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
         self._d1 = 'Target URL'
         o1 = opt_factory('target', 'http://', self._d1, 'list')

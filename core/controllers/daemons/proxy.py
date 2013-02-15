@@ -73,7 +73,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
     def _get_post_data(self):
         '''
-        @return: Post data preserving rfile
+        :return: Post data preserving rfile
         '''
         post_data = None
         if 'content-length' in self.headers.dict:
@@ -404,19 +404,19 @@ class Proxy(Process):
         - http requests like GET, HEAD, POST, CONNECT
         - https CONNECT ( thanks Sasha! )
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, ip, port, uri_opener, proxy_handler=w3afProxyHandler,
                  proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
-        @param ip: IP address to bind
-        @param port: Port to bind
-        @param uri_opener: The uri_opener that will be used to open
+        :param ip: IP address to bind
+        :param port: Port to bind
+        :param uri_opener: The uri_opener that will be used to open
             the requests that arrive from the browser
-        @param proxy_handler: A class that will know how to handle
+        :param proxy_handler: A class that will know how to handle
             requests from the browser
-        @param proxy_cert: Proxy certificate to use, this is needed
+        :param proxy_cert: Proxy certificate to use, this is needed
             for proxying SSL connections.
         '''
         Process.__init__(self)
@@ -444,13 +444,13 @@ class Proxy(Process):
 
     def get_bind_ip(self):
         '''
-        @return: The IP address where the proxy will listen.
+        :return: The IP address where the proxy will listen.
         '''
         return self._ip
 
     def get_bind_port(self):
         '''
-        @return: The TCP port where the proxy will listen.
+        :return: The TCP port where the proxy will listen.
         '''
         return self._port
 
@@ -476,7 +476,7 @@ class Proxy(Process):
 
     def is_running(self):
         '''
-        @return: True if the proxy daemon is running
+        :return: True if the proxy daemon is running
         '''
         return self._running
 

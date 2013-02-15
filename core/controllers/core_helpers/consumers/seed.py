@@ -42,7 +42,7 @@ class seed(Process):
 
     def __init__(self, w3af_core):
         '''
-        @param w3af_core: The w3af core that we'll use for status reporting
+        :param w3af_core: The w3af core that we'll use for status reporting
         '''
         super(seed, self).__init__()
         self.name = 'Seed'

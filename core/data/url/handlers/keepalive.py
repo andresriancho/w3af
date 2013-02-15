@@ -368,8 +368,8 @@ class ConnectionManager(object):
         '''
         Remove a connection, it was closed by the server.
 
-        @param conn: Connection to remove
-        @param host: The host for to the connection. If passed, the connection
+        :param conn: Connection to remove
+        :param host: The host for to the connection. If passed, the connection
         will be removed faster.
         '''
         # Just make sure we don't leak open connections
@@ -423,9 +423,9 @@ class ConnectionManager(object):
         '''
         Re-create a mal-functioning connection.
 
-        @param bad_conn: The bad connection
-        @param host: The host for the connection
-        @param conn_factory: The factory function for new connection creation.
+        :param bad_conn: The bad connection
+        :param host: The host for the connection
+        :param conn_factory: The factory function for new connection creation.
         '''
         with self._lock:
             self.remove_connection(bad_conn, host)
@@ -442,8 +442,8 @@ class ConnectionManager(object):
         '''
         Return an available connection ready to be reused
 
-        @param host: Host for the connection.
-        @param conn_factory: Factory function for connection creation. Receives
+        :param host: Host for the connection.
+        :param conn_factory: Factory function for connection creation. Receives
             <host> as parameter.
         '''
         with self._lock:
@@ -500,7 +500,7 @@ class ConnectionManager(object):
         for that host. Otherwise return a dict with 'host: str' and
         'conns: list' as items.
 
-        @param host: Host
+        :param host: Host
         '''
         if host:
             return list(self._hostmap.get(host, []))

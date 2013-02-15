@@ -29,7 +29,7 @@ class extrusionClient:
     This class defines a simple client, that connects to every port that is passed to it
     in the constructor and closes the connection afterwards.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, host, tcpPorts, udpPorts):

@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 def get_long_description():
     '''
-    @return: The description for the plugin type.
+    :return: The description for the plugin type.
     '''
     return '''Crawl plugins use different techniques to identify new URLs, forms,
     and any other resource that might be of use during the audit and bruteforce

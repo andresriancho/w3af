@@ -117,7 +117,7 @@ class QuestOptions(gtk.VBox):
 class Wizard(entries.RememberingWindow):
     '''The wizard to help the user to create a profile.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, wizard):
         super(Wizard, self).__init__(
@@ -218,7 +218,7 @@ class Wizard(entries.RememberingWindow):
     def _buildWindow(self, question):
         '''Builds the useful pane for a question.
 
-        @param question: the question with the info to build.
+        :param question: the question with the info to build.
         '''
         self.qtitle.set_markup("<b>%s</b>" % question.get_question_title())
         self.quest.set_text(question.get_question_string())
@@ -262,7 +262,7 @@ class SimpleRadioButton(gtk.VBox):
 class WizardChooser(entries.RememberingWindow):
     '''Window that let's the user to choose a Wizard.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(WizardChooser, self).__init__(

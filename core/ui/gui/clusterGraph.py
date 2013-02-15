@@ -55,9 +55,9 @@ EXAMPLE_FUNCTION = """def customized_distance(a, b):
     '''
     Calculates the distance between two responses "a" and "b".
 
-    @param a: An HTTP response object.
-    @param b: An HTTP response object.
-    @return: The the distance between "a" and "b", where 0 means equal and 1
+    :param a: An HTTP response object.
+    :param b: An HTTP response object.
+    :return: The the distance between "a" and "b", where 0 means equal and 1
              means totally different.
     '''
     if 'error' in b.get_body().lower() and 'error' in a.get_body().lower():
@@ -73,7 +73,7 @@ class distance_function_selector(entries.RememberingWindow):
     '''A small window to select which distance_function the w3afDotWindow
     will use to generate the graph.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, w3af, response_list):
         super(distance_function_selector, self).__init__(
@@ -156,7 +156,7 @@ class distance_function_selector(entries.RememberingWindow):
         The button action.
         Launch the graph window!
 
-        @return: None
+        :return: None
         '''
         selected_function = None
         custom_code = None
@@ -280,7 +280,7 @@ class clusterGraphWidget(w3afDotWindow):
     def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN,
                  custom_code=None):
         '''
-        @param response_list: A list with the responses to graph.
+        :param response_list: A list with the responses to graph.
         '''
         self.w3af = w3af
         w3afDotWindow.__init__(self)
@@ -352,7 +352,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         Calculates the distance between two responses based on the levenshtein distance
 
-        @return: The distance
+        :return: The distance
         '''
         return 1 - relative_distance(a.get_body(), b.get_body())
 
@@ -360,7 +360,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         Calculates the distance between two responses based on the HTTP response code
 
-        @return: The distance
+        :return: The distance
         '''
         distance = 0.1
         for i in [100, 200, 300, 400, 500]:
@@ -373,7 +373,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         Calculates the distance between two responses based on the length of the response body
 
-        @return: The distance
+        :return: The distance
         '''
         distance = abs(len(b.get_body()) - len(a.get_body()))
         distance = distance % 100
@@ -393,7 +393,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         Generate the dotcode for the current window, based on all the responses.
 
-        @param response_list: A list with the responses.
+        :param response_list: A list with the responses.
         '''
         dotcode = 'graph G {graph [ overlap="scale" ]\n'
         # Write the URLs
@@ -422,7 +422,7 @@ class clusterGraphWidget(w3afDotWindow):
     def _normalize_distances(self, dist_dict):
         '''
         Perform some magic in order to get a nice graph
-        @return: A normalized distance dict
+        :return: A normalized distance dict
         '''
         # Find max
         max = 0
@@ -461,7 +461,7 @@ class clusterGraphWidget(w3afDotWindow):
     def on_url_clicked(self, widget, id, event):
         '''
         When the user clicks on the node, we get here.
-        @param id: The id of the request that the user clicked on.
+        :param id: The id of the request that the user clicked on.
         '''
         reqResWindow(self.w3af, int(id))
         return True

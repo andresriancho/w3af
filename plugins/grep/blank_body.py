@@ -30,7 +30,7 @@ class blank_body(GrepPlugin):
     '''
     Find responses with empty body.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     METHODS = ('GET', 'POST')
@@ -44,9 +44,9 @@ class blank_body(GrepPlugin):
         '''
         Plugin entry point, find the blank bodies and report them.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if response.get_body() == '' and request.get_method() in self.METHODS\
         and response.get_code() not in self.HTTP_CODES\
@@ -68,7 +68,7 @@ class blank_body(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds HTTP responses with a blank body, these responses may

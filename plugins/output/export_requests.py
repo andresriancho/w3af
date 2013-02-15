@@ -33,7 +33,7 @@ class export_requests(OutputPlugin):
     '''
     Export the fuzzable requests found during crawl to a file.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -78,13 +78,13 @@ class export_requests(OutputPlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self.output_file = option_list['output_file'].get_value()
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -96,7 +96,7 @@ class export_requests(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exports all discovered HTTP requests (URL, Method, Params)

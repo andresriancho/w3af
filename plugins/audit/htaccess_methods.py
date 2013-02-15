@@ -31,7 +31,7 @@ class htaccess_methods(AuditPlugin):
     '''
     Find misconfigurations in Apache's "<LIMIT>" configuration.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     BAD_METHODS = set([http_constants.UNAUTHORIZED,
                        http_constants.NOT_IMPLEMENTED,
@@ -46,7 +46,7 @@ class htaccess_methods(AuditPlugin):
         '''
         Tests an URL for htaccess misconfigurations.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         response = self._uri_opener.GET(freq.get_url(), cache=True)
 
@@ -150,7 +150,7 @@ class htaccess_methods(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds .htaccess misconfigurations in the LIMIT configuration

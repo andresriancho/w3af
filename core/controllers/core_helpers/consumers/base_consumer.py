@@ -42,10 +42,10 @@ class BaseConsumer(Process):
     def __init__(self, consumer_plugins, w3af_core, thread_name='Consumer',
                  create_pool=True):
         '''
-        @param base_consumer_plugins: Instances of base_consumer plugins in a list
-        @param w3af_core: The w3af core that we'll use for status reporting
-        @param thread_name: How to name the current thread
-        @param create_pool: True to create a worker pool for this consumer
+        :param base_consumer_plugins: Instances of base_consumer plugins in a list
+        :param w3af_core: The w3af core that we'll use for status reporting
+        :param thread_name: How to name the current thread
+        :param create_pool: True to create a worker pool for this consumer
         '''
         super(BaseConsumer, self).__init__()
 
@@ -145,7 +145,7 @@ class BaseConsumer(Process):
         '''
         @see: _task_done() documentation
 
-        @return: True if the in_queue_size is != 0 OR if one of the pool workers
+        :return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         '''
         if self.in_queue_size() > 0 \
@@ -191,7 +191,7 @@ class BaseConsumer(Process):
 
     def get_result(self, timeout=0.5):
         '''
-        @return: The first result from the output Queue.
+        :return: The first result from the output Queue.
         '''
         return self._out_queue.get(timeout=timeout)
 
@@ -201,10 +201,10 @@ class BaseConsumer(Process):
         then, the strategy will get the items from the output queue and
         handle the exceptions.
 
-        @param plugin_name: The plugin that generated the exception
-        @param fuzzable_request: The fuzzable request that was sent as input to
+        :param plugin_name: The plugin that generated the exception
+        :param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
-        @param _exception: The exception object
+        :param _exception: The exception object
         '''
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)

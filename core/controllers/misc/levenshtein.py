@@ -32,11 +32,11 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     function is equivalent to the expression:
         relative_distance(x, y) > threshold
 
-    @param a_str: A string object
-    @param b_str: A string object
-    @param threshold: Float value indicating the expected "similarity". Must be
+    :param a_str: A string object
+    :param b_str: A string object
+    :param threshold: Float value indicating the expected "similarity". Must be
                       0 <= threshold <= 1.0
-    @return: A boolean value
+    :return: A boolean value
     '''
 
     if threshold == 0:
@@ -100,9 +100,9 @@ def relative_distance(a_str, b_str):
     Measures the "similarity" of the strings. A return value value over 0.6
     means the strings are close matches.
 
-    @param a_str: A string object
-    @param b_str: A string object
-    @return: A float with the distance
+    :param a_str: A string object
+    :param b_str: A string object
+    :return: A float with the distance
     '''
     return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
 

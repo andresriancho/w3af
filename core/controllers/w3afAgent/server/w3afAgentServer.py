@@ -70,7 +70,7 @@ class ConnectionManager(Process):
         '''
         Thread entry point.
 
-        @return: None
+        :return: None
         '''
 
         #    Start listening
@@ -104,7 +104,7 @@ class ConnectionManager(Process):
 
     def is_working(self):
         '''
-        @return: Did the remote agent connected to me ?
+        :return: Did the remote agent connected to me ?
         '''
         return self._reportedConnection
 

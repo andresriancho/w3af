@@ -80,11 +80,11 @@ def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
     Method to analyze if a site is protected against XSS vulns type using
     CSP policies.
     
-    @param response: A HTTPResponse object.
-    @param allow_unsafe_eval: Allow inline javascript code block.
-    @param allow_unsafe_eval: Allow use of the java "eval()" function in
+    :param response: A HTTPResponse object.
+    :param allow_unsafe_eval: Allow inline javascript code block.
+    :param allow_unsafe_eval: Allow use of the java "eval()" function in
                               javascript code block.  
-    @return: True only if the site is protected, False otherwise.  
+    :return: True only if the site is protected, False otherwise.  
     '''
     protected = True
     
@@ -112,8 +112,8 @@ def find_vulns(response):
     analyze directives for permissive/invalid configuration and misspelled
     directive names.
     
-    @param response: A HTTPResponse object.
-    @return: A dictionary in which KEY is a CSP directive and VALUE is the 
+    :param response: A HTTPResponse object.
+    :return: A dictionary in which KEY is a CSP directive and VALUE is the 
              list of vulnerabilities found for the associated directive.
              A vulnerability is represented as NamedTuple exposing properties
              "desc" and "severity", both as String data type.
@@ -345,8 +345,8 @@ def unsafe_inline_enabled(response):
     Method to detect if CSP Policies are specified for Script/Style, 
     to allow unsafe inline content to be loaded.
     
-    @param response: A HTTPResponse object.
-    @return: True if CSP Policies are specified for Script/Style to allow 
+    :param response: A HTTPResponse object.
+    :return: True if CSP Policies are specified for Script/Style to allow 
              unsafe inline content to be loaded, False otherwise. 
     '''
     ##Extract and merge all policies
@@ -375,8 +375,8 @@ def unsafe_eval_enabled(response):
     Method to detect if CSP Policies are specified for Script, 
     to allow use of the javascript "eval()" function.
     
-    @param response: A HTTPResponse object.
-    @return: True if CSP Policies are specified for Script to allow 
+    :param response: A HTTPResponse object.
+    :return: True if CSP Policies are specified for Script to allow 
              use of the javascript "eval()" function, False otherwise. 
     '''
     ##Extract and merge all policies
@@ -403,8 +403,8 @@ def provides_csp_features(response):
     '''
     Method to detect if url provides CSP features.
     
-    @param response: A HTTPResponse object.
-    @return: True if the URL provides CSP features, False otherwise. 
+    :param response: A HTTPResponse object.
+    :return: True if the URL provides CSP features, False otherwise. 
     '''
     return ((len(retrieve_csp_policies(response)) 
              + len(retrieve_csp_policies(response, True))) > 0)
@@ -414,8 +414,8 @@ def retrieve_csp_report_uri(response):
     Method to retrieve all report uri from CSP Policies specified into a HTTP 
     response through CSP headers.
        
-    @param response: A HTTPResponse object.      
-    @return: A set of URIs
+    :param response: A HTTPResponse object.      
+    :return: A set of URIs
     ''' 
     uri_set = set()
     ##Extract and all merge policies
@@ -439,17 +439,17 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
     Method to retrieve all CSP Policies specified into a HTTP response 
     through CSP headers.
        
-    @param response: A HTTPResponse object.
-    @param select_only_reportonly_policies: Optional parameter to indicate to 
+    :param response: A HTTPResponse object.
+    :param select_only_reportonly_policies: Optional parameter to indicate to 
                                             method to retrieve only REPORT-ONLY 
                                             CSP policies (default is False).
-    @param select_also_misspelled_directives: Optional parameter to indicate to 
+    :param select_also_misspelled_directives: Optional parameter to indicate to 
                                             method to retrieve also list of 
                                             misspelled directives name
                                             (default is False). List is saved 
                                             in a dedicated KEY, see global var 
                                             named "CSP_MISSPELLED_DIRECTIVES".       
-    @return: A dictionary in which KEY is a CSP directive and VALUE is the 
+    :return: A dictionary in which KEY is a CSP directive and VALUE is the 
              list of associated policies.
     '''   
     headers = response.get_headers()
@@ -553,13 +553,13 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
     '''
     Method to merge 2 Policies dictionaries to a single.
                
-    @param non_report_only_policies_dict: A dictionary with all non 
+    :param non_report_only_policies_dict: A dictionary with all non 
                                           REPORT-ONLY Policies 
                                           (return of method "retrieve_csp_policies").
-    @param report_only_policies_dict: A dictionary with all REPORT-ONLY 
+    :param report_only_policies_dict: A dictionary with all REPORT-ONLY 
                                       Policies 
                                       (return of method "retrieve_csp_policies").      
-    @return: A merged dictionary in which KEY is a CSP directive 
+    :return: A merged dictionary in which KEY is a CSP directive 
              and VALUE is the list of associated policies.
     '''
     #Short circuit precheck...
@@ -589,9 +589,9 @@ def _contains_special_directive(directive_definition):
     Internal method to detect in a directive specification if
     a "special" directive is used.
     
-    @param directive_definition: Content of the directive (name + values).
+    :param directive_definition: Content of the directive (name + values).
     
-    @return: TRUE only if a special directive is detected. 
+    :return: TRUE only if a special directive is detected. 
     '''
     
     #Manage empty cases

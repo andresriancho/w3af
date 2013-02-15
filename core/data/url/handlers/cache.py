@@ -66,9 +66,9 @@ class CacheHandler(urllib2.BaseHandler):
     If a subsequent GET request is made for the same URL, the stored
     response is returned, saving time, resources and bandwidth
 
-    @author: Version 0.1 by Staffan Malmgren <staffan@tomtebo.org>
-    @author: Version 0.2 by Andres Riancho
-    @author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
+    :author: Version 0.1 by Staffan Malmgren <staffan@tomtebo.org>
+    :author: Version 0.2 by Andres Riancho
+    :author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
     '''
     def __init__(self):
         CacheClass.init()
@@ -188,7 +188,7 @@ class CachedResponse(StringIO.StringIO):
         '''
         Return the `part` string from the saved response.
 
-        @param part: Possible values: PART_HEADER, PART_BODY, PART_CODE and
+        :param part: Possible values: PART_HEADER, PART_BODY, PART_CODE and
             PART_MSG
         @raise ValueError: If `part` is not an expected value this exception
             is raised.
@@ -211,8 +211,8 @@ class CachedResponse(StringIO.StringIO):
         '''
         Verifies if a request is in the cache container
 
-        @param reqid: Request object
-        @return: Boolean value
+        :param reqid: Request object
+        :return: Boolean value
         @raises NotImplementedError: if the method is not redefined
         '''
         raise NotImplementedError
@@ -222,8 +222,8 @@ class CachedResponse(StringIO.StringIO):
         '''
         Saves data in request and response objects to the cache container
 
-        @param request:
-        @param response:
+        :param request:
+        :param response:
         @raises NotImplementedError: if the method is not redefined
         '''
         raise NotImplementedError

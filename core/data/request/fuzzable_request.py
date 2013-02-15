@@ -48,7 +48,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     the _dc in the querystring (get_uri) and HTTPPostDataRequest should return
     the _dc in the POSTDATA (get_data()).
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri, method='GET',
@@ -75,7 +75,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             GET,http://localhost/index.php?abc=123&def=789,
             POST,http://localhost/index.php,abc=123&def=789
 
-        @return: a csv str representation of the request
+        :return: a csv str representation of the request
         '''
         #
         # FIXME: What if a comma is inside the URL or DC?
@@ -122,8 +122,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
-        @param smth_instng: The string
-        @return: True if something similar was sent
+        :param smth_instng: The string
+        :return: True if something similar was sent
         '''
         def make_comp(heterogen_string):
             '''
@@ -172,7 +172,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def __str__(self):
         '''
-        @return: A string representation of this fuzzable request.
+        :return: A string representation of this fuzzable request.
 
         >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
         >>> str(fr)
@@ -219,7 +219,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             - They have the same parameters
             - The values for each parameter is equal
 
-        @return: True if the requests are equal.
+        :return: True if the requests are equal.
         '''
         if isinstance(other, FuzzableRequest):
             return (self._method == other._method and
@@ -242,7 +242,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             - They have the same parameter names
             - The values for each parameter have the same type (int / string)
 
-        @return: True if self and other are variants.
+        :return: True if self and other are variants.
         '''
         dc = self._dc
         odc = other._dc
@@ -293,7 +293,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def set_cookie(self, c):
         '''
-        @param cookie: A Cookie object as defined in core.data.dc.cookie,
+        :param cookie: A Cookie object as defined in core.data.dc.cookie,
             or a string.
         '''
         if isinstance(c, Cookie):

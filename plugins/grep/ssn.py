@@ -35,7 +35,7 @@ class ssn(GrepPlugin):
     '''
     This plugin detects the occurence of US Social Security numbers in web pages.
 
-    @author: dliz <dliz !at! users.sourceforge.net>
+    :author: dliz <dliz !at! users.sourceforge.net>
     '''
     # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
     regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012])) ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
@@ -50,9 +50,9 @@ class ssn(GrepPlugin):
         '''
         Plugin entry point, find the SSN numbers.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None.
         '''
         uri = response.get_uri()
 
@@ -78,7 +78,7 @@ class ssn(GrepPlugin):
 
     def _find_SSN(self, body_without_tags):
         '''
-        @return: SSN as found in the text and SSN in its regular format if the
+        :return: SSN as found in the text and SSN in its regular format if the
                  body had an SSN
         '''
         validated_ssn = None
@@ -159,7 +159,7 @@ class ssn(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugins scans every response page to find the strings that are likely

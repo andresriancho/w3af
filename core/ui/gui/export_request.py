@@ -43,7 +43,7 @@ Content-Type: application/x-www-form-urlencoded
 class export_request(entries.RememberingWindow):
     '''Infrastructure to export HTTP requests.
 
-    @author: Andres Riancho < andres.riancho | gmail.com >
+    :author: Andres Riancho < andres.riancho | gmail.com >
     '''
     def __init__(self, w3af, initialRequest=None):
         super(export_request, self).__init__(

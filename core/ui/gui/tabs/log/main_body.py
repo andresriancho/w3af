@@ -29,9 +29,9 @@ from core.ui.gui.tabs.log.stats import StatsViewer
 class LogBody(RememberingVPaned):
     '''Body of the log tab.
 
-    @param w3af: the Core instance.
+    :param w3af: the Core instance.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(LogBody, self).__init__(w3af, "pane-logbody")

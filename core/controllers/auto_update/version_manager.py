@@ -80,8 +80,8 @@ class VersionMgr(object):
         w3af version manager class. Handles the logic concerning the
         automatic update/commit process of the code.
 
-        @param localpath: Working directory
-        @param log: Default output function
+        :param localpath: Working directory
+        :param log: Default output function
         '''
         self._localpath = localpath
         self._client = GitClient(localpath)
@@ -110,8 +110,8 @@ class VersionMgr(object):
         '''
         Default events registration
         
-        @param log: Log function to call for events
-        @return: None, all saved in self._reg_funcs
+        :param log: Log function to call for events
+        :return: None, all saved in self._reg_funcs
         '''
         # Registered functions
         self._reg_funcs = {}
@@ -136,8 +136,8 @@ class VersionMgr(object):
         Perform code update if necessary. Return three elems tuple with the
         ChangeLog of the changed files, the local and the final commit id.
 
-        @param force: Force update ignoring the startup config.
-        @return: (changelog: A ChangeLog instance,
+        :param force: Force update ignoring the startup config.
+        :return: (changelog: A ChangeLog instance,
                   local_head_id: The local id before the update,
                   commit_id: The commit id after the update)
                   
@@ -175,7 +175,7 @@ class VersionMgr(object):
         '''
         Ask the user if he wants to update or not.
         
-        @return: True if the user wants to update.
+        :return: True if the user wants to update.
         ''' 
         # Call callback function
         if self.callback_onupdate_confirm is not None:
@@ -197,7 +197,7 @@ class VersionMgr(object):
         '''
         Finally call the Git client's pull!
         
-        @return: (changelog, local_head_id, target_commit)
+        :return: (changelog, local_head_id, target_commit)
         '''
         self._notify(VersionMgr.ON_UPDATE)
         
@@ -235,7 +235,7 @@ class VersionMgr(object):
         to reload all modules (and get those changes from the py files into
         memory) before continuing.
 
-        @return: None.
+        :return: None.
 
         TODO: This still needs to be implemented, I tried some ideas from:
         http://stackoverflow.com/questions/437589/how-do-i-unload-reload-a-python-module
@@ -264,7 +264,7 @@ class VersionMgr(object):
 
     def _added_new_dependencies(self, changelog):
         '''
-        @return: True if the changelog shows any modifications to the
+        :return: True if the changelog shows any modifications to the
                  dependency_check.py files.
         '''
         for commit in changelog.get_changes():
@@ -282,7 +282,7 @@ class VersionMgr(object):
             2) IF last_upd == 'yesterday' and freq == 'D' THEN return True
             3) IF last_upd == 'two_days_ago' and freq == 'W' THEN return False.
 
-        @return: Boolean value.
+        :return: Boolean value.
         '''
         startcfg = self._start_cfg
         # That's it!

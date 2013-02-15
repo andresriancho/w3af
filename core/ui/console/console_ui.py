@@ -51,7 +51,7 @@ class ConsoleUI(object):
     This class represents the console.
     It handles the keys pressed and delegate the completion and execution tasks
     to the current menu.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
     def __init__(self, commands=[], parent=None, do_upd=None):
@@ -103,7 +103,7 @@ class ConsoleUI(object):
 
     def accept_disclaimer(self):
         '''
-        @return: True/False depending on the user's answer to our disclaimer.
+        :return: True/False depending on the user's answer to our disclaimer.
                  Please note that in w3af_console we'll stop if the user does
                  not accept the disclaimer.
         '''

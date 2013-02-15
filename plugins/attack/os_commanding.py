@@ -139,7 +139,7 @@ class os_commanding(AttackPlugin):
     '''
     Exploit OS Commanding vulnerabilities.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     EXPLOIT_STRATEGIES = [FullPathExploitStrategy, CmdsInPathExploitStrategy,
                           BasicExploitStrategy]
@@ -149,7 +149,7 @@ class os_commanding(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
@@ -171,8 +171,8 @@ class os_commanding(AttackPlugin):
 
     def _generate_shell(self, vuln):
         '''
-        @param vuln: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed as
+        :param vuln: The vuln to exploit.
+        :return: The shell object based on the vulnerability that was passed as
                  parameter.
         '''
         # Check if we really can execute commands on the remote server
@@ -190,7 +190,7 @@ class os_commanding(AttackPlugin):
         '''
         This command verifies a vuln. This is really hard work!
 
-        @return : True if vuln can be exploited.
+        :return : True if vuln can be exploited.
         '''
         for StrategyKlass in self.EXPLOIT_STRATEGIES:
             
@@ -210,7 +210,7 @@ class os_commanding(AttackPlugin):
     
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -221,7 +221,7 @@ class os_commanding(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits os commanding vulnerabilities and returns a
@@ -244,8 +244,8 @@ class OSCommandingShell(ExecShell):
         This method executes a command in the remote operating system by
         exploiting the vulnerability.
 
-        @param command: The command to handle ( ie. "ls", "whoami", etc ).
-        @return: The result of the command.
+        :param command: The command to handle ( ie. "ls", "whoami", etc ).
+        :return: The result of the command.
         '''
         strategy_cmd = self.strategy.generate_command(command)
         try:

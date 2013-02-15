@@ -29,7 +29,7 @@ from core.controllers.exceptions import w3afException
 class profilesMenu(menu):
     '''
     Menu to control the profiles.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
 
     '''
 
@@ -43,7 +43,7 @@ class profilesMenu(menu):
 
     def _cmd_use(self, params):
         '''
-        @param params: A two-elems list containing the name of the profile to
+        :param params: A two-elems list containing the name of the profile to
                        load and the original working directory.
         '''
         if not params:

@@ -30,7 +30,7 @@ from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 class rnd_param(EvasionPlugin):
     '''
     Add a random parameter.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         EvasionPlugin.__init__(self)
@@ -39,9 +39,9 @@ class rnd_param(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified
+        :param request: HTTPRequest instance that is going to be modified
                         by the evasion plugin
-        @return: The modified request
+        :return: The modified request
         '''
         # First we mangle the URL
         qs = request.url_object.querystring.copy()
@@ -72,8 +72,8 @@ class rnd_param(EvasionPlugin):
         '''
         Add a random parameter.
 
-        @param data: A dict-like object.
-        @return: The same object with one new key-value.
+        :param data: A dict-like object.
+        :return: The same object with one new key-value.
         '''
         key = rand_alnum(5)
         value = rand_alnum(8)
@@ -85,13 +85,13 @@ class rnd_param(EvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        :return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 50
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin adds a random parameter.

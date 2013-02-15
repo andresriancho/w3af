@@ -39,14 +39,14 @@ def replace_file_special_chars(filename_path):
 
 def days_since_file_update(filename, days):
     '''
-    @return: True if the filename was updated earlier than @days before today
+    :return: True if the filename was updated earlier than @days before today
     '''
     time_delta_days = get_days_since_file_update(filename)
     return time_delta_days > days
 
 def get_days_since_file_update(filename):
     '''
-    @return: The days since the last update 
+    :return: The days since the last update 
     '''
     repo = Repo(".")
 
@@ -70,8 +70,8 @@ def get_days_since_file_update(filename):
     
 def days_since_newest_file_update(path):
     '''
-    @param path: The path to analyze
-    @return: The days since the the latest update to the newest file in a path
+    :param path: The path to analyze
+    :return: The days since the the latest update to the newest file in a path
     '''
     days = 365
     

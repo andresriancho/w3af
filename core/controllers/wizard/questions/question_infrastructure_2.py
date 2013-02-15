@@ -42,7 +42,7 @@ class question_infrastructure_2(question):
 
     def _get_option_objects(self):
         '''
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
         self._d1 = 'Detect active filters (IPS, WAF, Layer 7 firewalls)'
         o1 = opt_factory(self._d1, True, self._d1, 'boolean')

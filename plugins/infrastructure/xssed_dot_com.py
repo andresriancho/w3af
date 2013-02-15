@@ -37,8 +37,8 @@ class xssed_dot_com(InfrastructurePlugin):
     '''
     Search in xssed.com to find xssed pages.
 
-    @author: Nicolas Crocfer (shatter@shatter-blog.net)
-    @author: Fix: Set "." in front of the root domain to limit the search - Raul Siles
+    :author: Nicolas Crocfer (shatter@shatter-blog.net)
+    :author: Fix: Set "." in front of the root domain to limit the search - Raul Siles
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -54,7 +54,7 @@ class xssed_dot_com(InfrastructurePlugin):
         '''
         Search in xssed.com and parse the output.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.get_url().get_root_domain()
@@ -83,7 +83,7 @@ class xssed_dot_com(InfrastructurePlugin):
         '''
         Replace the URL in the good format.
 
-        @return: None
+        :return: None
         '''
         url = url.replace('<br>', '')
         url = url.replace('</th>', '')
@@ -100,7 +100,7 @@ class xssed_dot_com(InfrastructurePlugin):
         Parse the result from the xssed site and create the corresponding info
         objects.
 
-        @return: Fuzzable requests pointing to the XSS (if any)
+        :return: Fuzzable requests pointing to the XSS (if any)
         '''
         html_body = response.get_body()
 

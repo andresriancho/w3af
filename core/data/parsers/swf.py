@@ -31,7 +31,7 @@ class SWFParser(BaseParser):
     The parser is based on "SWF File Format Specification Version 10"
     http://www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, HTTPResponse):
         BaseParser.__init__(self, HTTPResponse)
@@ -49,8 +49,8 @@ class SWFParser(BaseParser):
     def _is_compressed(self, swf_document):
         '''
 
-        @param swf_content: The SWF file.
-        @return: True if the SWF is compressed
+        :param swf_content: The SWF file.
+        :return: True if the SWF is compressed
         '''
         return swf_document.startswith('CWS')
 
@@ -58,8 +58,8 @@ class SWFParser(BaseParser):
         '''
         zlib.inflate the SWF file.
 
-        @param swf_content: The SWF file.
-        @return: A decompressed version of the SWF
+        :param swf_content: The SWF file.
+        :return: A decompressed version of the SWF
         '''
         compressed_data = swf_document[8:]
         try:
@@ -78,7 +78,7 @@ class SWFParser(BaseParser):
         For now... don't decompile anything, just apply regular
         expressions to it.
 
-        @param swf_body: SWF bytecode string
+        :param swf_body: SWF bytecode string
         '''
         self._regex_url_parse(swf_body)
         self._0x83_getURL_parse(swf_body)
@@ -96,7 +96,7 @@ class SWFParser(BaseParser):
         
         So, with this information I'll extract links!
         
-        @return: Store new URLs in self._re_urls, None is returned.
+        :return: Store new URLs in self._re_urls, None is returned.
         '''
         for index, char in enumerate(swf_body):
             if char == '\x83' and swf_body[index+2] == '\x00':
@@ -136,7 +136,7 @@ class SWFParser(BaseParser):
             - frames
             - etc.
 
-        @return: Two lists, one with the parsed URLs, and one with the URLs
+        :return: Two lists, one with the parsed URLs, and one with the URLs
                  that came out of a regular expression. The second list if less
                  trustworthy.
         '''
@@ -151,7 +151,7 @@ class SWFParser(BaseParser):
             - get_meta_tags
             - get_references_of_tag
 
-        @return: Because we are a PDF document, we don't have the same things that
+        :return: Because we are a PDF document, we don't have the same things that
         a nice HTML document has, so we simply return an empty list.
         '''
         return []

@@ -31,7 +31,7 @@ class wsdl_finder(CrawlPlugin):
     '''
     Find web service definitions files.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     WSDL = ('?wsdl',
@@ -47,7 +47,7 @@ class wsdl_finder(CrawlPlugin):
         '''
         If url not in _tested, append a ?WSDL and check the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         url = fuzzable_request.get_url().uri2url()
@@ -71,7 +71,7 @@ class wsdl_finder(CrawlPlugin):
     def _do_request(self, url_to_request):
         '''
         Perform an HTTP request to the url_to_request parameter.
-        @return: None.
+        :return: None.
         '''
         try:
             self._uri_opener.GET(url_to_request, cache=True)
@@ -83,14 +83,14 @@ class wsdl_finder(CrawlPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.wsdl_greper']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds new web service descriptions and other web service

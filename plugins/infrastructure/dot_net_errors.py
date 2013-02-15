@@ -32,7 +32,7 @@ class dot_net_errors(InfrastructurePlugin):
     Request specially crafted URLs that generate ASP.NET errors in order
     to gather information.
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
@@ -48,7 +48,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         Requests the special filenames.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if len(self._already_tested) < self.MAX_TESTS \
@@ -65,7 +65,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         Generate new URLs based on original_url.
 
-        @param original_url: The original url that has to be modified in
+        :param original_url: The original url that has to be modified in
                                  order to trigger errors in the remote application.
         '''
         special_chars = ['|', '~']
@@ -83,7 +83,7 @@ class dot_net_errors(InfrastructurePlugin):
 
     def _send_and_check(self, url):
         '''
-        @param response: The HTTPResponse object that holds the content of
+        :param response: The HTTPResponse object that holds the content of
                              the response to analyze.
         '''
         response = self._uri_opener.GET(url, cache=True)
@@ -107,14 +107,14 @@ class dot_net_errors(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_pages']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Request specially crafted URLs that generate ASP.NET errors in order to

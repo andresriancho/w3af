@@ -34,7 +34,7 @@ class OutputPlugin(Plugin):
         3. error( message, verbose )
         4. vulnerability( message, verbose )
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         Plugin.__init__(self)
@@ -48,7 +48,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action for debug messages.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError
 
@@ -58,7 +58,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action for information messages.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError
 
@@ -68,7 +68,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError
 
@@ -78,7 +78,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action for vulnerability messages.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError
 
@@ -88,7 +88,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action for console messages.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError
 
@@ -98,7 +98,7 @@ class OutputPlugin(Plugin):
         called from a plugin or from the framework. This method should take an
         action to log HTTP requests and responses.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         pass
 
@@ -106,25 +106,25 @@ class OutputPlugin(Plugin):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
 
-        @param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
+        :param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
                    looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
 
-        @param pluginOptionsDict: As defined in the w3afCore, looks similar to:
+        :param pluginOptionsDict: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         pass
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be
+        :return: A list with the names of the plugins that should be
         run before the current one.
         '''
         return []
 
     def _clean_string(self, string_to_clean):
         '''
-        @param string_to_clean: A string that should be cleaned before using
+        :param string_to_clean: A string that should be cleaned before using
                                 it in a message object.
         '''
         for char, replace in [('\0', '\\0'), ('\t', '\\t')]:  # ('\n','\\n'),('\r','\\r'),
@@ -145,7 +145,7 @@ class OutputPlugin(Plugin):
             I also know that the om.out.XYZ method will be in the stack
             That's 3... so... number 4 is the one that really called me.
 
-        @return: The caller of the om.out.XYZ method; this is used to make output
+        :return: The caller of the om.out.XYZ method; this is used to make output
                  more readable.
 
         >>> bop = OutputPlugin()
@@ -174,13 +174,13 @@ class OutputPlugin(Plugin):
 
     def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
         '''
-        @return: A string with the information about enabled plugins and their
+        :return: A string with the information about enabled plugins and their
                  options.
 
-        @param plugin_type: audit, crawl, etc.
-        @param plugins_list: A list of the names of the plugins of
+        :param plugin_type: audit, crawl, etc.
+        :param plugins_list: A list of the names of the plugins of
                                  plugin_type that are enabled.
-        @param plugins_options: The options for the plugins
+        :param plugins_options: The options for the plugins
         '''
         response = ''
 

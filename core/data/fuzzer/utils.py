@@ -27,7 +27,7 @@ def rand_alpha(length=0):
     '''
     Create a random string ONLY with letters
 
-    @return: A random string only composed by letters.
+    :return: A random string only composed by letters.
     '''
     return ''.join(choice(letters) for _ in xrange(length or randint(10, 30)))
 
@@ -36,7 +36,7 @@ def rand_alnum(length=0):
     '''
     Create a random string with random length
 
-    @return: A random string of with length > 10 and length < 30.
+    :return: A random string of with length > 10 and length < 30.
     '''
     jibber = ''.join([letters, digits])
     return ''.join(choice(jibber) for _ in xrange(length or randint(10, 30)))
@@ -46,7 +46,7 @@ def rand_number(length=0, exclude_numbers=[]):
     '''
     Create a random string ONLY with numbers
 
-    @return: A random string only composed by numbers.
+    :return: A random string only composed by numbers.
     '''
     max_tries = 100
     while True:
@@ -64,7 +64,7 @@ def rand_number(length=0, exclude_numbers=[]):
 
 def create_format_string(length):
     '''
-    @return: A string with $length %s and a final %n
+    :return: A string with $length %s and a final %n
     '''
     result = '%n' * length
     return result

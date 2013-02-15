@@ -33,7 +33,7 @@ def luhnCheck(value):
     The Luhn check against the value which can be an array of digits,
     numeric string or a positive integer.
 
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     # Prepare the value to be analyzed.
     arr = []
@@ -57,7 +57,7 @@ class credit_cards(GrepPlugin):
     '''
     This plugin detects the occurrence of credit card numbers in web pages.
 
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
     def __init__(self):
@@ -78,9 +78,9 @@ class credit_cards(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the credit cards.
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if response.is_text_or_html() and response.get_code() == 200 \
                 and response.get_clear_text_body() is not None:
@@ -101,7 +101,7 @@ class credit_cards(GrepPlugin):
 
     def _find_card(self, body):
         '''
-        @return: A list of matching credit card numbers
+        :return: A list of matching credit card numbers
         '''
         res = []
 
@@ -116,7 +116,7 @@ class credit_cards(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugins scans every response page to find the strings that are

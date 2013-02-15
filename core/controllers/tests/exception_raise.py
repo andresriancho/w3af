@@ -28,7 +28,7 @@ class exception_raise(CrawlPlugin):
     
     Only useful for testing, see test_w3afcore.py
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     # pylint: disable=E1102
     exception_to_raise = None

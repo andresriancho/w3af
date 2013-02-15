@@ -35,7 +35,7 @@ class DataContainer(OrderedDict):
     This class represents a data container. It's basically the way
     query-string and post-data are stored when using url-encoding.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
 
@@ -65,7 +65,7 @@ class DataContainer(OrderedDict):
         '''
         This method returns a copy of the DataContainer Object.
 
-        @return: A copy of myself.
+        :return: A copy of myself.
         '''
         return copy.deepcopy(self)
 
@@ -86,7 +86,7 @@ class DataContainer(OrderedDict):
         >>> urllib.unquote(str(dc)).decode('latin-1') == u'a=1&u=Ú-ú-Ü-ü'
         True
 
-        @return: string representation of the DataContainer Object.
+        :return: string representation of the DataContainer Object.
         '''
         return enc_dec.urlencode(self, encoding=self.encoding)
 

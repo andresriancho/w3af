@@ -32,7 +32,7 @@ from core.data.kb.vuln import Vuln
 class un_ssl(AuditPlugin):
     '''
     Find out if secure content can also be fetched using http.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -48,7 +48,7 @@ class un_ssl(AuditPlugin):
             - input: https://w3af.org/
             - check: http://w3af.org/
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         if not self._run:
             return
@@ -107,7 +107,7 @@ class un_ssl(AuditPlugin):
 
     def _redirects_to_secure(self, insecure_response, secure_response):
         '''
-        @return: Is the insecure response redirecting to an HTTPS resource?
+        :return: Is the insecure response redirecting to an HTTPS resource?
         '''
         if insecure_response.was_redirected():
             redirect_target = insecure_response.get_redir_url()
@@ -119,7 +119,7 @@ class un_ssl(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin verifies that URL's that are available using HTTPS aren't

@@ -36,7 +36,7 @@ class PDFParser(BaseParser):
     This class parses pdf documents to find emails and URLs. It's based on the
     pdfminer library.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, HTTPResponse):
         super(PDFParser, self).__init__(HTTPResponse)
@@ -68,7 +68,7 @@ class PDFParser(BaseParser):
             - frames
             - etc.
 
-        @return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
+        :return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
         regular expression. The second list if less trustworthy.
         '''
         return ([], list(self._re_urls))
@@ -79,8 +79,8 @@ class PDFParser(BaseParser):
 
 def pdf_to_text(pdf_string):
     '''
-    @param pdf_string: The PDF file contents.
-    @return: A string with the content of the PDF file.
+    :param pdf_string: The PDF file contents.
+    :return: A string with the content of the PDF file.
     '''
     rsrcmgr = PDFResourceManager(caching=True)
     laparams = LAParams()

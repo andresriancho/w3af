@@ -37,7 +37,7 @@ class atHandler(delayedExecution):
 
     def can_delay(self):
         '''
-        @return: True if the remote user can add entries to his crontab
+        :return: True if the remote user can add entries to his crontab
         '''
         om.out.debug('[atHandler] Verifying if the remote user can run the at command.')
         res = self._exec('at')
@@ -86,7 +86,7 @@ class atHandler(delayedExecution):
         The current time is: 11:24:19.59
         Enter the new time:
 
-        @return: A tuple with the "at" command, and the time that it will take
+        :return: A tuple with the "at" command, and the time that it will take
                  to run the command.
         '''
         res = 'at '

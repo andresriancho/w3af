@@ -58,7 +58,7 @@ class HTMLParser(SGMLParser):
 
     def _pre_parse(self, http_resp):
         '''
-        @param http_resp: The HTTP response document that contains the
+        :param http_resp: The HTTP response document that contains the
         HTML document inside its body.
         '''
         SGMLParser._pre_parse(self, http_resp)

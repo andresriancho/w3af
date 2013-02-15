@@ -34,7 +34,7 @@ class cache_control(GrepPlugin):
     '''
     Grep every page for Pragma and Cache-Control headers.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     SAFE_CONFIG = {'pragma': 'no-cache',
@@ -66,9 +66,9 @@ class cache_control(GrepPlugin):
     
     def _get_cache_control(self, response):
         '''
-        @param response: The http response we want to extract the information
+        :param response: The http response we want to extract the information
                          from.
-        @return: A list with the headers and meta tag information used to
+        :return: A list with the headers and meta tag information used to
                  configure the browser cache control.
         '''
         res = []

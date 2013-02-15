@@ -33,13 +33,13 @@ class auth(BaseConsumer):
 
     def __init__(self, auth_plugins, w3af_core, timeout):
         '''
-        @param in_queue: A queue that's used to communicate with the thread. Items
+        :param in_queue: A queue that's used to communicate with the thread. Items
                          that might appear in this queue are:
                              * POISON_PILL
                              * FORCE_LOGIN
-        @param auth_plugins: Instances of auth plugins in a list
-        @param w3af_core: The w3af core that we'll use for status reporting
-        @param timeout: The time to wait between each login check
+        :param auth_plugins: Instances of auth plugins in a list
+        :param w3af_core: The w3af core that we'll use for status reporting
+        :param timeout: The time to wait between each login check
         '''
         super(auth, self).__init__(auth_plugins, w3af_core,
                                    thread_name='Authenticator')

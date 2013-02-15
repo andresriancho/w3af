@@ -81,7 +81,7 @@ class GUIUpdater(UIUpdater):
     
     def _downloading(self, ignored_param):
         '''
-        @return:
+        :return:
             * Updating .
             * Updating ..
             * Updating ...
@@ -100,7 +100,7 @@ class GUIUpdater(UIUpdater):
     
     def _generate_report(self, changelog, local_commit_id, remote_commit_id):
         '''
-        @return: A string with a report of the latest update from local commit
+        :return: A string with a report of the latest update from local commit
                  to remote commit which changes stuff in changelog.
         '''
         lshort = to_short_id(local_commit_id)

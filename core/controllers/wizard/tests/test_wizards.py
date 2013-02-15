@@ -105,7 +105,7 @@ class test_wizards(object):
 
     def _correctly_fill_options(self, option_list):
         '''
-        @return: A correctly completed option list, simulates a user that knows
+        :return: A correctly completed option list, simulates a user that knows
                  what he's doing and doesn't make any mistakes.
         '''
         values = {
@@ -125,7 +125,7 @@ class test_wizards(object):
 
     def _incorrectly_fill_options(self, option_list):
         '''
-        @return: Inorrectly completed option list, simulates a user that
+        :return: Inorrectly completed option list, simulates a user that
                  doesn't know what he's doing and makes all the mistakes.
         '''
         values = {

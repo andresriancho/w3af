@@ -48,7 +48,7 @@ ui_menu = """
 class Compare(entries.RememberingWindow):
     '''Compares two texts.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, commHandler):
         entries.RememberingWindow.__init__(
@@ -182,7 +182,7 @@ class Compare(entries.RememberingWindow):
     def sensitive_all(self, how):
         '''Sets the sensitivity of almost everything.
 
-        @param how: how to set it.
+        :param how: how to set it.
         '''
         self.comp.set_sensitive(how)
         for widg in self.tbarwidgets:
@@ -192,7 +192,7 @@ class Compare(entries.RememberingWindow):
     def add_element(self, element):
         '''Adds an element to the comparison.
 
-        @param element: the element to add.
+        :param element: the element to add.
         '''
         self.elements.append(element)
         newlen = len(self.elements)

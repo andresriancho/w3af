@@ -32,7 +32,7 @@ class dom_xss(GrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     JS_FUNCTIONS = ('document.write',
@@ -63,9 +63,9 @@ class dom_xss(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the DOM XSS vulns.
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if not response.is_text_or_html():
             return
@@ -85,8 +85,8 @@ class dom_xss(GrepPlugin):
     def _smart_grep(self, response):
         '''
         Search for the DOM XSS vulns using smart grep (context regex).
-        @param response: The HTTP response object
-        @return: list of dom xss items
+        :param response: The HTTP response object
+        :return: list of dom xss items
         '''
         res = []
         match = self._scriptRe.search(response.get_body())
@@ -105,7 +105,7 @@ class dom_xss(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for traces of DOM XSS.

@@ -71,7 +71,7 @@ def _make_json_mutants(freq, mutant_str_list, fuzzable_param_list,
 # Now we define a function that does the work...
 def _fuzz_json(mutant_str_list, parsed_json_inst, append):
     '''
-    @return: A list with tuples containing (fuzzed list/dict/string/int that
+    :return: A list with tuples containing (fuzzed list/dict/string/int that
              represents a JSON object, original value)
     '''
     res = []
@@ -154,7 +154,7 @@ class JSONMutant(PostDataMutant):
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
 
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         res = ''
         res += '"' + self.get_url() + '", using HTTP method '

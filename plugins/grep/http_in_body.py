@@ -31,7 +31,7 @@ from core.data.kb.info import Info
 class http_in_body (GrepPlugin):
     """
     Search for HTTP request/response string in response body.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     HTTP = (
@@ -51,9 +51,9 @@ class http_in_body (GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         uri = response.get_uri()
         
@@ -109,7 +109,7 @@ class http_in_body (GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''\
         This plugin searches for HTTP responses that contain other HTTP

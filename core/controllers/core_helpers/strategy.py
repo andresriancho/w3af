@@ -83,7 +83,7 @@ class w3af_core_strategy(object):
         User interface coders: Please remember that you have to call
         core.plugins.init_plugins() method before calling start.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         try:
             self._setup_grep()
@@ -182,7 +182,7 @@ class w3af_core_strategy(object):
         '''
         Loop once through all input consumers and route their results.
 
-        @return: (finished, consumer_forced_end) or None if we shouldn't call
+        :return: (finished, consumer_forced_end) or None if we shouldn't call
                  this method anymore.
         '''
         for url_producer in _input:
@@ -377,7 +377,7 @@ class w3af_core_strategy(object):
 
     def force_auth_login(self):
         '''Force a login in a sync way
-        @return: None.
+        :return: None.
         '''
         if self._auth_consumer is not None:
             self._auth_consumer.force_login()

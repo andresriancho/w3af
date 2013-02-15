@@ -36,7 +36,7 @@ class ClusterCellWindow(entries.RememberingWindow):
         '''
         A window that stores the clusterCellData and the level changer.
 
-        @param data: A list with the HTTPResponse objects to be clustered.
+        :param data: A list with the HTTPResponse objects to be clustered.
         '''
         # First we save the data
         self._data = data
@@ -155,7 +155,7 @@ class clusterCellData(gtk.TreeView):
 
     def __init__(self, data, level=50):
         '''
-        @param clusteredData: A list of objects that are clustered.
+        :param clusteredData: A list of objects that are clustered.
         '''
         # Save the data
         self._data = data
@@ -214,9 +214,9 @@ class clusterCellData(gtk.TreeView):
         Computes the relative levenshtein distance between two strings. It is
         in the range (0-1] where 1 means total equality.
 
-        @param a: HTTPResponse object
-        @param b: HTTPResponse object
-        @return: A float with the distance
+        :param a: HTTPResponse object
+        :param b: HTTPResponse object
+        :return: A float with the distance
         '''
         # After some tests I realized that the amount of calls to this method
         # was HUGE. It seems that python-cluster compares each pair (a,b) more
@@ -386,7 +386,7 @@ class clusterCellData(gtk.TreeView):
 
     def _getInfoForId(self, id):
         '''
-        @return: A string with information about the request with id == id
+        :return: A string with information about the request with id == id
         '''
         try:
             obj = [i for i in self._data if i.get_id() == int(id)][0]

@@ -32,7 +32,7 @@ class WSDLParser(object):
     '''
     This class parses WSDL documents.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -44,8 +44,8 @@ class WSDLParser(object):
         in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to
         enhance framework's performance.
 
-        @param data: A string that might represent a WSDL
-        @return: True if the data parameter is a WSDL document.
+        :param data: A string that might represent a WSDL
+        :return: True if the data parameter is a WSDL document.
         '''
         return False
         if '<definitions' in data[:150] or '<wsdl:definitions' in data[:150]:
@@ -55,7 +55,7 @@ class WSDLParser(object):
 
     def set_wsdl(self, xmlData):
         '''
-        @param xmlData: The WSDL to parse. At this point, we really don't know
+        :param xmlData: The WSDL to parse. At this point, we really don't know
                         if it really is a WSDL document.
         '''
         if not self.is_WSDL(xmlData):
@@ -74,7 +74,7 @@ class WSDLParser(object):
     def get_ns(self, method):
         '''
         @method: The method name
-        @return: The namespace of the WSDL
+        :return: The namespace of the WSDL
         '''
         if method in self._proxy.methods.keys():
             return str(self._proxy.methods[method].namespace)
@@ -84,7 +84,7 @@ class WSDLParser(object):
     def get_action(self, methodName):
         '''
         @methodName: The method name
-        @return: The soap action as a URL object
+        :return: The soap action as a URL object
         '''
         if methodName in self._proxy.methods.keys():
             action_str = str(self._proxy.methods[methodName].soapAction)
@@ -96,7 +96,7 @@ class WSDLParser(object):
     def get_location(self, methodName):
         '''
         @methodName: The method name
-        @return: The soap action.
+        :return: The soap action.
         '''
         if methodName in self._proxy.methods.keys():
             location_str = str(self._proxy.methods[methodName].location)
@@ -108,7 +108,7 @@ class WSDLParser(object):
     def get_methods(self):
         '''
         @wsdlDocument: The XML document
-        @return: The methods defined in the WSDL
+        :return: The methods defined in the WSDL
         '''
         res = []
         for methodName in self._proxy.methods.keys():
@@ -125,7 +125,7 @@ class WSDLParser(object):
     def get_methodParams(self, methodName):
         '''
         @methodName: The method name
-        @return: The soap action.
+        :return: The soap action.
         '''
         if not methodName in self._proxy.methods.keys():
             raise w3afException('Unknown method name.')

@@ -43,7 +43,7 @@ class Plugin(Configurable):
         1. set_options( OptionList )
         2. get_options()
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -76,7 +76,7 @@ class Plugin(Configurable):
         to open a Url and you are sure that the plugin is using the user
         supplied settings (proxy, user agent, etc).
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._uri_opener = UrlOpenerProxy(urlOpener, self)
 
@@ -89,20 +89,20 @@ class Plugin(Configurable):
         This method must be implemented in every plugin that wishes to have user
         configurable options.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         pass
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
         return ol
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be
+        :return: A list with the names of the plugins that should be
                  run before the current one. Only plugins with dependencies
                  should override this method.
         '''
@@ -110,7 +110,7 @@ class Plugin(Configurable):
 
     def get_desc(self):
         '''
-        @return: A description of the plugin.
+        :return: A description of the plugin.
 
         >>> b = Plugin()
         >>> b.__doc__ = 'abc'
@@ -131,7 +131,7 @@ class Plugin(Configurable):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         raise NotImplementedError(
             'Plugin is not implementing required method get_long_desc')
@@ -179,8 +179,8 @@ class Plugin(Configurable):
         Subclasses should redefine this method for a more refined
         behavior and must respect the return value format.
 
-        @param url_error: w3afMustStopOnUrlError exception instance
-        @return: (stopbubbling, result). The 1st is a boolean value
+        :param url_error: w3afMustStopOnUrlError exception instance
+        :return: (stopbubbling, result). The 1st is a boolean value
             that indicates the caller if the original error should
             stop bubbling or not. The 2nd is the result to be
             returned by the caller. Note that only makes sense

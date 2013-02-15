@@ -108,7 +108,7 @@ class ScanState:
     def get_stats(self):
         """Provides statistics about the scanning process.
 
-        @return: Number of clues gathered so far, number of successful requests
+        :return: Number of clues gathered so far, number of successful requests
         and number of unsuccessful ones (missed replies).
         @rtype: C{tuple}
         """
@@ -139,7 +139,7 @@ class ScanState:
     def get_clues(self):
         """Clue accessor.
 
-        @return: A copy of all obtained clues.
+        :return: A copy of all obtained clues.
         @rtype: C{list}
         """
         self.__mutex.acquire()
@@ -273,11 +273,11 @@ class BaseScanner(threading.Thread):
     def __init__(self, state, scantask):
         """Initializes the scanning thread.
 
-        @param state: Container to store the results of the scan (shared among
+        :param state: Container to store the results of the scan (shared among
         scanning threads).
         @type state: C{instanceof(ScanState)}
 
-        @param scantask: Object providing information needed to perform the
+        :param scantask: Object providing information needed to perform the
         scan.
         @type scantask: C{instanceof(ScanTask)}
         """
@@ -290,10 +290,10 @@ class BaseScanner(threading.Thread):
     def remaining(self, end=None):
         """Seconds left until a given point in time.
 
-        @param end: Ending time.
+        :param end: Ending time.
         @type end: C{float}
 
-        @return: Remaining time until L{self.timeout}
+        :return: Remaining time until L{self.timeout}
         @rtype: C{int}
         """
         if not end:
@@ -303,7 +303,7 @@ class BaseScanner(threading.Thread):
     def has_expired(self):
         """Expiration predicate.
 
-        @return: True if the timeout has expired, False otherwise.
+        :return: True if the timeout has expired, False otherwise.
         @rtype: C{bool}
         """
         return (self.remaining() <= 0)
@@ -311,10 +311,10 @@ class BaseScanner(threading.Thread):
     def set_timeout(self, secs):
         """Compute an expiration time.
 
-        @param secs: Amount of seconds to spend scanning the target.
+        :param secs: Amount of seconds to spend scanning the target.
         @type secs: C{int}
 
-        @return: The moment in time when the task expires.
+        :return: The moment in time when the task expires.
         @rtype: C{float}
         """
         self.timeout = time.time() + secs
@@ -361,13 +361,13 @@ class Scanner(BaseScanner):
     def make_clue(self, timestamp, headers):
         """Compose a clue object.
 
-        @param timestamp: Time when the reply was received.
+        :param timestamp: Time when the reply was received.
         @type timestamp: C{float}
 
-        @param headers: MIME headers coming from an HTTP response.
+        :param headers: MIME headers coming from an HTTP response.
         @type headers: C{str}
 
-        @return: A valid clue
+        :return: A valid clue
         @rtype: C{Clue}
         """
         clue = Halberd.clues.Clue.Clue()

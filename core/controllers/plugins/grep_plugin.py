@@ -30,7 +30,7 @@ class GrepPlugin(Plugin):
     inherit from it and implement the following method:
         1. grep(request, response)
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     TARGET_DOMAINS = None
@@ -45,10 +45,10 @@ class GrepPlugin(Plugin):
         This method CAN be implemented on a plugin, but its better to
         do your searches in _testResponse().
 
-        @param response: This is the HTTPResponse object to test.
-        @param fuzzable_request: This is the fuzzable request object that
+        :param response: This is the HTTPResponse object to test.
+        :param fuzzable_request: This is the fuzzable request object that
             generated the current response being analyzed.
-        @return: If something is found it must be reported to the Output
+        :return: If something is found it must be reported to the Output
             Manager and the KB.
         '''
         # Only run once for each HTTP response
@@ -68,8 +68,8 @@ class GrepPlugin(Plugin):
         '''
         Analyze the response.
 
-        @param fuzzable_request: The request that was sent
-        @param response: The HTTP response obj
+        :param fuzzable_request: The request that was sent
+        :param response: The HTTP response obj
         '''
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)

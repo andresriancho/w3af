@@ -36,8 +36,8 @@ _multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 def is_source_file(file_content):
     '''
-    @param file_content: The content of the http response body to analyze
-    @return: A tuple with:
+    :param file_content: The content of the http response body to analyze
+    :return: A tuple with:
                 a re.match object if the file_content matches a source code file,
                 a string with the source code programming language
     '''

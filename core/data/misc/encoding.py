@@ -31,7 +31,7 @@ HTML_ENCODE = 'html_encode_char'
 
 def _return_html_encoded(encodingexc):
     '''
-    @return: &#xff when input is \xff
+    :return: &#xff when input is \xff
     '''
     st = encodingexc.start
     en = encodingexc.end
@@ -42,7 +42,7 @@ def _return_html_encoded(encodingexc):
 
 def _return_escaped_char(encodingexc):
     '''
-    @return: \\xff when input is \xff
+    :return: \\xff when input is \xff
     '''
     st = encodingexc.start
     en = encodingexc.end
@@ -108,7 +108,7 @@ def smart_str(s, encoding='utf-8', errors='strict'):
 
 def is_known_encoding(encoding):
     '''
-    @return: True if the encoding name is known.
+    :return: True if the encoding name is known.
 
     >>> is_known_encoding( 'foo' )
     False

@@ -75,7 +75,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
 
     def __contains__(self, key):
         '''
-        @return: True if key is in the filter.
+        :return: True if key is in the filter.
         '''
         for bitno in self.generate_bits_for_key(key):
             if not self.is_set(bitno):
@@ -84,7 +84,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
 
     def to_str(self, key):
         '''
-        @return: A string representation of @key.        
+        :return: A string representation of @key.        
         '''
         return str(key)
     
@@ -94,7 +94,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
         we can perform a bit by bit check in __contains__ and in most cases
         increase performance by not calculating all hashes.
         
-        @return: A trail of bits to check in the file.
+        :return: A trail of bits to check in the file.
         '''
         key_str = self.to_str(key)
         m = hashlib.md5()

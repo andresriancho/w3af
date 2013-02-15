@@ -30,7 +30,7 @@ class xss_protection_header(GrepPlugin):
     Grep headers for "X-XSS-Protection: 0" which disables security features in
     the browser.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -39,9 +39,9 @@ class xss_protection_header(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         headers = response.get_headers()
         heaver_value, header_name = headers.iget('x-xss-protection', '')
@@ -59,7 +59,7 @@ class xss_protection_header(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin detects insecure usage of the "X-XSS-Protection" header as

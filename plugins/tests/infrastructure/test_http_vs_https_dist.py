@@ -37,7 +37,7 @@ from plugins.tests.helper import onlyroot
 
 class test_http_vs_https_dist(unittest.TestCase):
     '''
-    @author: Javier Andalia <jandalia =at= gmail.com>
+    :author: Javier Andalia <jandalia =at= gmail.com>
     '''
 
     test_url = URL('http://host.tld')

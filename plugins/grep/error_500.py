@@ -32,7 +32,7 @@ class error_500(GrepPlugin):
     Grep every page for error 500 pages that haven't been identified as bugs by
     other plugins.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     IGNORE_CODES = (404, 403, 401, 405, 400, 501)
@@ -48,9 +48,9 @@ class error_500(GrepPlugin):
         '''
         Plugin entry point, identify which requests generated a 500 error.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if response.is_text_or_html() \
         and response.get_code() > 400 \
@@ -69,7 +69,7 @@ class error_500(GrepPlugin):
             - http://127.0.0.2/%00/
             - http://127.0.0.2/%0a%0a<script>alert(\Vulnerable\)</script>.jsp
 
-        @return: True if the response is a false positive.
+        :return: True if the response is a false positive.
         '''
         for fps in self.FALSE_POSITIVE_STRINGS:
             if fps in response.get_body():
@@ -109,7 +109,7 @@ class error_500(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for error 500 pages that have'nt been caught

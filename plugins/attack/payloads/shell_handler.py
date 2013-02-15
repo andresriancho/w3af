@@ -54,7 +54,7 @@ def get_shell_code(extension, force_extension=False):
         get_shell_code() returns:
             "system( $_GET['cmd'] )"
 
-    @return: The CODE of the web shell, suitable to use in an eval() exploit.
+    :return: The CODE of the web shell, suitable to use in an eval() exploit.
     '''
     return _get_file_list('code', extension, force_extension)
 
@@ -82,11 +82,11 @@ def extract_result(body):
 
 def _get_file_list(type_of_list, extension, force_extension=False):
     '''
-    @param type_of_list: Indicates what type of list to return, options:
+    :param type_of_list: Indicates what type of list to return, options:
         - code
         - webshell
 
-    @return: A list with tuples of filename and extension for the webshells available in the
+    :return: A list with tuples of filename and extension for the webshells available in the
     webshells directory.
     '''
     known_framework = []

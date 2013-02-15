@@ -36,7 +36,7 @@ from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 class file_upload(AttackPlugin):
     '''
     Exploit applications that allow unrestricted file uploads inside the webroot.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -44,7 +44,7 @@ class file_upload(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
@@ -63,8 +63,8 @@ class file_upload(AttackPlugin):
 
     def _generate_shell(self, vuln_obj):
         '''
-        @param vuln_obj: The vuln to exploit.
-        @return: True is a shell object based on the param vuln was created ok.
+        :param vuln_obj: The vuln to exploit.
+        :return: True is a shell object based on the param vuln was created ok.
         '''
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
@@ -80,8 +80,8 @@ class file_upload(AttackPlugin):
         '''
         This command verifies a vuln. This is really hard work! :P
 
-        @param vuln_obj: The vuln to exploit.
-        @return : True if vuln can be exploited.
+        :param vuln_obj: The vuln to exploit.
+        :return : True if vuln can be exploited.
         '''
         # The vuln was saved to the kb as a vuln object
         url = vuln_obj.get_url()
@@ -126,7 +126,7 @@ class file_upload(AttackPlugin):
         '''
         Create a file with a webshell as content.
 
-        @return: Name of the file that was created.
+        :return: Name of the file that was created.
         '''
         # Get content
         file_content, real_extension = shell_handler.get_webshells(extension,
@@ -150,7 +150,7 @@ class file_upload(AttackPlugin):
 
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -161,7 +161,7 @@ class file_upload(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits insecure file uploads and returns a shell. It's
@@ -192,8 +192,8 @@ class FileUploadShell(ExecShell):
         Before calling this method, the framework calls the generic_user_input
         method from the shell class.
 
-        @param command: The command to handle ( ie. "read", "exec", etc ).
-        @return: The result of the command.
+        :param command: The command to handle ( ie. "read", "exec", etc ).
+        :return: The result of the command.
         '''
         to_send = self.get_exploit_URL()
         to_send.querystring = u'cmd=' + command

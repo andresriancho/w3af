@@ -42,13 +42,13 @@ def is_git_repo(path=W3AF_LOCAL_PATH):
     
 def get_latest_commit(path=W3AF_LOCAL_PATH):
     '''
-    @return: A string (hex sha) that identifies the commit
+    :return: A string (hex sha) that identifies the commit
     '''
     return git.Repo(path).head.commit.hexsha
 
 def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
     '''
-    @return: The date for the @commit_id
+    :return: The date for the @commit_id
     '''
     heads = [ref.commit for ref in git.Repo(path).refs]
     
@@ -61,7 +61,7 @@ def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
 
 def get_latest_commit_date(path=W3AF_LOCAL_PATH):
     '''
-    @return: The date for the latest commit
+    :return: The date for the latest commit
     '''
     cdate = git.Repo(path).head.commit.committed_date
     return time.strftime("%d %b %Y %H:%M", time.gmtime(cdate)) 
@@ -69,7 +69,7 @@ def get_latest_commit_date(path=W3AF_LOCAL_PATH):
 
 def get_current_branch(path=W3AF_LOCAL_PATH):
     '''
-    @return: The active branch for the repo at "path".
+    :return: The active branch for the repo at "path".
     '''
     repo = git.Repo(path)
     names = [ref.name for ref in repo.refs if ref.commit.hexsha == get_latest_commit()]
@@ -79,7 +79,7 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
 
 def repo_has_conflicts(path=W3AF_LOCAL_PATH):
     '''
-    @return: True if there was any merge conflict with the last pull()
+    :return: True if there was any merge conflict with the last pull()
     '''
     for stage, _ in git.Repo(path).index.iter_blobs():
         if stage != 0:

@@ -37,7 +37,7 @@ class text_file(OutputPlugin):
     '''
     Prints all messages to a text file.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -90,7 +90,7 @@ class text_file(OutputPlugin):
         '''
         Write to the log file.
 
-        @param msg: The text to write.
+        :param msg: The text to write.
         '''
         if self._file is None:
             return
@@ -108,7 +108,7 @@ class text_file(OutputPlugin):
         '''
         Write to the HTTP log file.
 
-        @param msg: The text to write (a string representation of the HTTP
+        :param msg: The text to write (a string representation of the HTTP
                         request and response)
         '''
         if self._http is None:
@@ -127,9 +127,9 @@ class text_file(OutputPlugin):
         '''
         Method that writes stuff to the text_file.
 
-        @param message: The message to write to the file
-        @param log_type: Type of message are we writing to the file
-        @param new_line: Add a new line after the message
+        :param message: The message to write to the file
+        :param log_type: Type of message are we writing to the file
+        :param new_line: Add a new line after the message
         '''
         if not self._initialized:
             self._init()
@@ -196,9 +196,9 @@ class text_file(OutputPlugin):
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
 
-        @param pluginsDict: A dict with all the plugin types and the enabled
+        :param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
-        @param optionsDict: A dict with the options for every plugin.
+        :param optionsDict: A dict with the options for every plugin.
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
@@ -244,7 +244,7 @@ class text_file(OutputPlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self.verbose = option_list['verbose'].get_value()
         self._output_file_name = option_list['output_file'].get_value()
@@ -254,7 +254,7 @@ class text_file(OutputPlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -276,8 +276,8 @@ class text_file(OutputPlugin):
     def log_http(self, request, response):
         '''
         log the http req / res to file.
-        @param request: A fuzzable request object
-        @param response: A HTTPResponse object
+        :param request: A fuzzable request object
+        :param response: A HTTPResponse object
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
@@ -296,7 +296,7 @@ class text_file(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to a text file.

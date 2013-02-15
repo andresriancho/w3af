@@ -38,7 +38,7 @@ class PayloadTestHelperExec(PluginTest):
 
     def _scan_wrapper(self):
         '''
-        @return: Run the scan and return the vulnerability itself and the vuln_id.
+        :return: Run the scan and return the vulnerability itself and the vuln_id.
         '''
         # Run the scan
         cfg = self._run_configs['cfg']

@@ -29,13 +29,13 @@ from core.ui.gui import entries, helpers
 class OnlyOptions(gtk.VBox):
     '''Only the options for configuration.
 
-    @param parentwidg: The parentwidg, to propagate changes
-    @param plugin: The selected plugin, for which the configuration is.
-    @param options: The options to configure.
-    @param save_btn: The save button.
-    @param rvrt_btn: The revert button.
+    :param parentwidg: The parentwidg, to propagate changes
+    :param plugin: The selected plugin, for which the configuration is.
+    :param options: The options to configure.
+    :param save_btn: The save button.
+    :param rvrt_btn: The revert button.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter=None):
         super(OnlyOptions, self).__init__()
@@ -87,7 +87,7 @@ class OnlyOptions(gtk.VBox):
     def _createNotebook(self):
         '''This create the notebook with all the options.
 
-        @return: The created notebook if more than one grouping
+        :return: The created notebook if more than one grouping
         '''
         # let's get the tabs, but in order!
         tabs = []
@@ -118,9 +118,9 @@ class OnlyOptions(gtk.VBox):
     def _makeTable(self, options, prop):
         '''Creates the table in which the options are shown.
 
-        @param options: The options to show
-        @param prop: The propagation function for this options
-        @return: The created table
+        :param options: The options to show
+        :param prop: The propagation function for this options
+        :return: The created table
 
         For each row, it will put:
 
@@ -156,7 +156,7 @@ class OnlyOptions(gtk.VBox):
     def _changedAnyWidget(self, like_initial):
         '''Adjust the save/revert buttons and alert the tree of the change.
 
-        @param like_initial: if the widgets are modified or not.
+        :param like_initial: if the widgets are modified or not.
 
         It only will be called if any widget changed its state, through
         a propagation buffer.
@@ -174,8 +174,8 @@ class OnlyOptions(gtk.VBox):
     def _changedWidget(self, widg, like_initial):
         '''Receives signal when a widget changed or not.
 
-        @param widg: the widget who changed.
-        @param like_initial: if it's modified or not
+        :param widg: the widget who changed.
+        :param like_initial: if it's modified or not
 
         Handles the boldness of the option label and then propagates
         the change.
@@ -193,8 +193,8 @@ class OnlyOptions(gtk.VBox):
     def _showHelp(self, widg, helpmsg):
         '''Shows a dialog with the help message of the config option.
 
-        @param widg: the widget who generated the signal
-        @param helpmsg: the message to show in the dialog
+        :param widg: the widget who generated the signal
+        :param helpmsg: the message to show in the dialog
         '''
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
                                 gtk.BUTTONS_OK, helpmsg)
@@ -205,8 +205,8 @@ class OnlyOptions(gtk.VBox):
     def _savePanel(self, widg, plugin):
         '''Saves the config changes to the plugins.
 
-        @param widg: the widget who generated the signal
-        @param plugin: the plugin to save the configuration
+        :param widg: the widget who generated the signal
+        :param plugin: the plugin to save the configuration
 
         First it checks if there's some invalid configuration, then gets the
         value of each option and save them to the plugin.
@@ -262,13 +262,13 @@ class OnlyOptions(gtk.VBox):
 class ConfigDialog(gtk.Dialog):
     '''Puts a Config panel inside a Dialog.
 
-    @param title: the title of the window.
-    @param w3af: the Core instance
-    @param plugin: the plugin to configure
-    @param overwriter: a dict of pair (config, value) to overwrite the plugin
+    :param title: the title of the window.
+    :param w3af: the Core instance
+    :param plugin: the plugin to configure
+    :param overwriter: a dict of pair (config, value) to overwrite the plugin
                        actual value
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, title, w3af, plugin, overwriter=None, showDesc=False):
         super(ConfigDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
@@ -313,7 +313,7 @@ class ConfigDialog(gtk.Dialog):
     def config_changed(self, like_initial):
         '''Propagates the change from the options.
 
-        @param like_initial: If the config is like the initial one
+        :param like_initial: If the config is like the initial one
         '''
         self.like_initial = like_initial
 
@@ -347,13 +347,13 @@ class ConfigDialog(gtk.Dialog):
 class AdvancedTargetConfigDialog(ConfigDialog):
     '''Inherits from the config dialog and overwrites the close method
 
-    @param title: the title of the window.
-    @param w3af: the Core instance
-    @param plugin: the plugin to configure
-    @param overwriter: a dict of pair (config, value) to overwrite the plugin
+    :param title: the title of the window.
+    :param w3af: the Core instance
+    :param plugin: the plugin to configure
+    :param overwriter: a dict of pair (config, value) to overwrite the plugin
                        actual value
 
-    @author: Andres Riancho
+    :author: Andres Riancho
     '''
     def __init__(self, title, w3af, plugin, overwriter=None):
         if overwriter is None:

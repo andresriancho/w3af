@@ -32,7 +32,7 @@ from core.data.kb.info import Info
 class robots_txt(CrawlPlugin):
     '''
     Analyze the robots.txt file and find new URLs
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -43,7 +43,7 @@ class robots_txt(CrawlPlugin):
         '''
         Get the robots.txt file and parse it.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         '''
         dirs = []
@@ -91,7 +91,7 @@ class robots_txt(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the robots.txt file, and parses it.

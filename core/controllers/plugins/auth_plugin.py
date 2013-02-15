@@ -30,7 +30,7 @@ class AuthPlugin(Plugin):
         2. logout(...)
         2. is_logged(...)
 
-    @author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
+    :author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
     '''
 
     def __init__(self):

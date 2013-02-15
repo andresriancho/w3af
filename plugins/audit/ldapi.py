@@ -33,7 +33,7 @@ from core.data.kb.vuln import Vuln
 class ldapi(AuditPlugin):
     '''
     Find LDAP injection bugs.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     LDAP_ERRORS = (
@@ -90,7 +90,7 @@ class ldapi(AuditPlugin):
         '''
         Tests an URL for LDAP injection vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         mutants = create_mutants(freq, self.LDAPI_STRINGS,
                                  orig_resp=orig_response)
@@ -127,8 +127,8 @@ class ldapi(AuditPlugin):
         '''
         This method searches for LDAP errors in html's.
 
-        @param response: The HTTP response object
-        @return: A list of errors found on the page
+        :param response: The HTTP response object
+        :return: A list of errors found on the page
         '''
         res = []
         for match_string in self._multi_in.query(response.body):
@@ -142,14 +142,14 @@ class ldapi(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will find LDAP injections by sending a specially crafted

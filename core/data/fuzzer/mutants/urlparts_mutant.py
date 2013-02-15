@@ -43,14 +43,14 @@ class URLPartsMutant(Mutant):
 
     def set_safe_encode_chars(self, safeChars):
         '''
-        @param safeChars: A string with characters we don't want to URL
+        :param safeChars: A string with characters we don't want to URL
                          encode in the filename. Example: '/&!'
         '''
         self._safe_encode_chars = safeChars
 
     def get_url(self):
         '''
-        @return: The URL, as modified by "set_mod_value()"
+        :return: The URL, as modified by "set_mod_value()"
         '''
         domain_path = self._freq.get_url().get_domain_path()
 
@@ -87,7 +87,7 @@ class URLPartsMutant(Mutant):
 
     def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' path, with value: "%s".'

@@ -32,7 +32,7 @@ class feeds(GrepPlugin):
     '''
     Grep every page and finds rss, atom, opml feeds.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -50,9 +50,9 @@ class feeds(GrepPlugin):
         '''
         Plugin entry point, find feeds.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         dom = response.get_dom()
         uri = response.get_uri()
@@ -82,7 +82,7 @@ class feeds(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page and finds rss, atom, opml feeds on them.

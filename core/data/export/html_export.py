@@ -28,8 +28,8 @@ from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 def html_export(request_string):
     '''
-    @param request_string: The string of the request to export
-    @return: A HTML that will perform the same HTTP request.
+    :param request_string: The string of the request to export
+    :return: A HTML that will perform the same HTTP request.
     '''
     request_lines = request_string.split('\n\n')
     header = request_lines[0]

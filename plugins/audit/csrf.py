@@ -49,8 +49,8 @@ class csrf(AuditPlugin):
     '''
     Identify Cross-Site Request Forgery vulnerabilities.
     
-    @author: Taras (oxdef@oxdef.info)
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Taras (oxdef@oxdef.info)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -63,7 +63,7 @@ class csrf(AuditPlugin):
         '''
         Tests a URL for csrf vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         if not self._is_suitable(freq):
             return
@@ -112,7 +112,7 @@ class csrf(AuditPlugin):
         For CSRF attack we need request with payload and persistent/session
         cookies.
 
-        @return: True if the request can have a CSRF vulnerability
+        :return: True if the request can have a CSRF vulnerability
         '''
         # Does the application send cookies?
         #
@@ -141,7 +141,7 @@ class csrf(AuditPlugin):
 
     def _is_origin_checked(self, freq, orig_response):
         '''
-        @return: True if the remote web application verifies the Referer before
+        :return: True if the remote web application verifies the Referer before
                  processing the HTTP request.
         '''
         fake_ref = 'http://www.w3af.org/'
@@ -158,7 +158,7 @@ class csrf(AuditPlugin):
 
     def _find_csrf_token(self, freq):
         '''
-        @return: A dict with the first identified token
+        :return: A dict with the first identified token
         '''
         result = {}
         dc = freq.get_dc()
@@ -185,7 +185,7 @@ class csrf(AuditPlugin):
         negatives. Read the github issue for more information.
         
         @see: https://github.com/andresriancho/w3af/issues/120
-        @return: True if the CSRF token is NOT verified by the web application
+        :return: True if the CSRF token is NOT verified by the web application
         '''
         token_pname_lst = token.keys()
         token_value = token[token_pname_lst[0]]
@@ -251,7 +251,7 @@ class csrf(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.

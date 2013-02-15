@@ -29,7 +29,7 @@ class QueryString(DataContainer):
     '''
     This class represents a Query String.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(QueryString, self).__init__(init_val, encoding)
@@ -41,6 +41,6 @@ class QueryString(DataContainer):
         >>> str(QueryString([('a', 'x=/etc/passwd')]))
         'a=x%3D%2Fetc%2Fpasswd'
 
-        @return: string representation of the QueryString object.
+        :return: string representation of the QueryString object.
         '''
         return enc_dec.urlencode(self, encoding=self.encoding, safe='')

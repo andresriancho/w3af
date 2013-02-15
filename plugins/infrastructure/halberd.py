@@ -55,7 +55,7 @@ class halberd(InfrastructurePlugin):
 
     This plugin is a wrapper of Juan M. Bello Rivas' halberd.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -66,7 +66,7 @@ class halberd(InfrastructurePlugin):
         '''
         It calls the "main" from halberd and writes the results to the kb.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         msg = 'halberd plugin is starting. Original halberd author: '
@@ -119,7 +119,7 @@ class halberd(InfrastructurePlugin):
         Displays detailed report information to the user and save the data to
         the kb.
 
-        @return: None.
+        :return: None.
         """
         if len(scantask.analyzed) == 1:
             msg = '"%s" doesn\'t seem to have an HTTP load balancer'\
@@ -195,7 +195,7 @@ class halberd(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin tries to find if an HTTP Load balancer is present.

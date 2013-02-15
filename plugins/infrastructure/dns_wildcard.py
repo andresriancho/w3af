@@ -36,7 +36,7 @@ from core.data.kb.info import Info
 class dns_wildcard(InfrastructurePlugin):
     '''
     Find out if www.site.com and site.com return the same page.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     SIMPLE_IP_RE = re.compile('\d?\d?\d\.\d?\d?\d\.\d?\d?\d\.\d?\d?\d')
@@ -49,7 +49,7 @@ class dns_wildcard(InfrastructurePlugin):
         '''
         Get www.site.com and site.com and compare responses.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
 
@@ -146,7 +146,7 @@ class dns_wildcard(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin compares the contents of www.site.com and site.com and tries

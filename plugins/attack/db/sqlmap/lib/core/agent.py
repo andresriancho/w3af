@@ -308,10 +308,10 @@ class Agent:
         Microsoft SQL Server output: ISNULL(CAST(@@VERSION AS VARCHAR(8000)), ' ')
         Microsoft SQL Server scope:  @@VERSION
 
-        @param field: field string to be processed
+        :param field: field string to be processed
         @type field: C{str}
 
-        @return: field string nulled and casted
+        :return: field string nulled and casted
         @rtype: C{str}
         """
 
@@ -355,10 +355,10 @@ class Agent:
         Microsoft SQL Server output: ISNULL(CAST(name AS VARCHAR(8000)), ' ')+'nTBdow'+ISNULL(CAST(master.dbo.fn_varbintohexstr(password) AS VARCHAR(8000)), ' ')
         Microsoft SQL Server scope:  SELECT name, master.dbo.fn_varbintohexstr(password) FROM master..sysxlogins
 
-        @param fields: fields string to be processed
+        :param fields: fields string to be processed
         @type fields: C{str}
 
-        @return: fields string nulled, casted and concatened
+        :return: fields string nulled, casted and concatened
         @rtype: C{str}
         """
 
@@ -391,10 +391,10 @@ class Agent:
         Input:  SELECT user, password FROM mysql.user
         Output: user,password
 
-        @param query: query to be processed
+        :param query: query to be processed
         @type query: C{str}
 
-        @return: query fields (columns) and more details
+        :return: query fields (columns) and more details
         @rtype: C{str}
         """
 
@@ -470,10 +470,10 @@ class Agent:
         Microsoft SQL Server input:  SELECT name, master.dbo.fn_varbintohexstr(password) FROM master..sysxlogins
         Microsoft SQL Server output: 'QQMQJO'+ISNULL(CAST(name AS VARCHAR(8000)), ' ')+'kAtlqH'+ISNULL(CAST(master.dbo.fn_varbintohexstr(password) AS VARCHAR(8000)), ' ')+'lpEqoi' FROM master..sysxlogins
 
-        @param query: query string to be processed
+        :param query: query string to be processed
         @type query: C{str}
 
-        @return: query string nulled, casted and concatenated
+        :return: query string nulled, casted and concatenated
         @rtype: C{str}
         """
 
@@ -578,15 +578,15 @@ class Agent:
         Microsoft SQL Server input:  (CHAR(74)+CHAR(86)+CHAR(106)+CHAR(116)+CHAR(116)+CHAR(108))+ISNULL(CAST(name AS VARCHAR(8000)), (CHAR(32)))+(CHAR(89)+CHAR(87)+CHAR(116)+CHAR(100)+CHAR(106)+CHAR(74))+ISNULL(CAST(master.dbo.fn_varbintohexstr(password) AS VARCHAR(8000)), (CHAR(32)))+(CHAR(71)+CHAR(74)+CHAR(68)+CHAR(66)+CHAR(85)+CHAR(106)) FROM master..sysxlogins
         Microsoft SQL Server output:  UNION ALL SELECT NULL, (CHAR(74)+CHAR(86)+CHAR(106)+CHAR(116)+CHAR(116)+CHAR(108))+ISNULL(CAST(name AS VARCHAR(8000)), (CHAR(32)))+(CHAR(89)+CHAR(87)+CHAR(116)+CHAR(100)+CHAR(106)+CHAR(74))+ISNULL(CAST(master.dbo.fn_varbintohexstr(password) AS VARCHAR(8000)), (CHAR(32)))+(CHAR(71)+CHAR(74)+CHAR(68)+CHAR(66)+CHAR(85)+CHAR(106)), NULL FROM master..sysxlogins-- AND 3254=3254
 
-        @param query: it is a processed query string unescaped to be
+        :param query: it is a processed query string unescaped to be
         forged within an UNION ALL SELECT statement
         @type query: C{str}
 
-        @param position: it is the NULL position where it is possible
+        :param position: it is the NULL position where it is possible
         to inject the query
         @type position: C{int}
 
-        @return: UNION ALL SELECT query string forged
+        :return: UNION ALL SELECT query string forged
         @rtype: C{str}
         """
 
@@ -676,16 +676,16 @@ class Agent:
         Input:  SELECT user FROM mysql.users
         Output: SELECT user FROM mysql.users LIMIT <num>, 1
 
-        @param num: limit number
+        :param num: limit number
         @type num: C{int}
 
-        @param query: query to be processed
+        :param query: query to be processed
         @type query: C{str}
 
-        @param field: field within the query
+        :param field: field within the query
         @type field: C{list}
 
-        @return: limited query string
+        :return: limited query string
         @rtype: C{str}
         """
 
@@ -815,10 +815,10 @@ class Agent:
         Input:  (SELECT super_priv FROM mysql.user WHERE user=(SUBSTRING_INDEX(CURRENT_USER(), '@', 1)) LIMIT 0, 1)='Y'
         Output: SELECT (CASE WHEN ((SELECT super_priv FROM mysql.user WHERE user=(SUBSTRING_INDEX(CURRENT_USER(), '@', 1)) LIMIT 0, 1)='Y') THEN 1 ELSE 0 END)
 
-        @param expression: expression to be processed
+        :param expression: expression to be processed
         @type num: C{str}
 
-        @return: processed expression
+        :return: processed expression
         @rtype: C{str}
         """
 

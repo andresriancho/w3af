@@ -40,7 +40,7 @@ class crontabHandler(delayedExecution):
 
     def can_delay(self):
         '''
-        @return: True if the remote user can add entries to his crontab
+        :return: True if the remote user can add entries to his crontab
         '''
         actualCron = self._exec('crontab -l 2>&1')
         if 'not allowed to use this program' in actualCron:
@@ -98,7 +98,7 @@ class crontabHandler(delayedExecution):
         Creates a crontab line that executes the command one minute after the
         "date" parameter.
 
-        @return: A tuple with the new line to add to the crontab, and the time
+        :return: A tuple with the new line to add to the crontab, and the time
                  that it will take to run the command.
         '''
         res_line = ''

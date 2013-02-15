@@ -52,7 +52,7 @@ class question(object):
         This is the method that is shown to the user interfaces;
         while the real information is inside the _get_option_objects().
 
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
         if self._previously_answered_values:
             # We get here when the user hits previous
@@ -65,7 +65,7 @@ class question(object):
         We get here when the user wants to complete this step of the
         wizard, and he didn't pressed Previous.
 
-        @return: The option objects
+        :return: The option objects
         '''
         ol = OptionList()
         return ol
@@ -84,7 +84,7 @@ class question(object):
 
     def get_next_question_id(self, options_list):
         '''
-        @return: The id of the next question that the wizard has to ask to the
+        :return: The id of the next question that the wizard has to ask to the
                  user, based on the options_list. None if this is the last
                  question of the wizard.
         '''

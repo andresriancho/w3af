@@ -52,27 +52,27 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
 
     def get_ssl_key_file(self):
         '''
-        @return: A string with the SSL key path and filename.
+        :return: A string with the SSL key path and filename.
         '''
         return self._sslKeyFile
 
     def set_ssl_key_file(self, keyFile):
         '''
-        @param keyFile: A string with the SSL key path and filename.
-        @return: None
+        :param keyFile: A string with the SSL key path and filename.
+        :return: None
         '''
         self._sslKeyFile = keyFile
 
     def get_ssl_cert_file(self):
         '''
-        @return: A string with the SSL cert path and filename.
+        :return: A string with the SSL cert path and filename.
         '''
         return self._sslCertFile
 
     def set_ssl_cert_file(self, file):
         '''
-        @param file: A string with the SSL cert path and filename.
-        @return: None
+        :param file: A string with the SSL cert path and filename.
+        :return: None
         '''
         self._sslCertFile = file
 

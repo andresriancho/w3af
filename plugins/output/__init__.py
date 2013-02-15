@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 def get_long_description():
     '''
-    @return: The description for the plugin type.
+    :return: The description for the plugin type.
     '''
     return '''Output plugins allow the user to configure how the framework is
     going to show its results.

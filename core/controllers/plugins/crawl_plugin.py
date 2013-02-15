@@ -31,7 +31,7 @@ class CrawlPlugin(Plugin):
     inherit from it and implement the following methods:
         1. crawl(...)
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         Plugin.__init__(self)
@@ -50,10 +50,10 @@ class CrawlPlugin(Plugin):
         '''
         This method MUST be implemented on every plugin.
 
-        @param fuzzable_request: Represents an HTTP request, with its URL and
+        :param fuzzable_request: Represents an HTTP request, with its URL and
                                  parameters.
 
-        @return: A list with of new fuzzable request objects found by this
+        :return: A list with of new fuzzable request objects found by this
                  plugin. Can be empty.
         '''
         raise w3afException(
@@ -72,7 +72,7 @@ class CrawlPlugin(Plugin):
         Perform an HTTP GET to url, extract URLs from the HTTP response and put
         them into the plugin's output queue.
         
-        @return: The http response that was parsed
+        :return: The http response that was parsed
         '''
         try:
             http_response = self._uri_opener.GET(url, cache=True)

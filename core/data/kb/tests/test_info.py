@@ -42,7 +42,7 @@ class TestInfo(unittest.TestCase):
     Simplest tests for info. Mainly started because of incompatibilities between
     nosetests, doctest and "_".
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def test_convert_to_range(self):

@@ -33,7 +33,7 @@ from core.data.kb.info import Info
 class detect_reverse_proxy(InfrastructurePlugin):
     '''
     Find out if the remote web server has a reverse proxy.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -46,7 +46,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
         '''
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # detect using GET
@@ -91,7 +91,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         '''
         Save the finding to the kb.
 
-        @param response: The response that triggered the detection
+        :param response: The response that triggered the detection
         '''
         desc = 'The remote web server seems to have a reverse proxy installed.'
 
@@ -104,7 +104,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
     def _has_proxy_headers(self, response):
         '''
         Performs the analysis
-        @return: True if the remote web server has a reverse proxy
+        :return: True if the remote web server has a reverse proxy
         '''
         for proxy_header in self._proxy_header_list:
             for response_header in response.get_headers():
@@ -116,8 +116,8 @@ class detect_reverse_proxy(InfrastructurePlugin):
         '''
         Performs the analysis of the response of the TRACE and TRACK command.
 
-        @param response: The HTTP response object to analyze
-        @return: True if the remote web server has a reverse proxy
+        :param response: The HTTP response object to analyze
+        :return: True if the remote web server has a reverse proxy
         '''
         response_body = response.get_body().upper()
         #remove duplicated spaces from body
@@ -135,14 +135,14 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before
+        :return: A list with the names of the plugins that should be run before
         the current one.
         '''
         return ['infrastructure.detect_transparent_proxy']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin tries to determine if the remote end has a reverse proxy

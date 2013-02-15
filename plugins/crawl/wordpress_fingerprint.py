@@ -40,7 +40,7 @@ from core.data.kb.info import Info
 class wordpress_fingerprint(CrawlPlugin):
     '''
     Finds the version of a WordPress installation.
-    @author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
+    :author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
     '''
     # Wordpress version unique data, file/data/version
     WP_VERSIONS_XML = os.path.join('plugins', 'crawl', 'wordpress_fingerprint',
@@ -57,7 +57,7 @@ class wordpress_fingerprint(CrawlPlugin):
     def crawl(self, fuzzable_request):
         '''
         Finds the version of a WordPress installation.
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
         (among other things) the URL to test.
         '''
         if not self._exec:
@@ -233,7 +233,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
     def _get_wp_fingerprints(self):
         '''
-        @return: Parse the XML and return a list of fingerprints.
+        :return: Parse the XML and return a list of fingerprints.
         '''
         try:
             wordpress_fp_fd = codecs.open(self.WP_VERSIONS_XML, 'r', 'utf-8',
@@ -260,7 +260,7 @@ class wordpress_fingerprint(CrawlPlugin):
     
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds the version of a WordPress installation by fingerprinting

@@ -42,7 +42,7 @@ class question_target_1(question):
 
     def _get_option_objects(self):
         '''
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
 
         d1 = 'Target URL'

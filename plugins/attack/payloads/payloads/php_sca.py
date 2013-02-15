@@ -42,7 +42,7 @@ class php_sca(Payload):
 
     def api_read(self, localtmpdir=None):
         '''
-        @param localtmpdir: Local temporary directory where to save
+        :param localtmpdir: Local temporary directory where to save
                             the remote code.
         '''
         # TODO: This import should be moved to the head of the module when phply

@@ -29,7 +29,7 @@ from core.data.parsers.url import parse_qs
 class rnd_case(EvasionPlugin):
     '''
     Change the case of random letters.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -39,9 +39,9 @@ class rnd_case(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified
+        :param request: HTTPRequest instance that is going to be modified
                         by the evasion plugin
-        @return: The modified request
+        :return: The modified request
         '''
         # First we mangle the URL
         path = request.url_object.get_path()
@@ -71,7 +71,7 @@ class rnd_case(EvasionPlugin):
     def _mutate(self, data):
         '''
         Change the case of the data string.
-        @return: a string.
+        :return: a string.
         '''
         new_data = ''
         for char in data:
@@ -87,13 +87,13 @@ class rnd_case(EvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        :return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 25
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin changes the case of random letters.

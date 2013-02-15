@@ -31,7 +31,7 @@ class error_pages(GrepPlugin):
     '''
     Grep every page for error pages.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     ERROR_PAGES = (
@@ -146,9 +146,9 @@ class error_pages(GrepPlugin):
         '''
         Plugin entry point, find the error pages and report them.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if not response.is_text_or_html():
             return
@@ -200,7 +200,7 @@ class error_pages(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin scans every page for error pages, and if possible extracts

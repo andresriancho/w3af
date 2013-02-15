@@ -88,7 +88,7 @@ class ThreadedURLImpact(threading.Thread):
 class ManualRequests(entries.RememberingWindow):
     '''Infrastructure to generate manual HTTP requests.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
         super(ManualRequests, self).__init__(
@@ -133,7 +133,7 @@ class ManualRequests(entries.RememberingWindow):
     def _send(self, widg):
         '''Actually generates the manual requests.
 
-        @param widget: who sent the signal.
+        :param widget: who sent the signal.
         '''
         (tsup, tlow) = self.reqresp.request.get_both_texts()
 
@@ -197,7 +197,7 @@ class ManualRequests(entries.RememberingWindow):
 class PreviewWindow(entries.RememberingWindow):
     '''A window with the analysis preview.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, parent, fg):
         super(PreviewWindow, self).__init__(
@@ -272,7 +272,7 @@ For example, you can do:
 class FuzzyRequests(entries.RememberingWindow):
     '''Infrastructure to generate fuzzy HTTP requests.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
         super(FuzzyRequests, self).__init__(
@@ -533,8 +533,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _real_send(self, fixContentLength, requestGenerator):
         '''This is the one that actually sends the requests, if corresponds.
 
-        @param fixContentLength: if the lenght should be fixed by the core.
-        @param requestGenerator: where to ask for the requests
+        :param fixContentLength: if the lenght should be fixed by the core.
+        :param requestGenerator: where to ask for the requests
         '''
         if self._sendStopped:
             return False
@@ -596,7 +596,7 @@ class FuzzyRequests(entries.RememberingWindow):
         else:
             self.responses.append((False, realreq, realbody, errorMsg))
 
-        @return: None.
+        :return: None.
         '''
         info = self.responses[page]
         if info[0]:

@@ -49,7 +49,7 @@ class colors:
 class LogGraph(gtk.DrawingArea, MessageConsumer):
     '''Defines a log visualization widget that shows an XY plot
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         gtk.DrawingArea.__init__(self)

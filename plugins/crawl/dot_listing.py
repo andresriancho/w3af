@@ -35,7 +35,7 @@ from core.data.kb.vuln import Vuln
 class dot_listing(CrawlPlugin):
     '''
     Search for .listing files and extracts new filenames from it.
-    @author: Tomas Velazquez ( tomas.velazquezz@gmail.com )
+    :author: Tomas Velazquez ( tomas.velazquezz@gmail.com )
     '''
 
     def __init__(self):
@@ -52,7 +52,7 @@ class dot_listing(CrawlPlugin):
         '''
         For every directory, fetch the .listing file and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         for domain_path in fuzzable_request.get_url().get_directories():
@@ -63,7 +63,7 @@ class dot_listing(CrawlPlugin):
     def _check_and_analyze(self, domain_path):
         '''
         Check if a .listing filename exists in the domain_path.
-        @return: None, everything is saved to the self.out_queue.
+        :return: None, everything is saved to the self.out_queue.
         '''
         # Request the file
         url = domain_path.url_join('.listing')
@@ -136,14 +136,14 @@ class dot_listing(CrawlPlugin):
         We're going to extract "andresr" (user), "w3af" (group) and "foo.zip"
         (file).
 
-        @return: A list with the information extracted from the listing_file_content
+        :return: A list with the information extracted from the listing_file_content
         '''
         for user, group, filename in self._listing_parser_re.findall(listing_file_content):
             yield user, group, filename.strip()
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the .listing file in all the directories and

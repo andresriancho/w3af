@@ -35,7 +35,7 @@ class private_ip(GrepPlugin):
     '''
     Find private IP addresses on the response body and headers.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -57,9 +57,9 @@ class private_ip(GrepPlugin):
         '''
         Plugin entry point. Search for private IPs in the header and the body.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, results are saved to the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, results are saved to the kb.
         '''
         if self._ignore_if_match is None:
             self._generate_ignores(response)
@@ -151,7 +151,7 @@ class private_ip(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page body and headers for private IP addresses.

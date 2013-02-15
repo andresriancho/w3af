@@ -27,7 +27,7 @@ class failing_spider(web_spider):
     This is a test plugin that will raise exceptions.
     Only useful for testing, see test_discover_exception_handling.py
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

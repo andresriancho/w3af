@@ -107,7 +107,7 @@ class SQLiteDBMS(object):
     @verify_started
     def select_one(self, query, parameters=()):
         """
-        @return: Only the first row of the SELECT, or None if there are no
+        :return: Only the first row of the SELECT, or None if there are no
         matching rows.
         """
         try:
@@ -177,8 +177,8 @@ class SQLiteDBMS(object):
         '''
         Create index for speed and performance
 
-        @param table: The table from which you want to create an index from
-        @param columns: A list of column names.
+        :param table: The table from which you want to create an index from
+        :param columns: A list of column names.
         '''
         query = 'CREATE INDEX %s_index ON %s( %s )' % (table, table,
                                                        ','.join(columns))

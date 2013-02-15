@@ -33,10 +33,10 @@ def provides_cors_features(freq, url_opener):
     '''
     Method to detect if url provides CORS features.
 
-    @param freq: A fuzzableRequest object.
-    @param url_opener: "core.data.url.ExtendedUrllib" class instance to use for
+    :param freq: A fuzzableRequest object.
+    :param url_opener: "core.data.url.ExtendedUrllib" class instance to use for
                        HTTP request/response processing.
-    @return: True if the URL provides CORS features, False otherwise.
+    :return: True if the URL provides CORS features, False otherwise.
     '''
     response = url_opener.GET(freq.get_url())
 
@@ -57,9 +57,9 @@ def retrieve_cors_header(response, key):
     '''
     Method to retrieve a CORS header value from a HTTP response.
 
-    @param response: A HTTPResponse object.
-    @param key: A key representing the desired header value to retrieve.
-    @return: The header value or None if the header do not exists.
+    :param response: A HTTPResponse object.
+    :param key: A key representing the desired header value to retrieve.
+    :return: The header value or None if the header do not exists.
     '''
     headers = response.get_headers()
 
@@ -74,11 +74,11 @@ def build_cors_request(url, origin_header_value):
     '''
     Method to generate a "GET" CORS HTTP request based on input context.
 
-    @param url: a URL object object.
-    @param origin_header_value: Value of the "ORIGIN" HTTP request header
+    :param url: a URL object object.
+    :param origin_header_value: Value of the "ORIGIN" HTTP request header
                                   (if value is set to None then the "ORIGIN"
                                   header is skipped).
-    @return: A fuzzable request that will be sent to @url and has
+    :return: A fuzzable request that will be sent to @url and has
              @origin_header_value in the Origin header.
     '''
     headers = Headers()

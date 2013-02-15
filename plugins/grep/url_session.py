@@ -32,7 +32,7 @@ class url_session(GrepPlugin):
     '''
     Finds URLs which have a parameter that holds the session ID. 
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     SESSID_PARAMS = ALL_COOKIES
@@ -45,16 +45,16 @@ class url_session(GrepPlugin):
         '''
         Plugin entry point, find the blank bodies and report them.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         self.analyze_uri(request, response)
         self.analyze_document_links(request, response)
     
     def _has_sessid(self, uri):
         '''
-        @return: A set which contains the session ID parameters (if any)
+        :return: A set which contains the session ID parameters (if any)
         '''
         sessid_in_uri = set()
         if uri.has_query_string():
@@ -119,7 +119,7 @@ class url_session(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds URLs which contain a parameter that stores the

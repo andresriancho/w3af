@@ -31,8 +31,8 @@ def python_escape_string(str_in):
 
 def python_export(request_string):
     '''
-    @param request_string: The string of the request to export
-    @return: A urllib2 based python script that will perform the same HTTP request.
+    :param request_string: The string of the request to export
+    :return: A urllib2 based python script that will perform the same HTTP request.
     '''
     # get the header and the body
     splitted_request = request_string.split('\n\n')

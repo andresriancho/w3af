@@ -32,7 +32,7 @@ from core.data.parsers.url import URL
 class fingerprint_os(InfrastructurePlugin):
     '''
     Fingerprint the remote operating system using the HTTP protocol.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -44,7 +44,7 @@ class fingerprint_os(InfrastructurePlugin):
         '''
         It calls the "main" and writes the results to the kb.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
@@ -97,7 +97,7 @@ class fingerprint_os(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin fingerprints the remote web server and tries to determine the

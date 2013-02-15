@@ -33,7 +33,7 @@ from core.data.kb.info import Info
 class detect_transparent_proxy(InfrastructurePlugin):
     '''
     Find out if your ISP has a transparent proxy installed.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -42,7 +42,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
         '''
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if self._is_proxyed_conn(fuzzable_request):
@@ -62,7 +62,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
         Make a connection to a "random" IP to port 80 and make a request for the
         URL we are interested in.
 
-        @return: True if proxy is present.
+        :return: True if proxy is present.
         '''
         random_ips = ['1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1',
                       '60.60.60.60', '44.44.44.44', '11.22.33.44', '11.22.33.11',
@@ -81,7 +81,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin tries to detect transparent proxies.

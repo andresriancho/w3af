@@ -26,11 +26,11 @@ def get_local_ip(target=None):
     '''
     Get the "public" IP address without sending any packets.
 
-    @param target: Since the host might have different interfaces,
+    :param target: Since the host might have different interfaces,
     we want to know the IP address that will be used to connect to "target",
     not just the "default gateway" IP address.
 
-    @return: The IP address.
+    :return: The IP address.
     '''
     connect_target = '4.4.4.2' if target is None else target
     try:

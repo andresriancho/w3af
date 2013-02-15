@@ -33,7 +33,7 @@ class blind_sqli_time_delay(object):
     is here and not as an audit plugin because this logic is also used in
     attack plugins.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):
@@ -44,7 +44,7 @@ class blind_sqli_time_delay(object):
         Check if this mutant is delay injectable or not.
 
         @mutant: The mutant object that I have to inject to
-        @return: A vulnerability object or None if nothing is found
+        :return: A vulnerability object or None if nothing is found
         '''
         for delay_obj in self._get_delays():
 
@@ -71,7 +71,7 @@ class blind_sqli_time_delay(object):
 
     def _get_delays(self):
         '''
-        @return: A list of statements that are going to be used to test for
+        :return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.
                  
                  IMPORTANT: Note that I need this function that generates

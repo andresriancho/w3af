@@ -33,7 +33,7 @@ from core.data.kb.info import Info
 class wordpress_enumerate_users(CrawlPlugin):
     '''
     Finds users in a WordPress installation.
-    @author: Andres Tarantini ( atarantini@gmail.com )
+    :author: Andres Tarantini ( atarantini@gmail.com )
     '''
 
     def __init__(self):
@@ -45,7 +45,7 @@ class wordpress_enumerate_users(CrawlPlugin):
     def crawl(self, fuzzable_request):
         '''
         Find users in a WordPress installation
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
@@ -140,7 +140,7 @@ class wordpress_enumerate_users(CrawlPlugin):
     def _kb_info_user(self, url, response_id, username):
         '''
         Put user in Kb
-        @return: None, everything is saved in kb
+        :return: None, everything is saved in kb
         '''
         desc = 'WordPress user "%s" found during username enumeration.'
         desc = desc % username
@@ -154,7 +154,7 @@ class wordpress_enumerate_users(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds usernames in WordPress installations.

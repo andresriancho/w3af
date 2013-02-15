@@ -34,7 +34,7 @@ from core.data.kb.vuln import Vuln
 class xpath(AuditPlugin):
     '''
     Find XPATH injection vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     XPATH_PATTERNS = (
@@ -79,7 +79,7 @@ class xpath(AuditPlugin):
         '''
         Tests an URL for xpath injection vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         xpath_strings = self._get_xpath_strings()
         mutants = create_mutants(freq, xpath_strings, orig_resp=orig_response)
@@ -92,7 +92,7 @@ class xpath(AuditPlugin):
         '''
         Gets a list of strings to test against the web app.
 
-        @return: A list with all xpath strings to test.
+        :return: A list with all xpath strings to test.
         '''
         xpath_strings = []
         xpath_strings.append("d'z\"0")
@@ -129,8 +129,8 @@ class xpath(AuditPlugin):
         '''
         This method searches for xpath errors in html's.
 
-        @param response: The HTTP response object
-        @return: A list of errors found on the page
+        :param response: The HTTP response object
+        :return: A list of errors found on the page
         '''
         res = []
         for xpath_error_match in self._multi_in.query(response.body):
@@ -143,14 +143,14 @@ class xpath(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds XPATH injections.

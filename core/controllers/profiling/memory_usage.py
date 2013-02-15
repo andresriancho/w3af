@@ -43,7 +43,7 @@ if DEBUG_MEMORY:
 def dump_memory_usage():
     '''
     This is a function that prints the memory usage of w3af in real time.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     if not DEBUG_MEMORY:
         return

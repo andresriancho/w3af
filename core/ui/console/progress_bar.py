@@ -28,7 +28,7 @@ class progress_bar(object):
     """
     This class defines methods to update and draw a progress bar.
 
-    @author: Bernardo Damele from the sqlmap project.
+    :author: Bernardo Damele from the sqlmap project.
     """
 
     def __init__(self, minValue=0, maxValue=10, totalWidth=54):

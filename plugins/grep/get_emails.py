@@ -35,7 +35,7 @@ class get_emails(GrepPlugin):
     '''
     Find email accounts.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -49,9 +49,9 @@ class get_emails(GrepPlugin):
         '''
         Plugin entry point, get the emails and save them to the kb.
 
-        @param request: The HTTP request
-        @param request: The HTTP response
-        @return: None
+        :param request: The HTTP request
+        :param request: The HTTP response
+        :return: None
         '''
         uri = response.get_uri()
         if uri not in self._already_inspected:
@@ -67,11 +67,11 @@ class get_emails(GrepPlugin):
         '''
         Helper method for using in self.grep()
 
-        @param request: The HTTP request
-        @param response: The HTTP response
-        @param kb_key: Knowledge base dict key
-        @param domain: Target domain for get_emails filter
-        @return: None
+        :param request: The HTTP request
+        :param response: The HTTP response
+        :param kb_key: Knowledge base dict key
+        :param domain: Target domain for get_emails filter
+        :return: None
         '''
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
@@ -137,7 +137,7 @@ class get_emails(GrepPlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -150,7 +150,7 @@ class get_emails(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for emails, these can be used in other

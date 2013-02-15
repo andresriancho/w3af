@@ -74,7 +74,7 @@ class Clue:
         """Extracts all relevant information from the MIME headers replied by
         the target.
 
-        @param headers: A set of MIME headers (a string as replied by the
+        :param headers: A set of MIME headers (a string as replied by the
         webserver or a previously parsed sequence of name, value tuples).
         @type headers: C{str}, C{list} or C{tuple}
 
@@ -114,10 +114,10 @@ class Clue:
         non-alphanumeric characters and also numeric ones placed at the
         beginning of the string.
 
-        @param name: String to be normalized.
+        :param name: String to be normalized.
         @type name: C{str}
 
-        @return: Normalized string.
+        :return: Normalized string.
         @rtype: C{str}
         """
         normal = name.translate(Halberd.util.table).lower()
@@ -138,7 +138,7 @@ class Clue:
     def _calcDiff(self):
         """Compute the time difference between the remote and local clocks.
 
-        @return: Time difference.
+        :return: Time difference.
         @rtype: C{int}
         """
         self.diff = int(self._local - self._remote)
@@ -146,7 +146,7 @@ class Clue:
     def inc_count(self, num=1):
         """Increase the times this clue has been found.
 
-        @param num: A positive non-zero number of hits to increase.
+        :param num: A positive non-zero number of hits to increase.
         @type num: C{int}
 
         @raise ValueError: in case L{num} is less than or equal to zero.
@@ -158,7 +158,7 @@ class Clue:
     def get_count(self):
         """Retrieve the number of times the clue has been found
 
-        @return: Number of hits.
+        :return: Number of hits.
         @rtype: C{int}.
         """
         return self._count
@@ -166,7 +166,7 @@ class Clue:
     def set_timestamp(self, timestamp):
         """Sets the local clock attribute.
 
-        @param timestamp: The local time (expressed in seconds since the Epoch)
+        :param timestamp: The local time (expressed in seconds since the Epoch)
         when the connection to the target was successfully completed.
         @type timestamp: C{int}
         """

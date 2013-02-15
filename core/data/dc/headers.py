@@ -27,7 +27,7 @@ class Headers(DataContainer):
     '''
     This class represents the set of HTTP request headers.
 
-    @author: Javier Andalia (jandalia AT gmail DOT com)
+    :author: Javier Andalia (jandalia AT gmail DOT com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
@@ -36,7 +36,7 @@ class Headers(DataContainer):
     @classmethod
     def from_string(cls, headers_str):
         '''
-        @param headers_str: A string with the HTTP headers, example:
+        :param headers_str: A string with the HTTP headers, example:
             Server: Apache
             Content-Length: 123
         '''
@@ -77,8 +77,8 @@ class Headers(DataContainer):
     
     def iget(self, header_name, default=None):
         '''
-        @param header_name: The name of the header we want the value for
-        @return: The value for a header given a name (be case insensitive)
+        :param header_name: The name of the header we want the value for
+        :return: The value for a header given a name (be case insensitive)
         '''
         for stored_header_name in self:
             if header_name.lower() == stored_header_name.lower():
@@ -115,7 +115,7 @@ class Headers(DataContainer):
         >>> repr(Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items()))
         "Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})"
 
-        @return: string representation of the Headers() object.
+        :return: string representation of the Headers() object.
         '''
         return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'
 

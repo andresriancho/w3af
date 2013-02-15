@@ -25,8 +25,8 @@ import socket
 
 def is_private_site(domain_or_IP_address):
     '''
-    @param domain_or_IP_address: The domain or IP address that we want to check
-    @return: Get the IP address of the domain, return True if its a private address.
+    :param domain_or_IP_address: The domain or IP address that we want to check
+    :return: Get the IP address of the domain, return True if its a private address.
     '''
     if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
     re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\

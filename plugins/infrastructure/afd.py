@@ -36,7 +36,7 @@ from core.data.kb.info import Info
 class afd(InfrastructurePlugin):
     '''
     Find out if the remote web server has an active filter (IPS or WAF).
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -55,7 +55,7 @@ class afd(InfrastructurePlugin):
         invented parameter and the custom payloads that are supposed to be
         filtered, and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         try:
@@ -68,7 +68,7 @@ class afd(InfrastructurePlugin):
     def _send_requests(self, fuzzable_request):
         '''
         Actually send the requests that might be blocked.
-        @param fuzzable_request: The FuzzableRequest to modify in order to
+        :param fuzzable_request: The FuzzableRequest to modify in order to
                                      see if it's blocked
         '''
         rnd_param = rand_alnum(7)
@@ -109,7 +109,7 @@ class afd(InfrastructurePlugin):
         '''
         Actually send the HTTP request.
 
-        @return: None, everything is saved to the self._filtered and
+        :return: None, everything is saved to the self._filtered and
                  self._not_filtered lists.
         '''
         try:
@@ -156,7 +156,7 @@ class afd(InfrastructurePlugin):
 
     def _get_offending_strings(self):
         '''
-        @return: A list of strings that will be filtered by most IPS devices.
+        :return: A list of strings that will be filtered by most IPS devices.
         '''
         res = []
         res.append('../../../../etc/passwd')
@@ -177,7 +177,7 @@ class afd(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin sends custom requests to the remote web server in order to

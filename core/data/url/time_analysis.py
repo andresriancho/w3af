@@ -40,7 +40,7 @@ class time_analysis:
     This class analyzes the response time of a GET/POST .
     It is usefull for finding possible DoS's to Web Apps, buffer overflows, etc.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -54,10 +54,10 @@ class time_analysis:
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.
 
-        @param uri: This is the url to register.
-        @param method: GET/POST
-        @param dc: This is the data container that ExtendedUrllib is going to send.
-        @return: No value is returned.
+        :param uri: This is the url to register.
+        :param method: GET/POST
+        :param dc: This is the data container that ExtendedUrllib is going to send.
+        :return: No value is returned.
         '''
         if self._numberOfRequests < AVERAGE_CALCULATION:
             # The first 3 requests are used to calculate the average time that the
@@ -71,10 +71,10 @@ class time_analysis:
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.
 
-        @param uri: This is the url to register.
-        @param method: GET/POST
-        @param dc: This is the data container that ExtendedUrllib is going to send.
-        @return: No value is returned.
+        :param uri: This is the url to register.
+        :param method: GET/POST
+        :param dc: This is the data container that ExtendedUrllib is going to send.
+        :return: No value is returned.
         '''
         if self._numberOfRequests < AVERAGE_CALCULATION:
             # The first 3 requests are used to calculate the average time that the
@@ -99,10 +99,10 @@ class time_analysis:
         '''
         This method calculates the AVG time.
 
-        @param uri: This is the url to register.
-        @param method: GET/POST
-        @param dc: This is the data container that ExtendedUrllib is going to send.
-        @return: No value is returned.
+        :param uri: This is the url to register.
+        :param method: GET/POST
+        :param dc: This is the data container that ExtendedUrllib is going to send.
+        :return: No value is returned.
         '''
         if (uri, method, str(dc)) not in self._outgoingRequests.keys():
             # This tuple hasnt been registered as an outgoing request.

@@ -49,7 +49,7 @@ class DiskList(object):
     thus slowing down the whole process with many disk reads of tens and maybe
     hundreds of MB's.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         self.db = get_default_temp_db_instance()
@@ -74,18 +74,18 @@ class DiskList(object):
 
     def _get_eq_attrs_values(self, obj):
         '''
-        @param obj: The object from which I need a hash.
+        :param obj: The object from which I need a hash.
 
-        @return: A hash representing the eq_attrs specified in the DiskItem.
+        :return: A hash representing the eq_attrs specified in the DiskItem.
         '''
         concatenated_eq_attrs = self.__internal_get_eq_attrs_values(obj)
         return hashlib.md5(concatenated_eq_attrs).hexdigest()
 
     def __internal_get_eq_attrs_values(self, obj):
         '''
-        @param obj: The object from which I need a unique string.
+        :param obj: The object from which I need a unique string.
 
-        @return: A string with all the values from the get_eq_attrs() method
+        :return: A string with all the values from the get_eq_attrs() method
                  concatenated. This should represent the object in an unique
                  way.
         '''
@@ -123,7 +123,7 @@ class DiskList(object):
 
     def __contains__(self, value):
         '''
-        @return: True if the value is in our list.
+        :return: True if the value is in our list.
         '''
         t = (self._get_eq_attrs_values(value),)
         # Adding the "limit 1" to the query makes it faster, as it won't
@@ -137,7 +137,7 @@ class DiskList(object):
         '''
         Append a value to the DiskList.
 
-        @param value: The value to append.
+        :param value: The value to append.
         '''
         pickled_obj = cPickle.dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
@@ -154,7 +154,7 @@ class DiskList(object):
         Extend the disk list with a group of items that is provided in
         @value_list
 
-        @return: None
+        :return: None
         '''
         for value in value_list:
             self.append(value)

@@ -30,7 +30,7 @@ class WMLParser(SGMLParser):
     '''
     This class is a WML parser. WML is used in cellphone "web" pages.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, HTTPResponse):
@@ -39,7 +39,7 @@ class WMLParser(SGMLParser):
 
     def _pre_parse(self, HTTPResponse):
         '''
-        @param HTTPResponse: The HTTP response document that contains the WML
+        :param HTTPResponse: The HTTP response document that contains the WML
         document inside its body.
         '''
         

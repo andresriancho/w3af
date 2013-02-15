@@ -36,7 +36,7 @@ class csv_file(OutputPlugin):
     '''
     Export identified vulnerabilities to a CSV file.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -87,7 +87,7 @@ class csv_file(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exports all identified vulnerabilities and informations
@@ -103,13 +103,13 @@ class csv_file(OutputPlugin):
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using get_options()
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self.output_file = option_list['output_file'].get_value()
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 

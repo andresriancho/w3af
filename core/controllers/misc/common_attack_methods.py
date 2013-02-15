@@ -44,19 +44,19 @@ class CommonAttackMethods(object):
         Guesses the header and footer based on two responses and an expected result
         that should be in body_a.
 
-        @param body_a: The response body for the request with the expected result.
+        :param body_a: The response body for the request with the expected result.
         For example, in local file read vulnerabilities this should be the result
         of requesting file.php?f=/etc/passwd
 
-        @param body_b: The response body for the request with an invalid resource.
+        :param body_b: The response body for the request with an invalid resource.
         For example, in local file read vulnerabilities this should be the result
         of requesting file.php?f=/does/not/exist
 
-        @param expected_result: The expected result that should be found in body_a.
+        :param expected_result: The expected result that should be found in body_a.
         For example, in local file read vulnerabilities this should look like:
         root:x:0:0:root:/root:/bin/bash
 
-        @return: True if the cut could be defined
+        :return: True if the cut could be defined
         '''
         if expected_result not in body_a:
             return False
@@ -157,12 +157,12 @@ class CommonAttackMethods(object):
         Defines the header and footer length based on the fact that we know the
         /etc/passwd file format.
         
-        @param body_a: The http response body for a request that retrieves
+        :param body_a: The http response body for a request that retrieves
                        /etc/passwd , without caching.
-        @param body_b: The http response body for a request that retrieves
+        :param body_b: The http response body for a request that retrieves
                        /etc/passwd , without caching.
         
-        @return: None, we just set self._header_length and self._footer_length
+        :return: None, we just set self._header_length and self._footer_length
                  or raise and exception if the method was not properly called.
         '''
         if body_a != body_b:
@@ -209,7 +209,7 @@ class CommonAttackMethods(object):
         and footer attributes that are used by _cut() in order to extract the
         information from the HTML.
 
-        @return: True if the cut could be defined
+        :return: True if the cut could be defined
         '''
         if not expected_result in body:
             # I won't be able to define the cut
@@ -234,7 +234,7 @@ class CommonAttackMethods(object):
         After defining a cut, I can cut parts of an HTML and return the important
         sections.
 
-        @param body: The HTML response that I need to cut to obtain the useful
+        :param body: The HTML response that I need to cut to obtain the useful
                      information.
         '''
         if self._header_length is None or self._footer_length is None:

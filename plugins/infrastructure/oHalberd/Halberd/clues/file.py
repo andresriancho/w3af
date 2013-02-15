@@ -44,10 +44,10 @@ class InvalidFile(Exception):
 def save(filename, clues):
     """Save a clues to a file.
 
-    @param filename: Name of the file where the clues will be written to.
+    :param filename: Name of the file where the clues will be written to.
     @type filename: C{str}
 
-    @param clues: Sequence of clues to write.
+    :param clues: Sequence of clues to write.
     @type clues: C{list}
     """
     # Create or truncate the destination file.
@@ -64,10 +64,10 @@ def save(filename, clues):
 def load(filename):
     """Load clues from file.
 
-    @param filename: Name of the files where the clues are stored.
+    :param filename: Name of the files where the clues are stored.
     @type filename: C{str}
 
-    @return: Clues extracted from the file.
+    :return: Clues extracted from the file.
     @rtype: C{list}
 
     @raise InvalidFile: In case there's a problem while reinterpreting the
@@ -123,7 +123,7 @@ class ClueDir:
     def __init__(self, root=None):
         """Initializes ClueDir object.
 
-        @param root: Root folder where to start creating sub-folders.
+        :param root: Root folder where to start creating sub-folders.
         @type root: C{str}
         """
         self.ext = 'clu'
@@ -157,13 +157,13 @@ class ClueDir:
     def save(self, url, addr, clues):
         """Hierarchically write clues.
 
-        @param url: URL scanned (will be used as a directory name).
+        :param url: URL scanned (will be used as a directory name).
         @type url: C{url}
 
-        @param addr: Address of the target.
+        :param addr: Address of the target.
         @type addr: C{str}
 
-        @param clues: Clues to be stored.
+        :param clues: Clues to be stored.
         @type clues: C{list}
 
         @raise OSError: If the directories can't be created.

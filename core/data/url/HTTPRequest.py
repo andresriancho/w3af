@@ -36,7 +36,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
 
-        @param method: None means "choose the method in the default way":
+        :param method: None means "choose the method in the default way":
                             if self.has_data():
                                 return "POST"
                             else:
@@ -100,7 +100,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         * I have to create a dict representation of HTTPRequest to serialize it,
         * and a from_dict to have the object back
         
-        @param unserialized_dict: A dict just as returned by to_dict()
+        :param unserialized_dict: A dict just as returned by to_dict()
         '''
         udict = unserialized_dict
         

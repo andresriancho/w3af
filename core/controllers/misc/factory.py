@@ -36,8 +36,8 @@ def factory(module_name, *args):
     'google_spider'
 
 
-    @param module_name: What plugin type do you need?
-    @return: An instance.
+    :param module_name: What plugin type do you need?
+    :return: An instance.
     '''
     try:
         __import__(module_name)

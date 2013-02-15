@@ -35,7 +35,7 @@ class PostDataMutant(Mutant):
 
     def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         res = '"' + self.get_uri() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'

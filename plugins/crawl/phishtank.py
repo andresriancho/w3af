@@ -43,8 +43,8 @@ class phishtank(CrawlPlugin):
     Search the phishtank.com database to determine if your server is (or was)
     being used in phishing scams.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
-    @author: Special thanks to http://www.phishtank.com/ !
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Special thanks to http://www.phishtank.com/ !
     '''
     PHISHTANK_DB = os.path.join('plugins', 'crawl', 'phishtank', 'index.xml')
 
@@ -80,8 +80,8 @@ class phishtank(CrawlPlugin):
 
     def _get_to_check(self, target_url):
         '''
-        @param target_url: The url object we can use to extract some information.
-        @return: From the domain, get a list of FQDN, rootDomain and IP address.
+        :param target_url: The url object we can use to extract some information.
+        :return: From the domain, get a list of FQDN, rootDomain and IP address.
         '''
         def addrinfo(url):
             return [x[4][0] for x in socket.getaddrinfo(url.get_domain(), 0)]
@@ -109,7 +109,7 @@ class phishtank(CrawlPlugin):
         Reads the phishtank db and tries to match the entries on that db with
         the to_check
 
-        @return: A list with the sites to match against the phishtank db
+        :return: A list with the sites to match against the phishtank db
         '''
         class PhishTankMatch(object):
             '''
@@ -217,7 +217,7 @@ class phishtank(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches the domain being tested in the phishtank database.

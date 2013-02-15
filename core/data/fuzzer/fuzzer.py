@@ -35,13 +35,13 @@ from core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 def create_mutants(freq, mutant_str_list, append=False,
                    fuzzable_param_list=[], orig_resp=None):
     '''
-    @param freq: A fuzzable request with a DataContainer inside.
-    @param mutant_str_list: a list with mutant strings to use
-    @param append: This indicates if the content of mutant_str_list should
+    :param freq: A fuzzable request with a DataContainer inside.
+    :param mutant_str_list: a list with mutant strings to use
+    :param append: This indicates if the content of mutant_str_list should
         be appended to the variable value
-    @param fuzzable_param_list: If [] then all params are fuzzed. If ['a'],
+    :param fuzzable_param_list: If [] then all params are fuzzed. If ['a'],
         then only 'a' is fuzzed.
-    @return: A Mutant object List.
+    :return: A Mutant object List.
     '''
     result = []
     fuzzer_config = _get_fuzzer_config(freq)
@@ -96,7 +96,7 @@ def create_mutants(freq, mutant_str_list, append=False,
 
 def _get_fuzzer_config(freq):
     '''
-    @return: This function verifies the configuration, and creates a map of
+    :return: This function verifies the configuration, and creates a map of
              things that can be fuzzed.
     '''
     config = cf.cf

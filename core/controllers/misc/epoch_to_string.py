@@ -25,7 +25,7 @@ import datetime
 
 def epoch_to_string(start_time):
     '''
-    @return: A string that represents in weeks/days/hours/minutes/seconds
+    :return: A string that represents in weeks/days/hours/minutes/seconds
     how much time the scan lasted.
 
     >>> import time

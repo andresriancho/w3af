@@ -46,8 +46,8 @@ class google(SearchEngine):
     GET requests to the mobile version, the Ajax API and the standard www.google.com
     page.
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
-    @author: Floyd Fuh (floyd_fuh@yahoo.de)
+    :author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Floyd Fuh (floyd_fuh@yahoo.de)
     '''
 
     def __init__(self, uri_opener):
@@ -61,9 +61,9 @@ class google(SearchEngine):
         '''
         Perform a google search and return the resulting links (URLs).
 
-        @param query: The query that we want to perform in the search engine
-        @param start: The first result item
-        @param count: How many results to get from start
+        :param query: The query that we want to perform in the search engine
+        :param start: The first result item
+        :param count: How many results to get from start
         '''
         return self._do_ordered_search(query, start, count)
 
@@ -72,9 +72,9 @@ class google(SearchEngine):
         Perform a *standard* google search and return the google result
         pages (HTML).
 
-        @param query: The query that we want to perform in the search engine
-        @param start: The first result item
-        @param count: How many results to get from start
+        :param query: The query that we want to perform in the search engine
+        :param start: The first result item
+        :param count: How many results to get from start
         '''
         return GStandardSearch(self._uri_opener, query, start, count).pages
 
@@ -191,9 +191,9 @@ class GAjaxSearch(GoogleAPISearch):
 
     def __init__(self, uri_opener, query, start=0, count=10):
         '''
-        @param query: query to perform
-        @param start: start index.
-        @param count: amount of results to fetch
+        :param query: query to perform
+        :param start: start index.
+        :param count: amount of results to fetch
         '''
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
@@ -273,9 +273,9 @@ class GStandardSearch(GoogleAPISearch):
 
     def __init__(self, uri_opener, query, start=0, count=10):
         '''
-        @param query: query to perform
-        @param start: start index.
-        @param count: amount of results to fetch
+        :param query: query to perform
+        :param start: start index.
+        :param count: amount of results to fetch
         '''
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
@@ -362,9 +362,9 @@ class GMobileSearch(GStandardSearch):
 
     def __init__(self, uri_opener, query, start=0, count=10):
         '''
-        @param query: query to perform
-        @param start: start index.
-        @param count: amount of results to fetch
+        :param query: query to perform
+        :param start: start index.
+        :param count: amount of results to fetch
         '''
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query

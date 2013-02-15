@@ -35,9 +35,9 @@ class audit(BaseConsumer):
 
     def __init__(self, audit_plugins, w3af_core):
         '''
-        @param in_queue: The input queue that will feed the audit plugins
-        @param audit_plugins: Instances of audit plugins in a list
-        @param w3af_core: The w3af core that we'll use for status reporting
+        :param in_queue: The input queue that will feed the audit plugins
+        :param audit_plugins: Instances of audit plugins in a list
+        :param w3af_core: The w3af core that we'll use for status reporting
         '''
         super(audit, self).__init__(audit_plugins, w3af_core,
                                     thread_name='Auditor')
@@ -71,7 +71,7 @@ class audit(BaseConsumer):
         enhancement to avoid sending the same HTTP request many times, once
         for each audit plugin that needed the http_response.
         
-        @param fuzzable_request: A FuzzableRequest instance
+        :param fuzzable_request: A FuzzableRequest instance
         '''
         try:
             orig_resp = self.get_original_response(fuzzable_request)

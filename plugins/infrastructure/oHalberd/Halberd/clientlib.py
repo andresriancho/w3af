@@ -131,13 +131,13 @@ class HTTPClient:
     def get_headers(self, address, urlstr):
         """Talk to the target webserver and fetch MIME headers.
 
-        @param address: The target's network address.
+        :param address: The target's network address.
         @type address: C{tuple}
 
-        @param urlstr: URL to use.
+        :param urlstr: URL to use.
         @type urlstr: C{str}
 
-        @return: The time when the client started reading the server's response
+        :return: The time when the client started reading the server's response
         and the MIME headers that were sent.
         @rtype: C{tuple}
         """
@@ -161,10 +161,10 @@ class HTTPClient:
         This method connects to the target server, sends the HTTP request and
         records a timestamp.
 
-        @param address: Target address.
+        :param address: Target address.
         @type address: C{str}
 
-        @param urlstr: A valid Unified Resource Locator.
+        :param urlstr: A valid Unified Resource Locator.
         @type urlstr: C{str}
 
         @raise InvalidURL: In case the URL scheme is not HTTP or HTTPS
@@ -190,10 +190,10 @@ class HTTPClient:
     def _getHostAndPort(self, netloc):
         """Determine the hostname and port to connect to from an URL
 
-        @param netloc: Relevant part of the parsed URL.
+        :param netloc: Relevant part of the parsed URL.
         @type netloc: C{str}
 
-        @return: Hostname (C{str}) and port (C{int})
+        :return: Hostname (C{str}) and port (C{int})
         @rtype: C{tuple}
         """
         try:
@@ -211,16 +211,16 @@ class HTTPClient:
     def _fillTemplate(self, hostname, port, url, params='', query='', fragment=''):
         """Fills the request template with relevant information.
 
-        @param hostname: Target host to reach.
+        :param hostname: Target host to reach.
         @type hostname: C{str}
 
-        @param port: Remote port.
+        :param port: Remote port.
         @type port: C{int}
 
-        @param url: URL to use as source.
+        :param url: URL to use as source.
         @type url: C{str}
 
-        @return: A request ready to be sent
+        :return: A request ready to be sent
         @rtype: C{str}
         """
         urlstr = url or '/'
@@ -243,7 +243,7 @@ class HTTPClient:
     def _connect(self, addr):
         """Connect to the target address.
 
-        @param addr: The target's address.
+        :param addr: The target's address.
         @type addr: C{tuple}
 
         @raise ConnectionRefused: If it can't reach the target webserver.
@@ -264,7 +264,7 @@ class HTTPClient:
     def _getReply(self):
         """Read a reply from the server.
 
-        @return: Time when the data started arriving plus the received data.
+        :return: Time when the data started arriving plus the received data.
         @rtype: C{tuple}
 
         @raise UnknownReply: If the remote server doesn't return a valid HTTP
@@ -325,7 +325,7 @@ class HTTPSClient(HTTPClient):
     def _connect(self, addr):
         """Connect to the target web server.
 
-        @param addr: The target's address.
+        :param addr: The target's address.
         @type addr: C{tuple}
 
         @raise HTTPSError: In case there's some mistake during the SSL
@@ -349,10 +349,10 @@ class HTTPSClient(HTTPClient):
 def clientFactory(scantask):
     """HTTP/HTTPS client factory.
 
-    @param scantask: Object describing where the target is and how to reach it.
+    :param scantask: Object describing where the target is and how to reach it.
     @type scantask: C{instanceof(ScanTask)}
 
-    @return: The appropriate client class for the specified URL.
+    :return: The appropriate client class for the specified URL.
     @rtype: C{class}
     """
     url = scantask.url

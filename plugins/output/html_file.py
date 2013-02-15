@@ -51,7 +51,7 @@ class html_file(OutputPlugin):
     '''
     Generate HTML report with identified vulnerabilities and log messages.
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -104,7 +104,7 @@ class html_file(OutputPlugin):
         '''
         Write all parameters to the output file.
 
-        @param msg_list: The messages (strings) to write to the file.
+        :param msg_list: The messages (strings) to write to the file.
         '''
         if self._file is None:
             return
@@ -163,9 +163,9 @@ class html_file(OutputPlugin):
         should take an action for the enabled plugins and their configuration.
         Usually, write the info to a file or print it somewhere.
 
-        @param pluginsDict: A dict with all the plugin types and the
+        :param pluginsDict: A dict with all the plugin types and the
                                 enabled plugins for that type of plugin.
-        @param optionsDict: A dict with the options for every plugin.
+        :param optionsDict: A dict with the options for every plugin.
         '''
         to_print = '<pre>'
 
@@ -189,8 +189,8 @@ class html_file(OutputPlugin):
         '''
         Add a message to the debug table.
 
-        @param message: The message to add to the table. It's in HTML.
-        @param msg_type: The type of message
+        :param message: The message to add to the table. It's in HTML.
+        :param msg_type: The type of message
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
@@ -208,14 +208,14 @@ class html_file(OutputPlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._output_file_name = option_list['output_file'].get_value()
         self._verbose = option_list['verbose'].get_value()
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -337,7 +337,7 @@ class html_file(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to an HTML report file.

@@ -47,7 +47,7 @@ from core.controllers.misc_settings import MiscSettings
 class rootMenu(menu):
     '''
     Main menu
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
     def __init__(self, name, console, core, parent=None):
@@ -71,7 +71,7 @@ class rootMenu(menu):
     def _cmd_start(self, params):
         '''
         Start the core in a different thread, monitor keystrokes in the main thread.
-        @return: None
+        :return: None
         '''
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
@@ -107,14 +107,14 @@ class rootMenu(menu):
         The user runs this command, when he has finished a scan, and wants to
         cleanup everything to start a new scan to another target.
 
-        @return: None
+        :return: None
         '''
         self._w3af.cleanup()
 
     def _real_start(self):
         '''
         Actually run core.start()
-        @return: None
+        :return: None
         '''
         try:
             self._w3af.plugins.init_plugins()

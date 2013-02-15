@@ -31,7 +31,7 @@ class bing(SearchEngine):
     This class is a wrapper for doing bing searches. It allows the user to use
     GET requests to search bing.com.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
                                'onlinehelp.microsoft.com', 'go.microsoft.com'])

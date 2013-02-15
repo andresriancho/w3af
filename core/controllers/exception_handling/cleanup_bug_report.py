@@ -26,7 +26,7 @@ import core.data.kb.config as cf
 
 def cleanup_bug_report(_input):
     '''
-    @return: A string that contains a "clean" bug report. The function will
+    :return: A string that contains a "clean" bug report. The function will
              remove all references to the target site, operating system user
              name, etc.
     '''

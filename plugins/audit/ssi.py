@@ -36,7 +36,7 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class ssi(AuditPlugin):
     '''
     Find server side inclusion vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -53,7 +53,7 @@ class ssi(AuditPlugin):
         '''
         Tests an URL for server side inclusion vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
@@ -76,7 +76,7 @@ class ssi(AuditPlugin):
         '''
         This method returns a list of server sides to try to include.
 
-        @return: A string, see above.
+        :return: A string, see above.
         '''
         yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % (rand_alpha(5),
                                                              rand_alpha(5))
@@ -95,7 +95,7 @@ class ssi(AuditPlugin):
     def _analyze_result(self, mutant, response):
         '''
         Analyze the result of the previously sent request.
-        @return: None, save the vuln to the kb.
+        :return: None, save the vuln to the kb.
         '''
         if self._has_no_bug(mutant):
             e_res = self._extract_result_from_payload(mutant.get_mod_value())
@@ -172,7 +172,7 @@ class ssi(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds server side include (SSI) vulnerabilities.

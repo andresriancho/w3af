@@ -32,7 +32,7 @@ class OutputFileOption(BaseOption):
 
     def set_value(self, value):
         '''
-        @param value: The value parameter is set by the user interface, which
+        :param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
         Based on the value parameter and the option type, I have to create a nice

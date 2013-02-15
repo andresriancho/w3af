@@ -43,7 +43,7 @@ class question_infrastructure_internet_1(question):
 
     def _get_option_objects(self):
         '''
-        @return: A list of options for this question.
+        :return: A list of options for this question.
         '''
         self._d1 = 'Find other virtual hosts using MSN search'
         o1 = opt_factory(self._d1, False, self._d1, 'boolean')

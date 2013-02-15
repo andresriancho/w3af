@@ -30,7 +30,7 @@ class EvasionPlugin(Plugin):
         2. set_options( OptionList )
         3. get_options()
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -42,8 +42,8 @@ class EvasionPlugin(Plugin):
 
         This method MUST be implemented on every plugin.
 
-        @param request: urllib2.Request instance that is going to be modified by the evasion plugin
-        @return: A fuzzed version of the Request.
+        :param request: urllib2.Request instance that is going to be modified by the evasion plugin
+        :return: A fuzzed version of the Request.
         '''
         msg = 'Plugin is not implementing required method modify_request'
         raise NotImplementedError(msg)
@@ -56,7 +56,7 @@ class EvasionPlugin(Plugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        :return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         msg = 'Plugin is not implementing required method get_priority'
         raise NotImplementedError(msg)

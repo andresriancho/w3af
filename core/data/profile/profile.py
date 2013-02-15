@@ -35,7 +35,7 @@ class profile(object):
     '''
     This class represents a profile.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, profname='', workdir=None):
         '''
@@ -114,7 +114,7 @@ class profile(object):
 
     def get_profile_file(self):
         '''
-        @return: The path and name of the file that contains the profile definition.
+        :return: The path and name of the file that contains the profile definition.
         '''
         return self._profile_file_name
 
@@ -165,9 +165,9 @@ class profile(object):
         '''
         Set the enabled plugins of type plugin_type.
 
-        @param plugin_type: 'audit', 'output', etc.
-        @param plugin_nameList: ['xss', 'sqli'] ...
-        @return: None
+        :param plugin_type: 'audit', 'output', etc.
+        :param plugin_nameList: ['xss', 'sqli'] ...
+        :return: None
         '''
         # First, get the enabled plugins of the current profile
         currentEnabledPlugins = self.get_enabled_plugins(plugin_type)
@@ -187,7 +187,7 @@ class profile(object):
 
     def get_enabled_plugins(self, plugin_type):
         '''
-        @return: A list of enabled plugins of type plugin_type
+        :return: A list of enabled plugins of type plugin_type
         '''
         res = []
         for section in self._config.sections():
@@ -204,10 +204,10 @@ class profile(object):
     def set_plugin_options(self, plugin_type, plugin_name, options):
         '''
         Set the plugin options.
-        @param plugin_type: 'audit', 'output', etc.
-        @param plugin_name: 'xss', 'sqli', etc.
-        @param options: an OptionList
-        @return: None
+        :param plugin_type: 'audit', 'output', etc.
+        :param plugin_name: 'xss', 'sqli', etc.
+        :param options: an OptionList
+        :return: None
         '''
         section = plugin_type + "." + plugin_name
         if section not in self._config.sections():
@@ -219,7 +219,7 @@ class profile(object):
 
     def get_plugin_options(self, plugin_type, plugin_name):
         '''
-        @return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
+        :return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
         '''
         # Get the plugin defaults with their types
         plugin_instance = factory(
@@ -249,16 +249,16 @@ class profile(object):
     def set_misc_settings(self, options):
         '''
         Set the misc settings options.
-        @param options: an OptionList
-        @return: None
+        :param options: an OptionList
+        :return: None
         '''
         self._set_x_settings('misc-settings', options)
 
     def set_http_settings(self, options):
         '''
         Set the http settings options.
-        @param options: an OptionList
-        @return: None
+        :param options: an OptionList
+        :return: None
         '''
         self._set_x_settings('http-settings', options)
 
@@ -266,9 +266,9 @@ class profile(object):
         '''
         Set the section options.
 
-        @param section: The section name
-        @param options: an OptionList
-        @return: None
+        :param section: The section name
+        :param options: an OptionList
+        :return: None
         '''
         if section not in self._config.sections():
             self._config.add_section(section)
@@ -280,7 +280,7 @@ class profile(object):
     def get_misc_settings(self):
         '''
         Get the misc settings options.
-        @return: The misc settings in an OptionList
+        :return: The misc settings in an OptionList
         '''
         from core.controllers.misc_settings import MiscSettings
         misc_settings = MiscSettings()
@@ -289,7 +289,7 @@ class profile(object):
     def get_http_settings(self):
         '''
         Get the http settings options.
-        @return: The http settings in an OptionList
+        :return: The http settings in an OptionList
         '''
         import core.data.url.opener_settings as opener_settings
         url_settings = opener_settings.OpenerSettings()
@@ -297,7 +297,7 @@ class profile(object):
 
     def _get_x_settings(self, section, configurable_instance):
         '''
-        @return: An OptionList with the options for a configurable object.
+        :return: An OptionList with the options for a configurable object.
         '''
         options_list = configurable_instance.get_options()
 
@@ -321,8 +321,8 @@ class profile(object):
     def set_name(self, name):
         '''
         Set the name of the profile.
-        @param name: The description of the profile
-        @return: None
+        :param name: The description of the profile
+        :return: None
         '''
         section = 'profile'
         if section not in self._config.sections():
@@ -331,7 +331,7 @@ class profile(object):
 
     def get_name(self):
         '''
-        @return: The profile name; as stated in the [profile] section
+        :return: The profile name; as stated in the [profile] section
         '''
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
@@ -347,8 +347,8 @@ class profile(object):
     def set_target(self, target):
         '''
         Set the target of the profile.
-        @param target: The target URL of the profile
-        @return: None
+        :param target: The target URL of the profile
+        :return: None
         '''
         section = 'target'
         if section not in self._config.sections():
@@ -357,7 +357,7 @@ class profile(object):
 
     def get_target(self):
         '''
-        @return: The profile target with the options (target_os, target_framework, etc.)
+        :return: The profile target with the options (target_os, target_framework, etc.)
         '''
         # Get the plugin defaults with their types
         target_instance = w3af_core_target()
@@ -376,8 +376,8 @@ class profile(object):
     def set_desc(self, desc):
         '''
         Set the description of the profile.
-        @param desc: The description of the profile
-        @return: None
+        :param desc: The description of the profile
+        :return: None
         '''
         section = 'profile'
         if section not in self._config.sections():
@@ -386,7 +386,7 @@ class profile(object):
 
     def get_desc(self):
         '''
-        @return: The profile description; as stated in the [profile] section
+        :return: The profile description; as stated in the [profile] section
         '''
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
@@ -403,7 +403,7 @@ class profile(object):
         '''
         Saves the profile to file_name.
 
-        @return: None
+        :return: None
         '''
         if not self._profile_file_name:
             if not file_name:

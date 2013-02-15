@@ -34,7 +34,7 @@ class password_profiling(GrepPlugin):
     '''
     Create a list of possible passwords by reading HTTP response bodies.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     COMMON_WORDS = common_words
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
@@ -58,9 +58,9 @@ class password_profiling(GrepPlugin):
         '''
         Plugin entry point. Get responses, analyze words, create dictionary.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None.
         '''
         if not self.got_lang():
             return
@@ -90,7 +90,7 @@ class password_profiling(GrepPlugin):
         Initial setup that's run until we have the language or lang plugin
         gave up
         
-        @return: True if we were able to get the language from the lang plugin
+        :return: True if we were able to get the language from the lang plugin
         '''
         if self._init:
             captured_lang = kb.kb.raw_read('lang', 'lang')
@@ -154,8 +154,8 @@ class password_profiling(GrepPlugin):
         Runs password profiling plugins to collect data from HTML, TXT,
         PDF, etc files.
         
-        @param response: A HTTPResponse object
-        @return: A map with word:repetitions
+        :param response: A HTTPResponse object
+        :return: A map with word:repetitions
         '''
         # Create plugin instances only once
         if not self._plugins:
@@ -211,14 +211,14 @@ class password_profiling(GrepPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before
+        :return: A list with the names of the plugins that should be run before
                  the current one.
         '''
         return ['grep.lang']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin creates a list of possible passwords by reading responses

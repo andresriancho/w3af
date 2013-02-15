@@ -37,7 +37,7 @@ class user_defined_regex(GrepPlugin):
     '''
     Report a vulnerability if the response matches a user defined regex.
 
-    @author: floyd fuh ( floyd_fuh@yahoo.de )
+    :author: floyd fuh ( floyd_fuh@yahoo.de )
     '''
 
     def __init__(self):
@@ -58,9 +58,9 @@ class user_defined_regex(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the user defined regex.
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if self._all_in_one is None:
             return
@@ -112,7 +112,7 @@ class user_defined_regex(GrepPlugin):
     def set_options(self, options_list):
         '''
         Handle user configuration parameters.
-        @return: None
+        :return: None
         '''
         # The not yet compiled all_in_one_regex
         tmp_not_compiled_all = []
@@ -166,7 +166,7 @@ class user_defined_regex(GrepPlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -188,7 +188,7 @@ class user_defined_regex(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every response for a user defined regex.

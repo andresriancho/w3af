@@ -45,7 +45,7 @@ class form_autocomplete(GrepPlugin):
     Grep every page for detection of forms with 'autocomplete' capabilities
     containing password-type inputs.
 
-    @author: Javier Andalia (jandalia =at= gmail.com)
+    :author: Javier Andalia (jandalia =at= gmail.com)
     '''
 
     def __init__(self):
@@ -63,9 +63,9 @@ class form_autocomplete(GrepPlugin):
         containing password-type inputs. Either form's <autocomplete> attribute
         is not present or is 'off'.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         url = response.get_url()
         dom = response.get_dom()
@@ -109,7 +109,7 @@ class form_autocomplete(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''\
         This plugin greps every page for autocomplete-able forms containing 

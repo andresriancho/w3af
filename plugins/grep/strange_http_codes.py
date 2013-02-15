@@ -29,7 +29,7 @@ class strange_http_codes(GrepPlugin):
     '''
     Analyze HTTP response codes sent by the remote web application.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     COMMON_HTTP_CODES = set([200,
@@ -44,9 +44,9 @@ class strange_http_codes(GrepPlugin):
         '''
         Plugin entry point. Analyze if the HTTP response codes are strange.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         if response.get_code() in self.COMMON_HTTP_CODES:
             return
@@ -83,7 +83,7 @@ class strange_http_codes(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Analyze HTTP response codes sent by the remote web application and

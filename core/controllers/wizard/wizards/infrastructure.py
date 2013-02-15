@@ -42,13 +42,13 @@ class infrastructure(wizard):
         '''
         This method should be overwritten by the actual wizards.
 
-        @return: A string that describes what the wizard will let you configure.
+        :return: A string that describes what the wizard will let you configure.
         '''
         return '''This wizard creates a scan profile that aims to identify the
         Web infrastructure of the target site.'''
 
     def get_name(self):
         '''
-        @return: The name of the wizard.
+        :return: The name of the wizard.
         '''
         return 'Infrastructure wizard'

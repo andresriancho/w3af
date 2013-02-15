@@ -24,9 +24,9 @@ import difflib
 
 def diff(a, b):
     '''
-    @param a: A string
-    @param b: A string (similar to a)
-    @return: Two strings (a_mod, b_mod) which are basically:
+    :param a: A string
+    :param b: A string (similar to a)
+    :return: Two strings (a_mod, b_mod) which are basically:
                 a_mod = a - (a intersection b)
                 b_mod = b - (a intersection b)
              Or if you want to see it in another way, the results are the

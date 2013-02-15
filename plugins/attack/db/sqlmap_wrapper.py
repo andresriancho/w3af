@@ -55,7 +55,7 @@ class SQLMapWrapper(object):
         wrapper to use it in the calls to sqlmap.py and have the traffic go
         through our proxy (which has the user configuration, logging, etc).
         
-        @return: None, an exception is raised if something fails.
+        :return: None, an exception is raised if something fails.
         '''
         host = '127.0.0.1'
         
@@ -76,7 +76,7 @@ class SQLMapWrapper(object):
     
     def is_vulnerable(self):
         '''
-        @return: True if the URL is vulnerable to SQL injection.
+        :return: True if the URL is vulnerable to SQL injection.
         '''
         if self.verified_vulnerable:
             return self.verified_vulnerable
@@ -100,7 +100,7 @@ class SQLMapWrapper(object):
         Internal function used by run_sqlmap and run_sqlmap_with_pipes to
         call subprocess.
         
-        @return: A Popen object.
+        :return: A Popen object.
         '''
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
@@ -123,10 +123,10 @@ class SQLMapWrapper(object):
         '''
         Run sqlmap and wait for it to finish before getting its output.
         
-        @param custom_params: A list with the extra parameters that we want to
+        :param custom_params: A list with the extra parameters that we want to
                               send to sqlmap.
                               
-        @return: Runs sqlmap and returns a tuple containing:
+        :return: Runs sqlmap and returns a tuple containing:
                     (last command run,
                      Popen object so that everyone can read .stdout,
                      .stderr, .stdin attributes)
@@ -140,10 +140,10 @@ class SQLMapWrapper(object):
         Run sqlmap and immediately return handlers to stdout, stderr and stdin
         so the code using this can interact directly with the process.
         
-        @param custom_params: A list with the extra parameters that we want to
+        :param custom_params: A list with the extra parameters that we want to
                               send to sqlmap.
                               
-        @return: Runs sqlmap and returns a tuple with:
+        :return: Runs sqlmap and returns a tuple with:
                     (last command run,
                      Popen object so that everyone can read .stdout,
                      .stderr, .stdin attributes)
@@ -182,7 +182,7 @@ class SQLMapWrapper(object):
         '''
         Utility function to allow me to easily wrap params.
         
-        @return: Runs sqlmap with --dbs and returns a tuple with:
+        :return: Runs sqlmap with --dbs and returns a tuple with:
                     (last command run,
                      Popen object so that everyone can read .stdout,
                      .stderr, .stdin attributes)
@@ -204,8 +204,8 @@ class SQLMapWrapper(object):
 
     def read(self, filename):
         '''
-        @param filename: The file to be read
-        @return: The contents of the file that was passed as parameter
+        :param filename: The file to be read
+        :return: The contents of the file that was passed as parameter
         '''
         cmd, process = self._wrap_param(['--file-read=%s' % filename,])
         local_file_re = re.compile("/etc/passwd file saved to:    '(.*)'")

@@ -39,7 +39,7 @@ class FileNameMutant(URLPartsMutant):
 
     def get_url(self):
         '''
-        @return: The URL, as modified by "set_mod_value()"
+        :return: The URL, as modified by "set_mod_value()"
                 '''
         domain_path = self._freq.get_url().get_domain_path()
 
@@ -77,7 +77,7 @@ class FileNameMutant(URLPartsMutant):
 
     def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' filename, with value: "%s".'
@@ -90,7 +90,7 @@ class FileNameMutant(URLPartsMutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         
-        @param fuzzable_param_list: Please note that in this case the user
+        :param fuzzable_param_list: Please note that in this case the user
                                     specifies the chunk of the filename that
                                     he wants to fuzz. Chunks:
                                         foo.bar.html

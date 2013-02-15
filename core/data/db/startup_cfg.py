@@ -64,7 +64,7 @@ class StartUpConfig(object):
 
     def set_last_upd(self, datevalue):
         '''
-        @param datevalue: datetime.date value
+        :param datevalue: datetime.date value
         '''
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
@@ -75,7 +75,7 @@ class StartUpConfig(object):
 
     def set_accepted_disclaimer(self, accepted_decision):
         '''
-        @param datevalue: datetime.date value
+        :param datevalue: datetime.date value
         '''
         self._accepted_disclaimer = accepted_decision
         value = 'true' if accepted_decision else 'false'

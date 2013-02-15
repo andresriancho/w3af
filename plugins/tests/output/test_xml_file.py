@@ -123,7 +123,7 @@ def validate_XML(content, schema_content):
     '''
     Validate an XML against an XSD.
 
-    @return: The validation error log as a string, an empty string is returned
+    :return: The validation error log as a string, an empty string is returned
              when there are no errors.
     '''
     xml_schema_doc = etree.parse(schema_content)

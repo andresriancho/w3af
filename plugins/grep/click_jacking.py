@@ -30,7 +30,7 @@ class click_jacking(GrepPlugin):
     '''
     Grep every page for X-Frame-Options header.
 
-    @author: Taras (oxdef@oxdef.info)
+    :author: Taras (oxdef@oxdef.info)
     '''
 
     def __init__(self):

@@ -39,7 +39,7 @@ class cors_origin(AuditPlugin):
     consistent with the value of the remote IP address/Host of the sender of
     the incoming HTTP request.
 
-    @author: Dominique RIGHETTO (dominique.righetto@owasp.org)
+    :author: Dominique RIGHETTO (dominique.righetto@owasp.org)
     '''
 
     MAX_REPEATED_REPORTS = 3
@@ -63,7 +63,7 @@ class cors_origin(AuditPlugin):
         '''
         Plugin entry point.
 
-        @param freq: A fuzzableRequest
+        :param freq: A fuzzableRequest
         '''
         # Detect if current url provides CORS features
         if not provides_cors_features(freq, self._uri_opener):
@@ -108,16 +108,16 @@ class cors_origin(AuditPlugin):
 
     def _filter_report(self, counter, section, vuln_severity, analysis_response):
         '''
-        @param counter: A string representing the name of the attr to increment
+        :param counter: A string representing the name of the attr to increment
                         when a vulnerability is found by the decorated method.
 
-        @param section: A string with the section name to use in the
+        :param section: A string with the section name to use in the
                         description when there are too many vulnerabilities of
                         this type.
 
-        @param vuln_severity: One of the constants in the severity module.
+        :param vuln_severity: One of the constants in the severity module.
 
-        @param analysis_response: The vulnerability (if any) found by the
+        :param analysis_response: The vulnerability (if any) found by the
                                   analysis method.
         '''
         if len(analysis_response):
@@ -154,7 +154,7 @@ class cors_origin(AuditPlugin):
         '''Analyze the server response and identify vulnerabilities which are'
         then saved to the KB.
 
-        @return: A list of vulnerability objects with the identified vulns
+        :return: A list of vulnerability objects with the identified vulns
                  (if any).
         '''
         res = []
@@ -173,7 +173,7 @@ class cors_origin(AuditPlugin):
         '''
         Report if we have sensitive methods enabled via CORS.
 
-        @return: A list of vulnerability objects with the identified vulns
+        :return: A list of vulnerability objects with the identified vulns
                  (if any).
         '''
         if allow_methods is not None:
@@ -241,7 +241,7 @@ class cors_origin(AuditPlugin):
         '''
         Check if the allow_origin is set to *.
 
-        @return: A list of vulnerability objects with the identified vulns
+        :return: A list of vulnerability objects with the identified vulns
                  (if any).
         '''
         if allow_origin == '*':
@@ -271,7 +271,7 @@ class cors_origin(AuditPlugin):
         is successful (most important vulnerability) then do not check for
         the @allow_origin is set to the value we sent.
 
-        @return: A list of vulnerability objects with the identified vulns
+        :return: A list of vulnerability objects with the identified vulns
                  (if any).
         '''
         if allow_origin is not None:
@@ -332,7 +332,7 @@ class cors_origin(AuditPlugin):
         This method detects this bad implementation, which this is not a vuln
         it might be interesting for the developers and/or security admins.
 
-        @return: Any implementation errors (as vuln objects) that might be found.
+        :return: Any implementation errors (as vuln objects) that might be found.
         '''
         allow_credentials = False
         if allow_credentials_str is not None:
@@ -363,7 +363,7 @@ class cors_origin(AuditPlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         opt_list = OptionList()
 
@@ -388,7 +388,7 @@ class cors_origin(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Inspect if application check that the value of the "Origin" HTTP header

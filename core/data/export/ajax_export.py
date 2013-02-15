@@ -32,8 +32,8 @@ def ajax_escape_string(str_in):
 
 def ajax_export(request_string):
     '''
-    @param request_string: The string of the request to export
-    @return: A javascript that will perform the same HTTP request.
+    :param request_string: The string of the request to export
+    :return: A javascript that will perform the same HTTP request.
     '''
     # get the header and the body
     splitted_request = request_string.split('\n\n')

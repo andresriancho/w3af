@@ -56,7 +56,7 @@ class w3afCore(object):
     This is the core of the framework, it calls all plugins, handles exceptions,
     coordinates all the work, creates threads, etc.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     WORKER_THREADS = 20
@@ -107,7 +107,7 @@ class w3afCore(object):
         scan. Used both when we init the core and when we want to clear all
         the previous results and state from an old scan and start again.
         
-        @return: None
+        :return: None
         '''
         if not self._first_scan:
             self.cleanup()
@@ -226,7 +226,7 @@ class w3afCore(object):
         (or ended successfully) and the user wants to start a new scan.
         All data from the kb is deleted.
 
-        @return: None
+        :return: None
         '''
         # End the ExtendedUrllib (clear the cache and close connections), this
         # is only useful if there was a previous scan and the user is starting
@@ -263,7 +263,7 @@ class w3afCore(object):
         This method is called by the user interface layer, when the user "clicks"
         on the stop button.
 
-        @return: None. The stop method can take some seconds to return.
+        :return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core, finishing threads...')
         
@@ -304,7 +304,7 @@ class w3afCore(object):
     def pause(self, pause_yes_no):
         '''
         Pauses/Un-Pauses scan.
-        @param trueFalse: True if the UI wants to pause the scan.
+        :param trueFalse: True if the UI wants to pause the scan.
         '''
         self.status.pause(pause_yes_no)
         self.strategy.pause(pause_yes_no)
@@ -382,7 +382,7 @@ class w3afCore(object):
     def _home_directory(self):
         '''
         Handle all the work related to creating/managing the home directory.
-        @return: None
+        :return: None
         '''
         # Start by trying to create the home directory (linux: /home/user/.w3af/)
         create_home_dir()

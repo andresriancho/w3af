@@ -60,7 +60,7 @@ class EchoWindows(BasePayloadTransfer):
 
     def estimate_transfer_time(self, size):
         '''
-        @return: An estimated transfer time for a file with the specified size.
+        :return: An estimated transfer time for a file with the specified size.
         '''
         before = time.time()
         res = self._exec_method("echo w3af")
@@ -148,7 +148,7 @@ class EchoWindows(BasePayloadTransfer):
 
     def get_speed(self):
         '''
-        @return: The transfer speed of the transfer object. It should return
+        :return: The transfer speed of the transfer object. It should return
                  a number between 100 (fast) and 1 (slow)
         '''
         return 1

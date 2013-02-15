@@ -31,9 +31,9 @@ class PromptView(gtk.TextView, MessageConsumer):
     The user input is passed to the registered function, the result
     of this is shown under the prompt.
 
-    @param procfunc: the function to process the user input
+    :param procfunc: the function to process the user input
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, promptText, procfunc):
         gtk.TextView.__init__(self)
@@ -80,7 +80,7 @@ class PromptView(gtk.TextView, MessageConsumer):
         This method is called from gobject.timeout_add and will add messages
         from self.message to the textbuffer.
 
-        @return: True to keep running
+        :return: True to keep running
         '''
         super(PromptView, self).handle_message(msg)
         
@@ -98,8 +98,8 @@ class PromptView(gtk.TextView, MessageConsumer):
         '''
         Insert a text into the text buffer, taking care of \r, \n, self.user_started.
 
-        @param text: The text to insert into the textbuffer
-        @return: None
+        :param text: The text to insert into the textbuffer
+        :return: None
         '''
         iterl = self.textbuffer.get_end_iter()
         # Handling carriage returns (special case for some apps)
@@ -270,10 +270,10 @@ class PromptView(gtk.TextView, MessageConsumer):
 class PromptDialog(gtk.Dialog):
     '''Puts the Prompt widget inside a Dialog.
 
-    @param title: the title of the window.
-    @param procfunc: the function to process the user input
+    :param title: the title of the window.
+    :param procfunc: the function to process the user input
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, title, promptText, procfunc):
         super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())

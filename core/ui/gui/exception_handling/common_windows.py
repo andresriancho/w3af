@@ -89,10 +89,10 @@ class report_bug_show_result(gtk.MessageDialog):
 
     def __init__(self, bug_report_function, bugs_to_report):
         '''
-        @param bug_report_function: The function that's used to report bugs.
+        :param bug_report_function: The function that's used to report bugs.
                                     apply(bug_report_function, bug_to_report)
 
-        @param bugs_to_report: An iterable with the bugs to report. These are
+        :param bugs_to_report: An iterable with the bugs to report. These are
                                going to be the parameters for the bug_report_function.
         '''
         gtk.MessageDialog.__init__(self,
@@ -244,7 +244,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
 
     def __init__(self, invalid_login=False):
         '''
-        @return: A tuple with the following information:
+        :return: A tuple with the following information:
                     (user_exit, method, params)
 
                 Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_GH and,
@@ -433,7 +433,7 @@ class dlg_ask_bug_info(gtk.MessageDialog):
 
     def __init__(self, invalid_login=False):
         '''
-        @return: A tuple with the following information:
+        :return: A tuple with the following information:
                     (user_exit, bug_summary, bug_description)
 
         '''

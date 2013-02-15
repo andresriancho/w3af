@@ -32,10 +32,10 @@ import cgi
 class ProfileList(gtk.TreeView):
     '''A list showing all the profiles.
 
-    @param w3af: The main core class.
-    @param initial: The profile to start
+    :param w3af: The main core class.
+    :param initial: The profile to start
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initial=None):
         self.w3af = w3af
@@ -75,7 +75,7 @@ class ProfileList(gtk.TreeView):
     def load_profiles(self, selected=None, retry=True):
         '''Load the profiles.
 
-        @param selected: which profile is already selected.
+        :param selected: which profile is already selected.
         '''
         # create the ListStore, with the info listed below
         liststore = gtk.ListStore(str, str, str, int, str)
@@ -197,8 +197,8 @@ class ProfileList(gtk.TreeView):
     def profile_changed(self, plugin=None, changed=None):
         '''Get executed when a plugin is changed.
 
-        @param plugin: The plugin which changed.
-        @param changed: Force a change.
+        :param plugin: The plugin which changed.
+        :param changed: Force a change.
 
         When executed, this check if the saved config is equal or not to the
         original one, and enables color and buttons.
@@ -224,7 +224,7 @@ class ProfileList(gtk.TreeView):
     def plugin_config(self, plugin):
         '''Gets executed when a plugin config panel is created.
 
-        @param plugin: The plugin which will be configured.
+        :param plugin: The plugin which will be configured.
 
         When executed, takes a snapshot of the original plugin configuration.
         '''
@@ -270,8 +270,8 @@ class ProfileList(gtk.TreeView):
     def _popupMenu(self, tv, event):
         '''Shows a menu when you right click on a plugin.
 
-        @param tv: the treeview.
-        @param event: The GTK event
+        :param tv: the treeview.
+        :param event: The GTK event
         '''
         if event.button != 3:
             return
@@ -324,8 +324,8 @@ class ProfileList(gtk.TreeView):
     def _get_actionsSensitivity(self, path):
         '''Returns which actions must be activated or not
 
-        @param path: where the cursor is located
-        @return: four booleans indicating the state for each option
+        :param path: where the cursor is located
+        :return: four booleans indicating the state for each option
         '''
         vals = []
         row = self.liststore[path]
@@ -344,7 +344,7 @@ class ProfileList(gtk.TreeView):
     def _getProfile(self):
         '''Gets the actual profile instance.
 
-        @return: The profile instance for the actual cursor position.
+        :return: The profile instance for the actual cursor position.
         '''
         (path, focus) = self.get_cursor()
         if path is None:
@@ -356,7 +356,7 @@ class ProfileList(gtk.TreeView):
     def _getProfileName(self):
         '''Gets the actual profile name.
 
-        @return: The profile name for the actual cursor position.
+        :return: The profile name for the actual cursor position.
         '''
         profile_obj = self._getProfile()
         if profile_obj is None:

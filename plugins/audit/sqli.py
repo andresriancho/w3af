@@ -32,7 +32,7 @@ from core.data.kb.vuln import Vuln
 class sqli(AuditPlugin):
     '''
     Find SQL injection bugs.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     SQL_ERRORS = (
@@ -135,7 +135,7 @@ class sqli(AuditPlugin):
         '''
         Tests an URL for SQL injection vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_response)
 
@@ -171,8 +171,8 @@ class sqli(AuditPlugin):
         '''
         This method searches for SQL errors in html's.
 
-        @param response: The HTTP response object
-        @return: A list of errors found on the page
+        :param response: The HTTP response object
+        :return: A list of errors found on the page
         '''
         res = []
 
@@ -187,7 +187,7 @@ class sqli(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds SQL injections. To find this vulnerabilities the plugin

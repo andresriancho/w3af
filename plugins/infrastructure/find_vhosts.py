@@ -43,7 +43,7 @@ from core.data.kb.info import Info
 class find_vhosts(InfrastructurePlugin):
     '''
     Modify the HTTP Host header and try to find virtual hosts.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -58,7 +58,7 @@ class find_vhosts(InfrastructurePlugin):
         '''
         Find virtual hosts.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         analysis_result = self._analyze(fuzzable_request)
@@ -218,7 +218,7 @@ class find_vhosts(InfrastructurePlugin):
     def _http_get_vhost(self, base_url, vhost):
         '''
         Performs an HTTP GET to a URL using a specific vhost.
-        @return: HTTPResponse object.
+        :return: HTTPResponse object.
         '''
         headers = Headers([('Host', vhost)])
         return self._uri_opener.GET(base_url, cache=False,
@@ -232,9 +232,9 @@ class find_vhosts(InfrastructurePlugin):
     def _get_common_virtualhosts(self, base_url):
         '''
 
-        @param base_url: The target URL object.
+        :param base_url: The target URL object.
 
-        @return: A list of possible domain names that could be hosted in the same web
+        :return: A list of possible domain names that could be hosted in the same web
         server that "domain".
 
         '''
@@ -259,7 +259,7 @@ class find_vhosts(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin uses the HTTP Host header to find new virtual hosts. For

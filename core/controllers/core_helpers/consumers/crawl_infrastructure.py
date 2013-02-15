@@ -44,10 +44,10 @@ class crawl_infrastructure(BaseConsumer):
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
                  max_discovery_time):
         '''
-        @param in_queue: The input queue that will feed the crawl_infrastructure plugins
-        @param crawl_infrastructure_plugins: Instances of crawl_infrastructure plugins in a list
-        @param w3af_core: The w3af core that we'll use for status reporting
-        @param max_discovery_time: The max time (in seconds) to use for the discovery phase
+        :param in_queue: The input queue that will feed the crawl_infrastructure plugins
+        :param crawl_infrastructure_plugins: Instances of crawl_infrastructure plugins in a list
+        :param w3af_core: The w3af core that we'll use for status reporting
+        :param max_discovery_time: The max time (in seconds) to use for the discovery phase
         '''
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
@@ -240,7 +240,7 @@ class crawl_infrastructure(BaseConsumer):
 
     def _should_stop_discovery(self):
         '''
-        @return: True if we should stop the crawl phase because of time limit
+        :return: True if we should stop the crawl phase because of time limit
                  set by the user, or simply because the user wants to stop the
                  crawl phase.
         '''
@@ -280,11 +280,11 @@ class crawl_infrastructure(BaseConsumer):
 
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
         '''
-        @param plugin: The plugin that found these fuzzable requests
+        :param plugin: The plugin that found these fuzzable requests
 
-        @param fuzzable_request: A potentially new fuzzable request
+        :param fuzzable_request: A potentially new fuzzable request
 
-        @return: True if @FuzzableRequest is new (never seen before).
+        :return: True if @FuzzableRequest is new (never seen before).
         '''
         base_urls_cf = cf.cf.get('baseURLs')
 
@@ -366,7 +366,7 @@ class crawl_infrastructure(BaseConsumer):
 
         TODO: unit-test this method
 
-        @return: A list with the newly found fuzzable requests.
+        :return: A list with the newly found fuzzable requests.
         '''
         # Please note that I add a task to self, this task is marked as DONE
         # in the finally clause below

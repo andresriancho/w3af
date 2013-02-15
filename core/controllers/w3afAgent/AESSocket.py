@@ -33,9 +33,9 @@ from pyrijndael.pyRijndael import EncryptData
 
 def makeAESSocket( key , sock ):
     '''
-    @param key: A string that will be the key for AES algorithm
-    @param sock: python socket
-    @return: a socket that will encrypt / decrypt all data that it sends and receives
+    :param key: A string that will be the key for AES algorithm
+    :param sock: python socket
+    :return: a socket that will encrypt / decrypt all data that it sends and receives
     '''
     sock._original_recv = sock.recv
     sock._original_send = sock.send

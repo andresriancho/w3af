@@ -36,7 +36,7 @@ from core.data.options.option_list import OptionList
 
 class httpLogTab(entries.RememberingHPaned):
     '''A tab that shows all HTTP requests and responses made by the framework.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, w3af, padding=10, time_refresh=False):
         """Init object."""

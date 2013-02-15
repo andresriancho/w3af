@@ -30,7 +30,7 @@ class InfrastructurePlugin(Plugin):
     should inherit from it and implement the following methods:
         1. discover(...)
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         Plugin.__init__(self)
@@ -49,8 +49,8 @@ class InfrastructurePlugin(Plugin):
         '''
         This method MUST be implemented on every plugin.
 
-        @param fuzzable_request: The target to use for infrastructure plugins.
-        @return: None. These plugins should store information in the KB. Results
+        :param fuzzable_request: The target to use for infrastructure plugins.
+        :return: None. These plugins should store information in the KB. Results
                  from this method will be ignored by the core.
         '''
         raise w3afException(

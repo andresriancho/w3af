@@ -33,7 +33,7 @@ class bug_report_menu(menu):
     This menu is used to display bugs gathered by the exception handler during
     a scan and help the user report those vulnerabilities to our Trac.
 
-    @author: Andres Riancho (andres.riancho |at| gmail.com)
+    :author: Andres Riancho (andres.riancho |at| gmail.com)
     '''
     def __init__(self, name, console, w3af_core, parent=None, **other):
         menu.__init__(self, name, console, w3af_core, parent)

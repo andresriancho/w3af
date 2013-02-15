@@ -37,7 +37,7 @@ from core.data.kb.info import Info
 class frontpage_version(InfrastructurePlugin):
     '''
     Search FrontPage Server Info file and if it finds it will determine its version.
-    @author: Viktor Gazdag ( woodspeed@gmail.com )
+    :author: Viktor Gazdag ( woodspeed@gmail.com )
     '''
     VERSION_RE = re.compile('FPVersion="(.*?)"', re.IGNORECASE)
     ADMIN_URL_RE = re.compile('FPAdminScriptUrl="(.*?)"', re.IGNORECASE)
@@ -54,7 +54,7 @@ class frontpage_version(InfrastructurePlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         for domain_path in fuzzable_request.get_url().get_directories():
@@ -85,8 +85,8 @@ class frontpage_version(InfrastructurePlugin):
         '''
         It seems that we have found a _vti_inf file, parse it and analyze the content!
 
-        @param response: The http response object for the _vti_inf file.
-        @return: None. All the info is saved to the kb.
+        :param response: The http response object for the _vti_inf file.
+        :return: None. All the info is saved to the kb.
         '''
         version_mo = self.VERSION_RE.search(response.get_body())
         admin_mo = self.ADMIN_URL_RE.search(response.get_body())
@@ -131,9 +131,9 @@ class frontpage_version(InfrastructurePlugin):
         '''
         Analyze the admin URL.
 
-        @param response: The http response object for the _vti_inf file.
-        @param frontpage_admin: A regex match object.
-        @return: None. All the info is saved to the kb.
+        :param response: The http response object for the _vti_inf file.
+        :param frontpage_admin: A regex match object.
+        :return: None. All the info is saved to the kb.
         '''
         admin_location = response.get_url().get_domain_path().url_join(
             frontpage_admin.group(1))
@@ -164,9 +164,9 @@ class frontpage_version(InfrastructurePlugin):
         '''
         Analyze the author URL.
 
-        @param response: The http response object for the _vti_inf file.
-        @param frontpage_author: A regex match object.
-        @return: None. All the info is saved to the kb.
+        :param response: The http response object for the _vti_inf file.
+        :param frontpage_author: A regex match object.
+        :return: None. All the info is saved to the kb.
         '''
         author_location = response.get_url().get_domain_path().url_join(
             frontpage_author.group(1))
@@ -194,7 +194,7 @@ class frontpage_version(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the FrontPage Server Info file and if it finds

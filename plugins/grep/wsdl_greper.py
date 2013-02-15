@@ -29,7 +29,7 @@ class wsdl_greper(GrepPlugin):
     '''
     Grep every page for web service definition files.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     WSDL_STRINGS = ('xs:int', 'target_namespace', 'soap:body',
                     '/s:sequence', 'wsdl:', 'soapAction=',
@@ -47,9 +47,9 @@ class wsdl_greper(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         uri = response.get_uri()
         if response.get_code() == 200 and uri not in self._already_inspected:
@@ -90,7 +90,7 @@ class wsdl_greper(GrepPlugin):
                 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for WSDL definitions.

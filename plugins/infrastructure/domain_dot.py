@@ -34,7 +34,7 @@ class domain_dot(InfrastructurePlugin):
     Send a specially crafted request with a dot after the domain
     (http://host.tld./) and analyze response.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -47,7 +47,7 @@ class domain_dot(InfrastructurePlugin):
         '''
         Sends the special request.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         domain = fuzzable_request.get_url().get_domain()
@@ -77,9 +77,9 @@ class domain_dot(InfrastructurePlugin):
 
     def _analyze_response(self, original_resp, resp):
         '''
-        @param original_resp: The HTTPResponse object that holds the
+        :param original_resp: The HTTPResponse object that holds the
                                   ORIGINAL response.
-        @param resp: The HTTPResponse object that holds the content of
+        :param resp: The HTTPResponse object that holds the content of
                          the response to analyze.
         '''
         if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
@@ -99,7 +99,7 @@ class domain_dot(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds misconfigurations in the virtual host settings by

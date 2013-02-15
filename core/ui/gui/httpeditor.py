@@ -218,8 +218,8 @@ class HttpEditor(gtk.VBox, Searchable):
 
         GtkWarning: gtk_text_buffer_emit_insert: assertion `g_utf8_validate (text, len, NULL)'
 
-        @param text: A text that may or may not be in UTF-8.
-        @return: A text, that's in UTF-8, and can be printed in a text view
+        :param text: A text that may or may not be in UTF-8.
+        :return: A text, that's in UTF-8, and can be printed in a text view
         """
         text = repr(text)
         text = text[1:-1]

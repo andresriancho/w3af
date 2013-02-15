@@ -31,7 +31,7 @@ class ManglePlugin(Plugin):
         3. set_options( OptionList )
         4. get_options()
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def get_type(self):
         return 'mangle'
@@ -46,8 +46,8 @@ class ManglePlugin(Plugin):
 
         This method MUST be implemented on every plugin.
 
-        @param request: This is the request to mangle.
-        @return: A mangled version of the request.
+        :param request: This is the request to mangle.
+        :return: A mangled version of the request.
         '''
         raise NotImplementedError
 
@@ -57,8 +57,8 @@ class ManglePlugin(Plugin):
 
         This method MUST be implemented on every plugin.
 
-        @param response: This is the response to mangle.
-        @return: A mangled version of the response.
+        :param response: This is the response to mangle.
+        :return: A mangled version of the response.
         '''
         raise NotImplementedError
 
@@ -94,7 +94,7 @@ class ManglePlugin(Plugin):
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.
 
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        :return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return self._priority
 

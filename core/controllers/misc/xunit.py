@@ -70,14 +70,14 @@ class XunitGen(object):
 
     def add_failure(self, test, fail, took):
         '''
-        @param test: Qualified name for test case.
+        :param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
                 scripts.script-afd.test_afd
                 core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
-        @param fail: Failure string
-        @param took: Time that took the test to run.
+        :param fail: Failure string
+        :param took: Time that took the test to run.
         '''
 
         self._stats['fail'] += 1
@@ -99,14 +99,14 @@ class XunitGen(object):
 
     def add_error(self, test, err, took, skipped=False):
         '''
-        @param test: Qualified name for test case.
+        :param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
                 scripts.script-afd.test_afd
                 core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
-        @param err: Error string
-        @param took: Time that took the test to run.
+        :param err: Error string
+        :param took: Time that took the test to run.
         '''
         if skipped:
             self._stats['skip'] += 1
@@ -130,13 +130,13 @@ class XunitGen(object):
 
     def add_success(self, test, took):
         '''
-        @param test: Qualified name for test case.
+        :param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
                 scripts.script-afd.test_afd
                 core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
-        @param took: Time that took the test to run.
+        :param took: Time that took the test to run.
         '''
         self._stats['pass'] += 1
         quoteattr = saxutils.quoteattr

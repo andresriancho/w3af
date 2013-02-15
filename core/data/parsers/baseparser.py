@@ -33,7 +33,7 @@ class BaseParser(object):
     '''
     This class is an abstract document parser.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
@@ -76,10 +76,10 @@ class BaseParser(object):
 
     def get_emails(self, domain=None):
         '''
-        @param domain: Indicates what email addresses I want to retrieve.
+        :param domain: Indicates what email addresses I want to retrieve.
                        All are returned if the domain is not set.
 
-        @return: A list of email accounts that are inside the document.
+        :return: A list of email accounts that are inside the document.
         '''
         if domain:
             return [i for i in self._emails if domain == i.split('@')[1]]
@@ -88,7 +88,7 @@ class BaseParser(object):
 
     def _extract_emails(self, doc_str):
         '''
-        @return: A set() with all mail users that are present in the doc_str.
+        :return: A set() with all mail users that are present in the doc_str.
         @see: We don't support emails like myself <at> gmail !dot! com
         '''
         # Revert url-encoded sub-strings
@@ -113,9 +113,9 @@ class BaseParser(object):
         '''
         Use regular expressions to find new URLs.
 
-        @param HTTPResponse: The http response object that stores the
+        :param HTTPResponse: The http response object that stores the
             response body and the URL.
-        @return: None. The findings are stored in self._re_urls as url_objects
+        :return: None. The findings are stored in self._re_urls as url_objects
         '''
         re_urls = self._re_urls
 
@@ -243,7 +243,7 @@ class BaseParser(object):
 
     def get_forms(self):
         '''
-        @return: A list of forms.
+        :return: A list of forms.
         '''
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_forms() method.')
@@ -258,7 +258,7 @@ class BaseParser(object):
             - frames
             - etc.
 
-        @return: Two sets, one with the parsed URLs, and one with the URLs that
+        :return: Two sets, one with the parsed URLs, and one with the URLs that
                  came out of a regular expression. The second list if less
                  trustworthy.
         '''
@@ -267,28 +267,28 @@ class BaseParser(object):
 
     def get_comments(self):
         '''
-        @return: A list of comments.
+        :return: A list of comments.
         '''
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_comments() method.')
 
     def get_scripts(self):
         '''
-        @return: A list of scripts (like javascript).
+        :return: A list of scripts (like javascript).
         '''
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_scripts() method.')
 
     def get_meta_redir(self):
         '''
-        @return: Returns list of meta redirections.
+        :return: Returns list of meta redirections.
         '''
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_redir() method.')
 
     def get_meta_tags(self):
         '''
-        @return: Returns list of all meta tags.
+        :return: Returns list of all meta tags.
         '''
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_tags() method.')

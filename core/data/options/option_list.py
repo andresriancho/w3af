@@ -26,7 +26,7 @@ class OptionList(object):
     '''
     This class represents a list of options.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         self._internal_opt_list = []
@@ -63,7 +63,7 @@ class OptionList(object):
         def set_options( self, optionsList ):
             self._check_persistent = optionsList['check_persistent']
 
-        @return: The value of the item that was selected
+        :return: The value of the item that was selected
 
         >>> from core.data.options.opt_factory import opt_factory
         >>> opt_list = OptionList()

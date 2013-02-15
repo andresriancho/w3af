@@ -26,7 +26,7 @@ def runonce(exc_class=Exception):
     '''
     Function to decorate methods that should be called only once.
 
-    @param exc_class: The Exception class to be raised when the method has
+    :param exc_class: The Exception class to be raised when the method has
         already been called.
     '''
     def runonce_meth(meth):
@@ -43,13 +43,13 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
     '''
     Retries a function or method if an exception was raised.
 
-    @param tries: Number of attempts. Must be >= 1.
-    @param delay: Initial delay before retrying. Must be nonnegative.
-    @param backoff: Indicates how much the delay should lengthen after
+    :param tries: Number of attempts. Must be >= 1.
+    :param delay: Initial delay before retrying. Must be nonnegative.
+    :param backoff: Indicates how much the delay should lengthen after
         each failure. Must greater than 1.
-    @param exc_class: Exception class to use if all attempts have been
+    :param exc_class: Exception class to use if all attempts have been
         exhausted.
-    @param err_msg: Error message to use when an instance of `exc_class`
+    :param err_msg: Error message to use when an instance of `exc_class`
         is raised. If no value is passed the string representation of the
         current exception is used.
     '''

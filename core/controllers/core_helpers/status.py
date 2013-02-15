@@ -65,7 +65,7 @@ class w3af_core_status(object):
 
     def get_status(self):
         '''
-        @return: A string representing the current w3af core status.
+        :return: A string representing the current w3af core status.
         '''
         if self._paused:
             return 'Paused.'
@@ -102,8 +102,8 @@ class w3af_core_status(object):
         This method saves the phase and plugin name in order to be shown
         to the user.
 
-        @param plugin_name: The plugin_type which the w3afCore is running
-        @param plugin_name: The plugin_name which the w3afCore is running
+        :param plugin_name: The plugin_type which the w3afCore is running
+        :param plugin_name: The plugin_name which the w3afCore is running
         '''
         if log:
             om.out.debug('Starting plugin: %s.%s' % (plugin_type, plugin_name))
@@ -113,20 +113,20 @@ class w3af_core_status(object):
 
     def get_running_plugin(self, plugin_type):
         '''
-        @return: The plugin that the core is running when the method is called.
+        :return: The plugin that the core is running when the method is called.
         '''
         return self._running_plugin.get(plugin_type, None)
 
     def latest_running_plugin(self):
         '''
-        @return: Tuple with plugin_type and plugin_name for the latest running
+        :return: Tuple with plugin_type and plugin_name for the latest running
                  plugin reported using set_running_plugin.
         '''
         return self._latest_ptype, self._latest_pname
 
     def is_running(self):
         '''
-        @return: If the user has called start, and then wants to know if the
+        :return: If the user has called start, and then wants to know if the
         core is still working, it should call is_running() to know that.
         '''
         return self._is_running
@@ -136,7 +136,7 @@ class w3af_core_status(object):
     
     def get_run_time(self):
         '''
-        @return: The time (in minutes) between now and the call to start().
+        :return: The time (in minutes) between now and the call to start().
         '''
         if self._start_time_epoch is None:
             raise RuntimeError('Can NOT call get_run_time before start().')
@@ -148,14 +148,14 @@ class w3af_core_status(object):
 
     def get_scan_time(self):
         '''
-        @return: The scan time in a format similar to:
+        :return: The scan time in a format similar to:
                         3h 25m 32s
         '''
         return epoch_to_string(self._start_time_epoch)
 
     def get_rpm(self):
         '''
-        @return: The number of HTTP requests per minute performed since the
+        :return: The number of HTTP requests per minute performed since the
                  start of the scan.
         '''
         if self._start_time_epoch is None:
@@ -173,14 +173,14 @@ class w3af_core_status(object):
 
     def get_current_fuzzable_request(self, plugin_type):
         '''
-        @return: The current fuzzable request that the w3afCore is working on.
+        :return: The current fuzzable request that the w3afCore is working on.
         '''
         return self._current_fuzzable_request.get(plugin_type, None)
 
     # pylint: disable=E0202
     def set_current_fuzzable_request(self, plugin_type, fuzzable_request):
         '''
-        @param fuzzable_request: The FuzzableRequest that the w3afCore is
+        :param fuzzable_request: The FuzzableRequest that the w3afCore is
         working on right now.
         '''
         self._current_fuzzable_request[plugin_type] = fuzzable_request

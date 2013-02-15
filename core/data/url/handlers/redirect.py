@@ -32,13 +32,13 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
 
     def _inc_counter(self, step=1):
         '''
-        @return: The next number to use in the request/response ID.
+        :return: The next number to use in the request/response ID.
         '''
         return core_num_gen.inc()
 
     def _get_counter(self):
         '''
-        @return: The current counter number to assign as the id for responses.
+        :return: The current counter number to assign as the id for responses.
         '''
         return core_num_gen.get()
 

@@ -69,14 +69,14 @@ class DAVTemplate(BaseTemplate):
 
     def get_kb_location(self):
         '''
-        @return: A tuple with the location where the vulnerability will be saved,
+        :return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         '''
         return ('dav', 'dav')
 
     def get_vulnerability_name(self):
         '''
-        @return: A string containing the name of the vulnerability to be added
+        :return: A string containing the name of the vulnerability to be added
                  to the KB, example: 'SQL Injection'. This is just a descriptive
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.

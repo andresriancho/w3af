@@ -34,7 +34,7 @@ class symfony(GrepPlugin):
     '''
     Grep every page for traces of the Symfony framework.
 
-    @author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon
+    :author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon
     work by Andres Riancho (andres.riancho@gmail.com) and help from
     Pablo Mouzo (pablomouzo@gmail.com)
     '''
@@ -50,9 +50,9 @@ class symfony(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         url = response.get_url()
         if response.is_text_or_html() and url not in self._already_inspected:
@@ -100,7 +100,7 @@ class symfony(GrepPlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -112,7 +112,7 @@ class symfony(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for traces of the Symfony framework and the

@@ -30,7 +30,7 @@ class oracle(GrepPlugin):
     '''
     Find Oracle applications.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     OAS_TAGS = ['<!-- Created by Oracle ',]
@@ -43,9 +43,9 @@ class oracle(GrepPlugin):
         '''
         Plugin entry point. Grep for oracle applications.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         url = response.get_url()
         if response.is_text_or_html() and url not in self._already_analyzed:
@@ -65,7 +65,7 @@ class oracle(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for oracle messages, versions, etc.

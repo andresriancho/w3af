@@ -36,7 +36,7 @@ class SGMLParser(BaseParser):
     The target SAX-like SGML parser. Methods 'start', 'end', 'data', 'comment'
     and 'close' will be called during the parsing process.
 
-    @author: Javier Andalia (jandalia =at= gmail.com)
+    :author: Javier Andalia (jandalia =at= gmail.com)
              Andres Riancho ((andres.riancho@gmail.com))
     '''
 
@@ -215,7 +215,7 @@ class SGMLParser(BaseParser):
     @property
     def forms(self):
         '''
-        @return: Return list of forms.
+        :return: Return list of forms.
         '''
         return self._forms
 
@@ -279,7 +279,7 @@ class SGMLParser(BaseParser):
 
     def get_references_of_tag(self, tagType):
         '''
-        @return: A list of the URLs that the parser found in a tag of
+        :return: A list of the URLs that the parser found in a tag of
             tagType = "tagType" (i.e img, a)
         '''
         return [x[1] for x in self._tag_and_url if x[0] == tagType]

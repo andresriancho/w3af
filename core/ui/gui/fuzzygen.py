@@ -48,7 +48,7 @@ class FuzzyError(w3afException):
 class FuzzyGenerator(object):
     '''Handles two texts with the fuzzy syntax.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, txt1, txt2):
         # separate the sane and replaceable info
@@ -98,7 +98,7 @@ class FuzzyGenerator(object):
     def _dissect(self, txt):
         '''Separates the fixed and dynamic part from the text.
 
-        @param txt: the string of the HTTP request to process.
+        :param txt: the string of the HTTP request to process.
         '''
         #
         #    fix for bug #164086

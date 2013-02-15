@@ -38,16 +38,16 @@ TYPES_OBJ = {
 class KBTree(gtk.TreeView):
     '''Show the Knowledge Base in a tree.
 
-    @param filter: the initial filter
-    @param title: the title to show
-    @param strict: if the tree will show exactly what is filtered
+    :param filter: the initial filter
+    :param title: the title to show
+    :param strict: if the tree will show exactly what is filtered
 
     Regarding the strict parameter: as these structures are not as clean as
     they should in the Core, some information does not have a way to be
     determined if they fall in or out of the filter. So, with this parameter
     you control if to show them (strict=False) or not.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, ifilter, title, strict):
         self.strict = strict
@@ -152,7 +152,7 @@ class KBTree(gtk.TreeView):
     def set_filter(self, active):
         '''Sets a new filter and update the tree.
 
-        @param active: which types should be shown.
+        :param active: which types should be shown.
         '''
         self.filter = active
         self.need_complete_tree_update = True
@@ -164,7 +164,7 @@ class KBTree(gtk.TreeView):
         We've subscribed using kb.kb.add_observer(None, None, ...) so we'll
         get all changes.
         
-        @return: None, the information we'll show to the user is stored in an
+        :return: None, the information we'll show to the user is stored in an
                  internal variable.
         '''
         if not isinstance(info_inst, Info):
@@ -196,10 +196,10 @@ class KBTree(gtk.TreeView):
     def _update_tree(self):
         '''Updates the GUI with the KB.
 
-        @param treestore: the gui tree to updated.
-        @param treeholder: a helping structure to calculate the diff.
+        :param treestore: the gui tree to updated.
+        :param treeholder: a helping structure to calculate the diff.
 
-        @return: True to keep being called by gobject.
+        :return: True to keep being called by gobject.
         '''
         while True:
         
@@ -242,7 +242,7 @@ class KBTree(gtk.TreeView):
         Update the child count, keep in mind that the child count for this
         level is increased only when a new data.location_b is added.
         
-        @param data: The data for the new item to add.
+        :param data: The data for the new item to add.
         '''
         contains_location_a = [d for d in self.treeholder if \
                                d.location_a == data.location_a]
@@ -329,7 +329,7 @@ class KBTree(gtk.TreeView):
         
         Paint the vulnerability name using colorlevel.
         
-        @return: None.
+        :return: None.
         '''
         #
         # Setup all the information to store
@@ -362,7 +362,7 @@ class KBTree(gtk.TreeView):
     def _get_store_iter(self, location_a, location_b=None, info_name=None,
                         new_data=None):
         '''
-        @return: A GtkTreeIter pointing to:
+        :return: A GtkTreeIter pointing to:
                     * location_a (mandatory)
                     * location_b (optional)
                     * info_name (optional)
@@ -402,8 +402,8 @@ class KBTree(gtk.TreeView):
     def _popup(self, tv, event):
         '''Shows a menu when you right click on an object inside the kb.
 
-        @param tv: the treeview.
-        @param event: The GTK event
+        :param tv: the treeview.
+        :param event: The GTK event
         '''
         if event.button != 3:
             return
@@ -489,8 +489,8 @@ class KBTree(gtk.TreeView):
     def get_instance(self, path):
         '''Extracts the instance from the tree.
 
-        @param path: where the user is in the tree
-        @return: The instance
+        :param path: where the user is in the tree
+        :return: The instance
         '''
         instanckey = self.treestore[path][2]
         instance = self.instances.get(instanckey)
@@ -499,8 +499,8 @@ class KBTree(gtk.TreeView):
     def _is_exploitable(self, vuln_id):
         '''Indicantes if 'vuln' is exploitable
 
-        @param vuln: The vuln to test.
-        @return: A bool value
+        :param vuln: The vuln to test.
+        :return: A bool value
         '''
         vuln_id = str(vuln_id)
         if self.exploit_vulns.get(vuln_id):
@@ -513,7 +513,7 @@ class KBTree(gtk.TreeView):
         '''If 'vuln' is an exploitable vulnerability then map it to its
         exploits
 
-        @param vuln: Potential vulnerability
+        :param vuln: Potential vulnerability
         '''
         exploits = self._get_exploits(vuln_id) or []
         # Ensure the each vuln is processed only once.

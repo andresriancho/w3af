@@ -29,11 +29,11 @@ class table(object):
     '''
     An utility class which stores the table-structured data and implements
     a clever method of drawing the tables. Ok, clever enough for our purposes.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, rows):
         '''
-        @param rows: array of arrays
+        :param rows: array of arrays
         Every row is array of string (string per column)
         '''
         self._rows = rows
@@ -77,7 +77,7 @@ class table(object):
     def _justify(self):
         '''
         This function reallocates widthes between columns.
-        @param shift is array which contain lack or plenty of space in the column.
+        :param shift is array which contain lack or plenty of space in the column.
         Lack of space happens when a longest word in a column does not fit into originally allocated space.
         This function acts as Robin Hood: it takes excess of space from the "richest" column and gives it
         to the poorest ones.

@@ -29,7 +29,7 @@ def get_net_iface():
     '''
     This function is very OS dependant.
 
-    @return: The interface name that is being used to connect to the net.
+    :return: The interface name that is being used to connect to the net.
     '''
     #   Get the IP address thats used to go to the Internet
     internet_ip = get_local_ip()

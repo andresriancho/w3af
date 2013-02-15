@@ -38,7 +38,7 @@ from core.data.kb.vuln import Vuln
 class form_auth(BruteforcePlugin):
     '''
     Bruteforce HTML form authentication.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -50,7 +50,7 @@ class form_auth(BruteforcePlugin):
         '''
         Tries to bruteforce a form auth. This aint fast!
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         freq_url = freq.get_url()
 
@@ -162,7 +162,7 @@ class form_auth(BruteforcePlugin):
 
     def _matches_failed_login(self, resp_body, login_failed_result_list):
         '''
-        @return: True if the resp_body matches the previously created
+        :return: True if the resp_body matches the previously created
         responses that are stored in self._login_failed_result_list.
         '''
         for login_failed_result in login_failed_result_list:
@@ -174,7 +174,7 @@ class form_auth(BruteforcePlugin):
 
     def _is_login_form(self, freq):
         '''
-        @return: True if this FuzzableRequest is a loginForm.
+        :return: True if this FuzzableRequest is a loginForm.
         '''
         passwd = text = other = 0
         data_container = freq.get_dc()
@@ -213,7 +213,7 @@ class form_auth(BruteforcePlugin):
 
     def _get_login_field_names(self, freq):
         '''
-        @return: The names of the form fields where to input the user and the
+        :return: The names of the form fields where to input the user and the
             password. Please remember that maybe user_parameter might be None,
             since we support password only login forms.
         '''
@@ -239,7 +239,7 @@ class form_auth(BruteforcePlugin):
         I have the correct username and password combination, it won't
         perform a successful login.
 
-        @return: A data_container that has all fields (other than the username
+        :return: A data_container that has all fields (other than the username
             and password) set to 1,
         '''
         for parameter_name in data_container:
@@ -252,8 +252,8 @@ class form_auth(BruteforcePlugin):
     def _brute_worker(self, freq, user_field, passwd_field,
                       login_failed_result_list, combination):
         '''
-        @param freq: A FuzzableRequest
-        @param combination: A tuple with (user, pass) or a pass if this is a
+        :param freq: A FuzzableRequest
+        :param combination: A tuple with (user, pass) or a pass if this is a
                                 password only form.
         '''
         if freq.get_url() not in self._found or not self._stop_on_first:

@@ -38,7 +38,7 @@ def ask(msg):
 class DisclaimerController(object):
     def accept_disclaimer(self):
         '''
-        @return: True/False depending on the user's answer to our disclaimer.
+        :return: True/False depending on the user's answer to our disclaimer.
                  Please note that in w3af_gui we'll stop if the user does
                  not accept the disclaimer.
         '''

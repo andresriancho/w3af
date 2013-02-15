@@ -30,7 +30,7 @@ W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
 def create_home_dir():
     '''
     Creates the w3af home directory, on linux: /home/user/.w3af/
-    @return: True if success.
+    :return: True if success.
     '''
     # Create .w3af inside home directory
     home_path = get_home_dir()
@@ -62,7 +62,7 @@ def create_home_dir():
 
 def get_home_dir():
     '''
-    @return: The location of the w3af directory inside the home directory of
+    :return: The location of the w3af directory inside the home directory of
         the current user.
     '''
     return HOME_DIR
@@ -73,10 +73,10 @@ def verify_dir_has_perm(path, perm, levels=0):
     Verify that home directory has `perm` access for current user. If at
     least one of them fails to have it the result will be False.
 
-    @param path: Path to test
-    @param perm: Access rights. Possible values are os' R_OK, W_OK and X_OK or
+    :param path: Path to test
+    :param perm: Access rights. Possible values are os' R_OK, W_OK and X_OK or
         the result of a bitwise "|" operator applied a combination of them.
-    @param levels: Depth levels to test
+    :param levels: Depth levels to test
     '''
     path = os.path.normpath(path)
     pdepth = len(path.split(os.path.sep))

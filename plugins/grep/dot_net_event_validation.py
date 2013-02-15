@@ -30,7 +30,7 @@ class dot_net_event_validation(GrepPlugin):
     '''
     Grep every page and identify the ones that have viewstate and don't have event validation.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -54,8 +54,8 @@ class dot_net_event_validation(GrepPlugin):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
         '''
         if not response.is_text_or_html():
             return
@@ -97,7 +97,7 @@ class dot_net_event_validation(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         ASP.NET implements a method to verify that every postback comes from the

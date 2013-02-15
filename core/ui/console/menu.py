@@ -34,7 +34,7 @@ class menu(object):
     '''
     Menu objects handle the commands and completion requests.
     Menus form an hierarchy and are able to delegate requests to their children.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, name, console, w3af, parent=None, **other):
         self._name = name
@@ -61,8 +61,8 @@ class menu(object):
     def suggest(self, tokens, part, onlyLocalCommands=False):
         '''
         Suggest the possible completions
-        @param tokens: list of string
-        @param part: base for completion
+        :param tokens: list of string
+        :param part: base for completion
         '''
         if len(tokens) == 0:
             return self.suggest_commands(part, onlyLocalCommands)

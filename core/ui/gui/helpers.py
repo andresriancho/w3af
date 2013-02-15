@@ -34,9 +34,9 @@ from core.controllers.exceptions import w3afException
 class PropagateBuffer(object):
     '''Buffer to don't propagate signals when it's not necessary.
 
-    @param target: the target to alert when the change *is* propagated.
+    :param target: the target to alert when the change *is* propagated.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, target):
         self.target = target
@@ -46,8 +46,8 @@ class PropagateBuffer(object):
     def change(self, widg, status):
         '''A change enters the buffer.
 
-        @param widg: the widget that changed
-        @param status: the new status of the widget
+        :param widg: the widget that changed
+        :param status: the new status of the widget
         '''
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
@@ -67,10 +67,10 @@ class PropagateBuffer(object):
 class PropagateBufferPayload(object):
     '''Equal to PropagateBuffer, but sending a payload
 
-    @param target: the target to alert when the change *is* propagated.
-    @param payload: anything to transmit
+    :param target: the target to alert when the change *is* propagated.
+    :param payload: anything to transmit
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, target, *payload):
         self.target = target
@@ -81,8 +81,8 @@ class PropagateBufferPayload(object):
     def change(self, widg, status):
         '''A change enters the buffer.
 
-        @param widg: the widget that changed
-        @param status: the new status of the widget
+        :param widg: the widget that changed
+        :param status: the new status of the widget
         '''
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
@@ -108,10 +108,10 @@ def clean_description(desc):
 
     Also trims more than one space between words.
 
-    @param desc: the description to clean
-    @return The cleaned description
+    :param desc: the description to clean
+    :return The cleaned description
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     return textwrap.dedent(desc)
 
@@ -141,7 +141,7 @@ class RegistThread(threading.Thread):
     It must supervise if needs to finish through the 'self.my_thread_ended'
     bool attribute.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self):
         _threadPool.append(self)
@@ -161,7 +161,7 @@ class RegistThread(threading.Thread):
 def friendlyException(message):
     '''Creates the dialog showing the message.
 
-    @param message: text received in the friendly exception.
+    :param message: text received in the friendly exception.
     '''
     class w3af_message_dialog(gtk.MessageDialog):
         def dialog_response_cb(self, widget, response_id):
@@ -193,7 +193,7 @@ class _Wrapper(object):
     If the core raises a friendly exception, it's not propagated but
     shown the message in a pop up.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, friendly):
         self.friendly = friendly
@@ -223,9 +223,9 @@ class IteratedQueue(RegistThread):
 
     Multiple iterations are supported simultaneously.
 
-    @param queue: The queue to supervise.
+    :param queue: The queue to supervise.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     CLEANUP_NUM = 1000
 
@@ -289,7 +289,7 @@ class BroadcastWrapper(object):
     Wraps objects to be able to have n widgets, and handle them
     as one.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, *values):
         self.initvalues = values
@@ -325,7 +325,7 @@ def debugHandler(widget, event, *a):
 class Throbber(gtk.ToolButton):
     '''Creates the throbber widget.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self):
         self.img_static = gtk.Image()
@@ -350,7 +350,7 @@ class Throbber(gtk.ToolButton):
 def loadImage(filename, path='core/ui/gui/data/'):
     '''Loads a pixbuf from disk.
 
-    @param filename: the file name, full path
+    :param filename: the file name, full path
     @returns: The pixbuf from the image.
     '''
     im = gtk.Image()
@@ -363,8 +363,8 @@ def loadImage(filename, path='core/ui/gui/data/'):
 def loadIcon(stock_item_id):
     '''Loads a pixbuf from Stock.
 
-    @param stock_item_id: Stock item id string
-    @return: The icon's pixbuf
+    :param stock_item_id: Stock item id string
+    :return: The icon's pixbuf
     '''
     # If param id not found use default stock item.
     stock_item = getattr(gtk, stock_item_id, gtk.STOCK_MISSING_IMAGE)
@@ -382,7 +382,7 @@ class SensitiveAnd(object):
     If all says it should be enable it is. If only one says it shouldn't
     it's off.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, target, falseDefaults=None):
         if falseDefaults is None:
@@ -420,7 +420,7 @@ KB_COLORS = ["black", "orange", "red", "red"]
 def open_help(chapter=''):
     '''Opens the help file in user's preferred browser.
 
-    @param chapter: the chapter of the help, optional.
+    :param chapter: the chapter of the help, optional.
     '''
     if chapter:
         chapter = '#' + chapter

@@ -36,7 +36,7 @@ HEADER_VALUE = 'ae5cw3af'
 class response_splitting(AuditPlugin):
     '''
     Find response splitting vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     HEADER_INJECTION_TESTS = ("w3af\r\n" + HEADER_NAME + ": " + HEADER_VALUE,
@@ -57,7 +57,7 @@ class response_splitting(AuditPlugin):
         '''
         Tests an URL for response splitting vulnerabilities.
 
-        @param freq: A fuzzable_request
+        :param freq: A fuzzable_request
         '''
         mutants = create_mutants(freq, self.HEADER_INJECTION_TESTS)
 
@@ -104,9 +104,9 @@ class response_splitting(AuditPlugin):
         '''
         This method verifies if a header was successfully injected
 
-        @param mutant: The mutant that was sent to generate the response
-        @param response: The HTTP response where I want to find the injected header.
-        @return: True / False
+        :param mutant: The mutant that was sent to generate the response
+        :param response: The HTTP response where I want to find the injected header.
+        :return: True / False
         '''
         # Get the lower case headers
         headers = response.get_lower_case_headers()
@@ -134,7 +134,7 @@ class response_splitting(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will find response splitting vulnerabilities.

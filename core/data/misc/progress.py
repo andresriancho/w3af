@@ -28,7 +28,7 @@ class Progress(object):
     know the total amount of items to process and know when one of them is
     successfully processed.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     def __init__(self):
@@ -84,7 +84,7 @@ class Progress(object):
 
     def get_progress(self):
         '''
-        @return: The % done.
+        :return: The % done.
 
         >>> p = Progress()
         >>> p.get_progress()
@@ -117,7 +117,7 @@ class Progress(object):
 
     def get_eta(self):
         '''
-        @return: The ETA for this phase.
+        :return: The ETA for this phase.
         '''
         if not self._eta:
             return 0, 0, 0, 0

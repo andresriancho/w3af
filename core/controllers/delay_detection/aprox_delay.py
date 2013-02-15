@@ -26,13 +26,13 @@ class AproxDelay(object):
     '''
     def __init__(self, delay_fmt, delay_char, char_reps):
         '''
-        @param delay_fmt: The format that should be use to generate the delay
+        :param delay_fmt: The format that should be use to generate the delay
                           string. Example: 'a@a.%sX!'.
         
-        @param delay_char: The character that will be repeated to complete the
+        :param delay_char: The character that will be repeated to complete the
                            delay_fmt
         
-        @param char_reps: The number of times the char will be repeated.
+        :param char_reps: The number of times the char will be repeated.
         '''
         self._delay_fmt = delay_fmt
         self._delay_char = delay_char
@@ -41,7 +41,7 @@ class AproxDelay(object):
         
     def get_string_for_multiplier(self, multiplier):
         '''
-        Applies @param multiplier to self._delay_fmt
+        Applies :param multiplier to self._delay_fmt
 
         >>> d = AproxDelay('a@a.%sX!', 'a', 10)
         >>> d.get_string_for_multiplier( 2 )

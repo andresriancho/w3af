@@ -30,7 +30,7 @@ class strange_reason(GrepPlugin):
     '''
     Analyze HTTP response reason (Not Found, Ok, Internal Server Error).
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -39,9 +39,9 @@ class strange_reason(GrepPlugin):
         '''
         Plugin entry point. Analyze if the HTTP response reason messages are strange.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         response_code = response.get_code()
         msg_list = W3C_REASONS.get(response_code, None)
@@ -84,7 +84,7 @@ class strange_reason(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Analyze HTTP response reason messages sent by the remote web application

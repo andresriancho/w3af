@@ -45,10 +45,10 @@ class FullKBTree(KBTree):
 
     This also gives a long description of the element when clicked.
 
-    @param kbbrowser: The KB Browser
-    @param filter: The filter to show which elements
+    :param kbbrowser: The KB Browser
+    :param filter: The filter to show which elements
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, kbbrowser, ifilter):
         super(FullKBTree, self).__init__(w3af, ifilter,
@@ -61,7 +61,7 @@ class FullKBTree(KBTree):
     def _showDesc(self, tv):
         '''Shows the description at the right
 
-        @param tv: the treeview.
+        :param tv: the treeview.
         '''
         (path, column) = tv.get_cursor()
         if path is None:
@@ -145,7 +145,7 @@ class FullKBTree(KBTree):
 class KBBrowser(entries.RememberingHPaned):
     '''Show the Knowledge Base, with the filter and the tree.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(KBBrowser, self).__init__(w3af, "pane-kbbrowser", 250)
@@ -269,7 +269,7 @@ class KBBrowser(entries.RememberingHPaned):
 class URLsGraph(gtk.VBox):
     '''Graph the URLs that the system discovers.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(URLsGraph, self).__init__()
@@ -383,7 +383,7 @@ User-Agent: w3af.org
 class URLsTree(gtk.TreeView):
     '''Show the URLs that the system discovers.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, grapher):
         self.w3af = w3af
@@ -426,7 +426,7 @@ class URLsTree(gtk.TreeView):
     def add_url(self):
         '''Adds periodically the new URLs to the tree.
 
-        @return: True to keep being called by gobject, False when it's done.
+        :return: True to keep being called by gobject, False when it's done.
         '''
         for url in self.urls.get():
             if url is None:
@@ -477,12 +477,12 @@ class URLsTree(gtk.TreeView):
         part of the URL, checking every time if needs to create a new
         node or just enter in it.
 
-        @param parent: the parent to insert the node
-        @param parts: the rest of the parts to walk the path
-        @param holder: the dict when what is already exists is stored.
-        @param rec_cntr: the recursion counter
+        :param parent: the parent to insert the node
+        :param parts: the rest of the parts to walk the path
+        :param holder: the dict when what is already exists is stored.
+        :param rec_cntr: the recursion counter
 
-        @return: The new or modified holder
+        :return: The new or modified holder
         '''
         if not parts:
             return {}
@@ -509,8 +509,8 @@ class URLsTree(gtk.TreeView):
     def popup_menu(self, tv, event):
         '''Shows a menu when you right click on a URL in the treeview.
 
-        @param tv: the treeview.
-        @param event: The GTK event
+        :param tv: the treeview.
+        :param event: The GTK event
         '''
         if event.button != 3:
             return
@@ -562,7 +562,7 @@ class URLsTree(gtk.TreeView):
 class ScanRunBody(gtk.Notebook):
     '''The whole body of scan run.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(ScanRunBody, self).__init__()
@@ -609,7 +609,7 @@ class IteratedURLList(object):
     Simply provide a way to access the kb.kb.get_all_known_urls()
     in an iterated manner!
 
-    @author: Andres Riancho < andres.riancho @ gmail.com >
+    :author: Andres Riancho < andres.riancho @ gmail.com >
     '''
     def __init__(self):
         self._index = 0

@@ -44,9 +44,9 @@ class _Guarded(object):
 class FoundObjectsGuardian(gtk.HBox):
     '''Shows the objects found by the core.
 
-    @param w3af: the core
+    :param w3af: the core
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(FoundObjectsGuardian, self).__init__()
@@ -99,7 +99,7 @@ class FoundExceptionsStatusBar(gtk.EventBox):
     '''
     Shows the number of exceptions found during the scan in the status bar
 
-    @author: Andres Riancho <andres.riancho =at= gmail.com>
+    :author: Andres Riancho <andres.riancho =at= gmail.com>
     '''
     def __init__(self, w3af):
         super(FoundExceptionsStatusBar, self).__init__()

@@ -37,7 +37,7 @@ from core.data.kb.info import Info
 class find_captchas(CrawlPlugin):
     '''
     Identify captcha images on web pages.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -49,7 +49,7 @@ class find_captchas(CrawlPlugin):
         '''
         Find CAPTCHA images.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         result, captchas = self._identify_captchas(fuzzable_request)
@@ -68,7 +68,7 @@ class find_captchas(CrawlPlugin):
 
     def _identify_captchas(self, fuzzable_request):
         '''
-        @return: A tuple with the following information:
+        :return: A tuple with the following information:
                     * True indicating that the page has CAPTCHAs
                     * A list with tuples that contain:
                         * The CAPTCHA image source
@@ -122,8 +122,8 @@ class find_captchas(CrawlPlugin):
         '''
         Get all img tags and retrieve the src.
 
-        @param fuzzable_request: The request to modify
-        @return: A list with tuples containing (img_src, image_hash, http_response)
+        :param fuzzable_request: The request to modify
+        :return: A list with tuples containing (img_src, image_hash, http_response)
         '''
         res = []
 
@@ -161,7 +161,7 @@ class find_captchas(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds any CAPTCHA images that appear on a HTML document. The

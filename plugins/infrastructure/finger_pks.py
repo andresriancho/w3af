@@ -33,7 +33,7 @@ from core.data.kb.info import Info
 class finger_pks(InfrastructurePlugin):
     '''
     Search MIT PKS to get a list of users for a domain.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -42,7 +42,7 @@ class finger_pks(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
         '''
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         root_domain = fuzzable_request.get_url().get_root_domain()
@@ -71,7 +71,7 @@ class finger_pks(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds mail addresses in PGP PKS servers.

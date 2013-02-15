@@ -48,10 +48,10 @@ class ExactDelayController(DelayMixIn):
 
     def __init__(self, mutant, delay_obj, uri_opener):
         '''
-        @param mutant: The mutant that will be sent (one or more times) to the
+        :param mutant: The mutant that will be sent (one or more times) to the
                        remote server in order to detect the time delay.
 
-        @param delay_obj: A delay object as defined in delay.py file. Basically
+        :param delay_obj: A delay object as defined in delay.py file. Basically
                           an object that contains the string that would delay
                           the remote server (ie. sleep(%s) )
         '''
@@ -94,12 +94,12 @@ class ExactDelayController(DelayMixIn):
     def delay_for(self, seconds, original_wait_time):
         '''
         Sends a request to the remote end that "should" delay the response in
-        @param seconds.
+        :param seconds.
 
-        @param original_wait_time: The time that it takes to perform the
+        :param original_wait_time: The time that it takes to perform the
                                    request without adding any delays.
 
-        @return: (True, response) if there was a delay. In order to make
+        :return: (True, response) if there was a delay. In order to make
                  things right we first send some requests to measure the
                  original wait time.
         '''

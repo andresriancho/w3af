@@ -28,7 +28,7 @@ SP = ' '
 class RequestMixIn(object):
     def dump(self):
         '''
-        @return: a DETAILED str representation of this fuzzable request.
+        :return: a DETAILED str representation of this fuzzable request.
         '''
         return "%s%s%s" % (self.dump_request_head(),
                            CRLF, str(self.get_data() or ''))
@@ -41,12 +41,12 @@ class RequestMixIn(object):
 
     def dump_request_head(self):
         '''
-        @return: A string with the head of the request
+        :return: A string with the head of the request
         '''
         return "%s%s" % (self.get_request_line(), self.dump_headers())
 
     def dump_headers(self):
         '''
-        @return: A string representation of the headers.
+        :return: A string representation of the headers.
         '''
         return str(self.get_headers())    

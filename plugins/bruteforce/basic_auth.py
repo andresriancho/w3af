@@ -34,7 +34,7 @@ from core.data.kb.vuln import Vuln
 class basic_auth(BruteforcePlugin):
     '''
     Bruteforce HTTP basic authentication.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -44,7 +44,7 @@ class basic_auth(BruteforcePlugin):
         '''
         Tries to bruteforce a basic HTTP auth. This is not fast!
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         auth_url_list = [i.get_url().get_domain_path() for i in
                                  kb.kb.get('http_auth_detect', 'auth')]
@@ -71,8 +71,8 @@ class basic_auth(BruteforcePlugin):
         Try a user/password combination with HTTP basic authentication against
         a specific URL.
 
-        @param url: A string representation of an URL
-        @param combination: A tuple that contains (user,pass)
+        :param url: A string representation of an URL
+        :param combination: A tuple that contains (user,pass)
         '''
         # Remember that this worker is called from a thread which lives in a
         # threadpool. If the worker finds something, it has to let the rest know
@@ -125,7 +125,7 @@ class basic_auth(BruteforcePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin bruteforces basic authentication logins.

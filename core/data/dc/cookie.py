@@ -29,7 +29,7 @@ class Cookie(DataContainer):
     '''
     This class represents a cookie.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
 
@@ -54,7 +54,7 @@ class Cookie(DataContainer):
         '''
         This method returns a string representation of the cookie Object.
 
-        @return: string representation of the cookie object.
+        :return: string representation of the cookie object.
         '''
         res = ''
         for parameter_name in self:

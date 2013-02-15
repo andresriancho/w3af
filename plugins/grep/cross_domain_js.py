@@ -34,7 +34,7 @@ class cross_domain_js(GrepPlugin):
     '''
     Find script tags with src attributes that point to a different domain.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -48,9 +48,9 @@ class cross_domain_js(GrepPlugin):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         url = response.get_url()
 
@@ -92,7 +92,7 @@ class cross_domain_js(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Find script tags with src attributes that point to a different domain.

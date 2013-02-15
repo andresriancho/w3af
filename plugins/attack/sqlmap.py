@@ -36,7 +36,7 @@ from plugins.attack.payloads.decorators.read_decorator import read_debug
 class sqlmap(AttackPlugin):
     '''
     Exploit web servers that have sql injection vulnerabilities using sqlmap.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -47,7 +47,7 @@ class sqlmap(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
@@ -66,8 +66,8 @@ class sqlmap(AttackPlugin):
 
     def _generate_shell(self, vuln_obj):
         '''
-        @param vuln_obj: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed as
+        :param vuln_obj: The vuln to exploit.
+        :return: The shell object based on the vulnerability that was passed as
                  a parameter.
         '''
         # Check if we really can execute commands on the remote server
@@ -83,7 +83,7 @@ class sqlmap(AttackPlugin):
         '''
         This command verifies a vuln. This is really hard work! :P
 
-        @return : True if vuln can be exploited.
+        :return : True if vuln can be exploited.
         '''
         uri = vuln_obj.get_uri()
         dc = vuln_obj.get_dc()
@@ -106,7 +106,7 @@ class sqlmap(AttackPlugin):
 
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -117,7 +117,7 @@ class sqlmap(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits SQL injection vulnerabilities using sqlmap. For
@@ -215,7 +215,7 @@ class SQLMapShell(ReadShell):
     
     def __repr__(self):
         '''
-        @return: A string representation of this shell.
+        :return: A string representation of this shell.
         '''
         return '<sqlmap shell object>'
     

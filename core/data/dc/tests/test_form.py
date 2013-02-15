@@ -357,9 +357,9 @@ def create_form_helper(form_data):
     '''
     Creates a dc.Form object from a dict container
 
-    @param form_data: A list containing dicts representing a form's
+    :param form_data: A list containing dicts representing a form's
         internal structure
-    @return: A dc.Form object from `form_data`
+    :return: A dc.Form object from `form_data`
     '''
     new_form = form.Form()
 

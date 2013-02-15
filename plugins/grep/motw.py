@@ -32,7 +32,7 @@ from core.data.kb.info import Info
 class motw(GrepPlugin):
     """
     Identify whether the page is compliant to mark of the web.
-    @author: Sharad Ganapathy sharadgana |at| gmail.com
+    :author: Sharad Ganapathy sharadgana |at| gmail.com
     """
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -48,9 +48,9 @@ class motw(GrepPlugin):
         '''
         Plugin entry point, search for motw.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if not response.is_text_or_html():
             return
@@ -112,7 +112,7 @@ class motw(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will specify whether the page is compliant against the MOTW

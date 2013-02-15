@@ -27,7 +27,7 @@ from core.ui.console.menu import menu
 class sessionMenu(menu):
     '''
     Menu to control sessions.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def _cmd_save(self, params):
         if len(params) != 1:

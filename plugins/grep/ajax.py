@@ -33,7 +33,7 @@ class ajax(GrepPlugin):
     '''
     Grep every page for traces of Ajax code.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -54,9 +54,9 @@ class ajax(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         url = response.get_url()
         if response.is_text_or_html() and url not in self._already_inspected:
@@ -88,7 +88,7 @@ class ajax(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for traces of Ajax code.

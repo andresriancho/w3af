@@ -25,7 +25,7 @@ class Config(dict):
     '''
     This class saves config parameters sent by the user.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def save(self, variable_name, value):

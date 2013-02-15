@@ -63,10 +63,10 @@ class AproxDelayController(DelayMixIn):
 
     def __init__(self, mutant, delay_obj, uri_opener, delay_setting=LINEARLY):
         '''
-        @param mutant: The mutant that will be sent (one or more times) to the
+        :param mutant: The mutant that will be sent (one or more times) to the
                        remote server in order to detect the time delay.
 
-        @param delay_obj: A delay object as defined in delay.py file. Basically
+        :param delay_obj: A delay object as defined in delay.py file. Basically
                           an object that contains the string that would delay
                           the remote server (ie. sleep(%s) )
         '''
@@ -132,7 +132,7 @@ class AproxDelayController(DelayMixIn):
     
     def multiplier_delays_response(self, multiplier, original_wait_time):
         '''
-        @return: (True if the multiplier delays the response,
+        :return: (True if the multiplier delays the response,
                   The HTTP response)
         '''
         delay_str = self.delay_obj.get_string_for_multiplier(multiplier)

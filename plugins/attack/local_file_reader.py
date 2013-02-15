@@ -34,7 +34,7 @@ from plugins.attack.payloads.decorators.read_decorator import read_debug
 class local_file_reader(AttackPlugin):
     '''
     Exploit local file inclusion bugs.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -42,7 +42,7 @@ class local_file_reader(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
@@ -64,8 +64,8 @@ class local_file_reader(AttackPlugin):
 
     def _generate_shell(self, vuln_obj):
         '''
-        @param vuln_obj: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed
+        :param vuln_obj: The vuln to exploit.
+        :return: The shell object based on the vulnerability that was passed
                  as a parameter.
         '''
         if self._verify_vuln(vuln_obj):
@@ -84,7 +84,7 @@ class local_file_reader(AttackPlugin):
         '''
         This command verifies a vuln.
 
-        @return : True if vuln can be exploited.
+        :return : True if vuln can be exploited.
         '''
         strict = self._strict_with_etc_passwd(vuln_obj)
         if strict:
@@ -98,7 +98,7 @@ class local_file_reader(AttackPlugin):
         Try to define the cut with a relaxed algorithm based on two different
         http requests.
         
-        @return : True if vuln can be exploited and the information extracted
+        :return : True if vuln can be exploited and the information extracted
         '''
         function_reference = getattr(self._uri_opener, vuln_obj.get_method())
         #    Prepare the first request, with the original data
@@ -130,7 +130,7 @@ class local_file_reader(AttackPlugin):
         Try to define the cut with a very strict algorithm based on the
         /etc/passwd file format.
         
-        @return : True if vuln can be exploited and the information extracted
+        :return : True if vuln can be exploited and the information extracted
         '''
         function_reference = getattr(self._uri_opener, vuln_obj.get_method())
         vuln_dc = vuln_obj.get_dc()
@@ -157,7 +157,7 @@ class local_file_reader(AttackPlugin):
 
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -168,7 +168,7 @@ class local_file_reader(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits local file inclusion and let's you "cat" every
@@ -187,7 +187,7 @@ class FileReaderShell(ReadShell):
     '''
     A shell object to exploit local file include and local file read vulns.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
@@ -252,7 +252,7 @@ class FileReaderShell(ReadShell):
         '''
         Read a file and echo it's content.
 
-        @return: The file content.
+        :return: The file content.
         '''
         if self._use_base64_wrapper:
             try:
@@ -339,6 +339,6 @@ class FileReaderShell(ReadShell):
 
     def get_name(self):
         '''
-        @return: The name of this shell.
+        :return: The name of this shell.
         '''
         return 'local_file_reader'

@@ -36,7 +36,7 @@ class Payload(object):
 
     def can_run(self):
         '''
-        @return: True if this payload has any way of running with the "syscalls"
+        :return: True if this payload has any way of running with the "syscalls"
                  provided by the shell_obj.
         '''
         available_syscalls = self.get_shell_syscalls()
@@ -49,8 +49,8 @@ class Payload(object):
         '''
         Execute ANOTHER payload, by providing the other payload name.
 
-        @param payload_name: The name of the payload I want to run.
-        @return: The payload result.
+        :param payload_name: The name of the payload I want to run.
+        :return: The payload result.
         '''
         try:
             return payload_handler.exec_payload(self.shell, payload_name,
@@ -73,7 +73,7 @@ class Payload(object):
 
     def run(self, *args):
         '''
-        @return: The result of running the payload using the most performant
+        :return: The result of running the payload using the most performant
                  way. Basically, if I can run commands using exec() I'll use
                  that, if not I'll use read().
         '''
@@ -90,7 +90,7 @@ class Payload(object):
 
     def run_api(self, *args):
         '''
-        @return: The result of running the payload using the most performant way. Basically, if
+        :return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().
         '''
         available_syscalls = self.get_shell_syscalls()
@@ -106,13 +106,13 @@ class Payload(object):
 
     def require(self):
         '''
-        @return: The operating system requirement to run this payload.
+        :return: The operating system requirement to run this payload.
         '''
         return 'linux'
 
     def read_multi(self, fname_iter):
         '''
-        @param fname_iter: An iterator that yields all the file names to read.
+        :param fname_iter: An iterator that yields all the file names to read.
         '''
         read_file = return_args(self.shell.read)
         results = self.worker_pool.imap_unordered(read_file, fname_iter)
@@ -127,7 +127,7 @@ class Payload(object):
 
     def get_shell_syscalls(self, _filter=lambda x: x):
         '''
-        @return: A set with the syscalls that the shell implements
+        :return: A set with the syscalls that the shell implements
         '''
         available_syscalls = []
         
@@ -147,7 +147,7 @@ class Payload(object):
     
     def get_payload_implemented_methods(self):
         '''
-        @return: A list of all methods that the current payload implements,
+        :return: A list of all methods that the current payload implements,
                  in other words, a list with ['execute', 'read'] if the
                  methods run_execute and run_read exist.
         '''

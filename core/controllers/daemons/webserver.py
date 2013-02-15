@@ -160,10 +160,10 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     '''Create a http server deamon. The returned instance is unique for <ip>
     and <port>.
 
-    @param ip: IP number
-    @param port: Port number
-    @param webroot: webserver's root directory
-    @return: A local webserver instance bound to the requested address (<ip>, <port>)
+    :param ip: IP number
+    :param port: Port number
+    :param webroot: webserver's root directory
+    :return: A local webserver instance bound to the requested address (<ip>, <port>)
     '''
     server_thread = _get_inst(ip, port)
 

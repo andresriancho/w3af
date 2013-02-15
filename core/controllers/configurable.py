@@ -28,7 +28,7 @@ class Configurable(object):
         1. set_options( options_list )
         2. get_options()
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def set_options(self, options_list):
         '''
@@ -39,7 +39,7 @@ class Configurable(object):
 
         This method MUST be implemented on every configurable object.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         raise NotImplementedError('Configurable object is not implementing '
                                   'required method set_options')
@@ -53,7 +53,7 @@ class Configurable(object):
 
         This method MUST be implemented on every plugin.
 
-        @return: OptionList.
+        :return: OptionList.
         '''
         raise NotImplementedError('Configurable object is not implementing '
                                   'required method get_options')

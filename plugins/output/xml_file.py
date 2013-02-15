@@ -53,7 +53,7 @@ class xml_file(OutputPlugin):
     '''
     Print all messages to a xml file.
 
-    @author: Kevin Denver ( muffysw@hotmail.com )
+    :author: Kevin Denver ( muffysw@hotmail.com )
     '''
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -126,13 +126,13 @@ class xml_file(OutputPlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._file_name = option_list['output_file'].get_value()
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
 
@@ -169,9 +169,9 @@ class xml_file(OutputPlugin):
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
 
-        @param pluginsDict: A dict with all the plugin types and the enabled
+        :param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
-        @param optionsDict: A dict with the options for every plugin.
+        :param optionsDict: A dict with the options for every plugin.
         '''
         # Add the user configured targets to scaninfo
         strTargets = ''
@@ -363,7 +363,7 @@ class xml_file(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to an XML report file.

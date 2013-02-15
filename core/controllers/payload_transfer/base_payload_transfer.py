@@ -41,7 +41,7 @@ class BasePayloadTransfer(object):
 
     def estimate_transfer_time(self, size):
         '''
-        @return: An estimated transfer time for a file with the specified size.
+        :return: An estimated transfer time for a file with the specified size.
         '''
         raise NotImplementedError()
 
@@ -54,7 +54,7 @@ class BasePayloadTransfer(object):
 
     def get_speed(self):
         '''
-        @return: The transfer speed of the transfer object. It should return a
+        :return: The transfer speed of the transfer object. It should return a
                  number between 100 (fast) and 1 (slow)
         '''
         raise NotImplementedError()
@@ -63,9 +63,9 @@ class BasePayloadTransfer(object):
         '''
         Runs a series of commands to verify if the file was successfully uploaded.
 
-        @param file_content: The bytestream that should be in the remote_filename
-        @param remote_filename: The remote file where the uploaded content should be in
-        @return: True if the file was successfully uploaded.
+        :param file_content: The bytestream that should be in the remote_filename
+        :param remote_filename: The remote file where the uploaded content should be in
+        :return: True if the file was successfully uploaded.
         '''
         if '/etc/passwd' in self._exec_method('md5sum /etc/passwd'):
             md5sum_res = self._exec_method('md5sum ' + remote_filename)

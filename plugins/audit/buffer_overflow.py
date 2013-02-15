@@ -34,7 +34,7 @@ from core.data.kb.info import Info
 class buffer_overflow(AuditPlugin):
     '''
     Find buffer overflow vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     OVERFLOW_ERRORS = (
@@ -93,7 +93,7 @@ class buffer_overflow(AuditPlugin):
         '''
         Tests an URL for buffer overflow vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         mutants = create_mutants(freq, self.BUFFER_TESTS,
                                  orig_resp=orig_response)
@@ -140,14 +140,14 @@ class buffer_overflow(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds buffer overflow vulnerabilities.

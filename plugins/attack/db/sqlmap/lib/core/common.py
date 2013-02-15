@@ -176,7 +176,7 @@ class Format:
         Format the back-end DBMS fingerprint value and return its
         values formatted as a human readable string.
 
-        @return: detected back-end DBMS based upon fingerprint techniques.
+        :return: detected back-end DBMS based upon fingerprint techniques.
         @rtype: C{str}
         """
 
@@ -191,7 +191,7 @@ class Format:
         Parses the knowledge base htmlFp list and return its values
         formatted as a human readable string.
 
-        @return: list of possible back-end DBMS based upon error messages
+        :return: list of possible back-end DBMS based upon error messages
         parsing.
         @rtype: C{str}
         """
@@ -233,7 +233,7 @@ class Format:
           'type': set(['Windows'])
         }
 
-        @return: detected back-end operating system based upon fingerprint
+        :return: detected back-end operating system based upon fingerprint
         techniques.
         @rtype: C{str}
         """

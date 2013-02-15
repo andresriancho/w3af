@@ -29,7 +29,7 @@ from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 class rnd_hex_encode(EvasionPlugin):
     '''
     Add random hex encoding.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -39,9 +39,9 @@ class rnd_hex_encode(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified
+        :param request: HTTPRequest instance that is going to be modified
                         by the evasion plugin
-        @return: The modified request
+        :return: The modified request
         '''
         # First we mangle the URL
         path = request.url_object.get_path()
@@ -72,7 +72,7 @@ class rnd_hex_encode(EvasionPlugin):
         '''
         Replace some strings by it's hex encoded value.
 
-        @return: a string.
+        :return: a string.
         '''
         new_data = ''
         for char in data:
@@ -87,13 +87,13 @@ class rnd_hex_encode(EvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 0 is run first, 100 last.
+        :return: An integer specifying the priority. 0 is run first, 100 last.
         '''
         return 50
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin adds random hex encoding.

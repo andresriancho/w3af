@@ -32,7 +32,7 @@ class in_multi_in(object):
     def __init__(self, str_list):
         '''
 
-        @param str_list: A list with all the strings that we want
+        :param str_list: A list with all the strings that we want
         to match against one or more strings using the "query" function.
 
         This list might be [str_1, str_2 ... , str_N] or something like
@@ -63,7 +63,7 @@ class in_multi_in(object):
         Run through all the "in" statements on top of target_str and return a list
         according to the class __init__ documentation.
 
-        @param target_str: The target string where the in statements are
+        :param target_str: The target string where the in statements are
         going to be applied.
 
         '''

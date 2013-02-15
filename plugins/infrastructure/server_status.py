@@ -38,7 +38,7 @@ class server_status(InfrastructurePlugin):
     '''
     Find new URLs from the Apache server-status cgi.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -52,7 +52,7 @@ class server_status(InfrastructurePlugin):
         '''
         Get the server-status and parse it.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         base_url = fuzzable_request.get_url().base_url()
@@ -142,7 +142,7 @@ class server_status(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin fetches the server-status file used by Apache, and parses it.

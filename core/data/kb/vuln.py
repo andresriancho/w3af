@@ -28,20 +28,20 @@ from core.data.request.fuzzable_request import FuzzableRequest
 class Vuln(Info):
     '''
     This class represents a web vulnerability.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, name, desc, severity, response_ids, plugin_name):
         '''
-        @param name: The vulnerability name, will be checked against the values
+        :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         
-        @param desc: The vulnerability description
+        :param desc: The vulnerability description
         
-        @param severity: The severity for this object
+        :param severity: The severity for this object
         
-        @param response_ids: A list of response ids associated with this vuln
+        :param response_ids: A list of response ids associated with this vuln
         
-        @param plugin_name: The name of the plugin which identified the vuln
+        :param plugin_name: The name of the plugin which identified the vuln
         '''
         Info.__init__(self, name, desc, response_ids, plugin_name)
 
@@ -54,7 +54,7 @@ class Vuln(Info):
         unable to make it work. Refactoring required to avoid code duplication
         with info.py. The same applies to all classmethods
         
-        @return: A vuln instance with the proper data set based on the values
+        :return: A vuln instance with the proper data set based on the values
                  taken from the mutant.
         '''
         if not isinstance(mutant, Mutant):
@@ -73,7 +73,7 @@ class Vuln(Info):
     @classmethod
     def from_fr(cls, name, desc, severity, response_ids, plugin_name, freq):
         '''
-        @return: A vuln instance with the proper data set based on the values
+        :return: A vuln instance with the proper data set based on the values
                  taken from the fuzzable request.
         '''
         if not isinstance(freq, FuzzableRequest):
@@ -90,7 +90,7 @@ class Vuln(Info):
     @classmethod
     def from_vuln(cls, other_vuln):
         '''
-        @return: A clone of other_vuln. 
+        :return: A clone of other_vuln. 
         '''
         if not isinstance(other_vuln, Vuln):
             raise TypeError('Vuln expected in from_vuln.')

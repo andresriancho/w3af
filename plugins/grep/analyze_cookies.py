@@ -37,7 +37,7 @@ class analyze_cookies(GrepPlugin):
     '''
     Grep every response for session cookies sent by the web application.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')
@@ -55,9 +55,9 @@ class analyze_cookies(GrepPlugin):
         '''
         Plugin entry point, search for cookies.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         # do this check every time
         self._ssl_cookie_via_http(request, response)
@@ -133,11 +133,11 @@ class analyze_cookies(GrepPlugin):
         BUGBUG: The urllib2 library concatenates , values of repeated headers.
                 See HTTPMessage.addheader() in httplib.py
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @param cookie_header_value: The cookie, as sent in the HTTP response
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :param cookie_header_value: The cookie, as sent in the HTTP response
 
-        @return: The cookie object or None if the parsing failed
+        :return: The cookie object or None if the parsing failed
         '''
         cookie_object = Cookie.SimpleCookie()
         try:
@@ -186,12 +186,12 @@ class analyze_cookies(GrepPlugin):
             http://www.owasp.org/index.php/HTTPOnly
             http://en.wikipedia.org/wiki/HTTP_cookie
 
-        @param request: The http request object
-        @param response: The http response object
-        @param cookie_obj: The cookie object to analyze
-        @param cookie_header_value: The cookie, as sent in the HTTP response
-        @param fingerprinted: True if the cookie was fingerprinted
-        @return: None
+        :param request: The http request object
+        :param response: The http response object
+        :param cookie_obj: The cookie object to analyze
+        :param cookie_header_value: The cookie, as sent in the HTTP response
+        :param fingerprinted: True if the cookie was fingerprinted
+        :return: None
         '''
         if not self.HTTPONLY_RE.search(cookie_header_value):
             
@@ -248,7 +248,7 @@ class analyze_cookies(GrepPlugin):
         Now we analyze the cookie and try to guess the remote web server or
         programming framework based on the cookie that was sent.
 
-        @return: True if the cookie was fingerprinted
+        :return: True if the cookie was fingerprinted
         '''
         cookie_obj_str = cookie_obj.output(header='')
 
@@ -281,11 +281,11 @@ class analyze_cookies(GrepPlugin):
         Reference:
             http://en.wikipedia.org/wiki/HTTP_cookie
 
-        @param request: The http request object
-        @param response: The http response object
-        @param cookie_obj: The cookie object to analyze
-        @param cookie_header_value: The cookie, as sent in the HTTP response
-        @return: None
+        :param request: The http request object
+        :param response: The http response object
+        :param cookie_obj: The cookie object to analyze
+        :param cookie_header_value: The cookie, as sent in the HTTP response
+        :return: None
         '''
         # BUGBUG: http://bugs.python.org/issue1028088
         #
@@ -329,11 +329,11 @@ class analyze_cookies(GrepPlugin):
         '''
         Checks if a cookie that does NOT have a secure flag is sent over https.
 
-        @param request: The http request object
-        @param response: The http response object
-        @param cookie_obj: The cookie object to analyze
-        @param cookie_header_value: The cookie, as sent in the HTTP response
-        @return: None
+        :param request: The http request object
+        :param response: The http response object
+        :param cookie_obj: The cookie object to analyze
+        :param cookie_header_value: The cookie, as sent in the HTTP response
+        :return: None
         '''
         # BUGBUG: See other reference in this file for http://bugs.python.org/issue1028088
 
@@ -389,7 +389,7 @@ class analyze_cookies(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every response for session cookies that the web

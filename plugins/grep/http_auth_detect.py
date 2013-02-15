@@ -36,7 +36,7 @@ class http_auth_detect(GrepPlugin):
     '''
     Find responses that indicate that the resource requires auth.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -48,9 +48,9 @@ class http_auth_detect(GrepPlugin):
         '''
         Finds 401 or authentication URIs like http://user:pass@domain.com/
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         # If I have a 401 code, and this URL wasn't already reported...
         if response.get_code() == 401:
@@ -71,7 +71,7 @@ class http_auth_detect(GrepPlugin):
     def _find_auth_uri(self, response):
         '''
         Analyze a 200 response and report any findings of http://user:pass@domain.com/
-        @return: None
+        :return: None
         '''
         #
         #   Analyze the HTTP URL
@@ -148,7 +148,7 @@ class http_auth_detect(GrepPlugin):
     def _analyze_401(self, response):
         '''
         Analyze a 401 response and report it.
-        @return: None
+        :return: None
         '''
         realm = self._get_realm(response)
         
@@ -189,7 +189,7 @@ class http_auth_detect(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page and finds responses that indicate that the

@@ -34,7 +34,7 @@ class sitemap_xml(CrawlPlugin):
     '''
     Analyze the sitemap.xml file and find new URLs
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -45,7 +45,7 @@ class sitemap_xml(CrawlPlugin):
         '''
         Get the sitemap.xml file and parse it.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                    (among other things) the URL to test.
         '''
         base_url = fuzzable_request.get_url().base_url()
@@ -85,7 +85,7 @@ class sitemap_xml(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the sitemap.xml file, and parses it.

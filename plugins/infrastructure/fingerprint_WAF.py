@@ -39,7 +39,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     Identify if a Web Application Firewall is present and if possible identify
     the vendor and version.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     '''
@@ -54,7 +54,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
         '''
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         methods = [self._fingerprint_URLScan,
@@ -289,9 +289,9 @@ class fingerprint_WAF(InfrastructurePlugin):
         Creates a information object based on the name and the response parameter
         and saves the data in the kb.
 
-        @param name: The name of the WAF
-        @param response: The HTTP response object that was used to identify the WAF
-        @param protected_by: A more detailed description/version of the WAF
+        :param name: The name of the WAF
+        :param response: The HTTP response object that was used to identify the WAF
+        :param protected_by: A more detailed description/version of the WAF
         '''
         desc = 'The remote network seems to have a "%s" WAF deployed to' \
               ' protect access to the web server.'
@@ -310,14 +310,14 @@ class fingerprint_WAF(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.afd']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         Try to fingerprint the Web Application Firewall that is running on the

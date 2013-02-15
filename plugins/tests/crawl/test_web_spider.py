@@ -182,7 +182,7 @@ def clear_wivet():
 
 def extract_all_stats():
     '''
-    @return: A list with all the stats generated during this scan
+    :return: A list with all the stats generated during this scan
     '''
     stats_url = 'http://wivet/offscanpages/statistics/'
     response = urllib2.urlopen(stats_url)

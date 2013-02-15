@@ -27,7 +27,7 @@ class pdf(BasePwdProfilingPlugin):
     '''
     This plugin creates a map of possible passwords by reading pdf documents.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -37,7 +37,7 @@ class pdf(BasePwdProfilingPlugin):
         '''
         Iterate through all PDF pages and extract text
         
-        @return: A list containing the words in the PDF
+        :return: A list containing the words in the PDF
         '''
         pdf_text = pdf_to_text(document_str)
         return pdf_text.split()
@@ -46,9 +46,9 @@ class pdf(BasePwdProfilingPlugin):
         '''
         Get words from the pdf document.
 
-        @param response: In most common cases, an html. Could be almost
+        :param response: In most common cases, an html. Could be almost
                          anything, if we are lucky, it's a PDF file.
-        @return: A map of strings:repetitions.
+        :return: A map of strings:repetitions.
         '''
         res = None
         words = []

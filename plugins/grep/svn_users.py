@@ -33,7 +33,7 @@ class svn_users(GrepPlugin):
     '''
     Grep every response for users of the versioning system.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -52,9 +52,9 @@ class svn_users(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         uri = response.get_uri()
         if response.is_text_or_html() and uri not in self._already_inspected:
@@ -81,7 +81,7 @@ class svn_users(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for users of the versioning system. Sometimes

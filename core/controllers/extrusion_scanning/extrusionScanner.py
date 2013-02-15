@@ -45,16 +45,16 @@ class extrusionScanner(object):
         - starts extrusion server
         - returns results from extrusion server to user
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, exec_method, forceReRun=False,
                  tcpPortList=[25, 80, 53, 1433, 8080],
                  udpPortList=[53, 69, 139, 1025]):
         '''
-        @param exec_method: The exec_method used to execute commands on the
+        :param exec_method: The exec_method used to execute commands on the
                                remote host
-        @param forceReRun: If forceReRun is True, the extrusion scanner
+        :param forceReRun: If forceReRun is True, the extrusion scanner
                                won't fetch the results from the KB
         '''
         self._exec_method = exec_method

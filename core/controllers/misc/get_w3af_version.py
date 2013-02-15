@@ -30,7 +30,7 @@ VERSION_FILE = os.path.join('core', 'data', 'constants', 'version.txt')
 
 def get_w3af_version():
     '''
-    @return: A string with the w3af version.
+    :return: A string with the w3af version.
     '''
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
     cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''

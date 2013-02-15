@@ -23,10 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 def get_common_directories(os=None):
     '''
-    @param os: The operating system for which we want the common directories.
+    :param os: The operating system for which we want the common directories.
     If no os is specified, all directories are returned.
 
-    @return: A list of common directories
+    :return: A list of common directories
     '''
     directories = []
     if os == 'linux' or os is None:

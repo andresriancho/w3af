@@ -45,9 +45,9 @@ class wizard:
 
     def _get_instances(self, question_list, w3af_core):
         '''
-        @param question_list: A list of question ids
-        @param w3af_core: The w3af core object to pass to the question id
-        @return: A list of question objects
+        :param question_list: A list of question ids
+        :param w3af_core: The w3af core object to pass to the question id
+        :return: A list of question objects
         '''
         res = []
         mod = 'core.controllers.wizard.questions.question_%s'
@@ -61,7 +61,7 @@ class wizard:
         '''
         The user interface calls this method until it returns None.
 
-        @return: The next question that has to be asked to the user.
+        :return: The next question that has to be asked to the user.
         '''
         # Special case for first iteration
         if self._firstQuestion == True:
@@ -92,7 +92,7 @@ class wizard:
         '''
         We get here when the user clicks on the "Previous" button in the GTK user interface.
 
-        @return: The previous question, with the answers the user selected.
+        :return: The previous question, with the answers the user selected.
         '''
         # Special case, we can't go back because we don't have a previous question
         if self._firstQuestion:
@@ -108,13 +108,13 @@ class wizard:
         '''
         This method should be overwritten by the actual wizards.
 
-        @return: A string that describes what the wizard will let you configure.
+        :return: A string that describes what the wizard will let you configure.
         '''
         return ''
 
     def get_name(self):
         '''
-        @return: The name of the wizard.
+        :return: The name of the wizard.
         '''
         return ''
 
@@ -125,7 +125,7 @@ class wizard:
 
         This method raises an exception if the selected options are invalid.
 
-        @param options_list: This is a map with the answers for every question
+        :param options_list: This is a map with the answers for every question
                                that was made to the user.
         '''
         # This line may rise a w3afException

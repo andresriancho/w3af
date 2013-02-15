@@ -49,7 +49,7 @@ class GtkOutput(OutputPlugin):
     Any part of the GTK ui can subscribe to the messages that this object
     receives, and will get all data that is sent to the output manager. 
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -159,9 +159,9 @@ def unsubscribe_to_messages(observer_function):
 class Message(object):
     def __init__(self, msg_type, msg, new_line=True):
         '''
-        @param msg_type: console, information, vulnerability, etc
-        @param msg: The message itself
-        @param new_line: Should I print a newline ? True/False
+        :param msg_type: console, information, vulnerability, etc
+        :param msg: The message itself
+        :param new_line: Should I print a newline ? True/False
         '''
         self._type = msg_type
         self._msg = msg

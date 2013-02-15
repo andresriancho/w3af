@@ -33,7 +33,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 class global_redirect(AuditPlugin):
     '''
     Find scripts that redirect the browser to any site.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     TEST_URLS = ('http://www.w3af.org/',
@@ -52,7 +52,7 @@ class global_redirect(AuditPlugin):
         '''
         Tests an URL for global redirect vulnerabilities.
 
-        @param freq: A FuzzableRequest object
+        :param freq: A FuzzableRequest object
         '''
         mutants = create_mutants(freq, self.TEST_URLS)
 
@@ -169,7 +169,7 @@ class global_redirect(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds global redirection vulnerabilities. This kind of bugs

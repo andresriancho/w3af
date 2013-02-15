@@ -29,7 +29,7 @@ class pe:
     '''
     This class represents a PE file.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, arch='32bit'):
         self._arch = arch
@@ -48,7 +48,7 @@ class pe:
 
     def dump(self):
         '''
-        @return: A string with the complete pe file.
+        :return: A string with the complete pe file.
         '''
         try:
             template = file(self._templateFileName, 'r').read()

@@ -35,7 +35,7 @@ class esmre_multire(object):
     def __init__(self, re_list, re_compile_flags=0):
         '''
 
-        @param re_list: A list with all the regular expressions that we want
+        :param re_list: A list with all the regular expressions that we want
         to match against one or more strings using the "query" function.
 
         This list might be [re_str_1, re_str_2 ... , re_str_N] or something like
@@ -67,7 +67,7 @@ class esmre_multire(object):
         Apply the regular expressions to the target_str and return a list
         according to the class __init__ documentation.
 
-        @param target_str: The target string where the regular expressions are
+        :param target_str: The target string where the regular expressions are
         going to be applied. First we apply the esmre algorithm and then we do
         some magic of our own.
 

@@ -30,14 +30,14 @@ def commonPrefix(completions):
     '''
     Utility function which is used by console to extract the string to be
     suggested as autocompletion.
-    @param completions: [(part, completion)] where part is a prefix of completion
+    :param completions: [(part, completion)] where part is a prefix of completion
     (see core.ui.console.menu)
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
     def cp(str1, str2):
         '''
-        @return: the longest common prefix for 2 strings.
+        :return: the longest common prefix for 2 strings.
         '''
         ls2 = len(str2)
         j = 1
@@ -93,13 +93,13 @@ def removePrefix(s, prefix='!'):
 def suggest(tree, part, skipList=[]):
     '''
     The basic autocompletion logic.
-    @param tree: dict of list to take possible completions from.
+    :param tree: dict of list to take possible completions from.
     @part: the prefix for the completions.
     @allowSet: if True, it allows to autocomplete expressions
     like "dog,!cat,gira" into dog,!cat,giraffee' (useful for plugins)
-    @return: list of (p, c) where p is the prefix of the completion c and suffix of part.
+    :return: list of (p, c) where p is the prefix of the completion c and suffix of part.
         (currently, only lengths of p's are used).
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     try:
         list = tree.keys()
@@ -158,7 +158,7 @@ def formatParagraph(text, width):
 
 def formatParagraphLine(text, width):
     '''
-    @return: array of rows
+    :return: array of rows
     '''
     words = text.split()
     tail = words

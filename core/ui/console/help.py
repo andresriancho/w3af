@@ -41,7 +41,7 @@ class helpRepository(object):
     '''
     This class wraps a help file and allows to extract context-related help objects
 
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, path=os.path.join('core', 'ui', 'console', 'help.xml')):
         self.__doc = ET.parse(path)
@@ -53,10 +53,10 @@ class helpRepository(object):
     def load_help(self, topic, obj=None, vars=None):
         '''
         Loads an object from the repository.
-        @param topic: the name of a context (for example, menu)
-        @param obj: the help object where to load the help data
+        :param topic: the name of a context (for example, menu)
+        :param obj: the help object where to load the help data
         (if None, a new one is created)
-        @param vars: a dict of variables to replace in the help text
+        :param vars: a dict of variables to replace in the help text
         '''
 
         #a closure to simplify the substitution
@@ -115,8 +115,8 @@ class HelpContainer(object):
     def add_help_entry(self, subj, content, cat=''):
         '''
         Adds the help entry.
-        @param content: usually a tuple like (head, body)
-        @param cat: a name of the category.
+        :param content: usually a tuple like (head, body)
+        :param cat: a name of the category.
         If the item exists in an other category, it will be replaced.
         '''
 
@@ -153,9 +153,9 @@ class HelpContainer(object):
         '''
         Returns a table of format 'subject -> head'
         to display with the table.py module
-        @param separators: if True, the categories are separated
+        :param separators: if True, the categories are separated
         by extra line.
-        @param cat: category to include into the page.
+        :param cat: category to include into the page.
         If None, all are included.
         '''
         result = []

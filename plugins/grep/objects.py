@@ -32,7 +32,7 @@ class objects(GrepPlugin):
     '''
     Grep every page for objects and applets.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -47,9 +47,9 @@ class objects(GrepPlugin):
         '''
         Plugin entry point. Parse the object tags.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         url = response.get_url()
         dom = response.get_dom()
@@ -77,7 +77,7 @@ class objects(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for applets and other types of objects.

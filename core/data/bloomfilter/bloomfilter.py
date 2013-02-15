@@ -51,8 +51,8 @@ except:
 class BloomFilter(GenericBloomFilter):
     def __init__(self, capacity, error_rate):
         '''
-        @param capacity: How many items you want to store, eg. 10000
-        @param error_rate: The acceptable false positive rate, eg. 0.001
+        :param capacity: How many items you want to store, eg. 10000
+        :param error_rate: The acceptable false positive rate, eg. 0.001
         '''
         GenericBloomFilter.__init__(self, capacity, error_rate)
 

@@ -28,21 +28,21 @@ class ComboOption(BaseOption):
     '''
     This class represents an ComboOption.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     _type = COMBO
 
     def __init__(self, name, default_value, desc, _help='', tabid=''):
         '''
-        @param name: The name of the ComboOption
-        @param default_value: The default value of the ComboOption;
+        :param name: The name of the ComboOption
+        :param default_value: The default value of the ComboOption;
                              it is a list of the options that the
                              user can choose from.
-        @param desc: The description of the ComboOption
-        @param help: The help of the ComboOption; a large description
+        :param desc: The description of the ComboOption
+        :param help: The help of the ComboOption; a large description
                      of the ComboOption
-        @param tabid: The tab id of the ComboOption
+        :param tabid: The tab id of the ComboOption
         '''
         self._value = default_value[0]
         self._default_value = default_value[0]
@@ -58,7 +58,7 @@ class ComboOption(BaseOption):
 
     def set_value(self, value):
         '''
-        @param value: The value parameter is set by the user interface, which
+        :param value: The value parameter is set by the user interface, which
                       or example sends 'a' when the options of the combobox are
                       '1','2','a','f'
         '''

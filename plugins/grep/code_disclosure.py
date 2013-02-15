@@ -33,7 +33,7 @@ class code_disclosure(GrepPlugin):
     '''
     Grep every page for code disclosure vulnerabilities.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -49,9 +49,9 @@ class code_disclosure(GrepPlugin):
 
         Unit tests are available at plugins/grep/tests.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if response.is_text_or_html() and \
         response.get_url() not in self._already_added:
@@ -89,7 +89,7 @@ class code_disclosure(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page in order to find code disclosures.

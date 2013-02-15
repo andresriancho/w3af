@@ -671,9 +671,9 @@ class TestUtils(unittest.TestCase):
         Internal method to check if a vuln is present into a vulns list
         coming from method "find_vulns()".
         
-        @param vuln_desc: Vuln description.
-        @param vulns_list: vulns list coming from method "find_vulns()".
-        @return: True only if vuln is found. 
+        :param vuln_desc: Vuln description.
+        :param vulns_list: vulns list coming from method "find_vulns()".
+        :return: True only if vuln is found. 
         '''        
         for v in vulns_list:
             if v.desc == vuln_desc:

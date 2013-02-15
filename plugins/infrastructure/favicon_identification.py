@@ -40,7 +40,7 @@ from core.data.kb.info import Info
 class favicon_identification(InfrastructurePlugin):
     '''
     Identify server software using favicon.
-    @author: Vlatko Kosturjak  <kost@linux.hr> http://kost.com.hr
+    :author: Vlatko Kosturjak  <kost@linux.hr> http://kost.com.hr
     '''
 
     def __init__(self):
@@ -58,7 +58,7 @@ class favicon_identification(InfrastructurePlugin):
         '''
         Identify server software using favicon.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.get_url().get_domain_path()
@@ -117,7 +117,7 @@ class favicon_identification(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin identifies software version using favicon.ico file.

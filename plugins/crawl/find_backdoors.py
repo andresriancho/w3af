@@ -117,7 +117,7 @@ class find_backdoors(CrawlPlugin):
     '''
     Find web backdoors and web shells.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -130,7 +130,7 @@ class find_backdoors(CrawlPlugin):
         '''
         For every directory, fetch a list of shell files and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.get_url().get_domain_path()
@@ -148,7 +148,7 @@ class find_backdoors(CrawlPlugin):
         '''
         Check if the file exists.
 
-        @param web_shell_url: The URL to check
+        :param web_shell_url: The URL to check
         '''
         try:
             response = self._uri_opener.GET(web_shell_url, cache=True)
@@ -175,8 +175,8 @@ class find_backdoors(CrawlPlugin):
         Heuristic to infer if the content of <response> has the pattern of a
         backdoor response.
 
-        @param response: HTTPResponse object
-        @return: A bool value
+        :param response: HTTPResponse object
+        :return: A bool value
         '''
         if not is_404(response):
             body_text = response.get_body()
@@ -204,7 +204,7 @@ class find_backdoors(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for web shells in the directories that are sent as input.

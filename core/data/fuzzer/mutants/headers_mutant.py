@@ -50,7 +50,7 @@ class HeadersMutant(Mutant):
 
     def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified header was: "%s"'\
               ' and it\'s value was: "%s".'

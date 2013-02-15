@@ -106,8 +106,8 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     '''
     Parse a url encoded string (a=b&c=d) into a QueryString object.
 
-    @param url_enc_str: The string to parse
-    @return: A QueryString object (a dict wrapper).
+    :param url_enc_str: The string to parse
+    :return: A QueryString object (a dict wrapper).
     '''
     if not isinstance(qstr, basestring):
         raise TypeError('parse_qs requires a basestring as input.')
@@ -145,14 +145,14 @@ class URL(DiskItem):
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         '''
-        @param data: Either a string representing a URL or a 6-elems tuple
+        :param data: Either a string representing a URL or a 6-elems tuple
             representing the URL components:
             <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
 
@@ -207,13 +207,13 @@ class URL(DiskItem):
     def from_parts(cls, scheme, netloc, path, params,
                    qs, fragment, encoding=DEFAULT_ENCODING):
         '''
-        @param scheme: http/https
-        @param netloc: domain and port
-        @param path: directory
-        @param params: URL params
-        @param qs: query string
-        @param fragment: #fragments
-        @return: An instance of URL.
+        :param scheme: http/https
+        :param netloc: domain and port
+        :param path: directory
+        :param params: URL params
+        :param qs: query string
+        :param fragment: #fragments
+        :return: An instance of URL.
 
         This is a "constructor" for the URL class.
 
@@ -232,8 +232,8 @@ class URL(DiskItem):
     @classmethod
     def from_URL(cls, src_url_obj):
         '''
-        @param src_url: The url object to use as "template" for the new one
-        @return: An instance of URL with the same data as original_url_object
+        :param src_url: The url object to use as "template" for the new one
+        :return: An instance of URL with the same data as original_url_object
 
         This is a "constructor" for the URL class.
 
@@ -266,7 +266,7 @@ class URL(DiskItem):
     @property
     def url_string(self):
         '''
-        @return: A <unicode> representation of the URL
+        :return: A <unicode> representation of the URL
 
         >>> u = URL('http://w3af.com/foo/bar.txt?id=1')
         >>> u.url_string
@@ -310,7 +310,7 @@ class URL(DiskItem):
         >>> u.has_query_string()
         False
 
-        @return: True if self has a query string.
+        :return: True if self has a query string.
         '''
         return bool(self.querystring)
 
@@ -319,7 +319,7 @@ class URL(DiskItem):
         Parses the query string and returns a QueryString
         (a dict like) object.
 
-        @return: A QueryString Object that represents the query string.
+        :return: A QueryString Object that represents the query string.
 
         >>> URL(u'http://w3af.com/a/').querystring
         QueryString({})
@@ -355,7 +355,7 @@ class URL(DiskItem):
 
     def uri2url(self):
         '''
-        @return: Returns a string contaning the URL without the query string.
+        :return: Returns a string contaning the URL without the query string.
 
         >>> u = URL('http://w3af.com/foo/bar.txt?id=3')
         >>> u.uri2url().url_string
@@ -368,13 +368,13 @@ class URL(DiskItem):
 
     def get_fragment(self):
         '''
-        @return: Returns the #fragment of the URL.
+        :return: Returns the #fragment of the URL.
         '''
         return self.fragment
 
     def remove_fragment(self):
         '''
-        @return: A URL containing the URL without the fragment.
+        :return: A URL containing the URL without the fragment.
 
         >>> u = URL('http://w3af.com/foo/bar.txt?id=3#foobar')
         >>> u.remove_fragment().url_string
@@ -390,7 +390,7 @@ class URL(DiskItem):
 
     def base_url(self):
         '''
-        @return: A string contaning the URL without the query string and
+        :return: A string contaning the URL without the query string and
             without any path.
 
         >>> u = URL('http://www.w3af.com/foo/bar.txt?id=3#foobar')
@@ -556,7 +556,7 @@ class URL(DiskItem):
 
     def get_port(self):
         '''
-        @return: The TCP port that is going to be used to contact the remote end.
+        :return: The TCP port that is going to be used to contact the remote end.
 
         >>> u = URL('http://w3af.com/f00.b4r')
         >>> u.get_port()
@@ -602,11 +602,11 @@ class URL(DiskItem):
 
         For more information read RFC 1808 especially section 5.
 
-        @param relative: The relative url to add to the base url
-        @param encoding: The encoding to use for the final url_object being returned.
+        :param relative: The relative url to add to the base url
+        :param encoding: The encoding to use for the final url_object being returned.
                          If no encoding is specified, the returned url_object will
                          have the same encoding that the current url_object.
-        @return: The joined URL.
+        :return: The joined URL.
 
         Example usage available in test_url.py
         '''
@@ -627,7 +627,7 @@ class URL(DiskItem):
         >>> URL('http://foo.bar.def/def/jkl/').get_domain()
         'foo.bar.def'
 
-        @return: Returns the domain name for the url.
+        :return: Returns the domain name for the url.
         '''
         domain = self.netloc.split(':')[0]
         return domain
@@ -673,7 +673,7 @@ class URL(DiskItem):
         >>> u.get_net_location()
         'host.tld:443'
 
-        @return: Returns the domain name for the url.
+        :return: Returns the domain name for the url.
         '''
         if not re.match('[a-z0-9-\.]+([a-z0-9-]+)*$', new_domain):
             raise ValueError("'%s' is an invalid domain" % (new_domain))
@@ -706,8 +706,8 @@ class URL(DiskItem):
         >>> URL("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
         True
 
-        @param url: The url to parse.
-        @return: Returns a boolean that indicates if <url>'s domain is valid
+        :param url: The url to parse.
+        :return: Returns a boolean that indicates if <url>'s domain is valid
         '''
         return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$', self.netloc) is not None
 
@@ -720,7 +720,7 @@ class URL(DiskItem):
         >>> URL("http://aaa:443").get_net_location()
         'aaa:443'
 
-        @return: Returns the net location for the url.
+        :return: Returns the net location for the url.
         '''
         return self.netloc
 
@@ -733,7 +733,7 @@ class URL(DiskItem):
         >>> URL("ftp://aaa:443").get_protocol()
         'ftp'
 
-        @return: Returns the domain name for the url.
+        :return: Returns the domain name for the url.
         '''
         return self.scheme
 
@@ -747,7 +747,7 @@ class URL(DiskItem):
         >>> u.get_protocol()
         'https'
 
-        @return: Returns the domain name for the url.
+        :return: Returns the domain name for the url.
         '''
         self.scheme = protocol
 
@@ -818,7 +818,7 @@ class URL(DiskItem):
 
     def get_domain_path(self):
         '''
-        @return: Returns the domain name and the path for the url.
+        :return: Returns the domain name and the path for the url.
 
         >>> URL('http://w3af.com/def/jkl/').get_domain_path().url_string
         u'http://w3af.com/def/jkl/'
@@ -844,7 +844,7 @@ class URL(DiskItem):
 
     def get_file_name(self):
         '''
-        @return: Returns the filename name for the given url.
+        :return: Returns the filename name for the given url.
 
         >>> URL('https://w3af.com:443/xyz/def.html').get_file_name()
         'def.html'
@@ -858,7 +858,7 @@ class URL(DiskItem):
     @set_changed
     def set_file_name(self, new):
         '''
-        @return: Sets the filename name for the given URL.
+        :return: Sets the filename name for the given URL.
 
         >>> u = URL('https://w3af.com:443/xyz/def.html')
         >>> u.set_file_name( 'abc.pdf' )
@@ -891,7 +891,7 @@ class URL(DiskItem):
 
     def get_extension(self):
         '''
-        @return: Returns the extension of the filename, if possible, else, ''.
+        :return: Returns the extension of the filename, if possible, else, ''.
 
         >>> URL('https://w3af.com:443/xyz/d').get_extension()
         ''
@@ -910,8 +910,8 @@ class URL(DiskItem):
     @set_changed
     def set_extension(self, extension):
         '''
-        @param extension: The new extension to set, without the '.'
-        @return: None. The extension is set. An exception is raised if the
+        :param extension: The new extension to set, without the '.'
+        :return: None. The extension is set. An exception is raised if the
         original URL had no extension.
 
         >>> URL('https://www.w3af.com/xyz/foo').set_extension('xml')
@@ -956,7 +956,7 @@ class URL(DiskItem):
         >>> URL('https://w3af.com:443/xyz/file.asp').all_but_scheme()
         'w3af.com:443/xyz/'
 
-        @return: Returns the domain name and the path for the url.
+        :return: Returns the domain name and the path for the url.
         '''
         return self.netloc + self.path[:self.path.rfind('/') + 1]
 
@@ -973,7 +973,7 @@ class URL(DiskItem):
         >>> URL('https://w3af.com:443/').get_path()
         '/'
 
-        @return: Returns the path for the url:
+        :return: Returns the path for the url:
         '''
         return self.path
 
@@ -990,7 +990,7 @@ class URL(DiskItem):
         >>> URL('https://w3af.com:443/xyz/123/456/789/').get_path_without_file()
         '/xyz/123/456/789/'
 
-        @return: Returns the path for the url:
+        :return: Returns the path for the url:
         '''
         path = self.get_path()
         filename = self.get_file_name()
@@ -1007,7 +1007,7 @@ class URL(DiskItem):
         >>> URL(u'https://w3af.com:443/xyz/file.asp?id=1').get_path_qs()
         u'/xyz/file.asp?id=1'
 
-        @return: Returns the domain name and the path for the url.
+        :return: Returns the domain name and the path for the url.
         '''
         res = self.path
         if self.params != '':
@@ -1019,7 +1019,7 @@ class URL(DiskItem):
     def url_decode(self):
         '''
         @see: Unittests at test_urlParser
-        @return: A URL that represents the current URL without URL
+        :return: A URL that represents the current URL without URL
                  encoded characters.
         '''
         unquotedurl = urllib.unquote(str(self))
@@ -1029,7 +1029,7 @@ class URL(DiskItem):
     def url_encode(self):
         '''
         @see: Unittests at test_urlParser
-        @return: String that represents the current URL
+        :return: String that represents the current URL
         '''
         self_str = str(self)
         qs = ''
@@ -1071,7 +1071,7 @@ class URL(DiskItem):
         >>> URL('http://w3af.com/foobar.html;id=1?id=3').has_params()
         True
 
-        @return: True if the URL has params.
+        :return: True if the URL has params.
         '''
         if self.params != '':
             return True
@@ -1090,13 +1090,13 @@ class URL(DiskItem):
         >>> URL(u'http://w3af.com/foobar.html;id=1?id=3').get_params_string()
         u'id=1'
 
-        @return: Returns the params inside the url.
+        :return: Returns the params inside the url.
         '''
         return self.params
 
     def remove_params(self):
         '''
-        @return: Returns a new url object contaning the URL without the parameter. Example :
+        :return: Returns a new url object contaning the URL without the parameter. Example :
 
         >>> URL('http://w3af.com/').remove_params().url_string
         u'http://w3af.com/'
@@ -1130,8 +1130,8 @@ class URL(DiskItem):
         >>> u.get_path_qs()
         '/xyz.txt;file=3?file=2'
 
-        @param param_string: The param to set (e.g. "foo=aaa").
-        @return: Returns the url containing param.
+        :param param_string: The param to set (e.g. "foo=aaa").
+        :return: Returns the url containing param.
         '''
         self.params = param_string
 
@@ -1139,7 +1139,7 @@ class URL(DiskItem):
         '''
         Parses the params string and returns a dict.
 
-        @return: A QueryString object.
+        :return: A QueryString object.
 
         >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> u.get_params()
@@ -1183,7 +1183,7 @@ class URL(DiskItem):
 
     def __eq__(self, other):
         '''
-        @return: True if the url_strings are equal
+        :return: True if the url_strings are equal
         '''
         return isinstance(other, URL) and \
             self.url_string == other.url_string
@@ -1208,7 +1208,7 @@ class URL(DiskItem):
 
     def __str__(self):
         '''
-        @return: A string representation of myself
+        :return: A string representation of myself
 
         >>> str(URL('http://w3af.com/xyz.txt;id=1?file=2'))
         'http://w3af.com/xyz.txt;id=1?file=2'
@@ -1227,7 +1227,7 @@ class URL(DiskItem):
 
     def __unicode__(self):
         '''
-        @return: A unicode representation of myself
+        :return: A unicode representation of myself
 
         >>> unicode(URL('http://w3af.com:80/'))
         u'http://w3af.com:80/'
@@ -1239,14 +1239,14 @@ class URL(DiskItem):
 
     def __repr__(self):
         '''
-        @return: A string representation of myself for debugging
+        :return: A string representation of myself for debugging
 
         '''
         return '<URL for "%s">' % (self,)
 
     def __contains__(self, s):
         '''
-        @return: True if "s" in url_string
+        :return: True if "s" in url_string
 
         >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> '1' in u
@@ -1264,7 +1264,7 @@ class URL(DiskItem):
 
     def __add__(self, other):
         '''
-        @return: This URL concatenated with the "other" string.
+        :return: This URL concatenated with the "other" string.
 
         >>> u = URL('http://www.w3af.com/')
         >>> x = u + 'abc'
@@ -1301,7 +1301,7 @@ class URL(DiskItem):
 
     def __radd__(self, other):
         '''
-        @return: The "other" string concatenated with this URL.
+        :return: The "other" string concatenated with this URL.
 
         >>> u = URL('http://www.w3af.com/')
         >>> x = 'abc' + u

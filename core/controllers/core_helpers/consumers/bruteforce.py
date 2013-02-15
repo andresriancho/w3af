@@ -34,9 +34,9 @@ class bruteforce(BaseConsumer):
 
     def __init__(self, bruteforce_plugins, w3af_core):
         '''
-        @param in_queue: The input queue that will feed the bruteforce plugins
-        @param bruteforce_plugins: Instances of bruteforce plugins in a list
-        @param w3af_core: The w3af core that we'll use for status reporting
+        :param in_queue: The input queue that will feed the bruteforce plugins
+        :param bruteforce_plugins: Instances of bruteforce plugins in a list
+        :param w3af_core: The w3af core that we'll use for status reporting
         '''
         super(bruteforce, self).__init__(bruteforce_plugins, w3af_core,
                                          thread_name='Bruteforcer')
@@ -75,9 +75,9 @@ class bruteforce(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
 
-        @param fuzzable_request: The fuzzable request that (if suitable) will be
+        :param fuzzable_request: The fuzzable request that (if suitable) will be
                                  bruteforced by @plugin.
-        @return: A list of the URL's that have been successfully bruteforced
+        :return: A list of the URL's that have been successfully bruteforced
         '''
         # Please note that I add a task to self, this task is marked as DONE
         # in the finally clause below

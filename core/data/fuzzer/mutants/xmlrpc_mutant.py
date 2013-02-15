@@ -48,7 +48,7 @@ class MutantXMLRPC(PostDataMutant):
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
 
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         res = ''
         res += '"' + self.get_url() + '", using HTTP method '

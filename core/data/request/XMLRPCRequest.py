@@ -29,12 +29,12 @@ class XMLRPCRequest(HTTPPostDataRequest):
     This class represents a fuzzable request for a http request
     that contains XMLRPC postdata.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, xml, uri, method='POST', headers=Headers()):
         '''
-        @param xml: The original XML string that represents
+        :param xml: The original XML string that represents
                     the call to the RPC.
         '''
         HTTPPostDataRequest.__init__(self, uri)
@@ -42,7 +42,7 @@ class XMLRPCRequest(HTTPPostDataRequest):
 
     def get_data(self):
         '''
-        @return: A string that represents the XMLRPC data saved in the dc.
+        :return: A string that represents the XMLRPC data saved in the dc.
         '''
         return build_xmlrpc(self._xml, self._dc)
 

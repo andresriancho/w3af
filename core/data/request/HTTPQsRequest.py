@@ -28,7 +28,7 @@ class HTTPQSRequest(FuzzableRequest):
     This class represents a fuzzable request that sends all variables
     in the querystring. This is tipically used for GET requests.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri, method='GET', headers=Headers(), cookie=None):

@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 
 def get_webroot_dirs(domain=None):
     '''
-    @return: A list of strings with possible webroots. This function also 
+    :return: A list of strings with possible webroots. This function also 
              analyzed the contents of the knowledgeBase and tries to use
              that information in order to guess.
     '''

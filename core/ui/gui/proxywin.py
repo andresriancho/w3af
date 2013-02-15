@@ -49,7 +49,7 @@ ui_proxy_menu = """
 class ProxiedRequests(entries.RememberingWindow):
     """Proxies the HTTP requests, allowing modifications.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
     def __init__(self, w3af):
         '''Constructor.'''
@@ -183,7 +183,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def config_changed(self, like_initial):
         """Propagates the change from the options.
 
-        @param like_initial: If the config is like the initial one
+        :param like_initial: If the config is like the initial one
         """
         self.like_initial = like_initial
 
@@ -266,7 +266,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _superviseRequests(self, *a):
         """Supervise if there're requests to show.
 
-        @return: True to gobject to keep calling it, False when all is done.
+        :return: True to gobject to keep calling it, False when all is done.
         """
         if self.waitingRequests:
             req = self.proxy.get_trapped_request()
@@ -283,7 +283,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _drop(self, widg):
         """Discards the actual request.
 
-        @param widget: who sent the signal.
+        :param widget: who sent the signal.
         """
         self.reqresp.request.clear_panes()
         self.reqresp.request.set_sensitive(False)
@@ -293,7 +293,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _send(self, widg):
         """Sends the request through the proxy.
 
-        @param widget: who sent the signal.
+        :param widget: who sent the signal.
         """
         request = self.reqresp.request.get_object()
         # if nothing to send
@@ -321,7 +321,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _next(self, widg):
         """Moves to the next request.
 
-        @param widget: who sent the signal.
+        :param widget: who sent the signal.
         """
         resp = self.reqresp.response.get_object()
         # If there is request to send, let's send it first

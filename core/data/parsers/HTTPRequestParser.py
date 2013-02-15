@@ -29,7 +29,7 @@ from core.controllers.exceptions import w3afException
 
 def check_version_syntax(version):
     '''
-    @return: True if the syntax of the version section of HTTP is valid; else
+    :return: True if the syntax of the version section of HTTP is valid; else
              raise an exception.
 
     >>> check_version_syntax('HTTP/1.0')
@@ -70,7 +70,7 @@ def check_version_syntax(version):
 
 def check_uri_syntax(uri, host=None):
     '''
-    @return: True if the syntax of the URI section of HTTP is valid; else
+    :return: True if the syntax of the URI section of HTTP is valid; else
              raise an exception.
 
     >>> check_uri_syntax('http://abc/def.html')
@@ -105,12 +105,12 @@ def HTTPRequestParser(head, postdata):
     '''
     This function parses HTTP Requests from a string to a FuzzableRequest.
 
-    @param head: The head of the request.
-    @param postdata: The post data of the request
-    @return: A FuzzableRequest object with all the corresponding information
+    :param head: The head of the request.
+    :param postdata: The post data of the request
+    :return: A FuzzableRequest object with all the corresponding information
         that was sent in head and postdata
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
 
     '''
     # Parse the request head, the strip() helps us deal with the \r (if any)

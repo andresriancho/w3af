@@ -31,7 +31,7 @@ class strange_headers(GrepPlugin):
     '''
     Grep headers for uncommon headers sent in HTTP responses.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     # Remember that this headers are only the ones SENT BY THE SERVER TO THE
@@ -80,9 +80,9 @@ class strange_headers(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         # Check if the header names are common or not
         for header_name in response.get_headers().keys():
@@ -126,7 +126,7 @@ class strange_headers(GrepPlugin):
         Check if the response has a content-location header and the response code
         is not in the 300 range.
 
-        @return: None, all results are saved in the kb.
+        :return: None, all results are saved in the kb.
         '''
         if 'content-location' in response.get_lower_case_headers() \
         and response.get_code() > 300\
@@ -176,7 +176,7 @@ class strange_headers(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps all headers for non-common headers. This could be useful

@@ -32,7 +32,7 @@ class ReadShell(Shell):
     '''
     This class represents a shell that can only read files from the remote system.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, vuln, uri_opener, worker_pool):
@@ -81,9 +81,9 @@ class ReadShell(Shell):
         This is a wrapper around "read" that will write the results
         to a local file.
 
-        @param remote_filename: The remote file to download.
-        @param local_filename: The local file where to write the contents of the remote file.
-        @return: The message to show to the user.
+        :param remote_filename: The remote file to download.
+        :param local_filename: The local file where to write the contents of the remote file.
+        :return: The message to show to the user.
         '''
         remote_content = self.read(remote_filename)
 
@@ -107,9 +107,9 @@ class ReadShell(Shell):
         It is called from shell.generic_user_input() which provides generic
         commands like "help".
 
-        @param command: The string representing the command that the user
+        :param command: The string representing the command that the user
                         types in the shell.
-        @param parameters: A list with the parameters for @command
+        :param parameters: A list with the parameters for @command
         '''
         #
         #    Read remote files
@@ -154,7 +154,7 @@ class ReadShell(Shell):
 
     def __repr__(self):
         '''
-        @return: A string representation of this shell.
+        :return: A string representation of this shell.
         '''
         if not self._rOS:
             self._identify_os()

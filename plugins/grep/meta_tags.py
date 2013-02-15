@@ -32,7 +32,7 @@ class meta_tags(GrepPlugin):
     '''
     Grep every page for interesting meta tags.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     '''
@@ -59,9 +59,9 @@ class meta_tags(GrepPlugin):
         '''
         Plugin entry point, search for meta tags.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         uri = response.get_uri()
 
@@ -114,7 +114,7 @@ class meta_tags(GrepPlugin):
 
     def _find_name(self, tag):
         '''
-        @return: the tag name.
+        :return: the tag name.
         '''
         for key, value in tag.items():
             if key.lower() == 'name':
@@ -123,7 +123,7 @@ class meta_tags(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for interesting meta tags. Some interesting

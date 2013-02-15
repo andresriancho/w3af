@@ -78,7 +78,7 @@ class CookieMutant(Mutant):
 
     def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed.
+        :return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified parameter was the'\
               ' session cookie with value: "%s".'

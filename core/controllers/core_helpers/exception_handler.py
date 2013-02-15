@@ -41,7 +41,7 @@ class ExceptionHandler(object):
     This class handles exceptions generated while running plugins, usually
     the handling is just to store the traceback for later processing.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
@@ -69,17 +69,17 @@ class ExceptionHandler(object):
         processing. If there are already too many stored exceptions for this
         plugin then no action is taken.
 
-        @param current_status: Pointer to the core_helpers.status module
-        @param exception: The exception that was raised
-        @param exec_info: The exec info as returned by sys module
-        @param enabled_plugins: A string as returned by helpers.pprint_plugins.
+        :param current_status: Pointer to the core_helpers.status module
+        :param exception: The exception that was raised
+        :param exec_info: The exec info as returned by sys module
+        :param enabled_plugins: A string as returned by helpers.pprint_plugins.
                                 First I thought about getting the enabled_plugins
                                 after the scan finished, but that proved to be an
                                 incorrect approach since the UI and/or strategy
                                 could simply remove that information as soon as the
                                 scan finished.
 
-        @return: None
+        :return: None
         '''
         except_type, except_class, tb = exec_info
 
@@ -132,7 +132,7 @@ class ExceptionHandler(object):
 
     def generate_summary_str(self):
         '''
-        @return: A string with a summary of the exceptions found during the
+        :return: A string with a summary of the exceptions found during the
                  current scan. This is mostly used for printing in the console
                  but can be used anywhere.
 
@@ -171,7 +171,7 @@ class ExceptionHandler(object):
 
     def generate_summary(self):
         '''
-        @return: A dict with information about exceptions.
+        :return: A dict with information about exceptions.
         '''
         res = {}
         res['total_exceptions'] = len(self._exception_data)
@@ -195,7 +195,7 @@ class ExceptionHandler(object):
 
     def get_scan_id(self):
         '''
-        @return: A scan identifier to bind all bug reports together so that we
+        :return: A scan identifier to bind all bug reports together so that we
                  can understand them much better when looking at the individual
                  Github bug reports.
 

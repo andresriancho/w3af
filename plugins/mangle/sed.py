@@ -36,7 +36,7 @@ class sed(ManglePlugin):
     '''
     This plugin is a "stream editor" for http requests and responses.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -52,8 +52,8 @@ class sed(ManglePlugin):
         '''
         This method mangles the request.
 
-        @param request: This is the request to mangle.
-        @return: A mangled version of the request.
+        :param request: This is the request to mangle.
+        :return: A mangled version of the request.
         '''
         data = request.get_data()
         for regex, string in self._manglers['q']['b']:
@@ -76,8 +76,8 @@ class sed(ManglePlugin):
         '''
         This method mangles the response.
 
-        @param response: This is the response to mangle.
-        @return: A mangled version of the response.
+        :param response: This is the response to mangle.
+        :return: A mangled version of the response.
         '''
         body = response.get_body()
 
@@ -114,7 +114,7 @@ class sed(ManglePlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._user_option_fix_content_len = option_list[
             'fix_content_len'].get_value()
@@ -151,7 +151,7 @@ class sed(ManglePlugin):
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
         
@@ -182,7 +182,7 @@ class sed(ManglePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin is a stream editor for web requests and responses.

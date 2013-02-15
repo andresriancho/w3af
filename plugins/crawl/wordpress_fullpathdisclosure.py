@@ -33,7 +33,7 @@ from core.data.kb.info import Info
 class wordpress_fullpathdisclosure(CrawlPlugin):
     '''
     Try to find the path where the WordPress is installed
-    @author: Andres Tarantini ( atarantini@gmail.com )
+    :author: Andres Tarantini ( atarantini@gmail.com )
     '''
 
     CHECK_PATHS = ['wp-content/plugins/akismet/akismet.php',
@@ -47,7 +47,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
     def crawl(self, fuzzable_request):
         '''
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         if not self._exec:
@@ -69,9 +69,9 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
     def _extract_paths(self, domain_path):
         '''
-        @param domain_path: The URL object pointing to the current wordpress
+        :param domain_path: The URL object pointing to the current wordpress
                             installation
-        @return: A list with the paths that might trigger full path disclosures
+        :return: A list with the paths that might trigger full path disclosures
 
         TODO: Will fail if WordPress is running on a Windows server due to
               paths manipulation.
@@ -95,8 +95,8 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
     def _force_disclosures(self, domain_path, potentially_vulnerable_paths):
         '''
-        @param domain_path: The path to wordpress' root directory
-        @param potentially_vulnerable_paths: A list with the paths I'll URL-join
+        :param domain_path: The path to wordpress' root directory
+        :param potentially_vulnerable_paths: A list with the paths I'll URL-join
                                              with @domain_path, GET and parse.
         '''
         for pvuln_path in potentially_vulnerable_paths:
@@ -121,7 +121,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin try to find the path in the server where WordPress is

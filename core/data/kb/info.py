@@ -29,20 +29,20 @@ class Info(dict):
     '''
     This class represents an information that is saved to the kb.
     
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, name, desc, response_ids, plugin_name):
         '''
-        @param name: The vulnerability name, will be checked against the values
+        :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         
-        @param desc: The vulnerability description
+        :param desc: The vulnerability description
         
-        @param severity: The severity for this object
+        :param severity: The severity for this object
         
-        @param response_ids: A list of response ids associated with this vuln
+        :param response_ids: A list of response ids associated with this vuln
         
-        @param plugin_name: The name of the plugin which identified the vuln
+        :param plugin_name: The name of the plugin which identified the vuln
         '''
         # Default values
         self._url = None
@@ -61,7 +61,7 @@ class Info(dict):
     @classmethod
     def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
         '''
-        @return: An info instance with the proper data set based on the values
+        :return: An info instance with the proper data set based on the values
                  taken from the mutant.
         '''
         if not isinstance(mutant, Mutant):
@@ -80,7 +80,7 @@ class Info(dict):
     @classmethod
     def from_fr(cls, name, desc, response_ids, plugin_name, freq):
         '''
-        @return: An info instance with the proper data set based on the values
+        :return: An info instance with the proper data set based on the values
                  taken from the fuzzable request.
         '''
         if not isinstance(freq, FuzzableRequest):
@@ -97,7 +97,7 @@ class Info(dict):
     @classmethod
     def from_info(cls, other_info):
         '''
-        @return: A clone of other_info. 
+        :return: A clone of other_info. 
         '''
         if not isinstance(other_info, Info):
             raise TypeError('Info expected in from_info.')
@@ -124,7 +124,7 @@ class Info(dict):
 
     def get_severity(self):
         '''
-        @return: severity.INFORMATION , all information objects have the same
+        :return: severity.INFORMATION , all information objects have the same
                  level of severity.
         '''
         return INFORMATION
@@ -217,7 +217,7 @@ class Info(dict):
         '''
         Just a wrapper for _convert_to_range; please see documentation below!
 
-        @return: The result of self._convert_to_range( list_of_integers ) but
+        :return: The result of self._convert_to_range( list_of_integers ) but
                  without the trailing comma.
         '''
         res = self._convert_to_range(list_of_integers)
@@ -269,7 +269,7 @@ class Info(dict):
     
     def get_uniq_id(self):
         '''
-        @return: A uniq identifier for this info object. Since info objects are
+        :return: A uniq identifier for this info object. Since info objects are
                  persisted to SQLite and then re-generated for showing them to
                  the user, we can't use id() to know if two info objects are
                  the same or not.
@@ -346,7 +346,7 @@ class Info(dict):
 
     def get_id(self):
         '''
-        @return: The list of ids related to this information object. Please read
+        :return: The list of ids related to this information object. Please read
                  the documentation of set_id().
         '''
         return self._id

@@ -39,7 +39,7 @@ from core.data.kb.info import Info
 class phpinfo(CrawlPlugin):
     '''
     Search PHP Info file and if it finds it will determine the version of PHP.
-    @author: Viktor Gazdag ( woodspeed@gmail.com )
+    :author: Viktor Gazdag ( woodspeed@gmail.com )
     '''
 
     '''
@@ -58,7 +58,7 @@ class phpinfo(CrawlPlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         for domain_path in fuzzable_request.get_url().get_directories():
@@ -76,7 +76,7 @@ class phpinfo(CrawlPlugin):
     def _check_and_analyze(self, domain_path, php_info_filename):
         '''
         Check if a php_info_filename exists in the domain_path.
-        @return: None, everything is put() into the self.output_queue.
+        :return: None, everything is put() into the self.output_queue.
         '''
         # Request the file
         php_info_url = domain_path.url_join(php_info_filename)
@@ -144,8 +144,8 @@ class phpinfo(CrawlPlugin):
     def audit_phpinfo(self, response):
         '''
         Scan for insecure php settings
-        @author: Aung Khant (aungkhant[at]yehg.net)
-        @return none
+        :author: Aung Khant (aungkhant[at]yehg.net)
+        :return none
 
         two divisions: vulnerable settings and useful informative settings
 
@@ -592,7 +592,7 @@ class phpinfo(CrawlPlugin):
 
     def _get_potential_phpinfos(self):
         '''
-        @return: Filename of the php info file.
+        :return: Filename of the php info file.
         '''
         res = ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php',
                'phpInfo.php', 'info.php', 'test.php?mode=phpinfo',
@@ -618,7 +618,7 @@ class phpinfo(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the PHP Info file in all the directories and

@@ -194,7 +194,7 @@ class w3afAgentManager(Process):
 
     def _is_locally_available(self, port):
         '''
-        @return: True if the current user can bind to the specified port.
+        :return: True if the current user can bind to the specified port.
         '''
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

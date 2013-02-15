@@ -28,7 +28,7 @@ class shift_out_in_between_dots(EvasionPlugin):
     Insert between dots shift-in and shift-out control characters which are
     cancelled each other when they are below
     
-    @author: Jose Ramon Palanco( jose.palanco@hazent.com )
+    :author: Jose Ramon Palanco( jose.palanco@hazent.com )
     '''
 
     def __init__(self):
@@ -38,9 +38,9 @@ class shift_out_in_between_dots(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified by
+        :param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
-        @return: The modified request
+        :return: The modified request
         '''
         # We mangle the URL
         path = request.url_object.get_path()
@@ -59,13 +59,13 @@ class shift_out_in_between_dots(EvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        :return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 20
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return r'''
         This evasion plugin insert between dots shift-in and shift-out control

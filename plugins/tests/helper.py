@@ -81,8 +81,8 @@ class PluginTest(unittest.TestCase):
         Setup env and start scan. Typically called from children's
         test methods.
 
-        @param target: The target to scan.
-        @param plugins: PluginConfig objects to activate and setup before
+        :param target: The target to scan.
+        :param plugins: PluginConfig objects to activate and setup before
             the test runs.
         '''
         if not isinstance(target, (basestring, tuple)):

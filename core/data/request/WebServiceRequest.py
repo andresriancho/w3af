@@ -29,7 +29,7 @@ class WebServiceRequest(HTTPPostDataRequest):
     '''
     This class represents a fuzzable request for a webservice method call.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, url, action, params,
@@ -42,7 +42,7 @@ class WebServiceRequest(HTTPPostDataRequest):
 
     def get_data(self):
         '''
-        @return: XML with the remote method call
+        :return: XML with the remote method call
 
         POST /perl/soaplite.cgi HTTP/1.0
         Host: services.xmethods.net:80

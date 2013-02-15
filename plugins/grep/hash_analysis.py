@@ -32,7 +32,7 @@ class hash_analysis(GrepPlugin):
     '''
     Identify hashes in HTTP responses.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -47,9 +47,9 @@ class hash_analysis(GrepPlugin):
         '''
         Plugin entry point, identify hashes in the HTTP response.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         # I know that by doing this I loose the chance of finding hashes in
         # PDF files, but... this is much faster
@@ -90,8 +90,8 @@ class hash_analysis(GrepPlugin):
 
     def _has_hash_distribution(self, possible_hash):
         '''
-        @param possible_hash: A string that may be a hash.
-        @return: True if the possible_hash has an equal (aprox.) distribution
+        :param possible_hash: A string that may be a hash.
+        :return: True if the possible_hash has an equal (aprox.) distribution
         of numbers and letters and only has hex characters (0-9, a-f)
         '''
         numbers = 0
@@ -120,8 +120,8 @@ class hash_analysis(GrepPlugin):
 
     def _get_hash_type(self, possible_hash):
         '''
-        @param possible_hash: A string that may be a hash.
-        @return: The hash type if the string seems to be a md5 / sha1 hash.
+        :param possible_hash: A string that may be a hash.
+        :return: The hash type if the string seems to be a md5 / sha1 hash.
         None otherwise.
         '''
         # When adding something here, please review the code above where
@@ -142,7 +142,7 @@ class hash_analysis(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin identifies hashes in HTTP responses.

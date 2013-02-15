@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 def get_long_description():
     '''
-    @return: The description for the plugin type.
+    :return: The description for the plugin type.
     '''
     return '''Audit plugins use the knowledge created by crawl plugins to
     find vulnerabilities on the remote web application and web server.

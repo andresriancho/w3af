@@ -40,10 +40,10 @@ logger = Halberd.logger.getLogger()
 def diff_fields(clues):
     """Study differences between fields.
 
-    @param clues: Clues to analyze.
+    :param clues: Clues to analyze.
     @type clues: C{list}
 
-    @return: Fields which were found to be different among the analyzed clues.
+    :return: Fields which were found to be different among the analyzed clues.
     @rtype: C{list}
     """
     def pairs(num):
@@ -82,7 +82,7 @@ def ignore_changing_fields(clues):
     detects those fields and recalculates each clue's digest so they can be
     safely analyzed again.
 
-    @param clues: Sequence of clues.
+    :param clues: Sequence of clues.
     @type clues: C{list} or C{tuple}
     """
     from Halberd.clues.Clue import Clue
@@ -116,7 +116,7 @@ def get_digest(clue):
     This function is usually passed as a parameter for L{classify} so it can
     separate clues according to their digest (among other fields).
 
-    @return: The digest of a clue's parsed headers.
+    :return: The digest of a clue's parsed headers.
     @rtype: C{str}
     """
     return clue.info['digest']
@@ -128,14 +128,14 @@ def clusters(clues, step=3):
     A cluster is a group of at most C{step} clues which only differ in 1 seconds
     between each other.
 
-    @param clues: A sequence of clues to analyze
+    :param clues: A sequence of clues to analyze
     @type clues: C{list} or C{tuple}
 
-    @param step: Maximum difference between the time differences of the
+    :param step: Maximum difference between the time differences of the
     cluster's clues.
     @type step: C{int}
 
-    @return: A sequence with merged clusters.
+    :return: A sequence with merged clusters.
     @rtype: C{tuple}
     """
     def iscluster(clues, num):
@@ -189,10 +189,10 @@ def merge(clues):
     >>> merged == a
     True
 
-    @param clues: A sequence containing all the clues to merge into one.
+    :param clues: A sequence containing all the clues to merge into one.
     @type clues: C{list} or C{tuple}
 
-    @return: The result of merging all the passed clues into one.
+    :return: The result of merging all the passed clues into one.
     @rtype: L{Clue}
     """
     merged = copy.copy(clues[0])
@@ -235,14 +235,14 @@ def classify(seq, *classifiers):
         b
         c
 
-    @param seq: A sequence to classify.
+    :param seq: A sequence to classify.
     @type seq: C{list} or C{tuple}
 
-    @param classifiers: A sequence of callables which return specific fields of
+    :param classifiers: A sequence of callables which return specific fields of
     the items contained in L{seq}
     @type classifiers: C{list} or C{tuple}
 
-    @return: A nested dictionary in which the keys are the fields obtained by
+    :return: A nested dictionary in which the keys are the fields obtained by
     applying the classifiers to the items in the specified sequence.
     @rtype: C{dict}
     """
@@ -267,13 +267,13 @@ def sections(classified, sects=None):
 
     See also: L{classify}
 
-    @param classified: Nested dictionary.
+    :param classified: Nested dictionary.
     @type classified: C{dict}
 
-    @param sects: List of results. It should not be specified by the user.
+    :param sects: List of results. It should not be specified by the user.
     @type sects: C{list}
 
-    @return: A list of lists in where each item is a subsection of a nested dictionary.
+    :return: A list of lists in where each item is a subsection of a nested dictionary.
     @rtype: C{list}
     """
     if sects is None:
@@ -296,10 +296,10 @@ def deltas(xs):
     >>> deltas([1, 1, 2, 3, 5, 8, 13])
     [0, 1, 1, 2, 3, 5]
 
-    @param xs: A sequence of integers.
+    :param xs: A sequence of integers.
     @type xs: C{list}
 
-    @return: A list of differences between consecutive elements of L{xs}.
+    :return: A list of differences between consecutive elements of L{xs}.
     @rtype: C{list}
     """
     if len(xs) < 2:
@@ -323,14 +323,14 @@ def slices(start, xs):
     [10, 11, 12, 13, 14]
     [15, 16, 17, 18, 19]
 
-    @param start: Index of the first element of the sequence we want to
+    :param start: Index of the first element of the sequence we want to
     partition.
     @type start: C{int}.
 
-    @param xs: Sequence of indexes where 'cuts' must be made.
+    :param xs: Sequence of indexes where 'cuts' must be made.
     @type xs: C{list}
 
-    @return: A sequence of C{slice} objects suitable for splitting a list as
+    :return: A sequence of C{slice} objects suitable for splitting a list as
     specified.
     @rtype: C{list} of C{slice}
     """
@@ -353,14 +353,14 @@ def sort_clues(clues):
 def filter_proxies(clues, maxdelta=3):
     """Detect and merge clues pointing to a proxy cache on the remote end.
 
-    @param clues: Sequence of clues to analyze
+    :param clues: Sequence of clues to analyze
     @type clues: C{list}
 
-    @param maxdelta: Maximum difference allowed between a clue's time
+    :param maxdelta: Maximum difference allowed between a clue's time
     difference and the previous one.
     @type maxdelta: C{int}
 
-    @return: Sequence where all irrelevant clues pointing out to proxy caches
+    :return: Sequence where all irrelevant clues pointing out to proxy caches
     have been filtered out.
     @rtype: C{list}
     """
@@ -400,10 +400,10 @@ def uniq(clues):
     the same time diff and digest are not discarded, they are merged into one
     clue with the aggregated number of hits.
 
-    @param clues: A sequence containing the clues to analyze.
+    :param clues: A sequence containing the clues to analyze.
     @type clues: C{list}
 
-    @return: Filtered sequence of clues where no clue has the same digest and
+    :return: Filtered sequence of clues where no clue has the same digest and
     time difference.
     @rtype: C{list}
     """
@@ -421,10 +421,10 @@ def uniq(clues):
 def hits(clues):
     """Compute the total number of hits in a sequence of clues.
 
-    @param clues: Sequence of clues.
+    :param clues: Sequence of clues.
     @type clues: C{list}
 
-    @return: Total hits.
+    :return: Total hits.
     @rtype: C{int}
     """
     return sum([clue.get_count() for clue in clues])
@@ -433,10 +433,10 @@ def hits(clues):
 def analyze(clues):
     """Draw conclusions from the clues obtained during the scanning phase.
 
-    @param clues: Unprocessed clues obtained during the scanning stage.
+    :param clues: Unprocessed clues obtained during the scanning stage.
     @type clues: C{list}
 
-    @return: Coherent list of clues identifying real web servers.
+    :return: Coherent list of clues identifying real web servers.
     @rtype: C{list}
     """
     results = []
@@ -464,13 +464,13 @@ def reanalyze(clues, analyzed, threshold):
     happening: each clue is different from the others due to one or more MIME
     header fields which change unexpectedly.
 
-    @param clues: Raw sequence of clues.
+    :param clues: Raw sequence of clues.
     @type clues: C{list}
 
-    @param analyzed: Result from the first analysis phase.
+    :param analyzed: Result from the first analysis phase.
     @type analyzed: C{list}
 
-    @param threshold: Minimum clue-to-realserver ratio in order to trigger
+    :param threshold: Minimum clue-to-realserver ratio in order to trigger
     field inspection.
     @type threshold: C{float}
     """

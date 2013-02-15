@@ -45,8 +45,8 @@ class mangleHandler(urllib2.BaseHandler):
         Convert a urllib2 request object to a FuzzableRequest.
         Used in http_request.
 
-        @param request: A urllib2 request obj.
-        @return: A FuzzableRequest.
+        :param request: A urllib2 request obj.
+        :return: A FuzzableRequest.
         '''
         headers = request.headers
         headers.update(request.unredirected_hdrs)
@@ -61,8 +61,8 @@ class mangleHandler(urllib2.BaseHandler):
         Convert a FuzzableRequest to a urllib2 request object.
         Used in http_request.
 
-        @param fuzzable_request: A FuzzableRequest.
-        @return: A urllib2 request obj.
+        :param fuzzable_request: A FuzzableRequest.
+        :return: A urllib2 request obj.
         '''
         host = fuzzable_request.get_url().get_domain()
 
@@ -114,8 +114,8 @@ class mangleHandler(urllib2.BaseHandler):
         Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse
         subclass that I created in keepalive.
 
-        @param HTTPResponse: HTTPResponse.HTTPResponse object
-        @return: httplib.httpresponse subclass
+        :param HTTPResponse: HTTPResponse.HTTPResponse object
+        :return: httplib.httpresponse subclass
         '''
         ka_resp = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
                                strict=0, method=None)

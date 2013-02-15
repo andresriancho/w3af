@@ -32,7 +32,7 @@ class winVd(vdaemon):
     '''
     This class represents a windows virtual daemon, a point of entry for metasploit plugins to exploit web applications.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def _clean_up(self):
         '''

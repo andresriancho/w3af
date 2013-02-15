@@ -35,7 +35,7 @@ class password_bruteforcer(object):
     This class is a helper for bruteforcing any login that provides passwords
     with an iterator API.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, url):
         self.passwd_file = os.path.join(
@@ -77,7 +77,7 @@ class user_password_bruteforcer(object):
     This class is a helper for bruteforcing any login that provides user and
     password combinations with an iterator API.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, url):
@@ -110,7 +110,7 @@ class user_password_bruteforcer(object):
 
     def generator(self):
         '''
-        @return: A tuple with user and password strings.
+        :return: A tuple with user and password strings.
 
         TODO: I need a way to calculate the __len__ of this generator in order
               to avoid the "iterable = list(iterable)" in pool.py

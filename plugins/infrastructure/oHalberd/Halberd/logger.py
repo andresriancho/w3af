@@ -35,7 +35,7 @@ _logfmt = '%(levelname)s %(message)s'
 def getLogger():
     """Get a reference to an instance of a logger object.
 
-    @return: reference to a logger.
+    :return: reference to a logger.
     @rtype: C{object}
     """
     global _logger

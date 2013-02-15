@@ -28,7 +28,7 @@ from core.ui.gui.output.gtk_output import Message
 class MessageConsumer(object):
     '''Defines a base message consumer
 
-    @author: Andres Riancho <andres.riancho@gmail.com>
+    :author: Andres Riancho <andres.riancho@gmail.com>
     '''
     def __init__(self):
         super(MessageConsumer, self).__init__()
@@ -70,7 +70,7 @@ class MessageConsumer(object):
 
     def handle_message(self, msg):
         '''
-        @param msg: A gtk_output.Message object.
+        :param msg: A gtk_output.Message object.
         '''
         if not isinstance(msg, Message):
             raise TypeError('Expected Message and got %s instead.' % type(msg))

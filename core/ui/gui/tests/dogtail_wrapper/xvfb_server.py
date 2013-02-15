@@ -70,7 +70,7 @@ class XVFBServer(threading.Thread):
     def start_sync(self):
         '''Launch the xvfb process and wait for it to start the X server
 
-        @return: True if the server is started.
+        :return: True if the server is started.
         '''
         i = 0
         self.start()
@@ -129,12 +129,12 @@ class XVFBServer(threading.Thread):
         Run a new process (in most cases one that will open an X window) within
         the xvfb instance.
 
-        @param cmd: The command to run.
-        @param block: If block is True this method blocks until the command
+        :param cmd: The command to run.
+        :param block: If block is True this method blocks until the command
                       finishes, if not, the method returns immediately which
                       might lead to issues because of windows not being ready
                       yet inside the xvfb and checks being run on them.
-        @return: True if the process was run. Please note that the method will
+        :return: True if the process was run. Please note that the method will
                  return True for commands that do not exist, fail, etc.
         '''
         if not self.is_running():

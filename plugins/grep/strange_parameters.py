@@ -35,7 +35,7 @@ class strange_parameters(GrepPlugin):
     '''
     Grep the HTML response and find URIs that have strange parameters.
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
@@ -48,9 +48,9 @@ class strange_parameters(GrepPlugin):
         '''
         Plugin entry point.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, all results are saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, all results are saved in the kb.
         '''
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
@@ -117,7 +117,7 @@ class strange_parameters(GrepPlugin):
 
     def _is_SQL(self, request, parameter, value):
         '''
-        @return: True if the parameter value contains SQL sentences
+        :return: True if the parameter value contains SQL sentences
         '''
         regex = '(SELECT .*? FROM|INSERT INTO .*? VALUES|UPDATE .*? SET .*? WHERE)'
         for match in re.findall(regex, value, re.IGNORECASE):
@@ -128,7 +128,7 @@ class strange_parameters(GrepPlugin):
 
     def _is_strange(self, request, parameter, value):
         '''
-        @return: True if the parameter value is strange
+        :return: True if the parameter value is strange
         '''
         if 'wicket:' in parameter:
             #
@@ -162,7 +162,7 @@ class strange_parameters(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps all responses and tries to identify URIs with strange

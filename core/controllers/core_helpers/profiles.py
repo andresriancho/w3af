@@ -40,10 +40,10 @@ class w3af_core_profiles(object):
         '''
         Saves current config to a newly created profile.
 
-        @param profile_name: The profile to clone
-        @param profileDesc: The description of the new profile
+        :param profile_name: The profile to clone
+        :param profileDesc: The description of the new profile
 
-        @return: The new profile instance if the profile was successfully saved.
+        :return: The new profile instance if the profile was successfully saved.
                  Else, raise a w3afException.
         '''
         # Create the new profile.
@@ -60,7 +60,7 @@ class w3af_core_profiles(object):
         Save the current configuration of the core to the profile called
         profile_name.
 
-        @return: The new profile instance if the profile was successfully saved.
+        :return: The new profile instance if the profile was successfully saved.
             otherwise raise a w3afException.
         '''
         # Open the already existing profile
@@ -189,9 +189,9 @@ class w3af_core_profiles(object):
 
     def get_profile_list(self, directory=HOME_DIR):
         '''
-        @param directory: The directory from which profiles are loaded
+        :param directory: The directory from which profiles are loaded
 
-        @return: Two different lists:
+        :return: Two different lists:
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
 
@@ -222,7 +222,7 @@ class w3af_core_profiles(object):
 
     def remove_profile(self, profile_name):
         '''
-        @return: True if the profile was successfully removed. Else, raise a w3afException.
+        :return: True if the profile was successfully removed. Else, raise a w3afException.
         '''
         profile_inst = profile(profile_name)
         profile_inst.remove()

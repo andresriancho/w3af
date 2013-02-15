@@ -70,8 +70,8 @@ class Mutant(DiskItem):
         '''
         Set the name of the variable that this mutant modifies.
 
-        @param var: The variable name that's being modified.
-        @param index: The index. This was added to support repeated parameter names.
+        :param var: The variable name that's being modified.
+        :param index: The index. This was added to support repeated parameter names.
                       For example, if the data container holds a=123&a=456, and I
                       want to overwrite 456, index has to be 1.
         '''
@@ -105,7 +105,7 @@ class Mutant(DiskItem):
 
     def get_mod_value(self):
         '''
-        @return: The value that was sent to the remote server and triggered the
+        :return: The value that was sent to the remote server and triggered the
                  vulnerability.
         '''
         try:
@@ -203,7 +203,7 @@ class Mutant(DiskItem):
         '''
         An auxiliary function to create_mutants.
 
-        @return: A list of mutants.
+        :return: A list of mutants.
         '''
         if not issubclass(mutant_cls, Mutant):
             msg = 'mutant_cls parameter needs to be one of the known mutant'\
@@ -291,11 +291,11 @@ AVOID_FILLING_FORM_TYPES = ['checkbox', 'radio', 'select', 'file']
 
 def mutant_smart_fill(freq, dc_copy, ignore_pname, ignore_index, fuzzer_config):
     '''
-    @param freq: The fuzzable request (original request instance) we're fuzzing
-    @param ignore_pname: A parameter name to ignore
-    @param ignore_index: The index we want to ignore
+    :param freq: The fuzzable request (original request instance) we're fuzzing
+    :param ignore_pname: A parameter name to ignore
+    :param ignore_index: The index we want to ignore
 
-    @return: A data container that has been filled using smart_fill, ignoring
+    :return: A data container that has been filled using smart_fill, ignoring
              the parameters that I'm fuzzing and filling the file inputs with
              valid image file.
     '''

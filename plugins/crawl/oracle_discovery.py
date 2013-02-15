@@ -34,7 +34,7 @@ from core.data.kb.info import Info
 class oracle_discovery(CrawlPlugin):
     '''
     Find Oracle applications on the remote web server.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     ORACLE_DATA = (
@@ -60,7 +60,7 @@ class oracle_discovery(CrawlPlugin):
         '''
         GET some files and parse them.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.get_url().base_url()
@@ -99,7 +99,7 @@ class oracle_discovery(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin retrieves Oracle Application Server URLs and extracts

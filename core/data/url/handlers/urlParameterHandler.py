@@ -34,7 +34,7 @@ class URLParameterHandler(urllib2.BaseHandler):
         <scheme>://<net_loc>/<path>;<params>?<query>#<fragment>
     See Section 3.2.2 of RFC 1738
 
-    @author: Kevin Denver ( muffysw@hotmail.com )
+    :author: Kevin Denver ( muffysw@hotmail.com )
     '''
 
     def __init__(self, url_param):

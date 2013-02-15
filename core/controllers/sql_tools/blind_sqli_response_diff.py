@@ -37,7 +37,7 @@ class blind_sqli_response_diff(object):
     the logic is here and not as an audit plugin because it is also used in
     attack plugins when trying to verify the vulnerability.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):
@@ -50,7 +50,7 @@ class blind_sqli_response_diff(object):
         Most of the equal algorithms use a rate to tell if two responses
         are equal or not. 1 is 100% equal, 0 is totally different.
 
-        @param eq_limit: The equal limit to use.
+        :param eq_limit: The equal limit to use.
         '''
         self._eq_limit = eq_limit
 
@@ -61,7 +61,7 @@ class blind_sqli_response_diff(object):
         @mutant: The mutant object that I have to inject to
         @param: A string with the parameter name to test
 
-        @return: A vulnerability object or None if nothing is found
+        :return: A vulnerability object or None if nothing is found
         '''
         statements = self._get_statements(mutant)
         for statement_type in statements:
@@ -101,7 +101,7 @@ class blind_sqli_response_diff(object):
         '''
         Is the main algorithm for finding blind SQL injections.
 
-        @return: A vulnerability object or None if nothing is found
+        :return: A vulnerability object or None if nothing is found
         '''
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
@@ -216,8 +216,8 @@ class blind_sqli_response_diff(object):
         The sanitized version is useful for having clean comparisons between two
         responses that were generated with different mutants.
 
-        @param mutant: The mutant to send to the network.
-        @return: (
+        :param mutant: The mutant to send to the network.
+        :return: (
                     HTTP response,
                     Sanitized HTTP response body,
                  )
@@ -243,9 +243,9 @@ def get_clean_body(mutant, response):
 
     All injected values are removed encoded and "as is".
 
-    @param mutant: The mutant where I can get the value from.
-    @param response: The HTTPResponse object to clean
-    @return: A string that represents the "cleaned" response body.
+    :param mutant: The mutant where I can get the value from.
+    :param response: The HTTPResponse object to clean
+    :return: A string that represents the "cleaned" response body.
     '''
 
     body = response.body

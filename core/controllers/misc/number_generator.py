@@ -38,7 +38,7 @@ class number_generator(object):
 
     def inc(self):
         '''
-        @return: The next number.
+        :return: The next number.
         '''
         with self._lock:
             self._id += 1
@@ -46,7 +46,7 @@ class number_generator(object):
 
     def get(self):
         '''
-        @return: The current number
+        :return: The current number
         '''
         return self._id
 

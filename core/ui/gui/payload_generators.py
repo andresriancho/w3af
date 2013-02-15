@@ -25,7 +25,7 @@ import gobject
 
 def create_generator_menu(text_view_obj):
     '''
-    @return: A menu item that contains the generator classes for the fuzzy request editor window.
+    :return: A menu item that contains the generator classes for the fuzzy request editor window.
     '''
     # The main menu
     menu = gtk.Menu()

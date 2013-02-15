@@ -49,7 +49,7 @@ class console(OutputPlugin):
     '''
     Print messages to the console.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -93,7 +93,7 @@ class console(OutputPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to the console.
@@ -110,13 +110,13 @@ class console(OutputPlugin):
 
         This method MUST be implemented on every plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self.verbose = option_list['verbose'].get_value()
 
     def get_options(self):
         '''
-        @return: A list of option objects for this plugin.
+        :return: A list of option objects for this plugin.
         '''
         ol = OptionList()
         d = 'Enables verbose output for the console'

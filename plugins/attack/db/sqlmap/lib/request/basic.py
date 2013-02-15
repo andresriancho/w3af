@@ -88,7 +88,7 @@ def forgeHeaders(items=None):
 
 def parseResponse(page, headers):
     """
-    @param page: the page to parse to feed the knowledge base htmlFp
+    :param page: the page to parse to feed the knowledge base htmlFp
     (back-end DBMS fingerprint based upon DBMS error messages return
     through the web application) list and absFilePaths (absolute file
     paths) set.

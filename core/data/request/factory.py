@@ -52,12 +52,12 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an HTTP response instance.
 
-    @param resp: An HTTPResponse instance.
-    @param request: The HTTP request that generated the resp
-    @param add_self: If I should add the current HTTP request
-                         (@param request) to the result on not.
+    :param resp: An HTTPResponse instance.
+    :param request: The HTTP request that generated the resp
+    :param add_self: If I should add the current HTTP request
+                         (:param request) to the result on not.
 
-    @return: A list of fuzzable requests.
+    :return: A list of fuzzable requests.
     '''
     res = []
 
@@ -166,7 +166,7 @@ XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
 
 def create_fuzzable_request_from_request(request, add_headers=None):
     '''
-    @return: A fuzzable request with the same info as request
+    :return: A fuzzable request with the same info as request
     '''
     if not isinstance(request, HTTPRequest):
         raise TypeError('Requires HTTPRequest to create FuzzableRequest.')
@@ -187,10 +187,10 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
     '''
     Creates a fuzzable request based on the input parameters.
 
-    @param req_url: A URL object
-    @param method: A string that represents the method ('GET', 'POST', etc)
-    @param post_data: A string that represents the postdata.
-    @param add_headers: A Headers object that holds the headers. If `req_url` is a
+    :param req_url: A URL object
+    :param method: A string that represents the method ('GET', 'POST', etc)
+    :param post_data: A string that represents the postdata.
+    :param add_headers: A Headers object that holds the headers. If `req_url` is a
                         request then this dict will be merged with the request's
                         headers.
     '''

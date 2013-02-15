@@ -78,7 +78,7 @@ class FakeShelve(dict):
 class AboutDialog(gtk.Dialog):
     '''A dialog with the About information.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(
@@ -142,7 +142,7 @@ class WindowsCommunication(object):
         Create a new window if not active, raises the previous one if already
         is created.
 
-        @param info: info to sent initially to the window
+        :param info: info to sent initially to the window
         '''
         if self.isActive:
             self.client.present()
@@ -156,7 +156,7 @@ class WindowsCommunication(object):
     def send(self, info):
         '''Sends information to the window.
 
-        @param info: info to sent initially to the window
+        :param info: info to sent initially to the window
         '''
         if not self.isActive:
             self.create()
@@ -171,7 +171,7 @@ class WindowsCommunication(object):
 class MainApp(object):
     '''Main GTK application
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
 
     def __init__(self, profile, do_upd):
@@ -455,7 +455,7 @@ class MainApp(object):
         The main objective of this function is to disable the "Edit Plugin"
         option, if the user isn't focused over a plugin.
 
-        @param widget: Not used
+        :param widget: Not used
         '''
         treeToUse = None
         if self.pcbody.out_plugin_tree.is_focus():
@@ -478,7 +478,7 @@ class MainApp(object):
         '''
         This is the handler for the "Edit Plugin" menu option.
 
-        @param widget: Not used
+        :param widget: Not used
         '''
         self.pcbody.edit_selected_plugin()
 
@@ -489,9 +489,9 @@ class MainApp(object):
     def quit(self, widget, event, data=None):
         '''Main quit.
 
-        @param widget: who sent the signal.
-        @param event: the event that happened
-        @param data: optional data to receive.
+        :param widget: who sent the signal.
+        :param event: the event that happened
+        :param data: optional data to receive.
         '''
         msg = _("Do you really want to quit?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION,
@@ -526,8 +526,8 @@ class MainApp(object):
     def save_state_to_core(self, relaxedTarget=False):
         '''Save the actual state to the core.
 
-        @param relaxedTarget: if True, return OK even if the target wasn't saved ok
-        @return: True if all went ok
+        :param relaxedTarget: if True, return OK even if the target wasn't saved ok
+        :return: True if all went ok
         '''
         # Clear everything
         for ptype in self.w3af.plugins.get_plugin_types():
@@ -558,7 +558,7 @@ class MainApp(object):
     def _scan_start(self):
         '''Starts the actual scanning.
 
-        @param widget: the widget that generated the signal.
+        :param widget: the widget that generated the signal.
         '''
         if not self.save_state_to_core():
             return
@@ -717,7 +717,7 @@ class MainApp(object):
     def _scan_superviseStatus(self):
         '''Handles the waiting until core actually stopped.
 
-        @return: True to be called again
+        :return: True to be called again
         '''
         if self.w3af.status.is_running():
             return True
@@ -735,7 +735,7 @@ class MainApp(object):
     def set_tabs(self, sensit):
         '''Set the exploits tabs to real window or dummies labels.
 
-        @param sensit: if it's active or not
+        :param sensit: if it's active or not
         '''
         # the View menu
         for menu in self.menuViews.values():
@@ -821,7 +821,7 @@ class MainApp(object):
     def activate_profile_actions(self, newstatus):
         '''Activate profiles buttons.
 
-        @param newstatus: if the profile changed or not.
+        :param newstatus: if the profile changed or not.
         '''
         for opt, stt in zip(self.profile_actions, newstatus):
             opt.set_sensitive(stt)

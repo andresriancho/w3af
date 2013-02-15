@@ -57,7 +57,7 @@ class output_manager(Process):
     This class manages output. It has a list of output plugins and sends the
     messages to every plugin on that list.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     METHODS = (
@@ -144,11 +144,11 @@ class output_manager(Process):
         This method logs to the output plugins the enabled plugins and their
         configuration.
 
-        @param enabled_plugins: As returned by w3afCore's
+        :param enabled_plugins: As returned by w3afCore's
                                 get_all_enabled_plugins() looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
 
-        @param plugins_options: As defined in the w3afCore, looks similar to:
+        :param plugins_options: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         for o_plugin in self._output_plugin_instances:
@@ -236,9 +236,9 @@ class output_manager(Process):
         
     def set_output_plugins(self, output_plugins):
         '''
-        @param output_plugins: A list with the names of Output Plugins that
+        :param output_plugins: A list with the names of Output Plugins that
                                   will be used.
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._output_plugin_instances = []
         self._output_plugin_names = output_plugins
@@ -251,11 +251,11 @@ class output_manager(Process):
 
     def set_plugin_options(self, plugin_name, PluginsOptions):
         '''
-        @param PluginsOptions: A tuple with a string and a dictionary
+        :param PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
                                    { console:{'verbose': True} }
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         self._plugin_options[plugin_name] = PluginsOptions
 
@@ -264,8 +264,8 @@ class output_manager(Process):
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
 
-        @param OutputPluginName: The name of the plugin to add to the list.
-        @return: No value is returned.
+        :param OutputPluginName: The name of the plugin to add to the list.
+        :return: No value is returned.
         '''
         if OutputPluginName == 'all':
             fileList = os.listdir(os.path.join('plugins', 'output'))
@@ -297,7 +297,7 @@ class output_manager(Process):
         vulnerability() with the correct parameters, depending on the info_inst
         type and severity.
         
-        @param info_inst: An Info class or subclass.
+        :param info_inst: An Info class or subclass.
         '''
         from core.data.kb.info import Info
         from core.data.kb.vuln import Vuln

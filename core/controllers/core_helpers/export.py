@@ -29,7 +29,7 @@ class export:
     """
     This class helps to export stuff.
 
-    @author: Kevin Denver ( muffysw@hotmail.com )
+    :author: Kevin Denver ( muffysw@hotmail.com )
     """
 
     def __init__(self):

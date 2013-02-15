@@ -85,7 +85,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
         Based on the request it decides if we should send the request as multipart
         or not.
 
-        @return: (Boolean that indicates if multipart should be used,
+        :return: (Boolean that indicates if multipart should be used,
                   List with string variables,
                   List with file variables)
         '''

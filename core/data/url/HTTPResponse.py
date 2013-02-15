@@ -55,18 +55,18 @@ class HTTPResponse(object):
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=0.2, alias=None, charset=None):
         '''
-        @param code: HTTP code
-        @param read: HTTP body text; typically a string
-        @param headers: HTTP headers, typically a dict or a httplib.HTTPMessage
-        @param geturl: URL object instance
-        @param original_url: URL object instance
-        @param msg: HTTP message
-        @param id: Optional response identifier
-        @param time: The time between the request and the response
-        @param alias: Alias for the response, this contains a hash that helps
+        :param code: HTTP code
+        :param read: HTTP body text; typically a string
+        :param headers: HTTP headers, typically a dict or a httplib.HTTPMessage
+        :param geturl: URL object instance
+        :param original_url: URL object instance
+        :param msg: HTTP message
+        :param id: Optional response identifier
+        :param time: The time between the request and the response
+        :param alias: Alias for the response, this contains a hash that helps
                       the backend sqlite find http_responses faster by indexing
                       by this attr.
-        @param charset: Response's encoding; obligatory when `read` is unicode
+        :param charset: Response's encoding; obligatory when `read` is unicode
         '''
         if not isinstance(geturl, URL):
             raise TypeError('Invalid type %s for HTTPResponse ctor param geturl.'
@@ -117,10 +117,10 @@ class HTTPResponse(object):
         Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
         instance
     
-        @param httplibresp: httplib.HTTPResponse instance
-        @param original_url: Optional 'url_object' instance.
+        :param httplibresp: httplib.HTTPResponse instance
+        :param original_url: Optional 'url_object' instance.
     
-        @return: A HTTPResponse instance
+        :return: A HTTPResponse instance
         '''
         resp = httplibresp
         code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
@@ -144,7 +144,7 @@ class HTTPResponse(object):
         * I have to create a dict representation of HTTPResponse to serialize it,
         * and a from_dict to have the object back
         
-        @param unserialized_dict: A dict just as returned by to_dict()
+        :param unserialized_dict: A dict just as returned by to_dict()
         '''
         udict = unserialized_dict
         
@@ -159,7 +159,7 @@ class HTTPResponse(object):
 
     def to_dict(self):
         '''
-        @return: A dict that represents the current object and is serializable
+        :return: A dict that represents the current object and is serializable
                  by the json or msgpack modules.
         '''
         serializable_dict = {}
@@ -183,7 +183,7 @@ class HTTPResponse(object):
         Determine if the `string_to_test` is contained by the HTTP response
         body.
 
-        @param string_to_test: String to look for in the body
+        :param string_to_test: String to look for in the body
         '''
         return string_to_test in self.body
     
@@ -234,7 +234,7 @@ class HTTPResponse(object):
 
     def get_clear_text_body(self):
         '''
-        @return: A clear text representation of the HTTP response body.
+        :return: A clear text representation of the HTTP response body.
         '''
         clear_text_body = self._clear_text_body
 
@@ -270,7 +270,7 @@ class HTTPResponse(object):
             ...
             sgmlParser( http_response )
 
-        @return: None
+        :return: None
         '''
         self._dom = dom_inst
 
@@ -283,7 +283,7 @@ class HTTPResponse(object):
         @see: TODO: Potential performance improvement in sgmlParser._parse()
                     for ideas on how to reduce CPU usage.
 
-        @return: The DOM, or None if the HTML normalization failed.
+        :return: The DOM, or None if the HTML normalization failed.
         '''
         if self._dom is None:
             try:
@@ -330,7 +330,7 @@ class HTTPResponse(object):
         Sets the headers and also analyzes them in order to get the response
         mime type (text/html , application/pdf, etc).
 
-        @param headers: The headers dict.
+        :param headers: The headers dict.
         '''
         # Fix lowercase in header names from HTTPMessage
         if isinstance(headers, httplib.HTTPMessage):
@@ -435,14 +435,14 @@ class HTTPResponse(object):
 
     def set_from_cache(self, fcache):
         '''
-        @param fcache: True if this response was obtained from the
+        :param fcache: True if this response was obtained from the
         local cache.
         '''
         self._from_cache = fcache
 
     def get_from_cache(self):
         '''
-        @return: True if this response was obtained from the local cache.
+        :return: True if this response was obtained from the local cache.
         '''
         return self._from_cache
 
@@ -573,31 +573,31 @@ class HTTPResponse(object):
 
     def is_text_or_html(self):
         '''
-        @return: True if this response is text or html
+        :return: True if this response is text or html
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML
 
     def is_pdf(self):
         '''
-        @return: True if this response is a PDF file
+        :return: True if this response is a PDF file
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_PDF
 
     def is_swf(self):
         '''
-        @return: True if this response is a SWF file
+        :return: True if this response is a SWF file
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_SWF
 
     def is_image(self):
         '''
-        @return: True if this response is an image file
+        :return: True if this response is an image file
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
 
     def dump_response_head(self):
         '''
-        @return: A string with:
+        :return: A string with:
             HTTP/1.1 /login.html 200
             Header1: Value1
             Header2: Value2
@@ -620,7 +620,7 @@ class HTTPResponse(object):
 
     def dump_headers(self):
         '''
-        @return: a str representation of the headers.
+        :return: a str representation of the headers.
         '''
         if self.headers:
             return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF

@@ -43,7 +43,7 @@ class fingerprint_404(object):
     '''
     Read the 404 page(s) returned by the server.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     _instance = None
@@ -80,7 +80,7 @@ class fingerprint_404(object):
         Based on a URL, request something that we know is going to be a 404.
         Afterwards analyze the 404's and summarise them.
 
-        @return: A list with 404 bodies.
+        :return: A list with 404 bodies.
         '''
         #
         #    This is the case when nobody has properly configured
@@ -152,7 +152,7 @@ class fingerprint_404(object):
     def _send_404(self, url404, store=True):
         '''
         Sends a GET request to url404 and saves the response in self._response_body_list .
-        @return: The HTTP response body.
+        :return: The HTTP response body.
         '''
         # I don't use the cache, because the URLs are random and the only thing that
         # cache does is to fill up disk space
@@ -183,7 +183,7 @@ class fingerprint_404(object):
                setting a string that identifies the 404 response (in case we
                are missing it for some reason in case #1)
 
-        @param http_response: The HTTP response which we want to know if it
+        :param http_response: The HTTP response which we want to know if it
                                   is a 404 or not.
         '''
         #
@@ -285,7 +285,7 @@ class fingerprint_404(object):
     def _fingerprinted_as_404(self, http_response):
         '''
         Convenience function so that I don't forget to update the LRU
-        @return: True
+        :return: True
         '''
         self.is_404_LRU[http_response.get_url().get_path()] = True
         return True
@@ -293,7 +293,7 @@ class fingerprint_404(object):
     def _fingerprinted_as_200(self, http_response):
         '''
         Convenience function so that I don't forget to update the LRU
-        @return: False
+        :return: False
         '''
         self.is_404_LRU[http_response.get_url().get_path()] = False
         return False
@@ -307,10 +307,10 @@ class fingerprint_404(object):
         response with the modified one. If they are equal then the original
         request is a 404.
 
-        @param http_response: The original HTTP response
-        @param html_body: The original HTML body after passing it by a cleaner
+        :param http_response: The original HTTP response
+        :param html_body: The original HTML body after passing it by a cleaner
 
-        @return: True if the original response was a 404 !
+        :return: True if the original response was a 404 !
         '''
         response_url = http_response.get_url()
         filename = response_url.get_file_name()
@@ -364,8 +364,8 @@ def get_clean_body(response):
     The same works with filenames.
     All of them, are removed encoded and "as is".
 
-    @param response: The HTTPResponse object to clean
-    @return: A string that represents the "cleaned" response body of the response.
+    :param response: The HTTPResponse object to clean
+    :return: A string that represents the "cleaned" response body of the response.
     '''
 
     body = response.body

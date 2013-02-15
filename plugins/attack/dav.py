@@ -32,7 +32,7 @@ from core.controllers.plugins.attack_plugin import AttackPlugin
 class dav(AttackPlugin):
     '''
     Exploit web servers that have unauthenticated DAV access.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -43,7 +43,7 @@ class dav(AttackPlugin):
 
     def get_attack_type(self):
         '''
-        @return: The type of exploit, SHELL, PROXY, etc.
+        :return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
 
@@ -62,8 +62,8 @@ class dav(AttackPlugin):
 
     def _generate_shell(self, vuln_obj):
         '''
-        @param vuln_obj: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed as
+        :param vuln_obj: The vuln to exploit.
+        :return: The shell object based on the vulnerability that was passed as
                  a parameter.
         '''
         # Check if we really can execute commands on the remote server
@@ -79,7 +79,7 @@ class dav(AttackPlugin):
         '''
         This command verifies a vuln. This is really hard work! :P
 
-        @return : True if vuln can be exploited.
+        :return : True if vuln can be exploited.
         '''
         # Create the shell
         filename = rand_alpha(7)
@@ -125,7 +125,7 @@ class dav(AttackPlugin):
 
     def get_root_probability(self):
         '''
-        @return: This method returns the probability of getting a root shell
+        :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
@@ -136,7 +136,7 @@ class dav(AttackPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin exploits webDAV misconfigurations and returns a shell. It is
@@ -159,8 +159,8 @@ class DAVShell(ExecShell):
         This method executes a command in the remote operating system by
         exploiting the vulnerability.
 
-        @param command: The command to handle ( ie. "ls", "whoami", etc ).
-        @return: The result of the command.
+        :param command: The command to handle ( ie. "ls", "whoami", etc ).
+        :return: The result of the command.
         '''
         to_send = self.exploit_url + command
         to_send = URL(to_send)

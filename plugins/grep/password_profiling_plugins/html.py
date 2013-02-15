@@ -31,7 +31,7 @@ class html(BasePwdProfilingPlugin):
     '''
     This plugin creates a map of possible passwords by reading html responses.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -41,8 +41,8 @@ class html(BasePwdProfilingPlugin):
         '''
         Get words from the body, this is a modified "strings" that filters out HTML tags.
 
-        @param body: In most common cases, an html. Could be almost anything.
-        @return: A map of strings:repetitions.
+        :param body: In most common cases, an html. Could be almost anything.
+        :return: A map of strings:repetitions.
         '''
 
         data = {}

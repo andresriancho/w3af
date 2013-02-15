@@ -29,12 +29,12 @@ class JSONPostDataRequest(HTTPPostDataRequest):
     This class represents a fuzzable request for a http request that contains
     JSON postdata.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def get_data(self):
         '''
-        @return: A string that represents the JSON data saved in the dc.
+        :return: A string that represents the JSON data saved in the dc.
         '''
         return json.dumps(self._dc)
 

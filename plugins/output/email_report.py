@@ -33,7 +33,7 @@ from core.data.options.option_list import OptionList
 class email_report(OutputPlugin):
     '''Email report to specified addresses.
 
-    @author: Taras (oxdef@oxdef.info)
+    :author: Taras (oxdef@oxdef.info)
     '''
 
     MSG_TMPL = '''Hello!

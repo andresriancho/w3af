@@ -40,7 +40,7 @@ class html_comments(GrepPlugin):
     '''
     Extract and analyze HTML comments.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
@@ -69,9 +69,9 @@ class html_comments(GrepPlugin):
         '''
         Plugin entry point, parse those comments!
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if not response.is_text_or_html():
             return
@@ -169,7 +169,7 @@ class html_comments(GrepPlugin):
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
-        @return: None
+        :return: None
         '''
         inform = []
         for comment in self._comments.iterkeys():
@@ -196,7 +196,7 @@ class html_comments(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for HTML comments, special comments like

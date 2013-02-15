@@ -48,10 +48,10 @@ def utctime():
 def hostname(url):
     """Get the hostname part of an URL.
 
-    @param url: A valid URL (must be preceded by scheme://).
+    :param url: A valid URL (must be preceded by scheme://).
     @type url: C{str}
 
-    @return: Hostname corresponding to the URL or the empty string in case of
+    :return: Hostname corresponding to the URL or the empty string in case of
     failure.
     @rtype: C{str}
     """
@@ -65,10 +65,10 @@ def hostname(url):
 def addresses(host):
     """Get the network addresses to which a given host resolves to.
 
-    @param host: Hostname we want to resolve.
+    :param host: Hostname we want to resolve.
     @type host: C{str}
 
-    @return: Network addresses.
+    :return: Network addresses.
     @rtype: C{tuple}
     """
     assert host != ''

@@ -35,7 +35,7 @@ class kbMenu(menu):
     '''
     This menu is used to display information from the knowledge base
     and (in the nearest future) to manipulate it.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, name, console, w3afcore, parent=None, **other):
         menu.__init__(self, name, console, w3afcore, parent)

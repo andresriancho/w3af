@@ -39,7 +39,7 @@ class extrusionServer(object):
     This class defines a simple server that listens on the current interface for connections
     made from the extrusionClient.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, tcp_ports, udp_ports, host=None, iface=None):
@@ -48,9 +48,9 @@ class extrusionServer(object):
         (the one thats running the extrusionClient ) you can just say None
         and the extrusionServer will try to figure it out.
 
-        @param host: The host from where we expect the connections
-        @param portList: The portList ( as passed to extrusionClient ) to listen for
-        @param iface: The interface where scapy is going to listen for packets
+        :param host: The host from where we expect the connections
+        :param portList: The portList ( as passed to extrusionClient ) to listen for
+        :param iface: The interface where scapy is going to listen for packets
         '''
         self._host = host
         self._udp_ports = udp_ports

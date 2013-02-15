@@ -20,7 +20,7 @@ class spider(Payload):
 
         def extract_files_from_payloads():
             '''
-            @return: A list of files that's mentioned in the other payloads
+            :return: A list of files that's mentioned in the other payloads
             I use this as a start point.
             '''
             payload_files = self.exec_payload(
@@ -55,9 +55,9 @@ class spider(Payload):
 
         def extract_files_from_file(filename, file_content):
             '''
-            @param filename: The filename to request to the remote end and parse
-            @param file_content: The content of the file to analyze
-            @return: A list of files referenced in "filename"
+            :param filename: The filename to request to the remote end and parse
+            :param file_content: The content of the file to analyze
+            :return: A list of files referenced in "filename"
             '''
             # Compile
             regular_expressions = []
@@ -79,7 +79,7 @@ class spider(Payload):
 
         def is_interesting_file(filename, file_content):
             '''
-            @return: True if the file seems interesting
+            :return: True if the file seems interesting
             '''
             keyword_list = []
             keyword_list.append('passwords')

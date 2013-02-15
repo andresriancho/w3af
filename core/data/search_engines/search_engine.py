@@ -28,7 +28,7 @@ class SearchEngine(object):
     '''
     This class represents a search engine .
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
@@ -117,9 +117,9 @@ class SearchEngine(object):
 
         This method searches the web and returns a list of URLs.
 
-        @param query: The query that we want to perform in the search engine
-        @param start: The first result item
-        @param count: How many results to get from start
+        :param query: The query that we want to perform in the search engine
+        :param start: The first result item
+        :param count: How many results to get from start
         '''
         raise NotImplementedError(
             'SearchEngine subclasses should implement the search method.')
@@ -130,8 +130,8 @@ class SearchEngine(object):
 
         This method searches the web and returns a list of http response objects.
 
-        @param query: The query that we want to perform in the search engine
-        @param start: The first result item
-        @param count: How many results to get from start
+        :param query: The query that we want to perform in the search engine
+        :param start: The first result item
+        :param count: How many results to get from start
         '''
         raise NotImplementedError('SearchEngine subclasses should implement the page_search method.')

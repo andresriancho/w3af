@@ -34,7 +34,7 @@ from core.controllers.exceptions import w3afException
 class pluginsMenu(menu):
     '''
     Menu for the list of plugins.
-    @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
+    :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
 
     '''
 

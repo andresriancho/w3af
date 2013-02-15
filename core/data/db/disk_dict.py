@@ -33,7 +33,7 @@ class DiskDict(object):
         - Is thread safe
         - Deletes the table when the instance object is deleted
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         self.db = get_default_temp_db_instance()
@@ -73,7 +73,7 @@ class DiskDict(object):
 
     def __contains__(self, key):
         '''
-        @return: True if the value is in keys
+        :return: True if the value is in keys
         '''
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the

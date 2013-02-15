@@ -25,7 +25,7 @@ from lib.core.settings import UNKNOWN_DBMS_VERSION
 
 def setDbms(dbms):
     """
-    @param dbms: database management system to be set into the knowledge
+    :param dbms: database management system to be set into the knowledge
     base as fingerprint.
     @type dbms: C{str}
     """

@@ -37,7 +37,7 @@ class zone_h(InfrastructurePlugin):
     '''
     Find out if the site was defaced in the past.
 
-    @author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
+    :author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -47,7 +47,7 @@ class zone_h(InfrastructurePlugin):
         '''
         Search zone_h and parse the output.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.get_url().get_root_domain()
@@ -74,7 +74,7 @@ class zone_h(InfrastructurePlugin):
         Parse the result from the zone_h site and create the corresponding info
         objects.
 
-        @return: None
+        :return: None
         '''
         #
         #   I'm going to do only one big "if":

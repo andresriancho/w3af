@@ -37,7 +37,7 @@ CHAR_REF_PATT = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?', re.U)
 
 def htmldecode(text, use_repr=False):
     """
-    @return: Decode HTML entities in the given text and return it as unicode.
+    :return: Decode HTML entities in the given text and return it as unicode.
     """
 
     # Internal function to do the work

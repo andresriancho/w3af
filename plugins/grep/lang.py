@@ -34,7 +34,7 @@ class lang(GrepPlugin):
     '''
     Read N pages and determines the language the site is written in.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -48,8 +48,8 @@ class lang(GrepPlugin):
         Get the page indicated by the fuzzable_request and determine the language
         using the preposition list.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
         '''
         with self._plugin_lock:
             if self._exec and response.is_text_or_html() and not is_404(response):
@@ -86,7 +86,7 @@ class lang(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin reads N pages and determines the language the site is written

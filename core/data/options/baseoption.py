@@ -27,16 +27,16 @@ class BaseOption(object):
     '''
     This class represents an option.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, name, default_value, desc, _help='', tabid=''):
         '''
-        @param name: The name of the option
-        @param default_value: The default value of the option
-        @param desc: The description of the option
-        @param type: boolean, integer, string, etc..
-        @param _help: The help of the option; a large description of the option
-        @param tabid: The tab id of the option
+        :param name: The name of the option
+        :param default_value: The default value of the option
+        :param desc: The description of the option
+        :param type: boolean, integer, string, etc..
+        :param _help: The help of the option; a large description of the option
+        :param tabid: The tab id of the option
         '''
         self._value = None # To be set by set_value and to avoid pylint error
         self.set_value(default_value)
@@ -55,7 +55,7 @@ class BaseOption(object):
 
     def get_default_value(self):
         '''
-        @return: The object, as it was set using set_default_value / set_value
+        :return: The object, as it was set using set_default_value / set_value
                  or the __init__
         '''
         return self._default_value
@@ -93,7 +93,7 @@ class BaseOption(object):
 
     def set_value(self, value):
         '''
-        @param value: The value parameter is set by the user interface, which
+        :param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
         Based on the value parameter and the option type, I have to create a nice
@@ -112,7 +112,7 @@ class BaseOption(object):
 
         Each option type should implement this.
 
-        @return: The validated value (which in the GUI can be ignored) or a
+        :return: The validated value (which in the GUI can be ignored) or a
                  w3afException when the value is invalid.
         '''
         raise NotImplementedError
@@ -157,6 +157,6 @@ class BaseOption(object):
         '''
         This method returns a copy of the option Object.
 
-        @return: A copy of myself.
+        :return: A copy of myself.
         '''
         return copy.deepcopy(self)

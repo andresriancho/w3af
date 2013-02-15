@@ -26,7 +26,7 @@ import os
 class HistorySuggestion(object):
     '''Handles the history of any text, providing suggestions.
 
-    @param filename: Name of the file where the info is stored
+    :param filename: Name of the file where the info is stored
 
     It's also responsible of loading and saving the info in a file.
     '''
@@ -50,7 +50,7 @@ class HistorySuggestion(object):
     def get_texts(self):
         '''Provides the texts, ordered by relevance.
 
-        @return: a generator with the texts
+        :return: a generator with the texts
         '''
         info = sorted(
             self.history.items(), key=operator.itemgetter(1), reverse=True)

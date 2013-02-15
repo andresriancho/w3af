@@ -58,7 +58,7 @@ def os_detection_exec(exec_method):
 
 def get_remote_temp_file(exec_method):
     '''
-    @return: The name of a file in the remote file system that the user that I'm
+    :return: The name of a file in the remote file system that the user that I'm
              executing commands with can write, read and execute. The normal
              responses for this are files in /tmp/ or %TEMP% depending on the
              remote OS.

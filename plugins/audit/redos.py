@@ -36,8 +36,8 @@ class redos(AuditPlugin):
     '''
     Find ReDoS vulnerabilities.
 
-    @author: Sebastien Duquette ( sebastien.duquette@gmail.com )
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Sebastien Duquette ( sebastien.duquette@gmail.com )
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -46,7 +46,7 @@ class redos(AuditPlugin):
         '''
         Tests an URL for ReDoS vulnerabilities using time delays.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         if self.ignore_this_request(freq):
             return
@@ -88,7 +88,7 @@ class redos(AuditPlugin):
         We know for a fact that PHP is NOT vulnerable to this attack
         TODO: Add other frameworks that are not vulnerable!
         
-        @return: True if the request should be ignored.
+        :return: True if the request should be ignored.
         '''
         if 'php' in freq.get_url().get_extension().lower():
             return True
@@ -112,14 +112,14 @@ class redos(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before
+        :return: A list with the names of the plugins that should be run before
                  the current one.
         '''
         return ['infrastructure.server_header']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds ReDoS (regular expression DoS) vulnerabilities as

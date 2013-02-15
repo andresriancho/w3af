@@ -32,7 +32,7 @@ from core.data.kb.vuln import Vuln
 class mx_injection(AuditPlugin):
     '''
     Find MX injection vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     MX_ERRORS = (
@@ -59,7 +59,7 @@ class mx_injection(AuditPlugin):
         '''
         Tests an URL for mx injection vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = create_mutants(freq, mx_injection_strings,
@@ -94,7 +94,7 @@ class mx_injection(AuditPlugin):
         '''
         Gets a list of strings to test against the web app.
 
-        @return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
+        :return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
         '''
         mx_injection_strings = []
         mx_injection_strings.append('"')
@@ -104,7 +104,7 @@ class mx_injection(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will find MX injections. This kind of web application errors

@@ -27,15 +27,15 @@ PAYLOAD_PATH = os.path.join('plugins', 'attack', 'payloads', 'payloads')
 
 def payload_to_file(payload_name):
     '''
-    @param payload_name: The name of the payload.
-    @return: The filename related to the payload.
+    :param payload_name: The name of the payload.
+    :return: The filename related to the payload.
     '''
     return os.path.join(PAYLOAD_PATH, payload_name + '.py')
 
 
 def is_payload(function_name):
     '''
-    @return: True if the function_name is referencing a payload.
+    :return: True if the function_name is referencing a payload.
 
     >>> is_payload('udp')
     True
@@ -47,15 +47,15 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
     '''
     Now I execute the payload, by providing the shell_obj.
 
-    @param shell_obj: The shell object instance where I get the syscalls from.
+    :param shell_obj: The shell object instance where I get the syscalls from.
                       If this is set to None, the handler will choose a shell
                       from the KB that provide the necessary syscalls.
-    @param payload_name: The name of the payload I want to run.
-    @param args: A tuple with the args (strings) the user typed.
+    :param payload_name: The name of the payload I want to run.
+    :param args: A tuple with the args (strings) the user typed.
     @use_api: Indicates if I need to use the API or not in this run. This is
               True when exec_payload is called from Payload.exec_payload()
 
-    @return: The payload result.
+    :return: The payload result.
     '''
     payload_inst = get_payload_instance(payload_name, shell_obj)
     if use_api:
@@ -69,7 +69,7 @@ def runnable_payloads(shell_obj):
     '''
     The payloads that can be run using this shell object.
 
-    @return: A list with all runnable payload names.
+    :return: A list with all runnable payload names.
     '''
     result = []
 
@@ -83,7 +83,7 @@ def runnable_payloads(shell_obj):
 
 def get_payload_instance(payload_name, shell_obj):
     '''
-    @return: A payload instance.
+    :return: A payload instance.
     '''
     name = '.'.join(['plugins', 'attack', 'payloads', 'payloads',
                      payload_name])
@@ -108,7 +108,7 @@ def get_payload_desc(payload_name):
 
 def get_payload_list():
     '''
-    @return: A list of the payload names in the payloads directory.
+    :return: A list of the payload names in the payloads directory.
 
     >>> 'tcp' in get_payload_list()
     True

@@ -29,7 +29,7 @@ from core.data.kb.info import Info
 class server_header(InfrastructurePlugin):
     '''
     Identify the server type based on the server header.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -44,7 +44,7 @@ class server_header(InfrastructurePlugin):
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         if self._server_header:
@@ -147,7 +147,7 @@ class server_header(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin GETs the server header and saves the result to the knowledge base.

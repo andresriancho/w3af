@@ -28,7 +28,7 @@ class DiskSet(DiskList):
     '''
     A DiskList that only allows to add/append unique items.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -41,8 +41,8 @@ class DiskSet(DiskList):
         Append a value to the DiskSet (only if the value is not already contained
         in this instance).
 
-        @param value: The value to append.
-        @return: True if the value was added. False if it existed and was not added.
+        :param value: The value to append.
+        :return: True if the value was added. False if it existed and was not added.
         '''
         with self.lock:
             if self.__contains__(value):
@@ -55,7 +55,7 @@ class DiskSet(DiskList):
         '''
         Extend the disk set with a list of items that is provided in @value_list
 
-        @return: None
+        :return: None
         '''
         with self.lock:
             for value in value_list:

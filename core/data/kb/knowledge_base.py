@@ -39,7 +39,7 @@ class BasicKnowledgeBase(object):
     This is a base class from which all implementations of KnowledgeBase will
     inherit. It has the basic utility methods that will be used.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -55,13 +55,13 @@ class BasicKnowledgeBase(object):
 
         Does this in a thread-safe manner.
 
-        @param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
+        :param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
                           (location_a, location_b) if there is NO OTHER info
                           in that location with the same:
                               - 'VAR': URL,Variable,DataContainer.keys()
                               - 'URL': URL
 
-        @return: True if the vuln was added. False if there was already a
+        :return: True if the vuln was added. False if there was already a
                  vulnerability in the KB location with the same URL and
                  parameter.
         '''
@@ -83,7 +83,7 @@ class BasicKnowledgeBase(object):
 
     def filter_url(self, location_a, location_b, info_inst):
         '''
-        @return: True if there is no other info in (location_a, location_b)
+        :return: True if there is no other info in (location_a, location_b)
                  with the same URL as the info_inst.
         '''
         for saved_vuln in self.get(location_a, location_b):
@@ -94,7 +94,7 @@ class BasicKnowledgeBase(object):
 
     def filter_var(self, location_a, location_b, info_inst):
         '''
-        @return: True if there is no other info in (location_a, location_b)
+        :return: True if there is no other info in (location_a, location_b)
                  with the same URL,Variable,DataContainer.keys() as the
                  info_inst.
         '''
@@ -117,21 +117,21 @@ class BasicKnowledgeBase(object):
 
     def get_all_vulns(self):
         '''
-        @return: A list of all vulns reported by all plugins.
+        :return: A list of all vulns reported by all plugins.
         '''
         return self.get_all_entries_of_class(Vuln)
 
     def get_all_infos(self):
         '''
-        @return: A list of all vulns reported by all plugins.
+        :return: A list of all vulns reported by all plugins.
         '''
         return self.get_all_entries_of_class(Info)
 
     def get_all_shells(self, w3af_core=None):
         '''
-        @param w3af_core: The w3af_core used in the current scan
+        :param w3af_core: The w3af_core used in the current scan
         @see: Shell.__reduce__ to understand why we need the w3af_core 
-        @return: A list of all vulns reported by all plugins.
+        :return: A list of all vulns reported by all plugins.
         '''
         all_shells = []
 
@@ -158,24 +158,24 @@ class BasicKnowledgeBase(object):
 
     def get(self, plugin_name, location_b=None):
         '''
-        @param plugin_name: The plugin that saved the data to the
+        :param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
                                 but could also be the plugin instance.
 
-        @param location_b: The name of the variables under which the vuln
+        :param location_b: The name of the variables under which the vuln
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set
                                  to None, a dict with all the vuln objects found
                                  by the plugin_name is returned.
 
-        @return: Returns the data that was saved by another plugin.
+        :return: Returns the data that was saved by another plugin.
         '''
         raise NotImplementedError
 
     def get_all_entries_of_class(self, klass):
         '''
-        @return: A list of all objects of class == klass that are saved in the kb.
+        :return: A list of all objects of class == klass that are saved in the kb.
         '''
         raise NotImplementedError
 
@@ -214,7 +214,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     Data is stored in a DB.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -293,18 +293,18 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     def get(self, location_a, location_b, check_types=True):
         '''
-        @param location_a: The plugin that saved the data to the
+        :param location_a: The plugin that saved the data to the
                            kb.info Typically the name of the plugin,
                            but could also be the plugin instance.
 
-        @param location_b: The name of the variables under which the vuln
+        :param location_b: The name of the variables under which the vuln
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set
                                  to None, a dict with all the vuln objects found
                                  by the plugin_name is returned.
 
-        @return: Returns the data that was saved by another plugin.
+        :return: Returns the data that was saved by another plugin.
         '''
         location_a = self._get_real_name(location_a)
         
@@ -342,7 +342,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             * location_b
             * value that's added to the kb location
         
-        @return: None
+        :return: None
         '''
         if not isinstance(location_a, (basestring, types.NoneType)) or \
         not isinstance(location_a, (basestring, types.NoneType)):
@@ -360,7 +360,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         Call the observer if the location_a/location_b matches with the
         configured observers.
         
-        @return: None
+        :return: None
         '''
         # Note that I copy the items list in order to iterate though it without
         # any issues like the size changing
@@ -380,7 +380,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     def get_all_entries_of_class(self, klass):
         '''
-        @return: A list of all objects of class == klass that are saved in the kb.
+        :return: A list of all objects of class == klass that are saved in the kb.
         '''
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
@@ -435,13 +435,13 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     
     def get_all_known_urls(self):
         '''
-        @return: A DiskSet with all the known URLs as URL objects.
+        :return: A DiskSet with all the known URLs as URL objects.
         '''
         return self.urls
     
     def add_url(self, url):
         '''
-        @return: True if the URL was previously unknown 
+        :return: True if the URL was previously unknown 
         '''
         if not isinstance(url, URL):
             msg = 'add_url requires a URL as parameter got %s instead.'
@@ -451,13 +451,13 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     
     def get_all_known_fuzzable_requests(self):
         '''
-        @return: A DiskSet with all the known URLs as URL objects.
+        :return: A DiskSet with all the known URLs as URL objects.
         '''
         return self.fuzzable_requests
     
     def add_fuzzable_request(self, fuzzable_request):
         '''
-        @return: True if the FuzzableRequest was previously unknown 
+        :return: True if the FuzzableRequest was previously unknown 
         '''
         if not isinstance(fuzzable_request, FuzzableRequest):
             msg = 'add_fuzzable_request requires a FuzzableRequest as parameter.'\

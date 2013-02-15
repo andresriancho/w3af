@@ -36,7 +36,7 @@ class AuditPlugin(Plugin):
     from it and implement the following methods :
         1. audit(...)
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -54,9 +54,9 @@ class AuditPlugin(Plugin):
 
     def audit_return_vulns(self, fuzzable_request):
         '''
-        @param fuzzable_request: The fuzzable_request instance to analyze for
+        :param fuzzable_request: The fuzzable_request instance to analyze for
                                  vulnerabilities.
-        @return: The vulnerabilities found when running this audit plugin.
+        :return: The vulnerabilities found when running this audit plugin.
         '''
         with self._audit_return_vulns_lock:
             
@@ -114,8 +114,8 @@ class AuditPlugin(Plugin):
 
     def audit_with_copy(self, fuzzable_request, orig_resp):
         '''
-        @param freq: A FuzzableRequest
-        @param orig_resp: The HTTP response we get from sending the freq
+        :param freq: A FuzzableRequest
+        :param orig_resp: The HTTP response we get from sending the freq
         
         Copy the FuzzableRequest before auditing.
 
@@ -131,8 +131,8 @@ class AuditPlugin(Plugin):
 
         This method MUST be implemented on every plugin.
 
-        @param freq: A FuzzableRequest
-        @param orig_resp: The HTTP response we get from sending the freq
+        :param freq: A FuzzableRequest
+        :param orig_resp: The HTTP response we get from sending the freq
         '''
         msg = 'Plugin is not implementing required method audit'
         raise NotImplementedError(msg)
@@ -145,11 +145,11 @@ class AuditPlugin(Plugin):
         Test if the current combination of `fuzz_req`, `varname` hasn't
         already been reported to the knowledge base.
 
-        @param fuzz_req: A FuzzableRequest like object.
-        @param varname: Typically the name of the injection parameter.
-        @param pname: The name of the plugin that presumably reported
+        :param fuzz_req: A FuzzableRequest like object.
+        :param varname: Typically the name of the injection parameter.
+        :param pname: The name of the plugin that presumably reported
             the vulnerability. Defaults to self.name.
-        @param kb_varname: The name of the variable in the kb, where
+        :param kb_varname: The name of the variable in the kb, where
             the vulnerability was saved. Defaults to self.name.
         '''
         with self._plugin_lock:

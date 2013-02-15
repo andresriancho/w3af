@@ -32,7 +32,7 @@ from core.data.kb.info import Info
 class urllist_txt(CrawlPlugin):
     '''
     Analyze the urllist.txt file and find new URLs
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -43,7 +43,7 @@ class urllist_txt(CrawlPlugin):
         '''
         Get the urllist.txt file and parse it.
 
-        @param fuzzable_request: A fuzzable_request instance that contains
+        :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.get_url().base_url()
@@ -78,7 +78,7 @@ class urllist_txt(CrawlPlugin):
 
     def _is_urllist_txt(self, base_url, body):
         '''
-        @return: True if the body is a urllist.txt
+        :return: True if the body is a urllist.txt
         '''
         is_urllist = 5
         for line in body.split('\n'):
@@ -95,7 +95,7 @@ class urllist_txt(CrawlPlugin):
 
     def _extract_urls_generator(self, base_url, body):
         '''
-        @param body: The urllist.txt body
+        :param body: The urllist.txt body
         @yield: a URL object from the urllist.txt body
         '''
         for line in body.split('\n'):
@@ -112,7 +112,7 @@ class urllist_txt(CrawlPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the urllist.txt file, and parses it. The

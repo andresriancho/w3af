@@ -32,7 +32,7 @@ class mod_security(EvasionPlugin):
     '''
     Evade detection using a mod_security vulnerability.
 
-    @author: Francisco Amato ( famato |at| infobyte.com.ar )
+    :author: Francisco Amato ( famato |at| infobyte.com.ar )
     '''
 
     def __init__(self):
@@ -42,9 +42,9 @@ class mod_security(EvasionPlugin):
         '''
         Mangles the request
 
-        @param request: HTTPRequest instance that is going to be modified by
+        :param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
-        @return: The modified request
+        :return: The modified request
         '''
         # Mangle the postdata
         data = str(request.get_data())
@@ -70,13 +70,13 @@ class mod_security(EvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
-        @return: An integer specifying the priority. 0 is run first, 100 last.
+        :return: An integer specifying the priority. 0 is run first, 100 last.
         '''
         return 50
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin performs a bypass for mod_security version 2.1.0 or less here:

@@ -15,7 +15,7 @@ class pixy(Payload):
 
     def api_read(self, local_temp_dir, pixy_location):
         '''
-        @return: A dict with {'<vuln-type>': ['filename:line-number']}
+        :return: A dict with {'<vuln-type>': ['filename:line-number']}
 
         <vuln-type> is one of:
             - XSS
@@ -49,7 +49,7 @@ class pixy(Payload):
         #
         def extract_info(pixy_output):
             '''
-            Extract info from @param pixy_output and save it to self.result.
+            Extract info from :param pixy_output and save it to self.result.
             '''
             splitted_output = pixy_output.split('\n')
 

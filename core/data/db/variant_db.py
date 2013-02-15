@@ -36,7 +36,7 @@ class VariantDB(object):
         Called when a new reference is found and we proved that new
         variants are still needed.
 
-        @param reference: The reference (as a URL object) to add. This method
+        :param reference: The reference (as a URL object) to add. This method
                           will "normalize" it before adding it to the internal
                           shelve.
         '''
@@ -81,7 +81,7 @@ class VariantDB(object):
 
     def need_more_variants(self, reference):
         '''
-        @return: True if there are not enough variants associated with
+        :return: True if there are not enough variants associated with
         this reference in the DB.
         '''
         clean_reference = self._clean_reference(reference)

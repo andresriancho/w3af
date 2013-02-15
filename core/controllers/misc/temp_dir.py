@@ -30,7 +30,7 @@ TEMP_DIR = os.path.join(get_home_dir(), 'tmp', str(os.getpid()))
 
 def get_temp_dir():
     '''
-    @return: The path where we should create the dir.
+    :return: The path where we should create the dir.
     '''
     return TEMP_DIR
 
@@ -39,7 +39,7 @@ def create_temp_dir():
     '''
     Create the temp directory for w3af to work inside.
 
-    @return: A string that contains the temp directory to use,
+    :return: A string that contains the temp directory to use,
              in Linux: "~/.w3af/tmp/<pid>"
     '''
     complete_dir = get_temp_dir()

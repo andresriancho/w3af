@@ -37,7 +37,7 @@ class frontpage(AuditPlugin):
     '''
     Tries to upload a file using frontpage extensions (author.dll).
 
-    @author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
@@ -50,7 +50,7 @@ class frontpage(AuditPlugin):
         '''
         Searches for file upload vulns using a POST to author.dll.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         domain_path = freq.get_url().get_domain_path()
 
@@ -84,8 +84,8 @@ class frontpage(AuditPlugin):
         '''
         Upload the file using author.dll
 
-        @param domain_path: http://localhost/f00/
-        @param rand_file: <random>.html
+        :param domain_path: http://localhost/f00/
+        :param rand_file: <random>.html
         '''
         file_path = domain_path.get_path() + rand_file
 
@@ -123,9 +123,9 @@ class frontpage(AuditPlugin):
         '''
         Verify if the file was uploaded.
 
-        @param domain_path: http://localhost/f00/
-        @param rand_file: The filename that was supposingly uploaded
-        @param upload_id: The id of the POST request to author.dll
+        :param domain_path: http://localhost/f00/
+        :param rand_file: The filename that was supposingly uploaded
+        :param upload_id: The id of the POST request to author.dll
         '''
         target_url = domain_path.url_join(rand_file)
 
@@ -157,14 +157,14 @@ class frontpage(AuditPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
+        :return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.frontpage_version']
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin audits the frontpage extension configuration by trying to

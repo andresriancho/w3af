@@ -34,7 +34,7 @@ class path_disclosure(GrepPlugin):
     '''
     Grep every page for traces of path disclosure vulnerabilities.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -51,7 +51,7 @@ class path_disclosure(GrepPlugin):
 
     def _compile_regex(self):
         '''
-        @return: None, the result is saved in self._path_disc_regex_list
+        :return: None, the result is saved in self._path_disc_regex_list
         '''
         #
         #    I tried to enhance the performance of this plugin by putting
@@ -75,7 +75,7 @@ class path_disclosure(GrepPlugin):
         to 1/8 of the time in cases where no potential disclosures are found,
         and around 1/3 when potential disclosures *are* found.
 
-        @return: A list of the potential path disclosures
+        :return: A list of the potential path disclosures
         '''
         potential_disclosures = []
 
@@ -89,9 +89,9 @@ class path_disclosure(GrepPlugin):
         '''
         Identify the path disclosure vulnerabilities.
 
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None, the result is saved in the kb.
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None, the result is saved in the kb.
         '''
         if not response.is_text_or_html():
             return
@@ -167,9 +167,9 @@ class path_disclosure(GrepPlugin):
 
     def _longest(self, a, b):
         '''
-        @param a: A string.
-        @param a: Another string.
-        @return: The longest string.
+        :param a: A string.
+        :param a: Another string.
+        :return: The longest string.
         '''
         return cmp(len(a), len(b))
 
@@ -177,7 +177,7 @@ class path_disclosure(GrepPlugin):
         '''
         This method was created to remove some false positives.
 
-        @return: True if path_disclosure_string is the value of an attribute inside a tag.
+        :return: True if path_disclosure_string is the value of an attribute inside a tag.
 
         Examples:
             path_disclosure_string = '/home/image.png'
@@ -252,7 +252,7 @@ class path_disclosure(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every page for path disclosure vulnerabilities like:

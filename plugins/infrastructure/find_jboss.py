@@ -37,7 +37,7 @@ class find_jboss(InfrastructurePlugin):
     '''
     Find default Jboss installations.
 
-    @author: Nahuel Sanchez (nsanchez@bonsai-sec.com)
+    :author: Nahuel Sanchez (nsanchez@bonsai-sec.com)
     '''
     JBOSS_VULNS = (
         {'url': '/admin-console/',
@@ -119,7 +119,7 @@ class find_jboss(InfrastructurePlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin identifies JBoss installation directories and possible

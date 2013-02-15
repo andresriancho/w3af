@@ -32,7 +32,7 @@ class pks(SearchEngine):
     '''
     This class is a wrapper for doing PKS searches on the MIT PKS server.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):
@@ -43,7 +43,7 @@ class pks(SearchEngine):
         '''
         Searches a PKS server, and returns all emails related to hostname.
 
-        @param hostname: The hostname from which we want to get emails from.
+        :param hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'\

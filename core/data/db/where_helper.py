@@ -40,7 +40,7 @@ class WhereHelper(object):
 
     def sql(self, whereStr=True):
         '''
-        @return: SQL string.
+        :return: SQL string.
 
         >>> w = WhereHelper( [ ('field', '3', '=') ] )
         >>> w.sql()

@@ -234,9 +234,9 @@ class NodeRep(object):
         '''
         Yields parent nodes of type `type`.
 
-        @param nodetys: The types of nodes to yield. Default to list
+        :param nodetys: The types of nodes to yield. Default to list
             containing base type.
-        @param startnode: Start node.
+        :param startnode: Start node.
         '''
         parent = getattr(startnode, '_parent_node', None)
         while parent:
@@ -503,7 +503,7 @@ class FuncCall(NodeRep):
         Return the vuln type for the given function name `fname`. Return None
         if no vuln type is associated.
 
-        @param fname: Function name
+        :param fname: Function name
         '''
         for vulnty, pvfnames in FuncCall.PVFDB.iteritems():
             if any(fname == pvfn for pvfn in pvfnames):
@@ -515,7 +515,7 @@ class FuncCall(NodeRep):
         '''
         Return the the vuln. type secured by securing function `sfname`.
 
-        @param sfname: Securing function name
+        :param sfname: Securing function name
         '''
         for vulnty, sfnames in FuncCall.SFDB.iteritems():
             if any(sfname == sfn for sfn in sfnames):
@@ -561,9 +561,9 @@ class Scope(object):
 
     def __init__(self, ast_node, parent_scope=None, builtins={}):
         '''
-        @param ast_node: AST node that originated this scope
-        @param parent_scope: Parent scope
-        @param builtins: Language's builtin variables
+        :param ast_node: AST node that originated this scope
+        :param parent_scope: Parent scope
+        :param builtins: Language's builtin variables
         '''
         # AST node that defines this scope
         self._ast_node = ast_node

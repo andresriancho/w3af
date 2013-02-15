@@ -47,8 +47,8 @@ class SimpleTextView(gtk.TextView):
 
     def _repr(self, str_in):
         '''
-        @param str_in: The input parameter to "repr()"
-        @return: The repr'ed string
+        :param str_in: The input parameter to "repr()"
+        :return: The repr'ed string
         '''
         res = ''
         for c in str_in:
@@ -61,11 +61,11 @@ class SimpleTextView(gtk.TextView):
     def set_text(self, newtext, use_repr=False):
         '''Sets a new text in the pane, repr'ing it if needed.
 
-        @param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
+        :param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
         escapes new lines, and tabs, but we would like to keep those as they can be represented
         properly in a textview.
 
-        @param newtext: the new text of the pane.
+        :param newtext: the new text of the pane.
         '''
         self.clear()
         iterl = self.buffer.get_end_iter()
@@ -99,7 +99,7 @@ class SimpleTextView(gtk.TextView):
 class EncodeDecode(entries.RememberingWindow):
     '''Tool to encode and decode strings in different ways.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(EncodeDecode, self).__init__(
@@ -156,9 +156,9 @@ class EncodeDecode(entries.RememberingWindow):
     def _proc(self, inp, out, func, use_repr=False):
         '''Process the text.
 
-        @param inp: the text input.
-        @param out: the text output.
-        @param func: the processing function.
+        :param inp: the text input.
+        :param out: the text output.
+        :param func: the processing function.
         '''
         # clear the output text, this will introduce a small blink
         out.set_text(u"")
@@ -231,7 +231,7 @@ class ThreadedProc(threading.Thread):
 
 def _get_nibbles(char):
     '''
-    @return: The first ans second nibble of the ascii value of the char
+    :return: The first ans second nibble of the ascii value of the char
     '''
     try:
         x, y = hex(ord(char))[2:]

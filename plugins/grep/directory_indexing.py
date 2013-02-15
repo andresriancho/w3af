@@ -32,7 +32,7 @@ class directory_indexing(GrepPlugin):
     '''
     Grep every response for directory indexing problems.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     DIR_INDEXING = (
@@ -60,9 +60,9 @@ class directory_indexing(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
-        @param request: The HTTP request object.
-        @param response: The HTTP response object
-        @return: None
+        :param request: The HTTP request object.
+        :param response: The HTTP response object
+        :return: None
         '''
         if not response.is_text_or_html():
             return
@@ -87,7 +87,7 @@ class directory_indexing(GrepPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin greps every response directory indexing problems.

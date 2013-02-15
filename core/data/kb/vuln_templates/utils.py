@@ -27,7 +27,7 @@ from core.data.kb.vuln_templates.base_template import BaseTemplate
 
 def get_all_templates():
     '''
-    @return: A list with instances of all available templates
+    :return: A list with instances of all available templates
     '''
     templates = []
     location = ['core', 'data', 'kb', 'vuln_templates']

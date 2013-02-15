@@ -32,7 +32,7 @@ class count(CrawlPlugin):
     
     Only useful for testing, see test_w3afcore.py
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

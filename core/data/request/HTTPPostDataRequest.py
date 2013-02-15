@@ -32,7 +32,7 @@ class HTTPPostDataRequest(FuzzableRequest):
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.
 
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, uri, method='POST', headers=Headers(),
                  cookie=None, dc=None):
@@ -46,7 +46,7 @@ class HTTPPostDataRequest(FuzzableRequest):
 
     def get_data(self):
         '''
-        @return: A string representation of the DataContainer. There is a
+        :return: A string representation of the DataContainer. There is a
         special case, in which the DataContainer has a file inside, in which
         we return the data container as it is. This is needed by the multipart
         post handler.
@@ -69,7 +69,7 @@ class HTTPPostDataRequest(FuzzableRequest):
 
     def get_file_vars(self):
         '''
-        @return: A list of postdata parameters that contain a file
+        :return: A list of postdata parameters that contain a file
         '''
         if isinstance(self._dc, Form):
             return self._dc.get_file_vars()

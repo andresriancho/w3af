@@ -32,17 +32,17 @@ from core.controllers.misc.homeDir import get_home_dir
 class OptionsPanel(gtk.VBox):
     '''Panel with options for configuration.
 
-    @param plugin_tree: The plugin tree where the plugins are chosen.
-    @param plugin: The selected plugin, for which the configuration is.
-    @param title: The top description of the options panel
-    @param options: The options to configure.
+    :param plugin_tree: The plugin tree where the plugins are chosen.
+    :param plugin: The selected plugin, for which the configuration is.
+    :param title: The top description of the options panel
+    :param options: The options to configure.
 
     The panel consists mainly of:
         - the long description of the plugin
         - the table with the options to configure
         - save and revert buttons, at the end
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, plugin_tree, plugin, title, longdesc):
         super(OptionsPanel, self).__init__()
@@ -84,7 +84,7 @@ class OptionsPanel(gtk.VBox):
     def config_changed(self, like_initial):
         '''Propagates the change from the options.
 
-        @param like_initial: If the config is like the initial one
+        :param like_initial: If the config is like the initial one
         '''
         self.plugin_tree.config_changed(like_initial)
 
@@ -94,9 +94,9 @@ class ConfigPanel(gtk.VBox):
 
     Handles the creation of each configuration panel for each plugin.
 
-    @param profileDescription: The description of the selected profile, if any
+    :param profileDescription: The description of the selected profile, if any
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, profileDescription=None):
         super(ConfigPanel, self).__init__(False, 0)
@@ -122,9 +122,9 @@ class ConfigPanel(gtk.VBox):
     def config(self, plugin_tree, plugin, longdesc):
         '''Creates and shows the configuration panel.
 
-        @param plugin: the plugin to configure
-        @param xmloptions: the options in xml
-        @param longdesc: the long description of the plugin
+        :param plugin: the plugin to configure
+        :param xmloptions: the options in xml
+        :param longdesc: the long description of the plugin
         '''
         # A title with the name of the plugin in bold and with a bigger font
         title = "<b><big>" + plugin.get_name() + "</big></b>\n\n"
@@ -148,9 +148,9 @@ class ConfigPanel(gtk.VBox):
     def clear(self, title=None, longdesc='', label=""):
         '''Shows an almost empty panel when there's no configuration.
 
-        @param title: the title to show in the top (optional)
-        @param title: the long description for the plugin to show in the top (optional)
-        @param label: a message to the middle of the panel (optional).
+        :param title: the title to show in the top (optional)
+        :param title: the long description for the plugin to show in the top (optional)
+        :param label: a message to the middle of the panel (optional).
 
         When it does not receive nothing, the panel is clean.
         '''
@@ -185,11 +185,11 @@ class ConfigPanel(gtk.VBox):
 class PluginTree(gtk.TreeView):
     '''A tree showing all the plugins grouped by type.
 
-    @param mainwin: The mainwin where the scanok button leaves.
-    @param w3af: The main core class.
-    @param config_panel: The configuration panel, to handle each plugin config
+    :param mainwin: The mainwin where the scanok button leaves.
+    :param w3af: The main core class.
+    :param config_panel: The configuration panel, to handle each plugin config
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, style, config_panel):
         self.mainwin = w3af.mainwin
@@ -302,7 +302,7 @@ class PluginTree(gtk.TreeView):
     def config_changed(self, like_initial):
         '''Shows in the tree when a plugin configuration changed.
 
-        @param like_initial: if some of the configuration changed
+        :param like_initial: if some of the configuration changed
 
         If changed, puts the plugin name in bold. If any of the plugin in a
         type is bold, the type name is also bold.
@@ -338,8 +338,8 @@ class PluginTree(gtk.TreeView):
     def _get_plugin_inst(self, path):
         '''Caches the plugin instance.
 
-        @param path: where the user is in the plugin tree
-        @return The plugin
+        :param path: where the user is in the plugin tree
+        :return The plugin
         '''
         try:
             return self.plugin_instances[path]
@@ -362,8 +362,8 @@ class PluginTree(gtk.TreeView):
     def popup_menu(self, tv, event):
         '''Shows a menu when you right click on a plugin.
 
-        @param tv: the treeview.
-        @param event: The GTK event
+        :param tv: the treeview.
+        :param event: The GTK event
         '''
         if event.button == 3:
             # It's a right click !
@@ -435,7 +435,7 @@ class PluginTree(gtk.TreeView):
     def configure_plugin(self, tv=None):
         '''Starts the plugin configuration.
 
-        @param tv: the treeview.
+        :param tv: the treeview.
         '''
         (path, column) = self.get_cursor()
         if path is None:
@@ -456,8 +456,8 @@ class PluginTree(gtk.TreeView):
     def _get_children(self, path):
         '''Finds the children of a path.
 
-        @param path: the path to find the children.
-        @return Yields the childrens.
+        :param path: the path to find the children.
+        :return Yields the childrens.
         '''
 
         father = self.treestore.get_iter(path)
@@ -470,8 +470,8 @@ class PluginTree(gtk.TreeView):
     def activate_plugin(self, cell, path):
         '''Handles the plugin activation/deactivation.
 
-        @param cell: the cell that generated the signal.
-        @param path: the path that clicked the user.
+        :param cell: the cell that generated the signal.
+        :param path: the path that clicked the user.
 
         When a child gets activated/deactivated, the father is also refreshed
         to show if it's full/partially/not activated.
@@ -548,7 +548,7 @@ class PluginTree(gtk.TreeView):
     def get_activated_plugins(self):
         '''Return the activated plugins.
 
-        @return: all the plugins that are active.
+        :return: all the plugins that are active.
         '''
         result = []
         for row in self.treestore:
@@ -575,10 +575,10 @@ class PluginTree(gtk.TreeView):
 class PluginConfigBody(gtk.VBox):
     '''The main Plugin Configuration Body.
 
-    @param mainwin: the tab of the main notepad
-    @param w3af: the main core class
+    :param mainwin: the tab of the main notepad
+    :param w3af: the main core class
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, mainwin, w3af):
         super(PluginConfigBody, self).__init__()
@@ -682,7 +682,7 @@ class PluginConfigBody(gtk.VBox):
     def get_activated_plugins(self):
         '''Return the activated plugins.
 
-        @return: all the plugins that are active.
+        :return: all the plugins that are active.
         '''
         return self.std_plugin_tree.get_activated_plugins() + self.out_plugin_tree.get_activated_plugins()
 

@@ -24,7 +24,7 @@ import os
 
 def get_file_list(directory, extension='.py'):
     '''
-    @return: A list of the files that are present in @directory and match
+    :return: A list of the files that are present in @directory and match
              @extension. The files returned won't have an extension.
 
     >>> filename_list = get_file_list( os.path.join('plugins','audit') )

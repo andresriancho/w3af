@@ -26,7 +26,7 @@ from core.ui.gui.constants import W3AF_ICON
 class Splash(gtk.Window):
     '''Builds the Splash window.
 
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self):
         super(Splash, self).__init__()

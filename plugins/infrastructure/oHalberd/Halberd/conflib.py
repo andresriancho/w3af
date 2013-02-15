@@ -70,7 +70,7 @@ class ConfReader:
     def open(self, fname):
         """Opens the configuration file.
 
-        @param fname: Pathname to the configuration file.
+        :param fname: Pathname to the configuration file.
         @type fname: C{str}
 
         @raise InvalidConfFile: In case the passed file is not a valid one.
@@ -131,7 +131,7 @@ class ConfReader:
     def write_default(self, conf_file):
         """Write a bare-bones configuration file
 
-        @param conf_file: Target file where the default conf. will be written.
+        :param conf_file: Target file where the default conf. will be written.
         @type conf_file: C{str}
         """
         assert conf_file and isinstance(conf_file, basestring)

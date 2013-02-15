@@ -146,10 +146,10 @@ class MultiScanStrategy(BaseStrategy):
     def _targets(self, urlfp):
         """Obtain target addresses from URLs.
 
-        @param urlfp: File where the list of URLs is stored.
+        :param urlfp: File where the list of URLs is stored.
         @type urlfp: C{file}
 
-        @return: Generator providing the desired addresses.
+        :return: Generator providing the desired addresses.
         """
         for url in urlfp:
             if url == '\n':

@@ -36,7 +36,7 @@ from core.data.kb.vuln import Vuln
 class os_commanding(AuditPlugin):
     '''
     Find OS Commanding vulnerabilities.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     FILE_PATTERNS = FILE_PATTERNS 
@@ -55,7 +55,7 @@ class os_commanding(AuditPlugin):
         '''
         Tests an URL for OS Commanding vulnerabilities.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         # We are implementing two different ways of detecting OS Commanding
         # vulnerabilities:
@@ -78,7 +78,7 @@ class os_commanding(AuditPlugin):
         Tests an URL for OS Commanding vulnerabilities using cat/type to write the
         content of a known file (i.e. /etc/passwd) to the HTML.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         # Prepare the strings to create the mutants
         command_list = self._get_echo_commands()
@@ -120,8 +120,8 @@ class os_commanding(AuditPlugin):
 
     def _get_os_separator(self, mutant):
         '''
-        @param mutant: The mutant that is being analyzed.
-        @return: A tuple with the OS and the command separator
+        :param mutant: The mutant that is being analyzed.
+        :return: A tuple with the OS and the command separator
         that was used to generate the mutant.
         '''
         # Retrieve the data I need to create the vuln and the info objects
@@ -138,7 +138,7 @@ class os_commanding(AuditPlugin):
         '''
         Tests an URL for OS Commanding vulnerabilities using time delays.
 
-        @param freq: A FuzzableRequest
+        :param freq: A FuzzableRequest
         '''
         fake_mutants = create_mutants(freq, ['', ])
 
@@ -167,7 +167,7 @@ class os_commanding(AuditPlugin):
 
     def _get_echo_commands(self):
         '''
-        @return: This method returns a list of commands to try to execute in order
+        :return: This method returns a list of commands to try to execute in order
         to print the content of a known file.
         '''
         commands = []
@@ -194,7 +194,7 @@ class os_commanding(AuditPlugin):
 
     def _get_wait_commands(self):
         '''
-        @return: This method returns a list of commands to try to execute in order
+        :return: This method returns a list of commands to try to execute in order
         to introduce a time delay.
         '''
         commands = []
@@ -231,7 +231,7 @@ class os_commanding(AuditPlugin):
 
     def get_long_desc(self):
         '''
-        @return: A DETAILED description of the plugin functions and features.
+        :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will find OS commanding vulnerabilities. The detection is
@@ -263,19 +263,19 @@ class Command(object):
 
     def get_OS(self):
         '''
-        @return: The OS
+        :return: The OS
         '''
         return self._os
 
     def get_command(self):
         '''
-        @return: The Command to be executed
+        :return: The Command to be executed
         '''
         return self._comm
 
     def get_separator(self):
         '''
-        @return: The separator, could be one of ; && | etc.
+        :return: The separator, could be one of ; && | etc.
         '''
         return self._sep
 

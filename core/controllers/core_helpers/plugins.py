@@ -87,11 +87,11 @@ class w3af_core_plugins(object):
 
     def set_plugin_options(self, plugin_type, plugin_name, plugin_options):
         '''
-        @param plugin_type: The plugin type, like 'audit' or 'crawl'
-        @param plugin_name: The plugin name, like 'sqli' or 'web_spider'
-        @param plugin_options: An OptionList with the option objects for a plugin.
+        :param plugin_type: The plugin type, like 'audit' or 'crawl'
+        :param plugin_name: The plugin name, like 'sqli' or 'web_spider'
+        :param plugin_options: An OptionList with the option objects for a plugin.
 
-        @return: No value is returned.
+        :return: No value is returned.
         '''
         if plugin_type.lower() == 'output':
             om.out.set_plugin_options(plugin_name, plugin_options)
@@ -114,7 +114,7 @@ class w3af_core_plugins(object):
         to get the default options for a plugin, get a plugin instance and
         perform a plugin.get_options()
 
-        @return: An OptionList with the plugin options.
+        :return: An OptionList with the plugin options.
         '''
         return self._plugins_options.get(plugin_type, {}).get(plugin_name, None)
 
@@ -135,11 +135,11 @@ class w3af_core_plugins(object):
         of set_plugins and get_plugin_types. This way the user interface isnt
         bound to changes in the plugin types that are added or removed.
 
-        @param plugin_names: A list with the names of the Plugins that will be
+        :param plugin_names: A list with the names of the Plugins that will be
                              run.
-         @param plugin_type: The type of the plugin.
+         :param plugin_type: The type of the plugin.
 
-        @return: A list of plugins that are unknown to the framework. This is
+        :return: A list of plugins that are unknown to the framework. This is
                  mainly used to have some error handling related to old profiles,
                  that might reference deprecated plugins.
         '''
@@ -176,8 +176,8 @@ class w3af_core_plugins(object):
         inside the core have to be "reloaded" so, if the plugin code was changed,
         the core reflects that change.
 
-        @param plugin_type: The plugin type of the modified plugin ('audit','crawl', etc)
-        @param plugin_name: The plugin name of the modified plugin ('xss', 'sqli', etc)
+        :param plugin_type: The plugin type of the modified plugin ('audit','crawl', etc)
+        :param plugin_name: The plugin name of the modified plugin ('xss', 'sqli', etc)
         '''
         try:
             aModule = sys.modules['plugins.' + plugin_type +
@@ -190,8 +190,8 @@ class w3af_core_plugins(object):
 
     def get_plugin_type_desc(self, plugin_type):
         '''
-        @param plugin_type: The type of plugin for which we want a description.
-        @return: A description of the plugin type passed as parameter
+        :param plugin_type: The type of plugin for which we want a description.
+        :return: A description of the plugin type passed as parameter
         '''
         try:
             __import__('plugins.' + plugin_type)
@@ -203,7 +203,7 @@ class w3af_core_plugins(object):
 
     def get_plugin_types(self):
         '''
-        @return: A list with all plugin types.
+        :return: A list with all plugin types.
         '''
         def rem_from_list(ele, lst):
             try:
@@ -221,14 +221,14 @@ class w3af_core_plugins(object):
 
     def get_plugin_list(self, plugin_type):
         '''
-        @return: A string list of the names of all available plugins by type.
+        :return: A string list of the names of all available plugins by type.
         '''
         str_plugin_list = get_file_list(os.path.join('plugins', plugin_type))
         return str_plugin_list
 
     def get_plugin_inst(self, plugin_type, plugin_name):
         '''
-        @return: An instance of a plugin.
+        :return: An instance of a plugin.
         '''
         plugin_inst = factory('plugins.' + plugin_type + '.' + plugin_name)
         plugin_inst.set_url_opener(self._w3af_core.uri_opener)
@@ -248,9 +248,9 @@ class w3af_core_plugins(object):
         '''
         This method creates the user requested plugins.
 
-        @param requested_plugins: A string list with the requested plugins to be executed.
-        @param plugin_type: A string representing the plugin family (audit, crawl, etc.)
-        @return: A list with plugins to be executed, this list is ordered using the exec priority.
+        :param requested_plugins: A string list with the requested plugins to be executed.
+        :param plugin_type: A string representing the plugin family (audit, crawl, etc.)
+        :return: A list with plugins to be executed, this list is ordered using the exec priority.
         '''
         def get_quick_instance(plugin_type, plugin_name):
             plugin_module = '.'.join(['plugins', plugin_type, plugin_name])
@@ -343,15 +343,15 @@ class w3af_core_plugins(object):
 
     def _set_plugin_generic(self, plugin_type, plugin_list):
         '''
-        @param plugin_type: The plugin type where to store the @plugin_list.
-        @param plugin_list: A list with the names of @plugin_type plugins to be run.
+        :param plugin_type: The plugin type where to store the @plugin_list.
+        :param plugin_list: A list with the names of @plugin_type plugins to be run.
         '''
         self._plugins_names_dict[plugin_type] = plugin_list
 
     def _set_evasion_plugins(self, evasion_plugins):
         '''
-        @param evasion_plugins: A list with the names of Evasion Plugins that will be used.
-        @return: No value is returned.
+        :param evasion_plugins: A list with the names of Evasion Plugins that will be used.
+        :return: No value is returned.
         '''
         self._plugins_names_dict['evasion'] = evasion_plugins
         self.plugin_factory()
