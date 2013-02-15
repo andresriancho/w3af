@@ -84,7 +84,7 @@ class OptionsPanel(gtk.VBox):
     def config_changed(self, like_initial):
         '''Propagates the change from the options.
 
-        @params like_initial: If the config is like the initial one
+        @param like_initial: If the config is like the initial one
         '''
         self.plugin_tree.config_changed(like_initial)
 
