@@ -293,61 +293,64 @@ class crawl_infrastructure(BaseConsumer):
         # (http://a.com/foo.php#frag). Remove them
         fuzzable_request.set_uri(fr_uri.remove_fragment())
 
-        if fr_uri.base_url() in base_urls_cf:
-            # Filter out the fuzzable requests that aren't important
-            # (and will be ignored by audit plugins anyway...)
-            #
-            #   What I want to do here, is filter the repeated fuzzable requests.
-            #   For example, if the spidering process found:
-            #       - http://host.tld/?id=3739286
-            #       - http://host.tld/?id=3739285
-            #       - http://host.tld/?id=3739282
-            #       - http://host.tld/?id=3739212
-            #
-            #   I don't want to have all these different fuzzable requests. The reason is that
-            #   audit plugins will try to send the payload to each parameter, thus generating
-            #   the following requests:
-            #       - http://host.tld/?id=payload1
-            #       - http://host.tld/?id=payload1
-            #       - http://host.tld/?id=payload1
-            #       - http://host.tld/?id=payload1
-            #
-            #   w3af has a cache, but its still a waste of time to send those requests.
-            #
-            #   Now lets analyze this with more than one parameter. Spidered URIs:
-            #       - http://host.tld/?id=3739286&action=create
-            #       - http://host.tld/?id=3739285&action=create
-            #       - http://host.tld/?id=3739282&action=remove
-            #       - http://host.tld/?id=3739212&action=remove
-            #
-            #   Generated requests:
-            #       - http://host.tld/?id=payload1&action=create
-            #       - http://host.tld/?id=3739286&action=payload1
-            #       - http://host.tld/?id=payload1&action=create
-            #       - http://host.tld/?id=3739285&action=payload1
-            #       - http://host.tld/?id=payload1&action=remove
-            #       - http://host.tld/?id=3739282&action=payload1
-            #       - http://host.tld/?id=payload1&action=remove
-            #       - http://host.tld/?id=3739212&action=payload1
-            #
-            #   In cases like this one, I'm sending these repeated requests:
-            #       - http://host.tld/?id=payload1&action=create
-            #       - http://host.tld/?id=payload1&action=create
-            #       - http://host.tld/?id=payload1&action=remove
-            #       - http://host.tld/?id=payload1&action=remove
-            #
-            if fr_uri in self._already_seen_urls:
-                return False
-            else:
-                self._already_seen_urls.add(fr_uri)
+        # Is the "new" fuzzable request domain in the configured targets?
+        if fr_uri.base_url() not in base_urls_cf:
+            return False
+        
+        if fr_uri in self._already_seen_urls:
+            return False
+        
+        self._already_seen_urls.add(fr_uri)
 
-                if self._variant_db.need_more_variants(fr_uri):
-                    self._variant_db.append(fr_uri)
+        # Filter out the fuzzable requests that aren't important
+        # (and will be ignored by audit plugins anyway...)
+        #
+        #   What I want to do here, is filter the repeated fuzzable requests.
+        #   For example, if the spidering process found:
+        #       - http://host.tld/?id=3739286
+        #       - http://host.tld/?id=3739285
+        #       - http://host.tld/?id=3739282
+        #       - http://host.tld/?id=3739212
+        #
+        #   I don't want to have all these different fuzzable requests. The reason is that
+        #   audit plugins will try to send the payload to each parameter, thus generating
+        #   the following requests:
+        #       - http://host.tld/?id=payload1
+        #       - http://host.tld/?id=payload1
+        #       - http://host.tld/?id=payload1
+        #       - http://host.tld/?id=payload1
+        #
+        #   w3af has a cache, but its still a waste of time to send those requests.
+        #
+        #   Now lets analyze this with more than one parameter. Spidered URIs:
+        #       - http://host.tld/?id=3739286&action=create
+        #       - http://host.tld/?id=3739285&action=create
+        #       - http://host.tld/?id=3739282&action=remove
+        #       - http://host.tld/?id=3739212&action=remove
+        #
+        #   Generated requests:
+        #       - http://host.tld/?id=payload1&action=create
+        #       - http://host.tld/?id=3739286&action=payload1
+        #       - http://host.tld/?id=payload1&action=create
+        #       - http://host.tld/?id=3739285&action=payload1
+        #       - http://host.tld/?id=payload1&action=remove
+        #       - http://host.tld/?id=3739282&action=payload1
+        #       - http://host.tld/?id=payload1&action=remove
+        #       - http://host.tld/?id=3739212&action=payload1
+        #
+        #   In cases like this one, I'm sending these repeated requests:
+        #       - http://host.tld/?id=payload1&action=create
+        #       - http://host.tld/?id=payload1&action=create
+        #       - http://host.tld/?id=payload1&action=remove
+        #       - http://host.tld/?id=payload1&action=remove
+        #
+        if self._variant_db.need_more_variants(fr_uri):
+            self._variant_db.append(fr_uri)
 
-                    msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
-                                                                fuzzable_request.get_url())
-                    om.out.information(msg)
-                    return True
+            msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
+                                                        fuzzable_request.get_url())
+            om.out.information(msg)
+            return True
 
         return False
 

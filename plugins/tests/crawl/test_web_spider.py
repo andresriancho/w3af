@@ -26,11 +26,13 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 from plugins.tests.helper import PluginTest, PluginConfig
+from core.data.parsers.url import URL
 
 
 class TestWebSpider(PluginTest):
 
     follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/'
+    follow_links_80_url = 'http://moth:80/w3af/crawl/web_spider/follow_links/'
     dir_get_url = 'http://moth/w3af/crawl/web_spider/a/b/c/d/'
     encoding_url = 'http://moth/w3af/core/encoding/'
     relative_url = 'http://moth/w3af/crawl/web_spider/relativeRegex.html'
@@ -51,20 +53,32 @@ class TestWebSpider(PluginTest):
         },
     }
 
-    @attr('smoke')
-    def test_spider_found_urls(self):
+    def generic_follow_links_scan(self, target_url):
         cfg = self._run_configs['basic']
-        self._scan(self.follow_links_url + '1.html', cfg['plugins'])
+        self._scan(target_url + '1.html', cfg['plugins'])
+        
         expected_urls = (
             '3.html', '4.html', '',
             'd%20f/index.html', '2.html', 'a%20b.html',
             'a.gif', 'd%20f/', '1.html'
         )
+        
         urls = self.kb.get_all_known_urls()
+        
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.follow_links_url + end) for end in expected_urls)
+            set(URL(target_url + end).url_string for end in expected_urls)
         )
+
+    @attr('smoke')
+    def test_spider_found_urls(self):
+        self.generic_follow_links_scan(self.follow_links_url)
+
+    def test_spider_found_urls_with_port(self):
+        '''
+        Test for issue https://github.com/andresriancho/w3af/issues/134
+        '''
+        self.generic_follow_links_scan(self.follow_links_80_url)
 
     @attr('smoke')
     def test_spider_urls_with_strange_charsets(self):

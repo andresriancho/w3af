@@ -202,11 +202,15 @@ class URL(DiskItem):
             else:
                 invalid_url = data
             raise ValueError, 'Invalid URL "%s"' % (invalid_url,)
+        
+        self.normalize_url()
 
     @classmethod
     def from_parts(cls, scheme, netloc, path, params,
                    qs, fragment, encoding=DEFAULT_ENCODING):
         '''
+        This is a "constructor" for the URL class.
+        
         :param scheme: http/https
         :param netloc: domain and port
         :param path: directory
@@ -214,18 +218,6 @@ class URL(DiskItem):
         :param qs: query string
         :param fragment: #fragments
         :return: An instance of URL.
-
-        This is a "constructor" for the URL class.
-
-        >>> u = URL.from_parts('http', 'w3af.com', '/foo/bar.txt', None, 'a=b', 'frag')
-        >>> u.path
-        '/foo/bar.txt'
-        >>> u.scheme
-        'http'
-        >>> u.get_file_name()
-        'bar.txt'
-        >>> u.get_extension()
-        'txt'
         '''
         return cls((scheme, netloc, path, params, qs, fragment), encoding)
 
@@ -391,15 +383,7 @@ class URL(DiskItem):
     def base_url(self):
         '''
         :return: A string contaning the URL without the query string and
-            without any path.
-
-        >>> u = URL('http://www.w3af.com/foo/bar.txt?id=3#foobar')
-        >>> u.base_url().url_string
-        u'http://www.w3af.com/'
-
-        >>> u = URL('http://www.w3af.com')
-        >>> u.base_url().url_string
-        u'http://www.w3af.com/'
+                 without any path.
         '''
         params = (self.scheme, self.netloc, None, None, None, None)
         return URL.from_parts(*params, encoding=self._encoding)
@@ -433,71 +417,6 @@ class URL(DiskItem):
         http://host.tld:80/foo/bar != http://host.tld/foo/bar , and
         http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
-
-        So, before the path normalization, I perform a small net location
-        normalization that transforms:
-
-        >>> u = URL('http://host.tld:80/foo/bar')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://host.tld/foo/bar'
-
-        >>> u = URL('https://host.tld:443/foo/bar')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'https://host.tld/foo/bar'
-
-        >>> u = URL('https://host.tld:443////////////////')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'https://host.tld/'
-
-        >>> u = URL('https://host.tld:443////////////////?id=3&bar=4')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'https://host.tld/?id=3&bar=4'
-
-        >>> u = URL('http://w3af.com/../f00.b4r?id=3&bar=4')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/f00.b4r?id=3&bar=4'
-
-        >>> u = URL('http://w3af.com/f00.b4r?id=3&bar=//')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/f00.b4r?id=3&bar=//'
-
-        >>> u = URL('http://user:passwd@host.tld:80')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://user:passwd@host.tld/'
-
-        >>> u = URL('http://w3af.com/../f00.b4r')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/f00.b4r'
-
-        >>> u = URL('http://w3af.com/abc/../f00.b4r')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/f00.b4r'
-
-        >>> u = URL('http://w3af.com/a//b/f00.b4r')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/a/b/f00.b4r'
-
-        >>> u = URL('http://w3af.com/../../f00.b4r')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://w3af.com/f00.b4r'
-
-        # IPv6 support
-        >>> u = URL('http://fe80:0:0:0:202:b3ff:fe1e:8329/')
-        >>> u.normalize_url()
-        >>> u.url_string
-        u'http://fe80:0:0:0:202:b3ff:fe1e:8329/'
-
         '''
         # net location normalization:
         net_location = self.get_net_location()
@@ -508,21 +427,29 @@ class URL(DiskItem):
         # 'net_location' beginning in the last appereance of ':'
         at_symb_index = net_location.rfind('@')
         colon_symb_max_index = net_location.rfind(':')
+        
         # Found
         if colon_symb_max_index > at_symb_index:
 
             host = net_location[:colon_symb_max_index]
             port = net_location[(colon_symb_max_index + 1):]
 
+            if not port:
+                msg = 'Expected protocol number, got an empty string instead.'
+                raise ValueError(msg)
+
             # Assign default port if nondigit.
             if not port.isdigit():
-                if protocol == 'https':
-                    port = '443'
-                else:
-                    port = '80'
+                msg = 'Expected protocol number, got "%s" instead.'
+                raise ValueError(msg % port)
 
+            if int(port) > 65535 or int(port) < 1:
+                msg = 'Invalid TCP port %s, expected 1-65535.'
+                raise ValueError(msg % port)
+            
+            # Collapse port
             if (protocol == 'http' and port == '80') or \
-                    (protocol == 'https' and port == '443'):
+            (protocol == 'https' and port == '443'):
                 net_location = host
             else:
                 # The net location has a specific port definition
@@ -683,43 +610,14 @@ class URL(DiskItem):
 
     def is_valid_domain(self):
         '''
-        >>> URL("http://1.2.3.4").is_valid_domain()
-        True
-        >>> URL("http://aaa.com").is_valid_domain()
-        True
-        >>> URL("http://aaa.").is_valid_domain()
-        False
-        >>> URL("http://aaa*a").is_valid_domain()
-        False
-        >>> URL("http://aa-bb").is_valid_domain()
-        True
-        >>> URL("http://w3af.com").is_valid_domain()
-        True
-        >>> URL("http://w3af.com:39").is_valid_domain()
-        True
-        >>> URL("http://w3af.com:").is_valid_domain()
-        False
-        >>> URL("http://w3af.com:3932").is_valid_domain()
-        True
-        >>> URL("http://abc:3932322").is_valid_domain()
-        False
-        >>> URL("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
-        True
-
         :param url: The url to parse.
         :return: Returns a boolean that indicates if <url>'s domain is valid
         '''
-        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$', self.netloc) is not None
+        domain_re = '[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$'
+        return re.match(domain_re, self.netloc) is not None
 
     def get_net_location(self):
         '''
-        >>> URL("http://1.2.3.4").get_net_location()
-        '1.2.3.4'
-        >>> URL("http://aaa.com:80").get_net_location()
-        'aaa.com:80'
-        >>> URL("http://aaa:443").get_net_location()
-        'aaa:443'
-
         :return: Returns the net location for the url.
         '''
         return self.netloc
@@ -819,21 +717,6 @@ class URL(DiskItem):
     def get_domain_path(self):
         '''
         :return: Returns the domain name and the path for the url.
-
-        >>> URL('http://w3af.com/def/jkl/').get_domain_path().url_string
-        u'http://w3af.com/def/jkl/'
-        >>> URL('http://w3af.com/def.html').get_domain_path().url_string
-        u'http://w3af.com/'
-        >>> URL('http://w3af.com/xyz/def.html').get_domain_path().url_string
-        u'http://w3af.com/xyz/'
-        >>> URL('http://w3af.com:80/xyz/def.html').get_domain_path().url_string
-        u'http://w3af.com:80/xyz/'
-        >>> URL('http://w3af.com:443/xyz/def.html').get_domain_path().url_string
-        u'http://w3af.com:443/xyz/'
-        >>> URL('https://w3af.com:443/xyz/def.html').get_domain_path().url_string
-        u'https://w3af.com:443/xyz/'
-        >>> URL('http://w3af.com').get_domain_path().url_string
-        u'http://w3af.com/'
         '''
         if self.path:
             res = self.scheme + '://' + self.netloc + \
@@ -951,28 +834,12 @@ class URL(DiskItem):
 
     def all_but_scheme(self):
         '''
-        >>> URL('https://w3af.com:443/xyz/').all_but_scheme()
-        'w3af.com:443/xyz/'
-        >>> URL('https://w3af.com:443/xyz/file.asp').all_but_scheme()
-        'w3af.com:443/xyz/'
-
         :return: Returns the domain name and the path for the url.
         '''
         return self.netloc + self.path[:self.path.rfind('/') + 1]
 
     def get_path(self):
         '''
-        >>> URL('https://w3af.com:443/xyz/file.asp').get_path()
-        '/xyz/file.asp'
-        >>> URL('https://w3af.com:443/xyz/file.asp?id=-2').get_path()
-        '/xyz/file.asp'
-        >>> URL('https://w3af.com:443/xyz/').get_path()
-        '/xyz/'
-        >>> URL('https://w3af.com:443/xyz/123/456/789/').get_path()
-        '/xyz/123/456/789/'
-        >>> URL('https://w3af.com:443/').get_path()
-        '/'
-
         :return: Returns the path for the url:
         '''
         return self.path
@@ -1079,17 +946,6 @@ class URL(DiskItem):
 
     def get_params_string(self):
         '''
-        >>> URL(u'http://w3af.com/').get_params_string()
-        u''
-        >>> URL(u'http://w3af.com/;id=1').get_params_string()
-        u'id=1'
-        >>> URL(u'http://w3af.com/?id=3;id=1').get_params_string()
-        u''
-        >>> URL(u'http://w3af.com/;id=1?id=3').get_params_string()
-        u'id=1'
-        >>> URL(u'http://w3af.com/foobar.html;id=1?id=3').get_params_string()
-        u'id=1'
-
         :return: Returns the params inside the url.
         '''
         return self.params
@@ -1140,20 +996,6 @@ class URL(DiskItem):
         Parses the params string and returns a dict.
 
         :return: A QueryString object.
-
-        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
-        >>> u.get_params()
-        {'id': '1'}
-        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?file=2')
-        >>> u.get_params()
-        {'id': '1', 'file': '2'}
-        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?spam=2')
-        >>> u.get_params()
-        {'id': '1', 'file': '2'}
-        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?spam=3')
-        >>> u.get_params()
-        {'id': '1', 'file': '2'}
-
         '''
         parsedData = None
         result = {}
@@ -1209,14 +1051,6 @@ class URL(DiskItem):
     def __str__(self):
         '''
         :return: A string representation of myself
-
-        >>> str(URL('http://w3af.com/xyz.txt;id=1?file=2'))
-        'http://w3af.com/xyz.txt;id=1?file=2'
-        >>> str(URL('http://w3af.com:80/'))
-        'http://w3af.com:80/'
-        >>> str(URL(u'http://w3af.com/indéx.html', 'latin1')) == \
-        u'http://w3af.com/indéx.html'.encode('latin1')
-        True
         '''
         urlstr = smart_str(
             self.url_string,
@@ -1228,12 +1062,6 @@ class URL(DiskItem):
     def __unicode__(self):
         '''
         :return: A unicode representation of myself
-
-        >>> unicode(URL('http://w3af.com:80/'))
-        u'http://w3af.com:80/'
-        >>> unicode(URL(u'http://w3af.com/indéx.html', 'latin1')) == \
-        u'http://w3af.com/indéx.html'
-        True
         '''
         return self.url_string
 
