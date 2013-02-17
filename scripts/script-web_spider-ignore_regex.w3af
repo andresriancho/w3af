@@ -12,7 +12,7 @@ back
 infrastructure allowed_methods,web_spider
 
 crawl config web_spider
-set ignoreRegex .*a.html
+set ignore_regex .*a.html
 set only_forward True
 back
 back

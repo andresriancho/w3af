@@ -33,7 +33,7 @@ class TestDetailed(PluginTest):
         PluginConfig('web_spider',
                      ('only_forward', True, PluginConfig.BOOL),
                      (
-        'ignoreRegex', '.*logout.*', PluginConfig.STR)),
+        'ignore_regex', '.*logout.*', PluginConfig.STR)),
 
         ),
             'audit': (PluginConfig('xss',),),

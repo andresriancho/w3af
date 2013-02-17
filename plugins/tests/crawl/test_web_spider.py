@@ -45,7 +45,7 @@ class TestWebSpider(PluginTest):
                     PluginConfig('web_spider',
                                  ('only_forward', True, PluginConfig.BOOL),
                                  (
-                                 'ignoreRegex', '.*pages/100.php.*', PluginConfig.STR)),
+                                 'ignore_regex', '.*pages/100.php.*', PluginConfig.STR)),
                 )
             }
         },

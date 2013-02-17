@@ -65,8 +65,8 @@ eq_limit = 0.9
 verbose = True
 
 [crawl.web_spider]
-followRegex = .*
-ignoreRegex = 
+follow_regex = .*
+ignore_regex = 
 only_forward = False
 
 [audit.file_upload]

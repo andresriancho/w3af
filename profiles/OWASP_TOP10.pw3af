@@ -74,8 +74,8 @@ msf_location = /opt/metasploit3/bin/
 result_limit = 300
 
 [crawl.web_spider]
-followRegex = .*
-ignoreRegex = None
+follow_regex = .*
+ignore_regex = None
 only_forward = False
 
 [audit.ssl_certificate]

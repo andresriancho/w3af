@@ -72,8 +72,8 @@ use_w3af_site = True
 
 [crawl.web_spider]
 only_forward = False
-followRegex = .*
-ignoreRegex = 
+follow_regex = .*
+ignore_regex = 
 
 [bruteforce.basic_auth]
 usersFile = core/controllers/bruteforce/users.txt

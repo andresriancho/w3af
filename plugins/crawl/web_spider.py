@@ -355,13 +355,13 @@ class web_spider(CrawlPlugin):
         ol.add(o)
 
         d = 'When spidering, only follow links that match this regular expression '
-        d += '(ignoreRegex has precedence over followRegex)'
-        o = opt_factory('followRegex', self._follow_regex, d, REGEX)
+        d += '(ignore_regex has precedence over follow_regex)'
+        o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
         ol.add(o)
 
         d = 'When spidering, DO NOT follow links that match this regular expression '
-        d += '(has precedence over followRegex)'
-        o = opt_factory('ignoreRegex', self._ignore_regex, d, REGEX)
+        d += '(has precedence over follow_regex)'
+        o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
         ol.add(o)
 
         return ol
@@ -375,8 +375,8 @@ class web_spider(CrawlPlugin):
         :return: No value is returned.
         '''
         self._only_forward = options_list['only_forward'].get_value()
-        self._ignore_regex = options_list['ignoreRegex'].get_value()
-        self._follow_regex = options_list['followRegex'].get_value()
+        self._ignore_regex = options_list['ignore_regex'].get_value()
+        self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
 
     def _compile_re(self):
@@ -409,16 +409,16 @@ class web_spider(CrawlPlugin):
 
         Three configurable parameter exist:
             - only_forward
-            - ignoreRegex
-            - followRegex
+            - ignore_regex
+            - follow_regex
 
-        IgnoreRegex and followRegex are commonly used to configure the web_spider
+        IgnoreRegex and follow_regex are commonly used to configure the web_spider
         to spider all URLs except the "logout" or some other more exciting link
         like "Reboot Appliance" that would make the w3af run finish without the
         expected result.
 
-        By default ignoreRegex is an empty string (nothing is ignored) and
-        followRegex is '.*' (everything is followed). Both regular expressions
+        By default ignore_regex is an empty string (nothing is ignored) and
+        follow_regex is '.*' (everything is followed). Both regular expressions
         are normal regular expressions that are compiled with the python's re module.
 
         The regular expressions are applied to the URLs that are found using the

@@ -122,8 +122,8 @@ ntlm_auth_url =
 
 [crawl.web_spider]
 only_forward = False
-followRegex = .*
-ignoreRegex = 
+follow_regex = .*
+ignore_regex = 
 
 [grep.symfony]
 override = False

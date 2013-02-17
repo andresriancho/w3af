@@ -38,7 +38,7 @@ class TestGeneric(PluginTest):
         PluginConfig('web_spider',
                      ('only_forward', True, PluginConfig.BOOL),
                      (
-        'ignoreRegex', '.*logout.*', PluginConfig.STR)),
+        'ignore_regex', '.*logout.*', PluginConfig.STR)),
 
         ),
             'audit': (PluginConfig('xss',),),
@@ -66,10 +66,10 @@ class TestGeneric(PluginTest):
         'crawl': (
         PluginConfig('web_spider',
                      ('only_forward', True, PluginConfig.BOOL),
-                     ('ignoreRegex',
+                     ('ignore_regex',
                       '.*logout.*', PluginConfig.STR),
                      (
-        'followRegex', '.*queryxpath.*', PluginConfig.STR)),
+        'follow_regex', '.*queryxpath.*', PluginConfig.STR)),
 
         ),
             'auth': (PluginConfig('generic',
