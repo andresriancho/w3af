@@ -29,6 +29,7 @@ from multiprocessing.dummy import Process
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+from core.data.parsers.url import URL
 from core.controllers.w3afCore import w3afCore
 from plugins.tests.helper import create_target_option_list
 
@@ -49,7 +50,7 @@ class CountTestMixin(unittest.TestCase):
 
         self.w3afcore = w3afCore()
         
-        target_opts = create_target_option_list('http://moth/')
+        target_opts = create_target_option_list(URL('http://moth/'))
         self.w3afcore.target.set_options(target_opts)
 
         self.w3afcore.plugins.set_plugins(['count',], 'crawl')

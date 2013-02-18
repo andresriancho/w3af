@@ -25,6 +25,7 @@ import shutil
 from mock import patch, call
 from nose.plugins.attrib import attr
 
+from core.data.parsers.url import URL
 from core.controllers.w3afCore import w3afCore
 from core.controllers.exceptions import (w3afMustStopException,
                                          w3afMustStopByUnknownReasonExc,
@@ -52,7 +53,7 @@ class TestCoreExceptions(unittest.TestCase):
 
         self.w3afcore = w3afCore()
         
-        target_opts = create_target_option_list('http://moth/')
+        target_opts = create_target_option_list(URL('http://moth/'))
         self.w3afcore.target.set_options(target_opts)
 
         self.w3afcore.plugins.set_plugins(['exception_raise',], 'crawl')
