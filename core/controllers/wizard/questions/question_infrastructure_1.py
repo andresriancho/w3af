@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# options
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
@@ -46,7 +44,7 @@ class question_infrastructure_1(question):
         :return: A list of options for this question.
         '''
         self._d1 = 'Target URL'
-        o1 = opt_factory('target', 'http://', self._d1, 'list')
+        o1 = opt_factory('target', 'http://example.com', self._d1, 'url_list')
 
         ol = OptionList()
         ol.add(o1)

@@ -27,6 +27,7 @@ from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
 from core.controllers.exceptions import w3afException
 
+from core.data.parsers.url import URL
 from core.data.options.bool_option import BoolOption
 
 
@@ -109,7 +110,7 @@ class test_wizards(object):
                  what he's doing and doesn't make any mistakes.
         '''
         values = {
-            'target': 'http://www.w3af.org',
+            'target': URL('http://www.w3af.org'),
             'target_os': 'Unix',
             'target_framework': 'PHP'
         }
@@ -129,7 +130,7 @@ class test_wizards(object):
                  doesn't know what he's doing and makes all the mistakes.
         '''
         values = {
-            'target': 'foo://www.w3af.org',
+            'target': URL('foo://www.w3af.org'),
             'target_os': 'Minix',
             'target_framework': 'C++'
         }

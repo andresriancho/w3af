@@ -19,10 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.exceptions import w3afException
-import core.controllers.output_manager as om
-# options
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
@@ -60,8 +56,8 @@ class question_infrastructure_internet_1(question):
             plugin_list.append('shared_hosting')
 
         # Set the plugins to be run
-        old_discovery = self.w3af_core.plugins.get_enabled_plugins('crawl')
+        old_discovery = self.w3af_core.plugins.get_enabled_plugins('infrastructure')
         plugin_list.extend(old_discovery)
-        self.w3af_core.plugins.set_plugins(plugin_list, 'crawl')
+        self.w3af_core.plugins.set_plugins(plugin_list, 'infrastructure')
 
         return None

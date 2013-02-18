@@ -45,7 +45,6 @@ class question_infrastructure_4(question):
         '''
         :return: A list of options for this question.
         '''
-
         self._d1 = 'Is the target web application reachable from the Internet?'
         o1 = opt_factory(self._d1, True, self._d1, 'boolean')
 
@@ -55,8 +54,8 @@ class question_infrastructure_4(question):
         return ol
 
     def get_next_question_id(self, options_list):
-        cf.cf.save(
-            'reachable_from_internet', options_list[self._d1].get_value())
+        cf.cf.save('reachable_from_internet',
+                   options_list[self._d1].get_value())
 
         # The next question
         if cf.cf.get('reachable_from_internet'):
