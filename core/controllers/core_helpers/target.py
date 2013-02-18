@@ -68,7 +68,7 @@ class w3af_core_target(Configurable):
 
         targets = ','.join(str(tar) for tar in cf.cf.get('targets'))
         d = 'A comma separated list of URLs'
-        o = opt_factory('target', targets, d, 'list')
+        o = opt_factory('target', targets, d, 'url_list')
         ol.add(o)
 
         d = 'Target operating system (' + '/'.join(
@@ -96,40 +96,29 @@ class w3af_core_target(Configurable):
 
         return ol
 
-    def _verifyURL(self, target_url, fileTarget=True):
+    def _verify_url(self, target_url, file_target=True):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't
         support it.
 
-        >>> ts = w3af_core_target()
-        >>> ts._verifyURL('ftp://www.google.com/')
-        Traceback (most recent call last):
-          ...
-        w3afException: Invalid format for target URL "ftp://www.google.com/", you have to specify the protocol (http/https/file) and a domain or IP address. Examples: http://host.tld/ ; https://127.0.0.1/ .
-        >>> ts._verifyURL('http://www.google.com/')
-        >>> ts._verifyURL('http://www.google.com:39/') is None
-        True
-
         :param target_url: The target URL object to check if its valid or not.
         :return: None. A w3afException is raised on error.
         '''
-        try:
-            target_url = URL(target_url)
-        except ValueError:
-            is_invalid = True
-        else:
-            protocol = target_url.get_protocol()
-            aFile = fileTarget and protocol == 'file' and \
+        protocol = target_url.get_protocol()
+        
+        aFile = file_target and protocol == 'file' and \
                 target_url.get_domain() or ''
-            aHTTP = protocol in ('http', 'https') and \
+        
+        aHTTP = protocol in ('http', 'https') and \
                 target_url.is_valid_domain()
-            is_invalid = not (aFile or aHTTP)
-
-        if is_invalid:
+                
+        if not (aFile or aHTTP):
             msg = ('Invalid format for target URL "%s", you have to specify '
-                   'the protocol (http/https/file) and a domain or IP address. '
-                   'Examples: http://host.tld/ ; https://127.0.0.1/ .' % target_url)
-            raise w3afException(msg)
+                   'the protocol (http/https/file) and a domain or IP address.'
+                   ' Examples: http://host.tld/ ; https://127.0.0.1/ .')
+            raise w3afException(msg % target_url)
+        
+        return True
 
     def set_options(self, options_list):
         '''
@@ -139,53 +128,55 @@ class w3af_core_target(Configurable):
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         '''
-        target_urls_strings = options_list['target'].get_value() or []
+        configured_target_urls = options_list['target'].get_value()
+        target_urls = []
+        
+        for target_url in configured_target_urls:
 
-        for target_url_string in target_urls_strings:
+            self._verify_url(target_url)
 
-            self._verifyURL(target_url_string)
-
-            if target_url_string.count('file://'):
+            if not target_url.url_string.count('file://'):
+                # It's a common URL just like http://w3af.com/
+                target_urls.append(target_url)
+                
+            else:
                 try:
-                    f = urllib2.urlopen(target_url_string)
+                    f = urllib2.urlopen(target_url.url_string)
                 except:
-                    raise w3afException(
-                        'Cannot open target file: "%s"' % target_url_string)
+                    msg = 'Cannot open target file: "%s"'
+                    raise w3afException(msg % str(target_url))
                 else:
                     for line in f:
                         target_in_file = line.strip()
-                        self._verifyURL(target_in_file, fileTarget=False)
-                        target_urls_strings.append(target_in_file)
+                        target_in_file_inst = URL(target_in_file)
+                        self._verify_url(target_in_file_inst, file_target=False)
+                        target_urls.append(target_in_file_inst)
                     f.close()
-                target_urls_strings.remove(target_url_string)
 
-        # Convert to objects
-        target_url_objects = [URL(u) for u in target_urls_strings]
-
-        # Now we perform a check to see if the user has specified more than one target
-        # domain, for example: "http://google.com, http://yahoo.com".
-        domain_list = [target_url.get_net_location(
-        ) for target_url in target_url_objects]
+        # Now we perform a check to see if the user has specified more than
+        # one target domain, for example: "http://google.com, http://yahoo.com".
+        domain_list = [target_url.get_net_location() for target_url in
+                       target_urls]
         domain_list = list(set(domain_list))
+        
         if len(domain_list) > 1:
-            msg = 'You specified more than one target domain: ' + \
-                ','.join(domain_list)
-            msg += ' . And w3af only supports one target domain at the time.'
-            raise w3afException(msg)
+            msg = 'You specified more than one target domain: %s.'\
+                  ' And w3af can only scan one target domain at a time.'
+            raise w3afException(msg % ', '.join(domain_list))
 
         # Save in the config, the target URLs, this may be usefull for some plugins.
-        cf.cf.save('targets', target_url_objects)
+        cf.cf.save('targets', target_urls)
         cf.cf.save('target_domains', set([u.get_domain()
-                   for u in target_url_objects]))
-        cf.cf.save('baseURLs', [i.base_url() for i in target_url_objects])
+                   for u in target_urls]))
+        cf.cf.save('baseURLs', [i.base_url() for i in target_urls])
 
-        if target_url_objects:
-            sessName = [x.get_net_location() for x in target_url_objects]
-            sessName = '-'.join(sessName)
+        if target_urls:
+            sess_name = [x.get_net_location() for x in target_urls]
+            sess_name = '-'.join(sess_name)
         else:
-            sessName = 'noTarget'
+            sess_name = 'noTarget'
 
-        cf.cf.save('session_name', sessName + '-' + time.strftime(
+        cf.cf.save('session_name', sess_name + '-' + time.strftime(
             '%Y-%b-%d_%H-%M-%S'))
 
         # Advanced target selection
@@ -202,7 +193,7 @@ class w3af_core_target(Configurable):
             raise w3afException('Unknown target programming framework: ' + pf)
 
     def get_name(self):
-        return 'targetSettings'
+        return 'target_settings'
 
     def get_desc(self):
         return 'Configure target URLs'

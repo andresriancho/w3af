@@ -40,12 +40,12 @@ class configMenu(menu):
         self._options = self._configurable.get_options()
         self._optDict = {}
         self._memory = {}
-        self._plainOptions = {}
+        self._plain_options = {}
         for o in self._options:
             k = o.get_name()
             v = o.get_default_value()
             self._memory[k] = [v]
-            self._plainOptions[k] = v
+            self._plain_options[k] = v
             self._optDict[k] = o
         self._groupOptionsByTabId()
         self._load_help('config')
@@ -93,7 +93,7 @@ class configMenu(menu):
             # the user sets it to 'abc'
             try:
                 self._options[name].set_value(value)
-                self._plainOptions[name] = value
+                self._plain_options[name] = value
             except w3afException, e:
                 om.out.error(str(e))
             else:
@@ -106,6 +106,14 @@ class configMenu(menu):
             # @see: _cmd_back()
     
     def _cmd_save(self, tokens):
+        # Save the options using the corresponding setter
+        if isinstance(self._configurable, Plugin):
+            self._w3af.plugins.set_plugin_options(
+                self._configurable.get_type(),
+                self._configurable.get_name(),
+                self._options)
+        else:
+            self._configurable.set_options(self._options)
         try:
             # Save the options using the corresponding setter
             if isinstance(self._configurable, Plugin):
@@ -116,9 +124,10 @@ class configMenu(menu):
             else:
                 self._configurable.set_options(self._options)
                 
-        except Exception, e:
-            msg = 'Identified an error with the user-defined settings, "%s",'\
-                  ' no information has been saved.'
+        except w3afException, e:
+            msg = 'Identified an error with the user-defined settings:\n\n'\
+                  '    - %s\n\n'\
+                  'No information has been saved.'
             raise w3afException(msg % e)
         else:
             om.out.console('The configuration has been saved.')

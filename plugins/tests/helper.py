@@ -33,8 +33,9 @@ from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.controllers.misc.decorators import retry
 
 from core.data.options.opt_factory import opt_factory
-from core.data.options.option_types import LIST
+from core.data.options.option_types import URL_LIST
 from core.data.options.option_list import OptionList
+from core.data.parsers.url import URL
 from core.data.kb.read_shell import ReadShell 
 
 os.chdir(W3AF_LOCAL_PATH)
@@ -64,7 +65,7 @@ class PluginTest(unittest.TestCase):
             msg = 'The target site "%s" is down' % target
             
             try:
-                response = urllib2.urlopen(target)
+                response = urllib2.urlopen(target.url_string)
                 response.read()
             except urllib2.URLError, e:
                 if hasattr(e, 'code') and e.code in (404, 401):
@@ -88,8 +89,11 @@ class PluginTest(unittest.TestCase):
         if not isinstance(target, (basestring, tuple)):
             raise TypeError('Expected basestring or tuple in scan target.')
         
-        if isinstance(target, basestring):
-            target = (target,)
+        if isinstance(target, tuple):
+            target = tuple([URL(u) for u in target])
+            
+        elif isinstance(target, basestring):
+            target = (URL(target),)
         
         if verify_targets:
             self._verify_targets_up(target)
@@ -234,8 +238,8 @@ def onlyroot(meth):
 def create_target_option_list(*target):
     opts = OptionList()
 
-    opt = opt_factory('target', '', '', LIST)
-    opt.set_value(','.join(target))
+    opt = opt_factory('target', '', '', URL_LIST)
+    opt.set_value(','.join([u.url_string for u in target]))
     opts.add(opt)
     
     opt = opt_factory('target_os', ('unknown', 'unix', 'windows'), '', 'combo')

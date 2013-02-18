@@ -19,20 +19,27 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import os
 
 from nose.plugins.attrib import attr
 
+import core.data.kb.config as cf
+
+from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.target import w3af_core_target
+from core.data.parsers.url import URL as URL_KLASS
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
-    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT,
+    URL_LIST)
 
 OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-                INPUT_FILE, OUTPUT_FILE, PORT)
+                INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)
 
 
 @attr('smoke')
 class TestTarget(unittest.TestCase):
+    
     def test_basic(self):
         opt_lst = w3af_core_target().get_options()
 
@@ -48,3 +55,38 @@ class TestTarget(unittest.TestCase):
             self.assertIsInstance(opt.get_type(), basestring)
             self.assertIsInstance(opt.get_help(), basestring)
             self.assertIsInstance(opt.get_value_str(), basestring)
+
+    def test_verify_url(self):
+        ctarget = w3af_core_target()
+
+        self.assertRaises(w3afException, ctarget._verify_url,
+                          URL_KLASS('ftp://www.google.com/'))
+        
+        self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com/')))
+        self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com:39/')))
+
+    def test_verify_file_target(self):
+        ctarget = w3af_core_target()
+
+        target_file = '/tmp/moth.target'
+        target = 'file://%s' % target_file
+        
+        target_file_handler = file(target_file, 'w')
+        target_file_handler.write('http://moth/1\n')
+        target_file_handler.write('http://moth/2\n')
+        target_file_handler.close()
+        
+        options = ctarget.get_options()
+        options['target'].set_value(target)
+        ctarget.set_options(options)
+        
+        moth1 = URL_KLASS('http://moth/1')
+        moth2 = URL_KLASS('http://moth/2')
+        
+        self.assertIn(moth1, cf.cf.get('targets'))
+        self.assertIn(moth2, cf.cf.get('targets'))
+    
+    def tearDown(self):
+        if os.path.exists('/tmp/moth.target'):
+            os.unlink('/tmp/moth.target')
+            

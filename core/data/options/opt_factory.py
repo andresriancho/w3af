@@ -32,11 +32,12 @@ from core.data.options.regex_option import RegexOption
 from core.data.options.combo_option import ComboOption
 from core.data.options.input_file_option import InputFileOption
 from core.data.options.output_file_option import OutputFileOption
+from core.data.options.url_list_option import URLListOption
 
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT,
     LIST, REGEX, COMBO, INPUT_FILE,
-    OUTPUT_FILE, PORT, IP)
+    OUTPUT_FILE, PORT, IP, URL_LIST)
 
 
 def opt_factory(name, default_value, desc, _type, help='', tabid=''):
@@ -50,6 +51,7 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
         FLOAT: FloatOption,
         STRING: StringOption,
         URL: URLOption,
+        URL_LIST: URLListOption,
         IPPORT: IPPortOption,
         LIST: ListOption,
         REGEX: RegexOption,
