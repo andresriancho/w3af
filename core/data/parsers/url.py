@@ -191,7 +191,7 @@ class URL(DiskItem):
         self.querystring = qs or u''
         self.fragment = fragment or u''
 
-        if not self.netloc:
+        if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
             raise ValueError, 'Invalid URL "%s"' % (data,)
         

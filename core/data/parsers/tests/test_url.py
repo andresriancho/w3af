@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import urllib2
 
 from nose.plugins.skip import SkipTest
 
@@ -869,3 +870,7 @@ class TestURLParser(unittest.TestCase):
     
     def test_nonzero(self):
         self.assertTrue( bool(URL('http://www.w3af.com')) )
+
+    def test_file_url_full_path(self):
+        u = URL('file:///etc/passwd')
+        self.assertIn('root', urllib2.urlopen(u.url_string).read())

@@ -106,13 +106,12 @@ class w3af_core_target(Configurable):
         '''
         protocol = target_url.get_protocol()
         
-        aFile = file_target and protocol == 'file' and \
-                target_url.get_domain() or ''
+        is_file = file_target and protocol == 'file'
         
-        aHTTP = protocol in ('http', 'https') and \
-                target_url.is_valid_domain()
+        is_http = protocol in ('http', 'https') and \
+                  target_url.is_valid_domain()
                 
-        if not (aFile or aHTTP):
+        if not is_file and not is_http:
             msg = ('Invalid format for target URL "%s", you have to specify '
                    'the protocol (http/https/file) and a domain or IP address.'
                    ' Examples: http://host.tld/ ; https://127.0.0.1/ .')
@@ -135,7 +134,7 @@ class w3af_core_target(Configurable):
 
             self._verify_url(target_url)
 
-            if not target_url.url_string.count('file://'):
+            if not target_url.url_string.count('file:///'):
                 # It's a common URL just like http://w3af.com/
                 target_urls.append(target_url)
                 
