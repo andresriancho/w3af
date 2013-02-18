@@ -177,18 +177,9 @@ only_target_domain = True
 
 [grep.directory_indexing]
 
-[infrastructure.zone_h]
-
-[infrastructure.finger_google]
-result_limit = 300
-fast_search = False
-
 [infrastructure.favicon_identification]
 
 [infrastructure.server_header]
-
-[infrastructure.shared_hosting]
-result_limit = 300
 
 [infrastructure.fingerprint_os]
 
@@ -210,14 +201,9 @@ httpsPort = 443
 
 [infrastructure.find_jboss]
 
-[infrastructure.finger_bing]
-result_limit = 300
-
 [infrastructure.halberd]
 
 [infrastructure.domain_dot]
-
-[infrastructure.finger_pks]
 
 [infrastructure.fingerprint_WAF]
 
@@ -227,8 +213,6 @@ reportDavOnly = True
 
 [infrastructure.hmap]
 genFpF = False
-
-[infrastructure.xssed_dot_com]
 
 [misc-settings]
 fuzzCookie = False
@@ -242,10 +226,11 @@ autoDependencies = True
 stop_on_first_exception = False
 max_discovery_time = 120
 interface = ppp0
-local_ip_address = 10.5.6.18
+local_ip_address = 10.5.6.13
 demo = False
 non_targets = 
 msf_location = /opt/metasploit3/bin/
+fuzz_cookies = False
 
 [http-settings]
 timeout = 10
@@ -268,4 +253,21 @@ always_404 =
 never_404 = 
 string_match_404 = 
 url_parameter = 
+max_file_size = 400000
+
+[output.text_file]
+
+[audit.cors_origin]
+
+[grep.xss_protection_header]
+
+[grep.cache_control]
+
+[grep.cross_domain_js]
+
+[grep.url_session]
+
+[infrastructure.php_eggs]
+
+[infrastructure.frontpage_version]
 
