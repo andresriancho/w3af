@@ -143,16 +143,15 @@ class w3af_core_plugins(object):
                  mainly used to have some error handling related to old profiles,
                  that might reference deprecated plugins.
         '''
-        unknown_plugins = []
-
         # Validate the input...
         plugin_names = list(set(plugin_names))
         known_plugin_names = self.get_plugin_list(plugin_type)
+        
         for plugin_name in plugin_names:
             if plugin_name not in known_plugin_names \
             and plugin_name.replace('!', '') not in known_plugin_names\
             and plugin_name != 'all':
-                unknown_plugins.append(plugin_name)
+                raise ValueError('Unknown plugin %s' % plugin_name)
 
         set_dict = {
             'crawl': partial(self._set_plugin_generic, 'crawl'),
@@ -167,8 +166,6 @@ class w3af_core_plugins(object):
         }
 
         set_dict[plugin_type](plugin_names)
-
-        return unknown_plugins
 
     def reload_modified_plugin(self, plugin_type, plugin_name):
         '''

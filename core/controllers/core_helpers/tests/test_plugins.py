@@ -241,3 +241,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
             all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
             self.assertEqual(set(enabled_plugins), set(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
+
+    def test_enable_unknown(self):
+        w3af_core = w3afCore()
+        enable = ['i_do_not_exist', ]
+        
+        self.assertRaises(ValueError, w3af_core.plugins.set_plugins,
+                          enable, 'crawl')
+        
