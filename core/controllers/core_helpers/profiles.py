@@ -160,7 +160,8 @@ class w3af_core_profiles(object):
             # Handle errors that might have been triggered from a possibly
             # invalid profile
             unknown_plugins = self._w3af_core.plugins.set_plugins(plugin_names,
-                                                                  plugin_type)
+                                                                  plugin_type,
+                                                                  raise_on_error=False)
             for unknown_plugin in unknown_plugins:
                 msg = 'The profile references the "%s.%s" plugin which is unknown.'
                 error_messages.append(msg % (plugin_type, unknown_plugin))

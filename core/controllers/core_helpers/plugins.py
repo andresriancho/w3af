@@ -127,7 +127,7 @@ class w3af_core_plugins(object):
     def get_enabled_plugins(self, plugin_type):
         return self._plugins_names_dict[plugin_type]
 
-    def set_plugins(self, plugin_names, plugin_type):
+    def set_plugins(self, plugin_names, plugin_type, raise_on_error=True):
         '''
         This method sets the plugins that w3afCore is going to use. Before this
         plugin existed w3afCore used setcrawl_plugins() / setAuditPlugins() /
@@ -146,12 +146,17 @@ class w3af_core_plugins(object):
         # Validate the input...
         plugin_names = list(set(plugin_names))
         known_plugin_names = self.get_plugin_list(plugin_type)
+        unknown_plugins = []
         
         for plugin_name in plugin_names:
             if plugin_name not in known_plugin_names \
             and plugin_name.replace('!', '') not in known_plugin_names\
             and plugin_name != 'all':
-                raise ValueError('Unknown plugin %s' % plugin_name)
+            
+                if raise_on_error:
+                    raise ValueError('Unknown plugin %s' % plugin_name)
+                else:
+                    unknown_plugins.append(plugin_name)
 
         set_dict = {
             'crawl': partial(self._set_plugin_generic, 'crawl'),
@@ -166,7 +171,9 @@ class w3af_core_plugins(object):
         }
 
         set_dict[plugin_type](plugin_names)
-
+        
+        return unknown_plugins
+    
     def reload_modified_plugin(self, plugin_type, plugin_name):
         '''
         When a plugin is modified using the plugin editor, all instances of it
