@@ -32,7 +32,7 @@ from core.ui.console.menu import menu
 from core.ui.console.plugins import pluginsMenu
 from core.ui.console.profiles import profilesMenu
 from core.ui.console.exploit import exploit
-from core.ui.console.config import configMenu
+from core.ui.console.config import ConfigMenu
 from core.ui.console.kbMenu import kbMenu
 from core.ui.console.bug_report import bug_report_menu
 from core.ui.console.util import mapDict
@@ -59,9 +59,9 @@ class rootMenu(menu):
 
         mapDict(self.addChild, {
             'plugins': pluginsMenu,
-            'target': (configMenu, self._w3af.target),
-            'misc-settings': (configMenu, MiscSettings()),
-            'http-settings': (configMenu, self._w3af.uri_opener.settings),
+            'target': (ConfigMenu, self._w3af.target),
+            'misc-settings': (ConfigMenu, MiscSettings()),
+            'http-settings': (ConfigMenu, self._w3af.uri_opener.settings),
             'profiles': profilesMenu,
             'bug-report': bug_report_menu,
             'exploit': exploit,

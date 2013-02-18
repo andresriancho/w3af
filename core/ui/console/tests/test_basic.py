@@ -87,11 +87,11 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        expected_start_with = ('| target               | http://moth/',)
+        expected_start_with = ('| target                   | http://moth/',)
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
         
-    def test_menu_set_option_case02(self):
+    def test_menu_set_option_manual_save(self):
         commands_to_run = ['target set target http://moth/',
                            'target view',
                            'target save',
@@ -100,11 +100,24 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        expected_start_with = ('| target               | http://moth/',
+        expected_start_with = ('| target ',
                                'The configuration has been saved.')
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
+    def test_menu_set_option_auto_save(self):
+        commands_to_run = ['target set target http://moth/',
+                           'target view',
+                           'exit']
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        expected_start_with = ('| target ',
+                               'The configuration has been saved.')
+        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        self.assertTrue(assert_result, msg)
+        
     def test_menu_set_option_invalid_case01(self):
         # Invalid port
         commands_to_run = ['target', 'set target http://moth:301801/', 'view',

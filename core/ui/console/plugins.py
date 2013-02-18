@@ -26,7 +26,7 @@ import textwrap
 import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
-from core.ui.console.config import configMenu
+from core.ui.console.config import ConfigMenu
 from core.ui.console.util import suggest
 from core.controllers.exceptions import w3afException
 
@@ -274,7 +274,7 @@ class pluginsTypeMenu(menu):
         if name in self._configs:
             config = self._configs[name]
         else:
-            config = configMenu(name, self._console, self._w3af, self,
+            config = ConfigMenu(name, self._console, self._w3af, self,
                                 self._w3af.plugins.get_plugin_inst(self._name, params[0]))
             self._configs[name] = config
 

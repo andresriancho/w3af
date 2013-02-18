@@ -34,6 +34,7 @@ class menu(object):
     '''
     Menu objects handle the commands and completion requests.
     Menus form an hierarchy and are able to delegate requests to their children.
+    
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, name, console, w3af, parent=None, **other):
@@ -47,7 +48,8 @@ class menu(object):
         self._parent = parent
         self._console = console
         self._children = {}
-
+        self._child_call = False
+        
         self._load_help('common')
         helpMainRepository.load_help('keys', self._keysHelp)
 #        self._keysHelp = {}
@@ -146,13 +148,24 @@ class menu(object):
         return cmds
 
     def get_children(self):
-        return self._children  # self.get_commands()
+        return self._children
 
     def get_handler(self, command):
         try:
             return self._handlers[command]
         except:
             return None
+
+    def set_child_call(self, true_false):
+        '''
+        This will set _child_call to True for handling the "set" command:
+            w3af>>> target set target http://w3af.org/
+        
+        While this won't ever set it to true:
+            w3af>>> target
+            w3af/config:target>>> set target http://w3af.org/
+        '''
+        self._child_call = true_false
 
     def execute(self, tokens):
 
@@ -167,7 +180,11 @@ class menu(object):
         children = self.get_children()
         if command in children:
             child = children[command]
-            return child.execute(params)
+            child.set_child_call(True)
+            try:
+                return child.execute(params)
+            finally:
+                child.set_child_call(False)
 
         raise w3afException("Unknown command '%s'" % command)
 

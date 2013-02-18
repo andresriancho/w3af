@@ -27,7 +27,7 @@ from core.data.kb.vuln_templates.utils import (get_template_names,
                                                get_template_by_name)
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
-from core.ui.console.config import configMenu
+from core.ui.console.config import ConfigMenu
 
 
 class kbMenu(menu):
@@ -120,7 +120,7 @@ class kbMenu(menu):
 
         return suggest(get_template_names(), part)
 
-class StoreOnBackConfigMenu(configMenu):
+class StoreOnBackConfigMenu(ConfigMenu):
     def _cmd_back(self, tokens):
         try:
             self._cmd_save(tokens)

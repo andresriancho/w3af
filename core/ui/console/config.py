@@ -27,7 +27,7 @@ from core.controllers.plugins.plugin import Plugin
 from core.controllers.exceptions import w3afException
 
 
-class configMenu(menu):
+class ConfigMenu(menu):
     '''
     Generic menu for configuring the configurable items.
     It is used to configure plugins and set url and misc settings.
@@ -104,6 +104,17 @@ class configMenu(menu):
             # to handle the issue of configuration parameters which depend on
             # each other: https://github.com/andresriancho/w3af/issues/108
             # @see: _cmd_back()
+            #
+            # There is an exception to that rule, calling:
+            #    w3af>>> target set target http://w3af.org/
+            #
+            # Is different from calling:
+            #    w3af>>> target
+            #    w3af/config:target>>> set target http://w3af.org/
+            #
+            # The first one has an implied save:
+            if self._child_call:
+                self._cmd_save([])
     
     def _cmd_save(self, tokens):
         # Save the options using the corresponding setter
