@@ -440,13 +440,23 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
 
         self.str_repr = str_repr
 
+        self.props.has_tooltip = True
+
         self.set_events(gtk.gdk.POINTER_MOTION_MASK |
                         gtk.gdk.POINTER_MOTION_HINT_MASK)
         self.connect("expose-event", self.area_expose_cb)
+        self.connect("query-tooltip", self.query_tooltip)
         self.show()
 
     def area_expose_cb(self, area, event):
         self.draw()
+        return True
+    
+    def query_tooltip(self, widget, x, y, keyboard_tip, tooltip, data=None):
+        if keyboard_tip:
+            return False
+        
+        tooltip.set_markup('Representation of HTTP response body')
         return True
 
     def set_string_representation(self, str_repr):
