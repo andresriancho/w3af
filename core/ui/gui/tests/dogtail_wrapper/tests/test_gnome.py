@@ -56,7 +56,7 @@ class TestGnome(DogtailUnittest):
 
         os.remove(output_file)
 
-    def test_run_hello_world_find_window_with_dogtail(self):
+    def test_run_gedit_with_dogtail(self):
         self.assertTrue(self.gnome.is_running())
 
         # Start the hello world in gnome
