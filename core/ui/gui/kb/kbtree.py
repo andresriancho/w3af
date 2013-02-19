@@ -109,13 +109,12 @@ class KBTree(gtk.TreeView):
 
         # button events
         self.connect('button-release-event', self._popup)
-        self.connect('button-press-event', self._doubleClick)
-        self.connect('button-press-event', self._exploitVuln)
+        self.connect('button-press-event', self._double_click)
+        self.connect('button-press-event', self._exploit_vuln)
 
         # cursor events
         self.props.has_tooltip = True
-        self.connect("query-tooltip", self._showToolTips)
-##        self.connect("motion-notify-event", self._changeButtonStyle)
+        self.connect("query-tooltip", self._show_tooltips)
 
         # make sure we update the knowledge base view
         kb.kb.add_observer(None, None, self._receive_kb_items)
@@ -137,7 +136,7 @@ class KBTree(gtk.TreeView):
         # TODO: Code this
         return 0
 
-    def _doubleClick(self, widg, event):
+    def _double_click(self, widg, event):
         '''If double click, expand/collapse the row.'''
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
@@ -400,13 +399,16 @@ class KBTree(gtk.TreeView):
         #    menu.show_all()
         #    ----
 
-    def _showToolTips(self, widget, x, y, keyboard_tip, tooltip):
-        '''Shows tooltip for 'exploit vulns' buttons'''
+    def _show_tooltips(self, widget, x, y, keyboard_tip, tooltip):
+        '''
+        Shows tooltip for 'exploit vulns' buttons
+        '''
+        
+        # TODO: Why 27? Do something better here!!!
+        th = title_height = 27
+        
         try:
-            # TODO: Why 27? Do something better here!!!
-            title_height = 27
-            path, tv_column, x_cell, y_cell = self.get_path_at_pos(
-                x, y - title_height)
+            path, tv_column, x_cell, y_cell = self.get_path_at_pos(x, y - th)
         except:
             return False
         else:
@@ -416,40 +418,47 @@ class KBTree(gtk.TreeView):
             vuln = self.get_instance(path)
 
             # Is the cursor over an 'exploit' icon?
-            if vuln is not None and self._is_exploitable(vuln) \
+            if vuln is not None and self._is_exploitable(vuln.get_id()) \
             and 0 <= x_cell <= 18:
                 tooltip.set_text(_("Exploit this vulnerability!"))
                 self.set_tooltip_cell(tooltip, path, tv_column, None)
                 return True
+            
             return False
 
-    def _exploitVuln(self, widg, event):
+    def _exploit_vuln(self, widg, event):
         '''Exploits row's vulnerability'''
         try:
-            path, tv_column, x_cell, y_cell = self.get_path_at_pos(
-                event.x, event.y)
-        except:
+            # This method returns None if there is no path at the position.
+            path, tv_column, x_cell, _ = self.get_path_at_pos(int(event.x),
+                                                              int(event.y))
+        except TypeError:
+            '''
+            >>> a,b,c = None
+            Traceback (most recent call last):
+              File "<stdin>", line 1, in <module>
+            TypeError: 'NoneType' object is not iterable
+            '''
             return False
         else:
             # Make the X coord relative to the cell
             x_cell -= self.get_cell_area(path, tv_column).x
-            # Get the potential vuln object
-            vuln = self.get_instance(path)
-
-            if vuln is not None and self._is_exploitable(vuln) \
-            and 0 <= x_cell <= 18:
-                # Move to Exploit Tab
-                self.w3af.mainwin.nb.set_current_page(3)
-                # Exec the exploits for this vuln
-                exploittab.effectivelyExploitAll(self.w3af,
-                                                 self._get_exploits(vuln), False)
-                return True
+            
+            if 0 <= x_cell <= 18:
+                # Get the potential vuln object
+                vuln = self.get_instance(path)
+    
+                if vuln is not None and self._is_exploitable(vuln.get_id()):
+                    exploits = self._get_exploits(vuln.get_id())
+                    # Move to Exploit Tab
+                    self.w3af.mainwin.nb.set_current_page(3)
+                    # Exec the exploits for this vuln
+                    exploittab.effectivelyExploitAll(self.w3af,
+                                                     exploits,
+                                                     False)
+                    return True
+            
             return False
-
-    def _changeButtonStyle(self, widget, evt):
-        '''Put doctring here'''
-        # TODO: Implement this.
-        return False
 
     def get_instance(self, path):
         '''Extracts the instance from the tree.
@@ -467,12 +476,11 @@ class KBTree(gtk.TreeView):
         :param vuln: The vuln to test.
         :return: A bool value
         '''
-        vuln_id = str(vuln_id)
-        if self.exploit_vulns.get(vuln_id):
+        if self.exploit_vulns.get(str(vuln_id)):
             return True
         else:
             self._map_exploits_to_vuln(vuln_id)
-            return vuln_id in self.exploit_vulns
+            return str(vuln_id) in self.exploit_vulns
 
     def _map_exploits_to_vuln(self, vuln_id):
         '''If 'vuln' is an exploitable vulnerability then map it to its

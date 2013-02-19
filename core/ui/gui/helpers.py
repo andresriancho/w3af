@@ -361,19 +361,32 @@ def loadImage(filename, path='core/ui/gui/data/'):
 
 
 def loadIcon(stock_item_id):
-    '''Loads a pixbuf from Stock.
+    '''Loads an icon to show it in the GUI. The following directories are
+    searched in order to get the icon, if not found a missing-image.png
+    is returned.
+        * core/data/ui/gui/data/icons/<size>/<stock_item_id>
+        * Operating system theme directory
 
     :param stock_item_id: Stock item id string
     :return: The icon's pixbuf
     '''
-    # If param id not found use default stock item.
-    stock_item = getattr(gtk, stock_item_id, gtk.STOCK_MISSING_IMAGE)
-    icon_theme = gtk.IconTheme()
-    try:
-        icon = icon_theme.load_icon(stock_item, 16, ())
-    except:
-        icon = loadImage('missing-image.png').get_pixbuf()
-    return icon
+    stock_item = getattr(gtk, stock_item_id)
+
+    local_icon = os.path.join('core', 'ui', 'gui', 'data', 'icons',
+                              '16', '%s.png' % stock_item)
+    if os.path.exists(local_icon):
+        im = gtk.Image()
+        im.set_from_file(local_icon)
+        im.show()
+        return im.get_pixbuf()
+    else:
+        icon_theme = gtk.IconTheme()
+        try:
+            icon = icon_theme.load_icon(stock_item, 16, ())
+        except:
+            # If param id not found use this image
+            icon = loadImage('missing-image.png').get_pixbuf()
+        return icon
 
 
 class SensitiveAnd(object):
@@ -403,6 +416,7 @@ KB_ICONS = {
     ("info", None): loadImage('information.png'),
     ("vuln", None): loadImage('vulnerability.png'),
     ("shell", None): loadImage('shell.png'),
+    ("info", severity.INFORMATION): loadImage('information.png'),
     ("vuln", severity.LOW): loadImage('vulnerability_l.png'),
     ("vuln", severity.MEDIUM): loadImage('vulnerability_m.png'),
     ("vuln", severity.HIGH): loadImage('vulnerability_h.png'),
