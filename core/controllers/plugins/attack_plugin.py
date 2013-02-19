@@ -76,6 +76,13 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         :param vuln_to_exploit: The vulnerability id to exploit
         :return: True if we can exploit a vuln stored in the kb.
         '''
+        error_msg = 'can_exploit requires an integer list got %s instead.'
+        if not isinstance(vuln_to_exploit, list):
+            raise TypeError(error_msg % type(vuln_to_exploit))
+        
+        if not all([isinstance(_id, int) for _id in vuln_to_exploit]):
+            raise TypeError(error_msg % type(vuln_to_exploit))
+        
         vulns = self.get_exploitable_vulns()
         if vuln_to_exploit is not None:
             vulns = [v for v in vulns if v.get_id() == vuln_to_exploit]
