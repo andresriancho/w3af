@@ -28,8 +28,7 @@ import shlex
 import os
 
 from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
-from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
-                                                     restore_original_display)
+from core.ui.gui.tests.dogtail_wrapper.utils import restore_original_display
 
 
 class XVFBServer(threading.Thread):
@@ -44,6 +43,8 @@ class XVFBServer(threading.Thread):
     WIDTH = 1024
     HEIGTH = 768
 
+    REQUIRED_BINS = ['convert', 'xvnc4viewer', 'Xvfb', 'x11vnc']
+    
     XVFB_BIN = '/usr/bin/Xvfb'
     START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s' % (XVFB_BIN, DISPLAY, WIDTH,
                                                         HEIGTH, tempfile.gettempdir())
@@ -58,6 +59,14 @@ class XVFBServer(threading.Thread):
         self.xvfb_process = None
         self.xvfb_start_result = None
         self.vnc_server_running = False
+        
+        self.verify_required_bins()
+    
+    def verify_required_bins(self):
+        for binary in self.REQUIRED_BINS:
+            status, _ = commands.getstatusoutput('which %s' % binary)
+            if status != 0:
+                raise RuntimeError('Missing binary requirement "%s".' % binary)
 
     def is_installed(self):
         status, output = commands.getstatusoutput('%s --fake' % self.XVFB_BIN)
