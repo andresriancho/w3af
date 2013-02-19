@@ -368,8 +368,8 @@ class php_eggs(InfrastructurePlugin):
 
             if not found:
                 version = 'unknown'
-                powered_by_headers = kb.kb.get('server_header',
-                                               'powered_by_string')
+                powered_by_headers = kb.kb.raw_read('server_header',
+                                                    'powered_by_string')
                 try:
                     for v in powered_by_headers:
                         if 'php' in v.lower():
