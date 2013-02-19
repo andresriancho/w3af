@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import cPickle
 import types
+import collections
 
 from core.data.fuzzer.utils import rand_alpha
 from core.data.db.dbms import get_default_persistent_db_instance
@@ -279,7 +280,11 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         if isinstance(obj, Info):
             return obj.get_uniq_id()
         else:
-            return str(hash(obj))
+            if isinstance(obj, collections.Iterable):
+                concat_all = ''.join([str(i) for i in obj])
+                return str(hash(concat_all))
+            else:
+                return str(hash(obj))
 
     def append(self, location_a, location_b, value, ignore_type=False):
         '''

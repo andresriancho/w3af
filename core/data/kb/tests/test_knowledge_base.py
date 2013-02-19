@@ -366,3 +366,11 @@ class TestKnowledgeBase(unittest.TestCase):
         
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
+    
+    def test_raw_write_list(self):
+        '''
+        Test for _get_uniq_id which needs to be able to hash any object type.
+        '''
+        kb.raw_write('a', 'b', [1,2,3])
+        self.assertEqual(kb.raw_read('a','b'), [1,2,3])
+        
