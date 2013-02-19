@@ -244,8 +244,8 @@ class KBTree(gtk.TreeView):
         
         :param data: The data for the new item to add.
         '''
-        contains_location_a = [d for d in self.treeholder if \
-                               d.location_a == data.location_a]
+        contains_location_a = [r for r in self.treestore if \
+                               r[1] == data.location_a]
         
         if not contains_location_a:
             # Add the new data to the treestore
@@ -256,12 +256,14 @@ class KBTree(gtk.TreeView):
                                                       color,
                                                       child_count])
         else:
-            # There's already data in location_a, need to update the
+            # There's already data in location_a, might need to update the
             # child count
-            stored_locations_b = [d.location_b for d in self.treeholder if \
-                                  d.location_a == data.location_a]
+            assert len(contains_location_a), 1
+            location_a_row = contains_location_a[0]
             
-            store_iter = self._get_store_iter(data.location_a)
+            location_a_b_iter = location_a_row.iterchildren()
+            stored_locations_b = [r[1] for r in location_a_b_iter]
+            store_iter = location_a_row.iter
             
             if data.location_b not in stored_locations_b:
                 # Update the child count 
@@ -285,34 +287,36 @@ class KBTree(gtk.TreeView):
         Update the child count, keep in mind that the child count for this
         level is increased by each call to this method.
         '''
-        contains_location_ab = [d for d in self.treeholder if \
-                               d.location_a == data.location_a and\
-                               d.location_b == data.location_b]
+        location_a = [r for r in self.treestore if \
+                      r[1] == data.location_a]
+        assert len(location_a), 1
+        location_a_row = location_a[0]
         
-        parent = self._get_store_iter(data.location_a,
-                                      new_data=data)
+        contains_location_ab = [r for r in location_a_row.iterchildren() if \
+                                r[1] == data.location_b]
         
         if not contains_location_ab:
             # Add the new data to the treestore
             child_count = '( 1 )'
             color = helpers.KB_COLORS[data.colorlevel]
-            store_iter = self.treestore.append(parent, [None, data.location_a,
+            a_iter = location_a_row.iter
+            store_iter = self.treestore.append(a_iter, [None, data.location_b,
                                                         0, None, 0,
                                                         color,
                                                         child_count])
         else:
-            # There's already data in (location_a, location_b) need to update
-            # the child count
-            stored_locations_ab = [d.location_b for d in self.treeholder if \
-                                   d.location_a == data.location_a and\
-                                   d.location_b == data.location_b]
+            # There's already data in (location_a, location_b) need to
+            # update the child count
+            location_b_rows = [r for r in location_a_row.iterchildren() if \
+                               r[1] == data.location_b]
+            assert len(location_b_rows), 1
+            location_b_row = location_b_rows[0]
             
-            store_iter = self._get_store_iter(data.location_a,
-                                              data.location_b,
-                                              new_data=data)
+            store_iter = location_b_row.iter
             
             # Update the child count 
-            child_count = '( %s )' % (len(stored_locations_ab) + 1)
+            location_b_row_children = [r for r in location_b_row.iterchildren()]
+            child_count = '( %s )' % (len(location_b_row_children) + 1)
             self.treestore[store_iter][6] = child_count
                 
         # Make sure we paint it the right color, if it was originally of color
@@ -353,51 +357,12 @@ class KBTree(gtk.TreeView):
         #
         tree_store_info = [exploit_icon, data.obj_name, data.idinstance,
                            icon, data.colorlevel, color, '']
-        
-        parent = self._get_store_iter(data.location_a,
-                                          data.location_b,
-                                          new_data=data)
-        self.treestore.append(parent, tree_store_info)
 
-    def _get_store_iter(self, location_a, location_b=None, info_name=None,
-                        new_data=None):
-        '''
-        :return: A GtkTreeIter pointing to:
-                    * location_a (mandatory)
-                    * location_b (optional)
-                    * info_name (optional)
-        '''
-        # First, and based on the data in self.treeholder generate a path
-        # represented by a string
-        path_lst = []
-        treeholder_copy = self.treeholder[:]
-        if new_data is not None: treeholder_copy.append(new_data)
-        
-        location_a_lst = [data.location_a for data in treeholder_copy]
-        location_a_lst = list(set(location_a_lst))
-        path_lst.append(location_a_lst.index(location_a))
-        
-        if location_b is not None:
-            location_b_lst = [data.location_b for data in treeholder_copy if\
-                              data.location_a == location_a]
-            location_b_lst = list(set(location_b_lst))
-            path_lst.append(location_b_lst.index(location_b))
-            
-        if info_name is not None:
-            info_name_lst = [data.obj_name for data in treeholder_copy if\
-                             data.location_a == location_a and\
-                             data.location_b == location_b]
-            path_lst.append(info_name_lst.index(info_name))
-        
-        # Get the iter from the treestore
-        path_lst = [str(i) for i in path_lst]
-        path = ':'.join(path_lst)
-        try:
-            return self.treestore.get_iter_from_string(path)
-        except ValueError, ve:
-            import pprint
-            print 'Invalid path %s for %s %s %s with tree copy %s' % (path, location_a, location_b, info_name, pprint.pformat(treeholder_copy))
-            raise ve
+        location_a = [r for r in self.treestore if \
+                      r[1] == data.location_a][0]
+        location_b = [r for r in location_a.iterchildren() if \
+                      r[1] == data.location_b][0]
+        self.treestore.append(location_b.iter, tree_store_info)
         
     def _popup(self, tv, event):
         '''Shows a menu when you right click on an object inside the kb.
