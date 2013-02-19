@@ -51,7 +51,7 @@ def handle_exceptions(w3af_core):
 
     # Create the dialog that allows the user to send the bugs, potentially more
     # than one since we captured all of them during the scan using the new
-    # exception_handler, to Trac.
+    # exception_handler, to Github.
     title = _('Handled exceptions to report')
     bug_report_win = handled_bug_report.bug_report_window(w3af_core, title)
 

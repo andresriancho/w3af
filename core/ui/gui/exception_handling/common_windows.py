@@ -551,7 +551,7 @@ class github_bug_report(object):
 
     def _report_bug_to_github(self, gh, summary, userdesc, email):
         '''
-        Send bug to Trac.
+        Send bug to github.
         '''
         try:
             ticket_url, ticket_id = gh.report_bug(
@@ -637,7 +637,7 @@ class github_multi_bug_report(github_bug_report):
 
     def _report_bug_to_github(self, gh, tback, scan_id, email, plugins):
         '''
-        Send bug to Trac.
+        Send bug to github.
         '''
         userdesc = 'No user description was provided for this bug report given'\
                    ' that it was related to handled exceptions in scan with id'\

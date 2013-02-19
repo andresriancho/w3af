@@ -31,7 +31,7 @@ from core.ui.console.util import suggest
 class bug_report_menu(menu):
     '''
     This menu is used to display bugs gathered by the exception handler during
-    a scan and help the user report those vulnerabilities to our Trac.
+    a scan and help the user report those vulnerabilities to our Github project.
 
     :author: Andres Riancho (andres.riancho |at| gmail.com)
     '''
@@ -95,7 +95,7 @@ class bug_report_menu(menu):
 
     def _cmd_report(self, params):
         '''
-        Report one or more bugs to w3af's Trac, menu command.
+        Report one or more bugs to w3af's Github, menu command.
         '''
         all_edata = self._w3af.exception_handler.get_all_exceptions()
 
@@ -127,7 +127,7 @@ class bug_report_menu(menu):
 
     def _report_exception(self, edata, eid, num, total):
         '''
-        Report one or more bugs to w3af's Trac, submit data to server.
+        Report one or more bugs to w3af's Github, submit data to server.
         '''
         gh = GithubIssues(OAUTH_TOKEN)
         if not gh.login():

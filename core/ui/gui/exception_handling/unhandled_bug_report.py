@@ -36,7 +36,7 @@ class bug_report_window(simple_base_window, github_bug_report):
     handled.py .
     '''
 
-    MANUAL_BUG_REPORT = 'https://sourceforge.net/apps/trac/w3af/newticket'
+    MANUAL_BUG_REPORT = 'https://github.com/andresriancho/w3af/issues/new'
 
     def __init__(self, w3af_core, title, tback, fname, plugins):
         # Before doing anything else, cleanup the report to remove any
@@ -89,7 +89,7 @@ class bug_report_window(simple_base_window, github_bug_report):
                        ' bug tracking system from within this window. It is'
                        ' a simple <i>two step process</i>.\n\n'
                        'w3af will only send the exception traceback and the'
-                       ' version information to Trac, no personal or '
+                       ' version information to Github, no personal or '
                        ' confidential information is collected.')
         self.label.set_markup(label_text % fname)
         self.label.show()

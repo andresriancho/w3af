@@ -127,4 +127,4 @@ class FoundExceptionsStatusBar(gtk.EventBox):
         '''User clicked on me, he wants to report a bug'''
         handled.handle_exceptions(self.w3af)
         # TODO: Hide this status bar if and only if the user DID report
-        # the exceptions to Trac
+        # the exceptions to Github

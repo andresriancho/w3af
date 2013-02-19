@@ -48,7 +48,7 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
     # Save the info to a file for later analysis
     filename = create_crash_file(clean_exception)
 
-    # Create the dialog that allows the user to send the bug to Trac
+    # Create the dialog that allows the user to send the bug to github
     bug_report_win = unhandled_bug_report.bug_report_window(w3af_core,
                                                             _('Bug detected!'),
                                                             clean_exception,

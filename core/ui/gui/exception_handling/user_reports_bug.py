@@ -56,7 +56,7 @@ class user_reports_bug(simple_base_window, github_bug_report):
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the text you enter and the version information to')
         label_text += _(
-            ' Trac, no personal or confidential information is collected.\n')
+            ' Github, no personal or confidential information is collected.\n')
         self.label.set_markup(label_text)
         self.label.show()
 
