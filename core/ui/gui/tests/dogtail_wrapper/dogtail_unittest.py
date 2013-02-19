@@ -94,13 +94,22 @@ class DogtailUnittest(unittest.TestCase):
 
         try:
             from dogtail import __version__
-        except ImportError:
-            raise ImportError('dogtail with GTK2 bindings is required, install'
-                              ' from https://fedorahosted.org/dogtail/#Dogtail0.7.x-forGnome2systems')
+        except ImportError, ie:
+            if 'gi.repository' in str(ie): 
+                msg = 'dogtail with GTK2 bindings is required, the currently'\
+                      ' installed version uses gi.repository (gtk3) install'\
+                      ' the correct version from %s'
+            else:
+                msg = 'dogtail with GTK2 bindings is required. Dependency not'\
+                      ' found. Install the latest from %s'
+            
+            url = 'https://fedorahosted.org/dogtail/#Dogtail0.7.x-forGnome2systems'
+            raise ImportError(msg % url)
+                
         else:
-            if __version__ != '0.7.1':
-                raise ImportError('Since the GTK UI uses PyGTK, dogtail 0.7.1'
-                                  ' is required.')
+            if not __version__.startswith('0.7'):
+                raise ImportError('Since the GTK UI uses PyGTK, dogtail 0.7.x'
+                                  ' is required, got %s instead.' % __version__)
         
         from dogtail import tree
         from dogtail.utils import run
