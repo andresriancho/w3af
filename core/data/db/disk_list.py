@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import __builtin__ #magic
 import hashlib
 import cPickle
 
@@ -66,7 +67,7 @@ class DiskList(object):
         pks = ['index_']
         
         self.db.create_table(self.table_name, columns, pks)
-        self.db.create_index(self.table_name, ['eq_attrs'])
+        self.db.create_index(self.table_name, ['eq_attrs',])
         self.db.commit()
 
     def cleanup(self):
@@ -89,36 +90,21 @@ class DiskList(object):
                  concatenated. This should represent the object in an unique
                  way.
         '''
-        result = ''
-
-        if isinstance(obj, basestring):
-            return obj
-        
-        if obj is None:
-            return str(obj)
-
-        elif isinstance(obj, (int, float)):
-            return str(obj)
-
-        elif isinstance(obj, (list, tuple, set)):
-            for sub_obj in obj:
-                result += self.__internal_get_eq_attrs_values(sub_obj)
-            return result
-
-        elif isinstance(obj, dict):
-            for key, value in obj.iteritems():
-                result += self.__internal_get_eq_attrs_values(key)
-                result += self.__internal_get_eq_attrs_values(value)
-            return result
+        if type(obj).__name__ in dir(__builtin__):
+            return cPickle.dumps(obj)
 
         elif isinstance(obj, DiskItem):
+            result = ''
+            
             for attr in obj.get_eq_attrs():
                 value = getattr(obj, attr)
                 result += self.__internal_get_eq_attrs_values(value)
 
             return result
+        
         else:
-            msg = 'Complex classes like %s need to inherit from DiskItem to be stored.'
+            msg = 'Complex classes like %s need to inherit from DiskItem to'\
+                  ' be stored.'
             raise Exception(msg % type(obj))
 
     def __contains__(self, value):

@@ -26,11 +26,12 @@ from collections import Iterable
 
 import core.data.parsers.encode_decode as enc_dec
 
+from core.data.db.disk_item import DiskItem
 from core.data.constants.encodings import UTF8
 from core.controllers.misc.ordereddict import OrderedDict
 
 
-class DataContainer(OrderedDict):
+class DataContainer(OrderedDict, DiskItem):
     '''
     This class represents a data container. It's basically the way
     query-string and post-data are stored when using url-encoding.
@@ -119,3 +120,10 @@ class DataContainer(OrderedDict):
                     toapp = k + key_val_sep + ele
                 lst.append(toapp)
         return pair_sep.join(lst)
+    
+    @property
+    def _allitems(self):
+        return ''.join(str((k, v)) for k, v in self.iteritems())
+    
+    def get_eq_attrs(self):
+        return ['_allitems']
