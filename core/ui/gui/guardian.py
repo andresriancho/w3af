@@ -20,26 +20,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
 import gobject
+
 import core.data.kb.knowledge_base as kb
 import core.data.kb
 
 from core.ui.gui import helpers
-
 from core.ui.gui.exception_handling import handled
+
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
+from core.data.kb.shell import Shell
 
 
 class _Guarded(object):
     '''Helper for the guardian.'''
     def __init__(self, objtype):
         self.icon = helpers.KB_ICONS[objtype, None]
-        self._quant = 0
+        self.quant = 0
         self.label = gtk.Label("0".ljust(5))
 
-    def _qset(self, newval):
-        self._quant = newval
-        self.label.set_text(str(newval).ljust(5))
-    quant = property(lambda s: s._quant, _qset)
-
+    def inc(self):
+        self.quant += 1
+        gobject.idle_add(self.update_label)
+    
+    def update_label(self):
+        self.label.set_text(str(self.quant).ljust(5))
+        return False
 
 class FoundObjectsGuardian(gtk.HBox):
     '''Shows the objects found by the core.
@@ -74,25 +80,26 @@ class FoundObjectsGuardian(gtk.HBox):
         self.pack_start(self.shll.label, False, False, padding=2)
 
         # go live
-        gobject.timeout_add(300, self._update)
+        kb.kb.add_observer(None, None, self._update)
         self.show_all()
 
-    def _update(self):
-        '''Updates the objects shown.'''
-        # shells
-        shells = kb.kb.get_all_shells()
-        self.shll.quant = len(shells)
-        yield True
+    def _update(self, location_a, location_b, value):
+        '''
+        Updates the objects shown.
         
-        # infos
-        infos = kb.kb.get_all_infos()
-        self.info.quant = len(infos)
-        yield True
+        Called by the knowledge base when a new item is added to it.
+        '''
+        if isinstance(value, Shell):
+            self.shll.inc()
+            return
         
-        # vulns
-        vulns = kb.kb.get_all_vulns()
-        self.vuln.quant = len(vulns)
-        yield True
+        if isinstance(value, Vuln):
+            self.vuln.inc()
+            return
+
+        if isinstance(value, Info):
+            self.info.inc()
+            return
 
 
 class FoundExceptionsStatusBar(gtk.EventBox):
