@@ -38,8 +38,6 @@ class TestGnome(DogtailUnittest):
         DogtailUnittest.__init__(self, methodName=methodName)
 
     def get_screenshot(self):
-        raise SkipTest('Remove me later.')
-
         self.assertTrue(self.gnome.is_running())
 
         output_file = self.gnome.get_screenshot()
