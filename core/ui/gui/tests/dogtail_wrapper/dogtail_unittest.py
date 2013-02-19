@@ -92,6 +92,16 @@ class DogtailUnittest(unittest.TestCase):
         self.gnome.start_sync()
         set_display_to_self()
 
+        try:
+            from dogtail import __version__
+        except ImportError:
+            raise ImportError('dogtail with GTK2 bindings is required, install'
+                              ' from https://fedorahosted.org/dogtail/#Dogtail0.7.x-forGnome2systems')
+        else:
+            if __version__ != '0.7.1':
+                raise ImportError('Since the GTK UI uses PyGTK, dogtail 0.7.1'
+                                  ' is required.')
+        
         from dogtail import tree
         from dogtail.utils import run
         from dogtail.rawinput import pressKey
