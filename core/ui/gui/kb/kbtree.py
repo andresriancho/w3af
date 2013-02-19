@@ -457,9 +457,9 @@ class KBTree(gtk.TreeView):
         :param path: where the user is in the tree
         :return: The instance
         '''
-        instanckey = self.treestore[path][2]
-        instance = self.instances.get(instanckey)
-        return instance
+        info_uniq_id = self.treestore[path][2]
+        info_inst = kb.kb.get_by_uniq_id(info_uniq_id)
+        return info_inst
 
     def _is_exploitable(self, vuln_id):
         '''Indicantes if 'vuln' is exploitable

@@ -343,3 +343,26 @@ class TestKnowledgeBase(unittest.TestCase):
         
         core.worker_pool.terminate()
         core.worker_pool.join()
+    
+    def test_get_by_uniq_id(self):
+        i1 = MockInfo()
+        kb.append('a', 'b', i1)
+
+        i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
+        self.assertEqual(i1_copy, i1)
+    
+    def test_get_by_uniq_id_duplicated_ignores_second(self):
+        '''
+        TODO: Analyze this case, i1 and i2 have both the same ID because they
+              have all the same information (this is very very uncommon in a
+              real w3af run).
+              
+              Note that in the get_by_uniq_id call i2 is not returned.
+        '''
+        i1 = MockInfo()
+        i2 = MockInfo()
+        kb.append('a', 'b', i1)
+        kb.append('a', 'b', i2)
+        
+        i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
+        self.assertEqual(i1_copy, i1)

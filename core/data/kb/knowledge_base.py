@@ -227,11 +227,13 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         columns = [('location_a', 'TEXT'),
                    ('location_b', 'TEXT'),
+                   ('uniq_id', 'TEXT'),
                    ('pickle', 'BLOB')]
 
         self.table_name = rand_alpha(30)
         self.db.create_table(self.table_name, columns)
         self.db.create_index(self.table_name, ['location_a', 'location_b'])
+        self.db.create_index(self.table_name, ['uniq_id',])
         self.db.commit()
         
         # TODO: Why doesn't this work with a WeakValueDictionary?
@@ -272,6 +274,12 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             return []
         else:
             return result[0]
+    
+    def _get_uniq_id(self, obj):
+        if isinstance(obj, Info):
+            return obj.get_uniq_id()
+        else:
+            return str(hash(obj))
 
     def append(self, location_a, location_b, value, ignore_type=False):
         '''
@@ -283,11 +291,12 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             raise TypeError(msg)
         
         location_a = self._get_real_name(location_a)
+        uniq_id = self._get_uniq_id(value)
         
         pickled_obj = cPickle.dumps(value)
-        t = (location_a, location_b, pickled_obj)
+        t = (location_a, location_b, uniq_id, pickled_obj)
         
-        query = "INSERT INTO %s VALUES (?, ?, ?)" % self.table_name
+        query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
         self.db.execute(query, t)
         self._notify(location_a, location_b, value)
 
@@ -329,6 +338,17 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             result_lst.append(obj)
         
         return result_lst
+
+    def get_by_uniq_id(self, uniq_id):
+        query = 'SELECT pickle FROM %s WHERE uniq_id = ?'
+        params = (uniq_id,)
+        
+        result = self.db.select_one(query % self.table_name, params)
+        
+        if result is not None:
+            result = cPickle.loads(result[0])
+        
+        return result
 
     def add_observer(self, location_a, location_b, observer):
         '''

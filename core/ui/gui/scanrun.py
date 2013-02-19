@@ -32,6 +32,7 @@ from multiprocessing.dummy import Process, Event
 from core.ui.gui import httpLogTab, reqResViewer, craftedRequests, entries
 from core.ui.gui.kb.kbtree import KBTree
 from core.data.db.history import HistoryItem
+from core.data.kb.info import Info
 
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
@@ -68,71 +69,61 @@ class FullKBTree(KBTree):
             return
 
         instance = self.get_instance(path)
-        if hasattr(instance, "get_desc"):
-            longdesc = str(instance.get_desc())
-        else:
-            longdesc = ""
+        if not isinstance(instance, Info):
+            return
+        
+        longdesc = instance.get_desc()
         self.kbbrowser.explanation.set_text(longdesc)
 
         success = False
-        if hasattr(instance, "get_id"):
-            if instance.get_id() is not None:
-                #
-                # We have two different cases:
-                #
-                # 1) The object is related to ONLY ONE request / response
-                # 2) The object is related to MORE THAN ONE request / response
-                #
-                # For 1), we show the classic view, and for 2) we show the classic
-                # view with a "page control"
-                #
-                # Work:
-                #
-                if len(instance.get_id()) == 1:
-                    # There is ONLY ONE id related to the object
-                    # This is 1)
-                    self.kbbrowser.pagesControl.deactivate()
-                    self.kbbrowser._pageChange(0)
-                    self.kbbrowser.pagesControl.hide()
-                    self.kbbrowser.title0.hide()
 
-                    # This handles a special case, where the plugin writer made a mistake and
-                    # failed to set an id to the info / vuln object:
-                    if instance.get_id()[0] is None:
-                        raise Exception('Exception - The id should not be None! "' + str(instance._desc) + '".')
-                        success = False
-                    else:
-                        # ok, we don't have None in the id:
-                        historyItem = self._historyItem.read(
-                            instance.get_id()[0])
-                        if historyItem:
-                            self.kbbrowser.rrV.request.show_object(
-                                historyItem.request)
-                            self.kbbrowser.rrV.response.show_object(
-                                historyItem.response)
+        if instance.get_id():
+            #
+            # We have two different cases:
+            #
+            # 1) The object is related to ONLY ONE request / response
+            # 2) The object is related to MORE THAN ONE request / response
+            #
+            # For 1), we show the classic view, and for 2) we show the classic
+            # view with a "page control"
+            #
+            # Work:
+            #
+            if len(instance.get_id()) == 1:
+                # There is ONLY ONE id related to the object
+                # This is 1)
+                self.kbbrowser.pagesControl.deactivate()
+                self.kbbrowser._pageChange(0)
+                self.kbbrowser.pagesControl.hide()
+                self.kbbrowser.title0.hide()
 
-                            # Don't forget to highlight if neccesary
-                            severity = instance.get_severity()
-                            for s in instance.get_to_highlight():
-                                self.kbbrowser.rrV.response.highlight(
-                                    s, severity)
+                historyItem = self._historyItem.read(instance.get_id()[0])
+                if historyItem:
+                    self.kbbrowser.rrV.request.show_object(historyItem.request)
+                    self.kbbrowser.rrV.response.show_object(
+                        historyItem.response)
 
-                            success = True
-                        else:
-                            msg = _('Failed to find request/response with id'
-                                    '%s in the database.' % instance.get_id())
-                            om.out.error(msg)
-                else:
-                    # There are MORE THAN ONE ids related to the object
-                    # This is 2)
-                    self.kbbrowser.pagesControl.show()
-                    self.kbbrowser.title0.show()
+                    # Don't forget to highlight if neccesary
+                    severity = instance.get_severity()
+                    for s in instance.get_to_highlight():
+                        self.kbbrowser.rrV.response.highlight(s, severity)
 
-                    self.kbbrowser.req_res_ids = instance.get_id()
-                    self.kbbrowser.pagesControl.activate(
-                        len(instance.get_id()))
-                    self.kbbrowser._pageChange(0)
                     success = True
+                else:
+                    msg = _('Failed to find request/response with id'
+                            '%s in the database.' % instance.get_id())
+                    om.out.error(msg)
+            else:
+                # There are MORE THAN ONE ids related to the object
+                # This is 2)
+                self.kbbrowser.pagesControl.show()
+                self.kbbrowser.title0.show()
+
+                self.kbbrowser.req_res_ids = instance.get_id()
+                self.kbbrowser.pagesControl.activate(
+                    len(instance.get_id()))
+                self.kbbrowser._pageChange(0)
+                success = True
 
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
