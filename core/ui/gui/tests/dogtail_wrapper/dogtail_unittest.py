@@ -22,6 +22,11 @@ import unittest
 import getpass
 import time
 
+try:
+    from CORBA import COMM_FAILURE, OBJECT_NOT_EXIST
+except ImportError:
+    raise ImportError('Please run "sudo apt-get install python-omniorb"')
+
 from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
                                                      restore_original_display)
 from core.ui.gui.tests.dogtail_wrapper.gnome import Gnome
