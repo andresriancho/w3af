@@ -152,7 +152,7 @@ class ProxiedRequests(entries.RememberingWindow):
         # Proxy options
         proxyOptions = OptionList()
         proxyOptions.add(
-            opt_factory('ipport', "localhost:8080", "IP:port", "ipport"))
+            opt_factory('ipport', "127.0.0.1:8080", "IP:port", "ipport"))
         proxyOptions.add(opt_factory('trap', ".*", _("URLs to trap"), "regex"))
         proxyOptions.add(opt_factory(
             'methodtrap', "GET,POST", _("Methods to trap"), "list"))
@@ -367,5 +367,5 @@ class ProxiedRequests(entries.RememberingWindow):
     def _help(self, action):
         """Shows the help."""
         helpfile = os.path.join(os.getcwd(
-        ), "readme/EN/guiHTML/guiUsersGuide.html#Using_the_Proxy")
+        ), "readme/EN/gtkUiHTML/guiUsersGuide.html#Using_the_Proxy")
         webbrowser.open("file://" + helpfile)
