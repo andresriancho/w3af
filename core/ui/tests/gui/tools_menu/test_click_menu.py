@@ -25,7 +25,7 @@ from core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 class ClickMenu(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'menu', 'images')
+    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'tools_menu', 'images')
     
     def test_click_menu(self):
         self.find('all-menu')
