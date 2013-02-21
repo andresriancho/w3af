@@ -27,9 +27,9 @@ try:
 except ImportError:
     raise ImportError('Please run "sudo apt-get install python-omniorb"')
 
-from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
-                                                     restore_original_display)
-from core.ui.gui.tests.dogtail_wrapper.gnome import Gnome
+from core.ui.tests.wrappers.utils import (set_display_to_self,
+                                          restore_original_display)
+from core.ui.tests.wrappers.gnome import Gnome
 
 
 class dummy():

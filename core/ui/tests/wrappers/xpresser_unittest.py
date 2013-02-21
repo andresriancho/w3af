@@ -24,12 +24,28 @@ import subprocess
 import os
 
 from xpresser import Xpresser, ImageNotFound
- 
+
+from core.ui.tests.wrappers.gnome import Gnome
+from core.ui.tests.wrappers.utils import (set_display_to_self,
+                                          restore_original_display)
 
 class XpresserUnittest(unittest.TestCase):
     
     GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
-    
+
+    '''    
+    @classmethod
+    def setUpClass(cls):
+        cls.gnome = Gnome()
+        cls.gnome.start_sync()
+        set_display_to_self()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.gnome.stop()
+        restore_original_display()
+    '''
+         
     def setUp(self):
         self.xp = Xpresser()
         self.xp.load_images(self.IMAGES)

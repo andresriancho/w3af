@@ -23,7 +23,7 @@ import os
 from core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
-class ClickMenu(XpresserUnittest):
+class MainWindow(XpresserUnittest):
     
     IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
     

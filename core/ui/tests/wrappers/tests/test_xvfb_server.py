@@ -25,14 +25,14 @@ import time
 
 from mock import patch
 
-from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer
-from core.ui.gui.tests.dogtail_wrapper.tests.utils import is_black_image
+from core.ui.tests.wrappers.xvfb_server import XVFBServer
+from core.ui.tests.wrappers.tests.utils import is_black_image
 
 
 class TestEnvironment(unittest.TestCase):
 
-    X_TEST_COMMAND = 'python %s' % os.path.join('core', 'ui', 'gui', 'tests',
-                                                'dogtail_wrapper', 'helloworld.py')
+    X_TEST_COMMAND = 'python %s' % os.path.join('core', 'ui', 'tests',
+                                                'wrappers', 'tests', 'helloworld.py')
 
     def setUp(self):
         self.xvfb_server = XVFBServer()
@@ -111,8 +111,8 @@ class TestEnvironment(unittest.TestCase):
         self.assertTrue(is_black_image(Image.open(empty_scr_0)))
 
         # Start the hello world in the xvfb
-        run_result = self.xvfb_server.run_x_process(
-            self.X_TEST_COMMAND, block=False)
+        run_result = self.xvfb_server.run_x_process(self.X_TEST_COMMAND,
+                                                    block=False)
         self.assertTrue(run_result)
         # Let the window appear in the xvfb, note that block is False above
         time.sleep(1)

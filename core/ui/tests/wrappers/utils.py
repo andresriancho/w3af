@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
-from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
+from core.ui.tests.wrappers.constants import DISPLAY
 
 
 original_display = os.environ['DISPLAY']

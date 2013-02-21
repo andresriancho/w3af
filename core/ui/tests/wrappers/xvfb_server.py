@@ -27,8 +27,8 @@ import time
 import shlex
 import os
 
-from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
-from core.ui.gui.tests.dogtail_wrapper.utils import restore_original_display
+from core.ui.tests.wrappers.constants import DISPLAY
+from core.ui.tests.wrappers.utils import restore_original_display
 
 
 class XVFBServer(threading.Thread):

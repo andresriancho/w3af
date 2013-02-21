@@ -22,8 +22,8 @@ import os
 import tempfile
 import commands
 
-from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer
-from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
+from core.ui.tests.wrappers.xvfb_server import XVFBServer
+from core.ui.tests.wrappers.constants import DISPLAY
 
 
 class Gnome(XVFBServer):
@@ -39,8 +39,7 @@ class Gnome(XVFBServer):
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
-    XINITRC = os.path.join(os.getcwd(), 'core', 'ui', 'tests',
-                           'dogtail_wrapper', 'gnome.xinitrc')
+    XINITRC = os.path.join('core', 'ui', 'tests', 'wrappers', 'gnome.xinitrc')
 
     START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
     START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,
@@ -51,5 +50,11 @@ class Gnome(XVFBServer):
         # Kill all previously running instances of "gnome"
         # TODO: This is a little bit rough, huh?
         commands.getoutput("pkill -f %s" % self.XINITRC)
-
-        super(Gnome, self).start_sync()
+        
+        assert os.path.exists(self.XINITRC), 'gnome.xinitrc is required.'
+        
+        gnome_start = super(Gnome, self).start_sync()
+        
+        metacity_start = self.run_x_process('metacity --replace')
+        
+        return gnome_start and metacity_start
