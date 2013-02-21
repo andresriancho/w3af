@@ -1,5 +1,5 @@
 '''
-xpresser_unittest.py
+test_main_window.py
 
 Copyright 2013 Andres Riancho
 
@@ -18,24 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import unittest
-import time
-import subprocess
+import os
 
-from xpresser import Xpresser
+from core.ui.tests.xpresser_wrapper.xpresser_unittest import XpresserUnittest
 
 
-class XpresserUnittest(unittest.TestCase):
-    def setUp(self):
-        self.xp = Xpresser()
-        self.xp.load_images(self.IMAGES)
-        self.start_gui()
-        
-    def start_gui(self):
-        self.gui_process = subprocess.Popen(["python", "w3af_gui"])
+class ClickMenu(XpresserUnittest):
     
-    def stop_gui(self):
-        self.gui_process.kill()
+    IMAGES = os.path.join('core', 'ui', 'tests', 'main_window', 'images')
     
-    def tearDown(self):
-        self.stop_gui()
+    def test_close(self):
+        self.hover('main-window-title')
+        self.find('main-window-menu')

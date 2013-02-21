@@ -40,7 +40,7 @@ class Gnome(XVFBServer):
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
     XINITRC = os.path.join(os.getcwd(), 'core', 'ui', 'tests',
-                           'dogtail_wrapper', 'dogtail.xinitrc')
+                           'dogtail_wrapper', 'gnome.xinitrc')
 
     START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
     START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,
