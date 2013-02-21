@@ -93,14 +93,15 @@ class XpresserUnittest(unittest.TestCase):
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
+        
+        # This is an easy way to wait for the GUI to be available before
+        # starting any specific tests.
+        self.xp.find('insert_target_url_here', timeout=5)
     
     def stop_gui(self):
         try:
-            # self.type(['<Alt>','<F4>'], True)
-            # self.sleep(2)
-
-            self.hover('main-window-title')
-            self.click('main-window-cross-close')
+            self.xp.find('throbber_stopped')
+            self.type(['<Alt>','<F4>'], False)
             self.click('yes')
         except ImageNotFound:
             if self.gui_process_pid == self.gui_process.pid:
