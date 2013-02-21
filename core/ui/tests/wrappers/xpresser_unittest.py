@@ -23,11 +23,44 @@ import time
 import subprocess
 import os
 
+from functools import wraps
+from gi.repository import Notify
+
 from xpresser import Xpresser, ImageNotFound
 
 from core.ui.tests.wrappers.gnome import Gnome
 from core.ui.tests.wrappers.utils import (set_display_to_self,
                                           restore_original_display)
+
+def debug_notify(meth):
+    
+    name = meth.__name__
+    
+    @wraps(meth)
+    def debug(self, *args, **kwds):
+        try:
+            result = meth(self, *args, **kwds)
+        except ImageNotFound, inf:
+            title = 'Error'
+            message = 'Error found while running %s%s: %s'
+            message = message % (name, args, inf)
+            notification = Notify.Notification.new (title, message,
+                                                    'dialog-error')
+            notification.show()
+            raise inf
+        else:
+            '''
+            title = 'Success'
+            message = '%s(%s)' % (name, args)
+            notification = Notify.Notification.new (title, message,
+                                                    'dialog-information')
+            notification.show()
+            '''
+            return result
+    
+    return debug
+
+
 
 class XpresserUnittest(unittest.TestCase):
     
@@ -50,27 +83,51 @@ class XpresserUnittest(unittest.TestCase):
         self.xp = Xpresser()
         self.xp.load_images(self.IMAGES)
         self.xp.load_images(self.GENERIC_IMAGES)
+        
+        Notify.init('Xpresser')
+        
         self.start_gui()
         
     def start_gui(self):
-        self.gui_process = subprocess.Popen(["python", "w3af_gui"])
+        self.gui_process = subprocess.Popen(["python", "w3af_gui"],
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE)
+        self.gui_process_pid = self.gui_process.pid
     
     def stop_gui(self):
         try:
+            # self.type(['<Alt>','<F4>'], True)
+            # self.sleep(2)
+
             self.hover('main-window-title')
             self.click('main-window-cross-close')
             self.click('yes')
         except ImageNotFound:
-            self.gui_process.kill()
+            if self.gui_process_pid == self.gui_process.pid:
+                self.gui_process.kill()
     
     def tearDown(self):
         self.stop_gui()
     
+    @debug_notify
     def click(self, image):
         self.xp.click(image)
     
-    def find(self, image):
-        self.xp.find(image)
+    @debug_notify
+    def find(self, image, timeout=2):
+        self.xp.find(image, timeout=timeout)
     
-    def hover(self, image):
-        self.xp.hover(image)
+    @debug_notify
+    def hover(self, *args):
+        self.xp.hover(*args)
+    
+    @debug_notify
+    def double_click(self, image):
+        self.xp.double_click(image)
+    
+    @debug_notify
+    def type(self, chars, hold):
+        self.xp.type(chars, hold)
+    
+    def sleep(self, secs):
+        time.sleep(secs)
