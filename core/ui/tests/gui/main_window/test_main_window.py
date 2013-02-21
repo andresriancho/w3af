@@ -23,10 +23,34 @@ import os
 from core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
-class MainWindow(XpresserUnittest):
+class TestMainWindow(XpresserUnittest):
     
     IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
     
-    def test_close(self):
+    def test_main_menu(self):
         self.hover('main-window-title')
         self.find('main-window-menu')
+
+    def test_profiles_loaded(self):
+        self.find('owasp_top_10_profile')
+
+    def test_plugins_loaded(self):
+        self.find('audit_plugin_type')
+        self.double_click('audit_plugin_type_text')
+        self.find('eval_plugin')
+        
+        self.double_click('output_plugin_type_text')
+        self.find('output_plugin_list')
+    
+    def test_tab_navigation(self):
+        self.click('log_tab')
+        self.find('scan_not_started')
+        
+        self.click('results_tab')
+        self.find('scan_not_started')
+
+        self.find('throbber_stopped')
+        
+        self.click('exploit_tab')
+        self.find('exploit_list')
+        
