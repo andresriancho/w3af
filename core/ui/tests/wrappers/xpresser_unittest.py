@@ -89,7 +89,7 @@ class XpresserUnittest(unittest.TestCase):
         self.start_gui()
         
     def start_gui(self):
-        self.gui_process = subprocess.Popen(["python", "w3af_gui"],
+        self.gui_process = subprocess.Popen(["python", "w3af_gui", "-n"],
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
