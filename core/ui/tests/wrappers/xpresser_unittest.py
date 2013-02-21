@@ -28,7 +28,7 @@ from xpresser import Xpresser, ImageNotFound
 
 class XpresserUnittest(unittest.TestCase):
     
-    GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'main_window', 'images')
+    GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
     
     def setUp(self):
         self.xp = Xpresser()

@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
-from core.ui.tests.xpresser_wrapper.xpresser_unittest import XpresserUnittest
+from core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class ClickMenu(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'menu', 'images')
+    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'menu', 'images')
     
     def test_click_menu(self):
         self.find('all-menu')
