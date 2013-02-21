@@ -542,17 +542,22 @@ class MainApp(object):
 
         # unicode str needed. pygtk works with 'utf8'
         url = self.pcbody.target.get_text().decode('utf8')
-        options['target'].set_value(url)
+        target_option = options['target']
         if relaxedTarget:
             try:
+                target_option.set_value(url)
                 self.w3af.target.set_options(options)
             except:
                 pass
             return True
-        try:
-            helpers.coreWrap(self.w3af.target.set_options, options)
-        except w3afException:
-            return False
+        else:
+            
+            try:
+                helpers.coreWrap(target_option.set_value, url)
+                helpers.coreWrap(self.w3af.target.set_options, options)
+            except w3afException:
+                return False
+            
         return True
 
     def _scan_start(self):

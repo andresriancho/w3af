@@ -592,14 +592,15 @@ class PluginConfigBody(gtk.VBox):
         # entry
         histfile = os.path.join(get_home_dir(), "urlhistory.pkl")
         self.target = entries.AdvisedEntry(_("Insert the target URL here"),
-                                           mainwin.scanok.change, histfile, alertmodif=mainwin.profile_changed)
+                                           mainwin.scanok.change, histfile,
+                                           alertmodif=mainwin.profile_changed)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insert_url)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
 
         # start/stop button
-        startstop = entries.SemiStockButton(
-            _("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
+        startstop = entries.SemiStockButton(_("Start"), gtk.STOCK_MEDIA_PLAY,
+                                            _("Start scan"))
         startstop.set_sensitive(False)
         startstop.connect("clicked", mainwin._scan_director)
         startstop.connect("clicked", self.target.insert_url)
