@@ -60,7 +60,8 @@ def debug_notify(meth):
     
     return debug
 
-
+class ImageFound(ImageNotFound):
+    pass
 
 class XpresserUnittest(unittest.TestCase):
     
@@ -99,6 +100,7 @@ class XpresserUnittest(unittest.TestCase):
         self.xp.find('insert_target_url_here', timeout=5)
     
     def stop_gui(self):
+        self.not_find('bug_detected', timeout=1)
         try:
             self.xp.find('throbber_stopped')
             self.type(['<Alt>','<F4>'], False)
@@ -118,6 +120,15 @@ class XpresserUnittest(unittest.TestCase):
     def find(self, image, timeout=2):
         self.xp.find(image, timeout=timeout)
     
+    @debug_notify
+    def not_find(self, image, timeout=2):
+        try:
+            self.xp.find(image, timeout=timeout)
+        except:
+            return
+        else:
+            raise ImageFound('%s was found and should NOT be there' % image)
+        
     @debug_notify
     def hover(self, *args):
         self.xp.hover(*args)
