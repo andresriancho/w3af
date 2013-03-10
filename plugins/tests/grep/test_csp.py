@@ -52,7 +52,6 @@ class TestCSP(PluginTest):
         cfg = self._run_configs['cfg_with_error']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('csp', 'csp')
-        print vulns
         self.assertEquals(4, len(vulns))
 
 

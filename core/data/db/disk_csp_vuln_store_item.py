@@ -24,7 +24,7 @@ from core.data.db.disk_item import DiskItem
 class DiskCSPVulnStoreItem(DiskItem):
     '''
     This is a class to store CSP vulnerabilities found 
-    for a URL (URL+ID) in a DiskList of DiskSet.
+    for a URL (URL+ID) in a DiskList or DiskSet.
     '''
 
     '''
@@ -37,7 +37,6 @@ class DiskCSPVulnStoreItem(DiskItem):
     	self.url = r_url
     	self.resp_id = r_id
     	self.csp_vulns = r_vulns
-
 
     '''
     Implements method from base class.

@@ -74,6 +74,9 @@ CSP_DIRECTIVE_VALUE_XSS_FILTER = "filter"
 #Valid Mime Types list
 MIME_TYPES = MimeTypes().types_map[1].values()
 
+#Define NamedTuple tuple subclass to represents a CSP vuln.
+CSPVulnerability = namedtuple('CSPVulnerability', ['desc', 'severity'])    
+
 def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
                                       allow_unsafe_eval=False):
     '''
@@ -129,10 +132,7 @@ def find_vulns(response):
     #Quick exit to enhance performance
     if(len(policies_all) == 0):
         return vulns
-    
-    #Define NamedTuple tuple subclass to represents a CSP vuln.
-    CSPVulnerability = namedtuple('CSPVulnerability', ['desc', 'severity'])    
-    
+        
     #Analyze each policy in details. 
     ##Code analyse each directive independently in order to prepare algorithm to
     ##be enhanced with CSP specs evolution !
