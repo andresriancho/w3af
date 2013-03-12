@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import socket
 
-import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -64,70 +63,78 @@ class private_ip(GrepPlugin):
         if self._ignore_if_match is None:
             self._generate_ignores(response)
 
-        if not (request.get_url(), request.get_data()) in self._already_inspected:
+        if (request.get_url(), request.get_data()) in self._already_inspected:
+            return
 
-            #   Only run this once for each combination of URL and data sent to that URL
-            self._already_inspected.add(
-                (request.get_url(), request.get_data()))
+        # Only run this once for each combination of URL and data sent to
+        # that URL
+        self._already_inspected.add((request.get_url(), request.get_data()))
+        
+        self._analyze_headers(request, response)
+        self._analyze_html(request, response)
+        
+        
+    def _analyze_headers(self, request, response):
+        '''
+        Search for IP addresses in HTTP headers
+        '''
+        # Get the headers string
+        headers_string = response.dump_headers()
 
-            #
-            #   Search for IP addresses in HTTP headers
-            #   Get the headers string
-            #
-            headers_string = response.dump_headers()
+        #   Match the regular expressions
+        for regex in self._regex_list:
+            for match in regex.findall(headers_string):
 
-            #   Match the regular expressions
-            for regex in self._regex_list:
-                for match in regex.findall(headers_string):
+                # If i'm requesting 192.168.2.111 then I don't want to be
+                # alerted about it
+                if match not in self._ignore_if_match:
+                    desc = 'The URL: "%s" returned an HTTP header with a'\
+                           ' private IP address: "%s".'
+                    desc = desc % (response.get_url(), match)
+                    v = Vuln('Private IP disclosure vulnerability', desc,
+                             severity.LOW, response.id, self.get_name())
 
-                    # If i'm requesting 192.168.2.111 then I don't want to be
-                    # alerted about it
-                    if match not in self._ignore_if_match:
-                        desc = 'The URL: "%s" returned an HTTP header with a'\
-                               ' private IP address: "%s".'
-                        desc = desc % (response.get_url(), match)
-                        v = Vuln('Private IP disclosure vulnerability', desc,
-                                 severity.LOW, response.id, self.get_name())
+                    v.set_url(response.get_url())
 
-                        v.set_url(response.get_url())
+                    v['IP'] = match
+                    v.add_to_highlight(match)
+                    self.kb_append(self, 'header', v)
 
-                        v['IP'] = match
-                        v.add_to_highlight(match)
-                        self.kb_append(self, 'header', v)
+    def _analyze_html(self, request, response):
+        '''
+        Search for IP addresses in the HTML
+        '''
+        if not response.is_text_or_html():
+            return
 
-            #
-            #   Search for IP addresses in the HTML
-            #
-            if response.is_text_or_html():
+        # Performance improvement!
+        if not (('10.' in response) or ('172.' in response) or
+               ('192.168.' in response) or ('169.254.' in response)):
+            return
 
-                # Performance improvement!
-                if not (('10.' in response) or ('172.' in response) or
-                       ('192.168.' in response) or ('169.254.' in response)):
-                    return
+        for regex in self._regex_list:
+            for match in regex.findall(response.get_body()):
+                match = match.strip()
 
-                for regex in self._regex_list:
-                    for match in regex.findall(response.get_body()):
-                        match = match.strip()
+                # Some proxy servers will return errors that include headers in the body
+                # along with the client IP which we want to ignore
+                if re.search("^.*X-Forwarded-For: .*%s" % match, response.get_body(), re.M):
+                    continue
 
-                        # Some proxy servers will return errors that include headers in the body
-                        # along with the client IP which we want to ignore
-                        if re.search("^.*X-Forwarded-For: .*%s" % match, response.get_body(), re.M):
-                            continue
+                # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                if match not in self._ignore_if_match and \
+                not request.sent(match):
+                    desc = 'The URL: "%s" returned an HTML document'\
+                           ' with a private IP address: "%s".'
+                    desc = desc % (response.get_url(), match)
+                    v = Vuln('Private IP disclosure vulnerability', desc,
+                             severity.LOW, response.id, self.get_name())
 
-                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                        if match not in self._ignore_if_match and \
-                        not request.sent(match):
-                            desc = 'The URL: "%s" returned an HTML document'\
-                                   ' with a private IP address: "%s".'
-                            desc = desc % (response.get_url(), match)
-                            v = Vuln('Private IP disclosure vulnerability', desc,
-                                     severity.LOW, response.id, self.get_name())
+                    v.set_url(response.get_url())
 
-                            v.set_url(response.get_url())
-
-                            v['IP'] = match
-                            v.add_to_highlight(match)
-                            self.kb_append(self, 'HTML', v)
+                    v['IP'] = match
+                    v.add_to_highlight(match)
+                    self.kb_append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
         '''
