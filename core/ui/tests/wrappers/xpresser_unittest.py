@@ -138,6 +138,10 @@ class XpresserUnittest(unittest.TestCase):
         self.xp.double_click(image)
     
     @debug_notify
+    def right_click(self, image):
+        self.xp.right_click(image)
+    
+    @debug_notify
     def type(self, chars, hold):
         self.xp.type(chars, hold)
     
