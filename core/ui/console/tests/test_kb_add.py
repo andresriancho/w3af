@@ -63,10 +63,27 @@ class TestKBAdd(ConsoleTestHelper):
 
         expected = ('w3af>>> ',
                     'w3af/kb>>> ',
-                    'Parameter type is missing,',
+                    'Parameter "type" is missing,',
                     'Type foobar is unknown',
                     'Only one parameter is accepted,')
         
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
+
+    def test_kb_add_back_without_config(self):
+        commands_to_run = ['kb',
+                                'add',
+                                'add os_commanding',
+                                'back',
+                            'exit',]
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        expected = ('w3af>>> ',
+                    'w3af/kb>>> ',
+                    'This vulnerability requires data to be configured.',
+                    )
         
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)

@@ -90,7 +90,7 @@ class kbMenu(menu):
 
     def _cmd_add(self, params):
         if len(params) == 0:
-            om.out.console('Parameter type is missing, see the help:')
+            om.out.console('Parameter "type" is missing, see the help:')
             self._cmd_help(['add'])
             return
         
@@ -124,7 +124,7 @@ class StoreOnBackConfigMenu(ConfigMenu):
     def _cmd_back(self, tokens):
         try:
             self._cmd_save(tokens)
-        except w3afException, e:
+        except (ValueError, w3afException) as e:
             om.out.error(str(e))
             return self._console.back
         
