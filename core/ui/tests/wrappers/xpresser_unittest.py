@@ -66,7 +66,8 @@ class ImageFound(ImageNotFound):
 class XpresserUnittest(unittest.TestCase):
     
     GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
-
+    EXTRA_IMAGES = None
+    
     '''    
     @classmethod
     def setUpClass(cls):
@@ -85,6 +86,9 @@ class XpresserUnittest(unittest.TestCase):
         self.xp.load_images(self.IMAGES)
         self.xp.load_images(self.GENERIC_IMAGES)
         
+        if self.EXTRA_IMAGES is not None:
+            self.xp.load_images(self.EXTRA_IMAGES)
+            
         Notify.init('Xpresser')
         
         self.start_gui()
