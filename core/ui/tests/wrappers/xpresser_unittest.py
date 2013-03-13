@@ -117,7 +117,7 @@ class XpresserUnittest(unittest.TestCase):
         self.xp.click(image)
     
     @debug_notify
-    def find(self, image, timeout=2):
+    def find(self, image, timeout=3):
         self.xp.find(image, timeout=timeout)
     
     @debug_notify
