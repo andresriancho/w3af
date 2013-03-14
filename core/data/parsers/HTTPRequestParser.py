@@ -148,8 +148,8 @@ def HTTPRequestParser(head, postdata):
     for header in headers_str:
         one_splitted_header = header.split(':', 1)
         if len(one_splitted_header) == 1:
-            raise w3afException(
-                'The HTTP request has an invalid header: "' + header + '"')
+            msg = 'The HTTP request has an invalid header: "%s".'
+            raise w3afException(msg % header)
 
         header_name = one_splitted_header[0].strip()
         header_value = one_splitted_header[1].strip()

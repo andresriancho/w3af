@@ -325,7 +325,7 @@ class requestResponsePart(gtk.Notebook):
                 view.initial = False
         
         self.enable_attached_widgets()
-        
+
     def disable_attached_widgets(self):
         '''
         When there is an error (for example in the parsing of the HTTP request)

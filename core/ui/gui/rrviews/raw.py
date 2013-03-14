@@ -57,7 +57,7 @@ class HttpRawView(HttpEditor):
         if not self.initial:
             try:
                 obj = self.get_object()
-            except w3afException:
+            except w3afException, e:
                 # We get here when there is a parse error in the HTTP request
                 self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))
                 self.parentView.disable_attached_widgets()

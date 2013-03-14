@@ -164,17 +164,18 @@ class HttpEditor(gtk.VBox, Searchable):
 
     def get_text(self, splitted=False):
         buf = self.textView.get_buffer()
-        rawText = buf.get_text(buf.get_start_iter(), buf.get_end_iter())
+        raw_text = buf.get_text(buf.get_start_iter(), buf.get_end_iter())
         if not splitted:
-            return rawText
-        # else return turple headers+data
-        headers = rawText
+            return raw_text
+        
+        # else return tuple: (headers, data)
+        headers = raw_text
         data = ""
-        tmp = rawText.find("\n\n")
+        tmp = raw_text.find("\r\n\r\n")
         # It's POST!
         if tmp != -1:
-            headers = rawText[0:tmp + 1]
-            data = rawText[tmp + 2:]
+            headers = raw_text[0:tmp + 1]
+            data = raw_text[tmp + 2:]
             if data.strip() == "":
                 data = ""
         return (headers, data)
