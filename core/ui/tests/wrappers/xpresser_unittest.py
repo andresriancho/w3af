@@ -99,9 +99,13 @@ class XpresserUnittest(unittest.TestCase):
                                              stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
         
+        # Move the mouse pointer somewhere where it shouldn't break any image
+        # matching (screenshot with pointer vs. stored image)
+        self.xp.hover(600, 600)
+
         # This is an easy way to wait for the GUI to be available before
         # starting any specific tests.
-        self.xp.find('insert_target_url_here', timeout=5)
+        self.xp.find('insert_target_url_here', timeout=5)        
     
     def process_is_alive(self):
         return self.gui_process.poll() is None
