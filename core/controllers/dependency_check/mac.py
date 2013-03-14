@@ -33,7 +33,6 @@ SYSTEM_PACKAGES = {
                    'C_BUILD': ['python27', 'py27-distribute',
                                 'gcc48', 'autoconf', 'automake'],
                    'GIT': ['git-core'],
-                   'XML': ['py27-libxml2', 'py27-libxslt']
                   }
 PIP_CMD = 'pip-2.7' 
 
@@ -48,7 +47,8 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('pdfminer', 'pdfminer'),
                 PIPDependency('concurrent.futures', 'futures'),
                 PIPDependency('OpenSSL', 'pyOpenSSL'),
-                PIPDependency('lxml', 'lxml', SYSTEM_PACKAGES['XML']),
+                # http://lxml.de/installation.html
+                PIPDependency('lxml', 'lxml'),
                 PIPDependency('scapy.config', 'scapy-real'),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
