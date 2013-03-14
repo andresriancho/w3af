@@ -115,7 +115,7 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
 
         if self.path[1:].count('../') or self.path[1:].count('..\\'):
-            self.send_error(404, 'Yeah right...')
+            self.send_error(403, 'Yeah right...')
         else:
             try:
                 f = open(self.server.webroot + os.path.sep + self.path[1:])
