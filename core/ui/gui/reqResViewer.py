@@ -323,10 +323,28 @@ class requestResponsePart(gtk.Notebook):
                 view.initial = True
                 view.show_object(self._obj)
                 view.initial = False
+        
+        self.enable_attached_widgets()
+        
+    def disable_attached_widgets(self):
+        '''
+        When there is an error (for example in the parsing of the HTTP request)
+        that is being shown in the Manual HTTP request editor, and we want to
+        disable the "Send" button; then the raw.py calls this method to achieve
+        exactly that.
+        '''
         if self.enableWidget:
             for widg in self.enableWidget:
-                widg(bool(len(self._obj.get_headers())))
+                widg(False)
 
+    def enable_attached_widgets(self):
+        '''
+        @see: disable_attached_widgets
+        '''
+        if self.enableWidget:
+            for widg in self.enableWidget:
+                widg(True)
+                
     def clear_panes(self):
         self._obj = None
         ### FIXME: REMOVE ME ###

@@ -45,7 +45,7 @@ class HttpRawView(HttpEditor):
         self.set_text(obj.dump())
 
     def get_object(self):
-        '''Return object (request or resoponse).'''
+        '''Return object (request or response).'''
         head, body = self.get_text(splitted=True)
         if self.is_request:
             return HTTPRequestParser(head, body)
@@ -57,9 +57,11 @@ class HttpRawView(HttpEditor):
         if not self.initial:
             try:
                 obj = self.get_object()
-                self.reset_bg_color()
-            except w3afException, ex:
+            except w3afException:
+                # We get here when there is a parse error in the HTTP request
                 self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))
-                return
-            self.parentView.set_object(obj)
-            self.parentView.synchronize(self.id)
+                self.parentView.disable_attached_widgets()
+            else:
+                self.reset_bg_color()
+                self.parentView.set_object(obj)
+                self.parentView.synchronize(self.id)
