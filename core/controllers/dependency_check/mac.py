@@ -30,7 +30,7 @@ PKG_MANAGER_CMD = 'sudo port install'
 SYSTEM_PACKAGES = {
                    'PIP': ['py27-pip'],
                    # Python port includes the dev headers
-                   'C_BUILD': ['python27', 'py-setuptools',
+                   'C_BUILD': ['python27', 'py27-distribute',
                                 'gcc48', 'autoconf', 'automake'],
                    'GIT': ['git-core'],
                    'XML': ['py27-libxml2', 'py27-libxslt']
