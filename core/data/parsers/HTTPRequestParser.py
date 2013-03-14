@@ -31,24 +31,6 @@ def check_version_syntax(version):
     '''
     :return: True if the syntax of the version section of HTTP is valid; else
              raise an exception.
-
-    >>> check_version_syntax('HTTP/1.0')
-    True
-
-    >>> check_version_syntax('HTTPS/1.0')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: The HTTP request has an invalid HTTP token in the version specification: "HTTPS/1.0"
-
-    >>> check_version_syntax('HTTP/1.00000000000000')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: HTTP request version "HTTP/1.00000000000000" is unsupported
-
-    >>> check_version_syntax('ABCDEF')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: The HTTP request has an invalid version token: "ABCDEF"
     '''
     supportedVersions = ['1.0', '1.1']
     splittedVersion = version.split('/')
@@ -72,14 +54,6 @@ def check_uri_syntax(uri, host=None):
     '''
     :return: True if the syntax of the URI section of HTTP is valid; else
              raise an exception.
-
-    >>> check_uri_syntax('http://abc/def.html')
-    'http://abc/def.html'
-
-    >>> check_uri_syntax('ABCDEF')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: ABCDEF
     '''
     supported_schemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
@@ -93,9 +67,9 @@ def check_uri_syntax(uri, host=None):
         path = '/'
 
     if scheme not in supported_schemes or not domain:
-        msg = 'You have to specify the complete URI, including the protocol and the host.'
-        msg += ' Invalid URI: ' + uri
-        raise w3afException(msg)
+        msg = 'You have to specify the complete URI, including the protocol'
+        msg += ' and the host. Invalid URI: %s.'
+        raise w3afException(msg % uri)
 
     res = urlparse.urlunparse((scheme, domain, path, params, qs, fragment))
     return res
@@ -159,8 +133,11 @@ def HTTPRequestParser(head, postdata):
             headers_inst[header_name] = header_value
 
     host, _ = headers_inst.iget('host', None)
-
-    uri = URL(check_uri_syntax(uri, host))
+    
+    try:
+        uri = URL(check_uri_syntax(uri, host))
+    except ValueError, ve:
+        raise w3afException(str(ve))
 
     return create_fuzzable_request_from_parts(uri, method, postdata,
                                               headers_inst)

@@ -21,7 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from core.data.parsers.HTTPRequestParser import (HTTPRequestParser,
+                                                 check_version_syntax,
+                                                 check_uri_syntax)
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
@@ -86,3 +88,16 @@ class TestHTTPRequestParser(unittest.TestCase):
         self.assertEqual(fuzzable_request.get_headers(), exp_headers)
         self.assertEquals(fuzzable_request.get_data(), 'a=1&a=2')
         self.assertEquals(fuzzable_request.get_dc(), {'a': ['1', '2']})
+    
+    def test_check_version_syntax(self):
+        self.assertTrue(check_version_syntax('HTTP/1.0'))
+
+        self.assertRaises(w3afException, check_version_syntax, 'HTTPS/1.0')
+        self.assertRaises(w3afException, check_version_syntax, 'HTTP/1.00000000000000')
+        self.assertRaises(w3afException, check_version_syntax, 'ABCDEF')
+    
+    def test_check_uri_syntax(self):
+        self.assertEqual(check_uri_syntax('http://abc/def.html'),
+                         'http://abc/def.html')
+
+        self.assertRaises(w3afException, check_uri_syntax, 'ABCDEF')
