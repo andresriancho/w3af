@@ -103,15 +103,19 @@ class XpresserUnittest(unittest.TestCase):
         # starting any specific tests.
         self.xp.find('insert_target_url_here', timeout=5)
     
+    def process_is_alive(self):
+        return self.gui_process.poll() is None
+    
     def stop_gui(self):
-        self.not_find('bug_detected', timeout=1)
-        try:
-            self.xp.find('throbber_stopped')
-            self.type(['<Alt>','<F4>'], False)
-            self.click('yes')
-        except ImageNotFound:
-            if self.gui_process_pid == self.gui_process.pid:
-                self.gui_process.kill()
+        if self.process_is_alive():
+            self.not_find('bug_detected', timeout=1)
+            try:
+                self.xp.find('throbber_stopped')
+                self.type(['<Alt>','<F4>'], False)
+                self.click('yes')
+            except ImageNotFound:
+                if self.gui_process_pid == self.gui_process.pid:
+                    self.gui_process.kill()
     
     def tearDown(self):
         self.stop_gui()
