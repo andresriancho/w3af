@@ -105,7 +105,8 @@ class XpresserUnittest(unittest.TestCase):
 
         # This is an easy way to wait for the GUI to be available before
         # starting any specific tests.
-        self.xp.find('insert_target_url_here', timeout=5)        
+        self.xp.find('insert_target_url_here', timeout=5)
+        self.sleep(0.5)       
     
     def process_is_alive(self):
         return self.gui_process.poll() is None
