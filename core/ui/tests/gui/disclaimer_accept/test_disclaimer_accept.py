@@ -38,6 +38,15 @@ class TestDisclaimer(XpresserUnittest):
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
+
+    def tearDown(self):
+        XpresserUnittest.tearDown(self)
+        
+        # Just in case... we don't want to break other tests
+        startup_cfg = StartUpConfig()
+        startup_cfg.accepted_disclaimer = True
+        startup_cfg.save()
+
         
     def test_disclaimer_shown_accept(self):
         startup_cfg = StartUpConfig()
