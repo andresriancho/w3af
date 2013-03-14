@@ -29,6 +29,7 @@ import gtk
 import os
 
 from core.controllers.exceptions import w3afException
+from core.ui.gui.constants import W3AF_ICON
 
 
 class PropagateBuffer(object):
@@ -158,7 +159,7 @@ class RegistThread(threading.Thread):
 #-- the following is for core wrapping
 
 
-def friendlyException(message):
+def FriendlyExceptionDlg(message):
     '''Creates the dialog showing the message.
 
     :param message: text received in the friendly exception.
@@ -181,7 +182,7 @@ def friendlyException(message):
 
     dlg = w3af_message_dialog(
         None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
-    dlg.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
+    dlg.set_icon_from_file(W3AF_ICON)
     dlg.set_title('Error')
     dlg.dialog_run()
     return
@@ -204,7 +205,7 @@ class _Wrapper(object):
             return func(*args, **kwargs)
         except Exception, err:
             if isinstance(err, self.friendly):
-                friendlyException(str(err))
+                FriendlyExceptionDlg(str(err))
             raise
 
 coreWrap = _Wrapper(w3afException)

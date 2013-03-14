@@ -117,28 +117,32 @@ class ManualRequests(entries.RememberingWindow):
                 self.reqresp.response.set_sensitive(True)
                 self.reqresp.response.show_object(impact.httpResp)
                 self.reqresp.nb.next_page()
+                
             elif hasattr(impact, 'exception'):
                 e_kls = impact.exception.__class__
                 if e_kls in (w3afException, w3afMustStopException,
                              w3afMustStopOnUrlError,
                              w3afMustStopByKnownReasonExc,
                              w3afProxyException):
-                    msg = "Stopped sending requests because '%s'" % str(
-                        impact.exception)
+                    msg = "Stopped sending requests because of the following"\
+                          " unexpected error:\n\n%s" % str(impact.exception)
+                          
                 else:
                     raise impact.exception
+                
                 self.reqresp.response.clear_panes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
-                helpers.friendlyException(msg)
+                helpers.FriendlyExceptionDlg(msg)
                 gtk.gdk.threads_leave()
+                
             else:
                 # This is a very strange case, because impact.ok == False
                 # but impact.exception does not exist!
                 self.reqresp.response.clear_panes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
-                helpers.friendlyException(
+                helpers.FriendlyExceptionDlg(
                     'Errors occurred while sending the HTTP request.')
                 gtk.gdk.threads_leave()
 

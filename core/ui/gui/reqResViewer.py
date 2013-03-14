@@ -258,7 +258,7 @@ class reqResViewer(gtk.VBox):
             self.throbber.hide()
             self.throbber.running(False)
             gtk.gdk.threads_enter()
-            helpers.friendlyException(msg)
+            helpers.FriendlyExceptionDlg(msg)
             gtk.gdk.threads_leave()
         return False
 

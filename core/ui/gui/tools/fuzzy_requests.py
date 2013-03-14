@@ -411,9 +411,11 @@ class FuzzyRequests(entries.RememberingWindow):
             httpResp = None
             self.result_err += 1
 
-            # Let the user know ahout the problem
-            msg = "Stopped sending requests because " + str(e)
-            helpers.friendlyException(msg)
+            # Let the user know about the problem
+            msg = "Stopped sending requests because of the following"\
+                  " unexpected error:\n\n%s" % str(e)
+
+            helpers.FriendlyExceptionDlg(msg)
             return False
 
         if httpResp is not None:
