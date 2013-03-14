@@ -21,103 +21,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import sys
 import warnings
-import subprocess
 
 from core.controllers.dependency_check.lazy_load import lazy_load
-from core.controllers.dependency_check.os_detection import is_mac, is_linux
+from core.controllers.dependency_check.os_detection import is_mac
+from core.controllers.dependency_check.utils import verify_python_version, pip_installed
 
 if is_mac():
-    SYSTEM_PACKAGES = {
-                       'PIP': ['py27-pip'],
-                       'C_BUILD': ['python2.7-dev', 'python-setuptools',
-                                    'build-essential'],
-                       'GIT': ['git'],
-                       'XML': ['libxml2-dev', 'libxslt-dev']
-                      }
-    PIP_CMD = 'pip-2.7' 
+    from core.controllers.dependency_check.mac import (SYSTEM_NAME,
+                                                       PKG_MANAGER_CMD,
+                                                       SYSTEM_PACKAGES,
+                                                       PIP_CMD,
+                                                       PIP_PACKAGES,
+                                                       os_package_is_installed)
 
 else:
-    SYSTEM_PACKAGES = {
-                       'PIP': ['pip'],
-                       'C_BUILD': ['python2.7-dev', 'python-setuptools',
-                                    'build-essential'],
-                       'GIT': ['git'],
-                       'XML': ['libxml2-dev', 'libxslt-dev']
-                      }
-    PIP_CMD = 'pip'
+    from core.controllers.dependency_check.linux import (SYSTEM_NAME,
+                                                         PKG_MANAGER_CMD,
+                                                         SYSTEM_PACKAGES,
+                                                         PIP_CMD,
+                                                         PIP_PACKAGES,
+                                                         os_package_is_installed)
 
-PIP_INSTALL = 'http://www.pip-installer.org/en/latest/installing.html'
-
-
-class PIPDependency(object):
-    def __init__(self, module_name, package_name, os_packages=[]):
-        self.module_name = module_name
-        self.package_name = package_name
-        self.os_packages = SYSTEM_PACKAGES['PIP'][:]
-        self.os_packages.extend(os_packages)
-
-PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
-                PIPDependency('git', 'GitPython', SYSTEM_PACKAGES['GIT']),
-                PIPDependency('pybloomfilter', 'pybloomfiltermmap',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('esmre', 'esmre'),
-                PIPDependency('sqlite3', 'pysqlite'),
-                PIPDependency('nltk', 'nltk'),
-                PIPDependency('chardet', 'chardet'),
-                PIPDependency('pdfminer', 'pdfminer'),
-                PIPDependency('concurrent.futures', 'futures'),
-                PIPDependency('OpenSSL', 'pyOpenSSL'),
-                PIPDependency('lxml', 'lxml', SYSTEM_PACKAGES['XML']),
-                PIPDependency('scapy.config', 'scapy-real'),
-                PIPDependency('guess_language', 'guess-language'),
-                PIPDependency('cluster', 'cluster'),
-                PIPDependency('msgpack', 'msgpack-python',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('ntlm', 'python-ntlm'),]
-
-def os_package_is_installed(package_name):
-    not_installed = 'is not installed and no info is available'
-    installed = 'Status: install ok installed'
-    
-    try:
-        p = subprocess.Popen(['dpkg', '-s', package_name], stdout=subprocess.PIPE,
-                                                           stderr=subprocess.PIPE)
-    except OSError:
-        # We're not on a debian based system
-        return None
-    else:
-        dpkg_output = p.stdout.read()
-
-        if not_installed in dpkg_output:
-            return False
-        elif installed in dpkg_output:
-            return True
-        else:
-            return None
-    
-    
-def verify_python_version():
-    '''
-    Check python version eq 2.6 or 2.7
-    '''
-    major, minor, micro, releaselevel, serial = sys.version_info
-    if major == 2:
-        if minor not in (6, 7):
-            msg = 'Error: Python 2.%s found but Python 2.6 or 2.7 required.' % minor
-            print msg
-    elif major > 2:
-        msg = 'It seems that you are running Python 3k, please let us know if' \
-              ' w3af works as expected at w3af-develop@lists.sourceforge.net !'
-        print msg
-        sys.exit(1)
-
-def pip_installed():
-    try:
-        return not bool(subprocess.call([PIP_CMD, 'help'], stdout=subprocess.PIPE,
-                                                         stderr=subprocess.PIPE))
-    except OSError:
-        return False
-        
     
 def dependency_check():
     '''
@@ -159,21 +83,18 @@ def dependency_check():
     
     if pip_installed():
         for pip_pkg in SYSTEM_PACKAGES['PIP']:
-            os_packages.remove(pip_pkg)
+            if pip_pkg in os_packages:
+                os_packages.remove(pip_pkg)
     
     os_packages = [pkg for pkg in os_packages if not os_package_is_installed(pkg)]
     
     if os_packages:
-        if is_linux():
-            msg = 'On Debian based systems please install the following operating'\
-                  ' system packages before running the pip installer:\n'
-            msg += '    sudo apt-get install ' + ' '.join(os_packages)
-            print msg, '\n'
-        elif is_mac():
-            msg = 'On Mac OS X systems please install the following operating'\
-                  ' system packages before running the pip installer:\n'
-            msg += '    sudo port install ' + ' '.join(os_packages)
-            print msg, '\n'
+        missing_pkgs = ' '.join(os_packages)
+        
+        msg = 'On %s systems please install the following operating'\
+              ' system packages before running the pip installer:\n'\
+              '    %s %s\n' 
+        print msg % (SYSTEM_NAME, PKG_MANAGER_CMD, missing_pkgs)
             
     #
     #    Report missing pip packages
@@ -188,12 +109,4 @@ def dependency_check():
     sys.exit(1)
 
 
-def mem_test(when):
-    from core.controllers.profiling.ps_mem import get_memory_usage, human
-    sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True)
-    cmd = sorted_cmds[0]
-    msg = "%8sB Private + %8sB Shared = %8sB" % (human(cmd[1] - shareds[cmd[0]]),
-                                                 human(shareds[cmd[
-                                                               0]]), human(cmd[1])
-                                                 )
-    print 'Total memory usage %s: %s' % (when, msg)
+
