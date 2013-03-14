@@ -65,6 +65,31 @@ class TestManualRequests(XpresserUnittest):
         # Close the error dialog
         self.type(['<Enter>',], False)
 
+    def test_invalid_request(self):
+        self.double_click('localhost')
+        self.type('moth:8081', False)
+        
+        # Move to the beginning and break the syntax
+        self.type(['<PgUp>',], False)
+        self.type('x', False)
+        self.type(['<Enter>',], False)
+        
+        self.find('send_disabled')
+        
+        # Remove the ugly stuff
+        self.type(['<PgUp>',], False)
+        self.type(['<Delete>',], False)
+        self.type(['<Delete>',], False)
+        self.sleep(1)
+        
+        self.not_find('send_disabled')
+        
+        self.click('send')
+        self.find('stopped_sending_requests')
+        
+        # Close the error dialog
+        self.type(['<Enter>',], False)
+
     def test_GET_request(self):
         self.http_daemon = HTTPDaemon()
         self.http_daemon.start()
