@@ -38,6 +38,23 @@ class TestInvalidURL(XpresserUnittest):
         self.find('invalid_url')
         self.click('ok')
 
+    def test_invalid_url_correct_mistake(self):
+        first = 'http:'
+        second = '//moth/w3af/audit/xss/simple_xss.php?text=1'
         
+        self.click('insert_target_url_here')
+        self.type(first, False)
+        self.type(['<Enter>',], False)
+        
+        self.find('invalid_url')
+        self.click('ok')
+
+        self.sleep(1)        
+        self.type(second, False)
+        self.type(['<Enter>',], False)
+        
+        # The scan actually started
+        self.find('no_audit_grep_plugins')
+        self.type(['<Enter>',], False)
         
         
