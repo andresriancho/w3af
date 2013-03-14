@@ -121,7 +121,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, initialRequest=None):
+    def __init__(self, w3af, initial_request=None):
         super(FuzzyRequests, self).__init__(
             w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
         self.w3af = w3af
@@ -158,10 +158,10 @@ class FuzzyRequests(entries.RememberingWindow):
                                                      self.sSB_state.change, "rRV")],
                                                     editable=True, widgname="fuzzyrequest")
 
-        if initialRequest is None:
+        if initial_request is None:
             self.originalReq.show_raw(FUZZY_REQUEST_EXAMPLE, '')
         else:
-            (initialUp, initialDn) = initialRequest
+            (initialUp, initialDn) = initial_request
             self.originalReq.show_raw(initialUp, initialDn)
 
         # Add the right button popup menu to the text widgets

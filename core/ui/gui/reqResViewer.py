@@ -61,15 +61,16 @@ class reqResViewer(gtk.VBox):
     :author: Facundo Batista ( facundo@taniquetil.com.ar )
 
     '''
-    def __init__(
-        self, w3af, enableWidget=None, withManual=True, withFuzzy=True,
-        withCompare=True, withAudit=True, editableRequest=False,
-            editableResponse=False, widgname="default", layout='Tabbed'):
+    def __init__(self, w3af, enableWidget=None, withManual=True,
+                 withFuzzy=True, withCompare=True, withAudit=True,
+                 editableRequest=False, editableResponse=False,
+                 widgname="default", layout='Tabbed'):
+        
         super(reqResViewer, self).__init__()
         self.w3af = w3af
         # Request
-        self.request = requestPart(
-            self, w3af, enableWidget, editableRequest, widgname=widgname)
+        self.request = requestPart(self, w3af, enableWidget, editableRequest,
+                                   widgname=widgname)
         self.request.show()
         # Response
         self.response = responsePart(

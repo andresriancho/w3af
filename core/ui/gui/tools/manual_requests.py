@@ -39,61 +39,53 @@ Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
 
-UI_MENU = """
-<ui>
-  <toolbar name="Toolbar">
-    <toolitem action="Send"/>
-    <separator name="sep1"/>
-  </toolbar>
-</ui>
-"""
 
 class ManualRequests(entries.RememberingWindow):
     '''Infrastructure to generate manual HTTP requests.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, initialRequest=None):
-        super(ManualRequests, self).__init__(w3af, "manualreq", "w3af - Manual Requests",
+    def __init__(self, w3af, initial_request=None):
+        super(ManualRequests, self).__init__(w3af, "manualreq",
+                                             "w3af - Manual Requests",
                                              "Manual_Requests")
         self.w3af = w3af
-        self._uimanager = gtk.UIManager()
-        accelgroup = self._uimanager.get_accel_group()
-        self.add_accel_group(accelgroup)
-        actiongroup = gtk.ActionGroup('UIManager')
-        actiongroup.add_actions([
-            ('Send', gtk.STOCK_YES, _('_Send Request'), None,
-             _('Send request'), self._send),
-        ])
-        # Finish the toolbar
-        self._uimanager.insert_action_group(actiongroup, 0)
-        self._uimanager.add_ui_from_string(UI_MENU)
-        toolbar = self._uimanager.get_widget('/Toolbar')
-        b = toolbar.get_nth_item(0)
-        self.vbox.pack_start(toolbar, False)
-        toolbar.show()
+        
+        #
+        # Toolbar
+        #
+        self.send_but = entries.SemiStockButton(_("Send"), gtk.STOCK_MEDIA_PLAY,
+                                                _("Send HTTP request"))
+        self.send_but.connect("clicked", self._send)
+        self.send_but.show()
+        
         # Fix content length checkbox
-        self._fix_content_lengthCB = gtk.CheckButton('Fix content length header')
-        self._fix_content_lengthCB.set_active(True)
-        self._fix_content_lengthCB.show()
+        self._fix_content_len_cb = gtk.CheckButton('Fix content length header')
+        self._fix_content_len_cb.set_active(True)
+        self._fix_content_len_cb.show()
+        
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive],
-                                                 withManual=False, editableRequest=True)
+        self.reqresp = reqResViewer.reqResViewer(w3af, [self.send_but.set_sensitive],
+                                                 withManual=False,
+                                                 editableRequest=True)
         self.reqresp.response.set_sensitive(False)
-        self.vbox.pack_start(self._fix_content_lengthCB, False, False)
+        
         self.vbox.pack_start(self.reqresp, True, True)
+        self.vbox.pack_start(self._fix_content_len_cb, False, False)
+        self.vbox.pack_start(self.send_but, False, False)
+        
         # Add a default request
-        if initialRequest is None:
+        if initial_request is None:
             self.reqresp.request.show_raw(MANUAL_REQUEST_EXAMPLE, '')
         else:
-            (initialUp, initialDn) = initialRequest
+            (initialUp, initialDn) = initial_request
             self.reqresp.request.show_raw(initialUp, initialDn)
 
         # Show all!
         self.show()
 
     def _send(self, widg):
-        '''Actually generates the manual requests.
+        '''Actually sends the manual requests.
 
         :param widget: who sent the signal.
         '''
@@ -109,12 +101,12 @@ class ManualRequests(entries.RememberingWindow):
             gtk.main_iteration()
 
         # Get the fix content length value
-        fixContentLength = self._fix_content_lengthCB.get_active()
+        fix_content_len = self._fix_content_len_cb.get_active()
 
         # threading game
         event = threading.Event()
         impact = ThreadedURLImpact(self.w3af, tsup, tlow, event,
-                                   fixContentLength)
+                                   fix_content_len)
 
         def impact_done():
             if not event.isSet():

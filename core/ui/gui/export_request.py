@@ -45,7 +45,7 @@ class export_request(entries.RememberingWindow):
 
     :author: Andres Riancho < andres.riancho | gmail.com >
     '''
-    def __init__(self, w3af, initialRequest=None):
+    def __init__(self, w3af, initial_request=None):
         super(export_request, self).__init__(
             w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
         self.w3af = w3af
@@ -102,10 +102,10 @@ class export_request(entries.RememberingWindow):
         vpan.pack2(vbox)
 
         # Show the data
-        if initialRequest is None:
+        if initial_request is None:
             self.http_request.set_text(export_request_example)
         else:
-            (request_header, request_body) = initialRequest
+            (request_header, request_body) = initial_request
             self.http_request.set_text(request_header + '\n\n' + request_body)
         func = self._exporters[0][1]
         self.exported_text.set_text(func(self.http_request.get_text()))
