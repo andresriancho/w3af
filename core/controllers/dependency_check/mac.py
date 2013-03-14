@@ -23,7 +23,7 @@ import subprocess
 
 from core.controllers.dependency_check.pip_dependency import PIPDependency
 
-SYSTEM_NAME = 'Mac OSX'
+SYSTEM_NAME = 'Mac OS X'
 
 PKG_MANAGER_CMD = 'sudo port install'
 
@@ -36,6 +36,7 @@ SYSTEM_PACKAGES = {
                    'C_BUILD': ['python27', 'py27-distribute',
                                 'gcc48', 'autoconf', 'automake'],
                    'GIT': ['git-core'],
+                   'SCAPY': ['py27-libdnet'],
                   }
 PIP_CMD = 'pip-2.7' 
 
@@ -52,7 +53,7 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('OpenSSL', 'pyOpenSSL'),
                 # http://lxml.de/installation.html
                 PIPDependency('lxml', 'lxml'),
-                PIPDependency('scapy.config', 'scapy-real'),
+                PIPDependency('scapy.config', 'scapy-real', SYSTEM_PACKAGES['SCAPY']),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
                 PIPDependency('msgpack', 'msgpack-python',
