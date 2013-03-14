@@ -43,6 +43,7 @@ from core.ui.gui.rrviews.headers import HttpHeadersView
 from core.ui.gui.rrviews.rendering import getRenderingView
 from core.ui.gui.export_request import export_request
 from core.ui.gui import helpers
+from git.refs.head import HEAD
 
 
 def sigsegv_handler(signum, frame):
@@ -289,9 +290,6 @@ class requestResponsePart(gtk.Notebook):
         super(requestResponsePart, self).__init__()
         self._parent = parent
         self._obj = None
-        ### FIXME: REMOVE ME ###
-        self._set_vals = [(False, 'default_val')]
-        #######################
         self.w3af = w3af
         self.childButtons = []
         self._views = []
@@ -347,9 +345,6 @@ class requestResponsePart(gtk.Notebook):
                 
     def clear_panes(self):
         self._obj = None
-        ### FIXME: REMOVE ME ###
-        self._set_vals.append((False, 'panes_cleared'))
-        #######################
         self._parent.draw_area.clear()
         for view in self._views:
             view.initial = True
@@ -372,16 +367,10 @@ class requestResponsePart(gtk.Notebook):
             str_repr_dict = str_repr_inst.get_representation()
             self._parent.draw_area.set_string_representation(str_repr_dict)
 
-        ### FIXME: REMOVE ME ###
-        self._set_vals.append((True, str(self._obj)))
-        #######################
         self.synchronize()
 
     def set_object(self, obj):
         self._obj = obj
-        ### FIXME: REMOVE ME ###
-        self._set_vals.append((True, str(self._obj)))
-        #######################
 
     def get_object(self):
         return self._obj
@@ -401,21 +390,12 @@ class requestPart(requestResponsePart):
         self.add_view(HttpHeadersView(w3af, self, editable))
 
     def get_both_texts(self):
-        try:
-            data = ''
-            if self._obj.get_data():
-                data = str(self._obj.get_data())
-            return (self._obj.dump_request_head(), data)
-        except AttributeError, ae:  # FIXME: REMOVE ME ###
-            msg = ("DEBUG_EXCEPTION: %s. Actions were: %s" %
-                   (ae, self._set_vals))
-            raise AttributeError(msg)
+        head = self._obj.dump_request_head()
+        data = str(self._obj.get_data()) if self._obj.get_data() else '' 
+        return head, data
 
     def show_raw(self, head, body):
         self._obj = HTTPRequestParser(head, body)
-        ### FIXME: REMOVE ME ###
-        self._set_vals.append((True, str(self._obj)))
-        #######################
         self.synchronize()
 
 

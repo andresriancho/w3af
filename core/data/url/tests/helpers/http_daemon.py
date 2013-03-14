@@ -48,6 +48,13 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         
         self.wfile.write('ABCDEF\n')
 
+    def do_POST(self):
+        """Serve a POST request."""
+        self.send_response(200)
+        self.end_headers()        
+        
+        self.wfile.write('ABCDEF\n')
+
     def log_message(self, fmt, *args):
         pass
     
@@ -91,3 +98,6 @@ class HTTPDaemon(threading.Thread):
     def requests(self):
         return self.server.RequestHandlerClass.requests
     
+    def shutdown(self):
+        self.server.RequestHandlerClass.requests = []
+        self.server.shutdown()

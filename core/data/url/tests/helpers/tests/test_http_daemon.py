@@ -39,7 +39,7 @@ class TestHTTPDaemon(unittest.TestCase):
         self.requests = self.http_daemon.requests 
     
     def tearDown(self):
-        self.http_daemon.server.shutdown()
+        self.http_daemon.shutdown()
     
     def test_simple_GET(self):
         url = 'http://%s:%s/hello' % ('127.0.0.1', self.http_daemon.get_port())

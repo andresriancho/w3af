@@ -209,6 +209,8 @@ class ExtendedUrllib(object):
 
         :return: An HTTPResponse object.
         '''
+        print repr(head)
+        print repr(postdata)
         # Parse the two strings
         fuzz_req = HTTPRequestParser(head, postdata)
 

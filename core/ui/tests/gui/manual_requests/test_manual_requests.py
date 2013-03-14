@@ -101,4 +101,58 @@ class TestManualRequests(XpresserUnittest):
             self.assertIn(header_name.lower(), request.headers)
             self.assertEqual(header_value, request.headers[header_name.lower()])
             
-        self.http_daemon.server.shutdown()
+        self.http_daemon.shutdown()
+    
+    def test_POST_request(self):
+        self.http_daemon = HTTPDaemon()
+        self.http_daemon.start()
+        self.http_daemon.wait_for_start()
+        
+        #
+        #    Send the request to our server using the GUI
+        #
+        self.double_click('localhost')
+        self.type('127.0.0.1:%s' % self.http_daemon.get_port(), False)
+        
+        # Move to the beginning
+        self.type(['<PgUp>',], False)
+        
+        # Replace GET with POST
+        self.type(['<Delete>',], False)
+        self.type(['<Delete>',], False)
+        self.type(['<Delete>',], False)
+        self.type('POST', False)
+        
+        # Move to the end (postdata)
+        self.type(['<PgDn>',], False)
+        post_data = 'foo=bar&spam=eggs'
+        self.type(post_data, False)
+        
+        self.click('send')
+        
+        # Wait until we actually get the response, and verify we got the
+        # response body we expected:
+        self.find('abcdef')
+        self.find('200_OK')
+        
+        #
+        #    Assert that it's what we really expected
+        #
+        requests = self.http_daemon.requests
+        self.assertEqual(len(requests), 1)
+        
+        request = requests[0]
+
+        head, postdata = MANUAL_REQUEST_EXAMPLE, ''
+        http_request = HTTPRequestParser(head, postdata)
+        
+        self.assertEqual(http_request.get_url().get_path(), request.path)
+        self.assertEqual('POST', request.command)
+        
+        for header_name, header_value in http_request.get_headers().iteritems():
+            self.assertIn(header_name.lower(), request.headers)
+            self.assertEqual(header_value, request.headers[header_name.lower()])
+        
+        self.assertEqual(str(len(post_data)), request.headers['content-length'])
+        
+        self.http_daemon.shutdown()

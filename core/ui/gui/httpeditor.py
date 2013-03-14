@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import pango
 import os
-import sys
 
 import gtksourceview2 as gtksourceview
 
@@ -56,11 +55,12 @@ class HttpEditor(gtk.VBox, Searchable):
         fontDesc = pango.FontDescription('monospace')
         if fontDesc:
             self.textView.modify_font(fontDesc)
+        
         # Syntax highlight
-        self._lm = gtksourceview.LanguageManager()
-        foo = self._lm.get_search_path()
-        foo.append('core' + os.path.sep + 'ui' + os.path.sep + 'gui')
-        self._lm.set_search_path(foo)
+        self._lang_man = gtksourceview.LanguageManager()
+        spath = self._lang_man.get_search_path()
+        spath.append('core' + os.path.sep + 'ui' + os.path.sep + 'gui')
+        self._lang_man.set_search_path(spath)
         self.set_language('http')
         #b.set_highlight_syntax(True)
 
@@ -78,12 +78,12 @@ class HttpEditor(gtk.VBox, Searchable):
         self.pack_start(sw1, expand=True, fill=True)
         # Create the search widget
         Searchable.__init__(self, self.textView, small=True)
-#
-# Interface
-#
-
+    
+    #
+    # Interface
+    #
     def set_language(self, name):
-        lang = self._lm.get_language(name)
+        lang = self._lang_man.get_language(name)
         b = self.textView.get_buffer()
         b.set_language(lang)
 
@@ -169,15 +169,18 @@ class HttpEditor(gtk.VBox, Searchable):
             return raw_text
         
         # else return tuple: (headers, data)
-        headers = raw_text
-        data = ""
-        tmp = raw_text.find("\r\n\r\n")
-        # It's POST!
-        if tmp != -1:
-            headers = raw_text[0:tmp + 1]
-            data = raw_text[tmp + 2:]
-            if data.strip() == "":
-                data = ""
+        splitted_raw_text = raw_text.split("\r\n\r\n", 1)
+        
+        if len(splitted_raw_text) == 1:
+            # no postdata
+            headers = splitted_raw_text
+            data = ''
+        else:
+            # We'll always have 2 here, since we passed 1 as a second
+            # parameter to split
+            headers = splitted_raw_text[0]
+            data = splitted_raw_text[1]
+                
         return (headers, data)
 
     def set_text(self, text, fixUtf8=False):
@@ -190,9 +193,10 @@ class HttpEditor(gtk.VBox, Searchable):
 
     def set_editable(self, e):
         return self.textView.set_editable(e)
-#
-# Inherit SourceView methods
-#
+    
+    #
+    # Inherit SourceView methods
+    #
 
     def set_highlight_syntax(self, val):
         b = self.textView.get_buffer()
@@ -209,10 +213,10 @@ class HttpEditor(gtk.VBox, Searchable):
             self.textView.set_wrap_mode(gtk.WRAP_WORD)
         else:
             self.textView.set_wrap_mode(gtk.WRAP_NONE)
-#
-# Private methods
-#
-
+            
+    #
+    # Private methods
+    #
     def _to_utf8(self, text):
         """
         This method was added to fix:
