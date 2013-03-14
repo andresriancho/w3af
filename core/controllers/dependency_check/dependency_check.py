@@ -20,28 +20,46 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import sys
-import platform
 import warnings
 import subprocess
 
 from core.controllers.dependency_check.lazy_load import lazy_load
+from core.controllers.dependency_check.os_detection import is_mac, is_linux
 
+if is_mac():
+    SYSTEM_PACKAGES = {
+                       'PIP': ['py27-pip'],
+                       'C_BUILD': ['python2.7-dev', 'python-setuptools',
+                                    'build-essential'],
+                       'GIT': ['git'],
+                       'XML': ['libxml2-dev', 'libxslt-dev']
+                      }
+    PIP_CMD = 'pip-2.7' 
 
-PYTHON_PIP = 'python-pip'
+else:
+    SYSTEM_PACKAGES = {
+                       'PIP': ['pip'],
+                       'C_BUILD': ['python2.7-dev', 'python-setuptools',
+                                    'build-essential'],
+                       'GIT': ['git'],
+                       'XML': ['libxml2-dev', 'libxslt-dev']
+                      }
+    PIP_CMD = 'pip'
+
 PIP_INSTALL = 'http://www.pip-installer.org/en/latest/installing.html'
 
-C_BUILD_PACKAGES = ['python2.7-dev', 'python-setuptools', 'build-essential']
 
 class PIPDependency(object):
     def __init__(self, module_name, package_name, os_packages=[]):
         self.module_name = module_name
         self.package_name = package_name
-        self.os_packages = [PYTHON_PIP,]
+        self.os_packages = SYSTEM_PACKAGES['PIP'][:]
         self.os_packages.extend(os_packages)
 
 PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
-                PIPDependency('git', 'GitPython', ['git']),
-                PIPDependency('pybloomfilter', 'pybloomfiltermmap', C_BUILD_PACKAGES),
+                PIPDependency('git', 'GitPython', SYSTEM_PACKAGES['GIT']),
+                PIPDependency('pybloomfilter', 'pybloomfiltermmap',
+                              SYSTEM_PACKAGES['C_BUILD']),
                 PIPDependency('esmre', 'esmre'),
                 PIPDependency('sqlite3', 'pysqlite'),
                 PIPDependency('nltk', 'nltk'),
@@ -49,11 +67,12 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('pdfminer', 'pdfminer'),
                 PIPDependency('concurrent.futures', 'futures'),
                 PIPDependency('OpenSSL', 'pyOpenSSL'),
-                PIPDependency('lxml', 'lxml', ['libxml2-dev', 'libxslt-dev']),
+                PIPDependency('lxml', 'lxml', SYSTEM_PACKAGES['XML']),
                 PIPDependency('scapy.config', 'scapy-real'),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
-                PIPDependency('msgpack', 'msgpack-python', C_BUILD_PACKAGES),
+                PIPDependency('msgpack', 'msgpack-python',
+                              SYSTEM_PACKAGES['C_BUILD']),
                 PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
@@ -94,7 +113,7 @@ def verify_python_version():
 
 def pip_installed():
     try:
-        return not bool(subprocess.call(['pip', 'help'], stdout=subprocess.PIPE,
+        return not bool(subprocess.call([PIP_CMD, 'help'], stdout=subprocess.PIPE,
                                                          stderr=subprocess.PIPE))
     except OSError:
         return False
@@ -133,24 +152,29 @@ def dependency_check():
     #
     #    Report all missing operating system packages
     #
-    curr_platform = platform.system().lower()
-    
     os_packages = []
     for fdep in failed_deps:
         os_packages.extend(fdep.os_packages)
     os_packages = list(set(os_packages))
     
     if pip_installed():
-        os_packages.remove(PYTHON_PIP)
+        for pip_pkg in SYSTEM_PACKAGES['PIP']:
+            os_packages.remove(pip_pkg)
     
     os_packages = [pkg for pkg in os_packages if not os_package_is_installed(pkg)]
     
-    if os_packages and 'linux' in curr_platform:
-        msg = 'On Debian based systems please install the following operating'\
-              ' system packages before running the pip installer:\n'
-        msg += '    sudo apt-get install ' + ' '.join(os_packages)
-        print msg, '\n'
-    
+    if os_packages:
+        if is_linux():
+            msg = 'On Debian based systems please install the following operating'\
+                  ' system packages before running the pip installer:\n'
+            msg += '    sudo apt-get install ' + ' '.join(os_packages)
+            print msg, '\n'
+        elif is_mac():
+            msg = 'On Mac OS X systems please install the following operating'\
+                  ' system packages before running the pip installer:\n'
+            msg += '    sudo port install ' + ' '.join(os_packages)
+            print msg, '\n'
+            
     #
     #    Report missing pip packages
     #
@@ -158,7 +182,7 @@ def dependency_check():
     
     msg = 'After installing any missing operating system packages, use pip to'\
           ' install the remaining modules:\n'
-    msg += '    sudo pip install ' + ' '.join(packages_pip)
+    msg += '    sudo %s install %s' % (PIP_CMD, ' '.join(packages_pip))
     print msg, '\n'
 
     sys.exit(1)
@@ -173,7 +197,3 @@ def mem_test(when):
                                                                0]]), human(cmd[1])
                                                  )
     print 'Total memory usage %s: %s' % (when, msg)
-
-
-def is_mac(curr_platform):
-    return 'darwin' in curr_platform or 'mac' in curr_platform
