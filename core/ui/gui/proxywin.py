@@ -56,7 +56,6 @@ class ProxiedRequests(entries.RememberingWindow):
         super(ProxiedRequests, self).__init__(
             w3af, "proxytool", _("w3af - Proxy"), "Using_the_Proxy",
             onDestroy=self._close)
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
         self.def_padding = 5
         self._uimanager = gtk.UIManager()

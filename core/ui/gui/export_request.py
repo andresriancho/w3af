@@ -48,7 +48,6 @@ class export_request(entries.RememberingWindow):
     def __init__(self, w3af, initialRequest=None):
         super(export_request, self).__init__(
             w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
 
         # different ways of exporting data

@@ -54,9 +54,8 @@ class ManualRequests(entries.RememberingWindow):
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(ManualRequests, self).__init__(
-            w3af, "manualreq", "w3af - Manual Requests", "Manual_Requests")
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
+        super(ManualRequests, self).__init__(w3af, "manualreq", "w3af - Manual Requests",
+                                             "Manual_Requests")
         self.w3af = w3af
         self._uimanager = gtk.UIManager()
         accelgroup = self._uimanager.get_accel_group()

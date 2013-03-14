@@ -50,7 +50,6 @@ class ClusterCellWindow(entries.RememberingWindow):
         super(ClusterCellWindow, self).__init__(
             w3af, "clusterWindow", "w3af - HTTP Response Clustering",
             "ClusterResponseTool")
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.set_size_request(400, 400)
 
         # Quit event.

@@ -23,6 +23,7 @@ import threading
 
 from core.ui.gui import history
 from core.ui.gui import helpers
+from core.ui.gui.constants import W3AF_ICON
 
 from core.data.options.preferences import Preferences
 from core.data.parsers.baseparser import BaseParser
@@ -629,6 +630,7 @@ class RememberingWindow(gtk.Window):
     '''
     def __init__(self, w3af, idstring, title, helpid='', onDestroy=None, guessResize=True):
         super(RememberingWindow, self).__init__(gtk.WINDOW_TOPLEVEL)
+        self.set_icon_from_file(W3AF_ICON)
         self.onDestroy = onDestroy
         self.helpid = helpid
 

@@ -79,7 +79,6 @@ class distance_function_selector(entries.RememberingWindow):
         super(distance_function_selector, self).__init__(
             w3af, "distance_function_selector", "w3af - Select distance function",
             "select_distance_function")
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.resize(300, 200)
 
         # Save for later usage

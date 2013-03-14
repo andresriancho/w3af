@@ -123,7 +123,6 @@ class Wizard(entries.RememberingWindow):
         super(Wizard, self).__init__(
             w3af, "wizard", "w3af Wizard: " + wizard.get_name(), "Wizards",
             guessResize=False)
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
         self.wizard = wizard
 
@@ -268,7 +267,6 @@ class WizardChooser(entries.RememberingWindow):
         super(WizardChooser, self).__init__(
             w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards",
             guessResize=False)
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
 
         # the image at the left

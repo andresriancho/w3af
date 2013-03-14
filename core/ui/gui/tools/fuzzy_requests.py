@@ -124,7 +124,6 @@ class FuzzyRequests(entries.RememberingWindow):
     def __init__(self, w3af, initialRequest=None):
         super(FuzzyRequests, self).__init__(
             w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
         self.historyItem = HistoryItem()
         mainhbox = gtk.HBox()

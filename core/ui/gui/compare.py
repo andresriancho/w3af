@@ -56,7 +56,6 @@ class Compare(entries.RememberingWindow):
         entries.RememberingWindow.__init__(
             self, w3af, "compare", "w3af - Compare", "Comparing_HTTP_traffic",
             onDestroy=commHandler.destroy)
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
         self.commHandler = commHandler
         commHandler.enable(self, self.add_element)
