@@ -43,6 +43,7 @@ class TestMainWindow(XpresserUnittest):
         self.find('output_plugin_list')
     
     def test_tab_navigation(self):
+        self.sleep(1)
         self.click('log_tab')
         self.find('scan_not_started')
         
