@@ -27,6 +27,9 @@ SYSTEM_NAME = 'Mac OSX'
 
 PKG_MANAGER_CMD = 'sudo port install'
 
+#
+#    Remember to use http://www.macports.org/ports.php to search for packages
+#
 SYSTEM_PACKAGES = {
                    'PIP': ['py27-pip'],
                    # Python port includes the dev headers
