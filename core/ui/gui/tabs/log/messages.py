@@ -143,11 +143,14 @@ class Messages(gtk.VBox, Searchable):
             but.connect("clicked", self.type_filter, signal)
             self.filters[signal] = initial
             upbox.pack_start(but, False, False)
+            
         make_but(_("Vulnerabilities"), "vulnerability", True)
         make_but(_("Information"), "information", True)
         make_but(_("Error"), "error", True)
-        search = entries.SemiStockButton(
-            _("Search"), gtk.STOCK_FIND, _("Search in the text"))
+        
+        search = entries.SemiStockButton(_("Search"), gtk.STOCK_FIND,
+                                         _("Search in the text"))
+        
         upbox.pack_end(search, False, False)
         upbox.show_all()
         self.pack_start(upbox, expand=False, fill=False)
@@ -165,6 +168,7 @@ class Messages(gtk.VBox, Searchable):
         Searchable.__init__(self, self.sclines)
         search.connect("clicked", self.show_search)
         self.show()
+        self.queue_draw()
 
     def type_filter(self, button, ptype):
         '''Applies the filter selected through the checkboxes.'''
