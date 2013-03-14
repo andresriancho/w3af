@@ -21,10 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import platform
 
+
+curr_platform = platform.system().lower()
+
 def is_mac():
-    curr_platform = platform.system().lower()
     return 'darwin' in curr_platform or 'mac' in curr_platform
 
 def is_linux():
-    curr_platform = platform.system().lower()
     return 'linux' in curr_platform
+
+def is_openbsd():
+    return 'openbsd' in curr_platform

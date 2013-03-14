@@ -23,24 +23,13 @@ import sys
 import warnings
 
 from core.controllers.dependency_check.lazy_load import lazy_load
-from core.controllers.dependency_check.os_detection import is_mac
 from core.controllers.dependency_check.utils import verify_python_version, pip_installed
-
-if is_mac():
-    from core.controllers.dependency_check.mac import (SYSTEM_NAME,
-                                                       PKG_MANAGER_CMD,
-                                                       SYSTEM_PACKAGES,
-                                                       PIP_CMD,
-                                                       PIP_PACKAGES,
-                                                       os_package_is_installed)
-
-else:
-    from core.controllers.dependency_check.linux import (SYSTEM_NAME,
-                                                         PKG_MANAGER_CMD,
-                                                         SYSTEM_PACKAGES,
-                                                         PIP_CMD,
-                                                         PIP_PACKAGES,
-                                                         os_package_is_installed)
+from core.controllers.dependency_check.current_platform import (SYSTEM_NAME,
+                                                                PKG_MANAGER_CMD,
+                                                                SYSTEM_PACKAGES,
+                                                                PIP_CMD,
+                                                                PIP_PACKAGES,
+                                                                os_package_is_installed)
 
     
 def dependency_check():
