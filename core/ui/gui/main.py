@@ -50,11 +50,13 @@ from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 from core.ui.gui.output.gtk_output import GtkOutput
 from core.ui.gui.auto_update.gui_updater import GUIUpdater
  
-from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from core.ui.gui import scanrun, exploittab, helpers, profiles, compare
 from core.ui.gui import export_request
 from core.ui.gui import entries, encdec, pluginconfig, confpanel
 from core.ui.gui import wizard, guardian, proxywin
 from core.ui.gui.tabs.log.main_body import LogBody
+from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
+from core.ui.gui.tools.manual_requests import ManualRequests
 
 # This is just general info, to help people know their system and report more
 # complete bugs
@@ -851,7 +853,7 @@ class MainApp(object):
 
     def _manual_request(self, action):
         '''Generate manual HTTP requests.'''
-        craftedRequests.ManualRequests(self.w3af)
+        ManualRequests(self.w3af)
 
     def _export_request(self, action):
         '''Export HTTP requests to python, javascript, etc.'''
@@ -859,7 +861,7 @@ class MainApp(object):
 
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
-        craftedRequests.FuzzyRequests(self.w3af)
+        FuzzyRequests(self.w3af)
 
     def _encode_decode(self, action):
         '''Generate fuzzy HTTP requests.'''

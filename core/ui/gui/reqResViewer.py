@@ -118,7 +118,8 @@ class reqResViewer(gtk.VBox):
         # Buttons
 
         # This import needs to be here in order to avoid an import loop
-        from core.ui.gui.craftedRequests import ManualRequests, FuzzyRequests
+        from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
+        from core.ui.gui.tools.manual_requests import ManualRequests
 
         hbox = gtk.HBox()
         if withManual or withFuzzy or withCompare:
@@ -212,8 +213,8 @@ class reqResViewer(gtk.VBox):
         # Now I start the analysis of this request in a new thread,
         # threading game (copied from craftedRequests)
         event = threading.Event()
-        impact = ThreadedURLImpact(
-            self.w3af, request, plugin_name, plugin_type, event)
+        impact = ThreadedURLImpact(self.w3af, request, plugin_name,
+                                   plugin_type, event)
         impact.start()
         gobject.timeout_add(200, self._impact_done, event, impact)
 

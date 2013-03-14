@@ -22,7 +22,9 @@ import os
 import gtk
 import webbrowser
 
-from core.ui.gui import entries, craftedRequests
+from core.ui.gui import entries
+from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
+from core.ui.gui.tools.manual_requests import ManualRequests
 from core.ui.gui.comparator import comparator
 
 # Alternative ways of seeing the data
@@ -301,8 +303,8 @@ class Compare(entries.RememberingWindow):
 
     def _send_requests(self, widg, edittype, paneside):
         '''Send the request to the manual or fuzzy request window.'''
-        func = dict(manual=craftedRequests.ManualRequests,
-                    fuzzy=craftedRequests.FuzzyRequests)[edittype]
+        func = dict(manual=ManualRequests,
+                    fuzzy=FuzzyRequests)[edittype]
         if paneside == "left":
             element = self.leftElement
         else:

@@ -29,8 +29,11 @@ import xdot
 
 from multiprocessing.dummy import Process, Event
 
-from core.ui.gui import httpLogTab, reqResViewer, craftedRequests, entries
+from core.ui.gui import httpLogTab, reqResViewer, entries
 from core.ui.gui.kb.kbtree import KBTree
+from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
+from core.ui.gui.tools.manual_requests import ManualRequests
+
 from core.data.db.history import HistoryItem
 from core.data.kb.info import Info
 
@@ -524,7 +527,7 @@ class URLsTree(gtk.TreeView):
         image.set_from_stock(gtk.STOCK_INDEX, gtk.ICON_SIZE_MENU)
         e.set_image(image)
         e.connect('activate', self._send_request, sendtext,
-                  craftedRequests.ManualRequests)
+                  ManualRequests)
         gm.append(e)
 
         image = gtk.Image()
@@ -532,7 +535,7 @@ class URLsTree(gtk.TreeView):
         e = gtk.ImageMenuItem(_("Open with Fuzzy Request Editor..."))
         e.set_image(image)
         e.connect('activate', self._send_request, sendtext,
-                  craftedRequests.FuzzyRequests)
+                  FuzzyRequests)
         gm.append(e)
 
         e = gtk.ImageMenuItem(_("Open with default browser..."))
