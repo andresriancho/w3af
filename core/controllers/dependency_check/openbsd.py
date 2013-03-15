@@ -34,9 +34,10 @@ SYSTEM_PACKAGES = {
                    'PIP': ['py-pip'],
                    'C_BUILD': ['python-2.7.3p0', 'py-setuptools', 'gcc'],
                    'GIT': ['git'],
-                   'XML': ['libxml', 'libxslt']
+                   'XML': ['libxml', 'libxslt'],
+                   'SCAPY': ['py-pcapy', 'py-libdnet'],
                   }
-PIP_CMD = 'pip'
+PIP_CMD = 'pip-2.7'
 
 PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('git', 'GitPython', SYSTEM_PACKAGES['GIT']),
