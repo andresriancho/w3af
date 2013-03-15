@@ -29,7 +29,8 @@ from core.controllers.dependency_check.current_platform import (SYSTEM_NAME,
                                                                 SYSTEM_PACKAGES,
                                                                 PIP_CMD,
                                                                 PIP_PACKAGES,
-                                                                os_package_is_installed)
+                                                                os_package_is_installed,
+                                                                after_hook)
 
     
 def dependency_check():
@@ -94,7 +95,9 @@ def dependency_check():
           ' install the remaining modules:\n'
     msg += '    sudo %s install %s' % (PIP_CMD, ' '.join(packages_pip))
     print msg, '\n'
-
+    
+    after_hook()
+    
     sys.exit(1)
 
 

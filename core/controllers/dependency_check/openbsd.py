@@ -75,3 +75,6 @@ def os_package_is_installed(package_name):
             return True
         else:
             return False
+
+def after_hook():
+    pass

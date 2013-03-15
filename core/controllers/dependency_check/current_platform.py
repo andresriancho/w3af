@@ -27,7 +27,8 @@ if is_mac():
                                                        SYSTEM_PACKAGES,
                                                        PIP_CMD,
                                                        PIP_PACKAGES,
-                                                       os_package_is_installed)
+                                                       os_package_is_installed,
+                                                       after_hook)
 
 elif is_openbsd():
     from core.controllers.dependency_check.openbsd import (SYSTEM_NAME,
@@ -35,12 +36,14 @@ elif is_openbsd():
                                                            SYSTEM_PACKAGES,
                                                            PIP_CMD,
                                                            PIP_PACKAGES,
-                                                           os_package_is_installed)
+                                                           os_package_is_installed,
+                                                           after_hook)
 else:
     from core.controllers.dependency_check.linux import (SYSTEM_NAME,
                                                          PKG_MANAGER_CMD,
                                                          SYSTEM_PACKAGES,
                                                          PIP_CMD,
                                                          PIP_PACKAGES,
-                                                         os_package_is_installed)
+                                                         os_package_is_installed,
+                                                         after_hook)
     
