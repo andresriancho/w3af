@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import platform
 import subprocess
 
 import core.controllers.output_manager as om
 
-from core.controllers.dependency_check.dependency_check import is_mac
+from core.controllers.dependency_check.os_detection import is_mac, is_linux, is_openbsd
 
 
 def gtkui_dependency_check():
@@ -86,21 +85,19 @@ def gtkui_dependency_check():
         packages_openbsd.append('gtksourceview')
         reason_for_exit = True
 
-    curr_platform = platform.system().lower()
-
     if packages:
         msg = 'Your python installation needs the following packages:\n'
         msg += '    ' + ' '.join(packages)
         print msg, '\n'
-    if packages_debian and 'linux' in curr_platform:
+    if packages_debian and is_linux():
         msg = 'On debian based systems:\n'
         msg += '    sudo apt-get install ' + ' '.join(packages_debian)
         print msg, '\n'
-    if packages_mac_ports and is_mac(curr_platform):
+    if packages_mac_ports and is_mac():
         msg = 'On a mac with mac ports installed:\n'
         msg += '    sudo port install ' + ' '.join(packages_mac_ports)
         print msg, '\n'
-    if packages_openbsd and 'openbsd' in curr_platform:
+    if packages_openbsd and is_openbsd():
         msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
         msg += '    pkg_add -v  ' + ' '.join(packages_openbsd)
