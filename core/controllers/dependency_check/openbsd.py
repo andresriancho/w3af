@@ -58,7 +58,7 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
-    command = 'pkg_info | grep "^%s"'
+    command = 'pkg_info | grep "^%s"' % package_name
     
     try:
         pkg_info_output = subprocess.check_output(command, shell=True)
