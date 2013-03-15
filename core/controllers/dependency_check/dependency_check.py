@@ -70,13 +70,10 @@ def dependency_check():
     for fdep in failed_deps:
         os_packages.extend(fdep.os_packages)
     os_packages = list(set(os_packages))
-    
-    if pip_installed():
-        for pip_pkg in SYSTEM_PACKAGES['PIP']:
-            if pip_pkg in os_packages:
-                os_packages.remove(pip_pkg)
-    
     os_packages = [pkg for pkg in os_packages if not os_package_is_installed(pkg)]
+
+    if not pip_installed():
+        os_packages.extend(SYSTEM_PACKAGES['PIP'])
     
     if os_packages:
         missing_pkgs = ' '.join(os_packages)

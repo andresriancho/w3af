@@ -47,8 +47,9 @@ def verify_python_version():
 
 def pip_installed():
     try:
-        return not bool(subprocess.call([PIP_CMD, 'help'], stdout=subprocess.PIPE,
-                                                         stderr=subprocess.PIPE))
+        return not bool(subprocess.call([PIP_CMD, 'help'],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE))
     except OSError:
         return False
 
