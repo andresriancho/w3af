@@ -92,8 +92,13 @@ class dir_bruter(CrawlPlugin):
 
             # ignore comments and empty lines
             if directory_name and not directory_name.startswith('#'):
-                dir_url = base_path.url_join(directory_name + '/')
-                yield directory_name, dir_url
+                try:
+                    dir_url = base_path.url_join(directory_name + '/')
+                except ValueError, ve:
+                    msg = 'The "%s" line at "%s" generated an invalid URL: %s'
+                    om.out.debug(msg % (directory_name, self._dir_list, ve))
+                else:
+                    yield directory_name, dir_url
 
     def _send_and_check(self, base_path, (directory_name, dir_url)):
         '''
