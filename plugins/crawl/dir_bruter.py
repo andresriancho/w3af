@@ -106,34 +106,31 @@ class dir_bruter(CrawlPlugin):
         except:
             pass
         else:
-            if not is_404(http_response):
+            if is_404(http_response):
+                return
+            #
+            #   Looking good, but lets see if this is a false positive
+            #   or not...
+            #
+            dir_url = base_path.url_join(directory_name + rand_alnum(5) + '/')
+
+            invalid_http_response = self._uri_opener.GET(dir_url,
+                                                         cache=False)
+
+            if is_404(invalid_http_response):
                 #
-                #   Looking good, but lets see if this is a false positive
-                #   or not...
+                #    Good, the directory_name + rand_alnum(5) return a
+                #    404, the original directory_name is not a false positive.
                 #
-                dir_url = base_path.url_join(
-                    directory_name + rand_alnum(5) + '/')
+                for fr in self._create_fuzzable_requests(http_response):
+                    self.output_queue.put(fr)
 
-                invalid_http_response = self._uri_opener.GET(
-                    dir_url, cache=False)
-
-                if is_404(invalid_http_response):
-                    #
-                    #    Good, the directory_name + rand_alnum(5) return a
-                    #    404, the original directory_name is not a false positive.
-                    #
-                    for fr in self._create_fuzzable_requests(http_response):
-                        self.output_queue.put(fr)
-
-                    msg = 'Directory bruteforcer plugin found directory "'
-                    msg += http_response.get_url() + '"'
-                    msg += ' with HTTP response code ' + \
-                        str(http_response.get_code())
-                    msg += ' and Content-Length: ' + \
-                        str(len(http_response.get_body()))
-                    msg += '.'
-
-                    om.out.information(msg)
+                msg = 'Directory bruteforcer plugin found directory "%s"'\
+                      ' with HTTP response code %s and Content-Length: %s.'\
+                
+                om.out.information(msg % (http_response.get_url(),
+                                          http_response.get_code(),
+                                          len(http_response.get_body())))
 
     def _bruteforce_directories(self, base_path):
         '''
