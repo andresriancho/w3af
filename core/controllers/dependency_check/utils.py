@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import subprocess
 
-from core.controllers.dependency_check.current_platform import PIP_CMD
+from .platforms.current_platform import PIP_CMD
 
                                                          
 def verify_python_version():
