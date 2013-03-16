@@ -57,7 +57,7 @@ class csp(GrepPlugin):
     def grep(self, request, response):
         '''
         Perform search on current HTTP request/response exchange.
-        Store informations about vulns for futher global processing.
+        Store informations about vulns for further global processing.
         
         @param request: HTTP request
         @param response: HTTP response  
@@ -89,15 +89,57 @@ class csp(GrepPlugin):
             return
         
         #Parse vulns collection
-        #TODO perform more deeper analysis in order find vulns correlation !!!
+        vuln_already_reported = []
+        total_url_processed_count = len(self._urls)
         for vuln_store_item in self._vulns:
             for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
                 for csp_vuln in csp_vulns_list:
-                    desc = "[CSP Directive '" + csp_directive_name + "'] : " + csp_vuln.desc
-                    v = Vuln('CSP vulnerability', desc,
-                             csp_vuln.severity, vuln_store_item.resp_id, self.get_name())
-                    self.kb_append(self, 'csp', v)  
+                    #Check if the current vuln is common (shared) to several url processed 
+                    #and have been already reported
+                    if csp_vuln.desc in vuln_already_reported:
+                        continue
+                    #Search for current vuln occurences in order to know if 
+                    #the vuln is common (shared) to several url processed                                    
+                    occurences = self._find_occurences(csp_vuln.desc)
+                    v = None
+                    if len(occurences) > 1:
+                        #Shared vuln case
+                        v = Vuln('CSP vulnerability', csp_vuln.desc,
+                            csp_vuln.severity, occurences, self.get_name())
+                        vuln_already_reported.append(csp_vuln.desc)
+                    else:
+                        #Isolated vuln case
+                        v = Vuln('CSP vulnerability', csp_vuln.desc,
+                            csp_vuln.severity, vuln_store_item.resp_id, self.get_name())
+                    #Report vuln
+                    self.kb_append(self, 'csp', v)
                 
         #Cleanup
         self._urls.cleanup()
         self._vulns.cleanup()
+
+
+    def _find_occurences(self, vuln_desc):
+        '''
+        Internal utility function to find all occurences of a vuln 
+        into the global collection of vulns found by the plugin.
+        
+        @param vuln_desc: Vulnerability description.
+        @return: List of response ID for which the vuln is found.
+        '''
+        list_resp_id = []
+
+        #Check input for quick exit
+        if vuln_desc is None or vuln_desc.strip() == "":
+            return list_resp_id
+       
+        #Parse vulns collection
+        ref = vuln_desc.lower().strip()        
+        for vuln_store_item in self._vulns:
+            for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
+                for csp_vuln in csp_vulns_list:        
+                    if csp_vuln.desc.strip().lower() == ref:
+                        if vuln_store_item.resp_id  not in list_resp_id:
+                            list_resp_id.append(vuln_store_item.resp_id)
+
+        return list_resp_id
