@@ -22,12 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import subprocess
 
-from core.controllers.dependency_check.os_detection import is_mac
-
-if is_mac():
-    from core.controllers.dependency_check.mac import PIP_CMD
-else:
-    from core.controllers.dependency_check.linux import PIP_CMD
+from .platforms.current_platform import PIP_CMD
 
                                                          
 def verify_python_version():
@@ -47,8 +42,9 @@ def verify_python_version():
 
 def pip_installed():
     try:
-        return not bool(subprocess.call([PIP_CMD, 'help'], stdout=subprocess.PIPE,
-                                                         stderr=subprocess.PIPE))
+        return not bool(subprocess.call([PIP_CMD, 'help'],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE))
     except OSError:
         return False
 

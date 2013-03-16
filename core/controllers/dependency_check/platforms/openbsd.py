@@ -23,20 +23,21 @@ import subprocess
 
 from core.controllers.dependency_check.pip_dependency import PIPDependency
 
-SYSTEM_NAME = 'OpenBSD 5.1'
+SYSTEM_NAME = 'OpenBSD 5'
 
-PKG_MANAGER_CMD = 'pkg_add -v'
+PKG_MANAGER_CMD = 'pkg_add -i -v'
 
 #
-#    Package list here http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/
+#    Package list here http://ftp.openbsd.org/pub/OpenBSD/5.2/packages/i386/
 #
 SYSTEM_PACKAGES = {
                    'PIP': ['py-pip'],
-                   'C_BUILD': ['python2.7', 'py-setuptools', 'gcc-4.6.2'],
+                   'C_BUILD': ['python-2.7.3p0', 'py-setuptools', 'gcc'],
                    'GIT': ['git'],
-                   'XML': ['libxml', 'libxslt']
+                   'XML': ['libxml', 'libxslt'],
+                   'SCAPY': ['py-pcapy', 'py-libdnet'],
                   }
-PIP_CMD = 'pip'
+PIP_CMD = 'pip-2.7'
 
 PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('git', 'GitPython', SYSTEM_PACKAGES['GIT']),
@@ -50,7 +51,8 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('concurrent.futures', 'futures'),
                 PIPDependency('OpenSSL', 'pyOpenSSL'),
                 PIPDependency('lxml', 'lxml', SYSTEM_PACKAGES['XML']),
-                PIPDependency('scapy.config', 'scapy-real'),
+                PIPDependency('scapy.config', 'scapy-real',
+                              SYSTEM_PACKAGES['SCAPY']),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
                 PIPDependency('msgpack', 'msgpack-python',
@@ -58,23 +60,18 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
-    # TODO: Improve this function, it should also check for the negative case
-    # just like the one in linux.py (see not_installed)
-    installed = 'Information for '
+    command = 'pkg_info | grep "^%s"' % package_name
     
     try:
-        p = subprocess.Popen(['pkg_info', package_name], stdout=subprocess.PIPE,
-                                                         stderr=subprocess.PIPE)
-    except OSError:
+        pkg_info_output = subprocess.check_output(command, shell=True)
+    except:
         # We're not on an openbsd based system
         return None
     else:
-        pkg_info_output = p.stdout.read()
-
-        if installed in pkg_info_output:
-            return True
-        else:
-            return False
+        return pkg_info_output.startswith(package_name)
 
 def after_hook():
-    pass
+    msg = 'Before running pkg_add remember to specify the package path using:\n'\
+          '    export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/`uname'\
+          ' -r`/packages/`machine -a`/'
+    print msg

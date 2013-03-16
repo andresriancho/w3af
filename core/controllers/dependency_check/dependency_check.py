@@ -22,15 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import warnings
 
-from core.controllers.dependency_check.lazy_load import lazy_load
-from core.controllers.dependency_check.utils import verify_python_version, pip_installed
-from core.controllers.dependency_check.current_platform import (SYSTEM_NAME,
-                                                                PKG_MANAGER_CMD,
-                                                                SYSTEM_PACKAGES,
-                                                                PIP_CMD,
-                                                                PIP_PACKAGES,
-                                                                os_package_is_installed,
-                                                                after_hook)
+from .lazy_load import lazy_load
+from .utils import verify_python_version, pip_installed
+from .platforms.current_platform import (SYSTEM_NAME,
+                                         PKG_MANAGER_CMD,
+                                         SYSTEM_PACKAGES,
+                                         PIP_CMD,
+                                         PIP_PACKAGES,
+                                         os_package_is_installed,
+                                         after_hook)
 
     
 def dependency_check():
@@ -70,13 +70,10 @@ def dependency_check():
     for fdep in failed_deps:
         os_packages.extend(fdep.os_packages)
     os_packages = list(set(os_packages))
-    
-    if pip_installed():
-        for pip_pkg in SYSTEM_PACKAGES['PIP']:
-            if pip_pkg in os_packages:
-                os_packages.remove(pip_pkg)
-    
     os_packages = [pkg for pkg in os_packages if not os_package_is_installed(pkg)]
+
+    if not pip_installed():
+        os_packages.extend(SYSTEM_PACKAGES['PIP'])
     
     if os_packages:
         missing_pkgs = ' '.join(os_packages)
