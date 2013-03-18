@@ -524,8 +524,6 @@ class ExtendedUrllib(object):
 
         try:
             res = self._opener.open(req)
-        except Exception, e:
-            raise
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
             msg = '%s %s returned HTTP code "%s"' % (req.get_method(),
