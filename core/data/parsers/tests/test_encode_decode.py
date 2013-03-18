@@ -55,8 +55,9 @@ class TestHTMLDecode(unittest.TestCase):
         self.assertEqual(htmldecode(html), html)
     
     def test_bug_trigger_case02(self):
-        html = 'Aqu\xc3\xad encontrar\xc3\xa1'.encode('utf-8')
-        self.assertEqual(htmldecode(html), html)
+        html_utf8_raw = 'Aqu\xc3\xad encontrar\xc3\xa1'
+        html_unicode = 'Aqu\xc3\xad encontrar\xc3\xa1'.decode('utf-8')
+        self.assertEqual(htmldecode(html_utf8_raw), html_unicode)
 
     def test_bug_trigger_case03(self):
         html = u'\xed'
