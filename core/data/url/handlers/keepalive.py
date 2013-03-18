@@ -740,7 +740,8 @@ class KeepAliveHandler(object):
             header_dict.update(req.unredirected_hdrs)
 
             for k, v in header_dict.iteritems():
-                conn.putheader(k, v)
+                conn.putheader(to_utf8_raw(k),
+                               to_utf8_raw(v))
             conn.endheaders()
 
             if data is not None:
@@ -873,6 +874,11 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
         ssl = socket.ssl(self.sock, self.key_file, self.cert_file)
         self.sock = httplib.FakeSocket(self.sock, ssl)
 
+def to_utf8_raw(unicode_or_str):
+    if isinstance(unicode_or_str, unicode):
+        # Is 'ignore' the best option here?
+        return unicode_or_str.encode('utf-8', 'ignore')
+    return unicode_or_str
 
 class HTTPConnection(_HTTPConnection):
     # use the modified response class

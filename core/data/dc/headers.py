@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 headers.py
 
@@ -111,15 +112,40 @@ class Headers(DataContainer):
 
     def __str__(self):
         '''
-        >>> str(Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items()))
-        'HoST: w3af.com\\r\\nAccEpt: */*\\r\\n'
-
-        >>> repr(Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items()))
-        "Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})"
-
+        After getting some strange encoding errors I started to research about
+        HTTP header encoding a little bit. The RFC mentions that special chars
+        should be encoded using in RFC 2047, which in python is achieved with:
+        
+            >>> from email.header import Header
+            >>> h = Header()
+            >>> h.append(u'á')
+            >>> h.encode()
+            '=?utf-8?b?w4PCoQ==?='
+ 
+        Also tested wget and curl:
+            wget --header "X-MyHeader: à" moth
+            curl --header "X-MyHeader: à" moth
+        
+        And realized that both send the special char using a "simple" unicode
+        encoding (which actually goes against the RFC).
+        
+        Afterwards I created a test script in PHP, hosted it in my local Apache
+        and analyzed what PHP got in each case. The test proved that neither
+        PHP nor Apache decode the RFC 2047 and they DO ACCEPT the unicode
+        encoded char.
+        
+        To be sure we can send HTTP requests with special chars, which are
+        then correctly read by Apache/PHP, we're going to mimic wget/curl.
+        
         :return: string representation of the Headers() object.
         '''
-        return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'
+        header_str_unicode = self._to_str_with_separators(u': ', u'\r\n')
+        header_str_unicode += u'\r\n'
+        
+        return header_str_unicode.encode('utf-8')
 
     def __unicode__(self):
-        return str(self).decode(self.encoding)
+        '''
+        :see: __str__ documentation.
+        '''
+        return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'

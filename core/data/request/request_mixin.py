@@ -30,12 +30,12 @@ class RequestMixIn(object):
         '''
         :return: a DETAILED str representation of this fuzzable request.
         '''
-        return "%s%s%s" % (self.dump_request_head(),
+        return u"%s%s%s" % (self.dump_request_head(),
                            CRLF, str(self.get_data() or ''))
 
     def get_request_line(self):
         '''Return request line.'''
-        return "%s %s HTTP/1.1%s" % (self.get_method(),
+        return u"%s %s HTTP/1.1%s" % (self.get_method(),
                                      self.get_uri().url_encode(),
                                      CRLF)
 
@@ -43,10 +43,10 @@ class RequestMixIn(object):
         '''
         :return: A string with the head of the request
         '''
-        return "%s%s" % (self.get_request_line(), self.dump_headers())
+        return u"%s%s" % (self.get_request_line(), self.dump_headers())
 
     def dump_headers(self):
         '''
         :return: A string representation of the headers.
         '''
-        return str(self.get_headers())    
+        return unicode(self.get_headers())    
