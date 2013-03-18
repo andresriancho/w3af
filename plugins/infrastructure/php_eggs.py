@@ -336,6 +336,7 @@ class php_eggs(InfrastructurePlugin):
             cmp_list = []
             for query_result in query_results:
                 body = query_result.http_response.get_body()
+                if isinstance(body, unicode): body = body.encode('utf-8')
                 hash_str = hashlib.md5(body).hexdigest()
                 
                 cmp_list.append((hash_str, query_result.egg_desc))
