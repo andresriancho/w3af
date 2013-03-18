@@ -81,10 +81,10 @@ class TestXUrllib(unittest.TestCase):
 
     def test_POST_special_chars(self):
         url = URL('http://moth/w3af/audit/xss/data_receptor2.php')
-        test_data = 'abc<def>"-á-'
+        test_data = u'abc<def>"-á-'
         data = DataContainer([('empresa', test_data), ('firstname', 'def')])
         http_response = self.uri_opener.POST(url, data, cache=False)
-        self.assertTrue(test_data in http_response.body, http_response.body)
+        self.assertIn(test_data, http_response.body)
 
     def test_unknown_url(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
