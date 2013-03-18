@@ -77,8 +77,15 @@ class TestHeaders(unittest.TestCase):
     def test_special_chars(self):
         headers = Headers([('á', 'ç')])
 
-        self.assertIn('á', headers)
-        self.assertEqual(headers['á'], 'ç')
+        self.assertIn(u'á', headers)
+        self.assertEqual(headers[u'á'], u'ç')
+
+    def test_special_chars_build(self):
+        headers_initial = Headers([('á', 'ç')])
+        headers_from_headers = Headers(headers_initial)
+        
+        self.assertIn(u'á', headers_from_headers)
+        self.assertEqual(headers_from_headers[u'á'], u'ç')
 
     def test_add_later(self):
         headers = Headers([('a', 'b')])

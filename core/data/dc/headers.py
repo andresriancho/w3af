@@ -94,12 +94,14 @@ class Headers(DataContainer):
 
     def __setitem__(self, k, v):
         if isinstance(k, basestring):
-            k = k.encode(self.encoding, 'replace')
+            if not isinstance(k, unicode):
+                k = k.encode(self.encoding, 'replace')
         else:
             raise ValueError('Header name must be a string.')
 
         if isinstance(v, basestring):
-            v = v.encode(self.encoding, 'replace')
+            if not isinstance(k, unicode):
+                v = v.encode(self.encoding, 'replace')
         #
         # Had to remove this for clone_with_list_values
         #else:
