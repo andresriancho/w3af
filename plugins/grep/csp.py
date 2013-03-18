@@ -22,15 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.constants.severity as severity
 
 from core.data.db.disk_list import DiskList
-from core.data.db.disk_csp_vuln_store_item import DiskCSPVulnStoreItem
+from core.data.db.disk_item import DiskItem
 from core.data.kb.vuln import Vuln
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.csp.utils import find_vulns
 
 class csp(GrepPlugin):
     '''
-    Find in each page vulnerabilities coming from Content Security Policy  
-    (W3C specification) bad or too permissive configuration.    
+    This plugin identifies incorrect or too permissive CSP (Content Security Policy) headers returned by the web application under analysis.
     '''
 
     def __init__(self):
@@ -45,9 +44,8 @@ class csp(GrepPlugin):
                 
     def get_long_desc(self):
         return '''
-        This plugin find, in each page, vulnerabilities coming from 
-        Content Security Policy (W3C specification) bad or too permissive 
-        configuration.
+        This plugin identifies incorrect or too permissive CSP (Content Security Policy) headers
+        returned by the web application under analysis.
 
         Additional information: 
         https://www.owasp.org/index.php/Content_Security_Policy
@@ -95,7 +93,7 @@ class csp(GrepPlugin):
             for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
                 for csp_vuln in csp_vulns_list:
                     #Check if the current vuln is common (shared) to several url processed 
-                    #and have been already reported
+                    #and has been already reported
                     if csp_vuln.desc in vuln_already_reported:
                         continue
                     #Search for current vuln occurences in order to know if 
@@ -143,3 +141,27 @@ class csp(GrepPlugin):
                             list_resp_id.append(vuln_store_item.resp_id)
 
         return list_resp_id
+
+
+
+class DiskCSPVulnStoreItem(DiskItem):
+    '''
+    This is a class to store CSP vulnerabilities found for a URL (URL+ID) in a DiskList or DiskSet.
+    '''
+
+    '''
+    Constructor.
+    @param r_url: HTTP reponse url
+    @param r_id: HTTP reponse ID
+    @param r_vulns: CSP vulnerabilities found
+    '''
+    def __init__(self, r_url, r_id, r_vulns):
+        self.url = r_url
+        self.resp_id = r_id
+        self.csp_vulns = r_vulns
+
+    '''
+    Implements method from base class.
+    '''
+    def get_eq_attrs(self):
+        return ['url','resp_id']        

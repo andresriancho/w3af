@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 class TestCSP(PluginTest):
  
     #Test scripts URLs
-    base_url = 'http://moth:81'
+    base_url = 'http://moth'
     csp_with_error_url = base_url + '/grep/csp/index.php'    
     csp_without_error_url = base_url + '/grep/csp/csp_without_error.php'
 
@@ -64,9 +64,11 @@ class TestCSP(PluginTest):
         expected_vulns_desc.append("Directive 'script-src' is defined but no directive 'script-nonce' is defined to protect javascript resources.")
         expected_vulns_desc.append("Directive 'object-src' allow all plugin sources.")
         expected_vulns_desc.append("Somes directives are misspelled: def-src,sript-src.")
+
         #Configure and run test case
         cfg = self._run_configs['cfg_with_error']
         self._scan(cfg['target'], cfg['plugins'])
+
         #Apply validation
         vulns = self.kb.get('csp', 'csp')
         self.assertEquals(len(expected_vulns_desc), len(vulns))        
@@ -83,6 +85,7 @@ class TestCSP(PluginTest):
         #Configure and run test case
         cfg = self._run_configs['cfg_without_error']
         self._scan(cfg['target'], cfg['plugins'])
+        
         #Apply validation
         vulns = self.kb.get('csp', 'csp')
         self.assertEquals(0, len(vulns))        
