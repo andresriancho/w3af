@@ -47,24 +47,10 @@ class bing(SearchEngine):
         This method is based from the msn.py file from the massive enumeration toolset,
         coded by pdp and released under GPL v2.
         '''
-        class BingResult:
-            '''
-            Dummy class that represents the search result.
-            '''
-            def __init__(self, url):
-                if not isinstance(url, URL):
-                    msg = 'The url __init__ parameter of a BingResult object must'
-                    msg += ' be of url.URL type.'
-                    raise ValueError(msg)
-
-                self.URL = url
-
-            def __repr__(self):
-                return '<bing result %s>' % self.URL
-
         url = 'http://www.bing.com/search?'
-        query = urllib.urlencode(
-            {'q': query, 'first': start + 1, 'FORM': 'PERE'})
+        query = urllib.urlencode({'q': query,
+                                  'first': start + 1,
+                                  'FORM': 'PERE'})
         url_instance = URL(url + query)
         response = self._uri_opener.GET(url_instance, headers=self._headers,
                                         cache=True, grep=False)
@@ -74,7 +60,7 @@ class bing(SearchEngine):
         re_match = re.findall('<a href="((http|https)(.*?))" h="ID=SERP,',
                               response.get_body())
 
-        results = []
+        results = set()
 
         for url, _, _ in re_match:
             try:
@@ -82,7 +68,30 @@ class bing(SearchEngine):
             except:
                 pass
             else:
+                
                 if url.get_domain() not in self.BLACKLISTED_DOMAINS:
-                    results.append(BingResult(url))
+                    bing_result = BingResult(url)
+                    results.add(bing_result)
 
         return results
+
+class BingResult(object):
+    '''
+    Dummy class that represents the search result.
+    '''
+    def __init__(self, url):
+        if not isinstance(url, URL):
+            msg = 'The url __init__ parameter of a BingResult object must'\
+                  ' be of url.URL type.'
+            raise TypeError(msg)
+
+        self.URL = url
+
+    def __repr__(self):
+        return '<bing result %s>' % self.URL
+    
+    def __eq__(self, other):
+        return self.URL == other.URL
+    
+    def __hash__(self):
+        return hash(self.URL)
