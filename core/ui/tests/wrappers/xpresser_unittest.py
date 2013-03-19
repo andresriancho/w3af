@@ -44,16 +44,16 @@ def debug_notify(meth):
             title = 'Error'
             message = 'Error found while running %s%s: %s'
             message = message % (name, args, inf)
-            notification = Notify.Notification.new (title, message,
-                                                    'dialog-error')
+            notification = Notify.Notification.new(title, message,
+                                                   'dialog-error')
             notification.show()
             raise inf
         else:
             '''
             title = 'Success'
             message = '%s(%s)' % (name, args)
-            notification = Notify.Notification.new (title, message,
-                                                    'dialog-information')
+            notification = Notify.Notification.new(title, message,
+                                                   'dialog-information')
             notification.show()
             '''
             return result
@@ -86,6 +86,7 @@ class XpresserUnittest(unittest.TestCase):
         self.xp = Xpresser()
         
         all_image_paths = [self.GENERIC_IMAGES, self.EXTRA_IMAGES, self.IMAGES]
+        
         for image_path in all_image_paths:
             if image_path is not None:
                 self.xp.load_images(image_path)
