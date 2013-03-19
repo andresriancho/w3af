@@ -67,6 +67,7 @@ class XpresserUnittest(unittest.TestCase):
     
     GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
     EXTRA_IMAGES = None
+    IMAGES = None
     
     '''    
     @classmethod
@@ -83,11 +84,11 @@ class XpresserUnittest(unittest.TestCase):
          
     def setUp(self):
         self.xp = Xpresser()
-        self.xp.load_images(self.IMAGES)
-        self.xp.load_images(self.GENERIC_IMAGES)
         
-        if self.EXTRA_IMAGES is not None:
-            self.xp.load_images(self.EXTRA_IMAGES)
+        all_image_paths = [self.GENERIC_IMAGES, self.EXTRA_IMAGES, self.IMAGES]
+        for image_path in all_image_paths:
+            if image_path is not None:
+                self.xp.load_images(image_path)
             
         Notify.init('Xpresser')
         
