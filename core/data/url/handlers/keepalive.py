@@ -832,7 +832,7 @@ class ProxyHTTPConnection(_HTTPConnection):
     def connect(self):
         httplib.HTTPConnection.connect(self)
         #send proxy CONNECT request
-        self.send("CONNECT %s:%d HTTP/1.0\r\n\r\n" % (self._real_host,
+        self.send("CONNECT %s:%d HTTP/1.0\r\nConnection: close\r\n\r\n" % (self._real_host,
                                                       self._real_port))
         #expect a HTTP/1.0 200 Connection established
         response = self.response_class(self.sock, strict=self.strict,
