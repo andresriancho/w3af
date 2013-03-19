@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 import compiler
+import subprocess
 
 
 class TestW3afConsole(unittest.TestCase):
@@ -30,3 +31,15 @@ class TestW3afConsole(unittest.TestCase):
                 file('w3af_console').read(), '/tmp/foo.tmp', 'exec')
         except SyntaxError, se:
             self.assertTrue(False, 'Error in w3af_console code "%s"' % se)
+
+    def test_get_prompt(self):
+        p = subprocess.Popen(['python', 'w3af_console', '-n'],
+                             stdout=subprocess.PIPE,
+                             stdin=subprocess.PIPE)
+        
+        expected_prompt = 'w3af>>>'
+        prompt = p.stdout.read(len(expected_prompt))
+        
+        self.assertEqual(expected_prompt, prompt)
+        
+        p.kill()
