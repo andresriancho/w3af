@@ -224,16 +224,20 @@ class lfi(AuditPlugin):
                   ' included is (only a fragment is shown): "%s". This is' \
                   ' just an informational message, which might be related' \
                   '  to a vulnerability and was found on response with id %s.'
-            om.out.debug(msg % (res[0], response.id))
+            om.out.debug(msg % (list(res)[0], response.id))
+            
         if len(res) > 1:
             msg = 'File fragments have been found. The following is a list' \
                   ' of file fragments that were returned by the web application' \
                   ' while testing for local file inclusion: \n'
+            
             for file_pattern_match in res:
-                msg += '- "' + file_pattern_match + '" \n'
+                msg += '- "%s" \n' % file_pattern_match
+                
             msg += 'This is just an informational message, which might be' \
                    ' related to a vulnerability and was found in response' \
-                   ' with id %s.' % response.id 
+                   ' with id %s.' % response.id
+                    
             om.out.debug(msg)
         
         return res
