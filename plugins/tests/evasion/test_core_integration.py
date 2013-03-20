@@ -25,6 +25,7 @@ from mock import MagicMock
 from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
+from core.data.parsers.url import URL
 from plugins.tests.helper import create_target_option_list
 
 
@@ -42,7 +43,7 @@ class TestCoreIntegration(unittest.TestCase):
         self.w3afcore.plugins.set_plugins(['self_reference'], 'evasion')
         self.w3afcore.plugins.set_plugins(['sqli'], 'audit')
         
-        target_opts = create_target_option_list('http://moth/')
+        target_opts = create_target_option_list(URL('http://moth/'))
         self.w3afcore.target.set_options(target_opts)
 
         # Verify env and start the scan
