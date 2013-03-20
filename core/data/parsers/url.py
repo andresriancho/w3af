@@ -658,17 +658,17 @@ class URL(DiskItem):
 
     def url_decode(self):
         '''
-        @see: Unittests at test_urlParser
+        @see: Unittests at test_url.py
         :return: A URL that represents the current URL without URL
                  encoded characters.
         '''
-        unquotedurl = urllib.unquote(str(self))
+        unquoted_url = urllib.unquote(str(self))
         enc = self._encoding
-        return URL(unquotedurl.decode(enc, 'ignore'), enc)
+        return URL(unquoted_url.decode(enc, 'ignore'), enc)
 
     def url_encode(self):
         '''
-        @see: Unittests at test_urlParser
+        @see: Unittests at test_url.py
         :return: String that represents the current URL
         '''
         self_str = str(self)
