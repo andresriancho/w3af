@@ -264,7 +264,7 @@ class MainApp(object):
             ('New', gtk.STOCK_NEW, _('_New'), None, _(
                 'Create a new profile'), lambda w: self.profile_action("new")),
             ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profile_action("save")),
-            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profile_action("saveAs")),
+            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profile_action("save_as")),
             ('Revert', gtk.STOCK_REVERT_TO_SAVED, _('_Revert'), None, _('Revert the profile to its saved state'), lambda w: self.profile_action("revert")),
             ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _('Delete this profile'), lambda w: self.profile_action("delete")),
             ('ProfilesMenu', None, _('_Profiles')),
