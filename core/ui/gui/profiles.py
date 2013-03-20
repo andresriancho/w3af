@@ -162,7 +162,9 @@ class ProfileList(gtk.TreeView):
             for i in invalid_profiles:
                 message += '\n\t- ' + i
             message += '\n\nPlease click OK to continue without these profiles.'
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING,
+                                    gtk.BUTTONS_OK, message)
             dlg.run()
             dlg.destroy()
 
@@ -253,7 +255,9 @@ class ProfileList(gtk.TreeView):
 
             # Clicked with left button
             msg = _("Do you want to discard the changes in the Profile?")
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO,
+                                    msg)
             stayhere = dlg.run() != gtk.RESPONSE_YES
             dlg.destroy()
             if not stayhere:
