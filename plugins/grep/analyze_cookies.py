@@ -140,6 +140,15 @@ class analyze_cookies(GrepPlugin):
         :return: The cookie object or None if the parsing failed
         '''
         cookie_object = Cookie.SimpleCookie()
+        
+        # FIXME: Workaround for bug in Python's Cookie.py
+        #
+        # if type(rawdata) == type(""):
+        #     self.__ParseString(rawdata)
+        #
+        # Should read "if isinstance(rawdata, basestring)"
+        cookie_header_value = cookie_header_value.encode('utf-8')
+        
         try:
             # Note to self: This line may print some chars to the console
             cookie_object.load(cookie_header_value)
