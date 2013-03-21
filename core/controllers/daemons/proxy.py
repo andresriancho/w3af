@@ -167,11 +167,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                               headers=Headers(self.headers.items()),
                               grep=grep)
         except w3afException, w:
-            traceback.print_exc()
             om.out.error('The proxy request failed, error: ' + str(w))
             raise w
         except Exception, e:
-            traceback.print_exc()
             raise e
         else:
             return res
