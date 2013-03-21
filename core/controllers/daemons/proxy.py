@@ -24,6 +24,7 @@ import traceback
 import socket
 import select
 import httplib
+import time
 import SocketServer
 
 from OpenSSL import SSL
@@ -502,7 +503,13 @@ class Proxy(Process):
         # TCP port
         del self._server
 
-
+    def get_port(self):
+        if self._server is not None:
+            return self._server.server_address[1]
+    
+    def wait_for_start(self):
+        while self._server is None or self.get_port() is None:
+            time.sleep(0.5)
 
 # I want to use threads to handle all requests.
 
