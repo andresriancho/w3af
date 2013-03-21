@@ -30,14 +30,15 @@ class test_bing(unittest.TestCase):
 
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 200),
-                                                ('two and half man', 37),
-                                                ('doctor house', 55)])
+                                                ('two and half man', 40),
+                                                ('doctor house', 60)])
         self.bing_se = bing(ExtendedUrllib())
 
     def test_get_links_results(self):
         results = self.bing_se.get_n_results(self.query, self.limit)
+        
         # Len of results must be le. than limit
-        self.assertTrue(len(results) <= self.limit)
+        self.assertLessEqual(len(results), self.limit)
 
         # I want to get some results...
         self.assertTrue(len(results) >= 10, results)
@@ -45,4 +46,7 @@ class test_bing(unittest.TestCase):
             len(set([r.URL.get_domain() for r in results])) >= 3, results)
 
         # URLs should be unique
-        self.assertTrue(len(results) == len(set([r.URL for r in results])))
+        urls = [r.URL for r in results]
+        repeated_urls = [u for u in urls if urls.count(u)>1]
+        self.assertEqual(len(repeated_urls), 0,
+                         'These are the repeated URLs: %s' % repeated_urls)

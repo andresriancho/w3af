@@ -120,3 +120,5 @@ class TestConsoleBugReport(ConsoleTestHelper):
                 issue.edit(state='closed')                 
                 
                 break
+        else:
+            self.assertTrue(False, 'Did NOT close test ticket.')

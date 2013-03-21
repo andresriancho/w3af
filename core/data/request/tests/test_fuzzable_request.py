@@ -82,6 +82,8 @@ class TestFuzzableRequest(unittest.TestCase):
                                 ''])
         headers = Headers([('Hello', 'World')])
 
+        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
+        # appearing in the dump. It might be a bug...
         fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
@@ -92,6 +94,9 @@ class TestFuzzableRequest(unittest.TestCase):
                                  u'',
                                  u''])
         headers = Headers([(u'Hola', u'Múndo')])
+        
+        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
+        # appearing in the dump. It might be a bug...
         fr = FuzzableRequest(self.url, method='GET', dc={u'á': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
@@ -105,6 +110,9 @@ class TestFuzzableRequest(unittest.TestCase):
                                  u''])
 
         headers = Headers([(u'Hola', header_value)])
+        
+        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
+        # appearing in the dump. It might be a bug...
         fr = FuzzableRequest(self.url, method='GET', dc={u'a': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)

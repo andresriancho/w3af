@@ -7,6 +7,9 @@ CODE_FIX = '''
 class Popen(object):
     stdout = StringIO.StringIO()
     def communicate(*args, **kwds): pass
+    def pid(*args, **kwds): pass
+    def poll(*args, **kwds): pass
+    def kill(*args, **kwds): pass
 '''
 
 def subprocess_transform(module):

@@ -19,7 +19,7 @@ persistent=no
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=hashlib_fix,scapy_fix,subprocess_fix
+load-plugins=hashlib_fix,scapy_fix,subprocess_fix,gi_repository_fix
 
 
 [MESSAGES CONTROL]

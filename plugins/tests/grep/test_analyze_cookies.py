@@ -30,7 +30,7 @@ from core.data.dc.headers import Headers
 from plugins.grep.analyze_cookies import analyze_cookies
 
 
-class test_analyze_cookies(unittest.TestCase):
+class TestAnalyzeCookies(unittest.TestCase):
 
     def setUp(self):
         kb.kb.cleanup()
@@ -53,11 +53,12 @@ class test_analyze_cookies(unittest.TestCase):
     def test_analyze_cookies_simple_cookie(self):
         body = ''
         url = URL('http://www.w3af.com/')
-        headers = Headers(
-            {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}.items())
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def'}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
+        
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)

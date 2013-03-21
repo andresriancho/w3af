@@ -286,7 +286,7 @@ def _create_cookie(http_response):
     >>> response = HTTPResponse(200, '' , headers, url, url)
     >>> cookie = _create_cookie(response)
     >>> cookie
-    Cookie({'abc': ['def']})
+    Cookie({u'abc': [u'def']})
 
     '''
     cookies = []

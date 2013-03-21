@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import string
 import hashlib
 import time
+import ssl
 
 from github import Github
 from github import GithubException
@@ -80,6 +81,9 @@ class GithubIssues(object):
             # really do anything with the user credentials.
             try:
                 [i for i in self.gh.get_user().get_repos()]
+            except ssl.SSLError:
+                # SSLError: The read operation timed out
+                return False
             except GithubException:
                 return False
         

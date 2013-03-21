@@ -108,7 +108,9 @@ class TestBasic(unittest.TestCase):
 
                     msg = '%s is not of type %s in %s plugin dependency.' % (
                         plugin_name, plugin_type, plugin)
-                    self.assertTrue(plugin_name in self.w3afcore.plugins.get_plugin_list(plugin_type), msg)
+                    self.assertIn(plugin_name,
+                                  self.w3afcore.plugins.get_plugin_list(plugin_type),
+                                  msg)
 
     def test_plugin_desc(self):
         for plugin_type in self.plugins:
@@ -231,11 +233,11 @@ class TestFailOnInvalidURL(PluginTest):
 
     def test_fail_1(self):
         cfg = self._run_configs['cfg']
-        self.assertRaises(w3afException,
+        self.assertRaises(ValueError,
                           self._scan, 'http://http://moth/', cfg['plugins'],
                           verify_targets=False)
 
     def test_fail_2(self):
         cfg = self._run_configs['cfg']
-        self.assertRaises(w3afException, self._scan, '', cfg['plugins'],
+        self.assertRaises(ValueError, self._scan, '', cfg['plugins'],
                           verify_targets=False)

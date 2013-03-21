@@ -97,4 +97,4 @@ def pdf_to_text(pdf_string):
     
     device.close()
     output.seek(0)
-    return output.read()
+    return output.read().decode('utf-8')

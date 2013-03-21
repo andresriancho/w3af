@@ -166,6 +166,14 @@ class output_manager(Process):
         '''
         encoded_params = []
 
+        # http://docs.python.org/2/howto/unicode.html
+        #
+        # The most important tip is:
+        #     Software should only work with Unicode strings internally,
+        #     converting to a particular encoding on output.
+        #
+        # Given that we don't want to convert to utf8 inside every plugin
+        # before sending to a file, we do it here
         for arg in args:
             if isinstance(arg, unicode):
                 arg = arg.encode(UTF8, 'replace')

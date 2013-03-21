@@ -45,10 +45,11 @@ class SearchEngine(object):
         Return a list of URLs ; that represent the result to all the search.
         '''
         start = 0
-        result = []
+        result = set()
+        
         while True:
             try:
-                tmp = self.search(query, start, 10)
+                search_results = self.search(query, start, 10)
             except w3afException, w3:
                 om.out.debug(str(w3))
                 raise
@@ -58,9 +59,9 @@ class SearchEngine(object):
                 om.out.error(msg)
                 raise w3afException(msg)
             else:
-                result += tmp
-                start += len(tmp)
-                if len(tmp) != 10 or start >= limit:
+                result.update(list(search_results))
+                start += 10
+                if len(search_results) <= 10 or start >= limit:
                     break
 
         # Do some debug..

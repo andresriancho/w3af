@@ -28,6 +28,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.parsers.url import URL
 
+
 class TestPDF(unittest.TestCase):
     
     SIMPLE_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',

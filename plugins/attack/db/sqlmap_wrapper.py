@@ -128,8 +128,7 @@ class SQLMapWrapper(object):
                               
         :return: Runs sqlmap and returns a tuple containing:
                     (last command run,
-                     Popen object so that everyone can read .stdout,
-                     .stderr, .stdin attributes)
+                     stdout, sterr)
         '''
         process = self._run(custom_params)
         stdout, stderr = process.communicate()                
@@ -145,8 +144,7 @@ class SQLMapWrapper(object):
                               
         :return: Runs sqlmap and returns a tuple with:
                     (last command run,
-                     Popen object so that everyone can read .stdout,
-                     .stderr, .stdin attributes)
+                     Popen object so that everyone can read .stdout)
                  
                  This is very useful for using with w3af's output manager.
         '''

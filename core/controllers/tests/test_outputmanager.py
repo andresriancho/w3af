@@ -71,7 +71,7 @@ class TestOutputManager(unittest.TestCase):
 
             om.out.process_all_messages()
 
-            plugin_action.assert_called_once_with(msg, True)
+            plugin_action.assert_called_once_with(utf8_encoded_msg, True)
 
     def test_method_that_not_exists(self):
         '''The output manager implements __getattr__ and we don't want it to

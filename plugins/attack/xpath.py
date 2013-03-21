@@ -376,7 +376,8 @@ class XPathReader(Shell):
         :param data_len: The data length to retrieve
         :return: A string with the XML data!
 
-        HTTP library exceptions are not handled in order to make the code clearer.
+        HTTP library exceptions are not handled in order to make the code
+        clearer.
         '''
         data = [None] * data_len
         
@@ -385,7 +386,7 @@ class XPathReader(Shell):
         len_iter = xrange(data_len)
         
         for (pos,), char in imap_unordered(mod_get_char, len_iter):
-            data[pos] = char 
+            data[pos] = char
         
         clean_data = []
         current = ''

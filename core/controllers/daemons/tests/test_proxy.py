@@ -33,27 +33,22 @@ from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 class TestProxy(unittest.TestCase):
 
     IP = '127.0.0.1'
-    PORT = 44445
 
     def setUp(self):
         # Start the proxy server
         create_temp_dir()
 
-        for port in xrange(self.PORT, self.PORT + 10):
-            try:
-                self._proxy = Proxy(self.IP, port, ExtendedUrllib(), w3afProxyHandler)
-                self._proxy.start()
-            except Exception, e:
-                last_exception = e
-            else:
-                # Build the proxy opener
-                proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s"
-                                                      % (self.IP, port)})
-                self.proxy_opener = urllib2.build_opener(proxy_handler,
-                                                         urllib2.HTTPHandler)
-                break
-        else:
-            raise last_exception
+        self._proxy = Proxy(self.IP, 0, ExtendedUrllib(), w3afProxyHandler)
+        self._proxy.start()
+        self._proxy.wait_for_start()
+        
+        port = self._proxy.get_port()
+        
+        # Build the proxy opener
+        proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s"
+                                              % (self.IP, port)})
+        self.proxy_opener = urllib2.build_opener(proxy_handler,
+                                                 urllib2.HTTPHandler)
 
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open('http://moth').read()
