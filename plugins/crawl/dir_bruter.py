@@ -66,17 +66,12 @@ class dir_bruter(CrawlPlugin):
             raise w3afRunOnce()
         else:
             domain_path = fuzzable_request.get_url().get_domain_path()
-            base_url = fuzzable_request.get_url().base_url()
 
+            # Should I run more than once?
             if not self._be_recursive:
-                # Only run once
                 self._exec = False
 
-                if base_url not in self._already_tested:
-                    self._already_tested.add(base_url)
-                    self._bruteforce_directories(base_url)
-
-            elif domain_path not in self._already_tested:
+            if domain_path not in self._already_tested:
                 self._already_tested.add(domain_path)
                 self._bruteforce_directories(domain_path)
 
