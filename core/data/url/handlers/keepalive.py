@@ -118,6 +118,7 @@ import threading
 import urllib
 import sys
 import time
+import ssl
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
@@ -785,8 +786,8 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
 
     def _get_connection(self, host):
         if self._proxy:
-            proxyHost, port = self._proxy.split(':')
-            return ProxyHTTPSConnection(proxyHost, port)
+            proxy_host, port = self._proxy.split(':')
+            return ProxyHTTPSConnection(proxy_host, port)
         else:
             return HTTPSConnection(host)
 
@@ -832,9 +833,22 @@ class ProxyHTTPConnection(_HTTPConnection):
 
     def connect(self):
         httplib.HTTPConnection.connect(self)
+        
         #send proxy CONNECT request
-        self.send("CONNECT %s:%d HTTP/1.0\r\n\r\n" % (self._real_host,
-                                                      self._real_port))
+        new_line = '\r\n'
+        self.send("CONNECT %s:%d HTTP/1.1%s" % (self._real_host,
+                                                self._real_port,
+                                                new_line))
+        
+        connect_headers = {'Proxy-Connection': 'keep-alive',
+                           'Connection': 'keep-alive',
+                           'Host': self._real_host}
+        
+        for header_name, header_value in connect_headers.items():
+            self.send('%s: %s%s' % (header_name, header_value, new_line))
+        
+        self.send(new_line)
+        
         #expect a HTTP/1.0 200 Connection established
         response = self.response_class(self.sock, strict=self.strict,
                                        method=self._method)
@@ -847,7 +861,7 @@ class ProxyHTTPConnection(_HTTPConnection):
                               (code, message.strip()))
         #eat up header block from proxy....
         while True:
-            #should not use directly fp probablu
+            #should not use directly fp probably
             line = response.fp.readline()
             if line == '\r\n':
                 break
@@ -871,8 +885,9 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
     def connect(self):
         ProxyHTTPConnection.connect(self)
         #make the sock ssl-aware
-        ssl = socket.ssl(self.sock, self.key_file, self.cert_file)
-        self.sock = httplib.FakeSocket(self.sock, ssl)
+        ssl_sock_inst = ssl.wrap_socket(self.sock, self.key_file,
+                                        self.cert_file)
+        self.sock = ssl_sock_inst
 
 def to_utf8_raw(unicode_or_str):
     if isinstance(unicode_or_str, unicode):
