@@ -25,6 +25,7 @@ import os
 import socket
 import threading
 import select
+import time
 
 import core.controllers.output_manager as om
 
@@ -109,6 +110,15 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BaseHTTPServer.HTTPServer.server_bind(self)
 
+    def get_port(self):
+        try:
+            return self.server_address[1]
+        except:
+            return None
+    
+    def wait_for_start(self):
+        while self.get_port() is None:
+            time.sleep(0.5)
 
 class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -160,7 +170,7 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     '''Create a http server deamon. The returned instance is unique for <ip>
     and <port>.
 
-    :param ip: IP number
+    :param ip: IP address where to bind
     :param port: Port number
     :param webroot: webserver's root directory
     :return: A local webserver instance bound to the requested address (<ip>, <port>)
@@ -177,3 +187,22 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
         server_thread.start()
 
     return server_thread
+
+def start_webserver_any_free_port(ip, webroot, handler=w3afWebHandler):
+    '''Create a http server deamon in any free port available.
+
+    :param ip: IP address where to bind
+    :param webroot: webserver's root directory
+    :return: A local webserver instance and the port where it's listening
+    '''
+    web_server = w3afHTTPServer((ip, 0), webroot, handler)
+
+    # Start server!
+    server_thread = threading.Thread(target=web_server.serve_forever)
+    server_thread.name = 'WebServer'
+    server_thread.daemon = True
+    server_thread.start()
+
+    web_server.wait_for_start()
+
+    return server_thread, web_server.get_port()
