@@ -403,7 +403,6 @@ class KBTree(gtk.TreeView):
         '''
         Shows tooltip for 'exploit vulns' buttons
         '''
-        
         # TODO: Why 27? Do something better here!!!
         th = title_height = 27
         
@@ -414,12 +413,19 @@ class KBTree(gtk.TreeView):
         else:
             # Make the X coord relative to the cell
             x_cell -= self.get_cell_area(path, tv_column).x
+            
             # Get the potential vuln object
+            #
+            # FIXME: for some reason, in some edge case, the get_instance
+            #        returns a dict instead of a vuln object which then
+            #        triggers a vulnerability in self._is_exploitable
+            #
+            # https://github.com/andresriancho/w3af/issues/181
             vuln = self.get_instance(path)
 
             # Is the cursor over an 'exploit' icon?
-            if vuln is not None and self._is_exploitable(vuln.get_id()) \
-            and 0 <= x_cell <= 18:
+            if vuln is not None and 0 <= x_cell <= 18 and\
+            self._is_exploitable(vuln.get_id()):
                 tooltip.set_text(_("Exploit this vulnerability!"))
                 self.set_tooltip_cell(tooltip, path, tv_column, None)
                 return True
