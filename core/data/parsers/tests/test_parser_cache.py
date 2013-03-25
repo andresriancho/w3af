@@ -31,7 +31,7 @@ class TestParserCache(unittest.TestCase):
     
     def setUp(self):
         self.url = URL('http://w3af.com')
-        self.headers = Headers([('content-type', 'text/html')])
+        self.headers = Headers([(u'content-type', u'text/html')])
         self.dpc = ParserCache()
         
     def test_basic(self):
@@ -59,4 +59,9 @@ class TestParserCache(unittest.TestCase):
         _, parsed_refs_2 = parser2.get_references()
         
         self.assertEqual(parsed_refs_1, parsed_refs_2)
-        
+    
+    def test_issue_188_invalid_url(self):
+        # https://github.com/andresriancho/w3af/issues/188
+        all_chars = ''.join([chr(i) for i in xrange(0,255)])
+        response = HTTPResponse(200, all_chars, self.headers, self.url, self.url)
+        parser = self.dpc.get_document_parser_for(response)
