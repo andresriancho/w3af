@@ -286,7 +286,10 @@ class Info(dict):
         for functor in (self.get_uri, self.get_method, self.get_var,
                         self.get_dc, self.get_id, self.get_name, self.get_desc,
                         self.get_plugin_name):
-            concat_all += str(functor())
+            data = functor()
+            if isinstance(data, unicode):
+                data = data.encode('utf-8')
+            concat_all += str(data)
             
         return str(hash(concat_all))
     
