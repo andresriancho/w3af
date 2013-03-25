@@ -24,7 +24,8 @@ import unittest
 import tempfile
 import os
 
-from core.controllers.daemons.webserver import start_webserver
+from core.controllers.daemons.webserver import (start_webserver,
+                                                start_webserver_any_free_port)
 from core.data.constants.ports import REMOTEFILEINCLUDE
 
 
@@ -51,10 +52,25 @@ class TestWebserver(unittest.TestCase):
         self.assertRaises(urllib2.HTTPError, urllib2.urlopen,
                           'http://%s:%s' % (self.IP, self.PORT))
 
-    def test_GET_exists(self):
+    def _create_file(self):
         # Create a file and request it
-        file(os.path.join(
-            self.tempdir, 'foofile.txt'), 'w').write(self.TESTSTRING)
-        response_body = urllib2.urlopen(
-            'http://%s:%s/foofile.txt' % (self.IP, self.PORT)).read()
+        test_fh = file(os.path.join(self.tempdir, 'foofile.txt'), 'w')
+        test_fh.write(self.TESTSTRING)
+        test_fh.close()
+
+    def test_GET_exists(self):
+        self._create_file()
+        
+        url = 'http://%s:%s/foofile.txt' % (self.IP, self.PORT)
+        response_body = urllib2.urlopen(url).read()
+        
+        self.assertEqual(response_body, self.TESTSTRING)
+    
+    def test_any_free_port(self):
+        self._create_file()
+        _, port = start_webserver_any_free_port(self.IP, self.tempdir)
+        
+        url = 'http://%s:%s/foofile.txt' % (self.IP, port)
+        response_body = urllib2.urlopen(url).read()
+        
         self.assertEqual(response_body, self.TESTSTRING)
