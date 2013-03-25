@@ -51,7 +51,10 @@ class TestXUrllib(unittest.TestCase):
     def test_basic(self):
         url = URL('http://moth/')
         http_response = self.uri_opener.GET(url, cache=False)
-        self.assertTrue(self.MOTH_MESSAGE in http_response.body)
+        self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        self.assertLess(http_response.id, 4)
+        self.assertGreater(http_response.id, 1)
+        self.assertNotEqual(http_response.id, None)
 
     def test_cache(self):
         url = URL('http://moth/')
