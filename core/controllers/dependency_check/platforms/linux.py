@@ -28,7 +28,7 @@ SYSTEM_NAME = 'Debian'
 PKG_MANAGER_CMD = 'sudo apt-get install'
 
 SYSTEM_PACKAGES = {
-                   'PIP': ['pip'],
+                   'PIP': ['python-pip'],
                    'C_BUILD': ['python2.7-dev', 'python-setuptools',
                                 'build-essential'],
                    'GIT': ['git'],
