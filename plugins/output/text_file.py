@@ -286,6 +286,7 @@ class text_file(OutputPlugin):
             the_time + '=' * 40 + '\n'
         self._write_to_HTTP_log(msg)
         self._write_to_HTTP_log(request.dump())
+        
         msg2 = '\n' + '=' * 40 + 'Response ' + str(
             response.id) + ' - ' + the_time + '=' * 39 + '\n'
         self._write_to_HTTP_log(msg2)
