@@ -32,7 +32,8 @@ from plugins.tests.helper import PluginTest, PluginConfig
 class TestTextFile(PluginTest):
 
     OUTPUT_FILE = 'output-unittest.txt'
-
+    OUTPUT_HTTP_FILE = 'output-http-unittest.txt'
+    
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
 
     _run_configs = {
@@ -48,7 +49,9 @@ class TestTextFile(PluginTest):
                 'output': (
                     PluginConfig(
                         'text_file',
-                        ('output_file', OUTPUT_FILE, PluginConfig.STR)),
+                        ('output_file', OUTPUT_FILE, PluginConfig.STR),
+                        ('http_output_file', OUTPUT_HTTP_FILE, PluginConfig.STR)),
+                           
                 )
             },
         }
@@ -60,7 +63,8 @@ class TestTextFile(PluginTest):
 
         kb_vulns = self.kb.get('sqli', 'sqli')
         file_vulns = self._from_txt_get_vulns()
-
+        self._analyze_output_file()
+        
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
         self.assertEquals(
@@ -72,6 +76,18 @@ class TestTextFile(PluginTest):
             set(sorted([v.get_method() for v in kb_vulns])),
             set(sorted([v.get_method() for v in file_vulns]))
         )
+
+    def _analyze_output_file(self):
+        output_file_content = file(self.OUTPUT_HTTP_FILE).read()
+        
+        expected = ['Request 1', 'Response 1', '='*40]
+        not_expected = ['Request None']
+        
+        for exp_str in expected:
+            self.assertIn(exp_str, output_file_content)
+            
+        for not_exp_str in not_expected:
+            self.assertNotIn(not_exp_str, output_file_content)
 
     def _from_txt_get_vulns(self):
         file_vulns = []

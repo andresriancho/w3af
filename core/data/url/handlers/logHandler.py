@@ -63,9 +63,9 @@ class LogHandler(urllib2.BaseHandler):
         '''
         if not isinstance(response, HTTPResponse):
             url = request.url_object
-            response = HTTPResponse.from_httplib_resp(response,
-                                                      original_url=url)
-            response.set_id(response.id)
+            resp = HTTPResponse.from_httplib_resp(response,
+                                                  original_url=url)
+            resp.set_id(response.id)
 
         if not isinstance(request, HTTPRequest):
             msg = 'There is something odd going on in LogHandler,'\
@@ -73,4 +73,4 @@ class LogHandler(urllib2.BaseHandler):
                   ' instead.'
             raise TypeError(msg % type(request))
 
-        om.out.log_http(request, response)
+        om.out.log_http(request, resp)
