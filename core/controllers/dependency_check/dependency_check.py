@@ -86,12 +86,20 @@ def dependency_check():
     #
     #    Report missing pip packages
     #
-    packages_pip = [fdep.package_name for fdep in failed_deps]
+    not_git_pkgs = [fdep.package_name for fdep in failed_deps if not fdep.is_git]
+    git_pkgs = [fdep.package_name for fdep in failed_deps if fdep.is_git]
     
     msg = 'After installing any missing operating system packages, use pip to'\
           ' install the remaining modules:\n'
-    msg += '    sudo %s install %s' % (PIP_CMD, ' '.join(packages_pip))
-    print msg, '\n'
+    
+    if not_git_pkgs:
+        msg += '    sudo %s install %s\n' % (PIP_CMD, ' '.join(not_git_pkgs))
+    
+    if git_pkgs:
+        for missing_git_pkg in git_pkgs:
+            msg += '    sudo %s install -e %s\n' % (PIP_CMD, missing_git_pkg)
+    
+    print msg
     
     after_hook()
     

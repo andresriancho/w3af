@@ -41,12 +41,14 @@ SYSTEM_PACKAGES = {
                   }
 PIP_CMD = 'pip-2.7' 
 
+PHPLY_GIT = 'git+git://github.com/ramen/phply.git#egg=phply'
+
 PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('git', 'GitPython', SYSTEM_PACKAGES['GIT']),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap',
                               SYSTEM_PACKAGES['C_BUILD']),
                 PIPDependency('esmre', 'esmre'),
-                PIPDependency('phply', 'phply'),
+                PIPDependency('phply', PHPLY_GIT, is_git=True),
                 PIPDependency('sqlite3', 'pysqlite'),
                 PIPDependency('nltk', 'nltk'),
                 PIPDependency('chardet', 'chardet'),
