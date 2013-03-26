@@ -39,12 +39,12 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         expected = (
             'The plugins configured by the scan profile have been enabled',
             'Please set the target URL',
-            '| use                            | Use a profile.')
+            ' | Use a profile.')
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        assert_result, msg = self.startswith_expected_in_output(expected)
+        assert_result, msg = self.all_expected_substring_in_output(expected)
         self.assertTrue(assert_result, msg)
 
     def test_load_profile_not_exists(self):
