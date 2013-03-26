@@ -26,6 +26,7 @@ import unittest
 from pylint import lint
 from pylint.reporters.text import TextReporter
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 
 class WritableObject(object):
@@ -77,6 +78,8 @@ class PylintRunner(unittest.TestCase):
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_ui(self):
+        raise SkipTest('Remove me after fix https://www.logilab.org/ticket/122793')
+    
         pylint_output = self.run_pylint('core/ui/')
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
