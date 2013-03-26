@@ -103,6 +103,18 @@ class ConsoleTestHelper(unittest.TestCase):
         else:
             return True, 'OK'
 
+    def all_expected_substring_in_output(self, expected):
+        for e_substring in expected:
+            
+            for output_line in self._mock_stdout.messages:
+                if e_substring in output_line:
+                    break
+
+            else:
+                return False, self.generate_msg(e_substring)
+        else:
+            return True, 'OK'
+
     def error_in_output(self, errors):
         for line in self._mock_stdout.messages:
             for error_str in errors:

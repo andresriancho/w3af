@@ -87,8 +87,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        expected_start_with = ('| target                   | http://moth/',)
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        expected_start_with = ('| http://moth/',)
+        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
         
     def test_menu_set_option_manual_save(self):
