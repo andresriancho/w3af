@@ -205,7 +205,7 @@ class w3af_core_profiles(object):
 
         >>> HOME_DIR = '.'
         >>> p = w3af_core_profiles(None)
-        >>> valid, invalid = p.get_profile_list()
+        >>> valid, invalid = p.get_profile_list(HOME_DIR)
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
         True
