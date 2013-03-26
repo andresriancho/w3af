@@ -24,6 +24,7 @@ from core.ui.console.console_ui import ConsoleUI
 from core.ui.console.tests.helper import ConsoleTestHelper
 
 
+@attr('moth')
 class TestScanRunConsoleUI(ConsoleTestHelper):
     '''
     Run scans from the console UI.

@@ -23,6 +23,7 @@ import re
 import shutil
 
 from github import Github
+from nose.plugins.attrib import attr
 
 from core.ui.console.console_ui import ConsoleUI
 from core.ui.console.tests.helper import ConsoleTestHelper
@@ -30,6 +31,7 @@ from core.ui.console.tests.helper import ConsoleTestHelper
 from core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
 
+@attr('moth')
 class TestConsoleBugReport(ConsoleTestHelper):
     '''
     Run a scan from the console UI (which fails with a bug) and report it to
