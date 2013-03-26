@@ -30,7 +30,7 @@ PKG_MANAGER_CMD = 'sudo apt-get install'
 SYSTEM_PACKAGES = {
                    'PIP': ['python-pip'],
                    'C_BUILD': ['python2.7-dev', 'python-setuptools',
-                                'build-essential'],
+                                'build-essential', 'libsqlite3-dev'],
                    'GIT': ['git'],
                    'XML': ['libxml2-dev', 'libxslt-dev']
                   }
@@ -41,6 +41,7 @@ PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap',
                               SYSTEM_PACKAGES['C_BUILD']),
                 PIPDependency('esmre', 'esmre'),
+                PIPDependency('phply', 'phply'),
                 PIPDependency('sqlite3', 'pysqlite'),
                 PIPDependency('nltk', 'nltk'),
                 PIPDependency('chardet', 'chardet'),
