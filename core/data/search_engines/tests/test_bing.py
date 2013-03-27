@@ -22,10 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import random
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.data.search_engines.bing import bing
 from core.data.url.extended_urllib import ExtendedUrllib
 
 
+@attr('internet')
 class test_bing(unittest.TestCase):
 
     def setUp(self):
