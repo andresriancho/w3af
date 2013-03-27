@@ -30,9 +30,25 @@ class TestSQLMapUpdate(unittest.TestCase):
     def test_updated(self):
         days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)
         
-        msg = 'You need to update the sqlmap installation that\'s embedded with'\
-              ' w3af, to do so please run these commands:\n'\
-              'cd plugins/attack/db/sqlmap/\n'\
-              'git pull\n'
-        self.assertLess(days, 30, msg)
+        # See http://nuclearsquid.com/writings/subtree-merging-and-you/
+        #     https://www.kernel.org/pub/software/scm/git/docs/howto/using-merge-subtree.html
+        setup_commands = ('git remote add -f sqlmap git://github.com/sqlmapproject/sqlmap.git',
+                          'git merge -s ours --no-commit sqlmap/master',
+                          'git read-tree --prefix=plugins/attack/db/sqlmap/ -u sqlmap/master',
+                          "git commit -m 'Merging sqlmap into our subdirectory'")
+        setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
+        
+        maintain_commands = ('git pull -s subtree sqlmap master',)
+        maintain_str = ''.join(['    %s\n' % mcmd for mcmd in maintain_commands])
+        
+        msg = ('\nYou need to update the sqlmap installation that\'s embedded with'
+              ' w3af. If you run "git remote" and sqlmap appears in the output'
+              ' just run:\n'
+              '%s\n'
+              'Worse case scenario you will have to setup the remote:\n'
+              '%s')
+
+        msg = msg % (maintain_str, setup_str)
+        
+        self.assertLess(days, -1, msg)
         
