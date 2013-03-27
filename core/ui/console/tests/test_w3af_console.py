@@ -22,6 +22,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import compiler
 import subprocess
+import fcntl
+import os
+import time
+
+from core.controllers.misc.which import which
+
+
+def non_block_read(output):
+    '''
+    Note: Only supports unix platform!
+        http://docs.python.org/2/library/fcntl.html
+        Platforms: Unix
+    '''
+    fd = output.fileno()
+    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    try:
+        return output.read()
+    except:
+        return ""
 
 
 class TestW3afConsole(unittest.TestCase):
@@ -33,13 +53,24 @@ class TestW3afConsole(unittest.TestCase):
             self.assertTrue(False, 'Error in w3af_console code "%s"' % se)
 
     def test_get_prompt(self):
-        p = subprocess.Popen(['python', 'w3af_console', '-n'],
+        
+        # The easy way to do this was to simply pass 'python' to Popen
+        # but now that we want to run the tests in virtualenv, we need to
+        # find the "correct" / "virtual" python executable using which and
+        # then pass that one to Popen
+        python_executable = which('python')[0]
+        
+        p = subprocess.Popen([python_executable, 'w3af_console', '-n'],
                              stdout=subprocess.PIPE,
                              stdin=subprocess.PIPE)
         
-        expected_prompt = 'w3af>>>'
-        prompt = p.stdout.read(len(expected_prompt))
+        # Wait for the subprocess to start and the prompt to appear
+        time.sleep(10)
         
-        self.assertEqual(expected_prompt, prompt)
+        expected_prompt = 'w3af>>>'
+        prompt = non_block_read(p.stdout)
+        
+        msg = 'Failed to find %s in %s.' % (expected_prompt, prompt)
+        self.assertTrue(prompt.startswith(expected_prompt), msg)
         
         p.kill()
