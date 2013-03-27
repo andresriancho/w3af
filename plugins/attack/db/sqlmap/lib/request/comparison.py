@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -11,17 +11,18 @@ from lib.core.common import extractRegexResult
 from lib.core.common import getFilteredPageContent
 from lib.core.common import listToStrValue
 from lib.core.common import removeDynamicContent
-from lib.core.common import wasLastRequestDBMSError
-from lib.core.common import wasLastRequestHTTPError
+from lib.core.common import wasLastResponseDBMSError
+from lib.core.common import wasLastResponseHTTPError
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
-from lib.core.exception import sqlmapNoneDataException
+from lib.core.exception import SqlmapNoneDataException
 from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DIFF_TOLERANCE
 from lib.core.settings import HTML_TITLE_REGEX
 from lib.core.settings import MIN_RATIO
 from lib.core.settings import MAX_RATIO
+from lib.core.settings import REFLECTED_VALUE_MARKER
 from lib.core.settings import LOWER_RATIO_BOUND
 from lib.core.settings import UPPER_RATIO_BOUND
 from lib.core.threads import getCurrentThreadData
@@ -46,6 +47,7 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
     threadData = getCurrentThreadData()
 
     if kb.testMode:
+        threadData.lastComparisonHeaders = listToStrValue(headers.headers) if headers else ""
         threadData.lastComparisonPage = page
 
     if page is None and pageLength is None:
@@ -55,7 +57,7 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
     seqMatcher.set_seq1(kb.pageTemplate)
 
     if any((conf.string, conf.notString, conf.regexp)):
-        rawResponse = "%s%s" % (listToStrValue(headers.headers if headers else ""), page)
+        rawResponse = "%s%s" % (listToStrValue(headers.headers) if headers else "", page)
 
         # String to match in page when the query is True and/or valid
         if conf.string:
@@ -70,12 +72,12 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
             return re.search(conf.regexp, rawResponse, re.I | re.M) is not None
 
     # HTTP code to match when the query is valid
-    if isinstance(code, int) and conf.code:
+    if conf.code:
         return conf.code == code
 
     if page:
         # In case of an DBMS error page return None
-        if kb.errorIsNone and (wasLastRequestDBMSError() or wasLastRequestHTTPError()):
+        if kb.errorIsNone and (wasLastResponseDBMSError() or wasLastResponseHTTPError()):
             return None
 
         # Dynamic content lines to be excluded before comparison
@@ -91,7 +93,7 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
             errMsg = "problem occured while retrieving original page content "
             errMsg += "which prevents sqlmap from continuation. Please rerun, "
             errMsg += "and if the problem persists turn off any optimization switches"
-            raise sqlmapNoneDataException, errMsg
+            raise SqlmapNoneDataException(errMsg)
 
         ratio = 1. * pageLength / len(seqMatcher.a)
 
@@ -114,16 +116,26 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
             seq1 = getFilteredPageContent(seqMatcher.a, True) if conf.textOnly else seqMatcher.a
             seq2 = getFilteredPageContent(page, True) if conf.textOnly else page
 
-        if seq1 is not None:
-            seqMatcher.set_seq1(seq1)
-
-        if seq2 is not None:
-            seqMatcher.set_seq2(seq2)
-
         if seq1 is None or seq2 is None:
             return None
-        else:
-            ratio = round(seqMatcher.quick_ratio(), 3)
+
+        seq1 = seq1.replace(REFLECTED_VALUE_MARKER, "")
+        seq2 = seq2.replace(REFLECTED_VALUE_MARKER, "")
+
+        count = 0
+        while count < min(len(seq1), len(seq2)):
+            if seq1[count] == seq2[count]:
+                count += 1
+            else:
+                break
+        if count:
+            seq1 = seq1[count:]
+            seq2 = seq2[count:]
+
+        seqMatcher.set_seq1(seq1)
+        seqMatcher.set_seq2(seq2)
+
+        ratio = round(seqMatcher.quick_ratio(), 3)
 
     # If the url is stable and we did not set yet the match ratio and the
     # current injected value changes the url page content

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-class _Getch:
+class _Getch(object):
     """
     Gets a single character from standard input.  Does not echo to
     the screen (reference: http://code.activestate.com/recipes/134892/)
@@ -19,15 +19,19 @@ class _Getch:
             except(AttributeError, ImportError):
                 self.impl = _GetchUnix()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
 
 
-class _GetchUnix:
+class _GetchUnix(object):
     def __init__(self):
         import tty
 
     def __call__(self):
-        import sys, tty, termios
+        import sys
+        import termios
+        import tty
+
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -38,7 +42,7 @@ class _GetchUnix:
         return ch
 
 
-class _GetchWindows:
+class _GetchWindows(object):
     def __init__(self):
         import msvcrt
 
@@ -47,7 +51,7 @@ class _GetchWindows:
         return msvcrt.getch()
 
 
-class _GetchMacCarbon:
+class _GetchMacCarbon(object):
     """
     A function which returns the current ASCII key that is down;
     if no ASCII key is down, the null string is returned.  The
@@ -56,11 +60,11 @@ class _GetchMacCarbon:
     """
     def __init__(self):
         import Carbon
-        Carbon.Evt #see if it has this (in Unix, it doesn't)
+        Carbon.Evt  # see if it has this (in Unix, it doesn't)
 
     def __call__(self):
         import Carbon
-        if Carbon.Evt.EventAvail(0x0008)[0]==0: # 0x0008 is the keyDownMask
+        if Carbon.Evt.EventAvail(0x0008)[0] == 0:  # 0x0008 is the keyDownMask
             return ''
         else:
             #
@@ -72,8 +76,9 @@ class _GetchMacCarbon:
             # number is converted to an ASCII character with chr() and
             # returned
             #
-            (what,msg,when,where,mod)=Carbon.Evt.GetNextEvent(0x0008)[1]
+            (what, msg, when, where, mod) = Carbon.Evt.GetNextEvent(0x0008)[1]
             return chr(msg & 0x000000FF)
 
 
 getch = _Getch()
+

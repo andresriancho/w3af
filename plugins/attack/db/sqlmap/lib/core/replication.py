@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -9,11 +9,10 @@ import sqlite3
 
 from extra.safe2bin.safe2bin import safechardecode
 from lib.core.common import unsafeSQLIdentificatorNaming
-from lib.core.exception import sqlmapGenericException
-from lib.core.exception import sqlmapMissingDependence
-from lib.core.exception import sqlmapValueException
+from lib.core.exception import SqlmapGenericException
+from lib.core.exception import SqlmapValueException
 
-class Replication:
+class Replication(object):
     """
     This class holds all methods/classes used for database
     replication purposes.
@@ -62,10 +61,10 @@ class Replication:
             """
 
             if len(values) == len(self.columns):
-                self.execute('INSERT INTO "%s" VALUES (%s)' % (self.name, ','.join(['?']*len(values))), safechardecode(values))
+                self.execute('INSERT INTO "%s" VALUES (%s)' % (self.name, ','.join(['?'] * len(values))), safechardecode(values))
             else:
                 errMsg = "wrong number of columns used in replicating insert"
-                raise sqlmapValueException, errMsg
+                raise SqlmapValueException(errMsg)
 
         def execute(self, sql, parameters=[]):
             try:
@@ -74,7 +73,7 @@ class Replication:
                 errMsg = "problem occurred ('%s') while accessing sqlite database " % ex
                 errMsg += "located at '%s'. Please make sure that " % self.parent.dbpath
                 errMsg += "it's not used by some other program"
-                raise sqlmapGenericException, errMsg
+                raise SqlmapGenericException(errMsg)
 
         def beginTransaction(self):
             """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -13,17 +13,17 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.NORMAL
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces predefined SQL keywords with representations
     suitable for replacement (e.g. .replace("SELECT", "")) filters
 
-    Example:
-        * Input: 1 UNION SELECT 2--
-        * Output: 1 UNUNIONION SELSELECTECT 2--
-
     Notes:
         * Useful to bypass very weak custom filters
+
+    >>> random.seed(0)
+    >>> tamper('1 UNION SELECT 2--')
+    '1 UNIOUNIONN SELESELECTCT 2--'
     """
 
     keywords = ("UNION", "SELECT", "INSERT", "UPDATE", "FROM", "WHERE")
@@ -38,4 +38,4 @@ def tamper(payload, headers):
             _ = random.randint(1, len(keyword) - 1)
             retVal = re.sub(r"(?i)\b%s\b" % keyword, "%s%s%s" % (keyword[:_], keyword, keyword[_:]), retVal)
 
-    return retVal, headers
+    return retVal

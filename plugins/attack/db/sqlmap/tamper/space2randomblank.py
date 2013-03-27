@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -14,14 +14,10 @@ __priority__ = PRIORITY.LOW
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces space character (' ') with a random blank character from a
     valid set of alternate characters
-
-    Example:
-        * Input: SELECT id FROM users
-        * Output: SELECT\rid\tFROM\nusers
 
     Tested against:
         * Microsoft SQL Server 2005
@@ -31,6 +27,10 @@ def tamper(payload, headers):
 
     Notes:
         * Useful to bypass several web application firewalls
+
+    >>> random.seed(0)
+    >>> tamper('SELECT id FROM users')
+    'SELECT%0Did%0DFROM%0Ausers'
     """
 
     # ASCII table:
@@ -64,4 +64,4 @@ def tamper(payload, headers):
 
             retVal += payload[i]
 
-    return retVal, headers
+    return retVal

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,9 +10,8 @@ import re
 from lib.core.common import Backend
 from lib.core.common import Format
 from lib.core.common import getCurrentThreadData
-from lib.core.common import randomInt
 from lib.core.common import randomStr
-from lib.core.common import wasLastRequestDBMSError
+from lib.core.common import wasLastResponseDBMSError
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -27,7 +26,7 @@ class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.ACCESS)
 
-    def __sandBoxCheck(self):
+    def _sandBoxCheck(self):
         # Reference: http://milw0rm.com/papers/198
         retVal = None
         table = None
@@ -43,7 +42,7 @@ class Fingerprint(GenericFingerprint):
 
         return retVal
 
-    def __sysTablesCheck(self):
+    def _sysTablesCheck(self):
         infoMsg = "executing system table(s) existence fingerprint"
         logger.info(infoMsg)
 
@@ -52,7 +51,7 @@ class Fingerprint(GenericFingerprint):
                       "97":           ("MSysModules2", "MSysAccessObjects"),
                       "2000" :        ("!MSysModules2", "MSysAccessObjects"),
                       "2002-2003" :   ("MSysAccessStorage", "!MSysNavPaneObjectIDs"),
-                      "2007" :        ("MSysAccessStorage", "MSysNavPaneObjectIDs")
+                      "2007" :        ("MSysAccessStorage", "MSysNavPaneObjectIDs"),
                     }
         # MSysAccessXML is not a reliable system table because it doesn't always exist
         # ("Access through Access", p6, should be "normally doesn't exist" instead of "is normally empty")
@@ -67,8 +66,7 @@ class Fingerprint(GenericFingerprint):
                     negate = True
                     table = table[1:]
 
-                randInt = randomInt()
-                result = inject.checkBooleanExpression("EXISTS(SELECT * FROM %s WHERE %d=%d)" % (table, randInt, randInt))
+                result = inject.checkBooleanExpression("EXISTS(SELECT * FROM %s WHERE [RANDNUM]=[RANDNUM])" % table)
                 if result is None:
                     result = False
 
@@ -85,17 +83,16 @@ class Fingerprint(GenericFingerprint):
 
         return None
 
-    def __getDatabaseDir(self):
+    def _getDatabaseDir(self):
         retVal = None
 
         infoMsg = "searching for database directory"
         logger.info(infoMsg)
 
-        randInt = randomInt()
         randStr = randomStr()
-        _ = inject.checkBooleanExpression("EXISTS(SELECT * FROM %s.%s WHERE %d=%d)" % (randStr, randStr, randInt, randInt))
+        inject.checkBooleanExpression("EXISTS(SELECT * FROM %s.%s WHERE [RANDNUM]=[RANDNUM])" % (randStr, randStr))
 
-        if wasLastRequestDBMSError():
+        if wasLastResponseDBMSError():
             threadData = getCurrentThreadData()
             match = re.search("Could not find file\s+'([^']+?)'", threadData.lastErrorPage[1])
 
@@ -126,7 +123,7 @@ class Fingerprint(GenericFingerprint):
             value += DBMS.ACCESS
             return value
 
-        actVer = Format.getDbms() + " (%s)" % (self.__sandBoxCheck())
+        actVer = Format.getDbms() + " (%s)" % (self._sandBoxCheck())
         blank = " " * 15
         value += "active fingerprint: %s" % actVer
 
@@ -144,7 +141,7 @@ class Fingerprint(GenericFingerprint):
         if htmlErrorFp:
             value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
 
-        value += "\ndatabase directory: '%s'" % self.__getDatabaseDir()
+        value += "\ndatabase directory: '%s'" % self._getDatabaseDir()
 
         return value
 
@@ -178,7 +175,7 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "actively fingerprinting %s" % DBMS.ACCESS
             logger.info(infoMsg)
 
-            version = self.__sysTablesCheck()
+            version = self._sysTablesCheck()
 
             if version is not None:
                 Backend.setVersion(version)

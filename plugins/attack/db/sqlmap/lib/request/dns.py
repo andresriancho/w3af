@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import os
-import random
 import re
 import socket
 import threading
 import time
 
-class DNSQuery:
+class DNSQuery(object):
     """
     Used for making fake DNS resolution responses based on received
     raw request
@@ -33,7 +32,7 @@ class DNSQuery:
             j = ord(raw[i])
 
             while j != 0:
-                self._query += raw[i+1:i+j+1] + '.'
+                self._query += raw[i + 1:i + j + 1] + '.'
                 i = i + j + 1
                 j = ord(raw[i])
 
@@ -58,7 +57,7 @@ class DNSQuery:
 
         return retVal
 
-class DNSServer:
+class DNSServer(object):
     def __init__(self):
         self._requests = []
         self._lock = threading.Lock()
@@ -138,4 +137,3 @@ if __name__ == "__main__":
     finally:
         if server:
             server._running = False
-

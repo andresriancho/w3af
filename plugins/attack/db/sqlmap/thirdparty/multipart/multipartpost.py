@@ -24,11 +24,12 @@ import mimetools
 import mimetypes
 import os
 import stat
+import StringIO
 import sys
 import urllib
 import urllib2
 
-from lib.core.exception import sqlmapDataException
+from lib.core.exception import SqlmapDataException
 
 
 class Callable:
@@ -52,13 +53,13 @@ class MultipartPostHandler(urllib2.BaseHandler):
 
             try:
                 for(key, value) in data.items():
-                    if type(value) == file or hasattr(value, 'file'):
+                    if isinstance(value, file) or hasattr(value, 'file') or isinstance(value, StringIO.StringIO):
                         v_files.append((key, value))
                     else:
                         v_vars.append((key, value))
             except TypeError:
                 systype, value, traceback = sys.exc_info()
-                raise sqlmapDataException, "not a valid non-string sequence or mapping object", traceback
+                raise SqlmapDataException, "not a valid non-string sequence or mapping object", traceback
 
             if len(v_files) == 0:
                 data = urllib.urlencode(v_vars, doseq)
@@ -85,8 +86,8 @@ class MultipartPostHandler(urllib2.BaseHandler):
             buf += '\r\n\r\n' + value + '\r\n'
 
         for (key, fd) in files:
-            file_size = os.fstat(fd.fileno())[stat.ST_SIZE]
-            filename = fd.name.split('/')[-1]
+            file_size = os.fstat(fd.fileno())[stat.ST_SIZE] if isinstance(fd, file) else fd.len
+            filename = fd.name.split('/')[-1] if '/' in fd.name else fd.name.split('\\')[-1]
             contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             buf += '--%s\r\n' % boundary
             buf += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)

@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 try:
     import ibm_db_dbi
-except ImportError, _:
+except ImportError:
     pass
 
+import logging
+
+from lib.core.data import conf
 from lib.core.data import logger
-from lib.core.exception import sqlmapConnectionException
+from lib.core.exception import SqlmapConnectionException
 from plugins.generic.connector import Connector as GenericConnector
 
 class Connector(GenericConnector):
@@ -32,26 +35,26 @@ class Connector(GenericConnector):
             database = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s;PROTOCOL=TCPIP;" % (self.db, self.hostname, self.port)
             self.connector = ibm_db_dbi.connect(database, self.user, self.password)
         except ibm_db_dbi.OperationalError, msg:
-            raise sqlmapConnectionException, msg
+            raise SqlmapConnectionException(msg)
 
 
-        self.setCursor()
+        self.initCursor()
         self.connected()
 
     def fetchall(self):
         try:
             return self.cursor.fetchall()
         except ibm_db_dbi.ProgrammingError, msg:
-            logger.warn("(remote) %s" % msg[1])
+            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
             return None
 
     def execute(self, query):
         try:
             self.cursor.execute(query)
         except (ibm_db_dbi.OperationalError, ibm_db_dbi.ProgrammingError), msg:
-            logger.warn("(remote) %s" % msg[1])
+            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
         except ibm_db_dbi.InternalError, msg:
-            raise sqlmapConnectionException, msg[1]
+            raise SqlmapConnectionException(msg[1])
 
         self.connector.commit()
 

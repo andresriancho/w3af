@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,7 +10,7 @@ import socket
 import urllib2
 
 from lib.core.data import logger
-from lib.core.exception import sqlmapConnectionException
+from lib.core.exception import SqlmapConnectionException
 
 ssl = None
 try:
@@ -57,7 +57,7 @@ class HTTPSConnection(httplib.HTTPSConnection):
                 logger.debug("SSL connection error occured ('%s')" % errMsg)
 
         if not success:
-            raise sqlmapConnectionException, "can't establish SSL connection"
+            raise SqlmapConnectionException("can't establish SSL connection")
 
 class HTTPSHandler(urllib2.HTTPSHandler):
     def https_open(self, req):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -17,9 +17,9 @@ from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.datatype import AttribDict
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapConnectionException
-from lib.core.exception import sqlmapThreadException
-from lib.core.exception import sqlmapValueException
+from lib.core.exception import SqlmapConnectionException
+from lib.core.exception import SqlmapThreadException
+from lib.core.exception import SqlmapValueException
 from lib.core.settings import MAX_NUMBER_OF_THREADS
 from lib.core.settings import PYVERSION
 
@@ -42,6 +42,7 @@ class _ThreadData(threading.local):
         self.hashDBCursor = None
         self.inTransaction = False
         self.lastComparisonPage = None
+        self.lastComparisonHeaders = None
         self.lastErrorPage = None
         self.lastHTTPError = None
         self.lastRedirectMsg = None
@@ -88,7 +89,6 @@ def exceptionHandledFunction(threadFunction):
         raise
     except Exception, errMsg:
         # thread is just going to be silently killed
-        print
         logger.error("thread %s: %s" % (threading.currentThread().getName(), errMsg))
 
 def setDaemon(thread):
@@ -105,13 +105,13 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
     kb.threadContinue = True
     kb.threadException = False
 
-    if threadChoice and numThreads == 1 and any(map(lambda x: x in kb.injection.data, [PAYLOAD.TECHNIQUE.BOOLEAN, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.UNION])):
+    if threadChoice and numThreads == 1 and any(_ in kb.injection.data for _ in (PAYLOAD.TECHNIQUE.BOOLEAN, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY, PAYLOAD.TECHNIQUE.UNION)):
         while True:
             message = "please enter number of threads? [Enter for %d (current)] " % numThreads
             choice = readInput(message, default=str(numThreads))
             if choice and choice.isdigit():
                 if int(choice) > MAX_NUMBER_OF_THREADS:
-                    errMsg = "maximum number of used threads is %d avoiding possible connection issues" % MAX_NUMBER_OF_THREADS
+                    errMsg = "maximum number of used threads is %d avoiding potential connection issues" % MAX_NUMBER_OF_THREADS
                     logger.critical(errMsg)
                 else:
                     numThreads = int(choice)
@@ -166,12 +166,12 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
                 pass
 
         except KeyboardInterrupt:
-            raise sqlmapThreadException, "user aborted (Ctrl+C was pressed multiple times)"
+            raise SqlmapThreadException("user aborted (Ctrl+C was pressed multiple times)")
 
         if forwardException:
             raise
 
-    except (sqlmapConnectionException, sqlmapValueException), errMsg:
+    except (SqlmapConnectionException, SqlmapValueException), errMsg:
         print
         kb.threadException = True
         logger.error("thread %s: %s" % (threading.currentThread().getName(), errMsg))

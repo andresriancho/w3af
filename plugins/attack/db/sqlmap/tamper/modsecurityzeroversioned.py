@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,13 +12,9 @@ __priority__ = PRIORITY.HIGHER
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Embraces complete query with zero-versioned comment
-
-    Example:
-        * Input: 1 AND 2>1--
-        * Output: 1 /*!00000AND 2>1*/--
 
     Requirement:
         * MySQL
@@ -28,6 +24,9 @@ def tamper(payload, headers):
 
     Notes:
         * Useful to bypass ModSecurity WAF/IDS
+
+    >>> tamper('1 AND 2>1--')
+    '1 /*!00000AND 2>1*/--'
     """
 
     retVal = payload
@@ -42,4 +41,4 @@ def tamper(payload, headers):
         if ' ' in payload:
             retVal = "%s /*!00000%s*/%s" % (payload[:payload.find(' ')], payload[payload.find(' ') + 1:], postfix)
 
-    return retVal, headers
+    return retVal

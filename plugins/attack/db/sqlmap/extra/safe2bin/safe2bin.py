@@ -3,7 +3,7 @@
 """
 safe2bin.py - Simple safe(hex) to binary format converter
 
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -18,6 +18,9 @@ from optparse import OptionParser
 
 # Regex used for recognition of hex encoded characters
 HEX_ENCODED_CHAR_REGEX = r"(?P<result>\\x[0-9A-Fa-f]{2})"
+
+# Regex used for recognition of representation for hex encoded invalid unicode characters
+INVALID_UNICODE_CHAR_REGEX = r"(?P<result>\\\?[0-9A-Fa-f]{2})"
 
 # Raw chars that will be safe encoded to their slash (\) representations (e.g. newline to \n)
 SAFE_ENCODE_SLASH_REPLACEMENTS = "\t\n\r\x0b\x0c"
@@ -47,37 +50,45 @@ def safecharencode(value):
             for char in SAFE_ENCODE_SLASH_REPLACEMENTS:
                 retVal = retVal.replace(char, repr(char).strip('\''))
 
-            retVal = retVal.replace(SLASH_MARKER, '\\\\')
+            retVal = reduce(lambda x, y: x + (y if (y in string.printable or ord(y) > 255) else '\\x%02x' % ord(y)), retVal, (unicode if isinstance(value, unicode) else str)())
 
-            retVal = reduce(lambda x, y: x + (y if (y in string.printable or ord(y) > 255) else '\\x%02x' % ord(y)), retVal, unicode())
+            retVal = retVal.replace(SLASH_MARKER, "\\\\")
     elif isinstance(value, list):
         for i in xrange(len(value)):
             retVal[i] = safecharencode(value[i])
 
     return retVal
 
-def safechardecode(value):
+def safechardecode(value, binary=False):
     """
     Reverse function to safecharencode
     """
 
     retVal = value
     if isinstance(value, basestring):
-        regex = re.compile(HEX_ENCODED_CHAR_REGEX)
+        retVal = retVal.replace('\\\\', SLASH_MARKER)
 
         while True:
-            match = regex.search(retVal)
+            match = re.search(HEX_ENCODED_CHAR_REGEX, retVal)
             if match:
-                retVal = retVal.replace(match.group("result"), unichr(ord(binascii.unhexlify(match.group("result").lstrip('\\x')))))
+                retVal = retVal.replace(match.group("result"), (unichr if isinstance(value, unicode) else chr)(ord(binascii.unhexlify(match.group("result").lstrip("\\x")))))
             else:
                 break
-
-        retVal = retVal.replace('\\\\', SLASH_MARKER)
 
         for char in SAFE_ENCODE_SLASH_REPLACEMENTS[::-1]:
             retVal = retVal.replace(repr(char).strip('\''), char)
 
         retVal = retVal.replace(SLASH_MARKER, '\\')
+
+        if binary:
+            if isinstance(retVal, unicode):
+                retVal = retVal.encode("utf8")
+            while True:
+                match = re.search(INVALID_UNICODE_CHAR_REGEX, retVal)
+                if match:
+                    retVal = retVal.replace(match.group("result"), chr(ord(binascii.unhexlify(match.group("result").lstrip("\\?")))))
+                else:
+                    break
 
     elif isinstance(value, (list, tuple)):
         for i in xrange(len(value)):

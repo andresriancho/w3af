@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import codecs
 import doctest
 import os
 import re
@@ -12,40 +13,53 @@ import shutil
 import sys
 import tempfile
 import time
+import traceback
 
+from extra.beep.beep import beep
 from lib.controller.controller import start
-from lib.core.common import beep
 from lib.core.common import clearConsoleLine
 from lib.core.common import dataToStdout
+from lib.core.common import getUnicode
+from lib.core.common import randomStr
 from lib.core.common import readXmlFile
 from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.data import paths
+from lib.core.exception import SqlmapBaseException
+from lib.core.exception import SqlmapNotVulnerableException
+from lib.core.log import LOGGER_HANDLER
 from lib.core.option import init
-from lib.core.option import __setVerbosity
+from lib.core.option import initOptions
+from lib.core.option import setVerbosity
 from lib.core.optiondict import optDict
+from lib.core.settings import UNICODE_ENCODING
 from lib.parse.cmdline import cmdLineParser
+
+failedItem = None
+failedParseOn = None
+failedTraceBack = None
 
 def smokeTest():
     """
-    This will run the basic smoke testing of a program
+    Runs the basic smoke testing of a program
     """
+
     retVal = True
     count, length = 0, 0
 
     for root, _, files in os.walk(paths.SQLMAP_ROOT_PATH):
-        if 'extra' in root:
+        if any(_ in root for _ in ("thirdparty", "extra")):
             continue
 
         for ifile in files:
             length += 1
 
     for root, _, files in os.walk(paths.SQLMAP_ROOT_PATH):
-        if 'extra' in root:
+        if any(_ in root for _ in ("thirdparty", "extra")):
             continue
 
         for ifile in files:
-            if os.path.splitext(ifile)[1].lower() == '.py' and ifile != '__init__.py':
+            if os.path.splitext(ifile)[1].lower() == ".py" and ifile != "__init__.py":
                 path = os.path.join(root, os.path.splitext(ifile)[0])
                 path = path.replace(paths.SQLMAP_ROOT_PATH, '.')
                 path = path.replace(os.sep, '.').lstrip('.')
@@ -65,7 +79,7 @@ def smokeTest():
                         retVal = False
 
             count += 1
-            status = '%d/%d (%d%s) ' % (count, length, round(100.0*count/length), '%')
+            status = '%d/%d (%d%%) ' % (count, length, round(100.0 * count / length))
             dataToStdout("\r[%s] [INFO] complete: %s" % (time.strftime("%X"), status))
 
     clearConsoleLine()
@@ -93,12 +107,18 @@ def adjustValueType(tagName, value):
 
 def liveTest():
     """
-    This will run the test of a program against the live testing environment
+    Runs the test of a program against the live testing environment
     """
+
+    global failedItem
+    global failedParseOn
+    global failedTraceBack
+
     retVal = True
     count = 0
     global_ = {}
     vars_ = {}
+
     livetests = readXmlFile(paths.LIVE_TESTS_XML)
     length = len(livetests.getElementsByTagName("case"))
 
@@ -114,20 +134,24 @@ def liveTest():
         for item in element:
             for child in item.childNodes:
                 if child.nodeType == child.ELEMENT_NODE and child.hasAttribute("value"):
-                    vars_[child.tagName] = child.getAttribute("value")
+                    var = child.getAttribute("value")
+                    vars_[child.tagName] = randomStr(6) if var == "random" else var
 
     for case in livetests.getElementsByTagName("case"):
+        parse_from_console_output = False
         count += 1
-
-        if conf.runCase and conf.runCase != count:
-            continue
-
         name = None
-        log = []
+        parse = []
         switches = dict(global_)
+        value = ""
+        vulnerable = True
+        result = None
 
         if case.hasAttribute("name"):
             name = case.getAttribute("name")
+
+        if conf.runCase and ((conf.runCase.isdigit() and conf.runCase != count) or not re.search(conf.runCase, name, re.DOTALL)):
+            continue
 
         if case.getElementsByTagName("switches"):
             for child in case.getElementsByTagName("switches")[0].childNodes:
@@ -135,22 +159,73 @@ def liveTest():
                     value = replaceVars(child.getAttribute("value"), vars_)
                     switches[child.tagName] = adjustValueType(child.tagName, value)
 
-        if case.getElementsByTagName("log"):
-            for item in case.getElementsByTagName("log")[0].getElementsByTagName("item"):
+        if case.getElementsByTagName("parse"):
+            for item in case.getElementsByTagName("parse")[0].getElementsByTagName("item"):
                 if item.hasAttribute("value"):
-                    log.append(replaceVars(item.getAttribute("value"), vars_))
+                    value = replaceVars(item.getAttribute("value"), vars_)
 
-        msg = "running live test case '%s' (%d/%d)" % (name, count, length)
+                if item.hasAttribute("console_output"):
+                    parse_from_console_output = bool(item.getAttribute("console_output"))
+
+                parse.append((value, parse_from_console_output))
+
+        conf.verbose = global_.get("verbose", 1)
+        setVerbosity()
+
+        msg = "running live test case: %s (%d/%d)" % (name, count, length)
         logger.info(msg)
-        result = runCase(switches, log)
-        if result:
+
+        initCase(switches, count)
+
+        test_case_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "test_case"), "wb", UNICODE_ENCODING)
+        test_case_fd.write("%s\n" % name)
+
+        try:
+            result = runCase(parse)
+        except SqlmapNotVulnerableException:
+            vulnerable = False
+        finally:
+            conf.verbose = global_.get("verbose", 1)
+            setVerbosity()
+
+        if result is True:
             logger.info("test passed")
+            cleanCase()
         else:
-            logger.error("test failed")
+            errMsg = "test failed "
+
+            if failedItem:
+                errMsg += "at parsing item \"%s\" " % failedItem
+
+            errMsg += "- scan folder: %s " % paths.SQLMAP_OUTPUT_PATH
+            errMsg += "- traceback: %s" % bool(failedTraceBack)
+
+            if not vulnerable:
+                errMsg += " - SQL injection not detected"
+
+            logger.error(errMsg)
+            test_case_fd.write("%s\n" % errMsg)
+
+            if failedParseOn:
+                console_output_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "console_output"), "wb", UNICODE_ENCODING)
+                console_output_fd.write(failedParseOn)
+                console_output_fd.close()
+
+            if failedTraceBack:
+                traceback_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "traceback"), "wb", UNICODE_ENCODING)
+                traceback_fd.write(failedTraceBack)
+                traceback_fd.close()
+
             beep()
-        retVal &= result
+
+            if conf.stopFail is True:
+                return retVal
+
+        test_case_fd.close()
+        retVal &= bool(result)
 
     dataToStdout("\n")
+
     if retVal:
         logger.info("live test final result: PASSED")
     else:
@@ -158,57 +233,103 @@ def liveTest():
 
     return retVal
 
-def initCase(switches=None):
-    paths.SQLMAP_OUTPUT_PATH = tempfile.mkdtemp()
+def initCase(switches, count):
+    global failedItem
+    global failedParseOn
+    global failedTraceBack
+
+    failedItem = None
+    failedParseOn = None
+    failedTraceBack = None
+
+    paths.SQLMAP_OUTPUT_PATH = tempfile.mkdtemp(prefix="sqlmaptest-%d-" % count)
     paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
     paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
+
+    logger.debug("using output directory '%s' for this test case" % paths.SQLMAP_OUTPUT_PATH)
+
+    LOGGER_HANDLER.stream = sys.stdout = tempfile.SpooledTemporaryFile(max_size=0, mode="w+b", prefix="sqlmapstdout-")
+
     cmdLineOptions = cmdLineParser()
-    cmdLineOptions.liveTest = cmdLineOptions.smokeTest = False
 
     if switches:
         for key, value in switches.items():
             if key in cmdLineOptions.__dict__:
                 cmdLineOptions.__dict__[key] = value
 
-    init(cmdLineOptions, True)
-    __setVerbosity()
+    initOptions(cmdLineOptions, True)
+    init()
 
 def cleanCase():
     shutil.rmtree(paths.SQLMAP_OUTPUT_PATH, True)
-    paths.SQLMAP_OUTPUT_PATH = os.path.join(paths.SQLMAP_ROOT_PATH, "output")
-    paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
-    paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
-    conf.verbose = 1
-    __setVerbosity()
 
-def runCase(switches=None, log=None):
+def runCase(parse):
+    global failedItem
+    global failedParseOn
+    global failedTraceBack
+
     retVal = True
-    initCase(switches)
+    handled_exception = None
+    unhandled_exception = None
+    result = False
+    console = ""
 
-    result = start()
-    if result == False: #if None ignore
+    try:
+        result = start()
+    except KeyboardInterrupt:
+        pass
+    except SqlmapBaseException, e:
+        handled_exception = e
+    except Exception, e:
+        unhandled_exception = e
+    finally:
+        sys.stdout.seek(0)
+        console = sys.stdout.read()
+        LOGGER_HANDLER.stream = sys.stdout = sys.__stdout__
+
+    if unhandled_exception:
+        failedTraceBack = "unhandled exception: %s" % str(traceback.format_exc())
+        retVal = None
+    elif handled_exception:
+        failedTraceBack = "handled exception: %s" % str(traceback.format_exc())
+        retVal = None
+    elif result is False:  # this means no SQL injection has been detected - if None, ignore
         retVal = False
 
-    if log and retVal:
-        ifile = open(conf.dumper.getOutputFile(), 'r')
-        content = ifile.read()
-        ifile.close()
-        for item in log:
+    console = getUnicode(console, system=True)
+
+    if parse and retVal:
+        with codecs.open(conf.dumper.getOutputFile(), "rb", UNICODE_ENCODING) as f:
+            content = f.read()
+
+        for item, parse_from_console_output in parse:
+            parse_on = console if parse_from_console_output else content
+
             if item.startswith("r'") and item.endswith("'"):
-                if not re.search(item[2:-1], content, re.DOTALL):
-                    retVal = False
+                if not re.search(item[2:-1], parse_on, re.DOTALL):
+                    retVal = None
+                    failedItem = item
                     break
-            elif content.find(item) < 0:
-                retVal = False
+
+            elif item not in parse_on:
+                retVal = None
+                failedItem = item
                 break
 
-    cleanCase()
+        if failedItem is not None:
+            failedParseOn = console
+
+    elif retVal is False:
+        failedParseOn = console
+
     return retVal
 
 def replaceVars(item, vars_):
     retVal = item
+
     if item and vars_:
         for var in re.findall("\$\{([^}]+)\}", item):
             if var in vars_:
                 retVal = retVal.replace("${%s}" % var, vars_[var])
+
     return retVal

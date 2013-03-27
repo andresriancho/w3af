@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 from lib.controller.handler import setHandler
 from lib.core.common import Backend
 from lib.core.common import Format
-from lib.core.common import dataToStdout
 from lib.core.data import conf
 from lib.core.data import kb
+from lib.core.data import logger
 from lib.core.data import paths
-from lib.core.exception import sqlmapUnsupportedDBMSException
+from lib.core.enums import CONTENT_TYPE
+from lib.core.exception import SqlmapNoneDataException
+from lib.core.exception import SqlmapUnsupportedDBMSException
 from lib.core.settings import SUPPORTED_DBMS
 from lib.techniques.brute.use import columnExists
 from lib.techniques.brute.use import tableExists
@@ -50,9 +52,9 @@ def action():
             errMsg += ". Support for this DBMS will be implemented at "
             errMsg += "some point"
 
-        raise sqlmapUnsupportedDBMSException, errMsg
+        raise SqlmapUnsupportedDBMSException(errMsg)
 
-    dataToStdout("%s\n" % conf.dbmsHandler.getFingerprint())
+    conf.dumper.singleString(conf.dbmsHandler.getFingerprint())
 
     # Enumeration options
     if conf.getBanner:
@@ -74,16 +76,31 @@ def action():
         conf.dumper.users(conf.dbmsHandler.getUsers())
 
     if conf.getPasswordHashes:
-        conf.dumper.userSettings("database management system users password hashes",
-                                 conf.dbmsHandler.getPasswordHashes(), "password hash")
+        try:
+            conf.dumper.userSettings("database management system users password hashes",
+                                    conf.dbmsHandler.getPasswordHashes(), "password hash", CONTENT_TYPE.PASSWORDS)
+        except SqlmapNoneDataException, ex:
+            logger.critical(ex)
+        except:
+            raise
 
     if conf.getPrivileges:
-        conf.dumper.userSettings("database management system users privileges",
-                                 conf.dbmsHandler.getPrivileges(), "privilege")
+        try:
+            conf.dumper.userSettings("database management system users privileges",
+                                    conf.dbmsHandler.getPrivileges(), "privilege", CONTENT_TYPE.PRIVILEGES)
+        except SqlmapNoneDataException, ex:
+            logger.critical(ex)
+        except:
+            raise
 
     if conf.getRoles:
-        conf.dumper.userSettings("database management system users roles",
-                                 conf.dbmsHandler.getRoles(), "role")
+        try:
+            conf.dumper.userSettings("database management system users roles",
+                                    conf.dbmsHandler.getRoles(), "role", CONTENT_TYPE.ROLES)
+        except SqlmapNoneDataException, ex:
+            logger.critical(ex)
+        except:
+            raise
 
     if conf.getDbs:
         conf.dumper.dbs(conf.dbmsHandler.getDbs())
@@ -95,10 +112,10 @@ def action():
         conf.dumper.dbTables(tableExists(paths.COMMON_TABLES))
 
     if conf.getSchema:
-        conf.dumper.dbTableColumns(conf.dbmsHandler.getSchema())
+        conf.dumper.dbTableColumns(conf.dbmsHandler.getSchema(), CONTENT_TYPE.SCHEMA)
 
     if conf.getColumns:
-        conf.dumper.dbTableColumns(conf.dbmsHandler.getColumns())
+        conf.dumper.dbTableColumns(conf.dbmsHandler.getColumns(), CONTENT_TYPE.COLUMNS)
 
     if conf.getCount:
         conf.dumper.dbTablesCount(conf.dbmsHandler.getCount())
@@ -130,7 +147,7 @@ def action():
 
     # File system options
     if conf.rFile:
-        conf.dumper.rFile(conf.rFile, conf.dbmsHandler.readFile(conf.rFile))
+        conf.dumper.rFile(conf.dbmsHandler.readFile(conf.rFile))
 
     if conf.wFile:
         conf.dbmsHandler.writeFile(conf.wFile, conf.dFile, conf.wFileType)

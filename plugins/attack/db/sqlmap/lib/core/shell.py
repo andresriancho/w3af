@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -40,7 +40,7 @@ class CompleterNG(rlcompleter.Completer):
         matches = []
         n = len(text)
 
-        for ns in [ self.namespace ]:
+        for ns in (self.namespace,):
             for word in ns:
                 if word[:n] == text:
                     matches.append(word)

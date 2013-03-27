@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -13,10 +13,14 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.LOW
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Add random comments to SQL keywords
-    Example: 'INSERT' becomes 'IN/**/S/**/ERT'
+
+    >>> import random
+    >>> random.seed(0)
+    >>> tamper('INSERT')
+    'I/**/N/**/SERT'
     """
 
     retVal = payload
@@ -37,4 +41,4 @@ def tamper(payload, headers):
                 _ += word[-1]
                 retVal = retVal.replace(word, _)
 
-    return retVal, headers
+    return retVal

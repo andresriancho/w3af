@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from extra.safe2bin.safe2bin import safechardecode
+import re
+
+from lib.core.agent import agent
 from lib.core.bigarray import BigArray
 from lib.core.common import Backend
 from lib.core.common import clearConsoleLine
-from lib.core.common import decodeIntToUnicode
 from lib.core.common import getLimitRange
 from lib.core.common import getUnicode
 from lib.core.common import isInferenceAvailable
@@ -20,7 +21,6 @@ from lib.core.common import isTechniqueAvailable
 from lib.core.common import prioritySortColumns
 from lib.core.common import readInput
 from lib.core.common import safeSQLIdentificatorNaming
-from lib.core.common import singleTimeWarnMessage
 from lib.core.common import unArrayizeValue
 from lib.core.common import unsafeSQLIdentificatorNaming
 from lib.core.data import conf
@@ -32,13 +32,12 @@ from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import DBMS
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapConnectionException
-from lib.core.exception import sqlmapMissingMandatoryOptionException
-from lib.core.exception import sqlmapNoneDataException
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapConnectionException
+from lib.core.exception import SqlmapMissingMandatoryOptionException
+from lib.core.exception import SqlmapNoneDataException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.core.settings import CHECK_ZERO_COLUMNS_THRESHOLD
 from lib.core.settings import CURRENT_DB
-from lib.core.settings import MAX_INT
 from lib.core.settings import NULL
 from lib.request import inject
 from lib.utils.hash import attackDumpedTable
@@ -57,7 +56,7 @@ class Entries:
 
         if conf.db is None or conf.db == CURRENT_DB:
             if conf.db is None:
-                warnMsg = "missing database parameter, sqlmap is going "
+                warnMsg = "missing database parameter. sqlmap is going "
                 warnMsg += "to use the current database to enumerate "
                 warnMsg += "table(s) entries"
                 logger.warn(warnMsg)
@@ -71,7 +70,7 @@ class Entries:
             if  ',' in conf.db:
                 errMsg = "only one database name is allowed when enumerating "
                 errMsg += "the tables' columns"
-                raise sqlmapMissingMandatoryOptionException, errMsg
+                raise SqlmapMissingMandatoryOptionException(errMsg)
 
         conf.db = safeSQLIdentificatorNaming(conf.db)
 
@@ -91,7 +90,7 @@ class Entries:
             else:
                 errMsg = "unable to retrieve the tables "
                 errMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
-                raise sqlmapNoneDataException, errMsg
+                raise SqlmapNoneDataException(errMsg)
 
         for tbl in tblList:
             tblList[tblList.index(tbl)] = safeSQLIdentificatorNaming(tbl, True)
@@ -121,20 +120,26 @@ class Entries:
 
                     continue
 
-                colList = sorted(filter(None, kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)][safeSQLIdentificatorNaming(tbl, True)].keys()))
-                colString = ", ".join(column for column in colList)
+                columns = kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)][safeSQLIdentificatorNaming(tbl, True)]
+                colList = sorted(filter(None, columns.keys()))
+                colNames = colString = ", ".join(column for column in colList)
                 rootQuery = queries[Backend.getIdentifiedDbms()].dump_table
 
                 infoMsg = "fetching entries"
                 if conf.col:
-                    infoMsg += " of column(s) '%s'" % colString
+                    infoMsg += " of column(s) '%s'" % colNames
                 infoMsg += " for table '%s'" % unsafeSQLIdentificatorNaming(tbl)
                 infoMsg += " in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
                 logger.info(infoMsg)
 
+                for column in colList:
+                    _ = agent.preprocessField(tbl, column)
+                    if _ != column:
+                        colString = re.sub(r"\b%s\b" % column, _, colString)
+
                 entriesCount = 0
 
-                if any([isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION), isTechniqueAvailable(PAYLOAD.TECHNIQUE.ERROR), conf.direct]):
+                if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
                     entries = []
                     query = None
 
@@ -160,42 +165,41 @@ class Entries:
                         query = rootQuery.inband.query % (colString, conf.db, tbl)
 
                     if not entries and query:
-                        entries = inject.getValue(query, blind=False, dump=True)
+                        entries = inject.getValue(query, blind=False, time=False, dump=True)
 
-                    if isNoneValue(entries):
-                        entries = []
-                    elif isinstance(entries, basestring):
-                        entries = [entries]
-                    elif not isListLike(entries):
-                        entries = []
+                    if not isNoneValue(entries):
+                        if isinstance(entries, basestring):
+                            entries = [entries]
+                        elif not isListLike(entries):
+                            entries = []
 
-                    entriesCount = len(entries)
+                        entriesCount = len(entries)
 
-                    for index, column in enumerate(colList):
-                        if column not in kb.data.dumpedTable:
-                            kb.data.dumpedTable[column] = {"length": len(column), "values": BigArray()}
+                        for index, column in enumerate(colList):
+                            if column not in kb.data.dumpedTable:
+                                kb.data.dumpedTable[column] = {"length": len(column), "values": BigArray()}
 
-                        for entry in entries:
-                            if entry is None or len(entry) == 0:
-                                continue
+                            for entry in entries:
+                                if entry is None or len(entry) == 0:
+                                    continue
 
-                            if isinstance(entry, basestring):
-                                colEntry = entry
-                            else:
-                                colEntry = unArrayizeValue(entry[index]) if index < len(entry) else u''
+                                if isinstance(entry, basestring):
+                                    colEntry = entry
+                                else:
+                                    colEntry = unArrayizeValue(entry[index]) if index < len(entry) else u''
 
-                            _ = len(DUMP_REPLACEMENTS.get(getUnicode(colEntry), getUnicode(colEntry)))
-                            maxLen = max(len(column), _)
+                                _ = len(DUMP_REPLACEMENTS.get(getUnicode(colEntry), getUnicode(colEntry)))
+                                maxLen = max(len(column), _)
 
-                            if maxLen > kb.data.dumpedTable[column]["length"]:
-                                kb.data.dumpedTable[column]["length"] = maxLen
+                                if maxLen > kb.data.dumpedTable[column]["length"]:
+                                    kb.data.dumpedTable[column]["length"] = maxLen
 
-                            kb.data.dumpedTable[column]["values"].append(colEntry)
+                                kb.data.dumpedTable[column]["values"].append(colEntry)
 
                 if not kb.data.dumpedTable and isInferenceAvailable() and not conf.direct:
                     infoMsg = "fetching number of "
                     if conf.col:
-                        infoMsg += "column(s) '%s' " % colString
+                        infoMsg += "column(s) '%s' " % colNames
                     infoMsg += "entries for table '%s' " % unsafeSQLIdentificatorNaming(tbl)
                     infoMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
                     logger.info(infoMsg)
@@ -210,7 +214,8 @@ class Entries:
                         query = rootQuery.blind.count % tbl
                     else:
                         query = rootQuery.blind.count % (conf.db, tbl)
-                    count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+
+                    count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                     lengths = {}
                     entries = {}
@@ -228,7 +233,7 @@ class Entries:
                     elif not isNumPosStrValue(count):
                         warnMsg = "unable to retrieve the number of "
                         if conf.col:
-                            warnMsg += "column(s) '%s' " % colString
+                            warnMsg += "column(s) '%s' " % colNames
                         warnMsg += "entries for table '%s' " % unsafeSQLIdentificatorNaming(tbl)
                         warnMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
                         logger.warn(warnMsg)
@@ -255,7 +260,7 @@ class Entries:
 
                         if len(colList) < len(indexRange) > CHECK_ZERO_COLUMNS_THRESHOLD:
                             for column in colList:
-                                if inject.getValue("SELECT COUNT(%s) FROM %s" % (column, kb.dumpTable), inband=False, error=False) == '0':
+                                if inject.getValue("SELECT COUNT(%s) FROM %s" % (column, kb.dumpTable), union=False, error=False) == '0':
                                     emptyColumns.append(column)
                                     debugMsg = "column '%s' of table '%s' will not be " % (column, kb.dumpTable)
                                     debugMsg += "dumped as it appears to be empty"
@@ -273,18 +278,19 @@ class Entries:
                                         entries[column] = BigArray()
 
                                     if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
-                                        query = rootQuery.blind.query % (column, conf.db, conf.tbl, sorted(colList, key=len)[0], index)
+                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column), conf.db, conf.tbl, sorted(colList, key=len)[0], index)
                                     elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
-                                        query = rootQuery.blind.query % (column, column,
+                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column),
                                                                         tbl.upper() if not conf.db else ("%s.%s" % (conf.db.upper(), tbl.upper())),
                                                                         index)
                                     elif Backend.isDbms(DBMS.SQLITE):
-                                        query = rootQuery.blind.query % (column, tbl, index)
+                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column), tbl, index)
 
                                     elif Backend.isDbms(DBMS.FIREBIRD):
-                                        query = rootQuery.blind.query % (index, column, tbl)
+                                        query = rootQuery.blind.query % (index, agent.preprocessField(tbl, column), tbl)
 
-                                    value = NULL if column in emptyColumns else inject.getValue(query, inband=False, error=False, dump=True)
+                                    value = NULL if column in emptyColumns else inject.getValue(query, union=False, error=False, dump=True)
+                                    value = '' if value is None else value
 
                                     _ = DUMP_REPLACEMENTS.get(getUnicode(value), getUnicode(value))
                                     lengths[column] = max(lengths[column], len(_))
@@ -305,7 +311,7 @@ class Entries:
                 if len(kb.data.dumpedTable) == 0 or (entriesCount == 0 and kb.permissionFlag):
                     warnMsg = "unable to retrieve the entries "
                     if conf.col:
-                        warnMsg += "of columns '%s' " % colString
+                        warnMsg += "of columns '%s' " % colNames
                     warnMsg += "for table '%s' " % unsafeSQLIdentificatorNaming(tbl)
                     warnMsg += "in database '%s'%s" % (unsafeSQLIdentificatorNaming(conf.db), " (permission denied)" if kb.permissionFlag else "")
                     logger.warn(warnMsg)
@@ -316,7 +322,7 @@ class Entries:
                     attackDumpedTable()
                     conf.dumper.dbTableValues(kb.data.dumpedTable)
 
-            except sqlmapConnectionException, e:
+            except SqlmapConnectionException, e:
                 errMsg = "connection exception detected in dumping phase: "
                 errMsg += "'%s'" % e
                 logger.critical(errMsg)
@@ -332,7 +338,7 @@ class Entries:
         if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
             errMsg = "information_schema not available, "
             errMsg += "back-end DBMS is MySQL < 5.0"
-            raise sqlmapUnsupportedFeatureException, errMsg
+            raise SqlmapUnsupportedFeatureException(errMsg)
 
         infoMsg = "sqlmap will dump entries of all tables from all databases now"
         logger.info(infoMsg)
@@ -356,8 +362,8 @@ class Entries:
                         kb.data.dumpedTable = {}
 
                         self.dumpTable()
-                    except sqlmapNoneDataException:
-                        infoMsg = "skipping table '%s'" % table
+                    except SqlmapNoneDataException:
+                        infoMsg = "skipping table '%s'" % unsafeSQLIdentificatorNaming(table)
                         logger.info(infoMsg)
 
     def dumpFoundColumn(self, dbs, foundCols, colConsider):
@@ -372,7 +378,7 @@ class Entries:
 
         for db, tblData in dbs.items():
             if tblData:
-                message += "[%s]\n" % db
+                message += "[%s]\n" % unsafeSQLIdentificatorNaming(db)
 
         message += "[q]uit"
         test = readInput(message, default="a")
@@ -390,7 +396,7 @@ class Entries:
 
             conf.db = db
             dumpFromTbls = []
-            message = "which table(s) of database '%s'?\n" % db
+            message = "which table(s) of database '%s'?\n" % unsafeSQLIdentificatorNaming(db)
             message += "[a]ll (default)\n"
 
             for tbl in tblData:
@@ -435,7 +441,7 @@ class Entries:
 
         for db, tablesList in tables.items():
             if tablesList:
-                message += "[%s]\n" % db
+                message += "[%s]\n" % unsafeSQLIdentificatorNaming(db)
 
         message += "[q]uit"
         test = readInput(message, default="a")
@@ -453,11 +459,11 @@ class Entries:
 
             conf.db = db
             dumpFromTbls = []
-            message = "which table(s) of database '%s'?\n" % db
+            message = "which table(s) of database '%s'?\n" % unsafeSQLIdentificatorNaming(db)
             message += "[a]ll (default)\n"
 
             for tbl in tablesList:
-                message += "[%s]\n" % tbl
+                message += "[%s]\n" % unsafeSQLIdentificatorNaming(tbl)
 
             message += "[s]kip\n"
             message += "[q]uit"

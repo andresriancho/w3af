@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-import codecs
 import cookielib
+import glob
 import inspect
 import logging
 import os
 import re
 import socket
+import string
 import sys
 import threading
+import time
 import urllib2
 import urlparse
 
@@ -47,10 +49,11 @@ from lib.core.common import resetCookieJar
 from lib.core.common import runningAsAdmin
 from lib.core.common import sanitizeStr
 from lib.core.common import setOptimize
+from lib.core.common import setPaths
 from lib.core.common import singleTimeWarnMessage
 from lib.core.common import UnicodeRawConfigParser
 from lib.core.common import urldecode
-from lib.core.common import urlencode
+from lib.core.convert import base64unpickle
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -59,59 +62,65 @@ from lib.core.datatype import AttribDict
 from lib.core.datatype import InjectionDict
 from lib.core.defaults import defaults
 from lib.core.dicts import DBMS_DICT
+from lib.core.dicts import DUMP_REPLACEMENTS
+from lib.core.enums import ADJUST_TIME_DELAY
+from lib.core.enums import AUTH_TYPE
 from lib.core.enums import CUSTOM_LOGGING
-from lib.core.enums import HTTPHEADER
+from lib.core.enums import DUMP_FORMAT
+from lib.core.enums import HTTP_HEADER
 from lib.core.enums import HTTPMETHOD
 from lib.core.enums import MOBILES
 from lib.core.enums import PAYLOAD
 from lib.core.enums import PRIORITY
-from lib.core.enums import PROXYTYPE
+from lib.core.enums import PROXY_TYPE
 from lib.core.enums import REFLECTIVE_COUNTER
-from lib.core.exception import sqlmapConnectionException
-from lib.core.exception import sqlmapFilePathException
-from lib.core.exception import sqlmapGenericException
-from lib.core.exception import sqlmapMissingDependence
-from lib.core.exception import sqlmapMissingMandatoryOptionException
-from lib.core.exception import sqlmapMissingPrivileges
-from lib.core.exception import sqlmapSilentQuitException
-from lib.core.exception import sqlmapSyntaxException
-from lib.core.exception import sqlmapUnsupportedDBMSException
-from lib.core.exception import sqlmapUserQuitException
+from lib.core.enums import WIZARD
+from lib.core.exception import SqlmapConnectionException
+from lib.core.exception import SqlmapFilePathException
+from lib.core.exception import SqlmapGenericException
+from lib.core.exception import SqlmapMissingDependence
+from lib.core.exception import SqlmapMissingMandatoryOptionException
+from lib.core.exception import SqlmapMissingPrivileges
+from lib.core.exception import SqlmapSilentQuitException
+from lib.core.exception import SqlmapSyntaxException
+from lib.core.exception import SqlmapUnsupportedDBMSException
+from lib.core.exception import SqlmapUserQuitException
 from lib.core.log import FORMATTER
-from lib.core.log import LOGGER_HANDLER
 from lib.core.optiondict import optDict
 from lib.core.purge import purge
+from lib.core.settings import ACCESS_ALIASES
+from lib.core.settings import BURP_REQUEST_REGEX
 from lib.core.settings import CODECS_LIST_PAGE
 from lib.core.settings import CRAWL_EXCLUDE_EXTENSIONS
-from lib.core.settings import DEFAULT_GET_POST_DELIMITER
+from lib.core.settings import CUSTOM_INJECTION_MARK_CHAR
+from lib.core.settings import DB2_ALIASES
 from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DEFAULT_TOR_HTTP_PORTS
 from lib.core.settings import DEFAULT_TOR_SOCKS_PORT
+from lib.core.settings import FIREBIRD_ALIASES
+from lib.core.settings import INJECT_HERE_MARK
 from lib.core.settings import IS_WIN
-from lib.core.settings import NULL
-from lib.core.settings import PYVERSION
-from lib.core.settings import SITE
-from lib.core.settings import SUPPORTED_DBMS
-from lib.core.settings import SUPPORTED_OS
-from lib.core.settings import VERSION_STRING
+from lib.core.settings import LOCALHOST
+from lib.core.settings import MAXDB_ALIASES
+from lib.core.settings import MAX_CONNECT_RETRIES
+from lib.core.settings import MAX_NUMBER_OF_THREADS
 from lib.core.settings import MSSQL_ALIASES
 from lib.core.settings import MYSQL_ALIASES
-from lib.core.settings import PGSQL_ALIASES
+from lib.core.settings import NULL
 from lib.core.settings import ORACLE_ALIASES
-from lib.core.settings import SQLITE_ALIASES
-from lib.core.settings import ACCESS_ALIASES
-from lib.core.settings import FIREBIRD_ALIASES
-from lib.core.settings import MAXDB_ALIASES
-from lib.core.settings import SYBASE_ALIASES
-from lib.core.settings import DB2_ALIASES
-from lib.core.settings import BURP_REQUEST_REGEX
-from lib.core.settings import LOCALHOST
-from lib.core.settings import MAX_NUMBER_OF_THREADS
 from lib.core.settings import PARAMETER_SPLITTING_REGEX
+from lib.core.settings import PGSQL_ALIASES
+from lib.core.settings import PROBLEMATIC_CUSTOM_INJECTION_PATTERNS
+from lib.core.settings import SITE
+from lib.core.settings import SQLITE_ALIASES
+from lib.core.settings import SUPPORTED_DBMS
+from lib.core.settings import SUPPORTED_OS
+from lib.core.settings import SYBASE_ALIASES
 from lib.core.settings import TIME_DELAY_CANDIDATES
-from lib.core.settings import UNENCODED_ORIGINAL_VALUE
 from lib.core.settings import UNION_CHAR_REGEX
 from lib.core.settings import UNKNOWN_DBMS_VERSION
+from lib.core.settings import URI_INJECTABLE_REGEX
+from lib.core.settings import VERSION_STRING
 from lib.core.settings import WEBSCARAB_SPLITTER
 from lib.core.threads import getCurrentThreadData
 from lib.core.update import update
@@ -120,14 +129,13 @@ from lib.parse.payloads import loadPayloads
 from lib.request.basic import checkCharEncoding
 from lib.request.connect import Connect as Request
 from lib.request.dns import DNSServer
-from lib.request.proxy import ProxyHTTPSHandler
 from lib.request.basicauthhandler import SmartHTTPBasicAuthHandler
 from lib.request.certhandler import HTTPSCertAuthHandler
 from lib.request.httpshandler import HTTPSHandler
 from lib.request.rangehandler import HTTPRangeHandler
 from lib.request.redirecthandler import SmartRedirectHandler
 from lib.request.templates import getPageTemplate
-from lib.utils.crawler import Crawler
+from lib.utils.crawler import crawl
 from lib.utils.deps import checkDependencies
 from lib.utils.google import Google
 from thirdparty.colorama.initialise import init as coloramainit
@@ -143,7 +151,7 @@ proxyHandler = urllib2.BaseHandler()
 redirectHandler = SmartRedirectHandler()
 rangeHandler = HTTPRangeHandler()
 
-def __urllib2Opener():
+def _urllib2Opener():
     """
     This function creates the urllib2 OpenerDirector.
     """
@@ -179,12 +187,12 @@ def __urllib2Opener():
     opener = urllib2.build_opener(*handlers)
     urllib2.install_opener(opener)
 
-def __feedTargetsDict(reqFile, addedTargetUrls):
+def _feedTargetsDict(reqFile, addedTargetUrls):
     """
     Parses web scarab and burp logs and adds results to the target url list
     """
 
-    def __parseWebScarabLog(content):
+    def _parseWebScarabLog(content):
         """
         Parses web scarab logs (POST method not supported)
         """
@@ -200,7 +208,7 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
                 logger.debug("not a valid WebScarab log data")
                 continue
 
-            if method.upper() == "POST":
+            if method.upper() == HTTPMETHOD.POST:
                 warnMsg = "POST requests from WebScarab logs aren't supported "
                 warnMsg += "as their body content is stored in separate files. "
                 warnMsg += "Nevertheless you can use -r to load them individually."
@@ -208,30 +216,32 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
                 continue
 
             if not(conf.scope and not re.search(conf.scope, url, re.I)):
-                if not kb.targetUrls or url not in addedTargetUrls:
-                    kb.targetUrls.add((url, method, None, cookie))
+                if not kb.targets or url not in addedTargetUrls:
+                    kb.targets.add((url, method, None, cookie))
                     addedTargetUrls.add(url)
 
-    def __parseBurpLog(content):
+    def _parseBurpLog(content):
         """
         Parses burp logs
         """
-        port = None
-        scheme = None
 
-        reqResList = re.findall(BURP_REQUEST_REGEX, content, re.I | re.S)
-        if not reqResList:
+        if not re.search(BURP_REQUEST_REGEX, content, re.I | re.S):
             reqResList = [content]
+        else:
+            reqResList = re.finditer(BURP_REQUEST_REGEX, content, re.I | re.S)
 
-        for request in reqResList:
-            if scheme is None:
-                schemePort = re.search(r"(http[\w]*)\:\/\/.*?\:([\d]+).+?={10,}", request, re.I | re.S)
+        for match in reqResList:
+            request = match if isinstance(match, basestring) else match.group(0)
 
-                if schemePort:
-                    scheme = schemePort.group(1)
-                    port = schemePort.group(2)
+            schemePort = re.search(r"(http[\w]*)\:\/\/.*?\:([\d]+).+?={10,}", request, re.I | re.S)
 
-            if not re.search (r"^[\n]*(GET|POST).*?\sHTTP\/", request, re.I | re.M):
+            if schemePort:
+                scheme = schemePort.group(1)
+                port = schemePort.group(2)
+            else:
+                scheme, port = None, None
+
+            if not re.search(r"^[\n]*(GET|POST).*?\sHTTP\/", request, re.I | re.M):
                 continue
 
             if re.search(r"^[\n]*(GET|POST).*?\.(%s)\sHTTP\/" % "|".join(CRAWL_EXCLUDE_EXTENSIONS), request, re.I | re.M):
@@ -244,10 +254,13 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
             data = None
             cookie = None
             params = False
-            lines = request.split("\n")
+            newline = None
+            lines = request.split('\n')
 
             for line in lines:
-                if len(line) == 0 or line == "\n":
+                newline = "\r\n" if line.endswith('\r') else '\n'
+                line = line.strip('\r')
+                if len(line) == 0:
                     if method == HTTPMETHOD.POST and data is None:
                         data = ""
                         params = True
@@ -259,7 +272,7 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
                         index = 5
 
                     url = line[index:line.index(" HTTP/")]
-                    method = line[:index-1]
+                    method = line[:index - 1]
 
                     if "?" in line and "=" in line:
                         params = True
@@ -268,37 +281,42 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
 
                 # POST parameters
                 elif data is not None and params:
-                    data += "%s%s" % ("\n" if data else "", line)
+                    data += "%s%s" % (line, newline)
 
                 # GET parameters
                 elif "?" in line and "=" in line and ": " not in line:
                     params = True
 
                 # Headers
-                elif ": " in line:
+                elif re.search(r"\A\S+: ", line):
                     key, value = line.split(": ", 1)
 
                     # Cookie and Host headers
-                    if key.lower() == "cookie":
+                    if key.upper() == HTTP_HEADER.COOKIE.upper():
                         cookie = value
-                    elif key.lower() == "host":
+                    elif key.upper() == HTTP_HEADER.HOST.upper():
                         if '://' in value:
                             scheme, value = value.split('://')[:2]
                         splitValue = value.split(":")
                         host = splitValue[0]
 
                         if len(splitValue) > 1:
-                            port = filterStringValue(splitValue[1], '[0-9]')
+                            port = filterStringValue(splitValue[1], "[0-9]")
 
                     # Avoid to add a static content length header to
                     # conf.httpHeaders and consider the following lines as
                     # POSTed data
-                    if key == HTTPHEADER.CONTENT_LENGTH:
+                    if key.upper() == HTTP_HEADER.CONTENT_LENGTH.upper():
                         params = True
 
                     # Avoid proxy and connection type related headers
-                    elif key not in ( HTTPHEADER.PROXY_CONNECTION, HTTPHEADER.CONNECTION ):
+                    elif key not in (HTTP_HEADER.PROXY_CONNECTION, HTTP_HEADER.CONNECTION):
                         conf.httpHeaders.append((getUnicode(key), getUnicode(value)))
+
+                    if CUSTOM_INJECTION_MARK_CHAR in re.sub(PROBLEMATIC_CUSTOM_INJECTION_PATTERNS, "", value or ""):
+                        params = True
+
+            data = data.rstrip("\r\n") if data else data
 
             if getPostReq and (params or cookie):
                 if not port and isinstance(scheme, basestring) and scheme.lower() == "https":
@@ -310,28 +328,36 @@ def __feedTargetsDict(reqFile, addedTargetUrls):
                     scheme = "https"
                     port = port or "443"
 
+                if not host:
+                    errMsg = "invalid format of a request file"
+                    raise SqlmapSyntaxException, errMsg
+
                 if not url.startswith("http"):
                     url = "%s://%s:%s%s" % (scheme or "http", host, port or "80", url)
                     scheme = None
                     port = None
 
                 if not(conf.scope and not re.search(conf.scope, url, re.I)):
-                    if not kb.targetUrls or url not in addedTargetUrls:
-                        kb.targetUrls.add((url, method, urldecode(data) if data and urlencode(DEFAULT_GET_POST_DELIMITER, None) not in data else data, cookie))
+                    if not kb.targets or url not in addedTargetUrls:
+                        kb.targets.add((url, method, data, cookie))
                         addedTargetUrls.add(url)
 
     fp = openFile(reqFile, "rb")
 
     content = fp.read()
-    content = content.replace("\r", "")
 
     if conf.scope:
         logger.info("using regular expression '%s' for filtering targets" % conf.scope)
 
-    __parseBurpLog(content)
-    __parseWebScarabLog(content)
+    _parseBurpLog(content)
+    _parseWebScarabLog(content)
 
-def __loadQueries():
+    if not addedTargetUrls:
+        errMsg = "unable to find usable request(s) "
+        errMsg += "in provided file ('%s')" % reqFile
+        raise SqlmapGenericException(errMsg)
+
+def _loadQueries():
     """
     Loads queries from 'xml/queries.xml' file.
     """
@@ -340,6 +366,7 @@ def __loadQueries():
         class DictObject(object):
             def __init__(self):
                 self.__dict__ = {}
+
             def __contains__(self, name):
                 return name in self.__dict__
 
@@ -362,13 +389,13 @@ def __loadQueries():
     for node in tree.findall("*"):
         queries[node.attrib['value']] = iterate(node)
 
-def __setMultipleTargets():
+def _setMultipleTargets():
     """
     Define a configuration parameter if we are running in multiple target
     mode.
     """
 
-    initialTargetsCount = len(kb.targetUrls)
+    initialTargetsCount = len(kb.targets)
     addedTargetUrls = set()
 
     if not conf.logFile:
@@ -379,10 +406,10 @@ def __setMultipleTargets():
 
     if not os.path.exists(conf.logFile):
         errMsg = "the specified list of targets does not exist"
-        raise sqlmapFilePathException, errMsg
+        raise SqlmapFilePathException(errMsg)
 
     if os.path.isfile(conf.logFile):
-        __feedTargetsDict(conf.logFile, addedTargetUrls)
+        _feedTargetsDict(conf.logFile, addedTargetUrls)
 
     elif os.path.isdir(conf.logFile):
         files = os.listdir(conf.logFile)
@@ -392,21 +419,21 @@ def __setMultipleTargets():
             if not re.search("([\d]+)\-request", reqFile):
                 continue
 
-            __feedTargetsDict(os.path.join(conf.logFile, reqFile), addedTargetUrls)
+            _feedTargetsDict(os.path.join(conf.logFile, reqFile), addedTargetUrls)
 
     else:
         errMsg = "the specified list of targets is not a file "
         errMsg += "nor a directory"
-        raise sqlmapFilePathException, errMsg
+        raise SqlmapFilePathException(errMsg)
 
-    updatedTargetsCount = len(kb.targetUrls)
+    updatedTargetsCount = len(kb.targets)
 
     if updatedTargetsCount > initialTargetsCount:
         infoMsg = "sqlmap parsed %d " % (updatedTargetsCount - initialTargetsCount)
         infoMsg += "testable requests from the targets list"
         logger.info(infoMsg)
 
-def __adjustLoggingFormatter():
+def _adjustLoggingFormatter():
     """
     Solves problem of line deletition caused by overlapping logging messages
     and retrieved data info in inference mode
@@ -425,7 +452,7 @@ def __adjustLoggingFormatter():
     FORMATTER._format = FORMATTER.format
     FORMATTER.format = format
 
-def __setRequestFromFile():
+def _setRequestFromFile():
     """
     This function checks if the way to make a HTTP request is through supplied
     textual file, parses it and saves the information into the knowledge base.
@@ -444,18 +471,17 @@ def __setRequestFromFile():
     if not os.path.isfile(conf.requestFile):
         errMsg = "the specified HTTP request file "
         errMsg += "does not exist"
-        raise sqlmapFilePathException, errMsg
+        raise SqlmapFilePathException(errMsg)
 
-    __feedTargetsDict(conf.requestFile, addedTargetUrls)
+    _feedTargetsDict(conf.requestFile, addedTargetUrls)
 
-def __setCrawler():
+def _setCrawler():
     if not conf.crawlDepth:
         return
 
-    crawler = Crawler()
-    crawler.getTargetUrls()
+    crawl(conf.url)
 
-def __setGoogleDorking():
+def _setGoogleDorking():
     """
     This function checks if the way to request testable hosts is through
     Google dorking then requests to Google the search parameter, parses
@@ -474,7 +500,7 @@ def __setGoogleDorking():
     infoMsg = "first request to Google to get the session cookie"
     logger.info(infoMsg)
 
-    handlers = [ proxyHandler ]
+    handlers = [proxyHandler]
 
     # Reference: http://www.w3.org/Protocols/rfc2616/rfc2616-sec8.html
     if conf.keepAlive:
@@ -487,48 +513,59 @@ def __setGoogleDorking():
             handlers.append(keepAliveHandler)
 
     googleObj = Google(handlers)
-    googleObj.getCookie()
+    kb.data.onlyGETs = None
 
-    def search():
-        matches = googleObj.search(conf.googleDork)
+    def retrieve():
+        links = googleObj.search(conf.googleDork)
 
-        if not matches:
+        if not links:
             errMsg = "unable to find results for your "
             errMsg += "Google dork expression"
-            raise sqlmapGenericException, errMsg
+            raise SqlmapGenericException(errMsg)
 
-        googleObj.getTargetUrls()
-        return matches
+        for link in links:
+            link = urldecode(link)
+            if re.search(r"(.*?)\?(.+)", link):
+                kb.targets.add((link, conf.method, conf.data, conf.cookie))
+            elif re.search(URI_INJECTABLE_REGEX, link, re.I):
+                if kb.data.onlyGETs is None and conf.data is None:
+                    message = "do you want to scan only results containing GET parameters? [Y/n] "
+                    test = readInput(message, default="Y")
+                    kb.data.onlyGETs = test.lower() != 'n'
+                if not kb.data.onlyGETs:
+                    kb.targets.add((link, conf.method, conf.data, conf.cookie))
+
+        return links
 
     while True:
-        matches = search()
+        links = retrieve()
 
-        if kb.targetUrls:
-            infoMsg = "sqlmap got %d results for your " % len(matches)
+        if kb.targets:
+            infoMsg = "sqlmap got %d results for your " % len(links)
             infoMsg += "Google dork expression, "
 
-            if len(matches) == len(kb.targetUrls):
+            if len(links) == len(kb.targets):
                 infoMsg += "all "
             else:
-                infoMsg += "%d " % len(kb.targetUrls)
+                infoMsg += "%d " % len(kb.targets)
 
             infoMsg += "of them are testable targets"
             logger.info(infoMsg)
             break
 
         else:
-            message = "sqlmap got %d results " % len(matches)
+            message = "sqlmap got %d results " % len(links)
             message += "for your Google dork expression, but none of them "
             message += "have GET parameters to test for SQL injection. "
             message += "Do you want to skip to the next result page? [Y/n]"
             test = readInput(message, default="Y")
 
             if test[0] in ("n", "N"):
-                raise sqlmapSilentQuitException
+                raise SqlmapSilentQuitException
             else:
                 conf.googlePage += 1
 
-def __setBulkMultipleTargets():
+def _setBulkMultipleTargets():
     if not conf.bulkFile:
         return
 
@@ -540,27 +577,41 @@ def __setBulkMultipleTargets():
     if not os.path.isfile(conf.bulkFile):
         errMsg = "the specified bulk file "
         errMsg += "does not exist"
-        raise sqlmapFilePathException, errMsg
+        raise SqlmapFilePathException(errMsg)
 
     for line in getFileItems(conf.bulkFile):
         if re.search(r"[^ ]+\?(.+)", line, re.I):
-            kb.targetUrls.add((line.strip(), None, None, None))
+            kb.targets.add((line.strip(), None, None, None))
 
-def __findPageForms():
+def _findPageForms():
     if not conf.forms or conf.crawlDepth:
         return
 
-    if not checkConnection():
+    if conf.url and not checkConnection():
         return
 
     infoMsg = "searching for forms"
     logger.info(infoMsg)
 
-    page, _ = Request.queryPage(content=True)
+    if not conf.bulkFile:
+        page, _ = Request.queryPage(content=True)
+        findPageForms(page, conf.url, True, True)
+    else:
+        targets = getFileItems(conf.bulkFile)
+        for i in xrange(len(targets)):
+            try:
+                target = targets[i]
+                page, _, _ = Request.getPage(url=target.strip(), crawling=True, raise404=False)
+                findPageForms(page, target, False, True)
 
-    findPageForms(page, conf.url, True, True)
+                if conf.verbose in (1, 2):
+                    status = '%d/%d links visited (%d%%)' % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
+                    dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
+            except Exception, ex:
+                errMsg = "problem occured while searching for forms at '%s' ('%s')" % (target, ex)
+                logger.error(errMsg)
 
-def __setDBMSAuthentication():
+def _setDBMSAuthentication():
     """
     Check and set the DBMS authentication credentials to run statements as
     another user, not the session user
@@ -577,12 +628,12 @@ def __setDBMSAuthentication():
     if not match:
         errMsg = "DBMS authentication credentials value must be in format "
         errMsg += "username:password"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     conf.dbmsUsername = match.group(1)
     conf.dbmsPassword = match.group(2)
 
-def __setMetasploit():
+def _setMetasploit():
     if not conf.osPwn and not conf.osSmb and not conf.osBof:
         return
 
@@ -595,13 +646,15 @@ def __setMetasploit():
         if not conf.msfPath:
             def _(key, value):
                 retVal = None
+
                 try:
                     from  _winreg import ConnectRegistry, OpenKey, QueryValueEx, HKEY_LOCAL_MACHINE
                     _ = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
                     _ = OpenKey(_, key)
                     retVal = QueryValueEx(_, value)[0]
-                except Exception, ex:
-                    print ex
+                except:
+                    logger.debug("unable to identify Metasploit installation path via registry key")
+
                 return retVal
 
             conf.msfPath = _(r"SOFTWARE\Rapid7\Metasploit", "Location")
@@ -616,7 +669,7 @@ def __setMetasploit():
             errMsg += "if you want to perform a SMB relay attack because "
             errMsg += "it will need to listen on a user-specified SMB "
             errMsg += "TCP port for incoming connection attempts"
-            raise sqlmapMissingPrivileges, errMsg
+            raise SqlmapMissingPrivileges(errMsg)
 
     if conf.msfPath:
         for path in (conf.msfPath, os.path.join(conf.msfPath, "bin")):
@@ -644,7 +697,7 @@ def __setMetasploit():
 
     if not msfEnvPathExists:
         warnMsg = "sqlmap is going to look for Metasploit Framework "
-        warnMsg += "installation into the environment paths"
+        warnMsg += "installation inside the environment path(s)"
         logger.warn(warnMsg)
 
         envPaths = os.environ.get("PATH", "").split(";" if IS_WIN else ":")
@@ -664,10 +717,10 @@ def __setMetasploit():
 
     if not msfEnvPathExists:
         errMsg = "unable to locate Metasploit Framework installation. "
-        errMsg += "Get it from http://metasploit.com/framework/download/"
-        raise sqlmapFilePathException, errMsg
+        errMsg += "You can get it at 'http://www.metasploit.com/download/'"
+        raise SqlmapFilePathException(errMsg)
 
-def __setWriteFile():
+def _setWriteFile():
     if not conf.wFile:
         return
 
@@ -676,16 +729,16 @@ def __setWriteFile():
 
     if not os.path.exists(conf.wFile):
         errMsg = "the provided local file '%s' does not exist" % conf.wFile
-        raise sqlmapFilePathException, errMsg
+        raise SqlmapFilePathException(errMsg)
 
     if not conf.dFile:
         errMsg = "you did not provide the back-end DBMS absolute path "
         errMsg += "where you want to write the local file '%s'" % conf.wFile
-        raise sqlmapMissingMandatoryOptionException, errMsg
+        raise SqlmapMissingMandatoryOptionException(errMsg)
 
     conf.wFileType = getFileType(conf.wFile)
 
-def __setOS():
+def _setOS():
     """
     Force the back-end DBMS operating system option.
     """
@@ -700,7 +753,7 @@ def __setOS():
         errMsg += "If you do not know the back-end DBMS underlying OS, "
         errMsg += "do not provide it and sqlmap will fingerprint it for "
         errMsg += "you."
-        raise sqlmapUnsupportedDBMSException, errMsg
+        raise SqlmapUnsupportedDBMSException(errMsg)
 
     debugMsg = "forcing back-end DBMS operating system to user defined "
     debugMsg += "value '%s'" % conf.os
@@ -708,9 +761,9 @@ def __setOS():
 
     Backend.setOs(conf.os)
 
-def __setTechnique():
+def _setTechnique():
     validTechniques = sorted(getPublicTypeMembers(PAYLOAD.TECHNIQUE), key=lambda x: x[1])
-    validLetters = map(lambda x: x[0][0].upper(), validTechniques)
+    validLetters = [_[0][0].upper() for _ in validTechniques]
 
     if conf.tech and isinstance(conf.tech, basestring):
         _ = []
@@ -720,7 +773,7 @@ def __setTechnique():
                 errMsg = "value for --technique must be a string composed "
                 errMsg += "by the letters %s. Refer to the " % ", ".join(validLetters)
                 errMsg += "user's manual for details"
-                raise sqlmapSyntaxException, errMsg
+                raise SqlmapSyntaxException(errMsg)
 
             for validTech, validInt in validTechniques:
                 if letter == validTech[0]:
@@ -729,7 +782,7 @@ def __setTechnique():
 
         conf.tech = _
 
-def __setDBMS():
+def _setDBMS():
     """
     Force the back-end DBMS option.
     """
@@ -752,7 +805,7 @@ def __setDBMS():
         errMsg += "system. The supported DBMS are %s. " % ', '.join([d for d in DBMS_DICT])
         errMsg += "If you do not know the back-end DBMS, do not provide "
         errMsg += "it and sqlmap will fingerprint it for you."
-        raise sqlmapUnsupportedDBMSException, errMsg
+        raise SqlmapUnsupportedDBMSException(errMsg)
 
     for aliases in (MSSQL_ALIASES, MYSQL_ALIASES, PGSQL_ALIASES, ORACLE_ALIASES, \
                     SQLITE_ALIASES, ACCESS_ALIASES, FIREBIRD_ALIASES, \
@@ -762,7 +815,7 @@ def __setDBMS():
 
             break
 
-def __setTamperingFunctions():
+def _setTamperingFunctions():
     """
     Loads tampering functions from given script(s)
     """
@@ -786,11 +839,11 @@ def __setTamperingFunctions():
 
             elif not os.path.exists(tfile):
                 errMsg = "tamper script '%s' does not exist" % tfile
-                raise sqlmapFilePathException, errMsg
+                raise SqlmapFilePathException(errMsg)
 
             elif not tfile.endswith('.py'):
                 errMsg = "tamper script '%s' should have an extension '.py'" % tfile
-                raise sqlmapSyntaxException, errMsg
+                raise SqlmapSyntaxException(errMsg)
 
             dirname, filename = os.path.split(tfile)
             dirname = os.path.abspath(dirname)
@@ -801,7 +854,7 @@ def __setTamperingFunctions():
             if not os.path.exists(os.path.join(dirname, '__init__.py')):
                 errMsg = "make sure that there is an empty file '__init__.py' "
                 errMsg += "inside of tamper scripts directory '%s'" % dirname
-                raise sqlmapGenericException, errMsg
+                raise SqlmapGenericException(errMsg)
 
             if dirname not in sys.path:
                 sys.path.insert(0, dirname)
@@ -809,18 +862,19 @@ def __setTamperingFunctions():
             try:
                 module = __import__(filename[:-3])
             except ImportError, msg:
-                raise sqlmapSyntaxException, "cannot import tamper script '%s' (%s)" % (filename[:-3], msg)
+                raise SqlmapSyntaxException("cannot import tamper script '%s' (%s)" % (filename[:-3], msg))
 
             priority = PRIORITY.NORMAL if not hasattr(module, '__priority__') else module.__priority__
 
             for name, function in inspect.getmembers(module, inspect.isfunction):
-                if name == "tamper" and function.func_code.co_argcount == 2:
+                if name == "tamper":
                     found = True
                     kb.tamperFunctions.append(function)
+                    function.func_name = module.__name__
 
                     if check_priority and priority > last_priority:
                         message = "it seems that you might have mixed "
-                        message += "the order of tamper scripts.\n"
+                        message += "the order of tamper scripts. "
                         message += "Do you want to auto resolve this? [Y/n/q] "
                         test = readInput(message, default="Y")
 
@@ -829,7 +883,7 @@ def __setTamperingFunctions():
                         elif test[0] in ("n", "N"):
                             resolve_priorities = False
                         elif test[0] in ("q", "Q"):
-                            raise sqlmapUserQuitException
+                            raise SqlmapUserQuitException
 
                         check_priority = False
 
@@ -843,7 +897,7 @@ def __setTamperingFunctions():
             if not found:
                 errMsg = "missing function 'tamper(payload, headers)' "
                 errMsg += "in tamper script '%s'" % tfile
-                raise sqlmapGenericException, errMsg
+                raise SqlmapGenericException(errMsg)
 
         if resolve_priorities and priorities:
             priorities.sort(reverse=True)
@@ -852,11 +906,43 @@ def __setTamperingFunctions():
             for _, function in priorities:
                 kb.tamperFunctions.append(function)
 
-def __setThreads():
+def _setWafFunctions():
+    """
+    Loads WAF/IDS/IPS detecting functions from script(s)
+    """
+
+    if conf.identifyWaf:
+        for found in glob.glob(os.path.join(paths.SQLMAP_WAF_PATH, "*.py")):
+            dirname, filename = os.path.split(found)
+            dirname = os.path.abspath(dirname)
+
+            if filename == "__init__.py":
+                continue
+
+            debugMsg = "loading WAF script '%s'" % filename[:-3]
+            logger.debug(debugMsg)
+
+            if dirname not in sys.path:
+                sys.path.insert(0, dirname)
+
+            try:
+                module = __import__(filename[:-3])
+            except ImportError, msg:
+                raise SqlmapSyntaxException("cannot import WAF script '%s' (%s)" % (filename[:-3], msg))
+
+            _ = dict(inspect.getmembers(module))
+            if "detect" not in _:
+                errMsg = "missing function 'detect(page, headers, code)' "
+                errMsg += "in WAF script '%s'" % found
+                raise SqlmapGenericException(errMsg)
+            else:
+                kb.wafFunctions.append((_["detect"], _.get("__product__", filename[:-3])))
+
+def _setThreads():
     if not isinstance(conf.threads, int) or conf.threads <= 0:
         conf.threads = 1
 
-def __setDNSCache():
+def _setDNSCache():
     """
     Makes a cached version of socket._getaddrinfo to avoid subsequent DNS requests.
     """
@@ -873,9 +959,9 @@ def __setDNSCache():
         socket._getaddrinfo = socket.getaddrinfo
         socket.getaddrinfo = _getaddrinfo
 
-def __setHTTPProxy():
+def _setHTTPProxy():
     """
-    Check and set the HTTP proxy to pass by all HTTP requests.
+    Check and set the HTTP/SOCKS proxy for all HTTP requests.
     """
 
     global proxyHandler
@@ -886,13 +972,13 @@ def __setHTTPProxy():
 
         return
 
-    debugMsg = "setting the HTTP/SOCKS proxy to pass by all HTTP requests"
+    debugMsg = "setting the HTTP/SOCKS proxy for all HTTP requests"
     logger.debug(debugMsg)
 
     proxySplit = urlparse.urlsplit(conf.proxy)
-    hostnamePort = proxySplit[1].split(":")
+    hostnamePort = proxySplit.netloc.split(":")
 
-    scheme = proxySplit[0].upper()
+    scheme = proxySplit.scheme.upper()
     hostname = hostnamePort[0]
     port = None
     username = None
@@ -902,24 +988,24 @@ def __setHTTPProxy():
         try:
             port = int(hostnamePort[1])
         except:
-            pass #drops into the next check block
+            pass  # drops into the next check block
 
-    if not all((scheme, hasattr(PROXYTYPE, scheme), hostname, port)):
-        errMsg = "proxy value must be in format '(%s)://url:port'" % "|".join(_[0].lower() for _ in getPublicTypeMembers(PROXYTYPE))
-        raise sqlmapSyntaxException, errMsg
+    if not all((scheme, hasattr(PROXY_TYPE, scheme), hostname, port)):
+        errMsg = "proxy value must be in format '(%s)://url:port'" % "|".join(_[0].lower() for _ in getPublicTypeMembers(PROXY_TYPE))
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.pCred:
         _ = re.search("^(.*?):(.*?)$", conf.pCred)
         if not _:
             errMsg = "Proxy authentication credentials "
             errMsg += "value must be in format username:password"
-            raise sqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
         else:
             username = _.group(1)
             password = _.group(2)
 
-    if scheme in (PROXYTYPE.SOCKS4, PROXYTYPE.SOCKS5):
-        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if scheme == PROXYTYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, hostname, port, username=username, password=password)
+    if scheme in (PROXY_TYPE.SOCKS4, PROXY_TYPE.SOCKS5):
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if scheme == PROXY_TYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, hostname, port, username=username, password=password)
         socks.wrapmodule(urllib2)
     else:
         if conf.pCred:
@@ -929,19 +1015,9 @@ def __setHTTPProxy():
             proxyString = ""
 
         proxyString += "%s:%d" % (hostname, port)
+        proxyHandler = urllib2.ProxyHandler({"http": proxyString, "https": proxyString})
 
-        # Workaround for http://bugs.python.org/issue1424152 (urllib/urllib2:
-        # HTTPS over (Squid) Proxy fails) as long as HTTP over SSL requests
-        # can't be tunneled over an HTTP proxy natively by Python (<= 2.5)
-        # urllib2 standard library
-        if PYVERSION >= "2.6":
-            proxyHandler = urllib2.ProxyHandler({"http": proxyString, "https": proxyString})
-        elif conf.scheme == "https":
-            proxyHandler = ProxyHTTPSHandler(proxyString)
-        else:
-            proxyHandler = urllib2.ProxyHandler({"http": proxyString})
-
-def __setSafeUrl():
+def _setSafeUrl():
     """
     Check and set the safe URL options.
     """
@@ -956,17 +1032,17 @@ def __setSafeUrl():
 
     if conf.saFreq <= 0:
         errMsg = "please provide a valid value (>0) for safe frequency (--safe-freq) while using safe url feature"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
-def __setPrefixSuffix():
+def _setPrefixSuffix():
     if conf.prefix is not None and conf.suffix is not None:
         # Create a custom boundary object for user's supplied prefix
         # and suffix
         boundary = AttribDict()
 
         boundary.level = 1
-        boundary.clause = [ 0 ]
-        boundary.where = [ 1, 2, 3 ]
+        boundary.clause = [0]
+        boundary.where = [1, 2, 3]
         boundary.prefix = conf.prefix
         boundary.suffix = conf.suffix
 
@@ -984,9 +1060,9 @@ def __setPrefixSuffix():
 
         # user who provides --prefix/--suffix does not want other boundaries
         # to be tested for
-        conf.boundaries = [ boundary ]
+        conf.boundaries = [boundary]
 
-def __setAuthCred():
+def _setAuthCred():
     """
     Adds authentication credentials (if any) for current target to the password manager
     (used by connection handler)
@@ -995,7 +1071,7 @@ def __setAuthCred():
     if kb.passwordMgr:
         kb.passwordMgr.add_password(None, "%s://%s" % (conf.scheme, conf.hostname), conf.authUsername, conf.authPassword)
 
-def __setHTTPAuthentication():
+def _setHTTPAuthentication():
     """
     Check and set the HTTP(s) authentication method (Basic, Digest, NTLM or Certificate),
     username and password for first three methods, or key file and certification file for
@@ -1010,12 +1086,12 @@ def __setHTTPAuthentication():
     elif conf.aType and not conf.aCred:
         errMsg = "you specified the HTTP authentication type, but "
         errMsg += "did not provide the credentials"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     elif not conf.aType and conf.aCred:
         errMsg = "you specified the HTTP authentication credentials, "
         errMsg += "but did not provide the type"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if not conf.aCert:
         debugMsg = "setting the HTTP authentication type and credentials"
@@ -1023,15 +1099,15 @@ def __setHTTPAuthentication():
 
         aTypeLower = conf.aType.lower()
 
-        if aTypeLower not in ( "basic", "digest", "ntlm" ):
+        if aTypeLower not in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST, AUTH_TYPE.NTLM):
             errMsg = "HTTP authentication type value must be "
             errMsg += "Basic, Digest or NTLM"
-            raise sqlmapSyntaxException, errMsg
-        elif aTypeLower in ( "basic", "digest" ):
+            raise SqlmapSyntaxException(errMsg)
+        elif aTypeLower in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST):
             regExp = "^(.*?):(.*?)$"
             errMsg = "HTTP %s authentication credentials " % aTypeLower
             errMsg += "value must be in format username:password"
-        elif aTypeLower == "ntlm":
+        elif aTypeLower == AUTH_TYPE.NTLM:
             regExp = "^(.*\\\\.*):(.*?)$"
             errMsg = "HTTP NTLM authentication credentials value must "
             errMsg += "be in format DOMAIN\username:password"
@@ -1039,29 +1115,29 @@ def __setHTTPAuthentication():
         aCredRegExp = re.search(regExp, conf.aCred)
 
         if not aCredRegExp:
-            raise sqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
 
         conf.authUsername = aCredRegExp.group(1)
         conf.authPassword = aCredRegExp.group(2)
 
         kb.passwordMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
-        __setAuthCred()
+        _setAuthCred()
 
-        if aTypeLower == "basic":
+        if aTypeLower == AUTH_TYPE.BASIC:
             authHandler = SmartHTTPBasicAuthHandler(kb.passwordMgr)
 
-        elif aTypeLower == "digest":
+        elif aTypeLower == AUTH_TYPE.DIGEST:
             authHandler = urllib2.HTTPDigestAuthHandler(kb.passwordMgr)
 
-        elif aTypeLower == "ntlm":
+        elif aTypeLower == AUTH_TYPE.NTLM:
             try:
                 from ntlm import HTTPNtlmAuthHandler
             except ImportError:
                 errMsg = "sqlmap requires Python NTLM third-party library "
                 errMsg += "in order to authenticate via NTLM, "
                 errMsg += "http://code.google.com/p/python-ntlm/"
-                raise sqlmapMissingDependence, errMsg
+                raise SqlmapMissingDependence(errMsg)
 
             authHandler = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(kb.passwordMgr)
     else:
@@ -1073,7 +1149,7 @@ def __setHTTPAuthentication():
         if not aCertRegExp:
             errMsg = "HTTP authentication certificate option "
             errMsg += "must be in format key_file,cert_file"
-            raise sqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
 
         # os.path.expanduser for support of paths with ~
         key_file = os.path.expanduser(aCertRegExp.group(1))
@@ -1082,21 +1158,21 @@ def __setHTTPAuthentication():
         for ifile in (key_file, cert_file):
             if not os.path.exists(ifile):
                 errMsg = "File '%s' does not exist" % ifile
-                raise sqlmapSyntaxException, errMsg
+                raise SqlmapSyntaxException(errMsg)
 
         authHandler = HTTPSCertAuthHandler(key_file, cert_file)
 
-def __setHTTPMethod():
+def _setHTTPMethod():
     """
     Check and set the HTTP method to perform HTTP requests through.
     """
 
-    conf.method = HTTPMETHOD.POST if conf.data else HTTPMETHOD.GET
+    conf.method = HTTPMETHOD.POST if conf.data is not None else HTTPMETHOD.GET
 
     debugMsg = "setting the HTTP method to %s" % conf.method
     logger.debug(debugMsg)
 
-def __setHTTPExtraHeaders():
+def _setHTTPExtraHeaders():
     if conf.headers:
         debugMsg = "setting extra HTTP headers"
         logger.debug(debugMsg)
@@ -1111,23 +1187,23 @@ def __setHTTPExtraHeaders():
                     conf.httpHeaders.append((header, value))
             else:
                 errMsg = "invalid header value: %s. Valid header format is 'name:value'" % repr(headerValue).lstrip('u')
-                raise sqlmapSyntaxException, errMsg
+                raise SqlmapSyntaxException(errMsg)
 
     elif not conf.httpHeaders or len(conf.httpHeaders) == 1:
-        conf.httpHeaders.append((HTTPHEADER.ACCEPT_LANGUAGE, "en-us,en;q=0.5"))
+        conf.httpHeaders.append((HTTP_HEADER.ACCEPT_LANGUAGE, "en-us,en;q=0.5"))
         if not conf.charset:
-            conf.httpHeaders.append((HTTPHEADER.ACCEPT_CHARSET, "ISO-8859-15,utf-8;q=0.7,*;q=0.7"))
+            conf.httpHeaders.append((HTTP_HEADER.ACCEPT_CHARSET, "ISO-8859-15,utf-8;q=0.7,*;q=0.7"))
         else:
-            conf.httpHeaders.append((HTTPHEADER.ACCEPT_CHARSET, "%s;q=0.7,*;q=0.1" % conf.charset))
+            conf.httpHeaders.append((HTTP_HEADER.ACCEPT_CHARSET, "%s;q=0.7,*;q=0.1" % conf.charset))
 
         # Invalidating any caching mechanism in between
         # Reference: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-        conf.httpHeaders.append((HTTPHEADER.CACHE_CONTROL, "no-cache,no-store"))
-        conf.httpHeaders.append((HTTPHEADER.PRAGMA, "no-cache"))
+        conf.httpHeaders.append((HTTP_HEADER.CACHE_CONTROL, "no-cache,no-store"))
+        conf.httpHeaders.append((HTTP_HEADER.PRAGMA, "no-cache"))
 
-def __defaultHTTPUserAgent():
+def _defaultHTTPUserAgent():
     """
-    :return: default sqlmap HTTP User-Agent header
+    @return: default sqlmap HTTP User-Agent header
     @rtype: C{str}
     """
 
@@ -1140,7 +1216,7 @@ def __defaultHTTPUserAgent():
     # updated at March 2009
     #return "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)"
 
-def __setHTTPUserAgent():
+def _setHTTPUserAgent():
     """
     Set the HTTP User-Agent header.
     Depending on the user options it can be:
@@ -1158,7 +1234,7 @@ def __setHTTPUserAgent():
 
         for count in xrange(len(items)):
             item = items[count]
-            message += "[%d] %s%s\n" % (count + 1, item[:item.find(';')], " (default)" if item == MOBILES.IPHONE else "")
+            message += "[%d] %s%s\n" % (count + 1, item[0], " (default)" if item == MOBILES.IPHONE else "")
 
         test = readInput(message.rstrip('\n'), default=items.index(MOBILES.IPHONE) + 1)
 
@@ -1167,26 +1243,24 @@ def __setHTTPUserAgent():
         except:
             item = MOBILES.IPHONE
 
-        item = item[item.find(';') + 1:]
-
-        conf.httpHeaders.append(("User-Agent", item))
+        conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, item[1]))
 
     elif conf.agent:
         debugMsg = "setting the HTTP User-Agent header"
         logger.debug(debugMsg)
 
-        conf.httpHeaders.append(("User-Agent", conf.agent))
+        conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, conf.agent))
 
     elif not conf.randomAgent:
         _ = True
 
         for header, _ in conf.httpHeaders:
-            if header == "User-Agent":
+            if header == HTTP_HEADER.USER_AGENT:
                 _ = False
                 break
 
         if _:
-            conf.httpHeaders.append(("User-Agent", __defaultHTTPUserAgent()))
+            conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, _defaultHTTPUserAgent()))
 
     else:
         if not kb.userAgents:
@@ -1201,7 +1275,7 @@ def __setHTTPUserAgent():
                 warnMsg += "file '%s'" % paths.USER_AGENTS
                 logger.warn(warnMsg)
 
-                conf.httpHeaders.append((HTTPHEADER.USER_AGENT, __defaultHTTPUserAgent()))
+                conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, _defaultHTTPUserAgent()))
                 return
 
         count = len(kb.userAgents)
@@ -1209,16 +1283,16 @@ def __setHTTPUserAgent():
         if count == 1:
             userAgent = kb.userAgents[0]
         else:
-            userAgent = kb.userAgents[randomRange(stop=count-1)]
+            userAgent = kb.userAgents[randomRange(stop=count - 1)]
 
         userAgent = sanitizeStr(userAgent)
-        conf.httpHeaders.append((HTTPHEADER.USER_AGENT, userAgent))
+        conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, userAgent))
 
         infoMsg = "fetched random HTTP User-Agent header from "
         infoMsg += "file '%s': %s" % (paths.USER_AGENTS, userAgent)
         logger.info(infoMsg)
 
-def __setHTTPReferer():
+def _setHTTPReferer():
     """
     Set the HTTP Referer
     """
@@ -1227,9 +1301,9 @@ def __setHTTPReferer():
         debugMsg = "setting the HTTP Referer header"
         logger.debug(debugMsg)
 
-        conf.httpHeaders.append((HTTPHEADER.REFERER, conf.referer))
+        conf.httpHeaders.append((HTTP_HEADER.REFERER, conf.referer))
 
-def __setHTTPCookies():
+def _setHTTPCookies():
     """
     Set the HTTP Cookie header
     """
@@ -1238,9 +1312,9 @@ def __setHTTPCookies():
         debugMsg = "setting the HTTP Cookie header"
         logger.debug(debugMsg)
 
-        conf.httpHeaders.append((HTTPHEADER.COOKIE, conf.cookie))
+        conf.httpHeaders.append((HTTP_HEADER.COOKIE, conf.cookie))
 
-def __setHTTPTimeout():
+def _setHTTPTimeout():
     """
     Set the HTTP timeout
     """
@@ -1262,7 +1336,7 @@ def __setHTTPTimeout():
 
     socket.setdefaulttimeout(conf.timeout)
 
-def __checkDependencies():
+def _checkDependencies():
     """
     Checks for missing dependencies.
     """
@@ -1270,7 +1344,7 @@ def __checkDependencies():
     if conf.dependencies:
         checkDependencies()
 
-def __cleanupOptions():
+def _cleanupOptions():
     """
     Cleanup configuration attributes.
     """
@@ -1281,9 +1355,9 @@ def __cleanupOptions():
     width = getConsoleWidth()
 
     if conf.eta:
-        conf.progressWidth = width-26
+        conf.progressWidth = width - 26
     else:
-        conf.progressWidth = width-46
+        conf.progressWidth = width - 46
 
     if conf.testParameter:
         conf.testParameter = urldecode(conf.testParameter)
@@ -1332,13 +1406,10 @@ def __cleanupOptions():
         setOptimize()
 
     if conf.data:
-        if re.search(r'%[0-9a-f]{2}', conf.data, re.I):
-            original = conf.data
-            class _(unicode): pass
-            conf.data = _(urldecode(conf.data) if conf.data and urlencode(DEFAULT_GET_POST_DELIMITER, None) not in conf.data else conf.data)
-            setattr(conf.data, UNENCODED_ORIGINAL_VALUE, original)
-        else:
-            conf.data = urldecode(conf.data) if conf.data and urlencode(DEFAULT_GET_POST_DELIMITER, None) not in conf.data else conf.data
+        conf.data = re.sub(INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.data, re.I)
+
+    if conf.url:
+        conf.url = re.sub(INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.url, re.I)
 
     if conf.os:
         conf.os = conf.os.capitalize()
@@ -1350,25 +1421,26 @@ def __cleanupOptions():
         if not any([char in conf.testFilter for char in ('.', ')', '(', ']', '[')]):
             conf.testFilter = conf.testFilter.replace('*', '.*')
 
-    if conf.timeSec not in kb.explicitSettings:
+    if "timeSec" not in kb.explicitSettings:
         if conf.tor:
             conf.timeSec = 2 * conf.timeSec
-            kb.adjustTimeDelay = False
+            kb.adjustTimeDelay = ADJUST_TIME_DELAY.DISABLE
 
             warnMsg = "increasing default value for "
             warnMsg += "option '--time-sec' to %d because " % conf.timeSec
             warnMsg += "switch '--tor' was provided"
             logger.warn(warnMsg)
-        else:
-            kb.adjustTimeDelay = True
     else:
-        kb.adjustTimeDelay = False
+        kb.adjustTimeDelay = ADJUST_TIME_DELAY.DISABLE
+
+    if conf.retries:
+        conf.retries = min(conf.retries, MAX_CONNECT_RETRIES)
 
     if conf.code:
         conf.code = int(conf.code)
 
     if conf.csvDel:
-        conf.csvDel = conf.csvDel.decode('string_escape') # e.g. '\\t' -> '\t'
+        conf.csvDel = conf.csvDel.decode("string_escape")  # e.g. '\\t' -> '\t'
 
     if conf.torPort and conf.torPort.isdigit():
         conf.torPort = int(conf.torPort)
@@ -1378,14 +1450,33 @@ def __cleanupOptions():
 
     if conf.oDir:
         paths.SQLMAP_OUTPUT_PATH = conf.oDir
+        setPaths()
 
     if conf.string:
-        conf.string = conf.string.decode("unicode_escape")
+        try:
+            conf.string = conf.string.decode("unicode_escape")
+        except:
+            charset = string.whitespace.replace(" ", "")
+            for _ in charset:
+                conf.string = conf.string.replace(_.encode("string_escape"), _)
+
+    if conf.getAll:
+        map(lambda x: conf.__setitem__(x, True), WIZARD.ALL)
+
+    if conf.noCast:
+        for _ in DUMP_REPLACEMENTS.keys():
+            del DUMP_REPLACEMENTS[_]
+
+    if conf.dumpFormat:
+        conf.dumpFormat = conf.dumpFormat.upper()
+
+    if conf.torType:
+        conf.torType = conf.torType.upper()
 
     threadData = getCurrentThreadData()
     threadData.reset()
 
-def __purgeOutput():
+def _purgeOutput():
     """
     Safely removes (purges) output directory.
     """
@@ -1393,7 +1484,7 @@ def __purgeOutput():
     if conf.purgeOutput:
         purge(paths.SQLMAP_OUTPUT_PATH)
 
-def __setConfAttributes():
+def _setConfAttributes():
     """
     This function set some needed attributes into the configuration
     singleton.
@@ -1424,13 +1515,11 @@ def __setConfAttributes():
     conf.resultsFilename = None
     conf.resultsFP = None
     conf.scheme = None
-    conf.sessionFP = None
-    conf.start = True
     conf.tests = []
     conf.trafficFP = None
     conf.wFileType = None
 
-def __setKnowledgeBaseAttributes(flushAll=True):
+def _setKnowledgeBaseAttributes(flushAll=True):
     """
     This function set some needed attributes into the knowledge base
     singleton.
@@ -1440,13 +1529,14 @@ def __setKnowledgeBaseAttributes(flushAll=True):
     logger.debug(debugMsg)
 
     kb.absFilePaths = set()
-    kb.adjustTimeDelay = False
+    kb.adjustTimeDelay = None
+    kb.alerted = False
     kb.alwaysRefresh = None
     kb.arch = None
     kb.authHeader = None
     kb.bannerFp = AttribDict()
 
-    kb.brute = AttribDict({'tables':[], 'columns':[]})
+    kb.brute = AttribDict({"tables": [], "columns": []})
     kb.bruteMode = False
 
     kb.cache = AttribDict()
@@ -1467,7 +1557,7 @@ def __setKnowledgeBaseAttributes(flushAll=True):
 
     # Active back-end DBMS fingerprint
     kb.dbms = None
-    kb.dbmsVersion = [ UNKNOWN_DBMS_VERSION ]
+    kb.dbmsVersion = [UNKNOWN_DBMS_VERSION]
 
     kb.delayCandidates = TIME_DELAY_CANDIDATES * [0]
     kb.dep = None
@@ -1479,10 +1569,12 @@ def __setKnowledgeBaseAttributes(flushAll=True):
     kb.dynamicParameter = False
     kb.endDetection = False
     kb.explicitSettings = set()
+    kb.extendTests = None
     kb.errorIsNone = True
     kb.fileReadMode = False
     kb.forcedDbms = None
     kb.headersFp = {}
+    kb.heuristicDbms = None
     kb.heuristicTest = None
     kb.hintValue = None
     kb.htmlFp = []
@@ -1496,7 +1588,7 @@ def __setKnowledgeBaseAttributes(flushAll=True):
     kb.lastParserStatus = None
 
     kb.locks = AttribDict()
-    for _ in ("cache", "count", "index", "io", "limits", "log", "outputs", "value"):
+    for _ in ("cache", "count", "index", "io", "limit", "log", "redirect", "request", "value"):
         kb.locks[_] = threading.Lock()
 
     kb.matchRatio = None
@@ -1505,11 +1597,6 @@ def __setKnowledgeBaseAttributes(flushAll=True):
     kb.multiThreadMode = False
     kb.negativeLogic = False
     kb.nullConnection = None
-    kb.pageCompress = True
-    kb.pageTemplate = None
-    kb.pageTemplates = dict()
-    kb.previousMethod = None
-    kb.processUserMarks = None
     kb.orderByColumns = None
     kb.originalCode = None
     kb.originalPage = None
@@ -1522,23 +1609,31 @@ def __setKnowledgeBaseAttributes(flushAll=True):
     kb.osVersion = None
     kb.osSP = None
 
+    kb.pageCompress = True
+    kb.pageTemplate = None
+    kb.pageTemplates = dict()
     kb.pageEncoding = DEFAULT_PAGE_ENCODING
     kb.pageStable = None
     kb.partRun = None
     kb.permissionFlag = False
+    kb.postHint = None
+    kb.postSpaceToPlus = False
     kb.prependFlag = False
     kb.processResponseCounter = 0
+    kb.previousMethod = None
+    kb.processUserMarks = None
     kb.proxyAuthHeader = None
     kb.queryCounter = 0
     kb.redirectChoice = None
-    kb.redirectSetCookie = None
     kb.reflectiveMechanism = True
-    kb.reflectiveCounters = {REFLECTIVE_COUNTER.MISS:0, REFLECTIVE_COUNTER.HIT:0}
+    kb.reflectiveCounters = {REFLECTIVE_COUNTER.MISS: 0, REFLECTIVE_COUNTER.HIT: 0}
+    kb.requestCounter = 0
+    kb.resendPostOnRedirect = None
     kb.responseTimes = []
     kb.resumeValues = True
     kb.safeCharEncode = False
     kb.singleLogFlags = set()
-    kb.skipOthersDbms = None
+    kb.reduceTests = None
     kb.stickyDBMS = False
     kb.stickyLevel = None
     kb.suppressResumeInfo = False
@@ -1556,16 +1651,16 @@ def __setKnowledgeBaseAttributes(flushAll=True):
         kb.headerPaths = {}
         kb.keywords = set(getFileItems(paths.SQL_KEYWORDS))
         kb.passwordMgr = None
-        kb.scanOnlyGoogleGETs = None
         kb.tamperFunctions = []
-        kb.targetUrls = oset()
+        kb.targets = oset()
         kb.testedParams = set()
         kb.userAgents = None
         kb.vainRun = True
         kb.vulnHosts = set()
+        kb.wafFunctions = []
         kb.wordlists = None
 
-def __useWizardInterface():
+def _useWizardInterface():
     """
     Presents simple wizard interface for beginner users
     """
@@ -1612,19 +1707,20 @@ def __useWizardInterface():
             conf.risk = 1
             conf.level = 1
 
-    choice = None
+    if not conf.getAll:
+        choice = None
 
-    while choice is None or choice not in ("", "1", "2", "3"):
-        message = "Enumeration (--banner/--current-user/etc). Please choose:\n"
-        message += "[1] Basic (default)\n[2] Smart\n[3] All"
-        choice = readInput(message, default='1')
+        while choice is None or choice not in ("", "1", "2", "3"):
+            message = "Enumeration (--banner/--current-user/etc). Please choose:\n"
+            message += "[1] Basic (default)\n[2] Smart\n[3] All"
+            choice = readInput(message, default='1')
 
-        if choice == '2':
-            map(lambda x: conf.__setitem__(x, True), ['getBanner', 'getCurrentUser', 'getCurrentDb', 'isDba', 'getUsers', 'getDbs', 'getTables', 'getSchema', 'excludeSysDbs'])
-        elif choice == '3':
-            map(lambda x: conf.__setitem__(x, True), ['getBanner', 'getCurrentUser', 'getCurrentDb', 'isDba', 'getUsers', 'getPasswordHashes', 'getPrivileges', 'getRoles', 'dumpAll'])
-        else:
-            map(lambda x: conf.__setitem__(x, True), ['getBanner', 'getCurrentUser', 'getCurrentDb', 'isDba'])
+            if choice == '2':
+                map(lambda x: conf.__setitem__(x, True), WIZARD.SMART)
+            elif choice == '3':
+                map(lambda x: conf.__setitem__(x, True), WIZARD.ALL)
+            else:
+                map(lambda x: conf.__setitem__(x, True), WIZARD.BASIC)
 
     logger.debug("muting sqlmap.. it will do the magic for you")
     conf.verbose = 0
@@ -1634,7 +1730,7 @@ def __useWizardInterface():
 
     dataToStdout("\nsqlmap is running, please wait..\n\n")
 
-def __saveCmdline():
+def _saveCmdline():
     """
     Saves the command line options on a sqlmap configuration INI file
     Format.
@@ -1669,8 +1765,8 @@ def __saveCmdline():
             if value is None:
                 if datatype == "boolean":
                     value = "False"
-                elif datatype in ( "integer", "float" ):
-                    if option in ( "threads", "verbose" ):
+                elif datatype in ("integer", "float"):
+                    if option in ("threads", "verbose"):
                         value = "1"
                     elif option == "timeout":
                         value = "10"
@@ -1690,7 +1786,7 @@ def __saveCmdline():
     infoMsg = "saved command line options on '%s' configuration file" % paths.SQLMAP_CONFIG
     logger.info(infoMsg)
 
-def __setVerbosity():
+def setVerbosity():
     """
     This function set the verbosity of sqlmap output messages.
     """
@@ -1716,13 +1812,16 @@ def __setVerbosity():
     elif conf.verbose >= 5:
         logger.setLevel(CUSTOM_LOGGING.TRAFFIC_IN)
 
-def __mergeOptions(inputOptions, overrideOptions):
+def _mergeOptions(inputOptions, overrideOptions):
     """
     Merge command line options with configuration file and default options.
 
-    :param inputOptions: optparse object with command line options.
+    @param inputOptions: optparse object with command line options.
     @type inputOptions: C{instance}
     """
+
+    if inputOptions.pickledOptions:
+        inputOptions = base64unpickle(inputOptions.pickledOptions)
 
     if inputOptions.configFile:
         configFileParser(inputOptions.configFile)
@@ -1741,17 +1840,17 @@ def __mergeOptions(inputOptions, overrideOptions):
             kb.explicitSettings.add(key)
 
     for key, value in defaults.items():
-        if conf[key] is None:
+        if hasattr(conf, key) and conf[key] is None:
             conf[key] = value
 
-def __setTrafficOutputFP():
+def _setTrafficOutputFP():
     if conf.trafficFile:
         infoMsg = "setting file for logging HTTP traffic"
         logger.info(infoMsg)
 
         conf.trafficFP = openFile(conf.trafficFile, "w+")
 
-def __setDNSServer():
+def _setDNSServer():
     if not conf.dnsName:
         return
 
@@ -1767,30 +1866,30 @@ def __setDNSServer():
         except socket.error, msg:
             errMsg = "there was an error while setting up "
             errMsg += "DNS server instance ('%s')" % msg
-            raise sqlmapGenericException, errMsg
+            raise SqlmapGenericException(errMsg)
     else:
         errMsg = "you need to run sqlmap as an administrator "
         errMsg += "if you want to perform a DNS data exfiltration attack "
         errMsg += "as it will need to listen on privileged UDP port 53 "
         errMsg += "for incoming address resolution attempts"
-        raise sqlmapMissingPrivileges, errMsg
+        raise SqlmapMissingPrivileges(errMsg)
 
-def __setTorProxySettings():
+def _setTorProxySettings():
     if not conf.tor:
         return
 
-    if conf.torType == PROXYTYPE.HTTP:
-        __setTorHttpProxySettings()
+    if conf.torType == PROXY_TYPE.HTTP:
+        _setTorHttpProxySettings()
     else:
-        __setTorSocksProxySettings()
+        _setTorSocksProxySettings()
 
-def __setTorHttpProxySettings():
+def _setTorHttpProxySettings():
     infoMsg = "setting Tor HTTP proxy settings"
     logger.info(infoMsg)
 
     found = None
 
-    for port in (DEFAULT_TOR_HTTP_PORTS if not conf.torPort else (conf.torPort, )):
+    for port in (DEFAULT_TOR_HTTP_PORTS if not conf.torPort else (conf.torPort,)):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((LOCALHOST, port))
@@ -1814,26 +1913,25 @@ def __setTorHttpProxySettings():
         else:
             errMsg += "(e.g. http://www.coresec.org/2011/04/24/sqlmap-with-tor/)"
 
-        raise sqlmapConnectionException, errMsg
+        raise SqlmapConnectionException(errMsg)
 
     if not conf.checkTor:
         warnMsg = "use switch '--check-tor' at "
-        warnMsg += "your own convenience when using "
-        warnMsg += "HTTP proxy type (option '--tor-type') "
-        warnMsg += "for accessing Tor anonymizing network because of "
+        warnMsg += "your own convenience when accessing "
+        warnMsg += "Tor anonymizing network because of "
         warnMsg += "known issues with default settings of various 'bundles' "
         warnMsg += "(e.g. Vidalia)"
         logger.warn(warnMsg)
 
-def __setTorSocksProxySettings():
+def _setTorSocksProxySettings():
     infoMsg = "setting Tor SOCKS proxy settings"
     logger.info(infoMsg)
 
     # Has to be SOCKS5 to prevent DNS leaks (http://en.wikipedia.org/wiki/Tor_%28anonymity_network%29)
-    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if conf.torType == PROXYTYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, LOCALHOST, conf.torPort or DEFAULT_TOR_SOCKS_PORT)
+    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if conf.torType == PROXY_TYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, LOCALHOST, conf.torPort or DEFAULT_TOR_SOCKS_PORT)
     socks.wrapmodule(urllib2)
 
-def __checkTor():
+def _checkTor():
     if not conf.checkTor:
         return
 
@@ -1843,127 +1941,147 @@ def __checkTor():
     page, _, _ = Request.getPage(url="https://check.torproject.org/", raise404=False)
     if not page or 'Congratulations' not in page:
         errMsg = "it seems that Tor is not properly set. Please try using options '--tor-type' and/or '--tor-port'"
-        raise sqlmapConnectionException, errMsg
+        raise SqlmapConnectionException(errMsg)
     else:
         infoMsg = "Tor is properly being used"
         logger.info(infoMsg)
 
-def __basicOptionValidation():
+def _basicOptionValidation():
     if conf.limitStart is not None and not (isinstance(conf.limitStart, int) and conf.limitStart > 0):
-        errMsg = "value for --start (limitStart) option must be an integer value greater than zero (>0)"
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "value for option '--start' (limitStart) must be an integer value greater than zero (>0)"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.limitStop is not None and not (isinstance(conf.limitStop, int) and conf.limitStop > 0):
-        errMsg = "value for --stop (limitStop) option must be an integer value greater than zero (>0)"
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "value for option '--stop' (limitStop) must be an integer value greater than zero (>0)"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.level is not None and not (isinstance(conf.level, int) and conf.level > 0):
+        errMsg = "value for option '--level' must be an integer value greater than zero (>0)"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.risk is not None and not (isinstance(conf.risk, int) and conf.risk > 0):
+        errMsg = "value for option '--risk' must be an integer value greater than zero (>0)"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.limitStart is not None and isinstance(conf.limitStart, int) and conf.limitStart > 0 and \
        conf.limitStop is not None and isinstance(conf.limitStop, int) and conf.limitStop < conf.limitStart:
-        errMsg = "value for --start (limitStart) option must be smaller or equal than value for --stop (limitStop) option"
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "value for option '--start' (limitStart) must be smaller or equal than value for --stop (limitStop) option"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.firstChar is not None and isinstance(conf.firstChar, int) and conf.firstChar > 0 and \
        conf.lastChar is not None and isinstance(conf.lastChar, int) and conf.lastChar < conf.firstChar:
-        errMsg = "value for --first (firstChar) option must be smaller than or equal to value for --last (lastChar) option"
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "value for option '--first' (firstChar) must be smaller than or equal to value for --last (lastChar) option"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.cpuThrottle is not None and isinstance(conf.cpuThrottle, int) and (conf.cpuThrottle > 100 or conf.cpuThrottle < 0):
-        errMsg = "value for --cpu-throttle (cpuThrottle) option must be in range [0,100]"
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "value for option '--cpu-throttle' (cpuThrottle) must be in range [0,100]"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.textOnly and conf.nullConnection:
         errMsg = "switch '--text-only' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.titles and conf.nullConnection:
         errMsg = "switch '--titles' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.data and conf.nullConnection:
         errMsg = "option '--data' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.string and conf.nullConnection:
         errMsg = "option '--string' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.notString and conf.nullConnection:
         errMsg = "option '--not-string' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.noCast and conf.hexConvert:
+        errMsg = "switch '--no-cast' is incompatible with switch '--hex'"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.string and conf.notString:
         errMsg = "option '--string' is incompatible with switch '--not-string'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.regexp and conf.nullConnection:
         errMsg = "option '--regexp' is incompatible with switch '--null-connection'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.dumpTable and conf.dumpAll:
         errMsg = "switch '--dump' is incompatible with switch '--dump-all'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.predictOutput and (conf.threads > 1 or conf.optimize):
         errMsg = "switch '--predict-output' is incompatible with option '--threads' and switch '-o'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.threads > MAX_NUMBER_OF_THREADS:
-        errMsg = "maximum number of used threads is %d avoiding possible connection issues" % MAX_NUMBER_OF_THREADS
-        raise sqlmapSyntaxException, errMsg
+        errMsg = "maximum number of used threads is %d avoiding potential connection issues" % MAX_NUMBER_OF_THREADS
+        raise SqlmapSyntaxException(errMsg)
 
-    if conf.forms and not conf.url:
-        errMsg = "switch '--forms' requires usage of option '-u' (--url)"
-        raise sqlmapSyntaxException, errMsg
+    if conf.forms and not any((conf.url, conf.bulkFile)):
+        errMsg = "switch '--forms' requires usage of option '-u' (--url) or '-m'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.requestFile and conf.url:
+        errMsg = "option '-r' is incompatible with option '-u' (--url)"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.tor and conf.ignoreProxy:
         errMsg = "switch '--tor' is incompatible with switch '--ignore-proxy'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.tor and conf.proxy:
         errMsg = "switch '--tor' is incompatible with option '--proxy'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
-    if conf.checkTor and not any([conf.tor, conf.proxy]):
+    if conf.checkTor and not any((conf.tor, conf.proxy)):
         errMsg = "switch '--check-tor' requires usage of switch '--tor' (or option '--proxy' with HTTP proxy address using Tor)"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.torPort is not None and not (isinstance(conf.torPort, int) and conf.torPort > 0):
         errMsg = "value for option '--tor-port' must be a positive integer"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
-    if conf.torType not in getPublicTypeMembers(PROXYTYPE, True):
-        errMsg = "option '--tor-type' accepts one of following values: %s" % ", ".join(getPublicTypeMembers(PROXYTYPE, True))
-        raise sqlmapSyntaxException, errMsg
+    if conf.torType not in getPublicTypeMembers(PROXY_TYPE, True):
+        errMsg = "option '--tor-type' accepts one of following values: %s" % ", ".join(getPublicTypeMembers(PROXY_TYPE, True))
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.dumpFormat not in getPublicTypeMembers(DUMP_FORMAT, True):
+        errMsg = "option '--dump-format' accepts one of following values: %s" % ", ".join(getPublicTypeMembers(DUMP_FORMAT, True))
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.skip and conf.testParameter:
         errMsg = "option '--skip' is incompatible with option '-p'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.mobile and conf.agent:
         errMsg = "switch '--mobile' is incompatible with option '--user-agent'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.proxy and conf.ignoreProxy:
         errMsg = "option '--proxy' is incompatible with switch '--ignore-proxy'"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
-    if conf.forms and any([conf.logFile, conf.bulkFile, conf.direct, conf.requestFile, conf.googleDork]):
-        errMsg = "switch '--forms' is compatible only with option '-u' (--url)"
-        raise sqlmapSyntaxException, errMsg
+    if conf.forms and any([conf.logFile, conf.direct, conf.requestFile, conf.googleDork]):
+        errMsg = "switch '--forms' is compatible only with options '-u' (--url) and '-m'"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.timeSec < 1:
         errMsg = "value for option '--time-sec' must be a positive integer"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.uChar and not re.match(UNION_CHAR_REGEX, conf.uChar):
         errMsg = "value for option '--union-char' must be an alpha-numeric value (e.g. 1)"
-        raise sqlmapSyntaxException, errMsg
+        raise SqlmapSyntaxException(errMsg)
 
     if isinstance(conf.uCols, basestring):
         if not conf.uCols.isdigit() and ("-" not in conf.uCols or len(conf.uCols.split("-")) != 2):
             errMsg = "value for option '--union-cols' must be a range with hyphon "
             errMsg += "(e.g. 1-10) or integer value (e.g. 5)"
-            raise sqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
 
     if conf.charset:
         _ = checkCharEncoding(conf.charset, False)
@@ -1971,79 +2089,80 @@ def __basicOptionValidation():
             errMsg = "unknown charset '%s'. Please visit " % conf.charset
             errMsg += "'%s' to get the full list of " % CODECS_LIST_PAGE
             errMsg += "supported charsets"
-            raise sqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
         else:
             conf.charset = _
 
     if conf.loadCookies:
         if not os.path.exists(conf.loadCookies):
             errMsg = "cookies file '%s' does not exist" % conf.loadCookies
-            raise sqlmapFilePathException, errMsg
+            raise SqlmapFilePathException(errMsg)
 
-def __resolveCrossReferences():
+def _resolveCrossReferences():
     lib.core.threads.readInput = readInput
     lib.core.common.getPageTemplate = getPageTemplate
     lib.core.convert.singleTimeWarnMessage = singleTimeWarnMessage
 
-def init(inputOptions=AttribDict(), overrideOptions=False):
+def initOptions(inputOptions=AttribDict(), overrideOptions=False):
+    if not inputOptions.disableColoring:
+        coloramainit()
+
+    _setConfAttributes()
+    _setKnowledgeBaseAttributes()
+    _mergeOptions(inputOptions, overrideOptions)
+
+def init():
     """
     Set attributes into both configuration and knowledge base singletons
     based upon command line and configuration file options.
     """
 
-    if not inputOptions.disableColoring:
-        coloramainit()
-    else:
-        if hasattr(LOGGER_HANDLER, "disable_coloring"):
-            LOGGER_HANDLER.disable_coloring = True
-    __setConfAttributes()
-    __setKnowledgeBaseAttributes()
-    __mergeOptions(inputOptions, overrideOptions)
-    __useWizardInterface()
-    __setVerbosity()
-    __saveCmdline()
-    __setRequestFromFile()
-    __cleanupOptions()
-    __purgeOutput()
-    __checkDependencies()
-    __basicOptionValidation()
-    __setTorProxySettings()
-    __setDNSServer()
-    __adjustLoggingFormatter()
-    __setMultipleTargets()
-    __setTamperingFunctions()
-    __setTrafficOutputFP()
-    __resolveCrossReferences()
+    _useWizardInterface()
+    setVerbosity()
+    _saveCmdline()
+    _setRequestFromFile()
+    _cleanupOptions()
+    _purgeOutput()
+    _checkDependencies()
+    _basicOptionValidation()
+    _setTorProxySettings()
+    _setDNSServer()
+    _adjustLoggingFormatter()
+    _setMultipleTargets()
+    _setTamperingFunctions()
+    _setWafFunctions()
+    _setTrafficOutputFP()
+    _resolveCrossReferences()
 
     parseTargetUrl()
     parseTargetDirect()
 
     if any((conf.url, conf.logFile, conf.bulkFile, conf.requestFile, conf.googleDork, conf.liveTest)):
-        __setHTTPTimeout()
-        __setHTTPExtraHeaders()
-        __setHTTPCookies()
-        __setHTTPReferer()
-        __setHTTPUserAgent()
-        __setHTTPMethod()
-        __setHTTPAuthentication()
-        __setHTTPProxy()
-        __setDNSCache()
-        __setSafeUrl()
-        __setGoogleDorking()
-        __setBulkMultipleTargets()
-        __urllib2Opener()
-        __checkTor()
-        __setCrawler()
-        __findPageForms()
-        __setDBMS()
-        __setTechnique()
+        _setHTTPTimeout()
+        _setHTTPExtraHeaders()
+        _setHTTPCookies()
+        _setHTTPReferer()
+        _setHTTPUserAgent()
+        _setHTTPMethod()
+        _setHTTPAuthentication()
+        _setHTTPProxy()
+        _setDNSCache()
+        _setSafeUrl()
+        _setGoogleDorking()
+        _setBulkMultipleTargets()
+        _urllib2Opener()
+        _checkTor()
+        _setCrawler()
+        _findPageForms()
+        _setDBMS()
+        _setTechnique()
 
-    __setThreads()
-    __setOS()
-    __setWriteFile()
-    __setMetasploit()
-    __setDBMSAuthentication()
+    _setThreads()
+    _setOS()
+    _setWriteFile()
+    _setMetasploit()
+    _setDBMSAuthentication()
     loadPayloads()
-    __setPrefixSuffix()
+    _setPrefixSuffix()
     update()
-    __loadQueries()
+    _loadQueries()

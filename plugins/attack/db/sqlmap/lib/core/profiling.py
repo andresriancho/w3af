@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -65,7 +65,7 @@ def profile(profileOutputFile=None, dotOutputFile=None, imageOutputFile=None):
     dotFilePointer = codecs.open(dotOutputFile, 'wt', UNICODE_ENCODING)
     parser = gprof2dot.PstatsParser(profileOutputFile)
     profile = parser.parse()
-    profile.prune(0.5/100.0, 0.1/100.0)
+    profile.prune(0.5 / 100.0, 0.1 / 100.0)
     dot = gprof2dot.DotWriter(dotFilePointer)
     dot.graph(profile, gprof2dot.TEMPERATURE_COLORMAP)
     dotFilePointer.close()

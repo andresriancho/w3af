@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -16,13 +16,9 @@ __priority__ = PRIORITY.NORMAL
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces each keyword character with random case value
-
-    Example:
-        * Input: INSERT
-        * Output: InsERt
 
     Tested against:
         * Microsoft SQL Server 2005
@@ -34,6 +30,11 @@ def tamper(payload, headers):
         * Useful to bypass very weak and bespoke web application firewalls
           that has poorly written permissive regular expressions
         * This tamper script should work against all (?) databases
+
+    >>> import random
+    >>> random.seed(0)
+    >>> tamper('INSERT')
+    'INseRt'
     """
 
     retVal = payload
@@ -50,4 +51,4 @@ def tamper(payload, headers):
 
                 retVal = retVal.replace(word, _)
 
-    return retVal, headers
+    return retVal

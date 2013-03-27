@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -15,6 +15,7 @@ from lib.core.common import getUnicode
 from lib.core.common import serializeObject
 from lib.core.common import unserializeObject
 from lib.core.data import logger
+from lib.core.exception import SqlmapDataException
 from lib.core.settings import HASHDB_FLUSH_RETRIES
 from lib.core.settings import HASHDB_FLUSH_THRESHOLD
 from lib.core.settings import UNICODE_ENCODING
@@ -31,9 +32,14 @@ class HashDB(object):
         threadData = getCurrentThreadData()
 
         if threadData.hashDBCursor is None:
-            connection = sqlite3.connect(self.filepath, timeout=3, isolation_level=None)
-            threadData.hashDBCursor = connection.cursor()
-            threadData.hashDBCursor.execute("CREATE TABLE IF NOT EXISTS storage (id INTEGER PRIMARY KEY, value TEXT)")
+            try:
+                connection = sqlite3.connect(self.filepath, timeout=3, isolation_level=None)
+                threadData.hashDBCursor = connection.cursor()
+                threadData.hashDBCursor.execute("CREATE TABLE IF NOT EXISTS storage (id INTEGER PRIMARY KEY, value TEXT)")
+            except Exception, ex:
+                errMsg = "error occurred while opening a session "
+                errMsg += "file '%s' ('%s')" % (self.filepath, ex)
+                raise SqlmapDataException(errMsg)
 
         return threadData.hashDBCursor
 
@@ -104,7 +110,11 @@ class HashDB(object):
                             self.cursor.execute("INSERT INTO storage VALUES (?, ?)", (hash_, value,))
                         except sqlite3.IntegrityError:
                             self.cursor.execute("UPDATE storage SET value=? WHERE id=?", (value, hash_,))
-                    except sqlite3.OperationalError, ex:
+                    except sqlite3.DatabaseError, ex:
+                        if not os.path.exists(self.filepath):
+                            debugMsg = "session file '%s' does not exist" % self.filepath
+                            logger.debug(debugMsg)
+                            break
 
                         if retries == 0:
                             warnMsg = "there has been a problem while writing to "

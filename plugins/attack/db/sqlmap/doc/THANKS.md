@@ -81,6 +81,9 @@ Y P Chien, <ypchien@cox.net>
 Pierre Chifflier, <pollux@debian.org> and Mark Hymers, <ftpmaster@debian.org>
 * for uploading and accepting the sqlmap Debian package to the official Debian project repository
 
+Hysia Chow <hysia@icloud.com>
+* for contributing a couple of WAF scripts
+
 Chris Clements, <cclements@flatearth.net>
 * for reporting a couple of bugs
 
@@ -112,9 +115,15 @@ Stefano Di Paola, <stefano.dipaola@wisec.it>
 Mosk Dmitri, <ya@darkbyte.ru>
 * for reporting a minor bug
 
+Meng Dong, <whenov@gmail.com>
+* for contributing a code for Waffit integration
+
 Carey Evans, <careye@spamcop.net>
 * for his fcrypt module that allows crypt(3) support
     on Windows platforms
+
+Shawn Evans, <shawndevans@gmail.com>
+* for suggesting an idea for one tamper script, greatest.py
 
 Adam Faheem, <faheem.adam@is.co.za>
 * for reporting a few bugs
@@ -294,7 +303,7 @@ Michael Majchrowicz, <mmajchrowicz@gmail.com>
 * for suggesting a lot of ideas and features
 
 Ahmad Maulana, <matdhule@gmail.com>
-* for contributing one tamper scripts, halfversionedmorekeywords.py
+* for contributing one tamper script, halfversionedmorekeywords.py
 
 Ferruh Mavituna, <ferruh@mavituna.com>
 * for exchanging ideas on the implementation of a couple of features
@@ -354,7 +363,8 @@ Simone Onofri, <simone.onofri@gmail.com>
 * for patching the PHP web backdoor to make it work properly also on Windows
 
 Michele Orru, <michele.orru@antisnatchor.com>
-* for reporting a minor bug
+* for reporting a couple of bug
+* for suggesting ideas on how to implement the RESTful API
 
 Shaohua Pan, <pan@knownsec.com>
 * for reporting several bugs
@@ -491,6 +501,9 @@ Sumit Siddharth, <sid@notsosecure.com>
 Andre Silva, <andreoaz@gmail.com>
 * for reporting a bug
 
+Benjamin Silva H. <silva96@gmail.com>
+* for reporting a bug
+
 Duarte Silva <duarte.silva@serializing.me>
 * for reporting a couple of bugs
 
@@ -555,7 +568,8 @@ Kyprianos Vasilopoulos, <kyprianos.vasilopoulos@gmail.com>
 * for reporting a couple of minor bugs
 
 Vlado Velichkovski, <ketejadam@hotmail.com>
-* for reporting a couple of bugs
+* for reporting considerable amount of bugs
+* for suggesting an enhancement
 
 Johnny Venter, <johnny.venter@zoho.com>
 * for reporting a couple of bugs

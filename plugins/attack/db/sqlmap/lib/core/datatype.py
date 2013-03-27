@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import copy
 import types
 
-from lib.core.exception import sqlmapDataException
+from lib.core.exception import SqlmapDataException
 
 class AttribDict(dict):
     """
     This class defines the sqlmap object, inheriting from Python data
     type dictionary.
+
+    >>> foo = AttribDict()
+    >>> foo.bar = 1
+    >>> foo.bar
+    1
     """
 
     def __init__(self, indict=None, attribute=None):
@@ -38,7 +43,7 @@ class AttribDict(dict):
         try:
             return self.__getitem__(item)
         except KeyError:
-            raise sqlmapDataException, "unable to access item '%s'" % item
+            raise SqlmapDataException("unable to access item '%s'" % item)
 
     def __setattr__(self, item, value):
         """
@@ -47,11 +52,11 @@ class AttribDict(dict):
         """
 
         # This test allows attributes to be set in the __init__ method
-        if not self.__dict__.has_key('_AttribDict__initialised'):
+        if "_AttribDict__initialised" not in self.__dict__:
             return dict.__setattr__(self, item, value)
 
         # Any normal attributes are handled normally
-        elif self.__dict__.has_key(item):
+        elif item in self.__dict__:
             dict.__setattr__(self, item, value)
 
         else:

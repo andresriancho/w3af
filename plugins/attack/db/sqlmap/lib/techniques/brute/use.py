@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -13,19 +13,19 @@ from lib.core.common import filterListValue
 from lib.core.common import getFileItems
 from lib.core.common import Backend
 from lib.core.common import getPageWordSet
-from lib.core.common import hashDBRetrieve
 from lib.core.common import hashDBWrite
 from lib.core.common import randomInt
 from lib.core.common import randomStr
 from lib.core.common import safeStringFormat
 from lib.core.common import safeSQLIdentificatorNaming
+from lib.core.common import unsafeSQLIdentificatorNaming
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.enums import DBMS
 from lib.core.enums import HASHDB_KEYS
-from lib.core.exception import sqlmapDataException
-from lib.core.exception import sqlmapMissingMandatoryOptionException
+from lib.core.exception import SqlmapDataException
+from lib.core.exception import SqlmapMissingMandatoryOptionException
 from lib.core.settings import METADB_SUFFIX
 from lib.core.settings import BRUTE_COLUMN_EXISTS_TEMPLATE
 from lib.core.settings import BRUTE_TABLE_EXISTS_TEMPLATE
@@ -33,7 +33,7 @@ from lib.core.threads import getCurrentThreadData
 from lib.core.threads import runThreads
 from lib.request import inject
 
-def __addPageTextWords():
+def _addPageTextWords():
     wordsList = []
 
     infoMsg = "adding words used on web page to the check list"
@@ -50,24 +50,28 @@ def __addPageTextWords():
 
 def tableExists(tableFile, regex=None):
     result = inject.checkBooleanExpression("%s" % safeStringFormat(BRUTE_TABLE_EXISTS_TEMPLATE, (randomInt(1), randomStr())))
+
+    if conf.db and Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+        conf.db = conf.db.upper()
+
     if result:
         errMsg = "can't use table existence check because of detected invalid results "
         errMsg += "(most probably caused by inability of the used injection "
         errMsg += "to distinguish errornous results)"
-        raise sqlmapDataException, errMsg
+        raise SqlmapDataException(errMsg)
 
     tables = getFileItems(tableFile, lowercase=Backend.getIdentifiedDbms() in (DBMS.ACCESS,), unique=True)
 
     infoMsg = "checking table existence using items from '%s'" % tableFile
     logger.info(infoMsg)
 
-    tables.extend(__addPageTextWords())
+    tables.extend(_addPageTextWords())
     tables = filterListValue(tables, regex)
 
     threadData = getCurrentThreadData()
     threadData.shared.count = 0
     threadData.shared.limit = len(tables)
-    threadData.shared.outputs = []
+    threadData.shared.value = []
     threadData.shared.unique = set()
 
     def tableExistsThread():
@@ -83,7 +87,7 @@ def tableExists(tableFile, regex=None):
                 kb.locks.count.release()
                 break
 
-            if conf.db and METADB_SUFFIX not in conf.db:
+            if conf.db and METADB_SUFFIX not in conf.db and Backend.getIdentifiedDbms() not in (DBMS.SQLITE, DBMS.ACCESS, DBMS.FIREBIRD):
                 fullTableName = "%s%s%s" % (conf.db, '..' if Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.SYBASE) else '.', table)
             else:
                 fullTableName = table
@@ -93,16 +97,16 @@ def tableExists(tableFile, regex=None):
             kb.locks.io.acquire()
 
             if result and table.lower() not in threadData.shared.unique:
-                threadData.shared.outputs.append(table)
+                threadData.shared.value.append(table)
                 threadData.shared.unique.add(table.lower())
 
-                if conf.verbose in (1, 2):
+                if conf.verbose in (1, 2) and not hasattr(conf, "api"):
                     clearConsoleLine(True)
-                    infoMsg = "[%s] [INFO] retrieved: %s\r\n" % (time.strftime("%X"), table)
+                    infoMsg = "[%s] [INFO] retrieved: %s\r\n" % (time.strftime("%X"), unsafeSQLIdentificatorNaming(table))
                     dataToStdout(infoMsg, True)
 
             if conf.verbose in (1, 2):
-                status = '%d/%d items (%d%s)' % (threadData.shared.count, threadData.shared.limit, round(100.0*threadData.shared.count/threadData.shared.limit), '%')
+                status = '%d/%d items (%d%%)' % (threadData.shared.count, threadData.shared.limit, round(100.0 * threadData.shared.count / threadData.shared.limit))
                 dataToStdout("\r[%s] [INFO] tried %s" % (time.strftime("%X"), status), True)
 
             kb.locks.io.release()
@@ -118,17 +122,17 @@ def tableExists(tableFile, regex=None):
     clearConsoleLine(True)
     dataToStdout("\n")
 
-    if not threadData.shared.outputs:
+    if not threadData.shared.value:
         warnMsg = "no table(s) found"
         logger.warn(warnMsg)
     else:
-        for item in threadData.shared.outputs:
+        for item in threadData.shared.value:
             if conf.db not in kb.data.cachedTables:
                 kb.data.cachedTables[conf.db] = [item]
             else:
                 kb.data.cachedTables[conf.db].append(item)
 
-    for _ in map(lambda x: (conf.db, x), threadData.shared.outputs):
+    for _ in ((conf.db, item) for item in threadData.shared.value):
         if _ not in kb.brute.tables:
             kb.brute.tables.append(_)
 
@@ -139,27 +143,30 @@ def tableExists(tableFile, regex=None):
 def columnExists(columnFile, regex=None):
     if not conf.tbl:
         errMsg = "missing table parameter"
-        raise sqlmapMissingMandatoryOptionException, errMsg
+        raise SqlmapMissingMandatoryOptionException(errMsg)
+
+    if conf.db and Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+        conf.db = conf.db.upper()
 
     result = inject.checkBooleanExpression(safeStringFormat(BRUTE_COLUMN_EXISTS_TEMPLATE, (randomStr(), randomStr())))
+
     if result:
         errMsg = "can't use column existence check because of detected invalid results "
         errMsg += "(most probably caused by inability of the used injection "
         errMsg += "to distinguish errornous results)"
-        raise sqlmapDataException, errMsg
+        raise SqlmapDataException(errMsg)
 
     infoMsg = "checking column existence using items from '%s'" % columnFile
     logger.info(infoMsg)
 
     columns = getFileItems(columnFile, unique=True)
-    columns.extend(__addPageTextWords())
+    columns.extend(_addPageTextWords())
     columns = filterListValue(columns, regex)
 
-    if conf.db and METADB_SUFFIX not in conf.db:
-        table = "%s%s%s" % (conf.db, '..' if Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.SYBASE) else '.', conf.tbl)
-    else:
-        table = conf.tbl
-    table = safeSQLIdentificatorNaming(table, True)
+    table = safeSQLIdentificatorNaming(conf.tbl, True)
+
+    if conf.db and METADB_SUFFIX not in conf.db and Backend.getIdentifiedDbms() not in (DBMS.SQLITE, DBMS.ACCESS, DBMS.FIREBIRD):
+        table = "%s.%s" % (safeSQLIdentificatorNaming(conf.db), table)
 
     kb.threadContinue = True
     kb.bruteMode = True
@@ -167,7 +174,7 @@ def columnExists(columnFile, regex=None):
     threadData = getCurrentThreadData()
     threadData.shared.count = 0
     threadData.shared.limit = len(columns)
-    threadData.shared.outputs = []
+    threadData.shared.value = []
 
     def columnExistsThread():
         threadData = getCurrentThreadData()
@@ -187,15 +194,15 @@ def columnExists(columnFile, regex=None):
             kb.locks.io.acquire()
 
             if result:
-                threadData.shared.outputs.append(column)
+                threadData.shared.value.append(column)
 
-                if conf.verbose in (1, 2):
+                if conf.verbose in (1, 2) and not hasattr(conf, "api"):
                     clearConsoleLine(True)
-                    infoMsg = "[%s] [INFO] retrieved: %s\r\n" % (time.strftime("%X"), column)
+                    infoMsg = "[%s] [INFO] retrieved: %s\r\n" % (time.strftime("%X"), unsafeSQLIdentificatorNaming(column))
                     dataToStdout(infoMsg, True)
 
             if conf.verbose in (1, 2):
-                status = '%d/%d items (%d%s)' % (threadData.shared.count, threadData.shared.limit, round(100.0*threadData.shared.count/threadData.shared.limit), '%')
+                status = '%d/%d items (%d%%)' % (threadData.shared.count, threadData.shared.limit, round(100.0 * threadData.shared.count / threadData.shared.limit))
                 dataToStdout("\r[%s] [INFO] tried %s" % (time.strftime("%X"), status), True)
 
             kb.locks.io.release()
@@ -211,13 +218,13 @@ def columnExists(columnFile, regex=None):
     clearConsoleLine(True)
     dataToStdout("\n")
 
-    if not threadData.shared.outputs:
+    if not threadData.shared.value:
         warnMsg = "no column(s) found"
         logger.warn(warnMsg)
     else:
         columns = {}
 
-        for column in threadData.shared.outputs:
+        for column in threadData.shared.value:
             result = inject.checkBooleanExpression("%s" % safeStringFormat("EXISTS(SELECT %s FROM %s WHERE ROUND(%s)=ROUND(%s))", (column, table, column, column)))
 
             if result:

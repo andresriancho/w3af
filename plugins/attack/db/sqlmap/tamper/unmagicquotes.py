@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -14,20 +14,19 @@ __priority__ = PRIORITY.NORMAL
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces quote character (') with a multi-byte combo %bf%27 together with
     generic comment at the end (to make it work)
-
-    Example:
-        * Input: 1' AND 1=1
-        * Output: 1%bf%27 AND 1=1--%20
 
     Notes:
         * Useful for bypassing magic_quotes/addslashes feature
 
     Reference:
         * http://shiflett.org/blog/2006/jan/addslashes-versus-mysql-real-escape-string
+
+    >>> tamper("1' AND 1=1")
+    '1%bf%27 AND 1=1-- '
     """
 
     retVal = payload
@@ -48,4 +47,4 @@ def tamper(payload, headers):
             retVal = re.sub("\s*(AND|OR)[\s(]+'[^']+'\s*(=|LIKE)\s*'.*", "", retVal)
             retVal += "-- "
 
-    return retVal, headers
+    return retVal

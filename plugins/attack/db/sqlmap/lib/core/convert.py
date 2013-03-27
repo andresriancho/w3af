@@ -1,70 +1,93 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-try:
-    import hashlib
-except:
-    import md5
-    import sha
-
+import json
 import pickle
-import re
 import sys
-import struct
-import urllib
 
-from lib.core.enums import PLACE
 from lib.core.settings import IS_WIN
 from lib.core.settings import UNICODE_ENCODING
 
 def base64decode(value):
+    """
+    Decodes string value from Base64 to plain format
+
+    >>> base64decode('Zm9vYmFy')
+    'foobar'
+    """
+
     return value.decode("base64")
 
 def base64encode(value):
+    """
+    Encodes string value from plain to Base64 format
+
+    >>> base64encode('foobar')
+    'Zm9vYmFy'
+    """
+
     return value.encode("base64")[:-1].replace("\n", "")
 
 def base64pickle(value):
-    return base64encode(pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+    """
+    Serializes (with pickle) and encodes to Base64 format supplied (binary) value
+
+    >>> base64pickle('foobar')
+    'gAJVBmZvb2JhcnEALg=='
+    """
+
+    retVal = None
+    try:
+        retVal = base64encode(pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+    except:
+        warnMsg = "problem occurred while serializing "
+        warnMsg += "instance of a type '%s'" % type(value)
+        singleTimeWarnMessage(warnMsg)
+
+        retVal = base64encode(pickle.dumps(str(value), pickle.HIGHEST_PROTOCOL))
+    return retVal
 
 def base64unpickle(value):
+    """
+    Decodes value from Base64 to plain format and deserializes (with pickle) its content
+
+    >>> base64unpickle('gAJVBmZvb2JhcnEALg==')
+    'foobar'
+    """
+
     return pickle.loads(base64decode(value))
 
 def hexdecode(value):
+    """
+    Decodes string value from hex to plain format
+
+    >>> hexdecode('666f6f626172')
+    'foobar'
+    """
+
     value = value.lower()
     return (value[2:] if value.startswith("0x") else value).decode("hex")
 
 def hexencode(value):
-    return value.encode("hex")
+    """
+    Encodes string value from plain to hex format
 
-def md5hash(value):
-    if sys.modules.has_key('hashlib'):
-        return hashlib.md5(value).hexdigest()
-    else:
-        return md5.new(value).hexdigest()
+    >>> hexencode('foobar')
+    '666f6f626172'
+    """
 
-def orddecode(value):
-    packedString = struct.pack("!"+"I" * len(value), *value)
-    return "".join(chr(char) for char in struct.unpack("!"+"I"*(len(packedString)/4), packedString))
-
-def ordencode(value):
-    return tuple(ord(char) for char in value)
-
-def sha1hash(value):
-    if sys.modules.has_key('hashlib'):
-        return hashlib.sha1(value).hexdigest()
-    else:
-        return sha.new(value).hexdigest()
+    return utf8encode(value).encode("hex")
 
 def unicodeencode(value, encoding=None):
     """
-    Return 8-bit string representation of the supplied unicode value:
+    Returns 8-bit string representation of the supplied unicode value
 
-    >>> unicodeencode(u'test')
-    'test'
+    >>> unicodeencode(u'foobar')
+    'foobar'
     """
 
     retVal = value
@@ -76,16 +99,33 @@ def unicodeencode(value, encoding=None):
     return retVal
 
 def utf8encode(value):
+    """
+    Returns 8-bit string representation of the supplied UTF-8 value
+
+    >>> utf8encode(u'foobar')
+    'foobar'
+    """
+
     return unicodeencode(value, "utf-8")
 
 def utf8decode(value):
+    """
+    Returns UTF-8 representation of the supplied 8-bit string representation
+
+    >>> utf8decode('foobar')
+    u'foobar'
+    """
+
     return value.decode("utf-8")
 
-def htmlescape(value):
-    codes = (('&', '&amp;'), ('<', '&lt;'), ('>', '&gt;'), ('"', '&quot;'), ("'", '&#39;'), (' ', '&nbsp;'))
-    return reduce(lambda x, y: x.replace(y[0], y[1]), codes, value)
-
 def htmlunescape(value):
+    """
+    Returns (basic conversion) HTML unescaped value
+
+    >>> htmlunescape('a&lt;b')
+    'a<b'
+    """
+
     retVal = value
     if value and isinstance(value, basestring):
         codes = (('&lt;', '<'), ('&gt;', '>'), ('&quot;', '"'), ('&nbsp;', ' '), ('&amp;', '&'))
@@ -120,3 +160,23 @@ def stdoutencode(data):
         retVal = data.encode(UNICODE_ENCODING)
 
     return retVal
+
+def jsonize(data):
+    """
+    Returns JSON serialized data
+
+    >>> jsonize({'foo':'bar'})
+    '{\\n    "foo": "bar"\\n}'
+    """
+
+    return json.dumps(data, sort_keys=False, indent=4)
+
+def dejsonize(data):
+    """
+    Returns JSON deserialized data
+
+    >>> dejsonize('{\\n    "foo": "bar"\\n}')
+    {u'foo': u'bar'}
+    """
+
+    return json.loads(data)

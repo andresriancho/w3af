@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,14 +10,11 @@ import re
 from lib.core.common import Backend
 from lib.core.common import dataToStdout
 from lib.core.common import getSQLSnippet
-from lib.core.common import isTechniqueAvailable
+from lib.core.common import isStackingAvailable
 from lib.core.convert import utf8decode
 from lib.core.data import conf
-from lib.core.data import kb
 from lib.core.data import logger
-from lib.core.data import queries
 from lib.core.dicts import SQL_STATEMENTS
-from lib.core.enums import PAYLOAD
 from lib.core.settings import PARAMETER_SPLITTING_REGEX
 from lib.core.shell import autoCompletion
 from lib.request import inject
@@ -41,14 +38,14 @@ class Custom:
                     sqlType = sqlTitle
                     break
 
-        if 'OPENROWSET' not in query.upper() and (not sqlType or 'SELECT' in sqlType):
+        if not any(_ in query.upper() for _ in ("OPENROWSET", "INTO")) and (not sqlType or "SELECT" in sqlType):
             infoMsg = "fetching %s query output: '%s'" % (sqlType if sqlType is not None else "SQL", query)
             logger.info(infoMsg)
 
             output = inject.getValue(query, fromUser=True)
 
             return output
-        elif not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and not conf.direct:
+        elif not isStackingAvailable() and not conf.direct:
                 warnMsg = "execution of custom SQL queries is only "
                 warnMsg += "available when stacked queries are supported"
                 logger.warn(warnMsg)

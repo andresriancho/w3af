@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -49,7 +49,7 @@ class Enumeration(GenericEnumeration):
         return {}
 
     def getDbs(self):
-        warnMsg = "on Microsoft Access it is not possible to enumerate databases"
+        warnMsg = "on Microsoft Access it is not possible to enumerate databases (use only '--tables')"
         logger.warn(warnMsg)
 
         return []
@@ -74,4 +74,8 @@ class Enumeration(GenericEnumeration):
 
     def search(self):
         warnMsg = "on Microsoft Access search option is not available"
+        logger.warn(warnMsg)
+
+    def getHostname(self):
+        warnMsg = "on Microsoft Access it is not possible to enumerate the hostname"
         logger.warn(warnMsg)

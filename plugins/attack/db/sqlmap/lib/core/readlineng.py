@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -38,7 +38,7 @@ uses_libedit = False
 if PLATFORM == 'mac' and _readline:
     import commands
 
-    (status, result) = commands.getstatusoutput( "otool -L %s | grep libedit" % _readline.__file__ )
+    (status, result) = commands.getstatusoutput("otool -L %s | grep libedit" % _readline.__file__)
 
     if status == 0 and len(result) > 0:
         # We are bound to libedit - new in Leopard

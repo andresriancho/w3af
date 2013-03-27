@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -13,6 +13,7 @@ from lib.core.common import Backend
 from lib.core.common import filterPairValues
 from lib.core.common import getLimitRange
 from lib.core.common import getUnicode
+from lib.core.common import isAdminFromPrivileges
 from lib.core.common import isInferenceAvailable
 from lib.core.common import isNoneValue
 from lib.core.common import isNumPosStrValue
@@ -20,8 +21,8 @@ from lib.core.common import isTechniqueAvailable
 from lib.core.common import parsePasswordHash
 from lib.core.common import randomStr
 from lib.core.common import readInput
-from lib.core.common import strToHex
 from lib.core.common import unArrayizeValue
+from lib.core.convert import hexencode
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -34,11 +35,12 @@ from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import DBMS
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapNoneDataException
-from lib.core.exception import sqlmapUserQuitException
+from lib.core.exception import SqlmapNoneDataException
+from lib.core.exception import SqlmapUserQuitException
 from lib.core.threads import getCurrentThreadData
 from lib.request import inject
 from lib.utils.hash import attackCachedUsersPasswords
+from lib.utils.hash import storeHashesToFile
 from lib.utils.pivotdumptable import pivotDumpTable
 
 class Users:
@@ -78,7 +80,7 @@ class Users:
             query = queries[Backend.getIdentifiedDbms()].is_dba.query
 
         query = agent.forgeCaseStatement(query)
-        kb.data.isDba = unArrayizeValue(inject.getValue(query, expected=EXPECTED.BOOL, charsetType=CHARSET_TYPE.BINARY))
+        kb.data.isDba = inject.checkBooleanExpression(query) or False
 
         return kb.data.isDba
 
@@ -91,15 +93,15 @@ class Users:
         condition = (Backend.isDbms(DBMS.MSSQL) and Backend.isVersionWithin(("2005", "2008")))
         condition |= (Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema)
 
-        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
             if condition:
                 query = rootQuery.inband.query2
             else:
                 query = rootQuery.inband.query
-            value = inject.getValue(query, blind=False)
+            values = inject.getValue(query, blind=False, time=False)
 
-            if not isNoneValue(value):
-                kb.data.cachedUsers = arrayizeValue(value)
+            if not isNoneValue(values):
+                kb.data.cachedUsers = arrayizeValue(values)
 
         if not kb.data.cachedUsers and isInferenceAvailable() and not conf.direct:
             infoMsg = "fetching number of database users"
@@ -109,11 +111,12 @@ class Users:
                 query = rootQuery.blind.count2
             else:
                 query = rootQuery.blind.count
-            count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+
+            count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
             if not isNumPosStrValue(count):
                 errMsg = "unable to retrieve the number of database users"
-                raise sqlmapNoneDataException, errMsg
+                raise SqlmapNoneDataException(errMsg)
 
             plusOne = Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2)
             indexRange = getLimitRange(count, plusOne=plusOne)
@@ -125,14 +128,14 @@ class Users:
                     query = rootQuery.blind.query2 % index
                 else:
                     query = rootQuery.blind.query % index
-                user = inject.getValue(query, inband=False, error=False)
+                user = unArrayizeValue(inject.getValue(query, union=False, error=False))
 
                 if user:
                     kb.data.cachedUsers.append(user)
 
         if not kb.data.cachedUsers:
             errMsg = "unable to retrieve the database users"
-            raise sqlmapNoneDataException, errMsg
+            logger.error(errMsg)
 
         return kb.data.cachedUsers
 
@@ -164,7 +167,7 @@ class Users:
 
         users = filter(None, users)
 
-        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
             if Backend.isDbms(DBMS.MSSQL) and Backend.isVersionWithin(("2005", "2008")):
                 query = rootQuery.inband.query2
             else:
@@ -184,7 +187,6 @@ class Users:
 
                 if retVal:
                     for user, password in filterPairValues(zip(retVal[0]["%s.name" % randStr], retVal[0]["%s.password" % randStr])):
-                        # password = "0x%s" % strToHex(password)
                         if user not in kb.data.cachedUsersPasswords:
                             kb.data.cachedUsersPasswords[user] = [password]
                         else:
@@ -192,9 +194,9 @@ class Users:
 
                 getCurrentThreadData().disableStdOut = False
             else:
-                value = inject.getValue(query, blind=False)
+                values = inject.getValue(query, blind=False, time=False)
 
-                for user, password in filterPairValues(value):
+                for user, password in filterPairValues(values):
                     if not user or user == " ":
                         continue
 
@@ -226,7 +228,7 @@ class Users:
 
                 if retVal:
                     for user, password in filterPairValues(zip(retVal[0]["%s.name" % randStr], retVal[0]["%s.password" % randStr])):
-                        password = "0x%s" % strToHex(password)
+                        password = "0x%s" % hexencode(password).upper()
 
                         if user not in kb.data.cachedUsersPasswords:
                             kb.data.cachedUsersPasswords[user] = [password]
@@ -249,7 +251,8 @@ class Users:
                         query = rootQuery.blind.count2 % user
                     else:
                         query = rootQuery.blind.count % user
-                    count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+
+                    count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                     if not isNumPosStrValue(count):
                         warnMsg = "unable to retrieve the number of password "
@@ -273,7 +276,8 @@ class Users:
                                 query = rootQuery.blind.query % (user, index, user)
                         else:
                             query = rootQuery.blind.query % (user, index)
-                        password = inject.getValue(query, inband=False, error=False)
+
+                        password = unArrayizeValue(inject.getValue(query, union=False, error=False))
                         password = parsePasswordHash(password)
                         passwords.append(password)
 
@@ -291,47 +295,25 @@ class Users:
             errMsg += "database users (most probably because the session "
             errMsg += "user has no read privileges over the relevant "
             errMsg += "system database table)"
-            raise sqlmapNoneDataException, errMsg
+            logger.error(errMsg)
         else:
             for user in kb.data.cachedUsersPasswords:
                 kb.data.cachedUsersPasswords[user] = list(set(kb.data.cachedUsersPasswords[user]))
 
-        message = "do you want to perform a dictionary-based attack "
-        message += "against retrieved password hashes? [Y/n/q]"
-        test = readInput(message, default="Y")
+            storeHashesToFile(kb.data.cachedUsersPasswords)
 
-        if test[0] in ("n", "N"):
-            pass
-        elif test[0] in ("q", "Q"):
-            raise sqlmapUserQuitException
-        else:
-            attackCachedUsersPasswords()
+            message = "do you want to perform a dictionary-based attack "
+            message += "against retrieved password hashes? [Y/n/q]"
+            test = readInput(message, default="Y")
+
+            if test[0] in ("n", "N"):
+                pass
+            elif test[0] in ("q", "Q"):
+                raise SqlmapUserQuitException
+            else:
+                attackCachedUsersPasswords()
 
         return kb.data.cachedUsersPasswords
-
-    def __isAdminFromPrivileges(self, privileges):
-        # In PostgreSQL the usesuper privilege means that the
-        # user is DBA
-        dbaCondition = (Backend.isDbms(DBMS.PGSQL) and "super" in privileges)
-
-        # In Oracle the DBA privilege means that the
-        # user is DBA
-        dbaCondition |= (Backend.isDbms(DBMS.ORACLE) and "DBA" in privileges)
-
-        # In MySQL >= 5.0 the SUPER privilege means
-        # that the user is DBA
-        dbaCondition |= (Backend.isDbms(DBMS.MYSQL) and kb.data.has_information_schema and "SUPER" in privileges)
-
-        # In MySQL < 5.0 the super_priv privilege means
-        # that the user is DBA
-        dbaCondition |= (Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema and "super_priv" in privileges)
-
-        # In Firebird there is no specific privilege that means
-        # that the user is DBA
-        # TODO: confirm
-        dbaCondition |= (Backend.isDbms(DBMS.FIREBIRD) and "SELECT" in privileges and "INSERT" in privileges and "UPDATE" in privileges and "DELETE" in privileges and "REFERENCES" in privileges and "EXECUTE" in privileges)
-
-        return dbaCondition
 
     def getPrivileges(self, query2=False):
         infoMsg = "fetching database users privileges"
@@ -364,7 +346,7 @@ class Users:
         # Set containing the list of DBMS administrators
         areAdmins = set()
 
-        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+        if not kb.data.cachedUsersPrivileges and any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
             if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
                 query = rootQuery.inband.query2
                 condition = rootQuery.inband.condition2
@@ -383,7 +365,7 @@ class Users:
                 else:
                     query += " OR ".join("%s = '%s'" % (condition, user) for user in sorted(users))
 
-            values = inject.getValue(query, blind=False)
+            values = inject.getValue(query, blind=False, time=False)
 
             if not values and Backend.isDbms(DBMS.ORACLE) and not query2:
                 infoMsg = "trying with table USER_SYS_PRIVS"
@@ -422,6 +404,10 @@ class Users:
                                 if privilege.upper() == "Y":
                                     privileges.add(MYSQL_PRIVS[count])
 
+                            # In Firebird we get one letter for each privilege
+                            elif Backend.isDbms(DBMS.FIREBIRD):
+                                privileges.add(FIREBIRD_PRIVS[privilege.strip()])
+
                             # In DB2 we get Y or G if the privilege is
                             # True, N otherwise
                             elif Backend.isDbms(DBMS.DB2):
@@ -441,11 +427,8 @@ class Users:
 
                                 privileges.add(privilege)
 
-                    if self.__isAdminFromPrivileges(privileges):
-                        areAdmins.add(user)
-
                     if user in kb.data.cachedUsersPrivileges:
-                        kb.data.cachedUsersPrivileges[user].extend(privileges)
+                        kb.data.cachedUsersPrivileges[user] = list(privileges.union(kb.data.cachedUsersPrivileges[user]))
                     else:
                         kb.data.cachedUsersPrivileges[user] = list(privileges)
 
@@ -468,6 +451,7 @@ class Users:
             retrievedUsers = set()
 
             for user in users:
+                outuser = user
                 if user in retrievedUsers:
                     continue
 
@@ -475,7 +459,7 @@ class Users:
                     user = "%%%s%%" % user
 
                 infoMsg = "fetching number of privileges "
-                infoMsg += "for user '%s'" % user
+                infoMsg += "for user '%s'" % outuser
                 logger.info(infoMsg)
 
                 if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
@@ -486,21 +470,22 @@ class Users:
                     query = rootQuery.blind.count2 % user
                 else:
                     query = rootQuery.blind.count % user
-                count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+
+                count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                 if not isNumPosStrValue(count):
-                    if Backend.isDbms(DBMS.ORACLE) and not query2:
+                    if not retrievedUsers and Backend.isDbms(DBMS.ORACLE) and not query2:
                         infoMsg = "trying with table USER_SYS_PRIVS"
                         logger.info(infoMsg)
 
                         return self.getPrivileges(query2=True)
 
                     warnMsg = "unable to retrieve the number of "
-                    warnMsg += "privileges for user '%s'" % user
+                    warnMsg += "privileges for user '%s'" % outuser
                     logger.warn(warnMsg)
                     continue
 
-                infoMsg = "fetching privileges for user '%s'" % user
+                infoMsg = "fetching privileges for user '%s'" % outuser
                 logger.info(infoMsg)
 
                 privileges = set()
@@ -519,7 +504,7 @@ class Users:
                         query = rootQuery.blind.query % (index, user)
                     else:
                         query = rootQuery.blind.query % (user, index)
-                    privilege = inject.getValue(query, inband=False, error=False)
+                    privilege = unArrayizeValue(inject.getValue(query, union=False, error=False))
 
                     # In PostgreSQL we get 1 if the privilege is True,
                     # 0 otherwise
@@ -579,9 +564,6 @@ class Users:
 
                         privileges.add(privilege)
 
-                    if self.__isAdminFromPrivileges(privileges):
-                        areAdmins.add(user)
-
                     # In MySQL < 5.0 we break the cycle after the first
                     # time we get the user's privileges otherwise we
                     # duplicate the same query
@@ -592,7 +574,7 @@ class Users:
                     kb.data.cachedUsersPrivileges[user] = list(privileges)
                 else:
                     warnMsg = "unable to retrieve the privileges "
-                    warnMsg += "for user '%s'" % user
+                    warnMsg += "for user '%s'" % outuser
                     logger.warn(warnMsg)
 
                 retrievedUsers.add(user)
@@ -600,7 +582,11 @@ class Users:
         if not kb.data.cachedUsersPrivileges:
             errMsg = "unable to retrieve the privileges "
             errMsg += "for the database users"
-            raise sqlmapNoneDataException, errMsg
+            raise SqlmapNoneDataException(errMsg)
+
+        for user, privileges in kb.data.cachedUsersPrivileges.items():
+            if isAdminFromPrivileges(privileges):
+                areAdmins.add(user)
 
         return (kb.data.cachedUsersPrivileges, areAdmins)
 

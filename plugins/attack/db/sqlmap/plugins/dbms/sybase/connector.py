@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 try:
     import _mssql
     import pymssql
-except ImportError, _:
+except ImportError:
     pass
+
+import logging
 
 from lib.core.convert import utf8encode
 from lib.core.data import conf
 from lib.core.data import logger
-from lib.core.exception import sqlmapConnectionException
+from lib.core.exception import SqlmapConnectionException
 from plugins.generic.connector import Connector as GenericConnector
 
 class Connector(GenericConnector):
@@ -40,33 +42,40 @@ class Connector(GenericConnector):
         try:
             self.connector = pymssql.connect(host="%s:%d" % (self.hostname, self.port), user=self.user, password=self.password, database=self.db, login_timeout=conf.timeout, timeout=conf.timeout)
         except pymssql.OperationalError, msg:
-            raise sqlmapConnectionException, msg
+            raise SqlmapConnectionException(msg)
 
-        self.setCursor()
+        self.initCursor()
         self.connected()
 
     def fetchall(self):
         try:
             return self.cursor.fetchall()
         except (pymssql.ProgrammingError, pymssql.OperationalError, _mssql.MssqlDatabaseException), msg:
-            logger.warn("(remote) %s" % msg)
+            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % str(msg).replace("\n", " "))
             return None
 
     def execute(self, query):
+        retVal = False
+
         try:
             self.cursor.execute(utf8encode(query))
+            retVal = True
         except (pymssql.OperationalError, pymssql.ProgrammingError), msg:
-            logger.warn("(remote) %s" % msg)
+            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % str(msg).replace("\n", " "))
         except pymssql.InternalError, msg:
-            raise sqlmapConnectionException, msg
+            raise SqlmapConnectionException(msg)
+
+        return retVal
 
     def select(self, query):
-        self.execute(query)
-        value = self.fetchall()
+        retVal = None
 
-        try:
-            self.connector.commit()
-        except pymssql.OperationalError:
-            pass
+        if self.execute(query):
+            retVal = self.fetchall()
 
-        return value
+            try:
+                self.connector.commit()
+            except pymssql.OperationalError:
+                pass
+
+        return retVal

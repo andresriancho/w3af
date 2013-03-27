@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,13 +12,9 @@ __priority__ = PRIORITY.LOW
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces space character (' ') with comments '/**/'
-
-    Example:
-        * Input: SELECT id FROM users
-        * Output: SELECT/**/id/**/FROM/**/users
 
     Tested against:
         * Microsoft SQL Server 2005
@@ -28,6 +24,9 @@ def tamper(payload, headers):
 
     Notes:
         * Useful to bypass weak and bespoke web application firewalls
+
+    >>> tamper('SELECT id FROM users')
+    'SELECT/**/id/**/FROM/**/users'
     """
 
     retVal = payload
@@ -49,10 +48,10 @@ def tamper(payload, headers):
             elif payload[i] == '"':
                 doublequote = not doublequote
 
-            elif payload[i]==" " and not doublequote and not quote:
+            elif payload[i] == " " and not doublequote and not quote:
                 retVal += "/**/"
                 continue
 
             retVal += payload[i]
 
-    return retVal, headers
+    return retVal

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,9 +12,10 @@ class Syntax(GenericSyntax):
         GenericSyntax.__init__(self)
 
     @staticmethod
-    def unescape(expression, quote=True):
-        return expression
+    def escape(expression, quote=True):
+        """
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        "SELECT 'abcdefgh' FROM foobar"
+        """
 
-    @staticmethod
-    def escape(expression):
         return expression

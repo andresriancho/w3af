@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -30,7 +30,7 @@ def headersParser(headers):
             "servlet-engine":                  os.path.join(paths.SQLMAP_XML_BANNER_PATH, "servlet.xml"),
             "set-cookie":                      os.path.join(paths.SQLMAP_XML_BANNER_PATH, "cookie.xml"),
             "x-aspnet-version":                os.path.join(paths.SQLMAP_XML_BANNER_PATH, "x-aspnet-version.xml"),
-            "x-powered-by":                    os.path.join(paths.SQLMAP_XML_BANNER_PATH, "x-powered-by.xml")
+            "x-powered-by":                    os.path.join(paths.SQLMAP_XML_BANNER_PATH, "x-powered-by.xml"),
         }
 
     for header in itertools.ifilter(lambda x: x in kb.headerPaths, headers):

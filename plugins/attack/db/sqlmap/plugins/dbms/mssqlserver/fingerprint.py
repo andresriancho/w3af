@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.common import Backend
 from lib.core.common import Format
 from lib.core.common import getUnicode
-from lib.core.common import randomInt
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -85,16 +84,15 @@ class Fingerprint(GenericFingerprint):
         if conf.direct:
             result = True
         else:
-            randInt = randomInt()
-            result = inject.checkBooleanExpression("BINARY_CHECKSUM(%d)=BINARY_CHECKSUM(%d)" % (randInt, randInt))
+            result = inject.checkBooleanExpression("BINARY_CHECKSUM([RANDNUM])=BINARY_CHECKSUM([RANDNUM])")
 
         if result:
             infoMsg = "confirming %s" % DBMS.MSSQL
             logger.info(infoMsg)
 
-            for version, check in ( ("2000", "HOST_NAME()=HOST_NAME()"), \
+            for version, check in (("2000", "HOST_NAME()=HOST_NAME()"), \
                                     ("2005", "XACT_STATE()=XACT_STATE()"), \
-                                    ("2008", "SYSDATETIME()=SYSDATETIME()") ):
+                                    ("2008", "SYSDATETIME()=SYSDATETIME()")):
                 result = inject.checkBooleanExpression(check)
 
                 if result:

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
+
+import re
 
 from lib.core.enums import PRIORITY
 
@@ -12,13 +14,9 @@ __priority__ = PRIORITY.HIGHEST
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces greater than operator ('>') with 'NOT BETWEEN 0 AND #'
-
-    Example:
-        * Input: 'A > B'
-        * Output: 'A NOT BETWEEN 0 AND B'
 
     Tested against:
         * Microsoft SQL Server 2005
@@ -31,34 +29,20 @@ def tamper(payload, headers):
           filter the greater than character
         * The BETWEEN clause is SQL standard. Hence, this tamper script
           should work against all (?) databases
+
+    >>> tamper('1 AND A > B--')
+    '1 AND A NOT BETWEEN 0 AND B--'
     """
 
     retVal = payload
 
     if payload:
-        retVal = ""
-        quote, doublequote, firstspace = False, False, False
+        match = re.search(r"(?i)(\b(AND|OR)\b\s+)(?!.*\b(AND|OR)\b)([^>]+?)\s*>\s*([^>]+)\s*\Z", payload)
 
-        for i in xrange(len(payload)):
-            if not firstspace:
-                if payload[i].isspace():
-                    firstspace = True
-                    retVal += " "
-                    continue
+        if match:
+            _ = "%s %s NOT BETWEEN 0 AND %s" % (match.group(2), match.group(4), match.group(5))
+            retVal = retVal.replace(match.group(0), _)
+        else:
+            retVal = re.sub(r"\s*>\s*(\d+|'[^']+')", " NOT BETWEEN 0 AND \g<1>", payload)
 
-            elif payload[i] == '\'':
-                quote = not quote
-
-            elif payload[i] == '"':
-                doublequote = not doublequote
-
-            elif payload[i] == ">" and not doublequote and not quote:
-                retVal += " " if i > 0 and not payload[i-1].isspace() else ""
-                retVal += "NOT BETWEEN 0 AND"
-                retVal += " " if i < len(payload) - 1 and not payload[i+1:i+2].isspace() else ""
-
-                continue
-
-            retVal += payload[i]
-
-    return retVal, headers
+    return retVal

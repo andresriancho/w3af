@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -31,4 +31,4 @@ class MSSQLServerMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous
         Miscellaneous.__init__(self)
         Takeover.__init__(self)
 
-    unescaper[DBMS.MSSQL] = Syntax.unescape
+    unescaper[DBMS.MSSQL] = Syntax.escape

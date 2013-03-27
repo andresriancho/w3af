@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -64,7 +64,7 @@ def purge(directory):
         except:
             pass
 
-    dirpaths.sort(cmp = lambda x, y: y.count(os.path.sep) - x.count(os.path.sep))
+    dirpaths.sort(cmp=lambda x, y: y.count(os.path.sep) - x.count(os.path.sep))
 
     logger.debug("renaming directory names to random values...")
     for dirpath in dirpaths:

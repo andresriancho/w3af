@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -9,24 +9,24 @@ from extra.safe2bin.safe2bin import safechardecode
 from lib.core.common import dataToStdout
 from lib.core.common import Backend
 from lib.core.common import getSQLSnippet
-from lib.core.common import isTechniqueAvailable
+from lib.core.common import isStackingAvailable
 from lib.core.common import readInput
 from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.enums import DBMS
-from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapFilePathException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.core.shell import autoCompletion
 from lib.request import inject
 from lib.takeover.udf import UDF
 from lib.takeover.web import Web
-from lib.takeover.xp_cmdshell import xp_cmdshell
+from lib.takeover.xp_cmdshell import Xp_cmdshell
 
 
-class Abstraction(Web, UDF, xp_cmdshell):
+class Abstraction(Web, UDF, Xp_cmdshell):
     """
     This class defines an abstraction layer for OS takeover functionalities
-    to UDF / xp_cmdshell objects
+    to UDF / Xp_cmdshell objects
     """
 
     def __init__(self):
@@ -35,13 +35,13 @@ class Abstraction(Web, UDF, xp_cmdshell):
 
         UDF.__init__(self)
         Web.__init__(self)
-        xp_cmdshell.__init__(self)
+        Xp_cmdshell.__init__(self)
 
     def execCmd(self, cmd, silent=False):
-        if self.webBackdoorUrl and not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED):
+        if self.webBackdoorUrl and not isStackingAvailable():
             self.webBackdoorRunCmd(cmd)
 
-        elif Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
+        elif Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
             self.udfExecCmd(cmd, silent=silent)
 
         elif Backend.isDbms(DBMS.MSSQL):
@@ -49,15 +49,15 @@ class Abstraction(Web, UDF, xp_cmdshell):
 
         else:
             errMsg = "Feature not yet implemented for the back-end DBMS"
-            raise sqlmapUnsupportedFeatureException, errMsg
+            raise SqlmapUnsupportedFeatureException(errMsg)
 
     def evalCmd(self, cmd, first=None, last=None):
         retVal = None
 
-        if self.webBackdoorUrl and not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED):
+        if self.webBackdoorUrl and not isStackingAvailable():
             retVal = self.webBackdoorRunCmd(cmd)
 
-        elif Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
+        elif Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
             retVal = self.udfEvalCmd(cmd, first, last)
 
         elif Backend.isDbms(DBMS.MSSQL):
@@ -65,7 +65,7 @@ class Abstraction(Web, UDF, xp_cmdshell):
 
         else:
             errMsg = "Feature not yet implemented for the back-end DBMS"
-            raise sqlmapUnsupportedFeatureException, errMsg
+            raise SqlmapUnsupportedFeatureException(errMsg)
 
         return safechardecode(retVal)
 
@@ -91,13 +91,13 @@ class Abstraction(Web, UDF, xp_cmdshell):
             self.execCmd(cmd)
 
     def shell(self):
-        if self.webBackdoorUrl and not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED):
+        if self.webBackdoorUrl and not isStackingAvailable():
             infoMsg = "calling OS shell. To quit type "
             infoMsg += "'x' or 'q' and press ENTER"
             logger.info(infoMsg)
 
         else:
-            if Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
+            if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
                 infoMsg = "going to use injected sys_eval and sys_exec "
                 infoMsg += "user-defined functions for operating system "
                 infoMsg += "command execution"
@@ -110,7 +110,7 @@ class Abstraction(Web, UDF, xp_cmdshell):
 
             else:
                 errMsg = "feature not yet implemented for the back-end DBMS"
-                raise sqlmapUnsupportedFeatureException, errMsg
+                raise SqlmapUnsupportedFeatureException(errMsg)
 
             infoMsg = "calling %s OS shell. To quit type " % (Backend.getOs() or "Windows")
             infoMsg += "'x' or 'q' and press ENTER"
@@ -136,16 +136,16 @@ class Abstraction(Web, UDF, xp_cmdshell):
             if not command:
                 continue
 
-            if command.lower() in ( "x", "q", "exit", "quit" ):
+            if command.lower() in ("x", "q", "exit", "quit"):
                 break
 
             self.runCmd(command)
 
-    def __initRunAs(self):
+    def _initRunAs(self):
         if not conf.dbmsCred:
             return
 
-        if not conf.direct and not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED):
+        if not conf.direct and not isStackingAvailable():
             errMsg = "stacked queries is not supported hence sqlmap cannot "
             errMsg += "execute statements as another user. The execution "
             errMsg += "will continue and the DBMS credentials provided "
@@ -171,10 +171,10 @@ class Abstraction(Web, UDF, xp_cmdshell):
         #    expression = getSQLSnippet(DBMS.PGSQL, "configure_dblink", ENABLE="1")
         #    inject.goStacked(expression)
 
-    def initEnv(self, mandatory=True, detailed=False, web=False):
-        self.__initRunAs()
+    def initEnv(self, mandatory=True, detailed=False, web=False, forceInit=False):
+        self._initRunAs()
 
-        if self.envInitialized:
+        if self.envInitialized and not forceInit:
             return
 
         if web:
@@ -186,7 +186,7 @@ class Abstraction(Web, UDF, xp_cmdshell):
                 warnMsg = "functionality requested probably does not work because "
                 warnMsg += "the curent session user is not a database administrator"
 
-                if not conf.dbmsCred and Backend.getIdentifiedDbms() in ( DBMS.MSSQL, DBMS.PGSQL ):
+                if not conf.dbmsCred and Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.PGSQL):
                     warnMsg += ". You can try to use option '--dbms-cred' "
                     warnMsg += "to execute statements as a DBA user if you "
                     warnMsg += "were able to extract and crack a DBA "
@@ -194,13 +194,17 @@ class Abstraction(Web, UDF, xp_cmdshell):
 
                 logger.warn(warnMsg)
 
-            if Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
-                self.udfInjectSys()
+            if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
+                success = self.udfInjectSys()
+
+                if success is not True:
+                    msg = "unable to mount the operating system takeover"
+                    raise SqlmapFilePathException(msg)
             elif Backend.isDbms(DBMS.MSSQL):
                 if mandatory:
                     self.xpCmdshellInit()
             else:
                 errMsg = "feature not yet implemented for the back-end DBMS"
-                raise sqlmapUnsupportedFeatureException(errMsg)
+                raise SqlmapUnsupportedFeatureException(errMsg)
 
         self.envInitialized = True

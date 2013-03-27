@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from lib.core.exception import sqlmapSyntaxException
 from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
@@ -13,49 +12,16 @@ class Syntax(GenericSyntax):
         GenericSyntax.__init__(self)
 
     @staticmethod
-    def unescape(expression, quote=True):
-        if quote:
-            while True:
-                index = expression.find("'")
-                if index == -1:
-                    break
+    def escape(expression, quote=True):
+        """
+        Note: PostgreSQL has a general problem with concenation operator (||) precedence (hence the parentheses enclosing)
+              e.g. SELECT 1 WHERE 'a'!='a'||'b' will trigger error ("argument of WHERE must be type boolean, not type text")
 
-                firstIndex = index + 1
-                index = expression[firstIndex:].find("'")
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        'SELECT (CHR(97)||CHR(98)||CHR(99)||CHR(100)||CHR(101)||CHR(102)||CHR(103)||CHR(104)) FROM foobar'
+        """
 
-                if index == -1:
-                    raise sqlmapSyntaxException, "Unenclosed ' in '%s'" % expression
+        def escaper(value):
+            return "(%s)"  % "||".join("CHR(%d)" % ord(_) for _ in value)  # Postgres CHR() function already accepts Unicode code point of character(s)
 
-                lastIndex = firstIndex + index
-                old = "'%s'" % expression[firstIndex:lastIndex]
-                unescaped = "||".join("CHR(%d)" % (ord(expression[i])) for i in xrange(firstIndex, lastIndex))  # Postgres CHR() function already accepts Unicode code point of character(s)
-
-                expression = expression.replace(old, unescaped)
-        else:
-            expression = "||".join("CHR(%d)" % ord(c) for c in expression)
-
-        return expression
-
-    @staticmethod
-    def escape(expression):
-        while True:
-            index = expression.find("CHR(")
-            if index == -1:
-                break
-
-            firstIndex = index
-            index = expression[firstIndex:].find("))")
-
-            if index == -1:
-                raise sqlmapSyntaxException, "Unenclosed ) in '%s'" % expression
-
-            lastIndex = firstIndex + index + 1
-            old = expression[firstIndex:lastIndex]
-            oldUpper = old.upper()
-            oldUpper = oldUpper.replace("CHR(", "").replace(")", "")
-            oldUpper = oldUpper.split("||")
-
-            escaped = "'%s'" % "".join(chr(int(char)) for char in oldUpper)
-            expression = expression.replace(old, escaped)
-
-        return expression
+        return Syntax._escape(expression, quote, escaper)

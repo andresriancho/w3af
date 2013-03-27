@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -24,10 +24,10 @@ class PostgreSQLMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous,
         self.excludeDbsList = PGSQL_SYSTEM_DBS
         self.sysUdfs = {
                          # UDF name:     UDF parameters' input data-type and return data-type
-                         "sys_exec":     { "input":  [ "text" ], "return": "int4" },
-                         "sys_eval":     { "input":  [ "text" ], "return": "text" },
-                         "sys_bineval":  { "input":  [ "text" ], "return": "int4" },
-                         "sys_fileread": { "input":  [ "text" ], "return": "text" }
+                         "sys_exec":     { "input":  ["text"], "return": "int4" },
+                         "sys_eval":     { "input":  ["text"], "return": "text" },
+                         "sys_bineval":  { "input":  ["text"], "return": "int4" },
+                         "sys_fileread": { "input":  ["text"], "return": "text" }
                        }
 
         Syntax.__init__(self)
@@ -37,4 +37,4 @@ class PostgreSQLMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous,
         Miscellaneous.__init__(self)
         Takeover.__init__(self)
 
-    unescaper[DBMS.PGSQL] = Syntax.unescape
+    unescaper[DBMS.PGSQL] = Syntax.escape

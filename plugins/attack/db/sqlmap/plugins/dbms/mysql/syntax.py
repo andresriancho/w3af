@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import binascii
-import re
 
 from lib.core.convert import utf8encode
-from lib.core.exception import sqlmapSyntaxException
 from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
@@ -17,43 +15,18 @@ class Syntax(GenericSyntax):
         GenericSyntax.__init__(self)
 
     @staticmethod
-    def unescape(expression, quote=True):
-        if quote:
-            unescaped = expression
-            for item in re.findall(r"'[^']+'", expression, re.S):
-                try:
-                    unescaped = unescaped.replace(item, "0x%s" % binascii.hexlify(item.strip("'")))
-                except UnicodeEncodeError:
-                    unescaped = unescaped.replace(item, "CONVERT(0x%s USING utf8)" % "".join("%.2x" % ord(_) for _ in utf8encode(item.strip("'"))))
-        else:
-            unescaped = "0x%s" % binascii.hexlify(expression)
+    def escape(expression, quote=True):
+        """
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        'SELECT 0x6162636465666768 FROM foobar'
+        """
 
-        return unescaped
+        def escaper(value):
+            retVal = None
+            try:
+                retVal = "0x%s" % binascii.hexlify(value)
+            except UnicodeEncodeError:
+                retVal = "CONVERT(0x%s USING utf8)" % "".join("%.2x" % ord(_) for _ in utf8encode(value))
+            return retVal
 
-    @staticmethod
-    def escape(expression):
-        while True:
-            index = expression.find("CHAR(")
-            if index == -1:
-                break
-
-            firstIndex = index
-            index = expression[firstIndex:].find(")")
-
-            if index == -1:
-                raise sqlmapSyntaxException, "Unenclosed ) in '%s'" % expression
-
-            lastIndex = firstIndex + index + 1
-            old = expression[firstIndex:lastIndex]
-            oldUpper = old.upper()
-            oldUpper = oldUpper.lstrip("CHAR(").rstrip(")")
-            oldUpper = oldUpper.split(",")
-
-            escaped = "'%s'" % "".join(chr(int(char)) for char in oldUpper)
-            expression = expression.replace(old, escaped)
-
-        original = expression
-        for item in re.findall(r"0x[0-9a-fA-F]+", original, re.S):
-            expression = expression.replace(item, "'%s'" % binascii.unhexlify(item[2:]))
-
-        return expression
+        return Syntax._escape(expression, quote, escaper)

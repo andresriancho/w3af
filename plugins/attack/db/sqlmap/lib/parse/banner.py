@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -39,7 +39,7 @@ class MSSQLBannerHandler(ContentHandler):
     def _feedInfo(self, key, value):
         value = sanitizeStr(value)
 
-        if value in ( None, "None" ):
+        if value in (None, "None"):
             return
 
         self._info[key] = value

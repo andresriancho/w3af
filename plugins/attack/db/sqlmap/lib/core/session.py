@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,22 +10,15 @@ import re
 from lib.core.common import Backend
 from lib.core.common import Format
 from lib.core.common import hashDBWrite
-from lib.core.common import intersect
-from lib.core.common import readInput
-from lib.core.common import singleTimeWarnMessage
-from lib.core.convert import base64pickle
-from lib.core.convert import base64unpickle
-from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import OS
 from lib.core.settings import SUPPORTED_DBMS
-from lib.core.settings import UNKNOWN_DBMS_VERSION
 
 def setDbms(dbms):
     """
-    :param dbms: database management system to be set into the knowledge
+    @param dbms: database management system to be set into the knowledge
     base as fingerprint.
     @type dbms: C{str}
     """

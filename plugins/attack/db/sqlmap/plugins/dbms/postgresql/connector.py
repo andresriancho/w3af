@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,11 +10,11 @@ try:
     import psycopg2.extensions
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-except ImportError, _:
+except ImportError:
     pass
 
 from lib.core.data import logger
-from lib.core.exception import sqlmapConnectionException
+from lib.core.exception import SqlmapConnectionException
 from plugins.generic.connector import Connector as GenericConnector
 
 class Connector(GenericConnector):
@@ -37,11 +37,11 @@ class Connector(GenericConnector):
         try:
             self.connector = psycopg2.connect(host=self.hostname, user=self.user, password=self.password, database=self.db, port=self.port)
         except psycopg2.OperationalError, msg:
-            raise sqlmapConnectionException, msg
+            raise SqlmapConnectionException(msg)
 
         self.connector.set_client_encoding('UNICODE')
 
-        self.setCursor()
+        self.initCursor()
         self.connected()
 
     def fetchall(self):
@@ -60,7 +60,7 @@ class Connector(GenericConnector):
         except (psycopg2.OperationalError, psycopg2.ProgrammingError), msg:
             logger.warn(("(remote) %s" % msg).strip())
         except psycopg2.InternalError, msg:
-            raise sqlmapConnectionException, msg
+            raise SqlmapConnectionException(msg)
 
         self.connector.commit()
 

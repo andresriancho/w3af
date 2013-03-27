@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.data import logger
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
 class Enumeration(GenericEnumeration):
@@ -44,14 +44,10 @@ class Enumeration(GenericEnumeration):
         return {}
 
     def getDbs(self):
-        warnMsg = "on SQLite it is not possible to enumerate databases"
+        warnMsg = "on SQLite it is not possible to enumerate databases (use only '--tables')"
         logger.warn(warnMsg)
 
         return []
-
-    def dumpAll(self):
-        errMsg = "on SQLite you must specify the table and columns to dump"
-        raise sqlmapUnsupportedFeatureException, errMsg
 
     def searchDb(self):
         warnMsg = "on SQLite it is not possible to search databases"
@@ -60,5 +56,9 @@ class Enumeration(GenericEnumeration):
         return []
 
     def searchColumn(self):
-        errMsg = "on SQLite you must specify the table and columns to dump"
-        raise sqlmapUnsupportedFeatureException, errMsg
+        errMsg = "on SQLite it is not possible to search columns"
+        raise SqlmapUnsupportedFeatureException(errMsg)
+
+    def getHostname(self):
+        warnMsg = "on SQLite it is not possible to enumerate the hostname"
+        logger.warn(warnMsg)

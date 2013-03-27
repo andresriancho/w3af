@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -11,7 +11,7 @@ import tempfile
 
 from lib.core.settings import BIGARRAY_CHUNK_LENGTH
 
-class Cache:
+class Cache(object):
     """
     Auxiliary class used for storing cached chunks
     """
@@ -40,6 +40,10 @@ class BigArray(list):
             self.chunks[-1] = filename
             self.chunks.append([])
 
+    def extend(self, value):
+        for _ in value:
+            self.append(_)
+
     def pop(self):
         if len(self.chunks[-1]) < 1:
             self.chunks.pop()
@@ -54,7 +58,7 @@ class BigArray(list):
         return ValueError, "%s is not in list" % value
 
     def _dump(self, value):
-        handle, filename = tempfile.mkstemp()
+        handle, filename = tempfile.mkstemp(prefix="sqlmapba-")
         self.filenames.add(filename)
         os.close(handle)
         with open(filename, "w+b") as fp:

@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import binascii
-import re
 
 from lib.core.common import isDBMSVersionAtLeast
-from lib.core.exception import sqlmapSyntaxException
+from lib.core.settings import UNICODE_ENCODING
 from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
@@ -17,41 +16,25 @@ class Syntax(GenericSyntax):
         GenericSyntax.__init__(self)
 
     @staticmethod
-    def unescape(expression, quote=True):
-        unescaped = expression
+    def escape(expression, quote=True):
+        """
+        >>> Backend.setVersion('2')
+        ['2']
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        "SELECT 'abcdefgh' FROM foobar"
+        >>> Backend.setVersion('3')
+        ['3']
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        "SELECT CAST(X'6162636465666768' AS TEXT) FROM foobar"
+        """
+
+        def escaper(value):
+            # Reference: http://stackoverflow.com/questions/3444335/how-do-i-quote-a-utf-8-string-literal-in-sqlite3
+            return "CAST(X'%s' AS TEXT)" % binascii.hexlify(value.encode(UNICODE_ENCODING) if isinstance(value, unicode) else value)
+
+        retVal = expression
 
         if isDBMSVersionAtLeast('3'):
-            if quote:
-                for item in re.findall(r"'[^']+'", expression, re.S):
-                    unescaped = unescaped.replace(item, "X'%s'" % binascii.hexlify(item.strip("'")))
-            else:
-                unescaped = "X'%s'" % binascii.hexlify(expression)
+            retVal = Syntax._escape(expression, quote, escaper)
 
-        return unescaped
-
-    @staticmethod
-    def escape(expression):
-        # Example on SQLite 3, not supported on SQLite 2:
-        # select X'48'||X'656c6c6f20576f726c6400'; -- Hello World
-        while True:
-            index = expression.find("X'")
-            if index == -1:
-                break
-
-            firstIndex = index
-            index = expression[firstIndex+2:].find("'")
-
-            if index == -1:
-                raise sqlmapSyntaxException, "Unenclosed ' in '%s'" % expression
-
-            lastIndex = firstIndex + index + 3
-            old = expression[firstIndex:lastIndex]
-            oldUpper = old.upper()
-            oldUpper = oldUpper.replace("X'", "").replace("'", "")
-
-            for i in xrange(len(oldUpper)/2):
-                char = oldUpper[i*2:i*2+2]
-                escaped = "'%s'" % chr(int(char, 16))
-            expression = expression.replace(old, escaped)
-
-        return expression
+        return retVal

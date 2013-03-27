@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import os
 import zipfile
 
-from lib.core.exception import sqlmapDataException
+from lib.core.exception import SqlmapDataException
+from lib.core.settings import UNICODE_ENCODING
 
-class Wordlist:
+class Wordlist(object):
     """
     Iterator for looping over a large dictionaries
     """
@@ -41,7 +42,7 @@ class Wordlist:
                 _ = zipfile.ZipFile(current, 'r')
                 if len(_.namelist()) == 0:
                     errMsg = "no file(s) inside '%s'" % current
-                    raise sqlmapDataException, errMsg
+                    raise SqlmapDataException(errMsg)
                 self.fp = _.open(_.namelist()[0])
             else:
                 self.fp = open(current, 'r')
@@ -63,6 +64,10 @@ class Wordlist:
             except StopIteration:
                 self.adjust()
                 retVal = self.iter.next().rstrip()
+            try:
+                retVal = retVal.decode(UNICODE_ENCODING)
+            except UnicodeDecodeError:
+                continue
             if not self.proc_count or self.counter % self.proc_count == self.proc_id:
                 break
         return retVal

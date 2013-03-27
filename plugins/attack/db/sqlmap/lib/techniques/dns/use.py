@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import re
 import time
-import string
 
 from extra.safe2bin.safe2bin import safecharencode
 from lib.core.agent import agent
@@ -21,7 +20,6 @@ from lib.core.common import hashDBRetrieve
 from lib.core.common import hashDBWrite
 from lib.core.common import randomInt
 from lib.core.common import randomStr
-from lib.core.common import safecharencode
 from lib.core.common import safeStringFormat
 from lib.core.common import singleTimeWarnMessage
 from lib.core.data import conf
@@ -68,7 +66,7 @@ def dnsUse(payload, expression):
                 expressionReplaced = expression.replace(fieldToCastStr, nulledCastedField, 1)
 
                 expressionRequest = getSQLSnippet(Backend.getIdentifiedDbms(), "dns_request", PREFIX=prefix, QUERY=expressionReplaced, SUFFIX=suffix, DOMAIN=conf.dnsName)
-                expressionUnescaped = unescaper.unescape(expressionRequest)
+                expressionUnescaped = unescaper.escape(expressionRequest)
 
                 if Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.PGSQL):
                     query = agent.prefixQuery("; %s" % expressionUnescaped)

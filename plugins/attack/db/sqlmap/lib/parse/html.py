@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -15,7 +15,7 @@ from lib.core.data import kb
 from lib.core.data import paths
 from lib.core.threads import getCurrentThreadData
 
-class htmlHandler(ContentHandler):
+class HTMLHandler(ContentHandler):
     """
     This class defines methods to parse the input HTML page to
     fingerprint the back-end database management system
@@ -50,7 +50,7 @@ def htmlParser(page):
 
     xmlfile = paths.ERRORS_XML
     checkFile(xmlfile)
-    handler = htmlHandler(page)
+    handler = HTMLHandler(page)
 
     parseXmlFile(xmlfile, handler)
 

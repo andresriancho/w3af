@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -22,7 +22,7 @@ from lib.core.data import queries
 from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapNoneDataException
+from lib.core.exception import SqlmapNoneDataException
 from lib.core.settings import CURRENT_DB
 from lib.request import inject
 
@@ -42,7 +42,7 @@ class Enumeration(GenericEnumeration):
         areAdmins = set()
 
         if conf.user:
-            users = [ conf.user ]
+            users = [conf.user]
         elif not len(kb.data.cachedUsers):
             users = self.getUsers()
         else:
@@ -59,7 +59,7 @@ class Enumeration(GenericEnumeration):
 
             kb.data.cachedUsersPrivileges[user] = None
 
-        return ( kb.data.cachedUsersPrivileges, areAdmins )
+        return (kb.data.cachedUsersPrivileges, areAdmins)
 
     def getTables(self):
         if len(kb.data.cachedTables) > 0:
@@ -86,7 +86,7 @@ class Enumeration(GenericEnumeration):
 
         rootQuery = queries[Backend.getIdentifiedDbms()].tables
 
-        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
             for db in dbs:
                 if conf.excludeSysDbs and db in self.excludeDbsList:
                     infoMsg = "skipping system database '%s'" % db
@@ -96,7 +96,7 @@ class Enumeration(GenericEnumeration):
 
                 for query in (rootQuery.inband.query, rootQuery.inband.query2, rootQuery.inband.query3):
                     query = query.replace("%s", db)
-                    value = inject.getValue(query, blind=False)
+                    value = inject.getValue(query, blind=False, time=False)
                     if not isNoneValue(value):
                         break
 
@@ -119,7 +119,7 @@ class Enumeration(GenericEnumeration):
 
                 for query in (rootQuery.blind.count, rootQuery.blind.count2, rootQuery.blind.count3):
                     _ = query.replace("%s", db)
-                    count = inject.getValue(_, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                    count = inject.getValue(_, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
                     if not isNoneValue(count):
                         break
 
@@ -135,7 +135,7 @@ class Enumeration(GenericEnumeration):
                 for index in xrange(int(count)):
                     _ = (rootQuery.blind.query if query == rootQuery.blind.count else rootQuery.blind.query2 if query == rootQuery.blind.count2 else rootQuery.blind.query3).replace("%s", db) % index
 
-                    table = inject.getValue(_, inband=False, error=False)
+                    table = inject.getValue(_, union=False, error=False)
                     if not isNoneValue(table):
                         kb.hintValue = table
                         table = safeSQLIdentificatorNaming(table, True)
@@ -150,7 +150,7 @@ class Enumeration(GenericEnumeration):
 
         if not kb.data.cachedTables:
             errMsg = "unable to retrieve the tables for any database"
-            raise sqlmapNoneDataException(errMsg)
+            raise SqlmapNoneDataException(errMsg)
         else:
             for db, tables in kb.data.cachedTables.items():
                 kb.data.cachedTables[db] = sorted(tables) if tables else tables
@@ -196,14 +196,14 @@ class Enumeration(GenericEnumeration):
 
                     continue
 
-                if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+                if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
                     query = rootQuery.inband.query.replace("%s", db)
                     query += tblQuery
-                    values = inject.getValue(query, blind=False)
+                    values = inject.getValue(query, blind=False, time=False)
 
                     if not isNoneValue(values):
                         if isinstance(values, basestring):
-                            values = [ values ]
+                            values = [values]
 
                         for foundTbl in values:
                             if foundTbl is None:
@@ -220,7 +220,7 @@ class Enumeration(GenericEnumeration):
                     query = rootQuery.blind.count
                     query = query.replace("%s", db)
                     query += " AND %s" % tblQuery
-                    count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                    count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                     if not isNumPosStrValue(count):
                         warnMsg = "no table"
@@ -239,7 +239,7 @@ class Enumeration(GenericEnumeration):
                         query = query.replace("%s", db)
                         query += " AND %s" % tblQuery
                         query = agent.limitQuery(index, query, tblCond)
-                        tbl = inject.getValue(query, inband=False, error=False)
+                        tbl = inject.getValue(query, union=False, error=False)
                         kb.hintValue = tbl
                         foundTbls[db].append(tbl)
 
@@ -317,15 +317,15 @@ class Enumeration(GenericEnumeration):
                 if conf.excludeSysDbs and db in self.excludeDbsList:
                     continue
 
-                if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR)) or conf.direct:
+                if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
                     query = rootQuery.inband.query % (db, db, db, db, db, db)
                     query += " AND %s" % colQuery.replace("[DB]", db)
                     query += whereTblsQuery.replace("[DB]", db)
-                    values = inject.getValue(query, blind=False)
+                    values = inject.getValue(query, blind=False, time=False)
 
                     if not isNoneValue(values):
                         if isinstance(values, basestring):
-                            values = [ values ]
+                            values = [values]
 
                         for foundTbl in values:
                             foundTbl = safeSQLIdentificatorNaming(foundTbl, True)
@@ -353,7 +353,7 @@ class Enumeration(GenericEnumeration):
                             if db in foundCols[column]:
                                 foundCols[column][db].append(foundTbl)
                             else:
-                                foundCols[column][db] = [ foundTbl ]
+                                foundCols[column][db] = [foundTbl]
                 else:
                     foundCols[column][db] = []
 
@@ -367,7 +367,7 @@ class Enumeration(GenericEnumeration):
                     query = query % (db, db, db, db, db, db)
                     query += " AND %s" % colQuery.replace("[DB]", db)
                     query += whereTblsQuery.replace("[DB]", db)
-                    count = inject.getValue(query, inband=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                    count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
                     if not isNumPosStrValue(count):
                         warnMsg = "no tables contain column"
@@ -387,7 +387,7 @@ class Enumeration(GenericEnumeration):
                         query += " AND %s" % colQuery.replace("[DB]", db)
                         query += whereTblsQuery.replace("[DB]", db)
                         query = agent.limitQuery(index, query, colCond.replace("[DB]", db))
-                        tbl = inject.getValue(query, inband=False, error=False)
+                        tbl = inject.getValue(query, union=False, error=False)
                         kb.hintValue = tbl
 
                         tbl = safeSQLIdentificatorNaming(tbl, True)

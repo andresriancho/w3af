@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,7 +10,7 @@ import os
 from lib.core.common import randomInt
 from lib.core.data import kb
 from lib.core.data import logger
-from lib.core.exception import sqlmapUnsupportedFeatureException
+from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
 from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
@@ -28,18 +28,18 @@ class Filesystem(GenericFilesystem):
 
         return self.udfEvalCmd(cmd=rFile, udfName="sys_fileread")
 
-    def unionWriteFile(self, wFile, dFile, fileType):
+    def unionWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         errMsg = "PostgreSQL does not support file upload with UNION "
         errMsg += "query SQL injection technique"
-        raise sqlmapUnsupportedFeatureException, errMsg
+        raise SqlmapUnsupportedFeatureException(errMsg)
 
-    def stackedWriteFile(self, wFile, dFile, fileType):
+    def stackedWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         wFileSize = os.path.getsize(wFile)
 
         if wFileSize > 8192:
             errMsg = "on PostgreSQL it is not possible to write files "
             errMsg += "bigger than 8192 bytes at the moment"
-            raise sqlmapUnsupportedFeatureException, errMsg
+            raise SqlmapUnsupportedFeatureException(errMsg)
 
         self.oid = randomInt()
 
@@ -110,6 +110,8 @@ class Filesystem(GenericFilesystem):
         # (pg_largeobject 'data' field)
         inject.goStacked("SELECT lo_export(%d, '%s')" % (self.oid, dFile), silent=True)
 
-        self.askCheckWrittenFile(wFile, dFile, fileType)
+        written = self.askCheckWrittenFile(wFile, dFile, forceCheck)
 
         inject.goStacked("SELECT lo_unlink(%d)" % self.oid)
+
+        return written

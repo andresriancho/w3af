@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -13,7 +13,7 @@ class Enumeration(GenericEnumeration):
         GenericEnumeration.__init__(self)
 
     def getDbs(self):
-        warnMsg = "on Firebird it is not possible to enumerate databases"
+        warnMsg = "on Firebird it is not possible to enumerate databases (use only '--tables')"
         logger.warn(warnMsg)
 
         return []
@@ -30,18 +30,12 @@ class Enumeration(GenericEnumeration):
 
         return []
 
-    def searchTable(self):
-        warnMsg = "on Firebird searching of tables is not implemented"
-        logger.warn(warnMsg)
-
-        return []
-
     def searchColumn(self):
-        warnMsg = "on Firebird searching of columns is not implemented"
+        warnMsg = "on Firebird it is not possible to search columns"
         logger.warn(warnMsg)
 
         return []
 
-    def search(self):
-        warnMsg = "on Firebird search option is not available"
+    def getHostname(self):
+        warnMsg = "on Firebird it is not possible to enumerate the hostname"
         logger.warn(warnMsg)

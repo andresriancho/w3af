@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -22,7 +22,7 @@ class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.MAXDB)
 
-    def __versionCheck(self):
+    def _versionCheck(self):
         infoMsg = "executing %s SYSINFO version check" % DBMS.MAXDB
         logger.info(infoMsg)
 
@@ -76,7 +76,7 @@ class Fingerprint(GenericFingerprint):
             value += DBMS.MAXDB
             return value
 
-        actVer = Format.getDbms() + " (%s)" % self.__versionCheck()
+        actVer = Format.getDbms() + " (%s)" % self._versionCheck()
         blank = " " * 15
         value += "active fingerprint: %s" % actVer
 

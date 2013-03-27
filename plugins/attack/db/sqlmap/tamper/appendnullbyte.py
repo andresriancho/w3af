@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,13 +12,9 @@ __priority__ = PRIORITY.LOWEST
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Appends encoded NULL byte character at the end of payload
-
-    Example:
-        * Input: AND 1=1
-        * Output: AND 1=1%00
 
     Requirement:
         * Microsoft Access
@@ -29,6 +25,9 @@ def tamper(payload, headers):
           also possible
 
     Reference: http://projects.webappsec.org/w/page/13246949/Null-Byte-Injection
+
+    >>> tamper('1 AND 1=1')
+    '1 AND 1=1%00'
     """
 
-    return "%s%%00" % payload if payload else payload, headers
+    return "%s%%00" % payload if payload else payload

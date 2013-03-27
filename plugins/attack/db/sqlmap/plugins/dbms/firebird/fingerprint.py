@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,7 +10,6 @@ import re
 from lib.core.common import Backend
 from lib.core.common import Format
 from lib.core.common import getUnicode
-from lib.core.common import randomInt
 from lib.core.common import randomRange
 from lib.core.data import conf
 from lib.core.data import kb
@@ -47,7 +46,7 @@ class Fingerprint(GenericFingerprint):
             value += actVer
             return value
 
-        actVer = Format.getDbms() + " (%s)" % (self.__dialectCheck())
+        actVer = Format.getDbms() + " (%s)" % (self._dialectCheck())
         blank = " " * 15
         value += "active fingerprint: %s" % actVer
 
@@ -67,19 +66,20 @@ class Fingerprint(GenericFingerprint):
 
         return value
 
-    def __sysTablesCheck(self):
+    def _sysTablesCheck(self):
         retVal = None
         table = (
-                    ("1.0", ["EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)"]),
-                    ("1.5", ["NULLIF(%d,%d) IS NULL", "EXISTS(SELECT CURRENT_TRANSACTION FROM RDB$DATABASE)"]),
-                    ("2.0", ["EXISTS(SELECT CURRENT_TIME(0) FROM RDB$DATABASE)", "BIT_LENGTH(%d)>0", "CHAR_LENGTH(%d)>0"]),
-                    ("2.1", ["BIN_XOR(%d,%d)=0", "PI()>0.%d", "RAND()<1.%d", "FLOOR(1.%d)>=0"])
+                    ("1.0", ("EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)",)),
+                    ("1.5", ("NULLIF(%d,%d) IS NULL", "EXISTS(SELECT CURRENT_TRANSACTION FROM RDB$DATABASE)")),
+                    ("2.0", ("EXISTS(SELECT CURRENT_TIME(0) FROM RDB$DATABASE)", "BIT_LENGTH(%d)>0", "CHAR_LENGTH(%d)>0")),
+                    ("2.1", ("BIN_XOR(%d,%d)=0", "PI()>0.%d", "RAND()<1.%d", "FLOOR(1.%d)>=0")),
+                    # TODO: add test for Firebird 2.5
                  )
 
         for i in xrange(len(table)):
             version, checks = table[i]
             failed = False
-            check = checks[randomRange(0, len(checks)-1)].replace("%d", getUnicode(randomRange(1,100)))
+            check = checks[randomRange(0, len(checks) - 1)].replace("%d", getUnicode(randomRange(1, 100)))
             result = inject.checkBooleanExpression(check)
 
             if result:
@@ -93,7 +93,7 @@ class Fingerprint(GenericFingerprint):
 
         return retVal
 
-    def __dialectCheck(self):
+    def _dialectCheck(self):
         retVal = None
 
         if Backend.getIdentifiedDbms():
@@ -121,8 +121,7 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "testing %s" % DBMS.FIREBIRD
         logger.info(infoMsg)
 
-        randInt = randomInt()
-        result = inject.checkBooleanExpression("EXISTS(SELECT * FROM RDB$DATABASE WHERE %d=%d)" % (randInt, randInt))
+        result = inject.checkBooleanExpression("(SELECT COUNT(*) FROM RDB$DATABASE WHERE [RANDNUM]=[RANDNUM])>0")
 
         if result:
             infoMsg = "confirming %s" % DBMS.FIREBIRD
@@ -141,7 +140,7 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "actively fingerprinting %s" % DBMS.FIREBIRD
             logger.info(infoMsg)
 
-            version = self.__sysTablesCheck()
+            version = self._sysTablesCheck()
 
             if version is not None:
                 Backend.setVersion(version)

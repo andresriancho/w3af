@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -16,8 +16,9 @@ optDict = {
                                "logFile":           "string",
                                "bulkFile":          "string",
                                "requestFile":       "string",
+                               "sessionFile":       "string",
                                "googleDork":        "string",
-                               "configFile":        "string"
+                               "configFile":        "string",
                              },
 
             "Request":       {
@@ -46,7 +47,7 @@ optDict = {
                                "safUrl":            "string",
                                "saFreq":            "integer",
                                "skipUrlEncode":     "boolean",
-                               "evalCode":          "string"
+                               "evalCode":          "string",
                              },
 
             "Optimization":  {
@@ -54,7 +55,7 @@ optDict = {
                                "predictOutput":     "boolean",
                                "keepAlive":         "boolean",
                                "nullConnection":    "boolean",
-                               "threads":           "integer"
+                               "threads":           "integer",
                              },
 
             "Injection":     {
@@ -64,22 +65,22 @@ optDict = {
                                "invalidBignum":     "boolean",
                                "invalidLogical":    "boolean",
                                "noCast":            "boolean",
-                               "noUnescape":        "boolean",
+                               "noEscape":          "boolean",
                                "prefix":            "string",
                                "suffix":            "string",
                                "skip":              "string",
-                               "tamper":            "string"
+                               "tamper":            "string",
                              },
 
             "Detection":     {
                                "level":             "integer",
                                "risk":              "integer",
                                "string":            "string",
-                               "notString":         "notString",
+                               "notString":         "string",
                                "regexp":            "string",
                                "code":              "integer",
                                "textOnly":          "boolean",
-                               "titles":            "boolean"
+                               "titles":            "boolean",
                              },
 
             "Techniques":    {
@@ -87,15 +88,17 @@ optDict = {
                                "timeSec":           "integer",
                                "uCols":             "string",
                                "uChar":             "string",
+                               "uFrom":             "string",
                                "dnsName":           "string",
-                               "secondOrder":       "string"
+                               "secondOrder":       "string",
                              },
 
             "Fingerprint":   {
-                               "extensiveFp":       "boolean"
+                               "extensiveFp":       "boolean",
                              },
 
             "Enumeration":   {
+                               "getAll":            "boolean",
                                "getBanner":         ("boolean", "Banners"),
                                "getCurrentUser":    ("boolean", "Users"),
                                "getCurrentDb":      ("boolean", "Databases"),
@@ -124,23 +127,23 @@ optDict = {
                                "lastChar":          "integer",
                                "query":             "string",
                                "sqlShell":          "boolean",
-                               "sqlFile":           "string"
+                               "sqlFile":           "string",
                              },
 
             "Brute":         {
                                "commonTables":       "boolean",
-                               "commonColumns":      "boolean"
+                               "commonColumns":      "boolean",
                              },
 
             "User-defined function": {
                                "udfInject":         "boolean",
-                               "shLib":             "string"
+                               "shLib":             "string",
                              },
 
             "File system":   {
                                "rFile":             "string",
                                "wFile":             "string",
-                               "dFile":             "string"
+                               "dFile":             "string",
                              },
 
             "Takeover":      {
@@ -151,7 +154,7 @@ optDict = {
                                "osBof":             "boolean",
                                "privEsc":           "boolean",
                                "msfPath":           "string",
-                               "tmpPath":           "string"
+                               "tmpPath":           "string",
                              },
 
             "Windows":       {
@@ -161,7 +164,7 @@ optDict = {
                                "regKey":            "string",
                                "regVal":            "string",
                                "regData":           "string",
-                               "regType":           "string"
+                               "regType":           "string",
                              },
 
             "General":       {
@@ -173,6 +176,7 @@ optDict = {
                                "crawlDepth":        "integer",
                                "csvDel":            "string",
                                "dbmsCred":          "string",
+                               "dumpFormat":        "string",
                                "eta":               "boolean",
                                "flushSession":      "boolean",
                                "forms":             "boolean",
@@ -180,7 +184,7 @@ optDict = {
                                "hexConvert":        "boolean",
                                "oDir":              "string",
                                "parseErrors":       "boolean",
-                               "replicate":         "boolean",
+                               "saveCmdline":       "boolean",
                                "updateAll":         "boolean",
                                "tor":               "boolean",
                                "torPort":           "integer",
@@ -188,16 +192,34 @@ optDict = {
                              },
 
             "Miscellaneous": {
-                               "checkPayload":      "boolean",
+                               "mnemonics":         "string",
+                               "alert":             "string",
+                               "answers":           "string",
+                               "beep":              "boolean",
+                               "checkWaf":          "boolean",
                                "cleanup":           "boolean",
                                "dependencies":      "boolean",
                                "disableColoring":   "boolean",
                                "googlePage":        "integer",
+                               "hpp":               "boolean",
                                "mobile":            "boolean",
                                "pageRank":          "boolean",
+                               "purgeOutput":       "boolean",
                                "smart":             "boolean",
                                "testFilter":        "string",
                                "wizard":            "boolean",
-                               "verbose":           "integer"
+                               "verbose":           "integer",
                              },
+            "Hidden": {
+                               "dummy":             "boolean",
+                               "binaryFields":      "boolean",
+                               "profile":           "boolean",
+                               "cpuThrottle":       "integer",
+                               "forceDns":          "boolean",
+                               "identifyWaf":       "boolean",
+                               "smokeTest":         "boolean",
+                               "liveTest":          "boolean",
+                               "stopFail":          "boolean",
+                               "runCase":           "string",
+                      }
           }

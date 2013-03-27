@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import urllib
 import urllib2
 
-from lib.core.exception import sqlmapConnectionException
+from lib.core.exception import SqlmapConnectionException
 
 class HTTPRangeHandler(urllib2.BaseHandler):
     """
@@ -17,8 +17,8 @@ class HTTPRangeHandler(urllib2.BaseHandler):
     Reference: http://stackoverflow.com/questions/1971240/python-seek-on-remote-file
 
     This was extremely simple. The Range header is a HTTP feature to
-    begin with so all this class does is tell urllib2 that the 
-    "206 Partial Content" reponse from the HTTP server is what we 
+    begin with so all this class does is tell urllib2 that the
+    "206 Partial Content" response from the HTTP server is what we
     expected.
 
     Example:
@@ -47,4 +47,4 @@ class HTTPRangeHandler(urllib2.BaseHandler):
     def http_error_416(self, req, fp, code, msg, hdrs):
         # HTTP's Range Not Satisfiable error
         errMsg = "Invalid range"
-        raise sqlmapConnectionException, errMsg
+        raise SqlmapConnectionException(errMsg)

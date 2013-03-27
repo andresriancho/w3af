@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -16,19 +16,19 @@ __priority__ = PRIORITY.NORMAL
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Adds multiple spaces around SQL keywords
-
-    Example:
-        * Input: UNION SELECT
-        * Output:  UNION   SELECT  
 
     Notes:
         * Useful to bypass very weak and bespoke web application firewalls
           that has poorly written permissive regular expressions
 
     Reference: https://www.owasp.org/images/7/74/Advanced_SQL_Injection.ppt
+
+    >>> random.seed(0)
+    >>> tamper('1 UNION SELECT foobar')
+    '1    UNION     SELECT   foobar'
     """
 
     retVal = payload
@@ -43,7 +43,7 @@ def tamper(payload, headers):
                 words.add(word)
 
         for word in words:
-            retVal = re.sub("(?<=\W)%s(?=[^A-Za-z_(]|\Z)" % word, "%s%s%s" % (' '*random.randrange(1,4), word, ' '*random.randrange(1,4)), retVal)
-            retVal = re.sub("(?<=\W)%s(?=[(])" % word, "%s%s" % (' '*random.randrange(1,4), word), retVal)
+            retVal = re.sub("(?<=\W)%s(?=[^A-Za-z_(]|\Z)" % word, "%s%s%s" % (' ' * random.randrange(1, 4), word, ' ' * random.randrange(1, 4)), retVal)
+            retVal = re.sub("(?<=\W)%s(?=[(])" % word, "%s%s" % (' ' * random.randrange(1, 4), word), retVal)
 
-    return retVal, headers
+    return retVal

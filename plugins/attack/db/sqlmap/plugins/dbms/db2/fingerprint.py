@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 
 from lib.core.common import Backend
 from lib.core.common import Format
-from lib.core.common import randomInt
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -23,7 +22,7 @@ class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.DB2)
 
-    def __versionCheck(self):
+    def _versionCheck(self):
         minor, major = None, None
 
         for version in reversed(xrange(5, 15)):
@@ -47,7 +46,7 @@ class Fingerprint(GenericFingerprint):
             return None
 
     def getFingerprint(self):
-        value  = ""
+        value = ""
         wsOsFp = Format.getOs("web server", kb.headersFp)
 
         if wsOsFp:
@@ -90,14 +89,13 @@ class Fingerprint(GenericFingerprint):
         logMsg = "testing %s" % DBMS.DB2
         logger.info(logMsg)
 
-        randInt = randomInt()
-        result = inject.checkBooleanExpression("%d=(SELECT %d FROM SYSIBM.SYSDUMMY1)" % (randInt, randInt))
+        result = inject.checkBooleanExpression("[RANDNUM]=(SELECT [RANDNUM] FROM SYSIBM.SYSDUMMY1)")
 
         if result:
             logMsg = "confirming %s" % DBMS.DB2
             logger.info(logMsg)
 
-            version = self.__versionCheck()
+            version = self._versionCheck()
 
             if version:
                 Backend.setVersion(version)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -16,7 +16,7 @@ from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
 from lib.core.enums import PLACE
-from lib.core.exception import sqlmapNoneDataException
+from lib.core.exception import SqlmapNoneDataException
 from lib.request import inject
 from lib.techniques.union.use import unionUse
 from plugins.generic.filesystem import Filesystem as GenericFilesystem
@@ -63,7 +63,7 @@ class Filesystem(GenericFilesystem):
                 logger.warn(warnMsg)
                 result = self.nonStackedReadFile(rFile)
             else:
-                raise sqlmapNoneDataException, warnMsg
+                raise SqlmapNoneDataException(warnMsg)
         else:
             length = int(length)
             sustrLen = 1024
@@ -80,7 +80,7 @@ class Filesystem(GenericFilesystem):
 
         return result
 
-    def unionWriteFile(self, wFile, dFile, fileType):
+    def unionWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         logger.debug("encoding file to its hexadecimal string value")
 
         fcEncodedList = self.fileEncode(wFile, "hex", True)
@@ -100,13 +100,13 @@ class Filesystem(GenericFilesystem):
         sqlQuery = "%s INTO DUMPFILE '%s'" % (fcEncodedStr, dFile)
         unionUse(sqlQuery, unpack=False)
 
-        self.askCheckWrittenFile(wFile, dFile, fileType)
-
         warnMsg = "expect junk characters inside the "
         warnMsg += "file as a leftover from UNION query"
         singleTimeWarnMessage(warnMsg)
 
-    def stackedWriteFile(self, wFile, dFile, fileType):
+        return self.askCheckWrittenFile(wFile, dFile, forceCheck)
+
+    def stackedWriteFile(self, wFile, dFile, fileType, forceCheck=False):
         debugMsg = "creating a support table to write the hexadecimal "
         debugMsg += "encoded file to"
         logger.debug(debugMsg)
@@ -133,4 +133,4 @@ class Filesystem(GenericFilesystem):
         # Reference: http://dev.mysql.com/doc/refman/5.1/en/select.html
         inject.goStacked("SELECT %s FROM %s INTO DUMPFILE '%s'" % (self.tblField, self.fileTblName, dFile), silent=True)
 
-        self.askCheckWrittenFile(wFile, dFile, fileType)
+        return self.askCheckWrittenFile(wFile, dFile, forceCheck)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,11 +12,13 @@ from optparse import OptionGroup
 from optparse import OptionParser
 from optparse import SUPPRESS_HELP
 
+from lib.core.common import checkDeprecatedOptions
 from lib.core.common import expandMnemonics
 from lib.core.common import getUnicode
 from lib.core.data import logger
 from lib.core.defaults import defaults
 from lib.core.settings import BASIC_HELP_ITEMS
+from lib.core.settings import DUMMY_URL
 from lib.core.settings import IS_WIN
 from lib.core.settings import MAX_HELP_OPTION_LENGTH
 from lib.core.settings import VERSION_STRING
@@ -36,18 +38,22 @@ def cmdLineParser():
                           action="store_true",
                           help="Show advanced help message and exit")
 
+        parser.add_option("--version", dest="showVersion",
+                          action="store_true",
+                          help="Show version string and exit")
+
         parser.add_option("-v", dest="verbose", type="int",
                           help="Verbosity level: 0-6 (default %d)" % defaults.verbose)
 
         # Target options
         target = OptionGroup(parser, "Target", "At least one of these "
                              "options has to be specified to set the source "
-                             "to get target urls from")
+                             "to get target URLs from")
 
         target.add_option("-d", dest="direct", help="Direct "
                           "connection to the database")
 
-        target.add_option("-u", "--url", dest="url", help="Target url")
+        target.add_option("-u", "--url", dest="url", help="Target URL (e.g. \"www.target.com/vuln.php?id=1\")")
 
         target.add_option("-l", dest="logFile", help="Parse targets from Burp "
                           "or WebScarab proxy logs")
@@ -59,14 +65,14 @@ def cmdLineParser():
                           help="Load HTTP request from a file")
 
         target.add_option("-g", dest="googleDork",
-                          help="Process Google dork results as target urls")
+                          help="Process Google dork results as target URLs")
 
         target.add_option("-c", dest="configFile",
                           help="Load options from a configuration INI file")
 
         # Request options
         request = OptionGroup(parser, "Request", "These options can be used "
-                              "to specify how to connect to the target url")
+                              "to specify how to connect to the target URL")
 
         request.add_option("--data", dest="data",
                            help="Data string to be sent through POST")
@@ -120,7 +126,7 @@ def cmdLineParser():
                                 "key_file,cert_file)")
 
         request.add_option("--proxy", dest="proxy",
-                           help="Use a HTTP proxy to connect to the target url")
+                           help="Use a HTTP proxy to connect to the target URL")
 
         request.add_option("--proxy-cred", dest="pCred",
                            help="HTTP proxy authentication credentials "
@@ -144,10 +150,10 @@ def cmdLineParser():
                            help="Regexp to filter targets from provided proxy log")
 
         request.add_option("--safe-url", dest="safUrl",
-                           help="Url address to visit frequently during testing")
+                           help="URL address to visit frequently during testing")
 
         request.add_option("--safe-freq", dest="saFreq", type="int",
-                           help="Test requests between two visits to a given safe url")
+                           help="Test requests between two visits to a given safe URL")
 
         request.add_option("--skip-urlencode", dest="skipUrlEncode",
                            action="store_true",
@@ -206,9 +212,9 @@ def cmdLineParser():
                              action="store_true",
                              help="Turn off payload casting mechanism")
 
-        injection.add_option("--no-unescape", dest="noUnescape",
+        injection.add_option("--no-escape", dest="noEscape",
                              action="store_true",
-                             help="Turn off string unescaping mechanism")
+                             help="Turn off string escaping mechanism")
 
         injection.add_option("--prefix", dest="prefix",
                              help="Injection payload prefix string")
@@ -267,7 +273,7 @@ def cmdLineParser():
                                  "injection techniques")
 
         techniques.add_option("--technique", dest="tech",
-                              help="SQL injection techniques to test for "
+                              help="SQL injection techniques to use "
                                    "(default \"%s\")" % defaults.tech)
 
         techniques.add_option("--time-sec", dest="timeSec",
@@ -281,11 +287,14 @@ def cmdLineParser():
         techniques.add_option("--union-char", dest="uChar",
                               help="Character to use for bruteforcing number of columns")
 
+        techniques.add_option("--union-from", dest="uFrom",
+                              help="Table to use in FROM part of UNION query SQL injection")
+
         techniques.add_option("--dns-domain", dest="dnsName",
                               help="Domain name used for DNS exfiltration attack")
 
         techniques.add_option("--second-order", dest="secondOrder",
-                             help="Resulting page url searched for second-order "
+                             help="Resulting page URL searched for second-order "
                                   "response")
 
         # Fingerprint options
@@ -301,6 +310,9 @@ def cmdLineParser():
                                   "management system information, structure "
                                   "and data contained in the tables. Moreover "
                                   "you can run your own SQL statements")
+
+        enumeration.add_option("-a", "--all", dest="getAll",
+                               action="store_true", help="Retrieve everything")
 
         enumeration.add_option("-b", "--banner", dest="getBanner",
                                action="store_true", help="Retrieve DBMS banner")
@@ -511,10 +523,13 @@ def cmdLineParser():
 
         # General options
         general = OptionGroup(parser, "General", "These options can be used "
-                             "to set some general working parameters" )
+                             "to set some general working parameters")
 
         #general.add_option("-x", dest="xmlFile",
         #                    help="Dump the data into an XML file")
+
+        general.add_option("-s", dest="sessionFile",
+                            help="Load session from a stored (.sqlite) file")
 
         general.add_option("-t", dest="trafficFile",
                             help="Log all HTTP traffic into a "
@@ -532,7 +547,7 @@ def cmdLineParser():
                                   help="Check to see if Tor is used properly")
 
         general.add_option("--crawl", dest="crawlDepth", type="int",
-                                  help="Crawl the website starting from the target url")
+                                  help="Crawl the website starting from the target URL")
 
         general.add_option("--csv-del", dest="csvDel",
                                   help="Delimiting character used in CSV output "
@@ -540,6 +555,9 @@ def cmdLineParser():
 
         general.add_option("--dbms-cred", dest="dbmsCred",
                             help="DBMS authentication credentials (user:password)")
+
+        general.add_option("--dump-format", dest="dumpFormat",
+                                  help="Format of dumped data (CSV (default), HTML or SQLITE)")
 
         general.add_option("--eta", dest="eta",
                             action="store_true",
@@ -552,7 +570,7 @@ def cmdLineParser():
 
         general.add_option("--forms", dest="forms",
                                   action="store_true",
-                                  help="Parse and test forms on target url")
+                                  help="Parse and test forms on target URL")
 
         general.add_option("--fresh-queries", dest="freshQueries",
                             action="store_true",
@@ -570,10 +588,6 @@ def cmdLineParser():
                                   action="store_true",
                                   help="Parse and display DBMS error messages from responses")
 
-        general.add_option("--replicate", dest="replicate",
-                                  action="store_true",
-                                  help="Replicate dumped data into a sqlite3 database")
-
         general.add_option("--save", dest="saveCmdline",
                             action="store_true",
                             help="Save options to a configuration INI file")
@@ -586,7 +600,7 @@ def cmdLineParser():
                                   help="Set Tor proxy port other than default")
 
         general.add_option("--tor-type", dest="torType",
-                                  help="Set Tor proxy type (HTTP - default, SOCKS4 or SOCKS5)")
+                                  help="Set Tor proxy type (HTTP (default), SOCKS4 or SOCKS5)")
 
         general.add_option("--update", dest="updateAll",
                             action="store_true",
@@ -598,13 +612,18 @@ def cmdLineParser():
         miscellaneous.add_option("-z", dest="mnemonics",
                                help="Use short mnemonics (e.g. \"flu,bat,ban,tec=EU\")")
 
-        miscellaneous.add_option("--check-payload", dest="checkPayload",
-                                  action="store_true",
-                                  help="Offline WAF/IPS/IDS payload detection testing")
+        miscellaneous.add_option("--alert", dest="alert",
+                                  help="Run shell command(s) when SQL injection is found")
+
+        miscellaneous.add_option("--answers", dest="answers",
+                                  help="Set question answers (e.g. \"quit=N,follow=N\")")
+
+        miscellaneous.add_option("--beep", dest="beep", action="store_true",
+                                  help="Make a beep sound when SQL injection is found")
 
         miscellaneous.add_option("--check-waf", dest="checkWaf",
                                   action="store_true",
-                                  help="Check for existence of WAF/IPS/IDS protection")
+                                  help="Heuristically check for WAF/IPS/IDS protection")
 
         miscellaneous.add_option("--cleanup", dest="cleanup",
                                   action="store_true",
@@ -613,7 +632,7 @@ def cmdLineParser():
 
         miscellaneous.add_option("--dependencies", dest="dependencies",
                                   action="store_true",
-                                  help="Check for missing sqlmap dependencies")
+                                  help="Check for missing (non-core) sqlmap dependencies")
 
         miscellaneous.add_option("--disable-coloring", dest="disableColoring",
                                   action="store_true",
@@ -621,6 +640,14 @@ def cmdLineParser():
 
         miscellaneous.add_option("--gpage", dest="googlePage", type="int",
                                   help="Use Google dork results from specified page number")
+
+        miscellaneous.add_option("--hpp", dest="hpp",
+                                  action="store_true",
+                                  help="Use HTTP parameter pollution")
+
+        miscellaneous.add_option("--identify-waf", dest="identifyWaf",
+                                  action="store_true",
+                                  help="Make a through testing for a WAF/IPS/IDS protection")
 
         miscellaneous.add_option("--mobile", dest="mobile",
                                   action="store_true",
@@ -646,10 +673,15 @@ def cmdLineParser():
                                   help="Simple wizard interface for beginner users")
 
         # Hidden and/or experimental options
-        parser.add_option("--beep", dest="beep", action="store_true",
+        parser.add_option("--dummy", dest="dummy", action="store_true",
                           help=SUPPRESS_HELP)
 
+        parser.add_option("--pickled-options", dest="pickledOptions", help=SUPPRESS_HELP)
+
         parser.add_option("--profile", dest="profile", action="store_true",
+                          help=SUPPRESS_HELP)
+
+        parser.add_option("--binary-fields", dest="binaryFields",
                           help=SUPPRESS_HELP)
 
         parser.add_option("--cpu-throttle", dest="cpuThrottle", type="int",
@@ -664,8 +696,10 @@ def cmdLineParser():
         parser.add_option("--live-test", dest="liveTest", action="store_true",
                           help=SUPPRESS_HELP)
 
-        parser.add_option("--run-case", dest="runCase", type="int",
+        parser.add_option("--stop-fail", dest="stopFail", action="store_true",
                           help=SUPPRESS_HELP)
+
+        parser.add_option("--run-case", dest="runCase", help=SUPPRESS_HELP)
 
         parser.add_option_group(target)
         parser.add_option_group(request)
@@ -708,10 +742,15 @@ def cmdLineParser():
         for arg in sys.argv:
             args.append(getUnicode(arg, system=True))
 
+        checkDeprecatedOptions(args)
+
         # Hide non-basic options in basic help case
         for i in xrange(len(sys.argv)):
             if sys.argv[i] == '-hh':
                 sys.argv[i] = '-h'
+            elif sys.argv[i] == '--version':
+                print VERSION_STRING
+                raise SystemExit
             elif sys.argv[i] == '-h':
                 advancedHelp = False
                 for group in parser.option_groups[:]:
@@ -734,10 +773,14 @@ def cmdLineParser():
         # Expand given mnemonic options (e.g. -z "ign,flu,bat")
         for i in xrange(len(sys.argv) - 1):
             if sys.argv[i] == '-z':
-                expandMnemonics(sys.argv[i+1], parser, args)
+                expandMnemonics(sys.argv[i + 1], parser, args)
+
+        if args.dummy:
+            args.url = args.url or DUMMY_URL
 
         if not any((args.direct, args.url, args.logFile, args.bulkFile, args.googleDork, args.configFile, \
-            args.requestFile, args.updateAll, args.smokeTest, args.liveTest, args.wizard, args.dependencies, args.purgeOutput)):
+            args.requestFile, args.updateAll, args.smokeTest, args.liveTest, args.wizard, args.dependencies, \
+            args.purgeOutput, args.pickledOptions)):
             errMsg = "missing a mandatory option (-d, -u, -l, -m, -r, -g, -c, --wizard, --update, --purge-output or --dependencies), "
             errMsg += "use -h for basic or -hh for advanced help"
             parser.error(errMsg)

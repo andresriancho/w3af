@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -17,13 +17,9 @@ __priority__ = PRIORITY.HIGHEST
 def dependencies():
     singleTimeWarnMessage("tamper script '%s' is unlikely to work against %s" % (os.path.basename(__file__).split(".")[0], DBMS.PGSQL))
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces all occurances of operator equal ('=') with operator 'LIKE'
-
-    Example:
-        * Input: SELECT * FROM users WHERE id=1
-        * Output: SELECT * FROM users WHERE id LIKE 1
 
     Tested against:
         * Microsoft SQL Server 2005
@@ -34,6 +30,9 @@ def tamper(payload, headers):
           filter the equal character ('=')
         * The LIKE operator is SQL standard. Hence, this tamper script
           should work against all (?) databases
+
+    >>> tamper('SELECT * FROM users WHERE id=1')
+    'SELECT * FROM users WHERE id LIKE 1'
     """
 
     def process(match):
@@ -47,4 +46,4 @@ def tamper(payload, headers):
     if payload:
         retVal = re.sub(r"\s*=\s*", lambda match: process(match), retVal)
 
-    return retVal, headers
+    return retVal

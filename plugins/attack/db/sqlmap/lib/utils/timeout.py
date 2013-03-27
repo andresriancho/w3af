@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import threading
 
 from lib.core.data import logger
+from lib.core.enums import CUSTOM_LOGGING
 
 def timeout(func, args=(), kwargs={}, duration=1, default=None):
     class InterruptableThread(threading.Thread):
@@ -19,7 +20,7 @@ def timeout(func, args=(), kwargs={}, duration=1, default=None):
             try:
                 self.result = func(*args, **kwargs)
             except Exception, msg:
-                logger.log(7, msg)
+                logger.log(CUSTOM_LOGGING.TRAFFIC_IN, msg)
                 self.result = default
 
     thread = InterruptableThread()

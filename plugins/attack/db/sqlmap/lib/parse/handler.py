@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -29,7 +29,7 @@ class FingerprintHandler(ContentHandler):
     def _feedInfo(self, key, value):
         value = sanitizeStr(value)
 
-        if value in ( None, "None" ):
+        if value in (None, "None"):
             return
 
         if key == "dbmsVersion":
@@ -44,7 +44,7 @@ class FingerprintHandler(ContentHandler):
     def startElement(self, name, attrs):
         if name == "regexp":
             self._regexp = sanitizeStr(attrs.get("value"))
-            _ = re.match("\A[A-Za-z0-9]+", self._regexp) # minor trick avoiding compiling of large amount of regexes
+            _ = re.match("\A[A-Za-z0-9]+", self._regexp)  # minor trick avoiding compiling of large amount of regexes
 
             if _ and _.group(0).lower() in self._banner.lower() or not _:
                 self._match = re.search(self._regexp, self._banner, re.I | re.M)

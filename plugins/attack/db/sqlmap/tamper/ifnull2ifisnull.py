@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,13 +12,9 @@ __priority__ = PRIORITY.HIGHEST
 def dependencies():
     pass
 
-def tamper(payload, headers):
+def tamper(payload, **kwargs):
     """
     Replaces instances like 'IFNULL(A, B)' with 'IF(ISNULL(A), B, A)'
-
-    Example:
-        * Input: IFNULL(1, 2)
-        * Output: IF(ISNULL(1), 2, 1)
 
     Requirement:
         * MySQL
@@ -31,6 +27,9 @@ def tamper(payload, headers):
     Notes:
         * Useful to bypass very weak and bespoke web application firewalls
           that filter the IFNULL() function
+
+    >>> tamper('IFNULL(1, 2)')
+    'IF(ISNULL(1),2,1)'
     """
 
     if payload and payload.find("IFNULL") > -1:
@@ -55,10 +54,10 @@ def tamper(payload, headers):
 
             if comma and end:
                 _ = payload[index + len("IFNULL("):comma]
-                __ = payload[comma + 1:end]
+                __ = payload[comma + 1:end].lstrip()
                 newVal = "IF(ISNULL(%s),%s,%s)" % (_, __, _)
-                payload = payload[:index] + newVal + payload[end+1:]
+                payload = payload[:index] + newVal + payload[end + 1:]
             else:
                 break
 
-    return payload, headers
+    return payload

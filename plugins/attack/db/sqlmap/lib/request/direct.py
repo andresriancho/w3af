@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -11,6 +11,7 @@ from extra.safe2bin.safe2bin import safecharencode
 from lib.core.agent import agent
 from lib.core.common import Backend
 from lib.core.common import calculateDeltaSeconds
+from lib.core.common import extractExpectedValue
 from lib.core.common import getCurrentThreadData
 from lib.core.common import getUnicode
 from lib.core.common import hashDBRetrieve
@@ -20,7 +21,9 @@ from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.dicts import SQL_STATEMENTS
+from lib.core.enums import CUSTOM_LOGGING
 from lib.core.enums import DBMS
+from lib.core.enums import EXPECTED
 from lib.core.settings import UNICODE_ENCODING
 from lib.utils.timeout import timeout
 
@@ -40,9 +43,9 @@ def direct(query, content=True):
                 break
 
     if select and not query.upper().startswith("SELECT "):
-        query = "SELECT " + query
+        query = "SELECT %s" % query
 
-    logger.log(9, query)
+    logger.log(CUSTOM_LOGGING.PAYLOAD, query)
 
     output = hashDBRetrieve(query, True, True)
     start = time.time()
@@ -62,16 +65,9 @@ def direct(query, content=True):
     elif content:
         if output and isListLike(output):
             if len(output[0]) == 1:
-                if len(output) > 1:
-                    output = map(lambda _: _[0], output)
-                else:
-                    output = output[0][0]
+                output = [_[0] for _ in output]
 
         retVal = getUnicode(output, noneToNull=True)
         return safecharencode(retVal) if kb.safeCharEncode else retVal
     else:
-        for line in output:
-            if line[0] in (1, -1):
-                return True
-            else:
-                return False
+        return extractExpectedValue(output, EXPECTED.BOOL)

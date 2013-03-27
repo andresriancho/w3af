@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 """
-$Id$
-
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -33,4 +31,4 @@ class DB2Map(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeov
         Miscellaneous.__init__(self)
         Takeover.__init__(self)
 
-    unescaper[DBMS.DB2] = Syntax.unescape
+    unescaper[DBMS.DB2] = Syntax.escape

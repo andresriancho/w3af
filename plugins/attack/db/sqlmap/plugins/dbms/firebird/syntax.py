@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2012 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.common import isDBMSVersionAtLeast
-from lib.core.exception import sqlmapSyntaxException
 from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
@@ -14,59 +13,24 @@ class Syntax(GenericSyntax):
         GenericSyntax.__init__(self)
 
     @staticmethod
-    def unescape(expression, quote=True):
-        if isDBMSVersionAtLeast('2.1'):
-            if quote:
-                while True:
-                    index = expression.find("'")
-                    if index == -1:
-                        break
+    def escape(expression, quote=True):
+        """
+        >>> Backend.setVersion('2.0')
+        ['2.0']
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        "SELECT 'abcdefgh' FROM foobar"
+        >>> Backend.setVersion('2.1')
+        ['2.1']
+        >>> Syntax.escape("SELECT 'abcdefgh' FROM foobar")
+        'SELECT ASCII_CHAR(97)||ASCII_CHAR(98)||ASCII_CHAR(99)||ASCII_CHAR(100)||ASCII_CHAR(101)||ASCII_CHAR(102)||ASCII_CHAR(103)||ASCII_CHAR(104) FROM foobar'
+        """
 
-                    firstIndex = index + 1
-                    index = expression[firstIndex:].find("'")
+        def escaper(value):
+            return "||".join("ASCII_CHAR(%d)" % ord(_) for _ in value)
 
-                    if index == -1:
-                        raise sqlmapSyntaxException, "Unenclosed ' in '%s'" % expression
+        retVal = expression
 
-                    lastIndex = firstIndex + index
-                    old = "'%s'" % expression[firstIndex:lastIndex]
-                    unescaped = ""
+        if isDBMSVersionAtLeast("2.1"):
+            retVal = Syntax._escape(expression, quote, escaper)
 
-                    for i in xrange(firstIndex, lastIndex):
-                        unescaped += "ASCII_CHAR(%d)" % (ord(expression[i]))
-                        if i < lastIndex - 1:
-                            unescaped += "||"
-
-                    expression = expression.replace(old, unescaped)
-            else:
-                unescaped = "".join("ASCII_CHAR(%d)||" % ord(c) for c in expression)
-                if unescaped[-1] == "||":
-                    unescaped = unescaped[:-1]
-
-                expression = unescaped
-
-        return expression
-
-    @staticmethod
-    def escape(expression):
-        while True:
-            index = expression.find("ASCII_CHAR(")
-            if index == -1:
-                break
-
-            firstIndex = index
-            index = expression[firstIndex:].find(")")
-
-            if index == -1:
-                raise sqlmapSyntaxException, "Unenclosed ) in '%s'" % expression
-
-            lastIndex = firstIndex + index + 1
-            old = expression[firstIndex:lastIndex]
-            oldUpper = old.upper()
-            oldUpper = oldUpper.lstrip("ASCII_CHAR(").rstrip(")")
-            oldUpper = oldUpper.split("||")
-
-            escaped = "'%s'" % "".join(chr(int(char)) for char in oldUpper)
-            expression = expression.replace(old, escaped).replace("'||'", "")
-
-        return expression
+        return retVal
