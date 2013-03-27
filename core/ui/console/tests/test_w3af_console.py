@@ -27,6 +27,7 @@ import os
 import time
 
 from core.controllers.misc.which import which
+from core.data.db.startup_cfg import StartUpConfig
 
 
 def non_block_read(output):
@@ -53,7 +54,11 @@ class TestW3afConsole(unittest.TestCase):
             self.assertTrue(False, 'Error in w3af_console code "%s"' % se)
 
     def test_get_prompt(self):
-        
+        # We want to get the prompt, not a disclaimer message
+        startup_cfg = StartUpConfig()
+        startup_cfg.accepted_disclaimer = True
+        startup_cfg.save()
+
         # The easy way to do this was to simply pass 'python' to Popen
         # but now that we want to run the tests in virtualenv, we need to
         # find the "correct" / "virtual" python executable using which and
