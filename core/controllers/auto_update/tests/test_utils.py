@@ -43,5 +43,16 @@ class TestGitUtils(unittest.TestCase):
         self.assertRaises(git.exc.InvalidGitRepositoryError, get_latest_commit, '/etc/')
 
     def test_get_current_branch(self):
-        self.assertIn(get_current_branch(), ('threading2', 'master'))
+        # For some strange reason jenkins creates a branch called
+        # jenkins-<job name> during the build, which makes this test FAIL
+        # if we don't take that into account
+        
+        current_branch = get_current_branch()
+        
+        for branch_name in ('threading2', 'master', 'jenkins-'):
+            if current_branch.startswith(branch_name):
+                break
+        else:
+            self.assertTrue(False, 'Unknown branch name "%s".' % current_branch)
+        
         
