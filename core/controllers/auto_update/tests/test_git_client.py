@@ -32,7 +32,14 @@ class TestGitClient(unittest.TestCase):
     
     def test_get_URL(self):
         client = GitClient(W3AF_LOCAL_PATH)
-        self.assertEqual(client.URL, 'git@github.com:andresriancho/w3af.git')
+        
+        # https://github.com/andresriancho/w3af/ provides a list of all the
+        # URLs which can be used to clone the repo
+        REPO_URLS = ('git@github.com:andresriancho/w3af.git',
+                     'https://github.com/andresriancho/w3af.git',
+                     'git://github.com/andresriancho/w3af.git')
+        
+        self.assertIn(client.URL, REPO_URLS)
     
     def test_get_local_head_id(self):
         client = GitClient(W3AF_LOCAL_PATH)
