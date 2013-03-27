@@ -69,6 +69,8 @@ class rfi(AuditPlugin):
 
         # Internal variables
         self._error_reported = False
+        # FIXME: self._vulns and self._report_vulns are not thread-safe
+        self._vulns = []
 
         # User configured parameters
         self._listen_port = ports.REMOTEFILEINCLUDE
@@ -86,15 +88,67 @@ class rfi(AuditPlugin):
         if self._use_w3af_site:
             self._w3af_site_test_inclusion(freq, orig_response)
 
-        # Sanity check
-        if self._correctly_configured():
-            # 2- create a request that will include a file from a local web server
-            self._local_test_inclusion(freq, orig_response)
-        else:
+        # Sanity check required for #2 technique
+        if not self._correctly_configured() and not self._error_reported:
             # Report error to the user only once
-            if not self._error_reported:
-                self._error_reported = True
-                om.out.error(self.CONFIG_ERROR_MSG)
+            self._error_reported = True
+            om.out.error(self.CONFIG_ERROR_MSG)
+            return
+        
+        # 2- create a request that will include a file from a local web server
+        self._local_test_inclusion(freq, orig_response)
+        
+        # Now that we've captured all vulnerabilities, report the ones with
+        # higher risk
+        self._report_vulns()
+
+    def _report_vulns(self):
+        '''
+        There was a problem with threads and self.kb_append_uniq which in some
+        cases was hiding a high risk vulnerability. The issue was like this:
+            
+            * _analyze_result was called with response that contained PHP error
+            
+            * LOW risk vulnerability was kb_append_uniq'ed
+            
+            * _analyze_result was called with response that contained execution
+              result after successful RFI, vulnerability was detected and 
+              kb_append_uniq was called; but the vulnerability wasn't added to
+              the KB since the LOW risk vulnerability was already there for the
+              same (URL, param) tuple.
+        
+        So now we store stuff in self._vulns analyze them after all vulns are
+        found and store the ones with highest risk.
+        '''
+        sorted_vulns = {}
+        
+        for v in self._vulns:
+            if (v.get_url(), v.get_var()) in sorted_vulns:
+                sorted_vulns[(v.get_url(), v.get_var())].append(v)
+            else:
+                sorted_vulns[(v.get_url(), v.get_var())] = [v,]
+        
+        #FIXME: This should be done somewhere else
+        rank = {severity.INFORMATION: 0,
+                severity.LOW: 1,
+                severity.MEDIUM: 2,
+                severity.HIGH:3}
+        
+        # Get the one with the higher severity and report that one
+        for _, vulns_for_url_var in sorted_vulns.iteritems():
+            
+            highest_severity = -1
+            highest_severity_vuln = None
+            
+            for vuln in vulns_for_url_var:
+                this_vuln_severity = rank.get(vuln.get_severity())
+                if this_vuln_severity > highest_severity:
+                    highest_severity_vuln = vuln
+                
+                # Don't keep the vulnerability in memory
+                self._vulns.remove(vuln)
+                
+            self.kb_append_uniq(self, 'rfi', highest_severity_vuln)
 
     def _correctly_configured(self):
         '''
@@ -143,10 +197,11 @@ class rfi(AuditPlugin):
         is_target_priv = is_private_site(freq.get_url().get_domain())
 
         if (is_listen_priv and is_target_priv) or \
-                not (is_listen_priv or is_target_priv):
-            om.out.debug(
-                'RFI test using local web server for URL: ' + freq.get_url())
-            om.out.debug('w3af is running a webserver')
+        not (is_listen_priv or is_target_priv):
+            
+            msg = 'RFI using local web server for URL: %s' % freq.get_url() 
+            om.out.debug(msg)
+            
             try:
                 # Create file for remote inclusion
                 php_jsp_code, rfi_data = self._create_file()
@@ -250,10 +305,10 @@ class rfi(AuditPlugin):
                                  severity.HIGH, response.id, self.get_name(),
                                  mutant)
 
-            self.kb_append_uniq(self, 'rfi', v)
+            self._vulns.append(v)
 
         elif rfi_data.rfi_result_part_1 in response \
-                and rfi_data.rfi_result_part_2 in response:
+        and rfi_data.rfi_result_part_2 in response:
             # This means that both parts ARE in the response body but the
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
@@ -264,7 +319,7 @@ class rfi(AuditPlugin):
                                  severity.MEDIUM, response.id, self.get_name(),
                                  mutant)
 
-            self.kb_append_uniq(self, 'rfi', v)
+            self._vulns.append(v)
 
         else:
             #
@@ -282,7 +337,7 @@ class rfi(AuditPlugin):
                                          self.get_name(), mutant)
 
                     v.add_to_highlight(error)
-                    self.kb_append_uniq(self, 'rfi', v)
+                    self._vulns.append(v)
                     break
 
     def _create_file(self):
