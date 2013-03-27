@@ -350,17 +350,16 @@ class URL(DiskItem):
 
         So, to sum up, this method takes an URL, and returns a normalized
         URL. For the example we were talking before, it will return:
-            'http://abc/f00.b4r'
+            http://abc/f00.b4r
         instead of the normal response from urlparser.urljoin:
-            'http://abc/../f00.b4r'
+            http://abc/../f00.b4r
 
         Added later: Before performing anything, I also normalize the
-        net location part of the URL.
-        In some web apps we see things like:
-            - http://host.tld:80/foo/bar
+        net location part of the URL. In some web apps we see things like:
+            http://host.tld:80/foo/bar
 
         As you may have noticed, the ":80" is redundant, and what's even
-        worse, it can confuse w3af because in most cases
+        worse, it can confuse w3af when performing string comparisons:
         http://host.tld:80/foo/bar != http://host.tld/foo/bar , and
         http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
