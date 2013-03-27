@@ -108,7 +108,8 @@ class TestTextFile(PluginTest):
         return file_vulns
 
     def tearDown(self):
-        try:
-            os.remove(self.OUTPUT_FILE)
-        except:
-            pass
+        for f in (self.OUTPUT_FILE, self.OUTPUT_HTTP_FILE):
+            try:
+                os.remove(f)
+            except:
+                pass
