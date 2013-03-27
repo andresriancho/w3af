@@ -20,9 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import poplib
 
+from nose.plugins.attrib import attr
 from plugins.tests.helper import PluginTest, PluginConfig
 
 
+@attr('internet')
 class TestEmailReport(PluginTest):
 
     xss_url = 'http://moth/w3af/audit/xss/'
