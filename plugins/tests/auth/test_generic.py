@@ -101,6 +101,7 @@ class TestGeneric(PluginTest):
                           'Cross site scripting vulnerability')
         self.assertEquals(vuln.get_var(), 'section')
 
+    @attr('internet')
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else
