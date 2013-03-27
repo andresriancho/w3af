@@ -50,5 +50,5 @@ class TestSQLMapUpdate(unittest.TestCase):
 
         msg = msg % (maintain_str, setup_str)
         
-        self.assertLess(days, -1, msg)
+        self.assertLess(days, 30, msg)
         
