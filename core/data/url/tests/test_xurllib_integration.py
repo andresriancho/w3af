@@ -66,7 +66,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertIn('You are admin from MOTH/', http_response.body)
 
     def test_gzip(self):
-        url = URL('http://www.google.com.ar/')
+        url = URL('http://moth/')
         res = self.uri_opener.GET(url, cache=False)
         headers = res.get_headers()
         content_encoding, _ = headers.iget('content-encoding', '')
