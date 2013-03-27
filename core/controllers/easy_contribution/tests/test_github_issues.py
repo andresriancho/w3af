@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from github import Github
+from nose.plugins.attrib import attr
 
 from core.controllers.easy_contribution.github_issues import GithubIssues
 from core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
 
+@attr('internet')
 class TestGithubIssues(unittest.TestCase):
 
     def test_report(self):

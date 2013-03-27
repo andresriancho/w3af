@@ -32,6 +32,7 @@ from core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
 
 @attr('moth')
+@attr('internet')
 class TestConsoleBugReport(ConsoleTestHelper):
     '''
     Run a scan from the console UI (which fails with a bug) and report it to
