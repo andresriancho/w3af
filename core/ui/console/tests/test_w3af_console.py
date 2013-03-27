@@ -65,12 +65,13 @@ class TestW3afConsole(unittest.TestCase):
                              stdin=subprocess.PIPE)
         
         # Wait for the subprocess to start and the prompt to appear
-        time.sleep(10)
+        time.sleep(15)
         
         expected_prompt = 'w3af>>>'
         prompt = non_block_read(p.stdout)
         
-        msg = 'Failed to find %s in %s.' % (expected_prompt, prompt)
+        msg = 'Failed to find "%s" in "%s" using "%s" as python executable.'
+        msg = msg % (expected_prompt, prompt, python_executable)
         self.assertTrue(prompt.startswith(expected_prompt), msg)
         
         p.kill()
