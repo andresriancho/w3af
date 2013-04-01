@@ -50,10 +50,12 @@ class dir_bruter(CrawlPlugin):
         self._dir_list = os.path.join('plugins', 'crawl', 'dir_bruter',
                                       'common_dirs_small.db')
         self._be_recursive = True
+        self._end_slash = True
 
         # Internal variables
         self._exec = True
         self._already_tested = DiskSet()
+        self._end = { True:'/', False:'' }
 
     def crawl(self, fuzzable_request):
         '''
@@ -66,6 +68,7 @@ class dir_bruter(CrawlPlugin):
             raise w3afRunOnce()
         else:
             domain_path = fuzzable_request.get_url().get_domain_path()
+            self._slash = self._end[self._end_slash]
 
             # Should I run more than once?
             if not self._be_recursive:
@@ -88,7 +91,7 @@ class dir_bruter(CrawlPlugin):
             # ignore comments and empty lines
             if directory_name and not directory_name.startswith('#'):
                 try:
-                    dir_url = base_path.url_join(directory_name + '/')
+                    dir_url = base_path.url_join(directory_name + self._slash)
                 except ValueError, ve:
                     msg = 'The "%s" line at "%s" generated an invalid URL: %s'
                     om.out.debug(msg % (directory_name, self._dir_list, ve))
@@ -112,7 +115,7 @@ class dir_bruter(CrawlPlugin):
             #   Looking good, but lets see if this is a false positive
             #   or not...
             #
-            dir_url = base_path.url_join(directory_name + rand_alnum(5) + '/')
+            dir_url = base_path.url_join(directory_name + rand_alnum(5) + self._slash)
 
             invalid_http_response = self._uri_opener.GET(dir_url,
                                                          cache=False)
@@ -166,6 +169,11 @@ class dir_bruter(CrawlPlugin):
         o = opt_factory('be_recursive', self._be_recursive, d, BOOL, help=h)
         ol.add(o)
 
+        d = 'If set to True, this plugin will bruteforce directories adding a'\
+            ' "/" at the end of each word. It is usefull for bruteforce file.'
+        o = opt_factory('end_slash', self._end_slash, d, BOOL)
+        ol.add(o)
+
         return ol
 
     def set_options(self, option_list):
@@ -178,6 +186,7 @@ class dir_bruter(CrawlPlugin):
         '''
         self._dir_list = option_list['wordlist'].get_value()
         self._be_recursive = option_list['be_recursive'].get_value()
+        self._end_slash = option_list['end_slash'].get_value()
 
     def get_long_desc(self):
         '''
