@@ -1,5 +1,5 @@
 '''
-dir_bruter.py
+dir_file_bruter.py
 
 Copyright 2009 Jon Rose
 
@@ -36,9 +36,9 @@ from core.data.fuzzer.utils import rand_alnum
 from core.data.db.disk_set import DiskSet
 
 
-class dir_bruter(CrawlPlugin):
+class dir_file_bruter(CrawlPlugin):
     '''
-    Finds Web server directories by bruteforcing.
+    Finds Web server directories and files by bruteforcing.
 
     :author: Jon Rose ( jrose@owasp.org )
     :author: Andres Riancho ( andres@bonsai-sec.com )
@@ -47,9 +47,14 @@ class dir_bruter(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # User configured parameters
-        self._dir_list = os.path.join('plugins', 'crawl', 'dir_bruter',
+        self._dir_list = os.path.join('plugins', 'crawl', 'dir_file_bruter',
                                       'common_dirs_small.db')
-        self._be_recursive = True
+        self._file_list = os.path.join('plugins', 'crawl', 'dir_file_bruter',
+                                      'common_files_small.db')
+
+        self._bf_directories = True
+        self._bf_files = False
+        self._be_recursive = False
 
         # Internal variables
         self._exec = True
@@ -77,23 +82,42 @@ class dir_bruter(CrawlPlugin):
 
     def _dir_name_generator(self, base_path):
         '''
-        Simple generator that returns the names of the directories to test. It
-        extracts the information from the user configured wordlist parameter.
+        Simple generator that returns the names of the directories and files to test.
+        It extracts the information from the user configured wordlist parameter.
 
-        @yields: (A string with the directory name, a URL object with the dir name)
+        @yields: (A string with the directory or file name, a URL object with the dir or file name)
         '''
-        for directory_name in file(self._dir_list):
-            directory_name = directory_name.strip()
+        if self._bf_directories:
+            for directory_name in file(self._dir_list):
+                directory_name = directory_name.strip()
 
-            # ignore comments and empty lines
-            if directory_name and not directory_name.startswith('#'):
-                try:
-                    dir_url = base_path.url_join(directory_name + '/')
-                except ValueError, ve:
-                    msg = 'The "%s" line at "%s" generated an invalid URL: %s'
-                    om.out.debug(msg % (directory_name, self._dir_list, ve))
-                else:
-                    yield directory_name, dir_url
+                # ignore comments and empty lines
+                if directory_name and not directory_name.startswith('#'):
+                    try:
+                        dir_url = base_path.url_join(directory_name + '/')
+                    except ValueError, ve:
+                        msg = 'The "%s" line at "%s" generated an ' \
+                              'invalid URL: %s'
+                        om.out.debug(msg % (directory_name, self._dir_list, ve))
+                    else:
+                        yield directory_name, dir_url
+
+        if self._bf_files:
+            for file_name in file(self._file_list):
+                file_name = file_name.strip()
+
+                # ignore comments and empty lines
+                if file_name and not file_name.startswith('#'):
+                    try:
+                        dir_url = base_path.url_join(file_name)
+                    except ValueError, ve:
+                        msg = 'The "%s" line at "%s" generated an ' \
+                              'invalid URL: %s'
+                        om.out.debug(msg % (file_name, self._file_list, ve))
+                    else:
+                        yield file_name, dir_url
+
+
 
     def _send_and_check(self, base_path, (directory_name, dir_url)):
         '''
@@ -125,8 +149,8 @@ class dir_bruter(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(http_response):
                     self.output_queue.put(fr)
 
-                msg = 'Directory bruteforcer plugin found directory "%s"'\
-                      ' with HTTP response code %s and Content-Length: %s.'\
+                msg = 'dir_file_brute plugin found %s with HTTP response ' \
+                      'code %s and Content-Length: %s.' \
                 
                 om.out.information(msg % (http_response.get_url(),
                                           http_response.get_code(),
@@ -157,7 +181,19 @@ class dir_bruter(CrawlPlugin):
         ol = OptionList()
 
         d = 'Wordlist to use in directory bruteforcing process.'
-        o = opt_factory('wordlist', self._dir_list, d, INPUT_FILE)
+        o = opt_factory('dir_wordlist', self._dir_list, d, INPUT_FILE)
+        ol.add(o)
+
+        d = 'Wordlist to use in file bruteforcing process.'
+        o = opt_factory('file_wordlist', self._file_list, d, INPUT_FILE)
+        ol.add(o)
+
+        d = 'If set to True, this plugin will bruteforce directories.'
+        o = opt_factory('bf_directories', self._bf_directories, d, BOOL)
+        ol.add(o)
+
+        d = 'If set to True, this plugin will bruteforce files.'
+        o = opt_factory('bf_files', self._bf_files, d, BOOL)
         ol.add(o)
 
         d = 'If set to True, this plugin will bruteforce all directories, not'\
@@ -176,7 +212,10 @@ class dir_bruter(CrawlPlugin):
         :param OptionList: A dictionary with the options for the plugin.
         :return: No value is returned.
         '''
-        self._dir_list = option_list['wordlist'].get_value()
+        self._dir_list = option_list['dir_wordlist'].get_value()
+        self._file_list = option_list['file_wordlist'].get_value()
+        self._bf_directories = option_list['bf_directories'].get_value()
+        self._bf_files = option_list['bf_files'].get_value()
         self._be_recursive = option_list['be_recursive'].get_value()
 
     def get_long_desc(self):
@@ -184,15 +223,18 @@ class dir_bruter(CrawlPlugin):
         :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds directories on a web server by brute-forcing their
-        names using a wordlist.
+        This plugin finds directories and files on a web server by brute-forcing 
+        their names using a wordlist.
 
         Given the large amount of time that this plugin can consume, by default,
-        it will only try to identify directories in the web root ("/"), ignoring
-        the path that is sent as its input.
+        it will only try to identify directories in the current web resource, 
+        ignoring the path that is sent as its input.
 
-        Two configurable parameters exist:
-            - wordlist: The wordlist to be used in the directory bruteforce process.
+        Five configurable parameters exist:
+            - dir_wordlist: The wordlist to be used in the directory bruteforce process.
+            - file_wordlist: The wordlist to be used in the file bruteforce process.
+            - bf_directories: If set to True, this plugin will bruteforce directories.
+            - bf_files: If set to True, this plugin will bruteforce files.
             - be_recursive: If set to True, this plugin will bruteforce all
                             directories, not only the root directory.
         '''
