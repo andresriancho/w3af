@@ -145,6 +145,7 @@ class PluginConfig(object):
     LIST = 'list'
     INT = 'integer'
     URL = 'url'
+    INPUT_FILE = 'input_file'
 
     def __init__(self, name, *opts):
         self._name = name
