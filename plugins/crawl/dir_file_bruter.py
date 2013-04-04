@@ -42,6 +42,7 @@ class dir_file_bruter(CrawlPlugin):
 
     :author: Jon Rose ( jrose@owasp.org )
     :author: Andres Riancho ( andres@bonsai-sec.com )
+    :author: Tomas Velazquez
     '''
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -82,10 +83,12 @@ class dir_file_bruter(CrawlPlugin):
 
     def _dir_name_generator(self, base_path):
         '''
-        Simple generator that returns the names of the directories and files to test.
-        It extracts the information from the user configured wordlist parameter.
+        Simple generator that returns the names of the directories and files to
+        test. It extracts the information from the user configured wordlist
+        parameter.
 
-        @yields: (A string with the directory or file name, a URL object with the dir or file name)
+        @yields: (A string with the directory or file name,
+                  a URL object with the dir or file name)
         '''
         if self._bf_directories:
             for directory_name in file(self._dir_list):
@@ -118,7 +121,6 @@ class dir_file_bruter(CrawlPlugin):
                         yield file_name, dir_url
 
 
-
     def _send_and_check(self, base_path, (directory_name, dir_url)):
         '''
         Performs a GET and verifies that the response is not a 404.
@@ -149,7 +151,7 @@ class dir_file_bruter(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(http_response):
                     self.output_queue.put(fr)
 
-                msg = 'dir_file_brute plugin found %s with HTTP response ' \
+                msg = 'dir_file_brute plugin found "%s" with HTTP response ' \
                       'code %s and Content-Length: %s.' \
                 
                 om.out.information(msg % (http_response.get_url(),
@@ -198,7 +200,8 @@ class dir_file_bruter(CrawlPlugin):
 
         d = 'If set to True, this plugin will bruteforce all directories, not'\
             ' only the root directory.'
-        h = 'WARNING: Enabling this will make the plugin send LOTS of requests.'
+        h = 'WARNING: Enabling this will make the plugin send tens of thousands'\
+            ' of requests.'
         o = opt_factory('be_recursive', self._be_recursive, d, BOOL, help=h)
         ol.add(o)
 
