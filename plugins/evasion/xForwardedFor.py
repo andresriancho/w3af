@@ -7,7 +7,18 @@ from core.data.options.optionList import optionList
 
 class xForwardedFor(baseEvasionPlugin):
     '''
-    Add a X-Forwarded-For field to the request
+    This Plugin adds a X-Forwarded-For header field to every request (except it already has one).
+    It generates a new random IP for every request.
+    The Plugin can be handy if the target has some kind of "one request per host"-feature
+
+    Example:
+    if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
+           $ip = explore(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
+    } else {
+           $ip = $_SERVER['REMOTE_ADDR'];
+    }
+
+
     @author: m3tamantra (m3tamantra@gmail.com )
     '''
 
