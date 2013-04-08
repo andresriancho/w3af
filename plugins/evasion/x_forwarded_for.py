@@ -28,13 +28,9 @@ class x_forwarded_for(EvasionPlugin):
         otherwise the plugin could generate false negatives
         (scan #1 finds bug because of some specific IP it's sent in the header; 
         and then scan #2 doesn't send the same IP and the bug is not found).
-        
-        TODO: I think this is still not working right.
-              http://pastebin.com/rfXktADV  => scan 1
-              http://pastebin.com/dVK17yEt  => scan 2
-              Maybe I shoulden't use random at all and just to it with a counter variable?
         '''
-        random.seed(666)
+        self.random = random.Random()
+        self.random.seed(666)
         
     def modify_request(self, request):
         '''
@@ -47,7 +43,7 @@ class x_forwarded_for(EvasionPlugin):
     def get_random_ip(self):
         ret_ip = ''
         for _ in range(4):
-            ret_ip += '%d.'%(random.randint(1, 254))
+            ret_ip += '%d.'%(self.random.randint(1, 254))
         return ret_ip[:-1]
     
     def get_options(self):
