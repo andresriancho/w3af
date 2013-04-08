@@ -76,6 +76,7 @@ class sqli(AuditPlugin):
         # ORACLE
         (r'(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE),
         (r'Microsoft OLE DB Provider for Oracle', dbms.ORACLE),
+        (r'wrong number or types', dbms.ORACLE),
         # POSTGRE
         (r'PostgreSQL query failed:', dbms.POSTGRE),
         (r'supplied argument is not a valid PostgreSQL result', dbms.POSTGRE),
