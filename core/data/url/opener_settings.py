@@ -410,10 +410,12 @@ class OpenerSettings(Configurable):
         :return: A list of option objects for this plugin.
         '''
         d1 = 'The timeout for connections to the HTTP server'
-        h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
+        h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet'\
+             ' connections.'
         o1 = opt_factory('timeout', cfg.get('timeout'), d1, 'integer', help=h1)
 
-        d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
+        d2 = 'Set the headers filename. This file has additional headers which'\
+             ' are added to each request.'
         o2 = opt_factory('headers_file', cfg.get('headers_file'), d2, 'string')
 
         d3 = 'Set the basic authentication username for HTTP requests'
@@ -425,13 +427,14 @@ class OpenerSettings(Configurable):
             'basic_auth_passwd'), d4, 'string', tabid='Basic HTTP Authentication')
 
         d5 = 'Set the basic authentication domain for HTTP requests'
-        h5 = 'This configures on which requests to send the authentication settings configured'
-        h5 += ' in basic_auth_passwd and basic_auth_user. If you are unsure, just set it to the'
-        h5 += ' target domain name.'
+        h5 = 'This configures on which requests to send the authentication'\
+             ' settings configured in basic_auth_passwd and basic_auth_user.'\
+             ' If you are unsure, just set it to the target domain name.'
         o5 = opt_factory('basic_auth_domain', cfg.get('basic_auth_domain'), d5,
                          'string', help=h5, tabid='Basic HTTP Authentication')
 
-        d6a = 'Set the NTLM authentication domain (the windows domain name) for HTTP requests'
+        d6a = 'Set the NTLM authentication domain (the windows domain name)'\
+              ' for HTTP requests. Please note that only NTLM v1 is supported.'
         o6a = opt_factory('ntlm_auth_domain', cfg.get(
             'ntlm_auth_domain'), d6a, 'string', tabid='NTLM Authentication')
 
@@ -444,11 +447,11 @@ class OpenerSettings(Configurable):
             'ntlm_auth_passwd'), d7, 'string', tabid='NTLM Authentication')
 
         d7b = 'Set the NTLM authentication domain for HTTP requests'
-        h7b = 'This configures on which requests to send the authentication settings configured'
-        h7b += ' in ntlm_auth_passwd and ntlm_auth_user. If you are unsure, just set it to the'
-        h7b += ' target domain name.'
-        o7b = opt_factory('ntlm_auth_url', cfg.get(
-            'ntlm_auth_url'), d7b, 'string', tabid='NTLM Authentication')
+        h7b = 'This configures on which requests to send the authentication'\
+              ' settings configured in ntlm_auth_passwd and ntlm_auth_user.'\
+              ' If you are unsure, just set it to the target domain name.'
+        o7b = opt_factory('ntlm_auth_url', cfg.get('ntlm_auth_url'), d7b,
+                          'string', tabid='NTLM Authentication', help=h7b)
 
         d8 = 'Set the cookiejar filename.'
         h8 = 'The cookiejar file MUST be in mozilla format.'
