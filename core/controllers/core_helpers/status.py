@@ -90,9 +90,9 @@ class w3af_core_status(object):
 
             if audit_plugin is not None and audit_fr is not None:
                 if status_str: status_str += '\n'
-                 
-                status_str += 'Auditing %s using %s.%s'
-                status_str = status_str % (audit_fr, 'audit', audit_plugin)
+                
+                status_str += 'Auditing %s using %s.%s' % (audit_fr, 'audit',
+                                                           audit_plugin)
                 
             status_str = status_str.replace('\x00', '')
             return status_str
