@@ -336,11 +336,17 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 try:
                     httpsServer.process_request(conWrap, self.client_address)
                 except SSL.ZeroReturnError, ssl_error:
-                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' +
-                                 str(ssl_error))
+                    msg = 'Catched SSL.ZeroReturn in do_CONNECT(): %s'
+                    om.out.debug(msg % ssl_error)
                 except SSL.Error, ssl_error:
-                    om.out.debug('Catched SSL.Error in do_CONNECT(): ' +
-                                 str(ssl_error))
+                    msg = 'Catched SSL.Error in do_CONNECT(): %s'
+                    om.out.debug(msg % ssl_error)
+                except TypeError, type_error:
+                    # TypeError: shutdown() takes exactly 0 arguments (1 given)
+                    # https://bugs.launchpad.net/pyopenssl/+bug/900792
+                    msg = 'Socket shutdown is incompatible with pyOpenSSL: %s'
+                    om.out.debug(msg % type_error)
+                    
 
             except Exception, e:
                 om.out.error('Traceback for this error: ' +
