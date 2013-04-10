@@ -502,7 +502,7 @@ class HTTPResponse(object):
             _body = rawbody
             charset = DEFAULT_CHARSET
 
-            if self._code not in (301, 302, 401):
+            if len(_body):
                 msg = "The remote web server failed to send the 'content-type'"\
                       " header in HTTP response with id %s" % self.id
                 om.out.debug(msg)
