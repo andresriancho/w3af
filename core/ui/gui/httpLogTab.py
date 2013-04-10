@@ -80,7 +80,7 @@ class httpLogTab(entries.RememberingHPaned):
         self.__add_columns(self._lstoreTreeview)
         self._lstoreTreeview.show()
         self._lstoreTreeview.connect(
-            'cursor-changed', self._viewInReqResViewer)
+            'cursor-changed', self._view_in_req_res_viewer)
         # Popup menu
         self._rightButtonMenu = None
         self._lstoreTreeview.connect('button-press-event', self._popupMenu)
@@ -304,7 +304,7 @@ class httpLogTab(entries.RememberingHPaned):
         try:
             self.find_request_response()
         except w3afException, w3:
-            self._emptyResults()
+            self._empty_results()
         return
 
     def refresh_results(self):
@@ -378,33 +378,33 @@ class httpLogTab(entries.RememberingHPaned):
             searchResultObjects = self._historyItem.find(searchData,
                                                          result_limit=5001, orderData=[("id", "")])
         except w3afException, w3:
-            self._emptyResults()
+            self._empty_results()
             return
         if len(searchResultObjects) == 0:
             if not refresh:
-                self._emptyResults()
+                self._empty_results()
             return
         # Please see the 5001 above
         elif len(searchResultObjects) > 5000:
-            self._emptyResults()
+            self._empty_results()
             msg = _('The search you performed returned too many results (') +\
                 str(len(searchResultObjects)) + ').\n'
             msg += _('Please refine your search and try again.')
-            self._showMessage('Too many results', msg)
+            self._show_message('Too many results', msg)
             return
         else:
             # show the results in the list view (when first row is selected
             # that just triggers the req/resp filling.
             lastItem = searchResultObjects[-1]
             self._lastId = int(lastItem.id)
-            self._show_listView(searchResultObjects, appendMode=refresh)
+            self._show_list_view(searchResultObjects, appendMode=refresh)
             if not refresh:
                 self._sw.set_sensitive(True)
                 self._reqResViewer.set_sensitive(True)
                 self._lstoreTreeview.set_cursor((0,))
             return
 
-    def _emptyResults(self):
+    def _empty_results(self):
         """Empty all panes."""
         self._reqResViewer.request.clear_panes()
         self._reqResViewer.response.clear_panes()
@@ -412,7 +412,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._sw.set_sensitive(False)
         self._lstore.clear()
 
-    def _show_listView(self, results, appendMode=False):
+    def _show_list_view(self, results, appendMode=False):
         """Show the results of the search in a listview."""
         # First I clear all old results...
         if not appendMode:
@@ -430,7 +430,7 @@ class httpLogTab(entries.RememberingHPaned):
         if not appendMode:
             self._sw.show_all()
 
-    def _showMessage(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
+    def _show_message(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
         """Show message to user as GTK dialog."""
         dlg = gtk.MessageDialog(
             None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
@@ -438,7 +438,7 @@ class httpLogTab(entries.RememberingHPaned):
         dlg.run()
         dlg.destroy()
 
-    def _viewInReqResViewer(self, widget):
+    def _view_in_req_res_viewer(self, widget):
         """Action for "onselect" event of the main listview."""
         (path, column) = widget.get_cursor()
         itemNumber = path[0]
@@ -464,7 +464,7 @@ class httpLogTab(entries.RememberingHPaned):
                 self._reqResViewer.info.hide()
             self._reqResViewer.set_sensitive(True)
         else:
-            self._showMessage(_('Error'), _('The id ') + str(search_id) +
+            self._show_message(_('Error'), _('The id ') + str(search_id) +
                               _('is not inside the database.'))
 
 
