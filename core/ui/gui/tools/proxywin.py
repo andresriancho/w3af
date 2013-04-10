@@ -70,7 +70,7 @@ class ProxiedRequests(entries.RememberingWindow):
         actiongroup = gtk.ActionGroup('UIManager')
         actiongroup.add_actions([
             ('Help', gtk.STOCK_HELP, _(
-                '_Help'), None, _('Help regarding this window'), self._help),
+                '_Help'), None, _('Help regarding this window'), self.open_help),
             ('Drop', gtk.STOCK_CANCEL, _('_Drop Request'),
              None, _('Drop request'), self._drop),
             ('Send', gtk.STOCK_YES, _('_Send Request'), None,
@@ -103,7 +103,7 @@ class ProxiedRequests(entries.RememberingWindow):
         toolbar.show()
         # Request-response viewer
         self._init_options()
-        self._prevIpport = None
+        self._prev_ip_port = None
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
         self.reqresp = reqResViewer.reqResViewer(w3af,
@@ -145,10 +145,10 @@ class ProxiedRequests(entries.RememberingWindow):
         self.proxy = None
         # Finish it
         self.fuzzable = None
-        self.waitingRequests = False
-        self.keepChecking = False
+        self.waiting_requests = False
+        self.keep_checking = False
         self.reload_options()
-        gobject.timeout_add(200, self._superviseRequests)
+        gobject.timeout_add(200, self._supervise_requests)
         self.show()
 
     def _init_options(self):
@@ -241,28 +241,30 @@ class ProxiedRequests(entries.RememberingWindow):
         5. Set Trap options
         6. Save options
         """
-        newPort = self.pref.get_value('proxy', 'ipport')
-        if newPort != self._prevIpport:
+        new_port = self.pref.get_value('proxy', 'ipport')
+        if new_port != self._prev_ip_port:
             self.w3af.mainwin.sb(_("Stopping local proxy"))
             if self.proxy:
                 self.proxy.stop()
+            
             try:
-                self._startProxy()
+                self._start_proxy()
             except w3afProxyException:
                 # Ups, port looks already used..:(
                 # Let's show alert and focus Options tab
                 self.w3af.mainwin.sb(_("Failed to start local proxy"))
                 self.fuzzable = None
-                self.waitingRequests = False
-                self.keepChecking = False
+                self.waiting_requests = False
+                self.keep_checking = False
                 # Focus Options tab
                 self.nb.set_current_page(2)
                 return
             else:
                 self.fuzzable = None
-                self.waitingRequests = True
-                self.keepChecking = True
-        # Test of config
+                self.waiting_requests = True
+                self.keep_checking = True
+        
+        # Config test
         try:
             self.proxy.set_what_to_trap(self.pref.get_value('proxy', 'trap'))
             self.proxy.set_what_not_to_trap(self.pref.get_value('proxy', 'notrap'))
@@ -273,7 +275,7 @@ class ProxiedRequests(entries.RememberingWindow):
         except w3afException, w3:
             self.show_alert(_("Invalid configuration!\n" + str(w3)))
 
-        self._prevIpport = newPort
+        self._prev_ip_port = new_port
         httpeditor = self.reqresp.request.get_view_by_id('HttpRawView')
         httpeditor.set_show_line_numbers(
             self.pref.get_value('editor', 'display_line_num'))
@@ -290,15 +292,17 @@ class ProxiedRequests(entries.RememberingWindow):
     def show_alert(self, msg):
         dlg = gtk.MessageDialog(
             None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-        opt = dlg.run()
+        dlg.run()
         dlg.destroy()
 
-    def _startProxy(self, ip=None, port=None, silent=False):
+    def _start_proxy(self, ip=None, port=None, silent=False):
         """Starts the proxy."""
         if not ip:
             ipport = self.pref.get_value('proxy', 'ipport')
             ip, port = ipport.split(":")
+            
         self.w3af.mainwin.sb(_("Starting local proxy"))
+        
         try:
             self.proxy = LocalProxy(ip, int(port))
         except w3afProxyException, w3:
@@ -308,22 +312,22 @@ class ProxiedRequests(entries.RememberingWindow):
         else:
             self.proxy.start()
 
-    def _superviseRequests(self, *a):
+    def _supervise_requests(self, *a):
         """Supervise if there're requests to show.
 
         :return: True to gobject to keep calling it, False when all is done.
         """
-        if self.waitingRequests:
+        if self.waiting_requests:
             req = self.proxy.get_trapped_request()
             if req is not None:
-                self.waitingRequests = False
+                self.waiting_requests = False
                 self.fuzzable = req
                 self.reqresp.request.set_sensitive(True)
                 self.reqresp.request.show_object(req)
                 self.bt_drop.set_sensitive(True)
                 self.bt_send.set_sensitive(True)
                 self.bt_next.set_sensitive(True)
-        return self.keepChecking
+        return self.keep_checking
 
     def _drop(self, widg):
         """Discards the actual request.
@@ -332,7 +336,7 @@ class ProxiedRequests(entries.RememberingWindow):
         """
         self.reqresp.request.clear_panes()
         self.reqresp.request.set_sensitive(False)
-        self.waitingRequests = True
+        self.waiting_requests = True
         self.proxy.drop_request(self.fuzzable)
 
     def _send(self, widg):
@@ -351,14 +355,14 @@ class ProxiedRequests(entries.RememberingWindow):
         if data:
             data = str(data)
         try:
-            httpResp = helpers.coreWrap(
-                self.proxy.send_raw_request, self.fuzzable, headers, data)
+            http_resp = helpers.coreWrap(self.proxy.send_raw_request,
+                                         self.fuzzable, headers, data)
         except w3afException:
             return
         else:
             self.fuzzable = None
             self.reqresp.response.set_sensitive(True)
-            self.reqresp.response.show_object(httpResp)
+            self.reqresp.response.show_object(http_resp)
             self.reqresp.focus_response()
             self.bt_drop.set_sensitive(False)
             self.bt_send.set_sensitive(False)
@@ -378,11 +382,11 @@ class ProxiedRequests(entries.RememberingWindow):
         self.reqresp.response.set_sensitive(False)
         self.bt_next.set_sensitive(False)
         self.reqresp.focus_request()
-        self.waitingRequests = True
+        self.waiting_requests = True
 
     def _close(self):
         """Closes everything."""
-        self.keepChecking = False
+        self.keep_checking = False
         msg = _("Do you want to quit and close the proxy?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                 gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
@@ -390,8 +394,10 @@ class ProxiedRequests(entries.RememberingWindow):
         dlg.destroy()
         if  opt != gtk.RESPONSE_YES:
             return False
+        
         if self.proxy:
             self.proxy.stop()
+            
         return True
 
     def _toggle_trap(self, widget):
@@ -401,6 +407,7 @@ class ProxiedRequests(entries.RememberingWindow):
 
         trapactive = widget.get_active()
         self.proxy.set_trap(trapactive)
+        
         # Send all requests in queue if Intercept is switched off
         if not trapactive:
             res = self.reqresp.response.get_object()
@@ -409,9 +416,3 @@ class ProxiedRequests(entries.RememberingWindow):
             if req and not res:
                 self._send(None)
 
-    def _help(self, action):
-        """Shows the help."""
-        helpfile = os.path.join(os.getcwd(),
-                                os.path.join('readme','EN','gui-html',
-                                             'index.html#Using_the_Proxy'))
-        webbrowser.open("file://" + helpfile)

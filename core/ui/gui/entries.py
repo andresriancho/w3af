@@ -657,6 +657,9 @@ class RememberingWindow(gtk.Window):
         if event.keyval != 65470:  # F1, check: gtk.gdk.keyval_name(event.keyval)
             return
 
+        self.open_help()
+
+    def open_help(self, *args):
         helpers.open_help(self.helpid)
 
     def quit(self, widget, event):
