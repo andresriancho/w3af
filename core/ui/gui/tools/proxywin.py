@@ -25,11 +25,14 @@ import os
 import webbrowser
 
 from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
+from core.ui.gui.entries import ConfigOptions
+
 from core.controllers.exceptions import w3afException, w3afProxyException
+from core.controllers.daemons.localproxy import LocalProxy
+
+from core.data.options import option_types 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.controllers.daemons.localproxy import LocalProxy
-from core.ui.gui.entries import ConfigOptions
 
 ui_proxy_menu = """
 <ui>
@@ -99,7 +102,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.vbox.show()
         toolbar.show()
         # Request-response viewer
-        self._initOptions()
+        self._init_options()
         self._prevIpport = None
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
@@ -148,37 +151,76 @@ class ProxiedRequests(entries.RememberingWindow):
         gobject.timeout_add(200, self._superviseRequests)
         self.show()
 
-    def _initOptions(self):
+    def _init_options(self):
         '''Init options.'''
         self.like_initial = True
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
+        
         # Proxy options
-        proxyOptions = OptionList()
-        proxyOptions.add(
-            opt_factory('ipport', "127.0.0.1:8080", "IP:port", "ipport"))
-        proxyOptions.add(opt_factory('trap', ".*", _("URLs to trap"), "regex"))
-        proxyOptions.add(opt_factory(
-            'methodtrap', "GET,POST", _("Methods to trap"), "list"))
-        proxyOptions.add(opt_factory("notrap",
-                                     ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
-        proxyOptions.add(opt_factory(
-            "fixlength", True, _("Fix content length"), "boolean"))
-        proxyOptions.add(opt_factory("trap_view", ['Splitted',
-                         'Tabbed'], _("View of Intercept tab"), "combo"))
-        proxyOptions.add(opt_factory("home_tab", ['Intercept',
-                         'History', 'Options'], _("Home tab"), "combo"))
-        self.pref.add_section('proxy', _('Proxy Options'), proxyOptions)
+        proxy_options = OptionList()
+        
+        d = _('Proxy IP address and port number')
+        h = _('Local IP address where the proxy will listen for HTTP requests.')
+        o = opt_factory('ipport', "127.0.0.1:8080", d, option_types.IPPORT, help=h)
+        proxy_options.add(o)
+        
+        d = _('Regular expression for URLs to intercept')
+        h = _('Regular expression to match against the URLs of HTTP requests'
+              ' to decide if the request should be intercepted for analysis/'
+              'modifications or not.')
+        o = opt_factory('trap', ".*", d, option_types.REGEX, help=h)
+        proxy_options.add(o)
+        
+        d = _("HTTP methods to intercept")
+        h = _('Comma separated list of HTTP methods to intercept')
+        o = opt_factory('methodtrap', "GET,POST", d, option_types.LIST, help=h)
+        proxy_options.add(o)
+        
+        
+        d = _("Ignored extensions")
+        h = _('Filename extensions that will NOT be intercepted')
+        default_value = ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$"
+        o = opt_factory("notrap", default_value, d, option_types.REGEX)
+        proxy_options.add(o)
+        
+        d = _("Fix content length")
+        h = _('Indicates if the content length header value should be fixed'
+              ' to respect HTTP\'s RFC or not.')
+        o = opt_factory("fixlength", True, d, option_types.BOOL, help=h)
+        proxy_options.add(o)
+        
+        d = _("View mode for intercept tab")
+        views = ['Splitted', 'Tabbed']
+        o = opt_factory("trap_view", views, d, option_types.COMBO)
+        proxy_options.add(o)
+        
+        d = _("Home tab")
+        homes = ['Intercept', 'History', 'Options']
+        o = opt_factory("home_tab", homes, d, option_types.COMBO)
+        proxy_options.add(o)
+        
+        self.pref.add_section('proxy', _('Proxy options'), proxy_options)
+        
         # HTTP editor options
-        editorOptions = OptionList()
-        editorOptions.add(
-            opt_factory("wrap", True, _("Wrap long lines"), "boolean"))
-        editorOptions.add(opt_factory("highlight_current_line",
-                          True, _("Highlight current line"), "boolean"))
-        editorOptions.add(opt_factory(
-            "highlight_syntax", True, _("Highlight syntax"), "boolean"))
-        editorOptions.add(opt_factory(
-            "display_line_num", True, _("Display line numbers"), "boolean"))
-        self.pref.add_section('editor', _('HTTP Editor Options'), editorOptions)
+        editor_options = OptionList()
+        
+        o = opt_factory("wrap", True, _("Wrap long lines"), "boolean")
+        editor_options.add(o)
+        
+        o = opt_factory("highlight_current_line", True,
+                        _("Highlight current line"), "boolean")
+        editor_options.add(o)
+        
+        o = opt_factory("highlight_syntax", True,
+                        _("Highlight syntax"), "boolean")
+        editor_options.add(o)
+        
+        o = opt_factory("display_line_num", True,
+                        _("Display line numbers"), "boolean")
+        editor_options.add(o)
+        
+        self.pref.add_section('editor', _('HTTP editor options'), editor_options)
+        
         # Load values from configfile
         self.pref.load_values()
         self.pref.show()

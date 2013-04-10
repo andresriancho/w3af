@@ -477,10 +477,10 @@ class FilterOptions(gtk.HBox, Preferences):
 
     def show(self):
         # Init options
-        self._initOptionsView()
+        self._init_optionsView()
         super(FilterOptions, self).show()
 
-    def _initOptionsView(self):
+    def _init_optionsView(self):
         for section, optList in self.options.items():
             frame = gtk.Frame()
             label = gtk.Label('<b>%s</b>' % self.sections[section])

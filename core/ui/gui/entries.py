@@ -972,7 +972,7 @@ class ConfigOptions(gtk.VBox, Preferences):
 
     def show(self):
         # Init options
-        self._initOptionsView()
+        self._init_optionsView()
         # Buttons
         buttonsArea = gtk.HBox()
         buttonsArea.show()
@@ -991,7 +991,7 @@ class ConfigOptions(gtk.VBox, Preferences):
         self.pack_start(buttonsArea, False, False)
         super(ConfigOptions, self).show()
 
-    def _initOptionsView(self):
+    def _init_optionsView(self):
 
         for section, optList in self.options.items():
             frame = gtk.Frame()
