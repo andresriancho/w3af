@@ -136,7 +136,19 @@ class GitClient(object):
         origin_master = [ref for ref in repo_refs if ref.name == branch_name][0]
         
         return origin_master.commit.hexsha
+    
+    def get_parent_for_revision(self, child_hexsha):
+        '''
+        :return: The parent revision ID for the given hexsha.
+        '''
+        result = []
         
+        for commit in self._repo.iter_commits():
+            if commit.hexsha == child_hexsha:
+                result = [c.hexsha for c in commit.parents]
+        
+        return result
+                
         
 class GitRemoteProgress(RemoteProgress):
     '''

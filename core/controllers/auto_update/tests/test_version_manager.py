@@ -27,6 +27,7 @@ from core.data.db.startup_cfg import StartUpConfig
 from core.controllers.auto_update.version_manager import VersionMgr
 from core.controllers.auto_update.changelog import ChangeLog
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from core.controllers.auto_update.git_client import GitClient
 
 
 class TestVersionMgr(unittest.TestCase):
@@ -88,3 +89,99 @@ class TestVersionMgr(unittest.TestCase):
         
         self.assertFalse(self.vmgr._added_new_dependencies(changelog))
 
+    def test_update_not_required_not_forced(self):
+        '''
+        Test that we don't perform any extra steps if the local installation
+        was already updated today.
+        '''
+        self.vmgr._start_cfg = start_cfg = StartUpConfig()
+        start_cfg._autoupd = True
+        start_cfg._freq = StartUpConfig.FREQ_DAILY
+
+        last_upd = datetime.date.today() - datetime.timedelta(days=0)
+        start_cfg._lastupd = last_upd
+
+        on_update_check_mock = MagicMock()
+        on_already_latest_mock = MagicMock()
+        on_update_mock = MagicMock()
+
+        self.vmgr.register(VersionMgr.ON_UPDATE_CHECK, on_update_check_mock, None)
+        self.vmgr.register(VersionMgr.ON_ALREADY_LATEST, on_already_latest_mock, None)
+        self.vmgr.register(VersionMgr.ON_UPDATE, on_update_mock, None)
+
+        self.vmgr.update()
+        
+        self.assertEqual(on_update_check_mock.call_count, 0)
+        self.assertEqual(on_already_latest_mock.call_count, 0)
+        self.assertEqual(on_update_mock.call_count, 0)
+    
+    def test_update_required_not_forced(self):
+        '''
+        Test that we check if we're on the latest version if the latest
+        local installation update was 3 days ago and the frequency is set to
+        daily.
+        
+        The local repository is in the latest version (git pull is run before)
+        '''
+        git_client = GitClient('.')
+        git_client.pull()
+        
+        self.vmgr._start_cfg = start_cfg = StartUpConfig()
+        start_cfg._autoupd = True
+        start_cfg._freq = StartUpConfig.FREQ_DAILY
+
+        last_upd = datetime.date.today() - datetime.timedelta(days=3)
+        start_cfg._lastupd = last_upd
+
+        on_update_check_mock = MagicMock()
+        on_already_latest_mock = MagicMock()
+        on_update_mock = MagicMock()
+
+        self.vmgr.register(VersionMgr.ON_UPDATE_CHECK, on_update_check_mock, None)
+        self.vmgr.register(VersionMgr.ON_ALREADY_LATEST, on_already_latest_mock, None)
+        self.vmgr.register(VersionMgr.ON_UPDATE, on_update_mock, None)
+
+        self.vmgr.update()
+        
+        self.assertEqual(on_update_check_mock.call_count, 1)
+        self.assertEqual(on_already_latest_mock.call_count, 1)
+        self.assertEqual(on_update_mock.call_count, 0)
+        
+    def test_update_required_outdated_not_forced(self):
+        '''
+        Test that we check if we're on the latest version if the latest
+        local installation update was 3 days ago and the frequency is set to
+        daily.
+        
+        The local repository is NOT in the latest version. A 'git reset --hard'
+        is run at the beginning of this test to reset the repo to a revision
+        before the latest one.
+        '''
+        try:
+            git_client = GitClient('.')
+            head_id = git_client.get_local_head_id()
+            one_before_head = git_client.get_parent_for_revision(head_id)
+            git_client.reset_to_previous_state(one_before_head)
+            
+            self.vmgr._start_cfg = start_cfg = StartUpConfig()
+            start_cfg._autoupd = True
+            start_cfg._freq = StartUpConfig.FREQ_DAILY
+    
+            last_upd = datetime.date.today() - datetime.timedelta(days=3)
+            start_cfg._lastupd = last_upd
+    
+            on_update_check_mock = MagicMock()
+            on_already_latest_mock = MagicMock()
+            on_update_mock = MagicMock()
+    
+            self.vmgr.register(VersionMgr.ON_UPDATE_CHECK, on_update_check_mock, None)
+            self.vmgr.register(VersionMgr.ON_ALREADY_LATEST, on_already_latest_mock, None)
+            self.vmgr.register(VersionMgr.ON_UPDATE, on_update_mock, None)
+    
+            self.vmgr.update()
+            
+            self.assertEqual(on_update_check_mock.call_count, 1)
+            self.assertEqual(on_already_latest_mock.call_count, 1)
+            self.assertEqual(on_update_mock.call_count, 1)
+        finally:
+            git_client.pull()
