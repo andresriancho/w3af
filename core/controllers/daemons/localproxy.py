@@ -107,8 +107,12 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         content-length header; so we are going to fix that problem.
         '''
         fuzzable_request = HTTPRequestParser(head, postdata)
+        
+        if fuzzable_request.get_data() is None:
+            # Nothing to do here
+            return head, postdata
+        
         headers = fuzzable_request.get_headers()
-
         headers['content-length'] = [str(len(fuzzable_request.get_data())), ]
 
         fuzzable_request.set_headers(headers)
