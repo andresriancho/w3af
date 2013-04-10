@@ -53,11 +53,14 @@ class ProxiedRequests(entries.RememberingWindow):
     """
     def __init__(self, w3af):
         '''Constructor.'''
-        super(ProxiedRequests, self).__init__(
-            w3af, "proxytool", _("w3af - Proxy"), "Using_the_Proxy",
-            onDestroy=self._close)
+        super(ProxiedRequests, self).__init__(w3af, "proxytool",
+                                              _("w3af - Proxy"),
+                                              "Using_the_Proxy",
+                                              onDestroy=self._close)
         self.w3af = w3af
+        
         self.def_padding = 5
+        
         self._uimanager = gtk.UIManager()
         accelgroup = self._uimanager.get_accel_group()
         self.add_accel_group(accelgroup)
@@ -101,7 +104,8 @@ class ProxiedRequests(entries.RememberingWindow):
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
         self.reqresp = reqResViewer.reqResViewer(w3af,
-                                                 [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
+                                                 [self.bt_drop.set_sensitive,
+                                                  self.bt_send.set_sensitive],
                                                  editableRequest=True, layout=self._layout)
         self.reqresp.set_sensitive(False)
         vbox = gtk.VBox()
@@ -365,6 +369,7 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def _help(self, action):
         """Shows the help."""
-        helpfile = os.path.join(os.getcwd(
-        ), "readme/EN/gtkUiHTML/gtkUiUsersGuide.html#Using_the_Proxy")
+        helpfile = os.path.join(os.getcwd(),
+                                os.path.join('readme','EN','gui-html',
+                                             'index.html#Using_the_Proxy'))
         webbrowser.open("file://" + helpfile)

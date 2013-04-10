@@ -53,10 +53,11 @@ from core.ui.gui.auto_update.gui_updater import GUIUpdater
 from core.ui.gui import scanrun, exploittab, helpers, profiles, compare
 from core.ui.gui import export_request
 from core.ui.gui import entries, encdec, pluginconfig, confpanel
-from core.ui.gui import wizard, guardian, proxywin
+from core.ui.gui import wizard, guardian
 from core.ui.gui.tabs.log.main_body import LogBody
 from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from core.ui.gui.tools.manual_requests import ManualRequests
+from core.ui.gui.tools.proxywin import ProxiedRequests
 
 # This is just general info, to help people know their system and report more
 # complete bugs
@@ -874,7 +875,7 @@ class MainApp(object):
     def _proxy_tool(self, action):
         '''Proxies the HTTP calls.'''
         self.set_tabs(True)
-        proxywin.ProxiedRequests(self.w3af)
+        ProxiedRequests(self.w3af)
 
     def _wizards(self, action):
         '''Execute the wizards machinery.'''

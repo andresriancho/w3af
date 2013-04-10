@@ -285,7 +285,7 @@ class Compare(entries.RememberingWindow):
         self.comp.set_right_pane(*self._getElementText())
 
     def _help(self, action):
-        html_file = "readme/EN/gtkUiHTML/gtkUiUsersGuide.html#Comparing_HTTP_traffic"
+        html_file = "readme/EN/gui-html/index.html#Comparing_HTTP_traffic"
         helpfile = os.path.join(os.getcwd(), html_file)
         webbrowser.open("file://" + helpfile)
 
