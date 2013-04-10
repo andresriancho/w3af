@@ -28,12 +28,9 @@ from nose.plugins.attrib import attr
 from core.controllers.w3afCore import w3afCore
 
 
+@attr('smoke')
 class Test_w3afCore_plugins(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
-    @attr('smoke')
     def test_get_plugin_types(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.get_plugin_types()
@@ -41,7 +38,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
                         'evasion', 'bruteforce', 'auth', 'infrastructure'])
         self.assertEquals(set(plugin_types), expected)
 
-    @attr('smoke')
     def test_get_plugin_listAudit(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('audit')
@@ -49,7 +45,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         expected = set(['sqli', 'xss', 'eval'])
         self.assertTrue(set(plugin_list).issuperset(expected))
 
-    @attr('smoke')
     def test_get_plugin_listCrawl(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('crawl')
@@ -57,14 +52,12 @@ class Test_w3afCore_plugins(unittest.TestCase):
         expected = set(['web_spider', 'spider_man'])
         self.assertTrue(set(plugin_list).issuperset(expected))
 
-    @attr('smoke')
     def test_get_plugin_inst(self):
         w3af_core = w3afCore()
         plugin_inst = w3af_core.plugins.get_plugin_inst('audit', 'sqli')
 
         self.assertEquals(plugin_inst.get_name(), 'sqli')
 
-    @attr('smoke')
     def test_get_plugin_instAll(self):
         w3af_core = w3afCore()
 
@@ -74,7 +67,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
                     plugin_type, plugin_name)
                 self.assertEquals(plugin_inst.get_name(), plugin_name)
 
-    @attr('smoke')
     def test_set_plugins(self):
         w3af_core = w3afCore()
         enabled = ['sqli', ]
@@ -82,7 +74,18 @@ class Test_w3afCore_plugins(unittest.TestCase):
         retrieved = w3af_core.plugins.get_enabled_plugins('audit')
         self.assertEquals(enabled, retrieved)
 
-    @attr('smoke')
+    def test_set_plugins_negative(self):
+        w3af_core = w3afCore()
+        enabled = ['fake', ]
+        self.assertRaises(ValueError, w3af_core.plugins.set_plugins, enabled, 'output')
+
+    def test_set_plugins_negative_without_raise(self):
+        w3af_core = w3afCore()
+        enabled = ['fake', ]
+        unknown_plugins = w3af_core.plugins.set_plugins(enabled, 'output', raise_on_error=False)
+        self.assertEqual(enabled, unknown_plugins)
+        w3af_core.plugins.init_plugins()
+
     def test_get_all_enabled_plugins(self):
         w3af_core = w3afCore()
         enabled_audit = ['sqli', 'xss']
@@ -95,7 +98,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(enabled_audit, all_enabled['audit'])
         self.assertEquals(enabled_grep, all_enabled['grep'])
 
-    @attr('smoke')
     def test_plugin_options(self):
         w3af_core = w3afCore()
         plugin_inst = w3af_core.plugins.get_plugin_inst('crawl', 'web_spider')
@@ -106,13 +108,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
 
         self.assertEquals(options_1, options_2)
 
-    @attr('smoke')
     def test_plugin_options_invalid(self):
         w3af_core = w3afCore()
         self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options,
                           'crawl', 'web_spider', None)
 
-    @attr('smoke')
     def test_init_plugins(self):
         w3af_core = w3afCore()
         enabled = ['web_spider']
@@ -125,7 +125,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         plugin_inst = list(w3af_core.plugins.plugins['crawl'])[0]
         self.assertEquals(plugin_inst.get_name(), 'web_spider')
 
-    @attr('smoke')
     def test_enable_all(self):
         w3af_core = w3afCore()
         enabled = ['all']
@@ -138,7 +137,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(len(w3af_core.plugins.get_enabled_plugins('crawl')),
                           len(w3af_core.plugins.get_plugin_list('crawl')))
 
-    @attr('smoke')
     def test_enable_all_but_web_spider(self):
         w3af_core = w3afCore()
         enabled = ['all', '!web_spider']
@@ -152,7 +150,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
-    @attr('smoke')
     def test_enable_all_but_two(self):
         w3af_core = w3afCore()
         enabled = ['all', '!web_spider', '!archive_dot_org']
@@ -167,7 +164,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
-    @attr('smoke')
     def test_enable_not_web_spider_all(self):
         w3af_core = w3afCore()
         enabled = ['!web_spider', 'all']
@@ -181,7 +177,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
-    @attr('smoke')
     def test_enable_dependency_same_type(self):
         w3af_core = w3afCore()
         enabled_infra = ['php_eggs', ]
@@ -194,7 +189,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
             set(w3af_core.plugins.get_enabled_plugins('infrastructure')),
             set(enabled_infra))
 
-    @attr('smoke')
     def test_enable_dependency_same_type_order(self):
         w3af_core = w3afCore()
         enabled_infra = ['php_eggs', ]
@@ -211,7 +205,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEqual(w3af_core.plugins.plugins[
                          'infrastructure'][1].get_name(), 'php_eggs')
 
-    @attr('smoke')
     def test_enable_dependency_different_type(self):
         w3af_core = w3afCore()
         enabled_crawl = ['url_fuzzer', ]
@@ -228,7 +221,6 @@ class Test_w3afCore_plugins(unittest.TestCase):
             set(w3af_core.plugins.get_enabled_plugins('infrastructure')),
             set(enabled_infra))
 
-    @attr('smoke')
     def test_enable_all_all(self):
         w3af_core = w3afCore()
         for plugin_type in w3af_core.plugins.get_plugin_types():
@@ -241,11 +233,4 @@ class Test_w3afCore_plugins(unittest.TestCase):
             all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
             self.assertEqual(set(enabled_plugins), set(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
-
-    def test_enable_unknown(self):
-        w3af_core = w3afCore()
-        enable = ['i_do_not_exist', ]
-        
-        self.assertRaises(ValueError, w3af_core.plugins.set_plugins,
-                          enable, 'crawl')
         

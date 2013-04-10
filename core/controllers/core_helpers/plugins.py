@@ -158,6 +158,10 @@ class w3af_core_plugins(object):
                 else:
                     unknown_plugins.append(plugin_name)
 
+        # If we don't raise an error when an unknown plugin name is enabled,
+        # at least don't try to call the "_set_plugin_generic" method with it
+        plugin_names = [pn for pn in plugin_names if pn not in unknown_plugins]
+
         set_dict = {
             'crawl': partial(self._set_plugin_generic, 'crawl'),
             'audit': partial(self._set_plugin_generic, 'audit'),
