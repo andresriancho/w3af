@@ -56,12 +56,12 @@ class GUIUpdater(UIUpdater):
         self._register(
             VersionMgr.ON_ACTION_ERROR,
             notify,
-            'Update error, please update manually.'
+            _('Update error, please update manually.')
         )
         self._register(
             VersionMgr.ON_UPDATE_ADDED_DEP,
             notify,
-            ('New dependencies added, please restart w3af.')
+            _('New dependencies added, please restart w3af.')
         )
         
         #
