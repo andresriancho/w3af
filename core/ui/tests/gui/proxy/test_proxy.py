@@ -61,14 +61,22 @@ class TestProxy(XpresserUnittest):
         
         self.click('intercept')
 
-        def send_request():
+        def ui_clicker():
             # Click on the proxy button that will forward the request
-            self.sleep(1)
-            self.click('send-request')
+            try:
+                self.find('GET_http')
+                self.click('send-request')
+                self.find('200_OK')
+                self.click('next_request')
+                self.find('empty_intercept')
+            except:
+                pass
 
-        threading.Thread(target=send_request).start()
+        t = threading.Thread(target=ui_clicker)
+        t.start()
 
         port = self.http_daemon.get_port()
         http_response = self.opener.open('http://127.0.0.1:%s/foo' % port).read()
         self.assertEqual('ABCDEF\n', http_response)
-        
+
+        t.join()
