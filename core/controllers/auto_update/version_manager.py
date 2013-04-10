@@ -142,6 +142,10 @@ class VersionMgr(object):
                   commit_id: The commit id after the update)
                   
         '''
+        if not force and not self._has_to_update():
+            # No need to update based on user preferences
+            return
+        
         # Save the latest update date, always, even when the update had errors
         # or there was no update available
         self._start_cfg.last_upd = date.today()
@@ -149,10 +153,6 @@ class VersionMgr(object):
         
         local_head_id = self._client.get_local_head_id()
         short_local_head_id = to_short_id(local_head_id)
-
-        if not force and not self._has_to_update():
-            # No need to update based on user preferences
-            return
         
         # Lets update!
         self._notify(VersionMgr.ON_UPDATE_CHECK)
