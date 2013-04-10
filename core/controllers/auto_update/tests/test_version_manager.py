@@ -181,7 +181,7 @@ class TestVersionMgr(unittest.TestCase):
             self.vmgr.update()
             
             self.assertEqual(on_update_check_mock.call_count, 1)
-            self.assertEqual(on_already_latest_mock.call_count, 1)
+            self.assertEqual(on_already_latest_mock.call_count, 0)
             self.assertEqual(on_update_mock.call_count, 1)
         finally:
             git_client.pull()
