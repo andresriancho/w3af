@@ -177,6 +177,8 @@ class TestVersionMgr(unittest.TestCase):
             self.vmgr.register(VersionMgr.ON_UPDATE_CHECK, on_update_check_mock, None)
             self.vmgr.register(VersionMgr.ON_ALREADY_LATEST, on_already_latest_mock, None)
             self.vmgr.register(VersionMgr.ON_UPDATE, on_update_mock, None)
+
+            self.vmgr.callback_onupdate_confirm = MagicMock(side_effect=True)
     
             self.vmgr.update()
             
