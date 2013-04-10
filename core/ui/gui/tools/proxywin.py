@@ -21,11 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import gtk
 import gobject
-import os
-import webbrowser
 
 from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
-from core.ui.gui.entries import ConfigOptions
+from core.ui.gui.entries import ConfigOptions, StatusBar
 
 from core.controllers.exceptions import w3afException, w3afProxyException
 from core.controllers.daemons.localproxy import LocalProxy
@@ -82,7 +80,7 @@ class ProxiedRequests(entries.RememberingWindow):
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
             (
                 'TrapReq', gtk.STOCK_JUMP_TO, _(
-                    '_Trap Requests'), None, _('Trap the requests or not'),
+                    '_Trap Requests'), None, _('Trap requests'),
                 self._toggle_trap, False),
         ])
         # Finish the toolbar
@@ -114,20 +112,24 @@ class ProxiedRequests(entries.RememberingWindow):
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)
         vbox.show()
+        
         # Notebook
         self.nb = gtk.Notebook()
         tabs = []
+        
         # Intercept
         tmp = gtk.Label(_("_Intercept"))
         tmp.set_use_underline(True)
         self.nb.append_page(vbox, tmp)
         tabs.append('Intercept')
+        
         # History
         self.httplog = httpLogTab.httpLogTab(w3af, time_refresh=True)
         tmp = gtk.Label(_("_History"))
         tmp.set_use_underline(True)
         self.nb.append_page(self.httplog, tmp)
         tabs.append('History')
+        
         # Options
         tmp = gtk.Label(_("_Options"))
         tmp.set_use_underline(True)
@@ -135,19 +137,24 @@ class ProxiedRequests(entries.RememberingWindow):
         tabs.append('Options')
         self.vbox.pack_start(self.nb, True, True, padding=self.def_padding)
         self.nb.show()
+        
         # Go to Home Tab
         self.nb.set_current_page(
             tabs.index(self.pref.get_value('proxy', 'home_tab')))
+        
         # Status bar for messages
-        self.status_bar = gtk.Statusbar()
+        self.status_bar = StatusBar()
         self.vbox.pack_start(self.status_bar, False, False)
         self.status_bar.show()
+        
         self.proxy = None
+        
         # Finish it
         self.fuzzable = None
         self.waiting_requests = False
         self.keep_checking = False
         self.reload_options()
+        
         gobject.timeout_add(200, self._supervise_requests)
         self.show()
 
@@ -407,6 +414,9 @@ class ProxiedRequests(entries.RememberingWindow):
 
         trapactive = widget.get_active()
         self.proxy.set_trap(trapactive)
+        
+        status = 'Trap is %s' % ('on' if trapactive else 'off',)
+        self.status_bar(status)
         
         # Send all requests in queue if Intercept is switched off
         if not trapactive:
