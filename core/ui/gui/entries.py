@@ -1057,7 +1057,7 @@ class ConfigOptions(gtk.VBox, Preferences):
         self.propagAnyWidgetChanged.change(widg, like_initial)
         #propag = self.propagLabels[widg]
         #if propag is not None:
-         #   propag.change(widg, like_initial)
+        #   propag.change(widg, like_initial)
 
     def _savePanel(self, widg):
         """Saves the config changes to the plugins.
