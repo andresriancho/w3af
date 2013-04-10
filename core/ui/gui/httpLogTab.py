@@ -308,6 +308,12 @@ class httpLogTab(entries.RememberingHPaned):
         return
 
     def refresh_results(self):
+        '''
+        TODO: IMPROVEMENT: The find_request_response will read all items from
+                           the DB again. If there are no new requests BUT we're
+                           already showing 1K of them, all will be read. Not
+                           good for performance.
+        '''
         self.find_request_response(refresh=True)
         return True
 
@@ -398,10 +404,13 @@ class httpLogTab(entries.RememberingHPaned):
             lastItem = searchResultObjects[-1]
             self._lastId = int(lastItem.id)
             self._show_list_view(searchResultObjects, appendMode=refresh)
+            
+            self._sw.set_sensitive(True)
+            self._reqResViewer.set_sensitive(True)
+            
             if not refresh:
-                self._sw.set_sensitive(True)
-                self._reqResViewer.set_sensitive(True)
                 self._lstoreTreeview.set_cursor((0,))
+            
             return
 
     def _empty_results(self):
@@ -419,7 +428,8 @@ class httpLogTab(entries.RememberingHPaned):
             self._lstore.clear()
         for item in results:
             self._lstore.append([item.id, item.mark, item.method, item.url,
-                                 item.tag, item.code, item.msg, item.response_size, item.content_type,
+                                 item.tag, item.code, item.msg,
+                                 item.response_size, item.content_type,
                                  item.time])
         # Size search results
         if len(results) < 10:
