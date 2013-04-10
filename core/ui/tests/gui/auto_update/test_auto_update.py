@@ -56,4 +56,4 @@ class TestAutoUpdate(XpresserUnittest):
         self.find('update_window')
         self.click('update')
         
-        self.find('owasp_top_10_profile')
+        self.find('owasp_top_10_profile') 
