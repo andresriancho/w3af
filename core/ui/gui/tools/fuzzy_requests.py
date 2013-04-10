@@ -232,10 +232,10 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # cluster responses button
         image = gtk.Image()
-        image.set_from_file(os.path.join(
-            os.path.split(__file__)[0], 'data', 'cluster_data.png'))
+        image.set_from_file(os.path.join('core', 'ui', 'gui', 'data',
+                                         'cluster_data.png'))
         image.show()
-        self.clusterButton = gtk.Button(label='Cluster Responses')
+        self.clusterButton = gtk.Button(label='Cluster responses')
         self.clusterButton.connect("clicked", self._clusterData)
         self.clusterButton.set_sensitive(False)
         self.clusterButton.set_image(image)
