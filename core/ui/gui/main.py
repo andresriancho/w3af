@@ -50,11 +50,12 @@ from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 from core.ui.gui.output.gtk_output import GtkOutput
 from core.ui.gui.auto_update.gui_updater import GUIUpdater
  
-from core.ui.gui import scanrun, exploittab, helpers, profiles, compare
+from core.ui.gui import scanrun, helpers, profiles, compare
 from core.ui.gui import export_request
 from core.ui.gui import entries, encdec, pluginconfig, confpanel
 from core.ui.gui import wizard, guardian
 from core.ui.gui.tabs.log.main_body import LogBody
+from core.ui.gui.tabs.exploit.main_body import ExploitBody
 from core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from core.ui.gui.tools.manual_requests import ManualRequests
 from core.ui.gui.tools.proxywin import ProxiedRequests
@@ -428,7 +429,7 @@ class MainApp(object):
         self.set_tabs(False)
 
         label = gtk.Label(_("Exploit"))
-        exploit_tab_body = exploittab.ExploitBody(self.w3af)
+        exploit_tab_body = ExploitBody(self.w3af)
         self.nb.append_page(exploit_tab_body, label)
         self.notetabs[_("Exploit")] = exploit_tab_body
 

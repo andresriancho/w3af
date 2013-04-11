@@ -26,7 +26,8 @@ import core.data.kb.knowledge_base as kb
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
 
-from core.ui.gui import helpers, exploittab
+from core.ui.gui import helpers
+from core.ui.gui.tabs.exploit.exploit_all import effectively_exploit_all
 from collections import namedtuple
 
 TYPES_OBJ = {
@@ -90,9 +91,6 @@ class KBTree(gtk.TreeView):
         self.pending_insert = Queue.Queue()
         self.need_complete_tree_update = False
         
-        # here we will hold the instances, the key will be stored in the store
-        self.instances = {}
-
         # container for exploitable vulns.
         self.exploit_vulns = {}
         
@@ -194,9 +192,6 @@ class KBTree(gtk.TreeView):
         
     def _update_tree(self):
         '''Updates the GUI with the KB.
-
-        :param treestore: the gui tree to updated.
-        :param treeholder: a helping structure to calculate the diff.
 
         :return: True to keep being called by gobject.
         '''
@@ -459,9 +454,7 @@ class KBTree(gtk.TreeView):
                     # Move to Exploit Tab
                     self.w3af.mainwin.nb.set_current_page(3)
                     # Exec the exploits for this vuln
-                    exploittab.effectivelyExploitAll(self.w3af,
-                                                     exploits,
-                                                     False)
+                    effectively_exploit_all(self.w3af, exploits, False)
                     return True
             
             return False
