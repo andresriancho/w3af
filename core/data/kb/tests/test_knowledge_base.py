@@ -30,6 +30,7 @@ from core.data.kb.knowledge_base import kb, DBKnowledgeBase
 from core.data.kb.tests.test_info import MockInfo
 from core.data.kb.tests.test_vuln import MockVuln
 from core.data.kb.shell import Shell
+from core.data.kb.info import Info
 from core.data.dc.query_string import QueryString
 from core.data.db.dbms import get_default_persistent_db_instance
 from core.data.url.extended_urllib import ExtendedUrllib
@@ -235,7 +236,26 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.remove()
         
         self.assertFalse(db.table_exists(table_name))
-    
+
+    def test_types_observer(self):
+        observer = Mock()
+        info_inst = MockInfo()
+        
+        kb.add_types_observer(Info, observer)
+        kb.append('a', 'b', info_inst)
+        observer.assert_called_once_with('a', 'b', info_inst)
+        observer.reset_mock()
+        
+        info_inst = MockInfo()
+        kb.append('a', 'c', info_inst)
+        observer.assert_called_with('a', 'c', info_inst)
+        observer.reset_mock()
+
+        # Should NOT call it because it is NOT an Info instance        
+        some_int = 3
+        kb.raw_write('a', 'd', some_int)
+        self.assertEqual(observer.call_count, 0)
+        
     def test_observer_all(self):
         observer = Mock()
         

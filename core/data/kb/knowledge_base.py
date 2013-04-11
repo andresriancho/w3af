@@ -239,6 +239,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         # TODO: Why doesn't this work with a WeakValueDictionary?
         self.observers = {} #WeakValueDictionary()
+        self.type_observers = {} #WeakValueDictionary()
         self._observer_id = 0
 
     def clear(self, location_a, location_b):
@@ -376,6 +377,22 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         observer_id = self.get_observer_id()
         self.observers[(location_a, location_b, observer_id)] = observer
     
+    def add_types_observer(self, type_filter, observer):
+        '''
+        Add the observer function to the list of functions to be called when a
+        new object that is of type "type_filter" is added to the KB.
+        
+        The type_filter must be one of Info, Vuln or Shell.
+        
+        :return: None
+        '''
+        if type_filter not in (Info, Vuln, Shell):
+            msg = 'The type_filter needs to be one of Info, Vuln or Shell'
+            raise TypeError(msg)
+        
+        observer_id = self.get_observer_id()
+        self.type_observers[(type_filter, observer_id)] = observer
+        
     def get_observer_id(self):
         self._observer_id += 1
         return self._observer_id
@@ -402,6 +419,10 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             if obs_loc_a == location_a and obs_loc_b == location_b:
                 observer(location_a, location_b, value)
                 continue
+        
+        for (type_filter, _), observer in self.type_observers.items()[:]:
+            if isinstance(value, type_filter):
+                observer(location_a, location_b, value)
 
     def get_all_entries_of_class(self, klass):
         '''
