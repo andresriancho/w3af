@@ -371,6 +371,9 @@ class TestKnowledgeBase(unittest.TestCase):
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
     
+    def test_get_by_uniq_id_not_exists(self):
+        self.assertIs(kb.get_by_uniq_id(hash('foo')), None)
+        
     def test_get_by_uniq_id_duplicated_ignores_second(self):
         '''
         TODO: Analyze this case, i1 and i2 have both the same ID because they
