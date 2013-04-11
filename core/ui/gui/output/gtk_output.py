@@ -131,7 +131,7 @@ class GtkOutput(OutputPlugin):
 
     def end(self):
         global observers
-        observers = weakref.WeakSet()
+        observers = set()
 
 #pylint: disable=E1103
 def subscribe_to_messages(observer_function):
@@ -143,6 +143,8 @@ def subscribe_to_messages(observer_function):
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.subscribe(observer_function)
             break
+    else:
+        raise RuntimeError('GtkOutput not found!')
 
 
 def unsubscribe_to_messages(observer_function):
@@ -154,6 +156,8 @@ def unsubscribe_to_messages(observer_function):
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.unsubscribe(observer_function)
             break
+    else:
+        raise RuntimeError('GtkOutput not found!')
 #pylint: enable=E1103
 
 class Message(object):

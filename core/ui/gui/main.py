@@ -580,7 +580,8 @@ class MainApp(object):
             return
 
         def start_scan_wrap():
-            # This is inited before all, to have a full logging facility.
+            # Just in case, make sure we have a GtkOutput in the output manager
+            # for the current scan
             om.out.set_output_plugin_inst(GtkOutput())
             
             try:
@@ -697,8 +698,13 @@ class MainApp(object):
 
     def _scan_finished(self):
         '''
-        This method is called when the scan finishes successfully.
+        This method is called when the scan finishes successfully of because
+        of an exception.
         '''
+        # After the scan finishes, I want to be able to use the GtkOutput
+        # features for exploitation
+        om.out.set_output_plugin_inst(GtkOutput())
+        
         exception_list = self.w3af.exception_handler.get_all_exceptions()
         if exception_list:
             # damn...

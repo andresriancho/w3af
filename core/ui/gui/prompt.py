@@ -22,6 +22,8 @@ import gtk
 import gobject
 import pango
 
+import core.controllers.output_manager as om
+
 from core.ui.gui.output.message_consumer import MessageConsumer
 
 
@@ -35,11 +37,11 @@ class PromptView(gtk.TextView, MessageConsumer):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, promptText, procfunc):
+    def __init__(self, prompt_text, procfunc):
         gtk.TextView.__init__(self)
         MessageConsumer.__init__(self)
 
-        self.promptText = promptText
+        self.prompt_text = prompt_text
         self.procfunc = procfunc
         
         self.set_wrap_mode(gtk.WRAP_CHAR)
@@ -84,15 +86,14 @@ class PromptView(gtk.TextView, MessageConsumer):
         '''
         super(PromptView, self).handle_message(msg)
         
-        if msg.get_type() != 'console':
-            return
-
-        # Handling new lines
-        text = msg.get_msg()
-        if msg.get_new_line():
-            text += '\n'
-
-        self.insert_into_textbuffer(text)
+        if msg.get_type() == 'console':
+            # Handling new lines
+            text = msg.get_msg()
+            if msg.get_new_line():
+                text += '\n'
+    
+            self.insert_into_textbuffer(text)
+            yield True
 
     def insert_into_textbuffer(self, text):
         '''
@@ -237,15 +238,18 @@ class PromptView(gtk.TextView, MessageConsumer):
         self._prompt()
 
     def _prompt(self):
-        '''Show the prompt.'''
+        '''
+        Show the prompt-
+        '''
         iterl = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iterl, self.promptText + "> ")
+        self.textbuffer.insert(iterl, self.prompt_text + "> ")
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+        
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iterl)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
-        self.user_started = self.textbuffer.create_mark(
-            "user-input", iterl, True)
+        self.user_started = self.textbuffer.create_mark("user-input",
+                                                        iterl, True)
 
     def _key(self, widg, event):
         '''Separates the special keys from the other.'''
@@ -275,7 +279,7 @@ class PromptDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, promptText, procfunc):
+    def __init__(self, title, prompt_text, procfunc):
         super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gui/data/shell.png')
 
@@ -293,7 +297,7 @@ class PromptDialog(gtk.Dialog):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.prompt = PromptView(promptText, procfunc)
+        self.prompt = PromptView(prompt_text, procfunc)
         sw.add(self.prompt)
         self.vbox.pack_start(sw)
 
