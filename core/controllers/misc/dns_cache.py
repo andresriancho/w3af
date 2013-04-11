@@ -42,7 +42,7 @@ def enable_dns_cache():
     #  Copyright 2003 - 2004 Tor Hveem - <tor@bash.no>
     #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
     '''
-    om.out.debug('Enabling _dnsCache()')
+    om.out.debug('Enabling _dns_cache()')
 
     if not hasattr(socket, 'already_configured'):
         socket._getaddrinfo = socket.getaddrinfo
