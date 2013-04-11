@@ -410,13 +410,17 @@ class KBTree(gtk.TreeView):
             x_cell -= self.get_cell_area(path, tv_column).x
             
             # Get the potential vuln object
-            #
+            vuln = self.get_instance(path)
             # FIXME: for some reason, in some edge case, the get_instance
             #        returns a dict instead of a vuln object which then
-            #        triggers a vulnerability in self._is_exploitable
+            #        triggers a bug in self._is_exploitable
             #
             # https://github.com/andresriancho/w3af/issues/181
-            vuln = self.get_instance(path)
+            #
+            # The following lines were added to debug this issue
+            if isinstance(vuln, dict):
+                msg = 'Expected Info, got dict instead. Contents: %r'
+                raise Exception(msg % vuln)
 
             # Is the cursor over an 'exploit' icon?
             if vuln is not None and 0 <= x_cell <= 18 and\
