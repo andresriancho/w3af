@@ -417,11 +417,13 @@ class KBTree(gtk.TreeView):
             
             # Get the potential vuln object
             vuln = self.get_instance(path)
+            
+            # https://github.com/andresriancho/w3af/issues/181
             # FIXME: for some reason, in some edge case, the get_instance
             #        returns a dict instead of a vuln object which then
-            #        triggers a bug in self._is_exploitable
-            #
-            # https://github.com/andresriancho/w3af/issues/181
+            #        triggers a bug, so we have a workaround for it:
+            if not hasattr(vuln, 'get_id'):
+                return False
 
             # Is the cursor over an 'exploit' icon?
             if vuln is not None and 0 <= x_cell <= 18 and\
@@ -453,7 +455,14 @@ class KBTree(gtk.TreeView):
             if 0 <= x_cell <= 18:
                 # Get the potential vuln object
                 vuln = self.get_instance(path)
-    
+                
+                # https://github.com/andresriancho/w3af/issues/181
+                # FIXME: for some reason, in some edge case, the get_instance
+                #        returns a dict instead of a vuln object which then
+                #        triggers a bug, so we have a workaround for it:
+                if not hasattr(vuln, 'get_id'):
+                    return False
+
                 if vuln is not None and self._is_exploitable(vuln.get_id()):
                     exploits = self._get_exploits(vuln.get_id())
                     # Move to Exploit Tab
