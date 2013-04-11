@@ -312,7 +312,12 @@ class url_fuzzer(CrawlPlugin):
 
         :return : Sets self._head to the correct value, nothing is returned.
         '''
-        if 'HEAD' in kb.kb.get('allowed_methods', 'methods'):
+        allowed_methods_infos = kb.kb.get('allowed_methods', 'methods')
+        allowed_methods = []
+        for info in allowed_methods_infos:
+            allowed_methods.extend(info['methods'])
+        
+        if 'HEAD' in allowed_methods:
             self._head = True
         else:
             self._head = False
@@ -357,13 +362,13 @@ class url_fuzzer(CrawlPlugin):
         return '''
         This plugin will try to find new URL's based on the input. If the input
         is for example:
-            - http://a/a.html
+            - http://host.tld/a.html
 
         The plugin will request:
-            - http://a/a.html.tgz
-            - http://a/a.tgz
-            - http://a/a.zip
-            ... etc
+            - http://host.tld/a.html.tgz
+            - http://host.tld/a.tgz
+            ...
+            - http://host.tld/a.zip
 
         If the response is different from the 404 page (whatever it may be,
         automatic detection is performed), then we have found a new URL. This
