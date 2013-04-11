@@ -19,10 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from functools import wraps
+
 import core.controllers.output_manager as om
 
 
 def read_debug(fn):
+    
+    @wraps(fn)
     def new(self, filename):
         #   Run the original function
         result = fn(self, filename)
