@@ -231,7 +231,7 @@ class SQLMapShell(ReadShell):
         self._rOS = read_os_detection(self.read)
         
         # TODO: Could we determine this by calling some payloads?
-        self._rSystem = ''
+        self._rSystem = 'sqlmap'
         self._rSystemName = 'db'
         self._rUser = 'sqlmap'
         
