@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import itertools
 import os.path
 import re
+import codecs
 
 from collections import namedtuple
 
@@ -342,7 +343,7 @@ class NiktoTestParser(object):
                   The parsed parameters from the scan database line)
         '''
         try:
-            db_file = open(self.filename, "r")
+            db_file = codecs.open(self.filename, "r", "utf-8" )
         except Exception, e:
             msg = 'Failed to open the scan database. Exception: "%s".'
             om.out.error(msg % e)
@@ -417,7 +418,8 @@ class NiktoTestParser(object):
             10. 'message'
             11. 'data'
             12. 'headers'
-                        
+        
+        :param line: A unicode string     
         :return: Yield NiktoTests which contain the information above and has
                  the final URI with all @VARS replaced.
                  
@@ -426,6 +428,9 @@ class NiktoTestParser(object):
                  response matched (match_1, match_1_or, match_1_and, fail_1,
                  fail_2).
         '''
+        if not isinstance(line, unicode):
+            raise TypeError('Database information needs to be sent as unicode.')
+        
         splitted_line = line.split('","')
 
         if len(splitted_line) != 13:

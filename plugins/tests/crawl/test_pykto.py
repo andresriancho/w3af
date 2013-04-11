@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 test_pykto.py
 
@@ -46,7 +47,7 @@ class TestPykto(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('pykto', 'vuln')
-        self.assertGreater(len(vulns), 10, vulns)
+        self.assertGreater(len(vulns), 5, vulns)
 
         urls = self.kb.get_all_known_urls()
         self.assertTrue(len(urls) > 5, urls)
@@ -190,8 +191,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"000003","0","1234576890ab","@CGIDIRScart32.exe","GET","200"'\
-               ',"","","","","request cart32.exe/cart32clientlist","",""'
+        line = u'"000003","0","1234576890ab","@CGIDIRScart32.exe","GET","200"'\
+                ',"","","","","request cart32.exe/cart32clientlist","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 1)
@@ -225,8 +226,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"0","0","","/docs/JUNK(5)","GET","200"'\
-               ',"","","","","","",""'
+        line = u'"0","0","","/docs/JUNK(5)","GET","200"'\
+                ',"","","","","","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 1)
@@ -242,8 +243,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"0","0","","/docs/","GET","200"'\
-               ',"","","","","","",""'
+        line = u'"0","0","","/docs/","GET","200"'\
+                ',"","","","","","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 1)
@@ -258,8 +259,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"0","0","","@CGIDIRS","GET","200"'\
-               ',"","","","","","",""'
+        line = u'"0","0","","@CGIDIRS","GET","200"'\
+                ',"","","","","","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 1)
@@ -276,8 +277,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"0","0","","@ADMIN","GET","200"'\
-               ',"","","","","","",""'
+        line = u'"0","0","","@ADMIN","GET","200"'\
+                ',"","","","","","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 2)
@@ -295,8 +296,8 @@ class TestNiktoTestParser(PluginTest):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
         
-        line = '"0","0","","@ADMIN@USERS","GET","200"'\
-               ',"","","","","","",""'
+        line = u'"0","0","","@ADMIN@USERS","GET","200"'\
+                ',"","","","","","",""'
         nikto_tests = [i for i in nikto_parser._parse_db_line(line)]
         
         self.assertEqual(len(nikto_tests), 4)
@@ -304,3 +305,17 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(['/adm/sys', '/adm/root', '/admin/sys', '/admin/root'],
                          [nt.uri.get_path() for nt in nikto_tests])
         
+    def test_parse_db_line_raw_bytes(self):
+        config = Config(['/cgi-bin/'],[],[],[],[])
+        url = URL('http://moth/')
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        
+        line = '"006251","0","1","/administraçao.php","GET","200","","",""'\
+               ',"","Admin login page/section found.","",""'
+        try:
+            [_ for _ in nikto_parser._parse_db_line(line)]
+        except TypeError:
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
