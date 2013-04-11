@@ -73,7 +73,7 @@ class ReadShell(Shell):
                 download <remote> <local>       Download <remote> file to <local> file system location
                 exit                            Exit this shell session
             '''
-        return textwrap.dedent(_help)        
+        return textwrap.dedent(_help)
 
     @download_debug
     def download(self, remote_filename, local_filename):
