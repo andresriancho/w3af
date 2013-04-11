@@ -296,8 +296,8 @@ class w3af_core_strategy(object):
             'infrastructure']
 
         if crawl_plugins or infrastructure_plugins:
-            discovery_plugins = crawl_plugins
-            discovery_plugins.extend(infrastructure_plugins)
+            discovery_plugins = infrastructure_plugins
+            discovery_plugins.extend(crawl_plugins)
 
             self._discovery_consumer = crawl_infrastructure(discovery_plugins,
                                                             self._w3af_core,
