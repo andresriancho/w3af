@@ -206,7 +206,7 @@ class SQLMapWrapper(object):
         :return: The contents of the file that was passed as parameter
         '''
         cmd, process = self._wrap_param(['--file-read=%s' % filename,])
-        local_file_re = re.compile("/etc/passwd file saved to:    '(.*)'")
+        local_file_re = re.compile("the local file (.*?) and")
         # pylint: disable=E1101
         stdout = process.stdout.read()
         
