@@ -29,6 +29,7 @@ import core.controllers.output_manager as om
 from core.data.kb.read_shell import ReadShell
 from core.data.dc.form import Form
 from core.controllers.plugins.attack_plugin import AttackPlugin
+from core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -219,3 +220,14 @@ class SQLMapShell(ReadShell):
         '''
         return '<sqlmap shell object>'
     
+    def _identify_os(self):
+        '''
+        Identify the remote operating system by reading different files from
+        the OS.
+        '''
+        self._rOS = read_os_detection(self.read)
+        
+        # TODO: Could we determine this by calling some payloads?
+        self._rSystem = ''
+        self._rSystemName = 'db'
+        self._rUser = 'sqlmap'
