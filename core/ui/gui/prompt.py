@@ -22,8 +22,6 @@ import gtk
 import gobject
 import pango
 
-import core.controllers.output_manager as om
-
 from core.ui.gui.output.message_consumer import MessageConsumer
 
 
