@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import select
 import Queue
+import textwrap
 
 from multiprocessing.dummy import Process
 
@@ -233,3 +234,42 @@ class SQLMapShell(ReadShell):
         self._rSystem = ''
         self._rSystemName = 'db'
         self._rUser = 'sqlmap'
+        
+    def help(self, command):
+        '''
+        Handle the help command.
+        '''
+        if command in ('read', 'download'):
+            return super(SQLMapShell, self).help(command)
+        
+        elif command == 'sqlmap':
+            _help = '''\
+            sqlmap:
+                Run sqlmap and specify any extra parameters.
+            
+            Examples:
+                sqlmap -T users -D example_db --dump
+                sqlmap --tables
+                sqlmap --dbs
+            '''
+        else:
+            _help = '''\
+            Available commands:
+                help                            Display this information
+                
+                lsp                             List payloads
+                payload <payload>               Execute "payload" and get the result
+                read <file>                     Read the remote server <file> and echo to this console
+                download <remote> <local>       Download <remote> file to <local> file system location
+                
+                dbs                             List DBMS databases
+                tables                          List DBMS tables for the current database 
+                users                           List DBMS users
+                dump                            Dump table information
+                
+                sqlmap                          Run a sqlmap command. For example, the "dbs" command
+                                                is an alias for "sqlmap --dbs".
+                
+                exit                            Exit this shell session
+            '''
+        return textwrap.dedent(_help)
