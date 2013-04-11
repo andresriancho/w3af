@@ -53,10 +53,16 @@ class KBTree(gtk.TreeView):
     def __init__(self, w3af, ifilter, title, strict):
         self.strict = strict
         self.w3af = w3af
-
-        # simple empty Tree Store
-        # columns: string to show; key for the plugin instance, icon,
-        #          colorLevel, color, child_count
+        
+        # simple Tree Store
+        # columns: 
+        #    * exploit icon,
+        #    * string to show,
+        #    * key for the plugin instance,
+        #    * vulnerability icon,
+        #    * color_level,
+        #    * color,
+        #    * child_count
         self.treestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, str,
                                        gtk.gdk.Pixbuf, int, str, str)
         gtk.TreeView.__init__(self, self.treestore)
@@ -172,7 +178,7 @@ class KBTree(gtk.TreeView):
         
         obj_type = TYPES_OBJ.get(type(info_inst))
         color_tuple = (obj_type, obj_severity)
-        colorlevel = helpers.KB_COLOR_LEVEL.get(color_tuple, 0)
+        color_level = helpers.KB_COLOR_LEVEL.get(color_tuple, 0)
         
         # Note that I can't use id(instance) here since the
         # instances that come here are created from the SQLite DB
@@ -183,9 +189,9 @@ class KBTree(gtk.TreeView):
         vuln_id = info_inst.get_id()
         
         InfoData = namedtuple('InfoData', 'location_a location_b obj_name'\
-                                          ' obj_type colorlevel idinstance'\
+                                          ' obj_type color_level idinstance'\
                                           ' severity vuln_id')
-        data = InfoData(location_a, location_b, obj_name, obj_type, colorlevel,
+        data = InfoData(location_a, location_b, obj_name, obj_type, color_level,
                         idinstance, obj_severity, vuln_id)
         
         self.pending_insert.put(data)
@@ -231,7 +237,7 @@ class KBTree(gtk.TreeView):
         If data.location_a is not already in the treestore, add it.
         
         If data.location_a is in the treestore, make sure we paint it the right
-        color based on data.colorlevel
+        color based on data.color_level
         
         Update the child count, keep in mind that the child count for this
         level is increased only when a new data.location_b is added.
@@ -244,7 +250,7 @@ class KBTree(gtk.TreeView):
         if not contains_location_a:
             # Add the new data to the treestore
             child_count = '( 1 )'
-            color = helpers.KB_COLORS[data.colorlevel]
+            color = helpers.KB_COLORS[data.color_level]
             store_iter = self.treestore.append(None, [None, data.location_a,
                                                       0, None, 0,
                                                       color,
@@ -267,8 +273,8 @@ class KBTree(gtk.TreeView):
         # Make sure we paint it the right color, if it was originally of color
         # X and then we add a vulnerability that has a higher color level then
         # we need to "upgrade" the color
-        if data.colorlevel > self.treestore[store_iter][4]:
-            color = helpers.KB_COLORS[data.colorlevel] 
+        if data.color_level > self.treestore[store_iter][4]:
+            color = helpers.KB_COLORS[data.color_level] 
             self.treestore[store_iter][5] = color
     
     def _handle_second_level(self, data):
@@ -292,7 +298,7 @@ class KBTree(gtk.TreeView):
         if not contains_location_ab:
             # Add the new data to the treestore
             child_count = '( 1 )'
-            color = helpers.KB_COLORS[data.colorlevel]
+            color = helpers.KB_COLORS[data.color_level]
             a_iter = location_a_row.iter
             store_iter = self.treestore.append(a_iter, [None, data.location_b,
                                                         0, None, 0,
@@ -316,8 +322,8 @@ class KBTree(gtk.TreeView):
         # Make sure we paint it the right color, if it was originally of color
         # X and then we add a vulnerability that has a higher color level then
         # we need to "upgrade" the color
-        if data.colorlevel > self.treestore[store_iter][4]:
-            color = helpers.KB_COLORS[data.colorlevel] 
+        if data.color_level > self.treestore[store_iter][4]:
+            color = helpers.KB_COLORS[data.color_level] 
             self.treestore[store_iter][5] = color
                 
     def _add_info(self, data):
@@ -325,7 +331,7 @@ class KBTree(gtk.TreeView):
         Add the information object to the KB's third level at (location_a,
         location_b).
         
-        Paint the vulnerability name using colorlevel.
+        Paint the vulnerability name using color_level.
         
         :return: None.
         '''
@@ -344,13 +350,13 @@ class KBTree(gtk.TreeView):
     
             self._map_exploits_to_vuln(data.vuln_id)
         
-        color = helpers.KB_COLORS[data.colorlevel] 
+        color = helpers.KB_COLORS[data.color_level] 
         
         #
         # Store it!
         #
         tree_store_info = [exploit_icon, data.obj_name, data.idinstance,
-                           icon, data.colorlevel, color, '']
+                           icon, data.color_level, color, '']
 
         location_a = [r for r in self.treestore if \
                       r[1] == data.location_a][0]
@@ -416,11 +422,6 @@ class KBTree(gtk.TreeView):
             #        triggers a bug in self._is_exploitable
             #
             # https://github.com/andresriancho/w3af/issues/181
-            #
-            # The following lines were added to debug this issue
-            if isinstance(vuln, dict):
-                msg = 'Expected Info, got dict instead. Contents: %r'
-                raise Exception(msg % vuln)
 
             # Is the cursor over an 'exploit' icon?
             if vuln is not None and 0 <= x_cell <= 18 and\
