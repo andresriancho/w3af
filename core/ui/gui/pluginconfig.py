@@ -57,18 +57,19 @@ class OptionsPanel(gtk.VBox):
         self.pack_start(titl)
 
         # The long description of the plugin
-        longLabel = WrapLabel()
-        longLabel.set_text(longdesc)
-        longLabel.set_alignment(0.0, 0.5)
-        longLabel.show()
-        self.pack_start(longLabel)
+        long_label = WrapLabel()
+        long_label.set_text(longdesc)
+        long_label.set_alignment(0.0, 0.5)
+        long_label.show()
+        self.pack_start(long_label)
 
         # last row buttons
         hbox = gtk.HBox()
-        save_btn = gtk.Button(_("Save configuration"))
+        save_btn = gtk.Button(_("Save"), gtk.STOCK_SAVE)
         save_btn.show()
         hbox.pack_start(save_btn, expand=False, fill=False)
-        rvrt_btn = gtk.Button(_("Revert to previous values"))
+        rvrt_btn = gtk.Button(_("Revert"),
+                              gtk.STOCK_REVERT_TO_SAVED)
         rvrt_btn.show()
         hbox.pack_start(rvrt_btn, expand=False, fill=False)
         hbox.show()
@@ -165,11 +166,11 @@ class ConfigPanel(gtk.VBox):
             vbox.pack_start(titl)
 
         if longdesc is not None:
-            longLabel = gtk.Label()
-            longLabel.set_text(longdesc)
-            longLabel.set_alignment(0.0, 0.5)
-            longLabel.show()
-            vbox.pack_start(longLabel)
+            long_label = gtk.Label()
+            long_label.set_text(longdesc)
+            long_label.set_alignment(0.0, 0.5)
+            long_label.show()
+            vbox.pack_start(long_label)
 
         labl = gtk.Label(label)
         labl.show()

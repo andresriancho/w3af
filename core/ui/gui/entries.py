@@ -987,7 +987,7 @@ class ConfigOptions(gtk.VBox, Preferences):
             self.rvrtBtn, False, False, padding=self.def_padding)
         buttonsArea.pack_start(
             self.saveBtn, False, False, padding=self.def_padding)
-        self.saveBtn.connect("clicked", self._savePanel)
+        self.saveBtn.connect("clicked", self._save_panel)
         self.saveBtn.set_sensitive(False)
         self.rvrtBtn.set_sensitive(False)
         self.rvrtBtn.connect("clicked", self._revertPanel)
@@ -1059,7 +1059,7 @@ class ConfigOptions(gtk.VBox, Preferences):
         #if propag is not None:
         #   propag.change(widg, like_initial)
 
-    def _savePanel(self, widg):
+    def _save_panel(self, widg):
         """Saves the config changes to the plugins.
 
         :param widg: the widget who generated the signal

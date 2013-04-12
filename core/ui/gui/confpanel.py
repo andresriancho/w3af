@@ -23,6 +23,7 @@ import gtk
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.plugin import Plugin
 from core.data.options.option_list import OptionList
+from core.ui.gui.constants import W3AF_ICON
 from core.ui.gui import entries, helpers
 
 
@@ -49,7 +50,8 @@ class OnlyOptions(gtk.VBox):
         self.propagAnyWidgetChanged = helpers.PropagateBuffer(
             self._changedAnyWidget)
         self.propagLabels = {}
-
+        self.saved_successfully = False
+        
         # options
         self.options = OptionList()
         options = plugin.get_options()
@@ -68,7 +70,7 @@ class OnlyOptions(gtk.VBox):
             self.options.append(opt)
 
         # buttons
-        save_btn.connect("clicked", self._savePanel, plugin)
+        save_btn.connect("clicked", self._save_panel, plugin)
         save_btn.set_sensitive(False)
         rvrt_btn.set_sensitive(False)
         rvrt_btn.connect("clicked", self._revertPanel)
@@ -198,11 +200,11 @@ class OnlyOptions(gtk.VBox):
         '''
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
                                 gtk.BUTTONS_OK, helpmsg)
-        dlg.set_title('Plugin help')
+        dlg.set_title('Configuration help')
         dlg.run()
         dlg.destroy()
 
-    def _savePanel(self, widg, plugin):
+    def _save_panel(self, widg, plugin):
         '''Saves the config changes to the plugins.
 
         :param widg: the widget who generated the signal
@@ -217,6 +219,7 @@ class OnlyOptions(gtk.VBox):
             if hasattr(opt.widg, "is_valid"):
                 if not opt.widg.is_valid():
                     invalid.append(opt.get_name())
+        
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"\
                   " following parameter(s):\n\n"
@@ -232,15 +235,16 @@ class OnlyOptions(gtk.VBox):
         try:
             # Get the value from the GTK widget and set it to the option object
             for opt in self.options:
-                helpers.coreWrap(opt.set_value, opt.widg.get_value())
+                SetOptionsWrapper(opt.set_value, opt.widg.get_value())
 
             if isinstance(plugin, Plugin):
-                helpers.coreWrap(self.w3af.plugins.set_plugin_options,
-                                 plugin.ptype, plugin.pname, self.options)
+                SetOptionsWrapper(self.w3af.plugins.set_plugin_options,
+                                  plugin.ptype, plugin.pname, self.options)
             else:
-                helpers.coreWrap(plugin.set_options, self.options)
-        except w3afException:
+                SetOptionsWrapper(plugin.set_options, self.options)
+        except (w3afException, ValueError):
             return
+        
         for opt in self.options:
             opt.widg.save()
 
@@ -248,7 +252,8 @@ class OnlyOptions(gtk.VBox):
         self.w3af.mainwin.profiles.profile_changed(changed=True)
 
         # Status bar
-        self.w3af.mainwin.sb("Plugin configuration saved successfully")
+        self.w3af.mainwin.sb("Configuration saved successfully")
+        self.saved_successfully = True
 
     def _revertPanel(self, *vals):
         '''Revert all widgets to their initial state.'''
@@ -258,6 +263,7 @@ class OnlyOptions(gtk.VBox):
         msg = "The plugin configuration was reverted to its last saved state"
         self.w3af.mainwin.sb(msg)
 
+SetOptionsWrapper = helpers._Wrapper((w3afException, ValueError))
 
 class ConfigDialog(gtk.Dialog):
     '''Puts a Config panel inside a Dialog.
@@ -272,30 +278,31 @@ class ConfigDialog(gtk.Dialog):
     '''
     def __init__(self, title, w3af, plugin, overwriter=None, showDesc=False):
         super(ConfigDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
+        self.set_icon_from_file(W3AF_ICON)
         if overwriter is None:
             overwriter = {}
 
         # buttons and config panel
-        save_btn = self._button("Save configuration")
-        rvrt_btn = self._button("Revert to previous configuration")
-        close_btn = self._button(stock=gtk.STOCK_CLOSE)
+        save_btn = self._button(_("Save configuration"), gtk.STOCK_SAVE)
+        rvrt_btn = self._button(_("Revert"),
+                                gtk.STOCK_REVERT_TO_SAVED)
+        close_btn = self._button(_('Close'), stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.get_name(), plugin.get_type()
 
         # Show the description
         if showDesc:
             # The long description of the plugin
-            longLabel = gtk.Label()
-            longLabel.set_text(plugin.get_long_desc())
-            longLabel.set_alignment(0.0, 0.5)
-            longLabel.show()
-            self.vbox.pack_start(longLabel)
+            long_label = gtk.Label()
+            long_label.set_text(plugin.get_long_desc())
+            long_label.set_alignment(0.0, 0.5)
+            long_label.show()
+            self.vbox.pack_start(long_label)
 
         # Save it , I need it when I inherit from this class
         self._plugin = plugin
-        self._panel = OnlyOptions(
-            self, w3af, plugin, save_btn, rvrt_btn, overwriter)
+        self._panel = OnlyOptions(self, w3af, plugin, save_btn,
+                                  rvrt_btn, overwriter)
         self.vbox.pack_start(self._panel)
 
         self.like_initial = True
@@ -303,9 +310,9 @@ class ConfigDialog(gtk.Dialog):
         self.run()
         self.destroy()
 
-    def _button(self, text="", stock=None):
+    def _button(self, text="", stock=None, tooltip=''):
         '''Creates a button.'''
-        b = gtk.Button(text, stock)
+        b = entries.SemiStockButton(text, stock, tooltip)
         b.show()
         self.action_area.pack_start(b)
         return b
@@ -372,6 +379,6 @@ class AdvancedTargetConfigDialog(ConfigDialog):
         dlg.destroy()
 
         if saveConfig:
-            self._panel._savePanel(self._panel, self._plugin)
+            self._panel._save_panel(self._panel, self._plugin)
 
         return False
