@@ -78,7 +78,7 @@ class FileUploadTemplate(BaseTemplate):
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
         '''
-        return 'Arbitrary file upload vulnerability'
+        return 'Arbitrary file upload'
 
     def get_vulnerability_desc(self):
         return 'Code execution through arbitrary file upload vulnerability'

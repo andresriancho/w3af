@@ -86,7 +86,7 @@ class LocalFileReadTemplate(BaseTemplate):
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
         '''
-        return 'Local file read vulnerability'
+        return 'Arbitrary file read'
 
     def get_vulnerability_desc(self):
         return 'Arbitrary local file read vulnerability.'

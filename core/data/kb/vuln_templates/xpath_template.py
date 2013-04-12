@@ -63,7 +63,7 @@ class XPathTemplate(BaseTemplate):
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
         '''
-        return 'XPath injection vulnerability'
+        return 'XPath injection'
 
     def get_vulnerability_desc(self):
         return 'XPath injection vulnerability'
