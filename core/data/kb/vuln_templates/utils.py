@@ -74,3 +74,8 @@ def get_template_names():
     templates = get_all_templates()
     template_names = [t.get_short_name() for t in templates]
     return template_names
+
+def get_template_long_names():
+    templates = get_all_templates()
+    template_names = [t.get_vulnerability_name() for t in templates]
+    return template_names
