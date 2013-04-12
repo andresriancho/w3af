@@ -26,7 +26,7 @@ from core.data.request.fuzzable_request import FuzzableRequest
 
 class SQLiTemplate(BaseTemplate):
     '''
-    Vulnerability template for eval vulnerability.
+    Vulnerability template for SQL injection vulnerability.
     '''
     def __init__(self):
         super(SQLiTemplate, self).__init__()
