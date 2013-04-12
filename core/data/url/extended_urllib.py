@@ -145,6 +145,7 @@ class ExtendedUrllib(object):
         '''
         This method is called when the ExtendedUrllib is not going to be used anymore.
         '''
+        self._opener = None
         self.clear()
         self.settings.clear_cookies()
         self.settings.clear_cache()
