@@ -41,17 +41,18 @@ class eval(AuditPlugin):
     :author: Viktor Gazdag ( woodspeed@gmail.com )
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
+    PRINT_REPEATS = 5
 
     PRINT_STRINGS = (
         # PHP http://php.net/eval
-        "echo str_repeat('%s',5);",
+        "echo str_repeat('%%s',%s);" % PRINT_REPEATS,
         # Perl http://perldoc.perl.org/functions/eval.html
-        "print '%s'x5",
+        "print '%%s'x%s" % PRINT_REPEATS,
         # Python
         # http://docs.python.org/reference/simple_stmts.html#the-exec-statement
-        "print '%s'*5",
+        "print '%%s'*%s" % PRINT_REPEATS,
         # ASP
-        "Response.Write(new String(\"%s\",5))"
+        "Response.Write(new String(\"%%s\",%s))" % PRINT_REPEATS,
     )
 
     WAIT_OBJ = (
@@ -78,7 +79,7 @@ class eval(AuditPlugin):
         # Create some random strings, which the plugin will use.
         # for the fuzz_with_echo
         self._rnd = rand_alpha(5)
-        self._expected_result = self._rnd * 5
+        self._expected_result = self._rnd * self.PRINT_REPEATS
 
         # User configured parameters
         self._use_time_delay = True
