@@ -122,8 +122,8 @@ class ConfigPanel(gtk.VBox):
     def config(self, plugin_tree, plugin, longdesc):
         '''Creates and shows the configuration panel.
 
+        :param plugin_tree: The plugin tree that lists all plugins of this type
         :param plugin: the plugin to configure
-        :param xmloptions: the options in xml
         :param longdesc: the long description of the plugin
         '''
         # A title with the name of the plugin in bold and with a bigger font
