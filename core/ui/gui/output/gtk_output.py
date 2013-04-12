@@ -144,8 +144,9 @@ def subscribe_to_messages(observer_function):
             plugin_inst.subscribe(observer_function)
             break
     else:
-        raise RuntimeError('GtkOutput not found!')
-
+        gtk_output = GtkOutput()
+        om.out.set_output_plugin_inst(gtk_output)
+        gtk_output.subscribe(observer_function)
 
 def unsubscribe_to_messages(observer_function):
     '''
@@ -156,8 +157,6 @@ def unsubscribe_to_messages(observer_function):
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.unsubscribe(observer_function)
             break
-    else:
-        raise RuntimeError('GtkOutput not found!')
 #pylint: enable=E1103
 
 class Message(object):
