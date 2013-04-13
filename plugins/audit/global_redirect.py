@@ -45,8 +45,8 @@ class global_redirect(AuditPlugin):
         # Internal variables
         self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>',
                                      re.IGNORECASE | re.DOTALL)
-        self._meta_url_re = re.compile(
-            '.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
+        self._meta_url_re = re.compile('.*?;URL=(.*)',
+                                       re.IGNORECASE | re.DOTALL)
 
     def audit(self, freq, orig_response):
         '''
@@ -86,9 +86,9 @@ class global_redirect(AuditPlugin):
         lheaders = response.get_lower_case_headers()
 
         response = self._30x_code_redirect(response, lheaders) or \
-            self._refresh_redirect(response, lheaders) or \
-            self._meta_redirect(response) or \
-            self._javascript_redirect(response)
+                   self._refresh_redirect(response, lheaders) or \
+                   self._meta_redirect(response) or \
+                   self._javascript_redirect(response)
 
         return response
 
