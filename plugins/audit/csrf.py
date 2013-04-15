@@ -61,7 +61,7 @@ class csrf(AuditPlugin):
 
     def audit(self, freq, orig_response):
         '''
-        Tests a URL for csrf vulnerabilities.
+        Tests a URL for CSRF vulnerabilities.
 
         :param freq: A FuzzableRequest
         '''
@@ -184,7 +184,7 @@ class csrf(AuditPlugin):
         Please note that this method generates lots of false positives and
         negatives. Read the github issue for more information.
         
-        @see: https://github.com/andresriancho/w3af/issues/120
+        :see: https://github.com/andresriancho/w3af/issues/120
         :return: True if the CSRF token is NOT verified by the web application
         '''
         token_pname_lst = token.keys()
