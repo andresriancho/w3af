@@ -1,5 +1,5 @@
 '''
-payloads.py
+shell_handler.py
 
 Copyright 2009 Andres Riancho
 
@@ -99,7 +99,7 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         real_extension = extension
         known_framework.append((filename, real_extension))
     else:
-        powered_by_header_list = kb.kb.get('server_header', 'powered_by_string')
+        powered_by_header_list = kb.kb.raw_read('server_header', 'powered_by_string')
         filename = ''
 
         file_list = [x for x in os.listdir(path) if x.startswith(type_of_list)]
@@ -127,7 +127,7 @@ def _get_file_list(type_of_list, extension, force_extension=False):
     # We keep the order, first the ones we think could work, then the ones that may
     # work but... are just a long shot.
     known_framework.extend(uncertain_framework)
-
+    
     res = []
     for filename, real_extension in known_framework:
         try:
