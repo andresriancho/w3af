@@ -38,7 +38,7 @@ class xssed_dot_com(InfrastructurePlugin):
     Search in xssed.com to find xssed pages.
 
     :author: Nicolas Crocfer (shatter@shatter-blog.net)
-    :author: Fix: Set "." in front of the root domain to limit the search - Raul Siles
+    :author: Raul Siles: set "." in front of the root domain to limit search
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -64,19 +64,19 @@ class xssed_dot_com(InfrastructurePlugin):
                 "/search?key=." + target_domain)
             response = self._uri_opener.GET(check_url)
         except w3afException, e:
-            msg = 'An exception was raised while running xssed_dot_com plugin.'
-            msg += 'Exception: "%s".' % e
+            msg = 'An exception was raised while running xssed_dot_com'\
+                  ' plugin. Exception: "%s".' % e
             om.out.debug(msg)
         else:
             #
             #   Only parse the xssed result if we have it,
             #
             try:
-                return self._parse_xssed_result(response)
+                self._parse_xssed_result(response)
             except w3afException, e:
                 self._exec = True
-                msg = 'An exception was raised while running xssed_dot_com plugin. '
-                msg += 'Exception: "%s".' % e
+                msg = 'An exception was raised while running xssed_dot_com'\
+                      ' plugin. Exception: "%s".' % e
                 om.out.debug(msg)
 
     def _decode_xssed_url(self, url):
@@ -148,8 +148,6 @@ class xssed_dot_com(InfrastructurePlugin):
             #   Nothing to see here...
             om.out.debug('xssed_dot_com did not find any previously reported'
                          ' XSS vulnerabilities.')
-
-        return []
 
     def get_long_desc(self):
         return '''
