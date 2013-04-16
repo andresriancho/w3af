@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import core.data.parsers.parser_cache as parser_cache
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
