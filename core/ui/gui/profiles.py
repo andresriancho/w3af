@@ -20,13 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk
+import cgi
+
 from core.ui.gui import helpers, entries
 from core.controllers.exceptions import w3afException
-
-# Profile objects
 from core.data.profile.profile import profile as profile
-
-import cgi
 
 
 class ProfileList(gtk.TreeView):
@@ -378,7 +376,9 @@ class ProfileList(gtk.TreeView):
         try:
             self.w3af.profiles.use_profile(profile_obj.get_profile_file())
         except w3afException, w3:
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3))
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_OK,
+                                    str(w3))
             dlg.run()
             dlg.destroy()
 
