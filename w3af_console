@@ -7,8 +7,8 @@ import base64
  
 # First of all, we need to change the working directory to the w3af directory.
 current_dir = os.getcwd()
-script_dir = os.path.dirname(sys.argv[0]) or '.'
-os.chdir( script_dir )
+script_dir = os.path.dirname(os.path.realpath(__file__)) or '.'
+os.chdir(script_dir)
 
 def back_to_current_dir():
     os.chdir( current_dir )
