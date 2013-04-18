@@ -114,7 +114,7 @@ class FoundExceptionsStatusBar(gtk.EventBox):
 
         self.hbox = gtk.HBox()
 
-        self.set_tooltip_text(_("Exceptions were raised during the scan"))
+        self.set_tooltip_text(_("Exceptions raised during the scan"))
 
         self.exceptions = _Guarded("excp")
         self.hbox.pack_start(self.exceptions.icon, False, False, padding=2)
@@ -127,7 +127,7 @@ class FoundExceptionsStatusBar(gtk.EventBox):
 
     def show_all(self, num):
         '''Updates the object and shows all.'''
-        self.exceptions.quant = num
+        self.exceptions.inc()
         super(FoundExceptionsStatusBar, self).show_all()
 
     def _report_bug(self, widg, evt):
