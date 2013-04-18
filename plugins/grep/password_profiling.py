@@ -134,13 +134,16 @@ class password_profiling(GrepPlugin):
         '''
         "merge" both maps and update the repetitions
         '''
+        if lang not in self.COMMON_WORDS.keys():
+            lang = 'unknown'
+            
         for d in data:
 
             if len(d) >= 4 and d.isalnum() and \
-                not d.isdigit() and \
-                d.lower() not in self.BANNED_WORDS and \
-                d.lower() not in self.COMMON_WORDS[lang] and \
-                    not request.sent(d):
+            not d.isdigit() and \
+            d.lower() not in self.BANNED_WORDS and \
+            d.lower() not in self.COMMON_WORDS[lang] and \
+            not request.sent(d):
 
                 if d in old_data:
                     old_data[d] += data[d]
