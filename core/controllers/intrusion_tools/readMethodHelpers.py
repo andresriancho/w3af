@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
-from core.controllers.exceptions import w3afException
+
+from core.controllers.exceptions import OSDetectionException
 
 
 def read_os_detection(remote_read):
@@ -58,4 +58,4 @@ def read_os_detection(remote_read):
                 'Identified remote OS as Windows, returning "windows".')
             return 'windows'
 
-    raise w3afException('Failed to get/identify the remote OS.')
+    raise OSDetectionException('Failed to get/identify the remote OS.')

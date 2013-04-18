@@ -126,3 +126,6 @@ class DBException(w3afException):
 
 class FileException(w3afException):
     pass
+
+class OSDetectionException(w3afException):
+    pass
