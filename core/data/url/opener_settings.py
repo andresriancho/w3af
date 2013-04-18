@@ -411,137 +411,138 @@ class OpenerSettings(Configurable):
         '''
         :return: A list of option objects for this plugin.
         '''
-        d1 = 'The timeout for connections to the HTTP server'
-        h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet'\
-             ' connections.'
-        o1 = opt_factory('timeout', cfg.get('timeout'), d1, 'integer', help=h1)
-
-        d2 = 'Set the headers filename. This file has additional headers which'\
-             ' are added to each request.'
-        o2 = opt_factory('headers_file', cfg.get('headers_file'), d2, 'string')
-
-        d3 = 'Set the basic authentication username for HTTP requests'
-        o3 = opt_factory('basic_auth_user', cfg.get(
-            'basic_auth_user'), d3, 'string', tabid='Basic HTTP Authentication')
-
-        d4 = 'Set the basic authentication password for HTTP requests'
-        o4 = opt_factory('basic_auth_passwd', cfg.get(
-            'basic_auth_passwd'), d4, 'string', tabid='Basic HTTP Authentication')
-
-        d5 = 'Set the basic authentication domain for HTTP requests'
-        h5 = 'This configures on which requests to send the authentication'\
-             ' settings configured in basic_auth_passwd and basic_auth_user.'\
-             ' If you are unsure, just set it to the target domain name.'
-        o5 = opt_factory('basic_auth_domain', cfg.get('basic_auth_domain'), d5,
-                         'string', help=h5, tabid='Basic HTTP Authentication')
-
-        d6a = 'Set the NTLM authentication domain (the windows domain name)'\
-              ' for HTTP requests. Please note that only NTLM v1 is supported.'
-        o6a = opt_factory('ntlm_auth_domain', cfg.get(
-            'ntlm_auth_domain'), d6a, 'string', tabid='NTLM Authentication')
-
-        d6 = 'Set the NTLM authentication username for HTTP requests'
-        o6 = opt_factory('ntlm_auth_user', cfg.get(
-            'ntlm_auth_user'), d6, 'string', tabid='NTLM Authentication')
-
-        d7 = 'Set the NTLM authentication password for HTTP requests'
-        o7 = opt_factory('ntlm_auth_passwd', cfg.get(
-            'ntlm_auth_passwd'), d7, 'string', tabid='NTLM Authentication')
-
-        d7b = 'Set the NTLM authentication domain for HTTP requests'
-        h7b = 'This configures on which requests to send the authentication'\
-              ' settings configured in ntlm_auth_passwd and ntlm_auth_user.'\
-              ' If you are unsure, just set it to the target domain name.'
-        o7b = opt_factory('ntlm_auth_url', cfg.get('ntlm_auth_url'), d7b,
-                          'string', tabid='NTLM Authentication', help=h7b)
-
-        d8 = 'Set the cookiejar filename.'
-        h8 = 'The cookiejar file MUST be in mozilla format. An example of a'\
-             ' valid mozilla cookie jar file follows:\n\n'\
-             '# Netscape HTTP Cookie File\n'\
-             '.domain.com    TRUE   /       FALSE   1731510001'\
-             '      user    admin\n\n'\
-             'Please note that the comment is mandatory. Take special'\
-             ' attention to spaces.'
-        o8 = opt_factory('cookie_jar_file', cfg.get('cookie_jar_file'), d8,
-                         'string', help=h8, tabid='Cookies')
-
-        d9 = 'Ignore session cookies'
-        h9 = 'If set to True, w3af will ignore all session cookies sent by'\
-             ' the web application.'
-        o9 = opt_factory('ignore_session_cookies',
-                         cfg.get('ignore_session_cookies'), d9, 'boolean',
-                         help=h9, tabid='Cookies')
-
-        d10 = 'Proxy TCP port'
-        h10 = 'TCP port for the HTTP proxy. On Microsoft Windows systems,'\
-              ' w3af will use Internet Explorer\'s proxy settings.'
-        o10 = opt_factory('proxy_port', cfg.get('proxy_port'), d10, 'integer',
-                          help=h10, tabid='Outgoing proxy')
-
-        d11 = 'Proxy IP address'
-        h11 = 'IP address for the HTTP proxy. On Microsoft Windows systems,'\
-              ' w3af will use Internet Explorer\'s proxy settings.'
-        o11 = opt_factory('proxy_address', cfg.get('proxy_address'), d11,
-                          'string', help=h11, tabid='Outgoing proxy')
-
-        d12 = 'User Agent header'
-        h12 = 'User Agent header to send in HTTP requests.'
-        o12 = opt_factory('user_agent', cfg.get('user_agent'), d12, 'string',
-                          help=h12, tabid='Misc')
-
-        d13 = 'Maximum file size'
-        h13 = 'Indicates the maximum file size (in bytes) that w3af will'\
-              ' retrieve from the remote server.'
-        o13 = opt_factory('max_file_size', cfg.get('max_file_size'), d13,
-                          'integer', help=h13, tabid='Misc')
-
-        d14 = 'Maximum number of retries'
-        h14 = 'Indicates the maximum number of retries when requesting an URL.'
-        o14 = opt_factory('max_http_retries', cfg.get('max_http_retries'), d14,
-                          'integer', help=h14, tabid='Misc')
-
-        d15 = 'A comma separated list that determines what URLs will ALWAYS'\
-              ' be detected as 404 pages.'
-        o15 = opt_factory('always_404', cfg.get('always_404'), d15, 'list',
-                          tabid='404 settings')
-
-        d16 = 'A comma separated list that determines what URLs will NEVER be'\
-              ' detected as 404 pages.'
-        o16 = opt_factory('never_404', cfg.get('never_404'), d16, 'list',
-                          tabid='404 settings')
-
-        d17 = 'If this string is found in an HTTP response, then it will be'\
-              ' tagged as a 404.'
-        o17 = opt_factory('string_match_404', cfg.get('string_match_404'), d17,
-                          'string', tabid='404 settings')
-
-        d18 = 'Append the given URL parameter to every accessed URL.'\
-              ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
-        o18 = opt_factory('url_parameter', cfg.get('url_parameter'), d18,
-                          'string')
-
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o5)
-        ol.add(o6a)
-        ol.add(o6)
-        ol.add(o7)
-        ol.add(o7b)
-        ol.add(o8)
-        ol.add(o9)
-        ol.add(o10)
-        ol.add(o11)
-        ol.add(o12)
-        ol.add(o13)
-        ol.add(o14)
-        ol.add(o15)
-        ol.add(o16)
-        ol.add(o17)
-        ol.add(o18)
+        
+        d = 'The timeout for connections to the HTTP server'
+        h = 'Set low timeouts for LAN use and high timeouts for slow Internet'\
+             ' connections.'
+        o = opt_factory('timeout', cfg.get('timeout'), d, 'integer', help=h)
+        ol.add(o)
+        
+        d = 'Set the headers filename. This file has additional headers which'\
+            ' are added to each request.'
+        o = opt_factory('headers_file', cfg.get('headers_file'), d, 'string')
+        ol.add(o)
+        
+        d = 'Set the basic authentication username for HTTP requests'
+        o = opt_factory('basic_auth_user', cfg.get('basic_auth_user'), d,
+                        'string', tabid='Basic HTTP Authentication')
+        ol.add(o)
+        
+        d = 'Set the basic authentication password for HTTP requests'
+        o = opt_factory('basic_auth_passwd', cfg.get('basic_auth_passwd'), d,
+                        'string', tabid='Basic HTTP Authentication')
+        ol.add(o)
+        
+        d = 'Set the basic authentication domain for HTTP requests'
+        h = 'This configures on which requests to send the authentication'\
+            ' settings configured in basic_auth_passwd and basic_auth_user.'\
+            ' If you are unsure, just set it to the target domain name.'
+        o = opt_factory('basic_auth_domain', cfg.get('basic_auth_domain'), d,
+                        'string', help=h, tabid='Basic HTTP Authentication')
+        ol.add(o)
+        
+        d = 'Set the NTLM authentication domain (the windows domain name)'\
+            ' for HTTP requests. Please note that only NTLM v1 is supported.'
+        o = opt_factory('ntlm_auth_domain', cfg.get('ntlm_auth_domain'), d,
+                        'string', tabid='NTLM Authentication')
+        ol.add(o)
+        
+        d = 'Set the NTLM authentication username for HTTP requests'
+        o = opt_factory('ntlm_auth_user', cfg.get('ntlm_auth_user'), d,
+                        'string', tabid='NTLM Authentication')
+        ol.add(o)
+        
+        d = 'Set the NTLM authentication password for HTTP requests'
+        o = opt_factory('ntlm_auth_passwd', cfg.get('ntlm_auth_passwd'),
+                        d, 'string', tabid='NTLM Authentication')
+        ol.add(o)
+        
+        d = 'Set the NTLM authentication domain for HTTP requests'
+        h = 'This configures on which requests to send the authentication'\
+            ' settings configured in ntlm_auth_passwd and ntlm_auth_user.'\
+            ' If you are unsure, just set it to the target domain name.'
+        o = opt_factory('ntlm_auth_url', cfg.get('ntlm_auth_url'), d,
+                        'string', tabid='NTLM Authentication', help=h)
+        ol.add(o)
+        
+        d = 'Set the cookiejar filename.'
+        h = 'The cookiejar file MUST be in mozilla format. An example of a'\
+            ' valid mozilla cookie jar file follows:\n\n'\
+            '# Netscape HTTP Cookie File\n'\
+            '.domain.com    TRUE   /       FALSE   1731510001'\
+            '      user    admin\n\n'\
+            'Please note that the comment is mandatory. Take special'\
+            ' attention to spaces.'
+        o = opt_factory('cookie_jar_file', cfg.get('cookie_jar_file'), d,
+                        'string', help=h, tabid='Cookies')
+        ol.add(o)
+        
+        d = 'Ignore session cookies'
+        h = 'If set to True, w3af will ignore all session cookies sent by'\
+             ' the web application.'
+        o = opt_factory('ignore_session_cookies',
+                        cfg.get('ignore_session_cookies'), d, 'boolean',
+                        help=h, tabid='Cookies')
+        ol.add(o)
+        
+        d = 'Proxy TCP port'
+        h = 'TCP port for the HTTP proxy. On Microsoft Windows systems,'\
+            ' w3af will use Internet Explorer\'s proxy settings.'
+        o = opt_factory('proxy_port', cfg.get('proxy_port'), d, 'integer',
+                        help=h, tabid='Outgoing proxy')
+        ol.add(o)
+        
+        d = 'Proxy IP address'
+        h = 'IP address for the HTTP proxy. On Microsoft Windows systems,'\
+            ' w3af will use Internet Explorer\'s proxy settings.'
+        o = opt_factory('proxy_address', cfg.get('proxy_address'), d,
+                        'string', help=h, tabid='Outgoing proxy')
+        ol.add(o)
+        
+        d = 'User Agent header'
+        h = 'User Agent header to send in HTTP requests.'
+        o = opt_factory('user_agent', cfg.get('user_agent'), d, 'string',
+                          help=h, tabid='Misc')
+        ol.add(o)
+        
+        d = 'Maximum file size'
+        h = 'Indicates the maximum file size (in bytes) that w3af will'\
+            ' retrieve from the remote server.'
+        o = opt_factory('max_file_size', cfg.get('max_file_size'), d,
+                        'integer', help=h, tabid='Misc')
+        ol.add(o)
+        
+        d = 'Maximum number of retries'
+        h = 'Indicates the maximum number of retries when requesting an URL.'
+        o = opt_factory('max_http_retries', cfg.get('max_http_retries'), d,
+                        'integer', help=h, tabid='Misc')
+        ol.add(o)
+        
+        d = 'A comma separated list that determines what URLs will ALWAYS'\
+            ' be detected as 404 pages.'
+        o = opt_factory('always_404', cfg.get('always_404'), d, 'list',
+                        tabid='404 settings')
+        ol.add(o)
+        
+        d = 'A comma separated list that determines what URLs will NEVER be'\
+            ' detected as 404 pages.'
+        o = opt_factory('never_404', cfg.get('never_404'), d, 'list',
+                          tabid='404 settings')
+        ol.add(o)
+        
+        d = 'If this string is found in an HTTP response, then it will be'\
+            ' tagged as a 404.'
+        o = opt_factory('string_match_404', cfg.get('string_match_404'), d,
+                          'string', tabid='404 settings')
+        ol.add(o)
+        
+        d = 'Append the given URL parameter to every accessed URL.'\
+              ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
+        o = opt_factory('url_parameter', cfg.get('url_parameter'), d,
+                        'string')
+        ol.add(o)
+        
         return ol
 
     def set_options(self, options_list):
