@@ -66,7 +66,9 @@ class LogHandler(urllib2.BaseHandler):
             resp = HTTPResponse.from_httplib_resp(response,
                                                   original_url=url)
             resp.set_id(response.id)
-
+        else:
+            resp = response
+            
         if not isinstance(request, HTTPRequest):
             msg = 'There is something odd going on in LogHandler,'\
                   ' request should be of type HTTPRequest got %s'\
