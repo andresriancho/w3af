@@ -175,7 +175,8 @@ class OpenerSettings(Configurable):
             try:
                 cj.load(CookieJarFile)
             except Exception, e:
-                raise w3afException('Error while loading cookiejar file. Description: ' + str(e))
+                msg = 'Error while loading cookiejar file. Description: "%s".'
+                raise w3afException(msg % e)
 
             self._cookieHandler = CookieHandler(cj)
             cfg.save('cookie_jar_file', CookieJarFile)
@@ -202,7 +203,8 @@ class OpenerSettings(Configurable):
             cfg.save('timeout', timeout)
 
             # Set the default timeout
-            # I dont need to use timeoutsocket.py , it has been added to python sockets
+            # I don't need to use timeoutsocket.py , it has been added to
+            # python sockets!
             socket.setdefaulttimeout(cfg.get('timeout'))
 
     def get_timeout(self):
@@ -454,62 +456,70 @@ class OpenerSettings(Configurable):
                           'string', tabid='NTLM Authentication', help=h7b)
 
         d8 = 'Set the cookiejar filename.'
-        h8 = 'The cookiejar file MUST be in mozilla format.'
-        h8 += ' An example of a valid mozilla cookie jar file follows:\n\n'
-        h8 += '# Netscape HTTP Cookie File\n'
-        h8 += '.domain.com    TRUE   /       FALSE   1731510001      user    admin\n\n'
-        h8 += 'The comment IS mandatory. Take special attention to spaces.'
-        o8 = opt_factory('cookie_jar_file', cfg.get(
-            'cookie_jar_file'), d8, 'string', help=h8, tabid='Cookies')
+        h8 = 'The cookiejar file MUST be in mozilla format. An example of a'\
+             ' valid mozilla cookie jar file follows:\n\n'\
+             '# Netscape HTTP Cookie File\n'\
+             '.domain.com    TRUE   /       FALSE   1731510001'\
+             '      user    admin\n\n'\
+             'Please note that the comment is mandatory. Take special'\
+             ' attention to spaces.'
+        o8 = opt_factory('cookie_jar_file', cfg.get('cookie_jar_file'), d8,
+                         'string', help=h8, tabid='Cookies')
 
         d9 = 'Ignore session cookies'
-        h9 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
-        o9 = opt_factory('ignore_session_cookies', cfg.get(
-            'ignore_session_cookies'), d9, 'boolean', help=h9, tabid='Cookies')
+        h9 = 'If set to True, w3af will ignore all session cookies sent by'\
+             ' the web application.'
+        o9 = opt_factory('ignore_session_cookies',
+                         cfg.get('ignore_session_cookies'), d9, 'boolean',
+                         help=h9, tabid='Cookies')
 
         d10 = 'Proxy TCP port'
-        h10 = 'TCP port for the remote proxy server to use. On Microsoft Windows systems, w3af'
-        h10 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o10 = opt_factory('proxy_port', cfg.get(
-            'proxy_port'), d10, 'integer', help=h10, tabid='Outgoing proxy')
+        h10 = 'TCP port for the HTTP proxy. On Microsoft Windows systems,'\
+              ' w3af will use Internet Explorer\'s proxy settings.'
+        o10 = opt_factory('proxy_port', cfg.get('proxy_port'), d10, 'integer',
+                          help=h10, tabid='Outgoing proxy')
 
         d11 = 'Proxy IP address'
-        h11 = 'IP address for the remote proxy server to use. On Microsoft Windows systems, w3af'
-        h11 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o11 = opt_factory('proxy_address', cfg.get(
-            'proxy_address'), d11, 'string', help=h11, tabid='Outgoing proxy')
+        h11 = 'IP address for the HTTP proxy. On Microsoft Windows systems,'\
+              ' w3af will use Internet Explorer\'s proxy settings.'
+        o11 = opt_factory('proxy_address', cfg.get('proxy_address'), d11,
+                          'string', help=h11, tabid='Outgoing proxy')
 
         d12 = 'User Agent header'
-        h12 = 'User Agent header to send in request.'
-        o12 = opt_factory('user_agent', cfg.get(
-            'user_agent'), d12, 'string', help=h12, tabid='Misc')
+        h12 = 'User Agent header to send in HTTP requests.'
+        o12 = opt_factory('user_agent', cfg.get('user_agent'), d12, 'string',
+                          help=h12, tabid='Misc')
 
         d13 = 'Maximum file size'
-        h13 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
-        o13 = opt_factory('max_file_size', cfg.get(
-            'max_file_size'), d13, 'integer', help=h13, tabid='Misc')
+        h13 = 'Indicates the maximum file size (in bytes) that w3af will'\
+              ' retrieve from the remote server.'
+        o13 = opt_factory('max_file_size', cfg.get('max_file_size'), d13,
+                          'integer', help=h13, tabid='Misc')
 
         d14 = 'Maximum number of retries'
         h14 = 'Indicates the maximum number of retries when requesting an URL.'
-        o14 = opt_factory('max_http_retries', cfg.get(
-            'max_http_retries'), d14, 'integer', help=h14, tabid='Misc')
+        o14 = opt_factory('max_http_retries', cfg.get('max_http_retries'), d14,
+                          'integer', help=h14, tabid='Misc')
 
-        d15 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
-        o15 = opt_factory('always_404', cfg.get(
-            'always_404'), d15, 'list', tabid='404 settings')
+        d15 = 'A comma separated list that determines what URLs will ALWAYS'\
+              ' be detected as 404 pages.'
+        o15 = opt_factory('always_404', cfg.get('always_404'), d15, 'list',
+                          tabid='404 settings')
 
-        d16 = 'A comma separated list that determines what URLs will NEVER be detected as 404 pages.'
-        o16 = opt_factory('never_404', cfg.get(
-            'never_404'), d16, 'list', tabid='404 settings')
+        d16 = 'A comma separated list that determines what URLs will NEVER be'\
+              ' detected as 404 pages.'
+        o16 = opt_factory('never_404', cfg.get('never_404'), d16, 'list',
+                          tabid='404 settings')
 
-        d17 = 'If this string is found in an HTTP response, then it will be tagged as a 404.'
-        o17 = opt_factory('string_match_404', cfg.get(
-            'string_match_404'), d17, 'string', tabid='404 settings')
+        d17 = 'If this string is found in an HTTP response, then it will be'\
+              ' tagged as a 404.'
+        o17 = opt_factory('string_match_404', cfg.get('string_match_404'), d17,
+                          'string', tabid='404 settings')
 
-        d18 = 'Append the given URL parameter to every accessed URL.'
-        d18 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
-        o18 = opt_factory(
-            'url_parameter', cfg.get('url_parameter'), d18, 'string')
+        d18 = 'Append the given URL parameter to every accessed URL.'\
+              ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
+        o18 = opt_factory('url_parameter', cfg.get('url_parameter'), d18,
+                          'string')
 
         ol = OptionList()
         ol.add(o1)
