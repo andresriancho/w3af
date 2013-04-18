@@ -80,9 +80,10 @@ class OpenerSettings(Configurable):
         #    applications do this). So now we use the following user-agent
         #    string in w3af:
         #
-        user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0;'
-        user_agent += ' w3af.org)'
-        #   which basically is the UA for IE8 running in Windows 7, plus our website :)
+        user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
+                     ' Trident/4.0; w3af.org)'
+        #   which basically is the UA for IE8 running in Windows 7, plus our
+        #   website :)
         self.header_list = [('User-Agent', user_agent)]
 
         # By default, dont mangle any request/responses
@@ -562,8 +563,8 @@ class OpenerSettings(Configurable):
         bAuthPass = getOptsMapValue('basic_auth_passwd')
 
         if bAuthDomain != cfg['basic_auth_domain'] or \
-            bAuthUser != cfg['basic_auth_user'] or \
-                bAuthPass != cfg['basic_auth_passwd']:
+        bAuthUser != cfg['basic_auth_user'] or \
+        bAuthPass != cfg['basic_auth_passwd']:
             try:
                 bAuthDomain = URL(bAuthDomain) if bAuthDomain else ''
             except ValueError:
@@ -577,18 +578,18 @@ class OpenerSettings(Configurable):
         ntlm_auth_url = getOptsMapValue('ntlm_auth_url')
 
         if ntlm_auth_domain != cfg['ntlm_auth_domain'] or \
-            ntlm_auth_user != cfg['ntlm_auth_user'] or \
-            ntlm_auth_passwd != cfg['ntlm_auth_passwd'] or \
-                ntlm_auth_url != cfg['ntlm_auth_url']:
-            self.set_ntlm_auth(
-                ntlm_auth_url, ntlm_auth_domain, ntlm_auth_user, ntlm_auth_passwd)
+        ntlm_auth_user != cfg['ntlm_auth_user'] or \
+        ntlm_auth_passwd != cfg['ntlm_auth_passwd'] or \
+        ntlm_auth_url != cfg['ntlm_auth_url']:
+            self.set_ntlm_auth(ntlm_auth_url, ntlm_auth_domain,
+                               ntlm_auth_user, ntlm_auth_passwd)
 
         # Only apply changes if they exist
         proxy_address = getOptsMapValue('proxy_address')
         proxy_port = getOptsMapValue('proxy_port')
 
         if proxy_address != cfg['proxy_address'] or \
-                proxy_port != cfg['proxy_port']:
+        proxy_port != cfg['proxy_port']:
             self.set_proxy(proxy_address, proxy_port)
 
         self.set_cookie_jar_file(getOptsMapValue('cookie_jar_file'))
