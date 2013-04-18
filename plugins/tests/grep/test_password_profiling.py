@@ -19,6 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.grep.password_profiling import password_profiling
+
+from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.parsers.url import URL
 
 
 class TestPasswordProfiling(PluginTest):
@@ -57,3 +61,34 @@ class TestPasswordProfiling(PluginTest):
 
         self.assertEquals(collected_passwords[0], 'Password')
         self.assertTrue('repeat' in collected_passwords)
+
+    def test_merge_password_profiling(self):
+        pp = password_profiling()
+        
+        old_data = {'foobar': 1, 'spameggs': 2}
+        data = {'charlotte': 3, 'and': 55, 'spameggs': 1}
+        lang = 'en'
+        
+        url = URL('http://moth/')
+        request = FuzzableRequest(url)
+        
+        merged_map = pp.merge_maps(old_data, data, request, lang)
+        
+        self.assertEqual(merged_map, {'foobar': 1, 'spameggs': 3,
+                                      'charlotte': 3})
+
+    def test_merge_password_profiling_unknown_lang(self):
+        pp = password_profiling()
+        
+        old_data = {'foobar': 1, 'spameggs': 2}
+        data = {'charlotte': 3, 'and': 55, 'spameggs': 1}
+        lang = 'hu'
+        
+        url = URL('http://moth/')
+        request = FuzzableRequest(url)
+        
+        merged_map = pp.merge_maps(old_data, data, request, lang)
+        
+        self.assertEqual(merged_map, {'foobar': 1, 'spameggs': 3,
+                                      'charlotte': 3})
+            
