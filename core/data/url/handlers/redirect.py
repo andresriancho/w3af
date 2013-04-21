@@ -138,14 +138,13 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         '''
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
-                or code in (301, 302, 303) and m == "POST"):
+        or code in (301, 302, 303) and m == "POST"):
             # Strictly (according to RFC 2616), 301 or 302 in response
             # to a POST MUST NOT cause a redirection without confirmation
             # from the user (of urllib2, in this case).  In practice,
             # essentially all clients do redirect in this case, so we
             # do the same.
 
-            # This path correctly assigns an id for the request/response
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')
 
@@ -172,7 +171,7 @@ class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
     def http_error_default(self, req, resp, code, msg, hdrs):
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
-                or code in (301, 302, 303) and m == "POST"):
+        or code in (301, 302, 303) and m == "POST"):
             _30X_resp = urllib2.addinfourl(resp, msg, req.get_full_url())
             _30X_resp.code = code
             _30X_resp.msg = msg
