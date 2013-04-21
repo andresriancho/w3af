@@ -35,7 +35,8 @@ class SQLMapWrapper(object):
     SQLMAP_LOCATION = os.path.join('plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
-    
+
+    SQLMAP_ERRORS = ('connection timed out to the target',)
     
     def __init__(self, target, uri_opener, coloring=False):
         if not isinstance(target, Target):
@@ -91,6 +92,11 @@ class SQLMapWrapper(object):
         
         if self.NOT_VULN_STR in stdout and self.VULN_STR not in stdout:
             return False 
+
+        for error_string in self.SQLMAP_ERRORS:
+            if error_string in stdout:
+                # We found an unknown sqlmap error, such as a timeout
+                return False
         
         fmt = 'Unexpected answer found in sqlmap output for command "%s": "%s"'
         raise NotImplementedError(fmt % (full_command, stdout))
