@@ -195,6 +195,12 @@ class xml_file(OutputPlugin):
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
         """
+        headers, body = self.handle_headers(parentNode, action)
+        
+        if body:
+            self.handle_body(parentNode, headers, body)
+
+    def handle_headers(self, parentNode, action):
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
         if isinstance(action, HTTPRequest):
             headers = action.get_headers()
@@ -221,45 +227,56 @@ class xml_file(OutputPlugin):
             actionHeadersNode.appendChild(headerdetail)
         parentNode.appendChild(actionHeadersNode)
 
-        # if the body is defined, put it out
-        if body:
-            actionBodyNode = self._xmldoc.createElement("body")
-            actionBodyNode.setAttribute('content-encoding', 'text')
-            if "\0" in body:
-                # irrespective of the mimetype; if the NULL char is present; then base64.encode it
-                actionBodyContent = self._xmldoc.createTextNode(
-                    base64.encodestring(body))
-                actionBodyNode.setAttribute('content-encoding', 'base64')
+        return headers, body
+    
+    def handle_body(self, parentNode, headers, body):
+        '''
+        Create the XML tags that hold the http request or response body
+        '''
+        actionBodyNode = self._xmldoc.createElement("body")
+        actionBodyNode.setAttribute('content-encoding', 'text')
+        
+        # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
+        # the ']]>', which in some cases would end up in a CDATA section and
+        # break it, using base64 encoding
+        if '\0' in body or ']]>' in body:
+            # irrespective of the mimetype; if the NULL char is present; then
+            # base64.encode it
+            encoded = base64.encodestring(body)
+            actionBodyContent = self._xmldoc.createTextNode(encoded)
+            actionBodyNode.setAttribute('content-encoding', 'base64')
+        
+        else:
+            # try and extract the Content-Type header
+            content_type, _ = headers.iget('Content-Type', "")
+            
+            try:
+                # if we know the Content-Type (ie it's in the headers)
+                mime_type, sub_type = content_type.split('/', 1)
+            except ValueError:
+                # not strictly valid mime-type, it doesn't respect the usual
+                # foo/bar format. Play it safe with the content by forcing it
+                # to be written in base64 encoded form
+                mime_type = 'application'
+                sub_type = 'octet-stream'
+
+            if mime_type == 'text':
+                actionBodyContent = self._xmldoc.createTextNode(body)
+                
+            elif mime_type == 'application' and sub_type in NON_BIN:
+                # Textual type application, eg json, javascript
+                # which for readability we'd rather not base64.encode
+                actionBodyContent = self._xmldoc.createCDATASection(body)
+                
             else:
-                # try and extract the Content-Type header
-                content_type = headers.get('Content-Type', "")
-                try:
-                    # if we know the Content-Type (ie it's in the headers)
-                    (mime_type, sub_type) = content_type.split('/')
-                    if mime_type in ['image', 'audio', 'video']:
-                        # if one of image/, audio/, video/ put out base64encoded text
-                        actionBodyContent = self._xmldoc.createTextNode(
-                            base64.encodestring(body))
-                        actionBodyNode.setAttribute(
-                            'content-encoding', 'base64')
-                    elif mime_type == 'application':
-                        if sub_type in NON_BIN:
-                            # Textual type application, eg json, javascript which for readability we'd
-                            # rather not base64.encode
-                            actionBodyContent = self._xmldoc.createCDATASection(body)
-                        else:
-                            # either known or unknown binary format
-                            actionBodyContent = self._xmldoc.createTextNode(
-                                base64.encodestring(body))
-                            actionBodyNode.setAttribute(
-                                'content-encoding', 'base64')
-                    else:
-                        actionBodyContent = self._xmldoc.createTextNode(body)
-                except ValueError:
-                    # not strictly valid mime-type, play it safe with the content
-                    actionBodyContent = self._xmldoc.createCDATASection(body)
-            actionBodyNode.appendChild(actionBodyContent)
-            parentNode.appendChild(actionBodyNode)
+                # either known (image, audio, video) or unknown binary format
+                # Write it as base64encoded text
+                encoded = base64.encodestring(body)
+                actionBodyContent = self._xmldoc.createTextNode(encoded)
+                actionBodyNode.setAttribute('content-encoding', 'base64')
+
+        actionBodyNode.appendChild(actionBodyContent)
+        parentNode.appendChild(actionBodyNode)
 
     def end(self):
         '''

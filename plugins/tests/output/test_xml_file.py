@@ -98,8 +98,12 @@ class TestXMLOutput(PluginTest):
 
 
 class XMLParser:
+    
     vulns = []
 
+    _inside_body = False
+    _data_parts = []
+    
     def start(self, tag, attrib):
         '''
         <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability"
@@ -114,6 +118,28 @@ class XMLParser:
             v.set_url(URL(attrib['url']))
             
             self.vulns.append(v)
+        
+        # <body content-encoding="text">
+        elif tag == 'body':
+            content_encoding = attrib['content-encoding']
+            
+            assert content_encoding == 'text'
+            self._inside_body = True
+    
+    def end(self, tag):
+        if tag == 'body':
+            
+            data = ''.join(self._data_parts)
+            
+            assert 'Fatal error:' in data
+            assert 'MySQL server' in data
+            
+            self._inside_body = False
+            self._data_parts = []
+    
+    def data(self, data):
+        if self._inside_body:
+            self._data_parts.append(data)
 
     def close(self):
         return self.vulns
