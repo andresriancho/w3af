@@ -65,8 +65,8 @@ class blind_sqli_response_diff(object):
         '''
         statements = self._get_statements(mutant)
         for statement_type in statements:
-            vuln = self._find_bsql(
-                mutant, statements[statement_type], statement_type)
+            vuln = self._find_bsql(mutant, statements[statement_type],
+                                   statement_type)
             if vuln:
                 return vuln
 
@@ -210,8 +210,8 @@ class blind_sqli_response_diff(object):
     def send_clean(self, mutant):
         '''
         Sends a mutant to the network (without using the cache) and then returns
-        the HTTP response object and a sanitized response body (which doesn't contain
-        any traces of the injected payload).
+        the HTTP response object and a sanitized response body (which doesn't
+        contain any traces of the injected payload).
 
         The sanitized version is useful for having clean comparisons between two
         responses that were generated with different mutants.
