@@ -79,6 +79,10 @@ class HTTPResponse(object):
         if not isinstance(headers, Headers):
             raise TypeError('Invalid type %s for HTTPResponse ctor param headers.'
                             % type(headers))
+        
+        if not isinstance(read, basestring):
+            raise TypeError('Invalid type %s for HTTPResponse ctor param read.'
+                            % type(headers))
 
         self._charset = charset
         self._headers = None
