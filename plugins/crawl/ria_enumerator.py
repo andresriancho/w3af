@@ -67,8 +67,6 @@ class ria_enumerator(CrawlPlugin):
         self.worker_pool.map(self._send_and_check, url_generator,
                                 chunksize=10)
 
-        return []
-
     def _url_generator(self, base_url, extensions, wordlist):
         '''
         Based on different files and user configurations, generate the URLs that
