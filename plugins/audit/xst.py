@@ -70,7 +70,7 @@ class xst(AuditPlugin):
 
             # create a regex to test the response.
             regex = re.compile("FakeHeader: *?XST", re.IGNORECASE)
-            if re.search(regex, response.get_body()):
+            if regex.search(response.get_body()):
                 # If vulnerable record it. This will now become visible on
                 # the KB Browser
                 desc = 'The web server at "%s" is vulnerable to Cross Site'\
@@ -90,10 +90,10 @@ class xst(AuditPlugin):
         '''
         return '''
         This plugin finds the Cross Site Tracing (XST) vulnerability.
-
-        No configurable paramaters are available.
-
+        
         The TRACE method echos back requests sent to it. This plugin sends a
         TRACE request to the server and if the request is echoed back then XST
         is confirmed.
+
+        No configurable parameters are available.
         '''
