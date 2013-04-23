@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 import time
+import threading
 import traceback
+import pprint
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
@@ -175,6 +177,23 @@ class w3afCore(object):
                   ' to stop.'
             om.out.error(msg)
             raise
+        except threading.ThreadError:
+            # Catch threading errors such as "error: can't start new thread"
+            # and handle them in a specific way
+            active_threads = threading.active_count()
+    
+            def nice_thread_repr(alive_threads):
+                repr_alive = [repr(x) for x in alive_threads]
+                repr_alive.sort()
+                return pprint.pformat(repr_alive)
+            
+            pprint_threads = nice_thread_repr(threading.enumerate())
+    
+            msg = 'An error occurred while trying to start a new thread.\n'\
+                  ' The current process has a total of %s active threads.'\
+                  ' The complete list of threads follows:\n\n%s'
+            raise Exception(msg % (active_threads, pprint_threads))
+        
         except w3afMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the

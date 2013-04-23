@@ -67,11 +67,12 @@ def handle_keyboardinterrupt(w3af_core):
     import threading
     import pprint
     
-    def nice_repr(alive_threads):
+    def nice_thread_repr(alive_threads):
         repr_alive = [repr(x) for x in alive_threads]
         repr_alive.sort()
         return pprint.pformat(repr_alive)
-    print nice_repr(threading.enumerate())
+    
+    print nice_thread_repr(threading.enumerate())
         
     om.out.set_output_plugins(['console'])
     om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af, bye!'))
