@@ -105,7 +105,7 @@ class htaccess_methods(AuditPlugin):
             tmp_url.set_extension('php')
             yield tmp_url
 
-        if url.get_file_name():
+        if url.get_file_name() and url.get_extension():
             tmp_url = url.copy()
             tmp_url.set_extension('php')
             tmp_url.set_file_name('index')
