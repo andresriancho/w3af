@@ -200,8 +200,7 @@ class web_spider(CrawlPlugin):
         '''
         self.worker_pool.map_multi_args(
             self._verify_reference,
-            self._urls_to_verify_generator(
-                resp, fuzzable_req)
+            self._urls_to_verify_generator(resp, fuzzable_req)
         )
 
     def _fill_form(self, fuzzable_req):
