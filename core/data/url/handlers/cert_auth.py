@@ -1,5 +1,5 @@
 '''
-certHTTPSHandler.py
+cert_auth.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib2
 import httplib
+
 import core.controllers.output_manager as om
 
 

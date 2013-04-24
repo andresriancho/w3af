@@ -26,8 +26,6 @@ import cookielib
 
 import core.controllers.output_manager as om
 import core.data.url.handlers.ntlm_auth as HTTPNtlmAuthHandler
-import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
-import core.data.url.handlers.mangleHandler as mangleHandler
 
 from core.controllers.configurable import Configurable
 from core.controllers.exceptions import w3afException
@@ -35,15 +33,20 @@ from core.data.kb.config import cf as cfg
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
+
 from core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
-from core.data.url.handlers.logHandler import LogHandler
-from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
-from core.data.url.handlers.urlParameterHandler import URLParameterHandler
+from core.data.url.handlers.output_manager import OutputManagerHandler
+from core.data.url.handlers.redirect import HTTP30XHandler
+from core.data.url.handlers.url_parameter import URLParameterHandler
 from core.data.url.handlers.cache import CacheHandler
+from core.data.url.handlers.blacklist import BlacklistHandler 
+from core.data.url.handlers.mangle import MangleHandler
+from core.data.url.handlers.multipart import MultipartPostHandler
+from core.data.url.handlers.normalize import NormalizeHandler
 
 
 class OpenerSettings(Configurable):
@@ -59,7 +62,6 @@ class OpenerSettings(Configurable):
         self._proxy_handler = None
         self._kAHTTP = None
         self._kAHTTPS = None
-        self._mangleHandler = None
         self._url_parameterHandler = None
         self._ntlmAuthHandler = None
         self._cache_hdler = None
@@ -340,10 +342,10 @@ class OpenerSettings(Configurable):
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookieHandler,
-                        MultipartPostHandler.MultipartPostHandler,
-                        self._kAHTTP, self._kAHTTPS, LogHandler,
-                        HTTPErrorHandler, HTTP30XHandler,
-                        mangleHandler.mangleHandler(self._mangle_plugins),
+                        MultipartPostHandler, NormalizeHandler,
+                        self._kAHTTP, self._kAHTTPS, OutputManagerHandler,
+                        HTTP30XHandler, BlacklistHandler,
+                        MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
                         self._cache_hdler]:
             if handler:

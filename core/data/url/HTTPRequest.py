@@ -31,7 +31,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
-                 follow_redir=True, cookies=True, cache=False, method=None):
+                 cookies=True, cache=False, method=None):
         '''
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -46,7 +46,6 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         # Save some information for later access in an easier way
         #
         self.url_object = url
-        self.follow_redir = follow_redir
         self.cookies = cookies
         self.get_from_cache = cache
 
@@ -87,7 +86,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         
         sdict['method'], sdict['uri'] = self.get_method(), self.get_uri().url_string
         sdict['headers'], sdict['data'] = self.get_headers(), self.get_data()
-        sdict['follow_redir'], sdict['cookies'] = self.follow_redir, self.cookies
+        sdict['cookies'] = self.cookies
         sdict['cache'] = self.get_from_cache
             
         return serializable_dict
@@ -106,22 +105,21 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         
         method, uri = udict['method'], udict['uri']
         headers, data = udict['headers'], udict['data']
-        follow_redir, cookies = udict['follow_redir'], udict['cookies']
+        cookies = udict['cookies']
         cache = udict['cache']
         
         headers_inst = Headers(headers.items())
         url = URL(uri)
         
         return cls(url, data=data, headers=headers_inst,
-                   follow_redir=follow_redir, cookies=cookies, 
-                   cache=cache, method=method)
+                   cookies=cookies, cache=cache, method=method)
  
         
     def copy(self):
         return copy.deepcopy(self)
 
     def __repr__(self):
-        fmt = '<HTTPRequest "%s" (redir:%s, cookies:%s, cache:%s)>'
-        return fmt % (self.url_object.url_string, self.follow_redir,
-                      self.cookies, self.get_from_cache)
+        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s)>'
+        return fmt % (self.url_object.url_string, self.cookies,
+                      self.get_from_cache)
         
