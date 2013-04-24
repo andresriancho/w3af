@@ -53,7 +53,7 @@ from core.data.url.helpers import new_no_content_resp
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest
-from core.data.url.handlers.cache import CachedResponse
+from core.data.url.handlers.cache import CacheClass, CachedResponse
 from core.data.dc.headers import Headers
 
 
@@ -545,9 +545,12 @@ class ExtendedUrllib(object):
 
             self._increment_global_error_count(e, parsed_traceback)
 
-            # FIXME: Still need to figure out how to remove this instance of
-            # new_no_content_resp !
-            return new_no_content_resp(original_url_inst)
+            # FIXME: Still need to figure out how to remove this call to
+            #        new_no_content_resp and the call to
+            #        CacheClass.store_in_cache
+            resp = new_no_content_resp(original_url_inst)
+            CacheClass.store_in_cache(req, resp)
+            return resp
 
         else:
             # Everything went well!
