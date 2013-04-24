@@ -348,6 +348,10 @@ class ExtendedUrllib(object):
                                            uri, msg='No Content')
         if log_it:
             # This also assigns the id to both objects.
+            #
+            # FIXME: This is awful! I should never call the handler directly
+            # and this could be one of the reasons for bug #184 where there
+            # are ids which are not in the cache.
             OutputManagerHandler.log_req_resp(req, no_content_response)
 
         if no_content_response.id is None:
