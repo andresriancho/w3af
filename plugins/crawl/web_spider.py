@@ -175,7 +175,7 @@ class web_spider(CrawlPlugin):
                     # Filter the URL's according to the configured regexs
                     urlstr = ref.url_string
                     if not self._compiled_follow_re.match(urlstr) or \
-                            self._compiled_ignore_re.match(urlstr):
+                    self._compiled_ignore_re.match(urlstr):
                         continue
 
                     if self._only_forward:
