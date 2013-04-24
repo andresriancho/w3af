@@ -36,6 +36,7 @@ class OutputManagerHandler(urllib2.BaseHandler):
 
     def http_response(self, request, response):
         self.log_req_resp(request, response)
+        return response
 
     https_response = http_response
 
