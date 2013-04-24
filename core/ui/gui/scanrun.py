@@ -338,7 +338,7 @@ class URLsGraph(gtk.VBox):
 
     def limit_node(self, parent, node, name):
         # I have to escape the quotes, because I don't want a "dot code injection"
-        # This was bug #2675512
+        # This was sourceforge bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
@@ -401,8 +401,9 @@ class URLsTree(gtk.TreeView):
         self.treeholder = {}
 
         # get the queue and go live
-        self.urls = IteratedURLList()
-        gobject.timeout_add(750, self.add_url().next)
+        self.urls = Queue.Queue()
+        kb.kb.add_url_observer(self.urls.put)
+        gobject.timeout_add(250, self.add_url)
         self.show()
 
     def _doubleClick(self, widg, event):
@@ -422,11 +423,11 @@ class URLsTree(gtk.TreeView):
 
         :return: True to keep being called by gobject, False when it's done.
         '''
-        for url in self.urls.get():
-            if url is None:
-                yield True
-                continue
-
+        try:
+            url = self.urls.get_nowait()
+        except Queue.Empty:
+            pass
+        else:
             path = url.get_path()
             params = url.get_params_string()
             query = str(url.querystring)
@@ -453,16 +454,13 @@ class URLsTree(gtk.TreeView):
             nodes.append(end)
             parts = [x for x in nodes if x]
             
-            # To make sure we return to the mainloop
-            yield True
-            
             self._insertNodes(None, parts, self.treeholder, 1)
 
             # TODO: Automatically sort after each insertion
             # Order the treeview
             self.treestore.sort_column_changed()
-
-        yield False
+        
+        return True
 
     def _insertNodes(self, parent, parts, holder, rec_cntr):
         '''Insert a new node in the tree.
@@ -596,28 +594,3 @@ class ScanRunBody(gtk.Notebook):
     def changed_page(self, notebook, page, page_num):
         '''Changed the page in the Notebook.'''
         self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]
-
-
-class IteratedURLList(object):
-    '''
-    Simply provide a way to access the kb.kb.get_all_known_urls()
-    in an iterated manner!
-
-    :author: Andres Riancho < andres.riancho @ gmail.com >
-    '''
-    def __init__(self):
-        self._index = 0
-
-    def get(self):
-        '''Serves the elements taken from the list.'''
-        while True:
-            llist = kb.kb.get_all_known_urls()
-
-            if self._index < len(llist):
-                msg = llist[self._index]
-                self._index += 1
-                data = msg
-            else:
-                data = None
-
-            yield data
