@@ -1,5 +1,5 @@
 '''
-mangleHandler.py
+mangle.py
 
 Copyright 2006 Andres Riancho
 
@@ -27,15 +27,15 @@ from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.parsers.url import URL
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
-from core.data.url.handlers.logHandler import LogHandler
+from core.data.url.handlers.output_manager import OutputManagerHandler
 
 
-class mangleHandler(urllib2.BaseHandler):
+class MangleHandler(urllib2.BaseHandler):
     """
     Call mangle plugins for each request and response.
     """
 
-    handler_order = LogHandler.handler_order - 2
+    handler_order = OutputManagerHandler.handler_order - 2
 
     def __init__(self, plugin_list):
         self._plugin_list = plugin_list
@@ -75,7 +75,6 @@ class mangleHandler(urllib2.BaseHandler):
             fuzzable_request.get_uri(), data=data,
             headers=fuzzable_request.get_headers(),
             origin_req_host=host,
-            follow_redir=orig_req.follow_redir
         )
         return req
 
