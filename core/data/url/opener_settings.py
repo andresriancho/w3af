@@ -39,12 +39,13 @@ from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
-from core.data.url.handlers.log import LogHandler
+from core.data.url.handlers.output_manager import OutputManagerHandler
 from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
 from core.data.url.handlers.url_parameter import URLParameterHandler
 from core.data.url.handlers.cache import CacheHandler
 from core.data.url.handlers.mangle import MangleHandler
 from core.data.url.handlers.multipart import MultipartPostHandler
+from core.data.url.handlers.normalize import NormalizeHandler
 
 
 class OpenerSettings(Configurable):
@@ -340,8 +341,8 @@ class OpenerSettings(Configurable):
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookieHandler,
-                        MultipartPostHandler,
-                        self._kAHTTP, self._kAHTTPS, LogHandler,
+                        MultipartPostHandler, NormalizeHandler,
+                        self._kAHTTP, self._kAHTTPS, OutputManagerHandler,
                         HTTPErrorHandler, HTTP30XHandler,
                         MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,

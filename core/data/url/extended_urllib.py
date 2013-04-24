@@ -51,7 +51,7 @@ from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
 from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.url.handlers.keepalive import URLTimeoutError
-from core.data.url.handlers.log import LogHandler
+from core.data.url.handlers.output_manager import OutputManagerHandler
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.cache import CachedResponse
@@ -348,7 +348,7 @@ class ExtendedUrllib(object):
                                            uri, msg='No Content')
         if log_it:
             # This also assigns the id to both objects.
-            LogHandler.log_req_resp(req, no_content_response)
+            OutputManagerHandler.log_req_resp(req, no_content_response)
 
         if no_content_response.id is None:
             no_content_response.id = seq_gen.inc()

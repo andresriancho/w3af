@@ -27,33 +27,16 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest
 
 
-class LogHandler(urllib2.BaseHandler):
+class OutputManagerHandler(urllib2.BaseHandler):
     """
-    Add an unique id attribute to http responses and then log them.
+    Send the HTTP request and response to the output manager
     """
 
     handler_order = urllib2.HTTPErrorProcessor.handler_order - 1
 
-    def http_request(self, request):
-        '''
-        perform some ugly hacking of request headers and go on...
-        '''
-        #
-        # FIXME: What if the user doesn't want to add these headers?
-        #
-        if not request.has_header('Host'):
-            request.add_unredirected_header('Host', request.host)
-
-        if not request.has_header('Accept-encoding'):
-            request.add_unredirected_header('Accept-Encoding', 'identity')
-
-        return request
-
     def http_response(self, request, response):
         self.log_req_resp(request, response)
-        return response
 
-    https_request = http_request
     https_response = http_response
 
     @staticmethod
@@ -70,7 +53,7 @@ class LogHandler(urllib2.BaseHandler):
             resp = response
             
         if not isinstance(request, HTTPRequest):
-            msg = 'There is something odd going on in LogHandler,'\
+            msg = 'There is something odd going on in OutputManagerHandler,'\
                   ' request should be of type HTTPRequest got %s'\
                   ' instead.'
             raise TypeError(msg % type(request))
