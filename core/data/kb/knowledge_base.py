@@ -240,6 +240,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         # TODO: Why doesn't this work with a WeakValueDictionary?
         self.observers = {} #WeakValueDictionary()
         self.type_observers = {} #WeakValueDictionary()
+        self.url_observers = []
         self._observer_id = 0
 
     def clear(self, location_a, location_b):
@@ -484,6 +485,20 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         :return: A DiskSet with all the known URLs as URL objects.
         '''
         return self.urls
+
+    def add_url_observer(self, observer):
+        self.url_observers.append(observer)
+
+    def _notify_url_observers(self, new_url):
+        '''
+        Call the observer with new_url.
+        
+        :return: None
+        '''
+        # Note that I copy the items list in order to iterate though it without
+        # any issues like the size changing
+        for observer in self.url_observers[:]:            
+            observer(new_url)
     
     def add_url(self, url):
         '''
@@ -493,6 +508,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             msg = 'add_url requires a URL as parameter got %s instead.'
             raise TypeError(msg % type(url))
         
+        self._notify_url_observers(url)
         return self.urls.add(url)
     
     def get_all_known_fuzzable_requests(self):

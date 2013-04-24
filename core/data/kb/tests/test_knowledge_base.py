@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from mock import Mock
+from mock import Mock, call
 
 from core.controllers.threads.threadpool import Pool
 
@@ -396,4 +396,27 @@ class TestKnowledgeBase(unittest.TestCase):
         '''
         kb.raw_write('a', 'b', [1,2,3])
         self.assertEqual(kb.raw_read('a','b'), [1,2,3])
+    
+    def test_url_observer(self):
+        observer = Mock()
+        kb.add_url_observer(observer)
+        
+        url = URL('http://w3af.org/')
+        kb.add_url(url)
+        
+        self.assertEqual(observer.call_count, 1)
+        self.assertEqual(observer.call_args, call(url,))
+        self.assertIs(observer.call_args[0][0], url)
+
+    def test_url_observer_multiple(self):
+        observer_1 = Mock()
+        observer_2 = Mock()
+        kb.add_url_observer(observer_1)
+        kb.add_url_observer(observer_2)
+        
+        url = URL('http://w3af.org/')
+        kb.add_url(url)
+        
+        self.assertEqual(observer_1.call_count, 1)
+        self.assertEqual(observer_2.call_count, 1)
         
