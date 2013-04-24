@@ -32,7 +32,7 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
 from core.data.request.XMLRPCRequest import XMLRPCRequest
-from core.data.url.handlers.MultipartPostHandler import multipart_encode
+from core.data.url.handlers.multipart import multipart_encode
 from core.data.dc.headers import Headers
 
 

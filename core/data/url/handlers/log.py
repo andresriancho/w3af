@@ -1,5 +1,5 @@
 '''
-logHandler.py
+log.py
 
 Copyright 2006 Andres Riancho
 

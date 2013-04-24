@@ -1,5 +1,5 @@
 '''
-mangleHandler.py
+mangle.py
 
 Copyright 2006 Andres Riancho
 
@@ -27,10 +27,10 @@ from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.parsers.url import URL
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
-from core.data.url.handlers.logHandler import LogHandler
+from core.data.url.handlers.log import LogHandler
 
 
-class mangleHandler(urllib2.BaseHandler):
+class MangleHandler(urllib2.BaseHandler):
     """
     Call mangle plugins for each request and response.
     """

@@ -51,7 +51,7 @@ from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
 from core.data.request.factory import create_fuzzable_request_from_parts
 from core.data.url.handlers.keepalive import URLTimeoutError
-from core.data.url.handlers.logHandler import LogHandler
+from core.data.url.handlers.log import LogHandler
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.cache import CachedResponse
