@@ -35,13 +35,12 @@ class OutputManagerHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPErrorProcessor.handler_order - 1
 
     def http_response(self, request, response):
-        self.log_req_resp(request, response)
+        self._log_req_resp(request, response)
         return response
 
     https_response = http_response
 
-    @staticmethod
-    def log_req_resp(request, response):
+    def _log_req_resp(self, request, response):
         '''
         Send the request and the response to the output manager.
         '''
