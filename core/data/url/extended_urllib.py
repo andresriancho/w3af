@@ -39,7 +39,6 @@ import core.data.kb.config as cf
 import opener_settings
 
 from core.controllers.profiling.memory_usage import dump_memory_usage
-from core.controllers.misc.number_generator import consecutive_number_generator as seq_gen
 from core.controllers.exceptions import (w3afMustStopException, w3afException,
                                          w3afMustStopByUnknownReasonExc,
                                          w3afMustStopByKnownReasonExc,
@@ -50,10 +49,10 @@ from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
 from core.data.request.factory import create_fuzzable_request_from_parts
+from core.data.url.helpers import new_no_content_resp
 from core.data.url.handlers.keepalive import URLTimeoutError
-from core.data.url.handlers.output_manager import OutputManagerHandler
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.url.HTTPRequest import HTTPRequest
 from core.data.url.handlers.cache import CachedResponse
 from core.data.dc.headers import Headers
 
@@ -69,7 +68,6 @@ class ExtendedUrllib(object):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
         self._memory_usage_counter = 0
-        self._non_targets = None
 
         # For error handling
         self._last_request_failed = False
@@ -170,26 +168,6 @@ class ExtendedUrllib(object):
         req = HTTPRequest(uri)
         req = self._add_headers(req)
         return Headers(req.headers)
-
-    def _is_blacklisted(self, uri):
-        '''
-        If the user configured w3af to ignore a URL, we are going to be applying
-        that configuration here. This is the lowest layer inside w3af.
-        '''
-        if self._non_targets is None:
-            non_targets = cf.cf.get('non_targets') or []
-            self._non_targets = set()
-            self._non_targets.update(
-                [nt_url.uri2url() for nt_url in non_targets])
-
-        if uri.uri2url() in self._non_targets:
-            msg = 'The URL you are trying to reach (%s) was configured as a' \
-                  'non-target. NOT performing the HTTP request and returning an' \
-                  ' empty response.'
-            om.out.debug(msg % uri)
-            return True
-
-        return False
 
     def get_cookies(self):
         '''
@@ -303,12 +281,8 @@ class ExtendedUrllib(object):
             raise TypeError('The header parameter of ExtendedUrllib.GET() must be of '
                             'Headers type.')
 
-        # Validate what I'm sending, init the library (if needed) and check
-        # blacklists.
+        # Validate what I'm sending, init the library (if needed)
         self._init()
-
-        if self._is_blacklisted(uri):
-            return self._new_no_content_resp(uri, log_it=True)
 
         if data:
             uri = uri.copy()
@@ -319,42 +293,6 @@ class ExtendedUrllib(object):
 
         with raise_size_limit(respect_size_limit):
             return self._send(req, grep=grep)
-
-    def _new_no_content_resp(self, uri, log_it=False):
-        '''
-        Return a new NO_CONTENT HTTPResponse object. Optionally call the
-        subscribed log handlers
-
-        :param uri: URI string or request object
-
-        :param log_it: Boolean that indicated whether to log request
-        and response.
-        '''
-        # accept a URI or a Request object
-        if isinstance(uri, URL):
-            req = HTTPRequest(uri)
-        elif isinstance(uri, HTTPRequest):
-            req = uri
-        else:
-            msg = 'The uri parameter of ExtendedUrllib._new_content_resp() has to be'\
-                  ' of HTTPRequest of URL type.'
-            raise Exception(msg)
-
-        # Work,
-        no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
-                                           uri, msg='No Content')
-        if log_it:
-            # This also assigns the id to both objects.
-            #
-            # FIXME: This is awful! I should never call the handler directly
-            # and this could be one of the reasons for bug #184 where there
-            # are ids which are not in the cache.
-            OutputManagerHandler.log_req_resp(req, no_content_response)
-
-        if no_content_response.id is None:
-            no_content_response.id = seq_gen.inc()
-
-        return no_content_response
 
     def POST(self, uri, data='', headers=Headers(), grep=True,
              cache=False, cookies=True):
@@ -374,13 +312,8 @@ class ExtendedUrllib(object):
             raise TypeError('The header parameter of ExtendedUrllib.POST() must be of '
                             'Headers type.')
 
-        #    Validate what I'm sending, init the library (if needed) and check
-        #    blacklists.
-        #
+        #    Validate what I'm sending, init the library (if needed)
         self._init()
-
-        if self._is_blacklisted(uri):
-            return self._new_no_content_resp(uri, log_it=True)
 
         #
         #    Create and send the request
@@ -462,9 +395,6 @@ class ExtendedUrllib(object):
 
                 self._xurllib._init()
 
-                if self._xurllib._is_blacklisted(uri):
-                    return self._xurllib._new_no_content_resp(uri, log_it=True)
-
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method)
                 req = self._xurllib._add_headers(req, headers or {})
@@ -537,7 +467,7 @@ class ExtendedUrllib(object):
             code = int(e.code)
             headers = Headers(e.info().items())
             geturl_instance = URL(e.geturl())
-            read = self._readRespose(e)
+            read = self._read_response(e)
             http_resp = HTTPResponse(code, read, headers, geturl_instance,
                                      original_url_inst, _id=e.id,
                                      time=time.time() - start_time, msg=e.msg,
@@ -615,7 +545,9 @@ class ExtendedUrllib(object):
 
             self._increment_global_error_count(e, parsed_traceback)
 
-            return self._new_no_content_resp(original_url_inst, log_it=True)
+            # FIXME: Still need to figure out how to remove this instance of
+            # new_no_content_resp !
+            return new_no_content_resp(original_url_inst)
 
         else:
             # Everything went well!
@@ -665,7 +597,7 @@ class ExtendedUrllib(object):
 
             return http_resp
 
-    def _readRespose(self, res):
+    def _read_response(self, res):
         read = ''
         try:
             read = res.read()
