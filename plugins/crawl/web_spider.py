@@ -105,8 +105,7 @@ class web_spider(CrawlPlugin):
             fuzzable_req = self._fill_form(fuzzable_req)
 
         # Send the HTTP request,
-        resp = self._uri_opener.send_mutant(fuzzable_req,
-                                            follow_redir=False)
+        resp = self._uri_opener.send_mutant(fuzzable_req)
 
         # Nothing to do here...
         if resp.get_code() == 401:
@@ -280,7 +279,7 @@ class web_spider(CrawlPlugin):
 
         try:
             resp = self._uri_opener.GET(reference, cache=True,
-                                        headers=headers, follow_redir=False)
+                                        headers=headers)
         except w3afMustStopOnUrlError:
             pass
         else:

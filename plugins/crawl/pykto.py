@@ -137,8 +137,7 @@ class pykto(CrawlPlugin):
         #
         if nikto_test.is_vulnerable.checks_only_response_code():
             try:
-                http_response = self._uri_opener.HEAD(nikto_test.uri,
-                                                      follow_redir=False)
+                http_response = self._uri_opener.HEAD(nikto_test.uri)
             except Exception:
                 return
             else:
@@ -148,7 +147,7 @@ class pykto(CrawlPlugin):
         function_ptr = getattr(self._uri_opener, nikto_test.method)
 
         try:
-            http_response = function_ptr(nikto_test.uri, follow_redir=False)
+            http_response = function_ptr(nikto_test.uri)
         except w3afException, e:
             msg = 'An exception was raised while requesting "%s", the error'\
                   ' message is: "%s".'

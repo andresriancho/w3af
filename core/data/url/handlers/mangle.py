@@ -75,7 +75,6 @@ class MangleHandler(urllib2.BaseHandler):
             fuzzable_request.get_uri(), data=data,
             headers=fuzzable_request.get_headers(),
             origin_req_host=host,
-            follow_redir=orig_req.follow_redir
         )
         return req
 

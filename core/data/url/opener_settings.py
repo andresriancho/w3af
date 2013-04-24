@@ -40,7 +40,7 @@ from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 from core.data.url.handlers.output_manager import OutputManagerHandler
-from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
+from core.data.url.handlers.redirect import HTTP30XHandler
 from core.data.url.handlers.url_parameter import URLParameterHandler
 from core.data.url.handlers.cache import CacheHandler
 from core.data.url.handlers.mangle import MangleHandler
@@ -343,7 +343,7 @@ class OpenerSettings(Configurable):
                         self._ntlmAuthHandler, self._cookieHandler,
                         MultipartPostHandler, NormalizeHandler,
                         self._kAHTTP, self._kAHTTPS, OutputManagerHandler,
-                        HTTPErrorHandler, HTTP30XHandler,
+                        HTTP30XHandler,
                         MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
                         self._cache_hdler]:

@@ -1,5 +1,5 @@
 '''
-log.py
+output_manager.py
 
 Copyright 2006 Andres Riancho
 
