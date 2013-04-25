@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
+import gobject
 import threading
 
 from core.ui.gui import history
@@ -927,8 +928,8 @@ class StatusBar(gtk.Statusbar):
     def __init__(self, initmsg=None, others=[]):
         super(StatusBar, self).__init__()
         self._context = self.get_context_id("unique_sb")
-        self._timer = None
-
+        self._active_counter = 0
+        
         # add the others
         for oth in others[::-1]:
             self.pack_end(oth, False)
@@ -941,19 +942,24 @@ class StatusBar(gtk.Statusbar):
 
     def __call__(self, msg, timeout=5):
         '''Inserts a message in the statusbar.'''
-        if self._timer is not None:
-            self._timer.cancel()
         self.push(self._context, msg)
-        self._timer = threading.Timer(timeout, self.clear, ())
-        self._timer.start()
+        
+        # Wait 7 seconds and then call clear
+        #
+        # The active_counter avoids the clear() from message #1 to clear
+        # the data pushed by a second call to this method.
+        self._active_counter += 1
+        gobject.timeout_add(7000, self.clear)
 
     def clear(self):
         '''Clears the statusbar content.'''
-        self.push(self._context, "")
-        if self._timer is not None:
-            self._timer.cancel()
-            self._timer = None
-
+        self._active_counter -= 1
+        
+        if not self._active_counter:
+            self.push(self._context, "")
+        
+        # Don't call me again please
+        return False
 
 class ConfigOptions(gtk.VBox, Preferences):
     """Configuration class.
