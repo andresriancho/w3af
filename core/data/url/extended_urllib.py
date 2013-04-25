@@ -548,7 +548,7 @@ class ExtendedUrllib(object):
             # FIXME: Still need to figure out how to remove this call to
             #        new_no_content_resp and the call to
             #        CacheClass.store_in_cache
-            resp = new_no_content_resp(original_url_inst)
+            resp = new_no_content_resp(original_url_inst, add_id=True)
             CacheClass.store_in_cache(req, resp)
             return resp
 

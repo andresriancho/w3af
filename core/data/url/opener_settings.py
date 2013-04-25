@@ -47,6 +47,7 @@ from core.data.url.handlers.blacklist import BlacklistHandler
 from core.data.url.handlers.mangle import MangleHandler
 from core.data.url.handlers.multipart import MultipartPostHandler
 from core.data.url.handlers.normalize import NormalizeHandler
+from core.data.url.handlers.errors import ErrorHandler
 
 
 class OpenerSettings(Configurable):
@@ -347,7 +348,7 @@ class OpenerSettings(Configurable):
                         HTTP30XHandler, BlacklistHandler,
                         MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
-                        self._cache_hdler]:
+                        self._cache_hdler, ErrorHandler]:
             if handler:
                 handlers.append(handler)
 

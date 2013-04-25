@@ -26,6 +26,8 @@ from nose.plugins.attrib import attr
 
 import core.data.kb.config as cf
 
+from core.controllers.misc.number_generator import consecutive_number_generator
+
 from core.data.parsers.url import URL
 from core.data.constants.response_codes import NO_CONTENT
 from core.data.url.handlers.blacklist import BlacklistHandler
@@ -34,6 +36,9 @@ from core.data.url import opener_settings
 
 
 class TestBlacklistHandler(unittest.TestCase):
+    
+    def setUp(self):
+        consecutive_number_generator.reset()
     
     def tearDown(self):
         cf.cf.save('non_targets', [])
@@ -82,7 +87,8 @@ class TestBlacklistHandler(unittest.TestCase):
         response = opener.open(request)
         
         self.assertEqual(response.code, NO_CONTENT)
-
+        self.assertEqual(response.id, 1)
+        
     @attr('moth')
     def test_handler_order_pass(self):
         '''Get an instance of the extended urllib and verify that the blacklist
@@ -103,3 +109,4 @@ class TestBlacklistHandler(unittest.TestCase):
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
+        self.assertEqual(response.id, 1)
