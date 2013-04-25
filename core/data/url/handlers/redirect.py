@@ -22,14 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 
 
-class HTTP30XHandler(urllib2.HTTPDefaultErrorHandler):
+class HTTP30XHandler(urllib2.HTTPRedirectHandler):
     '''
     A simple handler that says: "30x responses are not errors".
     
-    Please note that this is NOT an HTTPRedirectHandler. We do NOT want to
-    follow any HTTP redirects in an "automagic" way. If the user/plugin needs
-    to follow a redirect he needs to do it manually.
+    Please note that this is an HTTPRedirectHandler. We do NOT want to
+    follow any HTTP redirects in an "automagic" way, so we need to override
+    the default HTTPRedirectHandler from urllib2.
     
+    If the user/plugin needs to follow a redirect he needs to do it manually.
     In cases such as the web_spider.py this is not an issue since it will
     perform an HTTP request and then create the fuzzable requests:
     
@@ -46,17 +47,17 @@ class HTTP30XHandler(urllib2.HTTPDefaultErrorHandler):
     request (in fuzz_req_list) for it.
     '''
     def http_error_default(self, req, resp, code, msg, hdrs):
+        
         m = req.get_method()
+
+        # The RFC defines only some cases in which the HTTP response can
+        # return 30x codes, and which codes can be returned.        
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
         or code in (301, 302, 303) and m == "POST"):
-            _30X_resp = urllib2.addinfourl(resp, msg, req.get_full_url())
-            _30X_resp.code = code
-            _30X_resp.msg = msg
-            _30X_resp.headers = hdrs
-            _30X_resp.id = req.id
-            _30X_resp.encoding = getattr(resp, 'encoding', None)
-            return _30X_resp
+            return resp
 
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
         err.id = req.id
         raise err
+    
+    http_error_301 = http_error_302 = http_error_303 = http_error_307 = http_error_default

@@ -1,7 +1,7 @@
 '''
-helpers.py
+errors.py
 
-Copyright 2013 Andres Riancho
+Copyright 2011 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,23 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.constants.response_codes import NO_CONTENT
-from core.data.url.HTTPResponse import HTTPResponse
-from core.data.dc.headers import Headers
-
-from core.controllers.misc.number_generator import consecutive_number_generator
+import urllib2
 
 
-def new_no_content_resp(uri, add_id=False):
+class ErrorHandler(urllib2.HTTPDefaultErrorHandler):
     '''
-    Return a new NO_CONTENT HTTPResponse object.
-    
-    :param uri: URI string or request object
+    A simple handler that assigns IDs to errors.
     '''
-    no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
-                                       uri, msg='No Content')
-
-    if add_id:
-        no_content_response.id = consecutive_number_generator.inc()
-
-    return no_content_response
+    def http_error_default(self, req, resp, code, msg, hdrs):
+        
+        err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
+        err.id = req.id
+        raise err
