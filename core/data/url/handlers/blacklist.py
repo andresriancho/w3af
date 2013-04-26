@@ -57,15 +57,7 @@ class BlacklistHandler(urllib2.BaseHandler):
         '''
         if self._is_blacklisted(req.url_object):
             nncr = new_no_content_resp(req.url_object)
-            
-            header_string = cStringIO.StringIO(str(nncr.get_headers()))
-            headers = mimetools.Message(header_string)
-            
-            addinfo_inst = urllib.addinfourl(cStringIO.StringIO(nncr.get_body()),
-                                             headers,
-                                             nncr.get_url().url_string,
-                                             code=nncr.get_code())
-            addinfo_inst.msg = 'No content'
+            addinfo_inst = http_response_to_httplib(nncr)
             
             return addinfo_inst
 
@@ -85,3 +77,14 @@ class BlacklistHandler(urllib2.BaseHandler):
             return True
 
         return False
+
+def http_response_to_httplib(nncr):
+    header_string = cStringIO.StringIO(str(nncr.get_headers()))
+    headers = mimetools.Message(header_string)
+    
+    addinfo_inst = urllib.addinfourl(cStringIO.StringIO(nncr.get_body()),
+                                     headers,
+                                     nncr.get_url().url_string,
+                                     code=nncr.get_code())
+    addinfo_inst.msg = 'No content'
+    return addinfo_inst

@@ -54,6 +54,7 @@ from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.url.handlers.cache import CacheClass, CachedResponse
+from core.data.url.handlers.blacklist import http_response_to_httplib
 from core.data.dc.headers import Headers
 
 
@@ -549,7 +550,11 @@ class ExtendedUrllib(object):
             #        new_no_content_resp and the call to
             #        CacheClass.store_in_cache
             resp = new_no_content_resp(original_url_inst, add_id=True)
-            CacheClass.store_in_cache(req, resp)
+            
+            # Translate to httplib
+            httplib_resp = http_response_to_httplib(resp)
+            
+            CacheClass.store_in_cache(req, httplib_resp)
             return resp
 
         else:
