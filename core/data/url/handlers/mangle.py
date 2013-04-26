@@ -21,10 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urllib2
 
-import core.data.url.HTTPResponse as HTTPResponse
-
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.url.HTTPRequest import HTTPRequest
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 from core.data.url.handlers.output_manager import OutputManagerHandler
@@ -98,13 +97,13 @@ class MangleHandler(urllib2.BaseHandler):
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
 
-            httpRes = HTTPResponse.HTTPResponse(code, body, hdrs, url_instance,
-                                                request.url_object, msg=msg)
+            http_resp = HTTPResponse(code, body, hdrs, url_instance,
+                                     request.url_object, msg=msg)
 
             for plugin in self._plugin_list:
-                plugin.mangle_response(httpRes)
+                plugin.mangle_response(http_resp)
 
-            response = self._HTTPResponse2httplib(response, httpRes)
+            response = self._HTTPResponse2httplib(response, http_resp)
 
         return response
 
@@ -117,7 +116,7 @@ class MangleHandler(urllib2.BaseHandler):
         :return: httplib.httpresponse subclass
         '''
         ka_resp = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
-                               strict=0, method=None)
+                                 strict=0, method=None)
         ka_resp.set_body(mangled_response.get_body())
         ka_resp.headers = mangled_response.get_headers()
         ka_resp.code = mangled_response.get_code()
