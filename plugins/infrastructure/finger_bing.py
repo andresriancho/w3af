@@ -108,7 +108,7 @@ class finger_bing(InfrastructurePlugin):
                         i.set_url(page.URL)
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
-                        i['url_list'] = [page.URL, ]
+                        i['url_list'] = set([page.URL, ])
                         
                         self.kb_append('emails', 'emails', i)
                         self.kb_append('finger_bing', 'emails', i)

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.output_manager as om
 import core.data.parsers.parser_cache as parser_cache
-import core.data.kb.knowledge_base as kb
 
 from core.data.search_engines.google import google as google
 from core.data.options.opt_factory import opt_factory
@@ -148,7 +147,7 @@ class finger_google(InfrastructurePlugin):
                     i.set_url(response.get_uri())
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
-                    i['url_list'] = [response.get_uri(), ]
+                    i['url_list'] = set([response.get_uri(), ])
 
                     self.kb_append('emails', 'emails', i)
                     self.kb_append(self, 'emails', i)
