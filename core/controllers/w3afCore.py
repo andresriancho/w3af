@@ -178,22 +178,7 @@ class w3afCore(object):
             om.out.error(msg)
             raise
         except threading.ThreadError:
-            # Catch threading errors such as "error: can't start new thread"
-            # and handle them in a specific way
-            active_threads = threading.active_count()
-    
-            def nice_thread_repr(alive_threads):
-                repr_alive = [repr(x) for x in alive_threads]
-                repr_alive.sort()
-                return pprint.pformat(repr_alive)
-            
-            pprint_threads = nice_thread_repr(threading.enumerate())
-    
-            msg = 'An error occurred while trying to start a new thread.\n'\
-                  ' The current process has a total of %s active threads.'\
-                  ' The complete list of threads follows:\n\n%s'
-            raise Exception(msg % (active_threads, pprint_threads))
-        
+            handle_threading_error()
         except w3afMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the
@@ -377,7 +362,7 @@ class w3afCore(object):
             #
             # The pool might be needed during the exploiting phase create a new
             # pool in exploit_phase_prerequisites()
-            #self.worker_pool.terminate()
+            self.worker_pool.terminate()
             #self.worker_pool.join()
             
             self.status.stop()
@@ -428,3 +413,21 @@ class w3afCore(object):
             print msg
             sys.exit(-3)
 
+def handle_threading_error():
+    '''
+    Catch threading errors such as "error: can't start new thread"
+    and handle them in a specific way
+    '''
+    active_threads = threading.active_count()
+    
+    def nice_thread_repr(alive_threads):
+        repr_alive = [repr(x) for x in alive_threads]
+        repr_alive.sort()
+        return pprint.pformat(repr_alive)
+    
+    pprint_threads = nice_thread_repr(threading.enumerate())
+    
+    msg = 'An error occurred while trying to start a new thread.\n'\
+          ' The current process has a total of %s active threads.'\
+          ' The complete list of threads follows:\n\n%s'
+    raise Exception(msg % (active_threads, pprint_threads))
