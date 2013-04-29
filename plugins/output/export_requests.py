@@ -38,7 +38,7 @@ class export_requests(OutputPlugin):
 
     def __init__(self):
         OutputPlugin.__init__(self)
-        self.output_file = 'output-requests.csv'
+        self.output_file = '~/output-requests.csv'
 
     def do_nothing(self, *args, **kwds):
         pass

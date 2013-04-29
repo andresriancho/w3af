@@ -44,8 +44,8 @@ class text_file(OutputPlugin):
         OutputPlugin.__init__(self)
 
         # User configured parameters
-        self._output_file_name = 'output.txt'
-        self._http_file_name = 'output-http.txt'
+        self._output_file_name = '~/output.txt'
+        self._http_file_name = '~/output-http.txt'
         self.verbose = True
 
         # Internal variables
