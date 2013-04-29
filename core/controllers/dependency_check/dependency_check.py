@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import sys
 import warnings
+import logging
 
 from .lazy_load import lazy_load
 from .utils import verify_python_version, pip_installed
@@ -40,8 +41,7 @@ def dependency_check():
     '''
     verify_python_version()
     
-    # nltk raises a warning... which I want to ignore...
-    warnings.filterwarnings('ignore', '.*',)
+    disable_warnings()
 
     failed_deps = []
     for w3af_dependency in PIP_PACKAGES:
@@ -101,9 +101,22 @@ def dependency_check():
     
     print msg
     
+    enable_warnings()
     after_hook()
     
     sys.exit(1)
 
 
+def disable_warnings():
+    # nltk raises a warning... which I want to ignore...
+    warnings.filterwarnings('ignore', '.*',)
 
+    # scapy raises an error if tcpdump is not found in PATH
+    logging.disable(logging.CRITICAL)
+
+def enable_warnings():
+    # Enable warnings once again
+    warnings.resetwarnings()
+    
+    # re-enable the logging module
+    logging.disable(logging.NOTSET)
