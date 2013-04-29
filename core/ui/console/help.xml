@@ -23,7 +23,6 @@ This is the central help file for the consoleUi
         <category name="common">
             <item name="back">Go to the previous menu.  </item>
             <item name="exit">Exit w3af.  </item>
-            <item name="assert">Check assertion. </item>
         </category>
    </topic>
    <topic name="root">
@@ -70,6 +69,13 @@ Example: use fast_scan]]></body>
             <item name="list">
                <head>List available profiles.</head>
                <body>Syntax: list</body>
+            </item>
+            <item name="save_as">
+               <head>Save the current configuration to a profile.</head>
+               <body><![CDATA[Syntax: save_as {profile-name}                
+Example: save_as fast_scan
+
+Please note that the save_as command will overwrite existing profiles.]]></body>
             </item>
         </category>
     </topic>
