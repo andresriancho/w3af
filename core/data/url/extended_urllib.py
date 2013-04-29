@@ -44,7 +44,8 @@ from core.controllers.exceptions import (w3afMustStopException, w3afException,
                                          w3afMustStopByKnownReasonExc,
                                          w3afMustStopByUserRequest,
                                          w3afMustStopOnUrlError)
-
+from core.controllers.misc.number_generator import (consecutive_number_generator
+                                                    as core_num_gen)
 from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
@@ -554,6 +555,7 @@ class ExtendedUrllib(object):
             # Translate to httplib
             httplib_resp = http_response_to_httplib(resp)
             
+            req.id = httplib_resp.id = core_num_gen.inc()
             CacheClass.store_in_cache(req, httplib_resp)
             return resp
 
