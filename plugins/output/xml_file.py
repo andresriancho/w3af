@@ -62,7 +62,7 @@ class xml_file(OutputPlugin):
         self._file = None
 
         # User configured parameters
-        self._file_name = 'report.xml'
+        self._file_name = '~/report.xml'
         self._timeFormat = '%a %b %d %H:%M:%S %Y'
         self._longTimestampString = str(
             time.strftime(self._timeFormat, time.localtime()))

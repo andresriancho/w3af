@@ -41,8 +41,9 @@ class OutputFileOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
-
-        directory = os.path.abspath(os.path.dirname(value))
+        
+        expanded_path = os.path.expanduser(value)
+        directory = os.path.abspath(os.path.dirname(expanded_path))
         if not os.path.isdir(directory):
             msg = 'Invalid file option value "%s", the directory does not'\
                   ' exist.'

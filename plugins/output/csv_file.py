@@ -26,7 +26,6 @@ import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
@@ -41,7 +40,7 @@ class csv_file(OutputPlugin):
 
     def __init__(self):
         OutputPlugin.__init__(self)
-        self.output_file = 'output-w3af.csv'
+        self.output_file = '~/output-w3af.csv'
 
     def do_nothing(self, *args, **kwds):
         pass
