@@ -105,7 +105,8 @@ class MiscSettings(Configurable):
             d, 'boolean', help=h, tabid='Fuzzer parameters')
         ol.add(opt)
 
-        desc = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
+        desc = 'Indicates if w3af plugins will send fuzzed URL parts in order'\
+               ' to find vulnerabilities'
         h = 'For example, if the discovered URL is http://test/foo/bar/123,'\
             ' and fuzz_url_parts is enabled, w3af will request among other '\
             ' things: http://test/bar/<script>alert(document.cookie)</script>'\
@@ -206,7 +207,7 @@ class MiscSettings(Configurable):
                    'msf_location', 'stop_on_first_exception')
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())
-            
+
         url_list = []
         for url_str in options_list['non_targets'].get_value():
             url_list.append(URL(url_str))

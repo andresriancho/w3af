@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import string
 import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
@@ -79,7 +80,31 @@ class profilesMenu(menu):
 
             self._console.draw_table(table)
 
+    def _cmd_save_as(self, params):
+        '''
+        Saves the current config to a new profile.
+        '''
+        if not params:
+            om.out.console('Parameter missing, please see the help:')
+            self._cmd_help(['save_as'])
+        else:
+            filename = params[0]
+            
+            valid = string.ascii_letters + string.digits + '_-'
+            for char in filename:
+                if char not in valid:
+                    msg = 'Invalid profile name. Use letters and digits only.'
+                    om.out.console(msg)
+                    return                    
+
+        description = 'Profile generated using the console UI.'
+        self._w3af.profiles.save_current_to_new_profile(filename, description)
+        
+        om.out.console('Profile saved.')
+
     def _para_use(self, params, part):
         if not params:
             return suggest(self._profiles.keys(), part)
         return []
+
+    _para_save_as = _para_use
