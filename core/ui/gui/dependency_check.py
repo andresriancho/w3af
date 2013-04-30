@@ -68,7 +68,7 @@ def gtkui_dependency_check():
     except:
         packages.extend(['pygtk', 'gtk'])
         packages_debian.append('python-gtk2')
-        packages_mac_ports.append('py26-gtk')
+        packages_mac_ports.append('py27-pygtk')
         reason_for_exit = True
 
     try:
