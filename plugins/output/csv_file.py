@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 import csv
 import itertools
 
@@ -54,6 +55,8 @@ class csv_file(OutputPlugin):
         '''
         all_vulns = kb.kb.get_all_vulns()
         all_infos = kb.kb.get_all_infos()
+
+        self.output_file = os.path.expanduser(self.output_file)
 
         try:
             csv_writer = csv.writer(

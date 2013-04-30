@@ -90,6 +90,7 @@ class xml_file(OutputPlugin):
         self._history = HistoryItem()
 
     def _init(self):
+        self._file_name = os.path.expanduser(self._file_name)
         try:
             self._file = open(self._file_name, "w")
         except IOError, io:

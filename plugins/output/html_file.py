@@ -73,6 +73,8 @@ class html_file(OutputPlugin):
         '''
         Write messages to HTML file.
         '''
+        self._output_file_name = os.path.expanduser(self._output_file_name)
+        
         if not self._initialized:
             self._initialized = True
             try:
