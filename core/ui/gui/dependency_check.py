@@ -83,6 +83,7 @@ def gtkui_dependency_check():
         packages.append('gtksourceview2')
         packages_debian.append('python-gtksourceview2')
         packages_openbsd.append('gtksourceview')
+        packages_mac_ports.append('py27-pygtksourceview')
         reason_for_exit = True
 
     if packages:
