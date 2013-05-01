@@ -37,7 +37,7 @@ SYSTEM_PACKAGES = {
                    'C_BUILD': ['python27', 'py27-distribute',
                                 'gcc48', 'autoconf', 'automake'],
                    'GIT': ['git-core'],
-                   'SCAPY': ['py27-libdnet'],
+                   'SCAPY': ['py27-pcapy', 'py27-libdnet'],
                   }
 PIP_CMD = 'pip-2.7' 
 
