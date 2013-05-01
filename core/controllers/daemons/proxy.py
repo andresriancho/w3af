@@ -466,7 +466,7 @@ class Proxy(Process):
         om.out.debug('Calling stop of proxy daemon.')
         if self._running:
             try:
-                # Tell the proxy that he must quit
+                # Tell the handler that he must quit
                 self._server.stop = True
                 conn = httplib.HTTPConnection(self._ip + ':' + str(self._port))
                 conn.request("QUIT", "/")

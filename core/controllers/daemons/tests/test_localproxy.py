@@ -52,6 +52,9 @@ class TestLocalProxy(unittest.TestCase):
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
     
+    def tearDown(self):
+        self._proxy.stop()
+    
     def test_get_thread_name(self):
         self.assertEqual(self._proxy.name, 'LocalProxyThread')
     
