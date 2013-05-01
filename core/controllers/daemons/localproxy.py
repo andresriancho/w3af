@@ -65,41 +65,49 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         # Add it to the request queue, and wait for the user to edit the
         # request...
         self.server.w3afLayer._request_queue.put(fuzzable_request)
-        # waiting...
-        while 1:
-            if id(fuzzable_request) in self.server.w3afLayer._edited_requests:
-                head, body = self.server.w3afLayer._edited_requests[
-                    id(fuzzable_request)]
-                del self.server.w3afLayer._edited_requests[
-                    id(fuzzable_request)]
-
-                if head == body is None:
-                    # The request was dropped!
-                    # We close the connection to the browser and exit
-                    self.rfile.close()
-                    self.wfile.close()
-                    break
-
-                else:
-                    # The request was edited by the user
-                    # Send it to the remote web server and to the proxy user interface.
-
-                    if self.server.w3afLayer._fix_content_length:
-                        head, body = self._fix_content_length(head, body)
-
-                    try:
-                        res = self._uri_opener.send_raw_request(head, body)
-                    except Exception, e:
-                        res = e
-
-                    # Save it so the upper layer can read this response.
-                    self.server.w3afLayer._edited_responses[
-                        id(fuzzable_request)] = res
-
-                    # From here, we send it to the browser
-                    return res
-            else:
+        edited_requests = self.server.w3afLayer._edited_requests
+        
+        while True:
+            
+            if not id(fuzzable_request) in edited_requests:
                 time.sleep(0.1)
+                continue
+            
+            head, body = edited_requests[id(fuzzable_request)]
+            del edited_requests[id(fuzzable_request)]
+
+            if head == body is None:
+                # The request was dropped by the user. Send 403 and break
+                self.send_response(403)
+                
+                self.send_header('Connection', 'close')
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write('The HTTP request was dropped by the user')
+                
+                self.rfile.close()
+                self.wfile.close()
+                break
+
+            else:
+                # The request was edited by the user
+                # Send it to the remote web server and to the proxy user interface.
+
+                if self.server.w3afLayer._fix_content_length:
+                    head, body = self._fix_content_length(head, body)
+
+                try:
+                    res = self._uri_opener.send_raw_request(head, body)
+                except Exception, e:
+                    res = e
+
+                # Save it so the upper layer can read this response.
+                self.server.w3afLayer._edited_responses[
+                    id(fuzzable_request)] = res
+
+                # From here, we send it to the browser
+                return res
+                
 
     def _fix_content_length(self, head, postdata):
         '''
@@ -188,6 +196,9 @@ class LocalProxy(Proxy):
         Proxy.__init__(self, ip, port, urlOpener, w3afLocalProxyHandler,
                        proxy_cert)
 
+        self.daemon = True
+        self.name = 'LocalProxyThread'
+
         # Internal vars
         self._request_queue = Queue.Queue()
         self._edited_requests = {}
@@ -275,19 +286,3 @@ class LocalProxy(Proxy):
         raise w3afException(
             'Timed out waiting for response from remote server.')
 
-if __name__ == '__main__':
-    lp = LocalProxy('127.0.0.1', 8080, ExtendedUrllib())
-    lp.start()
-
-    for i in xrange(10):
-        time.sleep(1)
-        tr = lp.get_trapped_request()
-        if tr:
-            print tr
-            print lp.send_raw_request(tr, tr.dump_request_head(), tr.get_data())
-        else:
-            print 'Waiting...'
-
-    print 'Exit!'
-    lp.stop()
-    print 'bye bye...'
