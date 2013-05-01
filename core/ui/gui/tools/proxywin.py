@@ -241,12 +241,12 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def reload_options(self):
         """Reload options.
-        1. Stop proxy
-        2. Try to start proxy with new params
-        3. If can't => alert
-        4. If everything is ok then start proxy
-        5. Set Trap options
-        6. Save options
+            1. Stop proxy
+            2. Try to start proxy with new params
+            3. If can't => alert
+            4. If everything is ok then start proxy
+            5. Set Trap options
+            6. Save options
         """
         new_port = self.pref.get_value('proxy', 'ipport')
         if new_port != self._prev_ip_port:
