@@ -71,12 +71,6 @@ class w3af_core_strategy(object):
         # Producer threads
         self._seed_producer = seed(self._w3af_core)
 
-        self._consumers = [self._grep_consumer,
-                           self._audit_consumer,
-                           self._auth_consumer,
-                           self._discovery_consumer,
-                           self._bruteforce_consumer]
-
     def start(self):
         '''
         Starts the work!
@@ -116,7 +110,13 @@ class w3af_core_strategy(object):
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
         '''
-        for consumer in self._consumers:
+        consumers = [self._grep_consumer,
+                     self._audit_consumer,
+                     self._auth_consumer,
+                     self._discovery_consumer,
+                     self._bruteforce_consumer]
+
+        for consumer in consumers:
             if consumer is not None:
                 consumer.terminate()
 
@@ -138,8 +138,7 @@ class w3af_core_strategy(object):
     def _fuzzable_request_router(self):
         '''
         This is one of the most important methods, it will take things from the
-        discovery Queue and store them in one or more Queues (
-            audit, bruteforce,
+        discovery Queue and store them in one or more Queues (audit, bruteforce,
         etc).
 
         Also keep in mind that is one of the only methods that will be run in

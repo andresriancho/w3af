@@ -363,7 +363,7 @@ class w3afCore(object):
             # The pool might be needed during the exploiting phase create a new
             # pool in exploit_phase_prerequisites()
             self.worker_pool.terminate()
-            #self.worker_pool.join()
+            self.worker_pool.join()
             
             self.status.stop()
 
