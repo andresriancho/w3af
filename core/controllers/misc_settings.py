@@ -27,6 +27,7 @@ from core.controllers.misc.get_net_iface import get_net_iface
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
+from core.data.options.option_types import URL_LIST
 
 
 class MiscSettings(Configurable):
@@ -141,13 +142,13 @@ class MiscSettings(Configurable):
 
         ######## Core parameters ########
         desc = 'Stop scan after first unhandled exception'
-        help = 'This feature is only useful for developers that want their scan'
-        help += ' to stop on the first exception that is raised by a plugin.'
-        help += 'Users should leave this as False in order to get better '
-        help += 'exception handling from w3af\'s core.'
+        h = 'This feature is only useful for developers that want their scan'\
+            ' to stop on the first exception that is raised by a plugin.'\
+            'Users should leave this as False in order to get better '\
+            'exception handling from w3af\'s core.'
         opt = opt_factory('stop_on_first_exception',
                           cf.cf.get('stop_on_first_exception'),
-                          desc, 'boolean', help=help, tabid='Core settings')
+                          desc, 'boolean', help=h, tabid='Core settings')
         ol.add(opt)
 
         desc = 'Maximum crawl time (minutes)'
@@ -173,10 +174,10 @@ class MiscSettings(Configurable):
 
         ######### Misc ###########
         desc = 'A comma separated list of URLs that w3af should completely ignore'
-        help = 'Sometimes it\'s a good idea to ignore some URLs and test them'\
-               ' manually'
+        h = 'Sometimes it\'s a good idea to ignore some URLs and test them'\
+            ' manually'
         opt = opt_factory('non_targets', cf.cf.get('non_targets'), desc,
-                          'list', help=help, tabid='Misc settings')
+                          URL_LIST, help=h, tabid='Misc settings')
         ol.add(opt)
 
         ######### Metasploit ###########
@@ -204,14 +205,11 @@ class MiscSettings(Configurable):
                    'fuzz_url_parts', 'fuzzed_files_extension',
                    'form_fuzzing_mode', 'max_discovery_time',
                    'fuzzable_headers', 'interface', 'local_ip_address',
-                   'msf_location', 'stop_on_first_exception')
+                   'msf_location', 'stop_on_first_exception',
+                   'non_targets')
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())
 
-        url_list = []
-        for url_str in options_list['non_targets'].get_value():
-            url_list.append(URL(url_str))
-        cf.cf.save('non_targets', url_list)
 
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 # TODO: FIXME: This is awful programming.
