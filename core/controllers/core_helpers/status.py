@@ -40,6 +40,7 @@ class w3af_core_status(object):
         self._is_running = False
         self._paused = False
         self._start_time_epoch = None
+        self.scans_completed = 0
         
         # This indicates the plugin that is running right now for each
         # plugin_type
@@ -170,6 +171,7 @@ class w3af_core_status(object):
         self._is_running = False
         self._running_plugin = {}
         self._current_fuzzable_request = {}
+        self.scans_completed += 1
 
     def get_current_fuzzable_request(self, plugin_type):
         '''

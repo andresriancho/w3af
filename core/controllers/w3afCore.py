@@ -178,7 +178,7 @@ class w3afCore(object):
             om.out.error(msg)
             raise
         except threading.ThreadError:
-            handle_threading_error()
+            handle_threading_error(self.status.scans_completed)
         except w3afMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the
@@ -413,7 +413,7 @@ class w3afCore(object):
             print msg
             sys.exit(-3)
 
-def handle_threading_error():
+def handle_threading_error(scans_completed):
     '''
     Catch threading errors such as "error: can't start new thread"
     and handle them in a specific way
@@ -428,6 +428,6 @@ def handle_threading_error():
     pprint_threads = nice_thread_repr(threading.enumerate())
     
     msg = 'An error occurred while trying to start a new thread.\n'\
-          ' The current process has a total of %s active threads.'\
-          ' The complete list of threads follows:\n\n%s'
-    raise Exception(msg % (active_threads, pprint_threads))
+          ' The current process has a total of %s active threads and has'\
+          ' completed %s scans. The complete list of threads follows:\n\n%s'
+    raise Exception(msg % (active_threads, scans_completed, pprint_threads))
