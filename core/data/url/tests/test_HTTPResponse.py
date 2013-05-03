@@ -237,6 +237,10 @@ class TestHTTPResponse(unittest.TestCase):
         loaded_resp = HTTPResponse.from_dict(loaded_dict)
         
         self.assertEqual(orig_resp, loaded_resp)
+        
+        orig_resp.__dict__.pop('_body_lock')
+        loaded_resp.__dict__.pop('_body_lock')
+        
         self.assertEqual(orig_resp.__dict__.values(),
                          loaded_resp.__dict__.values())
     
@@ -256,3 +260,10 @@ class TestHTTPResponse(unittest.TestCase):
                               ESCAPED_CHAR, on_error_guess=False),
                 loaded_resp.body
             )
+
+    def test_not_None(self):
+        url = URL('http://w3af.com')
+        headers = Headers([('Content-Type', 'application/pdf')])
+        body = None
+        self.assertRaises(TypeError, HTTPResponse, 200, body, headers, url, url)
+        
