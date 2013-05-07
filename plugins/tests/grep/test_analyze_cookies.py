@@ -263,5 +263,5 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(security), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         
-        desc = [i.get_desc() for i in security]
-        self.assertIn('Secure cookies over insecure channel', desc)
+        names = [i.get_name() for i in security]
+        self.assertIn('Secure cookies over insecure channel', names)
