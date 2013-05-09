@@ -49,8 +49,6 @@ class pykto(CrawlPlugin):
     A nikto port to python.
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    DB_FILE = os.path.join('plugins', 'crawl', 'pykto', 'scan_database.db')
-
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -59,6 +57,7 @@ class pykto(CrawlPlugin):
         self._already_analyzed = ScalableBloomFilter()
 
         # User configured parameters
+        self._db_file = os.path.join('plugins', 'crawl', 'pykto', 'scan_database.db')
         self._extra_db_file = os.path.join('plugins', 'crawl', 'pykto',
                                            'w3af_scan_database.db')
 
@@ -113,7 +112,7 @@ class pykto(CrawlPlugin):
         config = Config(self._cgi_dirs, self._admin_dirs, self._nuke,
                         self._mutate_tests, self._users)
                 
-        for db_file in [self.DB_FILE, self._extra_db_file]:
+        for db_file in [self._db_file, self._extra_db_file]:
             
             parser = NiktoTestParser(db_file, config, url)
             
@@ -208,8 +207,8 @@ class pykto(CrawlPlugin):
         ol.add(o)
 
         d = 'The path to the nikto scan_databse.db file.'
-        h = 'The default scan database file is ok in most cases.'
-        o = opt_factory('dbFile', self.DB_FILE, d, INPUT_FILE, help=h)
+        h = 'The default scan database file is fine in most cases.'
+        o = opt_factory('db_file', self._db_file, d, INPUT_FILE, help=h)
         ol.add(o)
 
         d = 'The path to the w3af_scan_databse.db file.'
@@ -238,6 +237,7 @@ class pykto(CrawlPlugin):
         self._admin_dirs = options_list['admin_dirs'].get_value()
         self._nuke = options_list['nuke_dirs'].get_value()
         self._extra_db_file = options_list['extra_db_file'].get_value()
+        self._db_file = options_list['db_file'].get_value()
         self._mutate_tests = options_list['mutate_tests'].get_value()
 
     def get_long_desc(self):
@@ -249,10 +249,11 @@ class pykto(CrawlPlugin):
         from nikto to search for new and vulnerable URL's.
 
         The following configurable parameters exist:
+            - db_file
+            - extra_db_file
             - cgi_dirs
             - admin_dirs
             - nuke_dirs
-            - extra_db_file
             - mutate_tests
 
         This plugin reads every line in the scan_database (and extra_db_file)
