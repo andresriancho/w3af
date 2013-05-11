@@ -178,9 +178,12 @@ class ConfigMenu(menu):
             if optName in self._optDict:
                 opt = self._optDict[optName]
                 om.out.console(opt.get_desc())
+                if opt.get_help():
+                    om.out.console('')
+                    om.out.console(opt.get_help())
                 om.out.console("Type: %s" % opt.get_type())
                 om.out.console(
-                    "Current value is: %s" % opt.get_default_value())
+                    'Current value is: "%s"' % opt.get_default_value())
                 return
 
         menu._cmd_help(self, params)
