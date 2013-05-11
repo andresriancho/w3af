@@ -66,7 +66,7 @@ class OpenerSettings(Configurable):
         # Keep alive handlers are created on build_openers()
 
         cj = cookielib.MozillaCookieJar()
-        self._cookieHandler = CookieHandler(cj)
+        self._cookie_handler = CookieHandler(cj)
 
         # Openers
         self._uri_opener = None
@@ -168,19 +168,31 @@ class OpenerSettings(Configurable):
     def get_headers_file(self):
         return cfg.get('headers_file')
 
-    def set_cookie_jar_file(self, CookieJarFile):
+    def set_cookie_jar_file(self, cookiejar_file):
         om.out.debug('Called SetCookie')
 
-        if CookieJarFile != '':
-            cj = cookielib.MozillaCookieJar()
-            try:
-                cj.load(CookieJarFile)
-            except Exception, e:
-                msg = 'Error while loading cookiejar file. Description: "%s".'
-                raise w3afException(msg % e)
-
-            self._cookieHandler = CookieHandler(cj)
-            cfg.save('cookie_jar_file', CookieJarFile)
+        if not cookiejar_file:
+            return
+        
+        cj = cookielib.MozillaCookieJar()
+        try:
+            cj.load(cookiejar_file)
+        except Exception, e:
+            msg = 'Error while loading cookiejar file. Description: "%s".'
+            raise w3afException(msg % e)
+        else:
+            self._cookie_handler = CookieHandler(cj)
+            cfg.save('cookie_jar_file', cookiejar_file)
+            
+            if not len(cj):
+                msg = 'Did not load any cookies from the cookie jar file.'\
+                      ' This usually happens when there are no cookies in'\
+                      ' the file or the cookies have expired.'
+                om.out.error(msg)
+            else:
+                om.out.debug('Loaded the following cookies:')
+                for c in cj:
+                    om.out.debug(str(c))
 
     def get_cookie_jar_file(self):
         return cfg.get('cookie_jar_file')
@@ -189,11 +201,11 @@ class OpenerSettings(Configurable):
         '''
         :return: The cookies that were collected during this scan.
         '''
-        return self._cookieHandler.cookiejar
+        return self._cookie_handler.cookiejar
     
     def clear_cookies(self):
-        self._cookieHandler.cookiejar.clear()
-        self._cookieHandler.cookiejar.clear_session_cookies()
+        self._cookie_handler.cookiejar.clear()
+        self._cookie_handler.cookiejar.clear_session_cookies()
 
     def set_timeout(self, timeout):
         om.out.debug('Called SetTimeout(' + str(timeout) + ')')
@@ -339,7 +351,7 @@ class OpenerSettings(Configurable):
         # Prepare the list of handlers
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
-                        self._ntlmAuthHandler, self._cookieHandler,
+                        self._ntlmAuthHandler, self._cookie_handler,
                         MultipartPostHandler.MultipartPostHandler,
                         self._kAHTTP, self._kAHTTPS, LogHandler,
                         HTTPErrorHandler, HTTP30XHandler,
@@ -350,7 +362,7 @@ class OpenerSettings(Configurable):
                 handlers.append(handler)
 
         if cfg.get('ignore_session_cookies'):
-            handlers.remove(self._cookieHandler)
+            handlers.remove(self._cookie_handler)
 
         self._uri_opener = urllib2.build_opener(*handlers)
 
@@ -467,14 +479,21 @@ class OpenerSettings(Configurable):
                         'string', tabid='NTLM Authentication', help=h)
         ol.add(o)
         
-        d = 'Set the cookiejar filename.'
-        h = 'The cookiejar file MUST be in mozilla format. An example of a'\
-            ' valid mozilla cookie jar file follows:\n\n'\
+        d = 'Cookie jar file to load cookies from'
+        h = 'The cookiejar file MUST be in Mozilla format. An example of a'\
+            ' valid Mozilla cookie jar file follows:\n\n'\
             '# Netscape HTTP Cookie File\n'\
             '.domain.com    TRUE   /       FALSE   1731510001'\
             '      user    admin\n\n'\
-            'Please note that the comment is mandatory. Take special'\
-            ' attention to spaces.'
+            'Please note that the comment is mandatory and the fields need'\
+            ' to be separated using tabs.\n\n'\
+            'It is also important to note that loaded cookies will only be'\
+            ' sent if all conditions are met. For example, secure cookies'\
+            ' will only be sent over HTTPS and cookie expiration time will'\
+            ' influence if a cookie is sent or not.\n\n'\
+            'Remember: Session cookies which are stored in cookie jars have'\
+            ' their session expiration set to 0, which will prevent them from'\
+            ' being sent.'
         o = opt_factory('cookie_jar_file', cfg.get('cookie_jar_file'), d,
                         'string', help=h, tabid='Cookies')
         ol.add(o)

@@ -31,5 +31,10 @@ class CookieHandler(urllib2.HTTPCookieProcessor):
         requests without any cookies.
         '''
         if request.cookies:
-            self.cookiejar.add_cookie_header(request)
+            return urllib2.HTTPCookieProcessor.http_request(self, request)
+        
+        # Don't do any cookie stuff
         return request
+
+    https_request = http_request
+    
