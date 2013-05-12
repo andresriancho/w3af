@@ -232,12 +232,15 @@ class analyze_cookies(GrepPlugin):
         for cookie in kb.kb.get('analyze_cookies', 'cookies'):
             if cookie.get_url().get_protocol().lower() == 'https' and \
             request.get_url().get_domain() == cookie.get_url().get_domain():
+                
                 # The cookie was sent using SSL, I'll check if the current
-                # request, is using this values in the POSTDATA / QS / COOKIE
+                # request, is using these values in the POSTDATA / QS / COOKIE
                 for key in cookie['cookie-object'].keys():
+                    
+                    value = cookie['cookie-object'][key].value
+                    
                     # This if is to create less false positives
-                    if len(cookie['cookie-object'][key]) > 6 and \
-                    cookie['cookie-object'][key] in request.dump():
+                    if len(value) > 6 and value in request.dump():
 
                         desc = 'Cookie values that were set over HTTPS, are' \
                                ' then sent over an insecure channel in a' \
@@ -249,7 +252,7 @@ class analyze_cookies(GrepPlugin):
 
                         v.set_url(response.get_url())
 
-                        self._set_cookie_to_rep(v, cobj=cookie)
+                        self._set_cookie_to_rep(v, cobj=cookie['cookie-object'])
                         kb.kb.append(self, 'security', v)
 
     def _match_cookie_fingerprint(self, request, response, cookie_obj):

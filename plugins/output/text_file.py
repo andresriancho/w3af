@@ -44,8 +44,8 @@ class text_file(OutputPlugin):
         OutputPlugin.__init__(self)
 
         # User configured parameters
-        self._output_file_name = 'output.txt'
-        self._http_file_name = 'output-http.txt'
+        self._output_file_name = '~/output.txt'
+        self._http_file_name = '~/output-http.txt'
         self.verbose = True
 
         # Internal variables
@@ -61,7 +61,12 @@ class text_file(OutputPlugin):
         self._show_caller = False
 
     def _init(self):
+        
         self._initialized = True
+        
+        self._output_file_name = os.path.expanduser(self._output_file_name)
+        self._http_file_name = os.path.expanduser(self._http_file_name)
+        
         try:
             self._file = open(self._output_file_name, "w")
         except IOError, io:

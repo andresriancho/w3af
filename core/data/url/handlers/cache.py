@@ -378,7 +378,7 @@ class SQLCachedResponse(CachedResponse):
                    ' the error is: %s %s %s' %
                    (ex, resp.get_id(), request.get_uri(), resp.get_code()))
             om.out.error(msg)
-            raise
+            raise Exception(msg)
 
     @staticmethod
     def exists_in_cache(req):

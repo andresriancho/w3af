@@ -51,8 +51,12 @@ class ConfigMenu(menu):
         self._load_help('config')
 
     def _cmd_view(self, params):
-        #col1Len = max([len(o) for o in self._options.keys()]) + 4
-        #col2Len = 16
+        # Some configurable objects require us to reload the options each time
+        # we're going to show them in the console.
+        # https://github.com/andresriancho/w3af/issues/291
+        self._options = self._configurable.get_options()
+        self._groupOptionsByTabId()
+        
         table = [['Setting', 'Value', 'Description']]
         for tabid in self._tabbedOptions.keys():
             tabOpts = self._tabbedOptions[tabid]

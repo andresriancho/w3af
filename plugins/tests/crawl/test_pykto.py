@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 import re
+import os
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.pykto import NiktoTestParser, IsVulnerableHelper, Config
@@ -34,11 +35,15 @@ from core.data.url.HTTPResponse import HTTPResponse
 class TestPykto(PluginTest):
 
     base_url = 'http://moth/w3af/'
-
+    DB_PATH = os.path.join('plugins', 'tests', 'crawl', 'pykto', 'scan_database.db')
+    
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('pykto'),)}
+            'plugins': {'crawl': (PluginConfig('pykto',
+                                                    ('db_file',
+                                                     DB_PATH,
+                                                     PluginConfig.INPUT_FILE)),)}
         }
     }
 
@@ -47,22 +52,15 @@ class TestPykto(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('pykto', 'vuln')
-        self.assertGreater(len(vulns), 5, vulns)
+        self.assertEqual(len(vulns), 2)
 
         urls = self.kb.get_all_known_urls()
-        self.assertTrue(len(urls) > 5, urls)
+        self.assertEqual(len(urls), 3)
 
-        hidden_url = 'http://moth/hidden/'
-        self.assertIn(hidden_url, [u.url_string for u in urls])
-        
-        expected = ['http://moth/images/', 'http://moth/phpinfo.php',
-                    'http://moth/hidden/', 'http://moth/sitemap.xml', 
-                    'http://moth/.svn/entries', 'http://moth/server-status',
-                    'http://moth/_vti_inf.html', 'http://moth/icons/README',
-                    'http://moth/setup/', 'http://moth/reports/rwservlet/showenv',
-                    'http://moth/reports/', 'http://moth/index.php']
+        expected = ['http://moth/phpinfo.php', 'http://moth/hidden/']
+        vuln_urls = [v.get_url().url_string for v in vulns]
         self.assertEqual(set(expected),
-                         set([v.get_url().url_string for v in vulns]))
+                         set(vuln_urls))
         
 
 class TestIsVulnerableHelper(unittest.TestCase):
@@ -156,7 +154,7 @@ class TestNiktoTestParser(PluginTest):
     def test_updated_scan_db(self):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
 
-        scan_db_file = pykto_inst.DB_FILE
+        scan_db_file = pykto_inst._db_file
         is_older = days_since_file_update(scan_db_file, 30)
 
         msg = 'The scan database file is too old. The following commands need'\
@@ -172,7 +170,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         # Go through all the lines        
         generator = nikto_parser.test_generator()
@@ -189,7 +187,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"000003","0","1234576890ab","@CGIDIRScart32.exe","GET","200"'\
                 ',"","","","","request cart32.exe/cart32clientlist","",""'
@@ -224,7 +222,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"0","0","","/docs/JUNK(5)","GET","200"'\
                 ',"","","","","","",""'
@@ -241,7 +239,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config([],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"0","0","","/docs/","GET","200"'\
                 ',"","","","","","",""'
@@ -257,7 +255,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"0","0","","@CGIDIRS","GET","200"'\
                 ',"","","","","","",""'
@@ -275,7 +273,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],admin_dirs,[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"0","0","","@ADMIN","GET","200"'\
                 ',"","","","","","",""'
@@ -294,7 +292,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config([],admin_dirs,[],[],users)
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = u'"0","0","","@ADMIN@USERS","GET","200"'\
                 ',"","","","","","",""'
@@ -309,7 +307,7 @@ class TestNiktoTestParser(PluginTest):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
-        nikto_parser = NiktoTestParser(pykto_inst.DB_FILE, config, url)
+        nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
         
         line = '"006251","0","1","/administraçao.php","GET","200","","",""'\
                ',"","Admin login page/section found.","",""'

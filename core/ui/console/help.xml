@@ -23,7 +23,6 @@ This is the central help file for the consoleUi
         <category name="common">
             <item name="back">Go to the previous menu.  </item>
             <item name="exit">Exit w3af.  </item>
-            <item name="assert">Check assertion. </item>
         </category>
    </topic>
    <topic name="root">
@@ -64,12 +63,20 @@ This is the central help file for the consoleUi
         <category name="menu">
             <item name="use">
                <head>Use a profile.</head>
-               <body><![CDATA[Syntax: use {profile-name}                
-Example: use fast_scan]]></body>
+               <body><![CDATA[Syntax: use PROFILE_NAME [directory]
+Example: use fast_scan
+Example: use fast_scan /tmp/]]></body>
             </item>
             <item name="list">
                <head>List available profiles.</head>
                <body>Syntax: list</body>
+            </item>
+            <item name="save_as">
+               <head>Save the current configuration to a profile.</head>
+               <body><![CDATA[Syntax: save_as PROFILE_NAME                
+Example: save_as fast_scan
+
+Please note that the save_as command will overwrite existing profiles.]]></body>
             </item>
         </category>
     </topic>
@@ -77,7 +84,7 @@ Example: use fast_scan]]></body>
         <category name="menu">
             <item name="list">
                 <head>List available plugins.</head>
-                <body><![CDATA[Syntax: list {plugin type} [all | enabled | disabled]
+                <body><![CDATA[Syntax: list PLUGIN_TYPE [all | enabled | disabled]
 By default all plugins are listed.
                 ]]></body>
             </item>
@@ -118,7 +125,7 @@ Result: ${PLUGIN1} is disabled in the second command, only ${PLUGIN2} will run.]
             </item>
             <item name="exploit">
                 <head>Exploit a vulnerability found by audit plugins.</head>
-                <body><![CDATA[Sintax: exploit {plugin [vulnerability-id] | * [stopOnFirst]}
+                <body><![CDATA[Syntax: exploit (PLUGIN_NAME [vulnerability-id] | * [stopOnFirst])
 When using "exploit *" you will be running all exploit plugins, ordered by the probability of getting a root shell. When you add the "stopOnFirst" option to the "exploit *" command, you are making w3af stop on the first successbody exploit.
 Examples:
 - exploit *
@@ -130,11 +137,6 @@ Examples:
                 <body><![CDATA[Syntax: interact [shell-id]               
 Examples: The "interact" command will list available shells and "interact 3" will start the interaction with the shell with id 3.]]></body>
             </item>
-            <item name="fastexploit">
-                <head>Exploit a vulnerability based on external parameters.</head>
-                <body><![CDATA[Syntax: fastexploit {plugin name}
-Example: fastexploit sqlmap]]></body>
-            </item>
          </category>
     </topic>
     <topic name="config">
@@ -144,7 +146,7 @@ Example: fastexploit sqlmap]]></body>
             </item>
             <item name="set">
                 <head>Set a parameter value.</head>
-                <body>Syntax: set {parameter} {value}</body>
+                <body>Syntax: set PARAMETER VALUE</body>
             </item>
             <item name="save">
                 <head>Save the configured settings.</head>
@@ -156,15 +158,17 @@ Example: fastexploit sqlmap]]></body>
         <category name="menu">
             <item name="list">
                 <head>List the items in the knowledge base.</head>
-		<body><![CDATA[Syntax: list {type}
-where {type} is one of: vulns, info, shells
+		<body><![CDATA[Syntax: list TYPE
+where TYPE is one of: vulns, info, shells
 ]]></body>
             </item>
             <item name="add">
                 <head>Add a vulnerability to the KB</head>
-		<body><![CDATA[Syntax: add {type}
+		<body><![CDATA[Syntax: add TYPE
 Manually adding vulnerabilities to the KB is used by advanced users to give attack
-plugins the required information about vulnerabilities they want to exploit. 
+plugins the required information about vulnerabilities they want to exploit.
+
+To get a list of the potential TYPEs to add, just press <TAB> twice after typing add. 
 ]]></body>
             </item>            
        </category>
@@ -173,14 +177,14 @@ plugins the required information about vulnerabilities they want to exploit.
         <category name="menu">
             <item name="list">
                 <head>List exceptions found during the previous scan.</head>
-				<body><![CDATA[Syntax: list {type}
-where {type} is one of w3af's plugin types. If no type is specified all exceptions are listed.
+				<body><![CDATA[Syntax: list [TYPE]
+where TYPE is one of w3af's plugin types. If no type is specified all exceptions are listed.
 ]]></body>
             </item>
             <item name="details">
                 <head>Show the full details for an exception identified by ID</head>
-				<body><![CDATA[Syntax: details {id}
-where {id} is the ID for the exception you want to analyze as returned by the list command.
+				<body><![CDATA[Syntax: details ID
+where ID is the ID for the exception you want to analyze as returned by the list command.
 ]]></body>
             </item>
             <item name="summary">

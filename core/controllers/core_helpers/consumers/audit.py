@@ -76,7 +76,7 @@ class audit(BaseConsumer):
         try:
             orig_resp = self.get_original_response(fuzzable_request)
         except Exception, e:
-            self.handle_exception('audit', 'audit.getget_original_response_name()',
+            self.handle_exception('audit', 'audit.get_original_response()',
                                   'audit.get_original_response()', e)
             return
 

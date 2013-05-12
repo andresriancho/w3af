@@ -67,12 +67,14 @@ class html_file(OutputPlugin):
 
         # User configured parameters
         self._verbose = False
-        self._output_file_name = 'report.html'
+        self._output_file_name = '~/report.html'
 
     def _init(self):
         '''
         Write messages to HTML file.
         '''
+        self._output_file_name = os.path.expanduser(self._output_file_name)
+        
         if not self._initialized:
             self._initialized = True
             try:

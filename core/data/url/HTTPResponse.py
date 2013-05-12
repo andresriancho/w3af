@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 import re
 import httplib
+import threading
 
 from lxml import etree
 from itertools import imap
@@ -82,7 +83,7 @@ class HTTPResponse(object):
         
         if not isinstance(read, basestring):
             raise TypeError('Invalid type %s for HTTPResponse ctor param read.'
-                            % type(headers))
+                            % type(read))
 
         self._charset = charset
         self._headers = None
@@ -114,6 +115,9 @@ class HTTPResponse(object):
         self._time = time
         self._alias = alias
         self._doc_type = None
+        
+        # Internal lock
+        self._body_lock = threading.RLock()
 
     @classmethod
     def from_httplib_resp(cls, httplibresp, original_url=None):
@@ -219,11 +223,12 @@ class HTTPResponse(object):
         return self._code
 
     def get_body(self):
-        if self._body is None:
-            self._body, self._charset = self._charset_handling()
-            # Free 'raw_body'
-            self._raw_body = None
-        return self._body
+        with self._body_lock:
+            if self._body is None:
+                self._body, self._charset = self._charset_handling()
+                # Free 'raw_body'
+                self._raw_body = None
+            return self._body
 
     def set_body(self, body):
         '''
@@ -231,6 +236,10 @@ class HTTPResponse(object):
 
         @body: A string that represents the body of the HTTP response
         '''
+        if not isinstance(body, basestring):
+            msg = 'Invalid type %s for set_body parameter body.'
+            raise TypeError(msg % type(body))
+            
         self._body = None
         self._raw_body = body
     
@@ -501,7 +510,8 @@ class HTTPResponse(object):
         if type(rawbody) is unicode:
             _body = rawbody
             assert charset is not None, ("HTTPResponse objects containing "
-                                         "unicode body must have an associated charset")
+                                         "unicode body must have an associated "
+                                         "charset")
         elif 'content-type' not in lcase_headers:
             _body = rawbody
             charset = DEFAULT_CHARSET
@@ -518,20 +528,7 @@ class HTTPResponse(object):
         else:
             # Figure out charset to work with
             if not charset:
-                # Start with the headers
-                charset_mo = CHARSET_EXTRACT_RE.search(
-                    lcase_headers['content-type'],
-                    re.I)
-                if charset_mo:
-                    # Seems like the response's headers contain a charset
-                    charset = charset_mo.groups()[0].lower().strip()
-                else:
-                    # Continue with the body's meta tag
-                    charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
-                    if charset_mo:
-                        charset = charset_mo.groups()[0].lower().strip()
-                    else:
-                        charset = DEFAULT_CHARSET
+                charset = self.guess_charset(rawbody, lcase_headers)
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
@@ -558,6 +555,22 @@ class HTTPResponse(object):
                 )
 
         return _body, charset
+
+    def guess_charset(self, rawbody, headers):
+        # Start with the headers
+        charset_mo = CHARSET_EXTRACT_RE.search(headers['content-type'], re.I)
+        if charset_mo:
+            # Seems like the response's headers contain a charset
+            charset = charset_mo.groups()[0].lower().strip()
+        else:
+            # Continue with the body's meta tag
+            charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
+            if charset_mo:
+                charset = charset_mo.groups()[0].lower().strip()
+            else:
+                charset = DEFAULT_CHARSET
+        
+        return charset
 
     @property
     def content_type(self):
@@ -633,3 +646,13 @@ class HTTPResponse(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state.pop('_body_lock')
+        return state
+    
+    def __setstate__(self, state):
+        self.__dict__ = state
+        self._body_lock = threading.RLock()
+        

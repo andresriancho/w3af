@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 import csv
 import itertools
 
@@ -26,7 +27,6 @@ import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
@@ -41,7 +41,7 @@ class csv_file(OutputPlugin):
 
     def __init__(self):
         OutputPlugin.__init__(self)
-        self.output_file = 'output-w3af.csv'
+        self.output_file = '~/output-w3af.csv'
 
     def do_nothing(self, *args, **kwds):
         pass
@@ -55,6 +55,8 @@ class csv_file(OutputPlugin):
         '''
         all_vulns = kb.kb.get_all_vulns()
         all_infos = kb.kb.get_all_infos()
+
+        self.output_file = os.path.expanduser(self.output_file)
 
         try:
             csv_writer = csv.writer(

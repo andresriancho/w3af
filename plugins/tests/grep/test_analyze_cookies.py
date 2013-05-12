@@ -237,3 +237,31 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
+
+    def test_analyze_cookies_https_value_over_http(self):
+        body = ''
+        url = URL('https://www.w3af.com/')
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=defjkluio; secure; httponly;'}.items())
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        # Receive the cookie over HTTPS
+        self.plugin.grep(request, response)
+
+        url = URL('http://www.w3af.com/?id=defjkluio')
+        headers = Headers({'content-type': 'text/html'}.items())
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        # Send the cookie over HTTP as a parameter value
+        self.plugin.grep(request, response)
+
+        security = kb.kb.get('analyze_cookies', 'security')
+
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual(len(security), 1)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        
+        names = [i.get_name() for i in security]
+        self.assertIn('Secure cookies over insecure channel', names)

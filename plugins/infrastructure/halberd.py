@@ -129,6 +129,11 @@ class halberd(InfrastructurePlugin):
             clues = scantask.analyzed
             hits = halberd_analysis.hits(clues)
 
+            # In some strange cases, we have no clues about the remote
+            # server. We just need to return in this case.
+            if not len(clues):
+                return
+
             # xxx This could be passed by the caller in order to avoid
             # recomputation in case the clues needed a re-analysis.
             diff_fields = halberd_analysis.diff_fields(clues)

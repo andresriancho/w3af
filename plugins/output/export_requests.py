@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
+
 import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
@@ -38,7 +40,7 @@ class export_requests(OutputPlugin):
 
     def __init__(self):
         OutputPlugin.__init__(self)
-        self.output_file = 'output-requests.csv'
+        self.output_file = '~/output-requests.csv'
 
     def do_nothing(self, *args, **kwds):
         pass
@@ -51,8 +53,9 @@ class export_requests(OutputPlugin):
         Exports a list of fuzzable requests to the user configured file.
         '''
         fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
+        
+        filename = os.path.expanduser(self.output_file)
 
-        filename = self.output_file
         try:
             out_file = open(filename, 'w')
             out_file.write('HTTP-METHOD,URI,POSTDATA\n')

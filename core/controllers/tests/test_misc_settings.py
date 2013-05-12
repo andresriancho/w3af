@@ -25,10 +25,10 @@ from nose.plugins.attrib import attr
 from core.controllers.misc_settings import MiscSettings
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
-    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)
 
 OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-                INPUT_FILE, OUTPUT_FILE, PORT)
+                INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)
 
 
 @attr('smoke')

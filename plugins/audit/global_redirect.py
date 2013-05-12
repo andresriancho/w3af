@@ -55,11 +55,8 @@ class global_redirect(AuditPlugin):
         :param freq: A FuzzableRequest object
         '''
         mutants = create_mutants(freq, self.TEST_URLS)
-
-        send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(
-            m, follow_redir=False)
-
-        self._send_mutants_in_threads(send_mutant_no_follow,
+        
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
 

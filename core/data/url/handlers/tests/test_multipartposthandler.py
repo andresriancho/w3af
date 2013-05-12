@@ -26,7 +26,7 @@ import urllib2
 
 from nose.plugins.attrib import attr
 
-from core.data.url.handlers.MultipartPostHandler import MultipartPostHandler, multipart_encode
+from core.data.url.handlers.multipart import MultipartPostHandler, multipart_encode
 from core.controllers.misc.io import NamedStringIO
 
 

@@ -76,7 +76,7 @@ class TestExceptionHandler(unittest.TestCase):
     @attr('smoke')
     def test_handle_multiple(self):
 
-        for i in xrange(10):
+        for _ in xrange(10):
             try:
                 raise Exception('unittest')
             except Exception, e:
