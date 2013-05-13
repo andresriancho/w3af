@@ -354,19 +354,11 @@ class OpenerSettings(Configurable):
         # Prepare the list of handlers
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
-<<<<<<< HEAD
                         self._ntlmAuthHandler, self._cookie_handler,
-                        MultipartPostHandler.MultipartPostHandler,
-                        self._kAHTTP, self._kAHTTPS, LogHandler,
-                        HTTPErrorHandler, HTTP30XHandler,
-                        mangleHandler.mangleHandler(self._mangle_plugins),
-=======
-                        self._ntlmAuthHandler, self._cookieHandler,
                         MultipartPostHandler, NormalizeHandler,
                         self._kAHTTP, self._kAHTTPS, OutputManagerHandler,
                         HTTP30XHandler, BlacklistHandler,
                         MangleHandler(self._mangle_plugins),
->>>>>>> 8e79cc706e8606af780165dba8f06c2a51f72907
                         HTTPGzipProcessor, self._url_parameterHandler,
                         self._cache_hdler, ErrorHandler]:
             if handler:
