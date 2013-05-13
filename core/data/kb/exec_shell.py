@@ -302,9 +302,10 @@ class ExecShell(Shell):
         '''
         raise NotImplementedError
 
-    def _identify_os(self):
+    def identify_os(self):
         '''
-        Identify the remote operating system and get some remote variables to show to the user.
+        Identify the remote operating system and get some remote variables to
+        show to the user.
         '''
         self._rOS = os_detection_exec(self.execute)
 
@@ -317,10 +318,14 @@ class ExecShell(Shell):
             self._rSystem = self.execute(
                 'echo %COMPUTERNAME% - %OS% - %PROCESSOR_IDENTIFIER%').strip()
             self._rSystemName = self.execute('echo %COMPUTERNAME%').strip()
+        else:
+            self._rUser = 'unknown'
+            self._rSystem = 'unknown'
+            self._rSystemName = 'unknown'
 
     def __repr__(self):
         if not self._rOS:
-            self._identify_os()
+            self.identify_os()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
         return fmt % (self.get_name(), self.get_remote_user(), 
                       self.get_remote_system())

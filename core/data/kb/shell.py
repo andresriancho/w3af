@@ -135,12 +135,12 @@ class Shell(ExploitResult):
     def end_interaction(self):
         '''
         When the user executes "exit" in the console, this method is called.
-        Basically, here we handle WHAT TO DO in that case. In most cases (and this is
-        why we implemented it this way here) the response is "yes, do it end me" that
-        equals to "return True".
+        Basically, here we handle WHAT TO DO in that case. In most cases (and
+        this is why we implemented it this way here) the response is "yes, do
+        it end me" that equals to "return True".
 
-        In some other cases, the shell prints something to the console and then exists,
-        or maybe some other, more complex, thing.
+        In some other cases, the shell prints something to the console and then
+        exists, or maybe some other, more complex, thing.
         '''
         return True
 
@@ -248,19 +248,25 @@ class Shell(ExploitResult):
               'inherit from "shell"'
         raise NotImplementedError(msg)
 
-    def _identify_os(self):
+    def identify_os(self):
         '''
         Identify the remote operating system and get some remote variables to
         show to the user.
+        
+        Internally it needs to set the following attributes which are None by
+        default:
+            self._rOS = None
+            self._rSystem = None
+            self._rUser = None
+            self._rSystemName = None
+
         '''
-        self._rUser = 'generic'
-        self._rSystem = 'generic'
-        self._rSystemName = 'generic'
-        self._rOS = 'generic'
+        msg = 'Shell instances need to implement the identify_os method.'
+        raise NotImplementedError(msg)
 
     def __repr__(self):
         if not self._rOS:
-            self._identify_os()
+            self.identify_os()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
         return fmt % (self.get_name(), self.get_remote_user(),
                       self.get_remote_system())

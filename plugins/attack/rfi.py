@@ -414,6 +414,12 @@ class PortScanShell(Shell):
 
     def get_name(self):
         return 'portscan-shell object'
+    
+    def identify_os(self):
+        self._rOS = 'unknown'
+        self._rSystem = 'PHP'
+        self._rUser = 'web-server'
+        self._rSystemName = 'unknown'
 
 
 class RFIShell(ExecShell, PortScanShell):

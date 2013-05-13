@@ -135,14 +135,15 @@ class ReadShell(Shell):
         
         return
 
-    def _identify_os(self):
+    def identify_os(self):
         '''
         Identify the remote operating system by reading different files from
         the OS.
         '''
         self._rOS = read_os_detection(self.read)
+        
         # TODO: Could we determine this by calling some payloads?
-        self._rSystem = ''
+        self._rSystem = 'unknown'
         self._rSystemName = 'unknown'
         self._rUser = 'file-reader'
 
@@ -157,7 +158,7 @@ class ReadShell(Shell):
         :return: A string representation of this shell.
         '''
         if not self._rOS:
-            self._identify_os()
+            self.identify_os()
 
         return '<shell object (rsystem: "' + self._rOS + '")>'
 
