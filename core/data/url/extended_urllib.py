@@ -59,6 +59,9 @@ from core.data.url.handlers.blacklist import http_response_to_httplib
 from core.data.dc.headers import Headers
 
 
+MAX_ERROR_COUNT = 10
+
+
 class ExtendedUrllib(object):
     '''
     This is a urllib2 wrapper.
@@ -73,7 +76,7 @@ class ExtendedUrllib(object):
 
         # For error handling
         self._last_request_failed = False
-        self._last_errors = deque(maxlen=10)
+        self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
         self._error_count = {}
         self._count_lock = threading.RLock()
 
@@ -660,9 +663,9 @@ class ExtendedUrllib(object):
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
 
         with self._count_lock:
-            if errtotal >= 10 and not self._error_stopped:
+            if errtotal >= MAX_ERROR_COUNT:
                 # Stop using ExtendedUrllib instance
-                self.stop()
+                self._error_stopped = True
                 # Known reason errors. See errno module for more info on these
                 # errors.
                 EUNKNSERV = -2  # Name or service not known error
@@ -710,8 +713,8 @@ class ExtendedUrllib(object):
                         reason_msg = '%s: %s' % (error.__class__.__name__,
                                                  error.args)
                     if reason_msg is not None:
-                        raise w3afMustStopByKnownReasonExc(
-                            msg % error, reason=reason_err)
+                        raise w3afMustStopByKnownReasonExc(msg % error,
+                                                           reason=reason_err)
 
                 errors = [] if parsed_traceback else last_errors
                 raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
