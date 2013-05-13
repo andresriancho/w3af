@@ -300,8 +300,8 @@ class w3af_core_strategy(object):
                 except w3afMustStopByUserRequest:
                     # Not a real error, the user stopped the scan
                     raise
-                except Exception, e:
-                    raise w3afMustStopException(msg % e)
+                except Exception:
+                    raise w3afMustStopException(msg)
                 else:
                     sent_requests += 1
 
