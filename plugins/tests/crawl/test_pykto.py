@@ -317,3 +317,42 @@ class TestNiktoTestParser(PluginTest):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
+    def test_parse_db_line_basic_w3af_scan_database(self):
+        '''
+        This test reads a line from the w3af scan database and parses it, it's
+        objective is to make sure that we can read both formats (or better yet,
+        that both files: the one from nikto and the one we have are in the same
+        format).
+        
+        https://github.com/andresriancho/w3af/issues/317
+        '''
+        config = Config([],[],[],[],[])
+        url = URL('http://moth/')
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        nikto_parser = NiktoTestParser(pykto_inst._extra_db_file, config, url)
+        
+        # Go through all the lines        
+        generator = nikto_parser.test_generator()
+        nikto_tests = [i for (i,) in generator]
+        
+        self.assertLess(len(nikto_parser.ignored), 30, len(nikto_parser.ignored))
+        
+        self.assertEqual(len(nikto_tests), 3)
+        
+        nikto_test = nikto_tests[0]
+    
+        self.assertEqual(nikto_test.id, '900001')
+        self.assertEqual(nikto_test.osvdb, '0')
+        self.assertEqual(nikto_test.tune, '3')
+        self.assertEqual(nikto_test.uri.url_string, 'http://moth/debug.seam')
+        self.assertEqual(nikto_test.method, 'GET')
+        self.assertIsInstance(nikto_test.match_1, type(re.compile('')))
+        self.assertEqual(nikto_test.match_1_or, None)
+        self.assertEqual(nikto_test.match_1_and, None)
+        self.assertEqual(nikto_test.fail_1, None)
+        self.assertEqual(nikto_test.fail_2, None)
+        self.assertEqual(nikto_test.message, 'JBoss Seam Debug Page is available.')
+        self.assertEqual(nikto_test.data, '')
+        self.assertEqual(nikto_test.headers, '')
+        

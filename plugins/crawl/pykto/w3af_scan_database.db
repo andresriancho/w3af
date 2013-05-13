@@ -15,8 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with w3af; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-"generic","/debug.seam","<title>JBoss Seam Debug Page</title>","GET","JBoss Seam Debug Page is available."
-"generic","/.svn/entries","props","GET","SVN metadata is present"
-"generic","/.git/index","DIRC","GET","GIT metadata is present"
-
+#
+# The information in each line contains the following information:
+#    0. 'id'
+#    1. 'osvdb'
+#    2. 'tune'
+#           1     Interesting File / Seen in logs
+#           2     Misconfiguration / Default File
+#           3     Information Disclosure
+#           4     Injection (XSS/Script/HTML)
+#           5     Remote File Retrieval - Inside Web Root
+#           6     Denial of Service
+#           7     Remote File Retrieval - Server Wide
+#           8     Command Execution / Remote Shell
+#           9     SQL Injection
+#           0     File Upload
+#           a     Authentication Bypass
+#           b     Software Identification
+#           c     Remote Source Inclusion
+#    3. 'uri'
+#    4. 'method'
+#    5. 'match_1'
+#    6. 'match_1_or'
+#    7. 'match_1_and'
+#    8. 'fail_1'
+#    9. 'fail_2'
+#    10. 'message'
+#    11. 'data'
+#    12. 'headers'
+"900001","0","3","/debug.seam","GET","<title>JBoss Seam Debug Page</title>","","","","","JBoss Seam Debug Page is available.","",""
+"900002","0","3","/.svn/entries","GET","props","","","","","SVN metadata is present","",""
+"900003","0","3","/.git/index","GET","DIRC","","","","","GIT metadata is present","",""

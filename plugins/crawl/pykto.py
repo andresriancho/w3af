@@ -431,6 +431,7 @@ class NiktoTestParser(object):
         if not isinstance(line, unicode):
             raise TypeError('Database information needs to be sent as unicode.')
         
+        line = line.strip()
         splitted_line = line.split('","')
 
         if len(splitted_line) != 13:
@@ -457,7 +458,11 @@ class NiktoTestParser(object):
 
             elif test_value:
                 flags = re.I | re.M | re.S
-                splitted_line[test_index] = re.compile(test_value, flags)
+                try:
+                    splitted_line[test_index] = re.compile(test_value, flags)
+                except:
+                    # Protect myself against buggy regular expressions
+                    raise StopIteration
             
             else:
                 splitted_line[test_index] = None
