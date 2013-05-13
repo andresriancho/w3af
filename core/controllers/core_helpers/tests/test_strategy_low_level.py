@@ -26,6 +26,7 @@ from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.core_helpers.strategy import w3af_core_strategy
+from core.controllers.exceptions import w3afMustStopException
 from core.data.kb.knowledge_base import kb
 
 
@@ -111,3 +112,29 @@ class TestStrategy(unittest.TestCase):
         expected_names = set(['MainThread', 'SQLiteExecutor', 'OutputManager'])
         
         self.assertEqual(thread_names, expected_names)
+        
+    def test_strategy_verify_target_server(self):
+        core = w3afCore()
+        
+        # TODO: Change 2312 by an always closed/non-http port
+        INVALID_TARGET = 'http://localhost:2312/'
+        
+        target = core.target.get_options()
+        target['target'].set_value(INVALID_TARGET)
+        core.target.set_options(target)
+        
+        core.plugins.set_plugins(['sqli',], 'audit')        
+        core.plugins.init_plugins()
+        
+        core.verify_environment()
+        core.scan_start_hook()
+        
+        strategy = w3af_core_strategy(core)
+        
+        try:
+            strategy.start()
+        except w3afMustStopException, wmse:
+            message = str(wmse)
+            self.assertIn('Please verify your target configuration', message)
+        else:
+            self.assertTrue(False)

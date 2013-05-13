@@ -27,6 +27,7 @@ import core.data.kb.config as cf
 import core.controllers.output_manager as om
 
 from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.url.extended_urllib import MAX_ERROR_COUNT
 
 from core.controllers.core_helpers.consumers.grep import grep
 from core.controllers.core_helpers.consumers.auth import auth
@@ -80,6 +81,8 @@ class w3af_core_strategy(object):
         :return: No value is returned.
         '''
         try:
+            self.verify_target_server()
+            
             self._setup_grep()
             self._setup_auth()
             self._setup_crawl_infrastructure()
@@ -263,6 +266,44 @@ class w3af_core_strategy(object):
         reach the try/except clause in w3afCore's start.
         '''
         self._w3af_core.exception_handler.handle_exception_data(exception_data)
+
+    def verify_target_server(self):
+        '''
+        Well, it is more common than expected that the user configures a target
+        which is offline, is not a web server, etc. So we're going to verify
+        all that before even starting our work, and provide a nice error message
+        so that users can change their config if needed.
+        
+        Note that we send MAX_ERROR_COUNT tests to the remote end in order to
+        trigger any errors in the remote end and have the Extended URL Library
+        error handle return errors.
+        
+        :raises: A friendly exception with lots of details of what could have
+                 happen.
+        '''
+        sent_requests = 0
+        
+        msg = ('The remote web server is not answering our HTTP requests,'
+               ' multiple errors have been found while trying to GET a response'
+               ' from the server.\n\n'
+               'In most cases this means that the configured target is'
+               ' incorrect, the port is closed, there is a firewall blocking'
+               ' our packets or there is no HTTP daemon listening on that'
+               ' port.\n\n'
+               'Please verify your target configuration and try again.')
+        
+        
+        while sent_requests < MAX_ERROR_COUNT * 1.5:
+            for url in cf.cf.get('targets'):
+                try:
+                    self._w3af_core.uri_opener.GET(url, cache=False)
+                except w3afMustStopByUserRequest:
+                    # Not a real error, the user stopped the scan
+                    raise
+                except Exception, e:
+                    raise w3afMustStopException(msg % e)
+                else:
+                    sent_requests += 1
 
     def _setup_404_detection(self):
         #
