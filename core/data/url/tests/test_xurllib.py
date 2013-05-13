@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 import Queue
+import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
 
 from core.data.url.extended_urllib import ExtendedUrllib
+from core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from core.data.parsers.url import URL
 from core.data.dc.data_container import DataContainer
 from core.data.dc.headers import Headers
@@ -92,6 +94,26 @@ class TestXUrllib(unittest.TestCase):
 
     def test_unknown_url(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
+        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+
+    def test_url_port_closed(self):
+        # TODO: Change 2312 by an always closed/non-http port
+        url = URL('http://127.0.0.1:2312/')
+        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+
+    def test_url_port_not_http(self):
+        class EmptyTCPHandler(SocketServer.BaseRequestHandler):
+            def handle(self):
+                self.data = self.request.recv(1024).strip()
+                self.request.sendall('')
+                
+        upper_daemon = UpperDaemon(EmptyTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        url = URL('http://127.0.0.1:%s/' % port)
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_stop(self):
