@@ -223,7 +223,7 @@ class SQLMapShell(ReadShell):
         '''
         return '<sqlmap shell object>'
     
-    def _identify_os(self):
+    def identify_os(self):
         '''
         Identify the remote operating system by reading different files from
         the OS.

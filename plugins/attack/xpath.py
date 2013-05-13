@@ -433,7 +433,12 @@ class XPathReader(Shell):
     def get_name(self):
         return 'xpath_reader'
 
-
+    def identify_os(self):
+        self._rOS = 'unknown'
+        self._rSystem = 'XPath'
+        self._rUser = 'xml-file'
+        self._rSystemName = 'unknown'
+        
 class IsErrorResponse(object):
     def __init__(self, vuln_obj, url_opener, use_difflib):
         self.vuln_obj = vuln_obj
