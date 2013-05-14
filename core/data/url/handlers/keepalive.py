@@ -310,7 +310,6 @@ class HTTPResponse(httplib.HTTPResponse):
             return s
 
     def readline(self, limit=-1):
-        data = ""
         i = self._rbuf.find('\n')
         while i < 0 and not (0 < limit <= len(self._rbuf)):
             new = self._raw_read(self._rbufsize)
@@ -332,16 +331,16 @@ class HTTPResponse(httplib.HTTPResponse):
     @closeonerror
     def readlines(self, sizehint=0):
         total = 0
-        list = []
+        line_list = []
         while 1:
             line = self.readline()
             if not line:
                 break
-            list.append(line)
+            line_list.append(line)
             total += len(line)
             if sizehint and total >= sizehint:
                 break
-        return list
+        return line_list
 
     def set_body(self, data):
         '''
