@@ -23,7 +23,9 @@ import unittest
 import clamd
 
 from itertools import repeat
+from functools import wraps
 from mock import patch
+from nose.plugins.skip import SkipTest
 
 import core.data.kb.knowledge_base as kb
 
@@ -32,6 +34,18 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
+
+
+def need_clamav(meth):
+    
+    @wraps(meth)
+    def debug(self, *args, **kwds):
+        if not self.plugin._connection_test():
+            raise SkipTest('No connection to clamav found.')
+        
+        return meth(self, *args, **kwds)
+    
+    return debug
 
 
 class TestClamAV(unittest.TestCase):
@@ -44,6 +58,7 @@ class TestClamAV(unittest.TestCase):
         self.plugin.end()
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @need_clamav
     def test_clamav_eicar(self, *args):
         body = clamd.EICAR
         url = URL('http://www.w3af.com/')
@@ -63,6 +78,7 @@ class TestClamAV(unittest.TestCase):
         
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @need_clamav
     def test_clamav_empty(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -74,3 +90,4 @@ class TestClamAV(unittest.TestCase):
         findings = kb.kb.get('clamav', 'malware')
         
         self.assertEqual(len(findings), 0, findings)
+
