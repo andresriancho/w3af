@@ -39,7 +39,10 @@ class TestErrorHandler(unittest.TestCase):
     
     @attr('moth')
     def test_error_handler_id(self):
-        '''Verify that the blacklist handler works as expected'''
+        '''
+        Verify that the error handler works as expected, in other words, do NOT
+        crash on response codes not in range 200-300.
+        '''
         fail_url = URL('http://moth/abc/def/do-not-exist.foo')
         
         settings = opener_settings.OpenerSettings()
