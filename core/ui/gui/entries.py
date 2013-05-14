@@ -864,13 +864,20 @@ class _RememberingPane(object):
 
         # if we have it from before, get the info; otherwise plan to
         # set it up around its half
-        if widgname in self.winconfig:
-            self.set_position(self.winconfig[widgname])
-        elif defaultInitPos is not None:
-            self.set_position(defaultInitPos)
-            self.winconfig[self.widgname] = defaultInitPos
-        else:
+        try:
+            widgname in self.winconfig
+        except ValueError:
+            # https://github.com/andresriancho/w3af/issues/332
+            # ValueError: invalid operation on closed shelf
             self.signal = self.connect("expose-event", self.exposed)
+        else:
+            if widgname in self.winconfig:
+                self.set_position(self.winconfig[widgname])
+            elif defaultInitPos is not None:
+                self.set_position(defaultInitPos)
+                self.winconfig[self.widgname] = defaultInitPos
+            else:
+                self.signal = self.connect("expose-event", self.exposed)
 
     def move_handle(self, widg, what):
         '''Adjust the record every time the handle is moved.'''
