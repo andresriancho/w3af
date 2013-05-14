@@ -81,13 +81,11 @@ class clamav(GrepPlugin):
         response.get_code() not in self.HTTP_CODES:
             return
         
-        if response.get_url() in self._already_analyzed:
-            return
-        
-        self._already_analyzed.add(response.get_url())
-        
-        # TODO: Solve the async issue
-        self._scan_http_response(request, response)
+        if response.get_url() not in self._already_analyzed:
+            self._already_analyzed.add(response.get_url())
+            
+            # TODO: Solve the async issue
+            self._scan_http_response(request, response)
 
     def _is_properly_configured(self):
         '''
@@ -140,7 +138,7 @@ class clamav(GrepPlugin):
         :return: None
         '''
         cd = self._get_connection()
-        
+       
         result_dict = cd.instream(BytesIO(response.get_body()))
         result = self._parse_scan_result(result_dict)
         
