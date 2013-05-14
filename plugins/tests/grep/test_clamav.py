@@ -30,6 +30,7 @@ from nose.plugins.skip import SkipTest
 import core.data.kb.knowledge_base as kb
 
 from plugins.grep.clamav import clamav
+from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
@@ -107,3 +108,40 @@ class TestClamAV(unittest.TestCase):
         
         self.assertEqual(len(findings), 0)
         self.assertEqual(self.plugin._scan_http_response.call_count, 0)
+
+ 
+class TestClamAVScan(PluginTest):
+ 
+    target_url = 'http://moth/w3af/grep/clamav/'
+
+    _run_configs = {          
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('clamav'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                    ('only_forward', True, PluginConfig.BOOL)),
+                )
+            }
+        },        
+    }
+
+    def test_found_vuln(self):
+        '''
+        Test to validate case in which malware is identified while crawling.
+        '''
+        #Configure and run test case
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        findings = kb.kb.get('clamav', 'malware')
+        
+        self.assertEqual(len(findings), 1)
+        finding = findings[0]
+        
+        EXPECTED_URL = self.target_url + 'eicar'
+        
+        self.assertEqual(finding.get_name(), 'Malware identified')
+        self.assertIn('ClamAV identified malware', finding.get_desc())
+        self.assertEqual(finding.get_url().url_string, EXPECTED_URL)    
