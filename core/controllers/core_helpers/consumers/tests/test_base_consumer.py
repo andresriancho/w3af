@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from mock import Mock
+
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.w3afCore import w3afCore
 from core.data.request.fuzzable_request import FuzzableRequest
@@ -45,3 +47,12 @@ class TestBaseConsumer(unittest.TestCase):
         self.assertEqual(exception_data.phase, 'audit')
         self.assertEqual(exception_data.plugin, 'sqli')
         self.assertEqual(exception_data.exception, e)
+    
+    def test_terminate(self):
+        self.bc.start()
+        
+        self.bc._teardown = Mock()
+        
+        self.bc.terminate()
+        
+        self.assertEqual(self.bc._teardown.call_count, 1)
