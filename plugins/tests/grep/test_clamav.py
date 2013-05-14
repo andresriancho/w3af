@@ -127,6 +127,15 @@ class TestClamAVScan(PluginTest):
         },        
     }
 
+    def setUp(self):
+        self.plugin = clamav()
+        super(TestClamAVScan, self).setUp()
+        
+    def tearDown(self):
+        super(TestClamAVScan, self).tearDown()
+        self.plugin.end()
+        
+    @need_clamav
     def test_found_vuln(self):
         '''
         Test to validate case in which malware is identified while crawling.
