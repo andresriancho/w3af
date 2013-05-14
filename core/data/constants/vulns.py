@@ -183,6 +183,7 @@ VULNS = {
          30054: 'Hash string in HTML content',
          30055: 'Blank http response body',
          30056: 'Content feed resource',
+         30057: 'Malware identified',
          
          # Infrastructure
          40001: 'Potential XSS vulnerability',
