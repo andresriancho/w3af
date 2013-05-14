@@ -178,7 +178,7 @@ class URL(DiskItem):
         # This is the case when someone creates a URL like
         # this: URL('www.w3af.com')
         #
-        if scheme == netloc == '' and path:
+        if scheme == netloc == '' and not path.startswith('/'):
             # By default we set the protocol to "http"
             scheme = 'http'
             netloc = path

@@ -99,24 +99,28 @@ class generic(AuthPlugin):
         '''
         options = [
             ('username', self.username, 'string',
-             'Username for using in the authentication'),
+             'Username for using in the authentication process'),
             ('password', self.password, 'string',
-             'Password for using in the authentication'),
+             'Password for using in the authentication process'),
             ('username_field', self.username_field,
-             'string', 'Username HTML field name'),
+             'string', 'Username parameter name (ie. "uname" if the HTML looks'
+                       ' like <input type="text" name="uname">...)'),
             ('password_field', self.password_field,
-             'string', 'Password HTML field name'),
+             'string', 'Password parameter name (ie. "pwd" if the HTML looks'
+                       ' like <input type="password" name="pwd">...)'),
             ('auth_url', self.auth_url, 'url',
-             'Auth URL - URL for POSTing the authentication information'),
+             'URL where the username and password will be sent using a POST'
+             ' request'),
             ('check_url', self.check_url, 'url',
-             'Check session URL - URL in which response body check_string will be searched'),
+             'URL used to verify if the session is still active by looking for'
+             ' the check_string.'),
             ('check_string', self.check_string, 'string',
-             'String for searching on check_url page to determine if user\
-                    is logged in the web application'),
+             'String for searching on check_url page to determine if the'
+             'current session is active.'),
         ]
         ol = OptionList()
         for o in options:
-            ol.add(opt_factory(o[0], o[1], o[3], o[2]))
+            ol.add(opt_factory(o[0], o[1], o[3], o[2], help=o[3]))
         return ol
 
     def set_options(self, options_list):
