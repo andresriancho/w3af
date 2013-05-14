@@ -24,7 +24,7 @@ import clamd
 
 from itertools import repeat
 from functools import wraps
-from mock import patch
+from mock import patch, Mock
 from nose.plugins.skip import SkipTest
 
 import core.data.kb.knowledge_base as kb
@@ -47,7 +47,7 @@ def need_clamav(meth):
     
     return debug
 
-
+    
 class TestClamAV(unittest.TestCase):
 
     def setUp(self):
@@ -91,3 +91,19 @@ class TestClamAV(unittest.TestCase):
         
         self.assertEqual(len(findings), 0, findings)
 
+    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    def test_no_clamav_eicar(self, *args):
+        body = clamd.EICAR
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+        
+        # Simulate that we don't have clamd running
+        self.plugin._connection_test = Mock(return_value=False)
+        self.plugin._scan_http_response = Mock()
+        self.plugin.grep(request, response)
+        findings = kb.kb.get('clamav', 'malware')
+        
+        self.assertEqual(len(findings), 0)
+        self.assertEqual(self.plugin._scan_http_response.call_count, 0)
