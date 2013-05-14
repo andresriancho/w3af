@@ -20,14 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import httplib
-import re
 import socket
 import threading
 import time
 import traceback
 import urllib
 import urllib2
-import sqlite3
 
 from contextlib import contextmanager
 from collections import deque
@@ -44,19 +42,16 @@ from core.controllers.exceptions import (w3afMustStopException, w3afException,
                                          w3afMustStopByKnownReasonExc,
                                          w3afMustStopByUserRequest,
                                          w3afMustStopOnUrlError)
-from core.controllers.misc.number_generator import (consecutive_number_generator
-                                                    as core_num_gen)
-from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.url import URL
 from core.data.request.factory import create_fuzzable_request_from_parts
-from core.data.url.helpers import new_no_content_resp
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.HTTPRequest import HTTPRequest
-from core.data.url.handlers.cache import CacheClass, CachedResponse
-from core.data.url.handlers.blacklist import http_response_to_httplib
 from core.data.dc.headers import Headers
+
+
+MAX_ERROR_COUNT = 10
 
 
 class ExtendedUrllib(object):
@@ -73,7 +68,7 @@ class ExtendedUrllib(object):
 
         # For error handling
         self._last_request_failed = False
-        self._last_errors = deque(maxlen=10)
+        self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
         self._error_count = {}
         self._count_lock = threading.RLock()
 
@@ -122,7 +117,7 @@ class ExtendedUrllib(object):
         def analyze_state():
             # There might be errors that make us stop the process
             if self._error_stopped:
-                msg = 'Exceptions found while sending HTTP requests.'
+                msg = 'Multiple exceptions found while sending HTTP requests.'
                 raise w3afMustStopException(msg)
 
             if self._user_stopped:
@@ -430,7 +425,7 @@ class ExtendedUrllib(object):
         else:
             return False
 
-    def _send(self, req, useMultipart=False, grep=True):
+    def _send(self, req, grep=True):
         '''
         Actually send the request object.
 
@@ -448,184 +443,122 @@ class ExtendedUrllib(object):
         req = self._evasion(req)
         original_url = req._Request__original
         original_url_inst = req.url_object
-
+        
         start_time = time.time()
-        res = None
 
         try:
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            msg = '%s %s returned HTTP code "%s"' % (req.get_method(),
-                                                     original_url,
-                                                     e.code)
-
-            from_cache = hasattr(e, 'from_cache')
-            flags = ' (id=%s,from_cache=%i,grep=%i)' % (e.id, from_cache, grep)
-            msg += flags
-            om.out.debug(msg)
-
-            # Return this info to the caller
-            code = int(e.code)
-            headers = Headers(e.info().items())
-            geturl_instance = URL(e.geturl())
-            read = self._read_response(e)
-            http_resp = HTTPResponse(code, read, headers, geturl_instance,
-                                     original_url_inst, _id=e.id,
-                                     time=time.time() - start_time, msg=e.msg,
-                                     charset=getattr(e.fp, 'encoding', None))
-
-            # Clear the log of failed requests; this request is done!
-            req_id = id(req)
-            if req_id in self._error_count:
-                del self._error_count[req_id]
-
-            # Reset errors counter
-            self._zero_global_error_count()
-
-            if grep:
-                self._grep(req, http_resp)
-
-            return http_resp
-        except urllib2.URLError, e:
-            # I get to this section of the code if a 400 error is returned
-            # also possible when a proxy is configured and not available
-            # also possible when auth credentials are wrong for the URI
-
-            # Timeouts are not intended to increment the global error counter.
-            # They are part of the expected behavior.
-            if not isinstance(e, URLTimeoutError):
-                self._increment_global_error_count(e)
-            try:
-                e.reason[0]
-            except:
-                raise w3afException('Unexpected error in urllib2 : %s'
-                                    % repr(e.reason))
-
-            msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' %
-                  (req.get_method(), original_url, e.reason))
-
-            # Log the errors
-            om.out.debug(msg)
-            om.out.debug('Traceback for this error: %s' %
-                         traceback.format_exc())
-            req._Request__original = original_url
-            # Then retry!
-            return self._retry(req, grep, e)
-        except sqlite3.Error, e:
-            msg = 'A sqlite3 error was raised: "%s".' % e
-            if 'disk' in str(e).lower():
-                msg += ' Please check if your disk is full.'
-            raise w3afMustStopException(msg)
-        except w3afMustStopException:
-            raise
-        except AttributeError:
-            raise
-        except Exception, e:
-            # This except clause will catch unexpected errors
-            # For the first N errors, return an empty response...
-            # Then a w3afMustStopException will be raised
-            msg = ('%s %s returned HTTP code "%s"' %
-                   (req.get_method(), original_url, NO_CONTENT))
-            om.out.debug(msg)
-            om.out.debug('Unhandled exception in ExtendedUrllib._send(): %s' % e)
-            om.out.debug(traceback.format_exc())
-
-            # Clear the log of failed requests; this request is done!
-            req_id = id(req)
-            if req_id in self._error_count:
-                del self._error_count[req_id]
-
-            trace_str = traceback.format_exc()
-            parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)',
-                                          trace_str)
-            # Returns something similar to:
-            #   [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'),
-            #    ('trace_test.py', '5', 'abc')]
-            #
-            # Where ('filename', 'line-number', 'function-name')
-
-            self._increment_global_error_count(e, parsed_traceback)
-
-            # FIXME: Still need to figure out how to remove this call to
-            #        new_no_content_resp and the call to
-            #        CacheClass.store_in_cache
-            resp = new_no_content_resp(original_url_inst, add_id=True)
-            
-            # Translate to httplib
-            httplib_resp = http_response_to_httplib(resp)
-            
-            req.id = httplib_resp.id = core_num_gen.inc()
-            CacheClass.store_in_cache(req, httplib_resp)
-            return resp
-
+            return self._handle_send_success(req, e, grep, original_url,
+                                             original_url_inst, start_time)
+        
+        except (socket.error, URLTimeoutError), e:
+            return self._handle_send_socket_error(req, e, grep, original_url)
+        
+        except (urllib2.URLError, httplib.HTTPException), e:
+            return self._handle_send_urllib_error(req, e, grep, original_url)
+        
         else:
-            # Everything went well!
-            rdata = req.get_data()
-            if not rdata:
-                msg = ('%s %s returned HTTP code "%s"' %
-                       (req.get_method(), urllib.unquote_plus(original_url), res.code))
-            else:
-                printable_data = urllib.unquote_plus(rdata)
-                if len(rdata) > 75:
-                    printable_data = '%s...' % printable_data[:75]
-                    printable_data = printable_data.replace('\n', ' ')
-                    printable_data = printable_data.replace('\r', ' ')
-                    
-                msg = ('%s %s with data: "%s" returned HTTP code "%s"'
-                       % (
-                          req.get_method(),
-                          original_url,
-                          printable_data,
-                          res.code)
-                         )
+            return self._handle_send_success(req, res, grep, original_url,
+                                             original_url_inst, start_time)
+    
+    def _handle_send_socket_error(self, req, exception, grep, original_url):
+        '''
+        This error handling is separated from the other because at some point I
+        want to have some type of backoff feature here that will wait increasing
+        amounts of seconds before retrying when a timeout occurs.
+        '''
+        self._increment_global_error_count(exception)
+        self._generic_send_error_handler(req, exception, grep, original_url)
+        
+    def _handle_send_urllib_error(self, req, exception, grep, original_url):
+        '''
+        I get to this section of the code if a 400 error is returned
+        also possible when a proxy is configured and not available
+        also possible when auth credentials are wrong for the URI
+        '''
+        self._increment_global_error_count(exception)
+        self._generic_send_error_handler(req, exception, grep, original_url)
+        
+    def _generic_send_error_handler(self, req, exception, grep, original_url):
+        msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' %
+              (req.get_method(), original_url, exception))
 
-            from_cache = hasattr(res, 'from_cache')
-            flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,
-                                                        grep)
-            msg += flags
-            om.out.debug(msg)
+        # Log the errors
+        om.out.debug(msg)
+        om.out.debug('Traceback for this error: %s' %
+                     traceback.format_exc())
+        
+        # Then retry!
+        req._Request__original = original_url
+        return self._retry(req, grep, exception)
+    
+    def _handle_send_success(self, req, res, grep, original_url,
+                             original_url_inst, start_time):
+        '''
+        Handle the case in "def _send" where the request was successful and
+        we were able to get a valid HTTP response.
+        
+        :return: An HTTPResponse object.
+        '''
+        # Everything went well!
+        rdata = req.get_data()
+        if not rdata:
+            msg = ('%s %s returned HTTP code "%s"' %
+                   (req.get_method(),
+                    urllib.unquote_plus(original_url),
+                    res.code))
+        else:
+            printable_data = urllib.unquote_plus(rdata)
+            if len(rdata) > 75:
+                printable_data = '%s...' % printable_data[:75]
+                printable_data = printable_data.replace('\n', ' ')
+                printable_data = printable_data.replace('\r', ' ')
+                
+            msg = ('%s %s with data: "%s" returned HTTP code "%s"'
+                   % (
+                      req.get_method(),
+                      original_url,
+                      printable_data,
+                      res.code)
+                     )
 
-            http_resp = HTTPResponse.from_httplib_resp(res,
-                                                       original_url=original_url_inst)
-            http_resp.set_id(res.id)
-            http_resp.set_wait_time(time.time() - start_time)
+        from_cache = hasattr(res, 'from_cache')
+        flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,
+                                                    grep)
+        msg += flags
+        om.out.debug(msg)
 
-            # Let the upper layers know that this response came from the
-            # local cache.
-            if isinstance(res, CachedResponse):
-                http_resp.set_from_cache(True)
+        http_resp = HTTPResponse.from_httplib_resp(res,
+                                                   original_url=original_url_inst)
+        http_resp.set_id(res.id)
+        http_resp.set_wait_time(time.time() - start_time)
 
-            # Clear the log of failed requests; this request is done!
-            req_id = id(req)
-            if req_id in self._error_count:
-                del self._error_count[req_id]
-            self._zero_global_error_count()
+        # Clear the log of failed requests; this request is DONE!
+        req_id = id(req)
+        if req_id in self._error_count:
+            del self._error_count[req_id]
+        self._zero_global_error_count()
 
-            if grep:
-                self._grep(req, http_resp)
+        if grep:
+            self._grep(req, http_resp)
 
-            return http_resp
-
-    def _read_response(self, res):
-        read = ''
-        try:
-            read = res.read()
-        except Exception, e:
-            om.out.error(str(e))
-        return read
+        return http_resp
 
     def _retry(self, req, grep, urlerr):
         '''
         Try to send the request again while doing some error handling.
         '''
         req_id = id(req)
+        
         if self._error_count.setdefault(req_id, 1) <= \
-                self.settings.get_max_retrys():
+        self.settings.get_max_retrys():
             # Increment the error count of this particular request.
             self._error_count[req_id] += 1
             om.out.debug('Re-sending request...')
             return self._send(req, grep=grep)
+        
         else:
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do
@@ -660,61 +593,81 @@ class ExtendedUrllib(object):
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
 
         with self._count_lock:
-            if errtotal >= 10 and not self._error_stopped:
-                # Stop using ExtendedUrllib instance
-                self.stop()
-                # Known reason errors. See errno module for more info on these
-                # errors.
-                EUNKNSERV = -2  # Name or service not known error
-                EINVHOSTNAME = -5  # No address associated with hostname
-                known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
-                                ECONNRESET, ENETDOWN, ENETUNREACH,
-                                EINVHOSTNAME, ETIMEDOUT, ENOSPC)
+            if errtotal >= MAX_ERROR_COUNT:
+                self._handle_error_on_increment(error, parsed_traceback,
+                                                last_errors)
+    
+    def _handle_error_on_increment(self, error, parsed_traceback, last_errors):
+        '''
+        Handle the error
+        '''
+        # Stop using ExtendedUrllib instance
+        self._error_stopped = True
 
-                msg = ('w3af found too many consecutive errors while performing'
-                       ' HTTP requests. Either the web server is not reachable'
-                       ' anymore or there is an internal error. The last error'
-                       ' message is "%s".')
+        #
+        # Create a detailed exception message
+        #
+        msg = ('w3af found too many consecutive errors while performing'
+               ' HTTP requests. In most cases this means that the remote web'
+               ' server is not reachable anymore, the network is down, or'
+               ' a WAF is blocking our tests. The last error message was "%s".')
 
-                if parsed_traceback:
-                    tback_str = ''
-                    for path, line, call in parsed_traceback[-3:]:
-                        tback_str += '    %s:%s at %s\n' % (path, line, call)
+        if parsed_traceback:
+            tback_str = ''
+            for path, line, call in parsed_traceback[-3:]:
+                tback_str += '    %s:%s at %s\n' % (path, line, call)
 
-                    msg += ' The last calls in the traceback are: \n%s' % tback_str
+            msg += ' The last calls in the traceback are: \n%s' % tback_str
 
-                if type(error) is urllib2.URLError:
-                    # URLError exceptions may wrap either httplib.HTTPException
-                    # or socket.error exception instances. We're interested on
-                    # treat'em in a special way.
-                    reason_err = error.reason
-                    reason_msg = None
+        reason_msg = None
 
-                    if isinstance(reason_err, socket.error):
-                        if isinstance(reason_err, socket.sslerror):
-                            reason_msg = 'SSL Error: %s' % error.reason
-                        elif reason_err[0] in known_errors:
-                            reason_msg = str(reason_err)
+        if isinstance(error, URLTimeoutError):
+            # New exception type raised by keepalive handler
+            reason_msg = error.message
+            reason_err = error.message
 
-                    elif isinstance(reason_err, httplib.HTTPException):
-                        #
-                        #    Here we catch:
-                        #
-                        #    BadStatusLine, ResponseNotReady, CannotSendHeader,
-                        #    CannotSendRequest, ImproperConnectionState,
-                        #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
-                        #    UnknownProtocol, InvalidURL, NotConnected.
-                        #
-                        #    TODO: Maybe we're being TOO generic in this isinstance?
-                        #
-                        reason_msg = '%s: %s' % (error.__class__.__name__,
-                                                 error.args)
-                    if reason_msg is not None:
-                        raise w3afMustStopByKnownReasonExc(
-                            msg % error, reason=reason_err)
+        # Exceptions may be of type httplib.HTTPException or socket.error
+        # We're interested on handling them in different ways
+        elif isinstance(error, urllib2.URLError):
+            reason_err = error.reason
 
-                errors = [] if parsed_traceback else last_errors
-                raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
+            # Known reason errors. See errno module for more info on these
+            # errors.
+            EUNKNSERV = -2  # Name or service not known error
+            EINVHOSTNAME = -5  # No address associated with hostname
+            known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
+                            ECONNRESET, ENETDOWN, ENETUNREACH,
+                            EINVHOSTNAME, ETIMEDOUT, ENOSPC)
+
+            if isinstance(reason_err, socket.error):
+                if isinstance(reason_err, socket.sslerror):
+                    reason_msg = 'SSL Error: %s' % error.reason
+                elif reason_err[0] in known_errors:
+                    reason_msg = str(reason_err)
+
+        elif isinstance(error, httplib.HTTPException):
+            #
+            #    Here we catch:
+            #
+            #    BadStatusLine, ResponseNotReady, CannotSendHeader,
+            #    CannotSendRequest, ImproperConnectionState,
+            #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
+            #    UnknownProtocol, InvalidURL, NotConnected.
+            #
+            #    TODO: Maybe we're being TOO generic in this isinstance?
+            #
+            reason_msg = '%s: %s' % (error.__class__.__name__,
+                                     error.args)
+            reason_err = error.message
+        
+        # If I got a reason, it means that it is a known exception.
+        if reason_msg is not None:
+            raise w3afMustStopByKnownReasonExc(msg % error,
+                                               reason=reason_err)
+
+        else:
+            errors = [] if parsed_traceback else last_errors
+            raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
 
     def ignore_errors(self, yes_no):
         '''

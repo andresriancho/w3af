@@ -95,35 +95,37 @@ class OpenerSettings(Configurable):
         # User configured variables
         if cfg.get('timeout') is None:
             # This is the first time we are executed...
+            self.set_default_values()
+    
+    def set_default_values(self):
+        cfg.save('timeout', 15)
+        socket.setdefaulttimeout(cfg.get('timeout'))
+        cfg.save('headers_file', '')
+        cfg.save('cookie_jar_file', '')
+        cfg.save('user_agent', 'w3af.org')
 
-            cfg.save('timeout', 15)
-            socket.setdefaulttimeout(cfg.get('timeout'))
-            cfg.save('headers_file', '')
-            cfg.save('cookie_jar_file', '')
-            cfg.save('user_agent', 'w3af.org')
+        cfg.save('proxy_address', '')
+        cfg.save('proxy_port', 8080)
 
-            cfg.save('proxy_address', '')
-            cfg.save('proxy_port', 8080)
+        cfg.save('basic_auth_passwd', '')
+        cfg.save('basic_auth_user', '')
+        cfg.save('basic_auth_domain', '')
 
-            cfg.save('basic_auth_passwd', '')
-            cfg.save('basic_auth_user', '')
-            cfg.save('basic_auth_domain', '')
+        cfg.save('ntlm_auth_domain', '')
+        cfg.save('ntlm_auth_user', '')
+        cfg.save('ntlm_auth_passwd', '')
+        cfg.save('ntlm_auth_url', '')
 
-            cfg.save('ntlm_auth_domain', '')
-            cfg.save('ntlm_auth_user', '')
-            cfg.save('ntlm_auth_passwd', '')
-            cfg.save('ntlm_auth_url', '')
+        cfg.save('ignore_session_cookies', False)
+        cfg.save('max_file_size', 400000)
+        cfg.save('max_http_retries', 2)
 
-            cfg.save('ignore_session_cookies', False)
-            cfg.save('max_file_size', 400000)
-            cfg.save('max_http_retries', 2)
+        cfg.save('url_parameter', '')
 
-            cfg.save('url_parameter', '')
-
-            # 404 settings
-            cfg.save('never_404', [])
-            cfg.save('always_404', [])
-            cfg.save('string_match_404', '')
+        # 404 settings
+        cfg.save('never_404', [])
+        cfg.save('always_404', [])
+        cfg.save('string_match_404', '')
 
     def set_headers_file(self, headers_file):
         '''
@@ -211,10 +213,10 @@ class OpenerSettings(Configurable):
         self._cookie_handler.cookiejar.clear_session_cookies()
 
     def set_timeout(self, timeout):
-        om.out.debug('Called SetTimeout(' + str(timeout) + ')')
+        om.out.debug('Called set_timeout(%s)' % timeout)
         if timeout > 60 or timeout < 1:
-            raise w3afException(
-                'The timeout parameter should be between 1 and 60 seconds.')
+            err = 'The timeout parameter should be between 1 and 60 seconds.'
+            raise w3afException(err)
         else:
             cfg.save('timeout', timeout)
 
@@ -222,6 +224,8 @@ class OpenerSettings(Configurable):
             # I don't need to use timeoutsocket.py , it has been added to
             # python sockets!
             socket.setdefaulttimeout(cfg.get('timeout'))
+            
+            self.need_update = True
 
     def get_timeout(self):
         return cfg.get('timeout')

@@ -23,6 +23,7 @@ import copy
 import re
 import httplib
 import threading
+import urllib2
 
 from lxml import etree
 from itertools import imap
@@ -33,6 +34,7 @@ from core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
+
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
 CR = '\r'
@@ -140,7 +142,15 @@ class HTTPResponse(object):
         else:
             url_inst = original_url = URL(resp.geturl())
     
-        charset = getattr(resp, 'encoding', None)
+        
+        if isinstance(resp, urllib2.HTTPError):
+            # This is possible because in errors.py I do:
+            # err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
+            charset = getattr(resp.fp, 'encoding', None)
+        else:
+            # The encoding attribute is only set on CachedResponse instances
+            charset = getattr(resp, 'encoding', None)
+        
         return cls(code, body, hdrs, url_inst, original_url,
                    msg, charset=charset)
 

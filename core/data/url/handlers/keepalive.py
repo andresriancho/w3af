@@ -131,8 +131,6 @@ from core.controllers.exceptions import (w3afException,
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = False
 
-# Global connection timeout. In seconds.
-TIMEOUT = 25
 # Max connections allowed per host.
 MAXCONNECTIONS = 50
 # If found this number of timeouts in-a-row per target host then we may either:
@@ -155,7 +153,11 @@ class URLTimeoutError(urllib2.URLError):
         urllib2.URLError.__init__(self, (408, 'timeout'))
 
     def __str__(self):
-        return '<urlopen error timeout>'
+        default_timeout = socket.getdefaulttimeout()
+        if default_timeout is not None:
+            return 'HTTP timeout error after %s seconds.' % default_timeout
+        else:
+            return 'HTTP timeout error.'
 
 
 def closeonerror(read_meth):
@@ -308,7 +310,6 @@ class HTTPResponse(httplib.HTTPResponse):
             return s
 
     def readline(self, limit=-1):
-        data = ""
         i = self._rbuf.find('\n')
         while i < 0 and not (0 < limit <= len(self._rbuf)):
             new = self._raw_read(self._rbufsize)
@@ -330,16 +331,16 @@ class HTTPResponse(httplib.HTTPResponse):
     @closeonerror
     def readlines(self, sizehint=0):
         total = 0
-        list = []
+        line_list = []
         while 1:
             line = self.readline()
             if not line:
                 break
-            list.append(line)
+            line_list.append(line)
             total += len(line)
             if sizehint and total >= sizehint:
                 break
-        return list
+        return line_list
 
     def set_body(self, data):
         '''
@@ -633,36 +634,42 @@ class KeepAliveHandler(object):
                     self._start_transaction(conn, req)
                     resp = conn.getresponse()
 
-        except (socket.error, httplib.HTTPException), err:
+        except socket.timeout:
             # We better discard this connection
             self._cm.remove_connection(conn, host)
-            if isinstance(err, socket.timeout):
-                resp_statuses.append(RESP_TIMEOUT)
-                _err = URLTimeoutError()
-            else:
-                resp_statuses.append(RESP_BAD)
-                if isinstance(err, httplib.HTTPException):
-                    err = repr(err)
-                _err = urllib2.URLError(err)
-            raise _err
+            resp_statuses.append(RESP_TIMEOUT)
+            raise URLTimeoutError()
 
-        # This response seems to be fine
-        resp_statuses.append(RESP_OK)
-
-        # If not a persistent connection, don't try to reuse it
-        if resp.will_close:
+        except socket.error:
+            # We better discard this connection
             self._cm.remove_connection(conn, host)
-
-        if DEBUG:
-            om.out.debug("STATUS: %s, %s" % (resp.status, resp.reason))
-        resp._handler = self
-        resp._host = host
-        resp._url = req.get_full_url()
-        resp._connection = conn
-        resp.code = resp.status
-        resp.headers = resp.msg
-        resp.msg = resp.reason
-        return resp
+            resp_statuses.append(RESP_BAD)
+            raise
+        
+        except httplib.HTTPException:
+            # We better discard this connection
+            self._cm.remove_connection(conn, host)
+            resp_statuses.append(RESP_BAD)
+            raise
+        
+        else:
+            # This response seems to be fine
+            resp_statuses.append(RESP_OK)
+    
+            # If not a persistent connection, don't try to reuse it
+            if resp.will_close:
+                self._cm.remove_connection(conn, host)
+    
+            if DEBUG:
+                om.out.debug("STATUS: %s, %s" % (resp.status, resp.reason))
+            resp._handler = self
+            resp._host = host
+            resp._url = req.get_full_url()
+            resp._connection = conn
+            resp.code = resp.status
+            resp.headers = resp.msg
+            resp.msg = resp.reason
+            return resp
 
     def _reuse_connection(self, conn, req, host):
         '''
@@ -730,10 +737,8 @@ class KeepAliveHandler(object):
             else:
                 conn.putrequest(req.get_method(), req.get_selector(),
                                 skip_host=1, skip_accept_encoding=1)
-        except httplib.ImproperConnectionState:
+        except (socket.error, httplib.HTTPException):
             raise
-        except (socket.error, httplib.HTTPException), err:
-            raise urllib2.URLError(err)
         else:
             # Add headers
             header_dict = dict(self.parent.addheaders)
@@ -797,7 +802,7 @@ class _HTTPConnection(httplib.HTTPConnection):
     def __init__(self, host, port=None, strict=None,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         httplib.HTTPConnection.__init__(self, host, port, strict,
-                                        timeout=TIMEOUT)
+                                        timeout=timeout)
         self.is_fresh = True
 
 
@@ -900,7 +905,7 @@ class HTTPConnection(_HTTPConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict, TIMEOUT)
+        _HTTPConnection.__init__(self, host, port, strict)
 
 
 class HTTPSConnection(httplib.HTTPSConnection):
@@ -909,5 +914,5 @@ class HTTPSConnection(httplib.HTTPSConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
         httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
-                                         strict, timeout=TIMEOUT)
+                                         strict)
         self.is_fresh = True

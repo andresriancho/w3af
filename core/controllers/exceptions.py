@@ -58,7 +58,14 @@ class w3afMustStopException(Exception):
         self.errs = errs
 
     def __str__(self):
-        return str(self.msg) + '\n'.join([str(e) for e in self.errs])
+        msg = str(self.msg)
+        
+        if self.errs:
+            msg += ' The following errors were logged:\n'
+            for err in self.errs:
+                msg += '  - %s' % err
+                
+        return msg
 
     __repr__ = __str__
 
@@ -70,22 +77,13 @@ class w3afMustStopByUserRequest(w3afMustStopException):
 class w3afMustStopOnUrlError(w3afMustStopException):
 
     def __init__(self, urlerr, req):
-        reason = urlerr.reason
-        if type(reason) is str:
-            ec, em = None, reason
-        else:
-            try:
-                ec, em = reason
-            except ValueError:
-                ec, em = None, reason[0]
         # Call parent's __init__
-        w3afMustStopException.__init__(self, em)
-        self.errcode = ec
+        w3afMustStopException.__init__(self, urlerr)
         self.req = req
 
     def __str__(self):
-        return ("UrlError '%s' while requesting '%s'. Error code was: %s" %
-                (self.msg, self.req.get_full_url(), self.errcode))
+        error_fmt = "Extended URL library error '%s' while requesting '%s'."
+        return (error_fmt % (self.msg, self.req.get_full_url()))
 
     __repr__ = __str__
 
