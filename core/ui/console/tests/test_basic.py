@@ -76,7 +76,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         self.assertTrue(assert_result, msg)
 
     def test_menu_set_option_case01(self):
-        commands_to_run = ['target', 'set target http://moth/', 'view',
+        commands_to_run = ['target', 'set target http://moth/', 'save', 'view',
                            'back', 'exit']
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
