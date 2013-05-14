@@ -25,7 +25,7 @@ from core.controllers.exceptions import w3afException
 from core.data.parsers.url import URL as URL_KLASS
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import (
-    BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
+    BOOL, INT, FLOAT, STRING, IPPORT, LIST,
     REGEX, COMBO, INPUT_FILE, OUTPUT_FILE,
     PORT, IP, URL, URL_LIST)
 
@@ -80,21 +80,27 @@ class TestOptionFactory(unittest.TestCase):
             'core', 'data', 'foobar', 'does-not-exist.txt')
         output_file = input_file
 
-        data = {BOOL: 'rucula',
-                INT: '0x32',
-                FLOAT: '1x2',
-                URL: 'http://',
-                URL_LIST: 'http://moth/1 , http://moth:333333',
-                IPPORT: '127.0.0.1',
-                REGEX: '.*(',
-                INPUT_FILE: input_file,
-                OUTPUT_FILE: output_file,
-                PORT: '65536'
+        data = {BOOL: ['rucula'],
+                INT: ['0x32',],
+                FLOAT: ['1x2',],
+                URL: ['http://', '/', ''],
+                URL_LIST: ['http://moth/1 , http://moth:333333',],
+                IPPORT: ['127.0.0.1',],
+                REGEX: ['.*(',],
+                INPUT_FILE: [input_file,],
+                OUTPUT_FILE: [output_file,],
+                PORT: ['65536',]
                 }
 
-        for _type, fake_value in data.iteritems():
-            self.assertRaises(w3afException, opt_factory, 'name', fake_value,
-                              'desc', _type)
+        for _type in data:
+            for fake_value in data[_type]:
+                err = '%s for an option of type %s should raise an exception.'
+                try:
+                    opt_factory('name', fake_value, 'desc', _type)
+                except w3afException:
+                    self.assertTrue(True)
+                else:
+                    self.assertTrue(False, err % (fake_value, _type))
 
     def test_factory_already_converted_type(self):
         data = {BOOL: (True, True),
