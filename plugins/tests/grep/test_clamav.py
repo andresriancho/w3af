@@ -35,6 +35,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
+from core.controllers.threads.threadpool import Pool
 
 
 def need_clamav(meth):
@@ -52,7 +53,11 @@ def need_clamav(meth):
 class TestClamAV(unittest.TestCase):
 
     def setUp(self):
+        pool = Pool(3)
+        
         self.plugin = clamav()
+        self.plugin.set_worker_pool(pool)
+        
         kb.kb.clear('clamav', 'malware')
 
     def tearDown(self):
@@ -68,6 +73,12 @@ class TestClamAV(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         
         self.plugin.grep(request, response)
+        
+        # Let the worker pool wait for the clamd response, this is done by
+        # the core when run in a real scan
+        self.plugin.worker_pool.close()
+        self.plugin.worker_pool.join()
+        
         findings = kb.kb.get('clamav', 'malware')
         
         self.assertEqual(len(findings), 1)

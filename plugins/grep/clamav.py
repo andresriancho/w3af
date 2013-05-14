@@ -56,6 +56,7 @@ class clamav(GrepPlugin):
         self._config_check_lock = threading.RLock()
         
         # User configured settings
+        # Default for ubuntu installation
         self._clamd_socket = '/var/run/clamav/clamd.ctl'
 
     def grep(self, request, response):
@@ -84,8 +85,9 @@ class clamav(GrepPlugin):
         if response.get_url() not in self._already_analyzed:
             self._already_analyzed.add(response.get_url())
             
-            # TODO: Solve the async issue
-            self._scan_http_response(request, response)
+            args = (request, response)
+            self.worker_pool.apply_async(self._scan_http_response, args=args,
+                                         callback=self._report_result)
 
     def _is_properly_configured(self):
         '''
@@ -121,6 +123,11 @@ class clamav(GrepPlugin):
             return False
     
     def _get_connection(self):
+        '''
+        :return: A different connection for each time you call the method.
+                 Thought about having a connection pool, but it doesn't make
+                 much sense; plus it adds complexity due to the threads.
+        '''
         return clamd.ClamdUnixSocket(path=self._clamd_socket)
     
     def _get_clamd_version(self):
@@ -135,18 +142,38 @@ class clamav(GrepPlugin):
         Scans an HTTP response body for malware and stores any findings in
         the knowledge base.
         
+        :param request: The HTTP request
+        :param response: The HTTP response
         :return: None
         '''
-        cd = self._get_connection()
-       
-        result_dict = cd.instream(BytesIO(response.get_body()))
-        result = self._parse_scan_result(result_dict)
+        try:
+            cd = self._get_connection()
+            result_dict = cd.instream(BytesIO(response.get_body()))
+        except Exception, e:
+            msg = 'The ClamAV plugin failed to connect to clamd using'\
+                  ' the provided unix socket: "%s". Please verify your'\
+                  ' configuration and try again. The exception was: "%s".'
+            om.out.error(msg % (self._clamd_socket, e))
+            self._properly_configured = False
+        else:
+            result = self._parse_scan_result(result_dict)
         
-        if result.found:
+        return response, result
+    
+    def _report_result(self, (response, scan_result)):
+        '''
+        This method stores the scan result in the KB, called as a callback for
+        the _scan_http_response method.
+        
+        :param response: The HTTP response
+        :param scan_result: The result object from _scan_http_response
+        :return: None
+        '''
+        if scan_result.found:
         
             desc = 'ClamAV identified malware at URL: "%s", the matched'\
                    ' signature name is "%s".'
-            desc = desc % (response.get_url(), result.signature)
+            desc = desc % (response.get_url(), scan_result.signature)
     
             i = Info('Malware identified', desc, response.id, self.get_name())
             i.set_url(response.get_url())
