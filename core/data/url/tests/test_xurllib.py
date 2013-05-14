@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
+import time
 import unittest
 import Queue
 import SocketServer
@@ -27,7 +28,7 @@ import SocketServer
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
 
-from core.data.url.extended_urllib import ExtendedUrllib
+from core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from core.data.parsers.url import URL
 from core.data.dc.data_container import DataContainer
@@ -35,7 +36,9 @@ from core.data.dc.headers import Headers
 
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.exceptions import (w3afMustStopByUserRequest,
-                                         w3afMustStopOnUrlError)
+                                         w3afMustStopOnUrlError,
+                                         w3afMustStopException,
+                                         w3afMustStopByUnknownReasonExc)
 
 
 @attr('moth')
@@ -102,11 +105,6 @@ class TestXUrllib(unittest.TestCase):
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_url_port_not_http(self):
-        class EmptyTCPHandler(SocketServer.BaseRequestHandler):
-            def handle(self):
-                self.data = self.request.recv(1024).strip()
-                self.request.sendall('')
-                
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
         upper_daemon.wait_for_start()
@@ -116,6 +114,68 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
+    def test_url_port_not_http_many(self):
+        upper_daemon = UpperDaemon(EmptyTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        for _ in xrange(MAX_ERROR_COUNT):
+            try:
+                self.uri_opener.GET(url)
+            except w3afMustStopByUnknownReasonExc:
+                self.assertTrue(False, 'Not expecting this exception type.')
+            except w3afMustStopOnUrlError:
+                self.assertTrue(True)
+            except w3afMustStopException:
+                self.assertTrue(True)
+                break
+        else:
+            self.assertTrue(False)
+
+    def test_timeout(self):
+        upper_daemon = UpperDaemon(TimeoutTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+        
+        url = URL('http://127.0.0.1:%s/' % port)
+        
+        self.uri_opener.settings.set_timeout(1)
+        
+        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+        
+        self.uri_opener.settings.set_default_values()
+
+    def test_timeout_many(self):
+        upper_daemon = UpperDaemon(TimeoutTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        self.uri_opener.settings.set_timeout(1)
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        
+        for _ in xrange(MAX_ERROR_COUNT):
+            try:
+                self.uri_opener.GET(url)
+            except w3afMustStopByUnknownReasonExc:
+                self.assertTrue(False, 'Not expecting this exception type.')
+            except w3afMustStopOnUrlError:
+                self.assertTrue(True)
+            except w3afMustStopException, e:
+                self.assertTrue(True)
+                break
+        else:
+            self.assertTrue(False)
+        
+        self.uri_opener.settings.set_default_values()
+        
     def test_stop(self):
         self.uri_opener.stop()
         url = URL('http://moth/')
@@ -189,3 +249,14 @@ class TestXUrllib(unittest.TestCase):
         headers = Headers([('foo', header_content)])
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertEqual(header_content, http_response.body)
+
+class EmptyTCPHandler(SocketServer.BaseRequestHandler):
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        self.request.sendall('')
+
+class TimeoutTCPHandler(SocketServer.BaseRequestHandler):
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        time.sleep(60)
+        self.request.sendall('')
