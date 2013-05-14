@@ -249,12 +249,12 @@ class OpenerSettings(Configurable):
 
         :return: None
         '''
-        om.out.debug('Called set_proxy(%s,%s)' % (ip, port))
+        om.out.debug('Called set_proxy(%s, %s)' % (ip, port))
 
         if not ip:
             #    The user doesn't want a proxy anymore
             cfg.save('proxy_address', '')
-            cfg.save('proxy_port', '')
+            cfg.save('proxy_port', port)
             self._proxy_handler = None
             return
 
