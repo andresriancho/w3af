@@ -50,7 +50,7 @@ class TestAutoUpdate(XpresserUnittest):
         
     def test_disclaimer_shown_accept(self):
         startup_cfg = StartUpConfig()
-        startup_cfg.last_upd = - datetime.timedelta(days=3)
+        startup_cfg.last_upd = datetime.date.today() - datetime.timedelta(days=3)
         startup_cfg.save()
         
         self.find('update_window')

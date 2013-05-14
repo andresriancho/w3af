@@ -572,20 +572,24 @@ class MainApp(object):
         if not self.save_state_to_core():
             return
 
-        # Verify that everything is ready to run
-        try:
-            helpers.coreWrap(self.w3af.plugins.init_plugins)
-            helpers.coreWrap(self.w3af.verify_environment)
-        except w3afException:
-            return
+        def real_scan_start():
+            # Verify that everything is ready to run
+            try:
+                helpers.coreWrap(self.w3af.plugins.init_plugins)
+                helpers.coreWrap(self.w3af.verify_environment)
+            except w3afException:
+                return
+            
+            self.w3af.start()
 
         def start_scan_wrap():
             # Just in case, make sure we have a GtkOutput in the output manager
             # for the current scan
             om.out.set_output_plugin_inst(GtkOutput())
             
+            
             try:
-                self.w3af.start()
+                real_scan_start()
             except KeyboardInterrupt:
                 # FIXME: Confirm: we should never get here because threads
                 # send the KeyboardInterrupt to the main thread.
