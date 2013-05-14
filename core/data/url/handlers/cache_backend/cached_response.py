@@ -54,9 +54,9 @@ class CachedResponse(StringIO.StringIO):
         StringIO.StringIO.__init__(self, self._body)
 
         # This kludge is necessary, do not touch!
-        class placeHolder:
+        class PlaceHolder:
             sock = None
-        self._connection = placeHolder()
+        self._connection = PlaceHolder()
 
     @property
     def code(self):
