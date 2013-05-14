@@ -91,7 +91,7 @@ class basic_auth(BruteforcePlugin):
                 response = self._uri_opener.GET(url, cache=False, grep=False,
                                                 headers=headers)
             except w3afException, w3:
-                msg = 'Exception while bruteforcing basic authentication,'\
+                msg = 'Exception while brute-forcing basic authentication,'\
                       ' error message: "%s".'
                 om.out.debug(msg % w3)
             else:
