@@ -49,6 +49,12 @@ class TestURLParser(unittest.TestCase):
         u = URL('w3af.com')
         self.assertEqual(u.get_domain(), 'w3af.com')
         self.assertEqual(u.get_protocol(), 'http')
+
+    def test_just_path(self):
+        '''
+        Can't specify the path without a domain and protocol
+        '''
+        self.assertRaises(ValueError, URL, '/')
     
     def test_no_domain(self):
         '''
