@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import time
 import clamd
 
 from itertools import repeat
@@ -99,9 +100,52 @@ class TestClamAV(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         
         self.plugin.grep(request, response)
+
+        # Let the worker pool wait for the clamd response, this is done by
+        # the core when run in a real scan
+        self.plugin.worker_pool.close()
+        self.plugin.worker_pool.join()
+
         findings = kb.kb.get('clamav', 'malware')
         
         self.assertEqual(len(findings), 0, findings)
+
+    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    def test_clamav_workers(self, *args):
+        
+        WAIT_TIME = 3
+        DELTA = WAIT_TIME * 0.1
+        
+        # Prepare the mocked plugin
+        def wait(x, y):
+            time.sleep(WAIT_TIME)
+        
+        self.plugin._is_properly_configured = Mock(return_value=True)
+        self.plugin._scan_http_response = wait
+        self.plugin._report_result = lambda x: 42
+        start_time = time.time()
+        
+        for i in xrange(3):
+            body = ''
+            url = URL('http://www.w3af.com/%s' % i)
+            headers = Headers([('content-type', 'text/html')])
+            response = HTTPResponse(200, body, headers, url, url, _id=1)
+            request = FuzzableRequest(url, method='GET')
+            
+            self.plugin.grep(request, response)
+
+        # Let the worker pool wait for the clamd response, this is done by
+        # the core when run in a real scan
+        self.plugin.worker_pool.close()
+        self.plugin.worker_pool.join()
+
+        end_time = time.time()
+        time_spent = end_time - start_time
+
+        findings = kb.kb.get('clamav', 'malware')
+        
+        self.assertEqual(len(findings), 0, findings)
+        self.assertLessEqual(time_spent, WAIT_TIME + DELTA)
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_clamav_eicar(self, *args):
