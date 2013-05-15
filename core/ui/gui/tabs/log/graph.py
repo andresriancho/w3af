@@ -130,7 +130,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         if tspan > usableWidth:
             self.timeGrouping *= int(tspan / usableWidth) + 1
             tspan = pan / self.timeGrouping
-        elif tspan < usableWidth // 2 and self.timeGrouping>1:
+        elif tspan < usableWidth // 2 and self.timeGrouping>2:
             self.timeGrouping //= 2
             tspan = pan / self.timeGrouping
 
