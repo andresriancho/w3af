@@ -163,10 +163,20 @@ class ConsoleUI(object):
             pass
 
         if not hasattr(self, '_parent'):
-            self._w3af.quit()
-            self._context.join()
-            om.out.console(self._random_message())
-            om.out.process_all_messages()
+            try:
+                self._w3af.quit()
+                self._context.join()
+                om.out.console(self._random_message())
+                om.out.process_all_messages()
+            except KeyboardInterrupt:
+                # The user might be in a hurry, and after "w3af>>> exit" he
+                # might also press Ctrl+C like seen here:
+                #     https://github.com/andresriancho/w3af/issues/148
+                #
+                # Since we don't want to show any tracebacks on this situation
+                # just "pass". 
+                pass
+            
             return 0
 
     def _executePending(self):
