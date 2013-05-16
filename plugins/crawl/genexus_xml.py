@@ -49,22 +49,22 @@ class genexus_xml(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         '''
-        dirs = []
-
+        
         base_url = fuzzable_request.get_url().base_url()
-        for file_name in ['execute.xml', 'Developer.xml']:
+        for file_name in ['execute.xml', 'DeveloperMenu.xml']:
             execute_url = base_url.url_join(file_name)
             http_response = self._uri_opener.GET(execute_url, cache=True)
 
-            if not is_404(http_response):
+            if '</ObjLink>' in http_response and not is_404(http_response):
                 # Save it to the kb!
-                desc = 'An execute.xml file was found at: "%s", this file might'\
+                desc = 'An "%s" file was found at: "%s", this file might'\
                        ' expose private URLs and requires a manual review. The'\
                        ' scanner will add all URLs listed in this file to the'\
                        ' crawl queue.'
-                desc =  desc % execute_url
+                desc =  desc % (file_name, execute_url)
+                title_info = 'GeneXus "%s" file' % file_name
             
-                i = Info('GeneXus execute.xml file', desc, http_response.id, self.get_name())
+                i = Info(title_info, desc, http_response.id, self.get_name())
                 i.set_url(execute_url)
             
                 kb.kb.append(self, file_name, i)
@@ -86,12 +86,11 @@ class genexus_xml(CrawlPlugin):
                     for url in raw_url_list:
                         try:
                             url = url.childNodes[0].data
-                            #url = URL(url)
                             url = base_url.url_join(url)
                         except ValueError, ve:
-                            om.out.debug('execute.xml file had an invalid URL "%s"' % ve)
+                            om.out.debug('"%s" file had an invalid URL "%s"' % (file_name,ve))
                         except:
-                            om.out.debun('execute.xml file had an invalid format')
+                            om.out.debug('"%s" file had an invalid format' % file_name)
                         else:
                             parsed_url_list.append(url)
                     self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
