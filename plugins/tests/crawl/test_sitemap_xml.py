@@ -33,7 +33,7 @@ class TestSitemap(PluginTest):
         }
     }
 
-    def test_robots(self):
+    def test_sitemap(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
