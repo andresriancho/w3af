@@ -34,8 +34,10 @@ from core.data.parsers.url import URL
 
 class genexus_xml(CrawlPlugin):
     '''
-    Analyze the execute.xml and DeveloperMenu.xml files and find new URLs 
-    author: Daniel Maldonado (daniel_5502@yahoo.com.ar) http://caceriadespammers.com.ar
+    Analyze the execute.xml and DeveloperMenu.xml files and find new URLs
+    
+    :author: Daniel Maldonado (daniel_5502@yahoo.com.ar)
+    http://caceriadespammers.com.ar
     '''
 
     def __init__(self):
@@ -88,19 +90,27 @@ class genexus_xml(CrawlPlugin):
                             url = url.childNodes[0].data
                             url = base_url.url_join(url)
                         except ValueError, ve:
-                            om.out.debug('"%s" file had an invalid URL "%s"' % (file_name,ve))
+                            om.out.debug(
+                                '"%s" file had an invalid URL "%s"'
+                                % (file_name,ve)
+                            )
                         except:
-                            om.out.debug('"%s" file had an invalid format' % file_name)
+                            om.out.debug(
+                                '"%s" file had an invalid format' % file_name
+                            )
                         else:
                             parsed_url_list.append(url)
-                    self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
+                    self.worker_pool.map(
+                        self.http_get_and_parse, parsed_url_list
+                    )
 
     def get_long_desc(self):
         '''
         :return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin searches for GeneXus' execute.xml and DeveloperMenu.xml file and parses it.
+        This plugin searches for GeneXus' execute.xml and DeveloperMenu.xml
+        file and parses it.
 
         By parsing this files, you can get more information about the
         target web application.
