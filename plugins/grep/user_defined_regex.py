@@ -23,7 +23,6 @@ import os
 import re
 
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin

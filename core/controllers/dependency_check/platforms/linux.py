@@ -38,7 +38,8 @@ PIP_CMD = 'pip'
 
 PHPLY_GIT = 'git+git://github.com/ramen/phply.git#egg=phply'
 
-PIP_PACKAGES = [PIPDependency('github', 'PyGithub'),
+PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
+                PIPDependency('github', 'PyGithub'),
                 PIPDependency('git.util', 'GitPython', SYSTEM_PACKAGES['GIT']),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap',
                               SYSTEM_PACKAGES['C_BUILD']),
