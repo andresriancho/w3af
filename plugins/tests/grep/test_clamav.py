@@ -201,11 +201,14 @@ class TestClamAVScan(PluginTest):
 
         findings = kb.kb.get('clamav', 'malware')
         
-        self.assertEqual(len(findings), 1)
-        finding = findings[0]
+        self.assertEqual(len(findings), 4)
         
-        EXPECTED_URL = self.target_url + 'eicar'
+        EXPECTED_FILES = ('eicar.com.txt',
+                          'eicar.com',
+                          'eicarcom2.zip',
+                          'eicar_com.zip')
         
-        self.assertEqual(finding.get_name(), 'Malware identified')
-        self.assertIn('ClamAV identified malware', finding.get_desc())
-        self.assertEqual(finding.get_url().url_string, EXPECTED_URL)    
+        for finding in findings:
+            self.assertIn(finding.get_url().get_file_name(), EXPECTED_FILES)
+            self.assertEqual(finding.get_name(), 'Malware identified')
+            self.assertIn('ClamAV identified malware', finding.get_desc())

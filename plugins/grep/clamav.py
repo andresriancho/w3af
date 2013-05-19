@@ -146,9 +146,11 @@ class clamav(GrepPlugin):
         :param response: The HTTP response
         :return: None
         '''
+        body = str(response.get_body())
+        
         try:
             cd = self._get_connection()
-            result_dict = cd.instream(BytesIO(response.get_body()))
+            result_dict = cd.instream(BytesIO(body))
         except Exception, e:
             msg = 'The ClamAV plugin failed to connect to clamd using'\
                   ' the provided unix socket: "%s". Please verify your'\
