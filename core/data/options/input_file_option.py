@@ -48,8 +48,8 @@ class InputFileOption(BaseOption):
 
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):
-            msg = 'Invalid input file option value "%s", the directory does not'\
-                  ' exist.'
+            msg = 'Invalid input file option value "%s", the directory does'\
+                  ' not exist.'
             raise w3afException(msg % value)
 
         if not os.access(directory, os.R_OK):
