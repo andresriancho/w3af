@@ -30,9 +30,9 @@ PKG_MANAGER_CMD = 'sudo apt-get install'
 SYSTEM_PACKAGES = {
                    'PIP': ['python-pip'],
                    'C_BUILD': ['python2.7-dev', 'python-setuptools',
-                                'build-essential', 'libsqlite3-dev'],
+                               'build-essential', 'libsqlite3-dev'],
                    'GIT': ['git'],
-                   'XML': ['libxml2-dev', 'libxslt-dev']
+                   'XML': ['libxml2-dev', 'libxslt1-dev']
                   }
 PIP_CMD = 'pip'
 
