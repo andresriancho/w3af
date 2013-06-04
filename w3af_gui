@@ -17,16 +17,11 @@ def back_to_current_dir():
 # Translation stuff
 gettext.install('w3af', 'locales/')
 
-# I perform the GTK UI dependency check here
-# please note that there is also a CORE dependency check, which verifies the
-# presence of different libraries.
-# This task is done in different places because the ConsoleUI has different requirements
-# than the GTK UI.
-from core.ui.gui.dependency_check import gtkui_dependency_check
-from core.controllers.dependency_check.dependency_check import dependency_check
+# Perform the GTK UI dependency check, this will verify that the current system
+# has all the modules required to run w3af (including the core dependencies)
+from core.ui.gui.dependency_check.dependency_check import dependency_check
 
 dependency_check()
-gtkui_dependency_check()
 
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
