@@ -243,6 +243,16 @@ class php_eggs(InfrastructurePlugin):
         ('fb3bbd9ccc4b3d9e0b3be89c5ff98a14', 'PHP Logo 2'),
         ('7675f1d01c927f9e6a4752cf182345a2', 'Zend Logo'),
         ('23f183b78eb4e3ba8b3df13f0a15e5de', 'PHP Credits')]
+    EGG_DB["5.3.23"] = [
+        ("5e8e6736635920a0a97ba79d69c55b30", "PHP Credits"),
+        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
+        ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
+        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo")]
+    EGG_DB["5.3.24"] = [
+        ("23f183b78eb4e3ba8b3df13f0a15e5de", "PHP Credits"),
+        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
+        ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
+        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo")]
     EGG_DB["5.3.25"] = [
         ("23f183b78eb4e3ba8b3df13f0a15e5de", "PHP Credits"),
         ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
