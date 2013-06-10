@@ -65,6 +65,9 @@ Options:
     
     -P <profile> or --profile-run=<profile>
         Run with the selected <profile> in batch mode
+    
+    -v or --version
+        Show w3af's version
 
 For more info visit http://w3af.org/
 '''
