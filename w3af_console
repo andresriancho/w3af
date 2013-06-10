@@ -17,13 +17,13 @@ def back_to_current_dir():
 gettext.install('w3af', 'locales/')
 
 # Check if I have all needed dependencies
-from core.controllers.dependency_check.dependency_check import dependency_check
+from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 dependency_check()
 
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
-from core.ui.console.console_ui import ConsoleUI
-import core.controllers.output_manager as om
+from w3af.core.ui.console.console_ui import ConsoleUI
+import w3af.core.controllers.output_manager as om
 try:
     om.out.set_output_plugins( ['console'] )
 except Exception, e:
@@ -31,8 +31,8 @@ except Exception, e:
     print 'Exception: "%s"' % e
     sys.exit(-9)
 
-from core.controllers.profiling.cpu_usage import dump_cpu_usage
-from core.controllers.misc.get_w3af_version import get_w3af_version
+from w3af.core.controllers.profiling.cpu_usage import dump_cpu_usage
+from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
 
 
 usage_doc = '''

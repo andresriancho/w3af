@@ -19,13 +19,13 @@ gettext.install('w3af', 'locales/')
 
 # Perform the GTK UI dependency check, this will verify that the current system
 # has all the modules required to run w3af (including the core dependencies)
-from core.ui.gui.dependency_check.dependency_check import dependency_check
+from w3af.core.ui.gui.dependency_check.dependency_check import dependency_check
 
 dependency_check()
 
 # Make sure that the output manager is started before doing anything else, since
 # it is used by most w3af modules 
-import core.controllers.output_manager as om
+import w3af.core.controllers.output_manager as om
 try:
     om.out.set_output_plugins( ['console'] )
 except Exception, e:
@@ -97,8 +97,9 @@ def main():
             om.out.error("The DISPLAY environment variable is not set! You can"
                          " not use any graphical program without it...")
             return -1
-    import core.ui.gui.main
-    core.ui.gui.main.main(profile, doupdate)
+
+    from w3af.core.ui.gui.main import main as gui_main
+    gui_main(profile, doupdate)
 
 if __name__ == "__main__":
     err_code = main()
