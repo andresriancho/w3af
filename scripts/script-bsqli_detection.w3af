@@ -2,10 +2,10 @@
 plugins
 audit blind_sqli
 audit config blind_sqli
-set equalLimit 0.89
+set eq_limit 0.89
+back
 
 output console,text_file
-output
 output config text_file
 set output_file output-w3af.txt
 set verbose True
