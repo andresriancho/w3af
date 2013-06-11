@@ -90,8 +90,8 @@ class test_wizards(object):
                 break
             else:
                 opt = question.get_option_objects()
-                filled_opt = self._incorrectly_fill_options(opt)
                 try:
+                    filled_opt = self._incorrectly_fill_options(opt)
                     wizard_inst.set_answer(filled_opt)
                 except w3afException:
                     # Now we correctly fill these values
