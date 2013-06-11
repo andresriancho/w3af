@@ -24,7 +24,7 @@ import os
 import shutil
 
 HOME_DIR = os.path.join(user.home, '.w3af')
-W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
+W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-5])
 
 
 def create_home_dir():
