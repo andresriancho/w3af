@@ -27,6 +27,7 @@ import xdot
 from w3af.core.controllers.misc.levenshtein import relative_distance
 from w3af.core.controllers.exceptions import w3afException
 
+from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.ui.gui.reqResViewer import reqResWindow
 from w3af.core.ui.gui import entries
 
@@ -215,7 +216,7 @@ class w3afDotWindow(xdot.DotWindow):
 
     def __init__(self):
         gtk.Window.__init__(self)
-        self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
+        self.set_icon_from_file(W3AF_ICON)
 
         self.graph = xdot.Graph()
 

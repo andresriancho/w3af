@@ -33,7 +33,6 @@ class XunitGen(object):
     '''
 
     outputfile = 'w3aftestscripts.xml'
-    sep = os.path.sep
 
     def __init__(self, outputfile=None):
         if outputfile:

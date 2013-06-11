@@ -4,8 +4,9 @@
 
 import os
 import pluginEditorDialogs
-import subprocess
 import gtk
+
+from w3af import ROOT_PATH
 
 BLOCK_SIZE = 2048
 RESPONSE_FORWARD = 1
@@ -301,8 +302,8 @@ class pluginEditor:
         self._plugin_name = plugin_name
 
         # The filename to edit
-        self._filename = 'plugins' + os.path.sep + plugin_type + \
-            os.path.sep + plugin_name + '.py'
+        self._filename = os.path.join(ROOT_PATH, 'plugins', plugin_type,
+                                      plugin_name + '.py')
 
         # Create the window
         w = EditWindow(quit_cb=self._quit_cb)

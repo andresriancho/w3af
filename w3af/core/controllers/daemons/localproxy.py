@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 import Queue
 import re
 import time
@@ -26,6 +27,7 @@ import traceback
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
@@ -182,7 +184,7 @@ class LocalProxy(Proxy):
     '''
 
     def __init__(self, ip, port, urlOpener=ExtendedUrllib(),
-                 proxy_cert='core/controllers/daemons/mitm.crt'):
+                 proxy_cert=Proxy.SSL_CERT):
         '''
         :param ip: IP address to bind
         :param port: Port to bind

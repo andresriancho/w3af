@@ -331,10 +331,10 @@ class Throbber(gtk.ToolButton):
     '''
     def __init__(self):
         self.img_static = gtk.Image()
-        self.img_static.set_from_file('core/ui/gui/data/throbber_static.gif')
+        self.img_static.set_from_file(os.path.join(GUI_DATA_PATH, 'throbber_static.gif'))
         self.img_static.show()
         self.img_animat = gtk.Image()
-        self.img_animat.set_from_file('core/ui/gui/data/throbber_animat.gif')
+        self.img_animat.set_from_file(os.path.join(GUI_DATA_PATH,'throbber_animat.gif'))
         self.img_animat.show()
 
         super(Throbber, self).__init__(self.img_static, "")

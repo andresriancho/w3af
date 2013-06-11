@@ -18,10 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 import gtk
 import gobject
 import pango
 
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui.output.message_consumer import MessageConsumer
 
 
@@ -279,7 +281,7 @@ class PromptDialog(gtk.Dialog):
     '''
     def __init__(self, title, prompt_text, procfunc):
         super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
-        self.set_icon_from_file('core/ui/gui/data/shell.png')
+        self.set_icon_from_file(os.path.join(GUI_DATA_PATH, 'shell.png'))
 
         # the toolbar
         box = gtk.HBox()

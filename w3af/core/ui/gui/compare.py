@@ -22,6 +22,7 @@ import os
 import gtk
 import webbrowser
 
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import entries
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from w3af.core.ui.gui.tools.manual_requests import ManualRequests
@@ -79,13 +80,13 @@ class Compare(entries.RememberingWindow):
             return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
 
         iconfactory.add(
-            'req_head', make_iconset('core/ui/gui/data/request-headers.png'))
+            'req_head', make_iconset(os.path.join(GUI_DATA_PATH, 'request-headers.png')))
         iconfactory.add(
-            'req_body', make_iconset('core/ui/gui/data/request-body.png'))
+            'req_body', make_iconset(os.path.join(GUI_DATA_PATH, 'request-body.png')))
         iconfactory.add(
-            'res_head', make_iconset('core/ui/gui/data/response-headers.png'))
+            'res_head', make_iconset(os.path.join(GUI_DATA_PATH, 'response-headers.png')))
         iconfactory.add(
-            'res_body', make_iconset('core/ui/gui/data/response-body.png'))
+            'res_body', make_iconset(os.path.join(GUI_DATA_PATH, 'response-body.png')))
 
         gtk.stock_add((
             ('req_head', "Show Request Headers", 0,

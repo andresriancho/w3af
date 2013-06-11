@@ -41,7 +41,7 @@ def create_home_dir():
             return False
 
     # webroot for some plugins
-    webroot = home_path + os.path.sep + 'webroot'
+    webroot = os.path.join(home_path, 'webroot')
     if not os.path.exists(webroot):
         try:
             os.makedirs(webroot)
@@ -49,7 +49,7 @@ def create_home_dir():
             return False
 
     # and the profile directory
-    home_profiles = home_path + os.path.sep + 'profiles'
+    home_profiles = os.path.join(home_path, 'profiles')
     default_profiles = 'profiles' + os.path.sep
     if not os.path.exists(home_profiles):
         try:

@@ -22,8 +22,11 @@ import signal
 import subprocess
 import time
 import unittest
+import os
 
 from nose.plugins.attrib import attr
+
+from w3af import ROOT_PATH
 
 
 @attr('moth')
@@ -31,8 +34,10 @@ class TestHandleCtrlC(unittest.TestCase):
     
     def test_scan_ctrl_c(self):
         
-        cmd = ['python', 'w3af_console', '-s',
-               'core/ui/console/tests/data/spider_long.w3af']
+        script = 'core/ui/console/tests/data/spider_long.w3af'
+        script_path = os.path.join(ROOT_PATH, script)
+        cmd = ['python', 'w3af_console', '-s', script_path]
+
         process = subprocess.Popen(args=cmd,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,

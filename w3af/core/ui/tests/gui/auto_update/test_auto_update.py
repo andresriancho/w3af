@@ -30,7 +30,7 @@ from w3af.core.data.db.startup_cfg import StartUpConfig
 class TestAutoUpdate(XpresserUnittest):
     
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'auto_update', 'images')
-    
+
     def start_gui(self):
         '''
         Need to override this method in order to avoid waiting for the "real"

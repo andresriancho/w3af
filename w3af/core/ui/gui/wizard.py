@@ -24,6 +24,7 @@ import os
 import cgi
 
 from w3af import ROOT_PATH
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import entries, confpanel, helpers
 from w3af.core.controllers.exceptions import w3afException
 
@@ -130,8 +131,8 @@ class Wizard(entries.RememberingWindow):
         # the image at the left
         mainhbox = gtk.HBox()
         self.vbox.pack_start(mainhbox)
-        leftframe = gtk.image_new_from_file(
-            'core/ui/gui/data/wizard_frame.png')
+        leftframe = gtk.image_new_from_file(os.path.join(GUI_DATA_PATH,
+                                                         'wizard_frame.png'))
         mainhbox.pack_start(leftframe, False, False)
         mainvbox = gtk.VBox()
         mainhbox.pack_start(mainvbox)
@@ -273,8 +274,8 @@ class WizardChooser(entries.RememberingWindow):
         # the image at the left
         mainhbox = gtk.HBox()
         self.vbox.pack_start(mainhbox)
-        leftframe = gtk.image_new_from_file(
-            'core/ui/gui/data/wizard_frame.png')
+        leftframe = gtk.image_new_from_file(os.path.join(GUI_DATA_PATH,
+                                                         'wizard_frame.png'))
         vb = gtk.VBox()
         vb.pack_end(leftframe, False, False)
         eb = gtk.EventBox()

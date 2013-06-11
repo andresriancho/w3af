@@ -22,6 +22,7 @@ import gtk
 import gobject
 import os
 
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import confpanel, entries, helpers
 from w3af.core.ui.gui.pluginEditor import pluginEditor
 from w3af.core.ui.gui.misc.text_wrap_label import WrapLabel
@@ -111,7 +112,8 @@ class ConfigPanel(gtk.VBox):
             self.add(lab)
         else:
             # put image
-            img = gtk.image_new_from_file('core/ui/gui/data/w3af_logo.png')
+            img = gtk.image_new_from_file(os.path.join(GUI_DATA_PATH,
+                                                       'w3af_logo.png'))
             self.widg = img
             img.show()
             img.set_sensitive(False)

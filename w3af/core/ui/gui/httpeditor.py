@@ -25,9 +25,11 @@ import os
 
 import gtksourceview2 as gtksourceview
 
+from w3af import ROOT_PATH
 from w3af.core.data.constants import severity
 from w3af.core.ui.gui.common.searchable import Searchable
 from w3af.core.ui.gui.encdec import EncodeDecode
+
 
 SEVERITY_TO_COLOR = {
     severity.INFORMATION: 'green',
@@ -59,7 +61,7 @@ class HttpEditor(gtk.VBox, Searchable):
         # Syntax highlight
         self._lang_man = gtksourceview.LanguageManager()
         spath = self._lang_man.get_search_path()
-        spath.append('core' + os.path.sep + 'ui' + os.path.sep + 'gui')
+        spath.append(os.path.join(ROOT_PATH, 'core', 'ui', 'gui'))
         self._lang_man.set_search_path(spath)
         self.set_language('http')
         #b.set_highlight_syntax(True)

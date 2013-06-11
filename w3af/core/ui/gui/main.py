@@ -42,6 +42,7 @@ from w3af.core.controllers.exception_handling.helpers import pprint_plugins, get
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
 
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui.splash import Splash
 from w3af.core.ui.gui.disclaimer import DisclaimerController
 from w3af.core.ui.gui.exception_handling import unhandled
@@ -90,7 +91,7 @@ class AboutDialog(gtk.Dialog):
                                         (_("Check the web site"), gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_OK))
 
         # content
-        img = gtk.image_new_from_file('core/ui/gui/data/splash.png')
+        img = gtk.image_new_from_file(os.path.join(GUI_DATA_PATH, 'splash.png'))
         self.vbox.pack_start(img)
         version = get_w3af_version()
         self.label = gtk.Label(version)

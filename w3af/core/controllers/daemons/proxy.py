@@ -25,6 +25,7 @@ import socket
 import select
 import httplib
 import time
+import os
 import SocketServer
 
 from OpenSSL import SSL
@@ -33,6 +34,7 @@ from multiprocessing.dummy import Process
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import w3afException, w3afProxyException
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -412,8 +414,10 @@ class Proxy(Process):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
+
     def __init__(self, ip, port, uri_opener, proxy_handler=w3afProxyHandler,
-                 proxy_cert='core/controllers/daemons/mitm.crt'):
+                 proxy_cert=SSL_CERT):
         '''
         :param ip: IP address to bind
         :param port: Port to bind

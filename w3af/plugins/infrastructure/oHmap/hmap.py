@@ -21,18 +21,18 @@
 ######################################################################
 
 import sys
-import pprint
 import glob
-import getopt
 import re
 import time
 import socket
-import urlparse
 import select
-import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.exceptions import w3afException
-import w3af.core.data.kb.config as cf
 import os
+
+import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
+
+from w3af import ROOT_PATH
+from w3af.core.controllers.exceptions import w3afException
 
 
 class request:
@@ -923,8 +923,8 @@ def testServer(ssl, server, port, matchCount, generateFP):
     useSSL = ssl
 
     MATCH_COUNT = matchCount
-    fingerprintDir = 'plugins' + os.path.sep + 'infrastructure' + \
-        os.path.sep + 'oHmap' + os.path.sep + 'known.servers' + os.path.sep
+    fingerprintDir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
+                                  'oHmap', 'known.servers')
 
     # Get the fingerprint
     target_url = server

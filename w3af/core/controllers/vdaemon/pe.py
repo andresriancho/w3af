@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import sys
 import os
-from w3af.core.controllers.exceptions import *
+
+from w3af import ROOT_PATH
+from w3af.core.controllers.exceptions import w3afException
 
 
-class pe:
+class pe(object):
     '''
     This class represents a PE file.
 
@@ -35,8 +35,8 @@ class pe:
         self._arch = arch
         self._shellcode = '\x90'
         self._maxPayloadLen = 1024
-        self._templateFileName = 'core' + os.path.sep + 'controllers' + \
-            os.path.sep + 'vdaemon' + os.path.sep + 'peTemplate.dat'
+        self._templateFileName = os.path.join(ROOT_PATH, 'core', 'controllers',
+                                              'vdaemon', 'pe_template.dat')
 
     def set_shell_code(self, sc):
         if len(sc) > self._maxPayloadLen:
@@ -57,13 +57,7 @@ class pe:
                 'Failed to open PE template file. Exception: ' + str(e))
         else:
             paddingLen = self._maxPayloadLen - len(self._shellcode)
-            executable = template.replace('\x90' * self._maxPayloadLen, self._shellcode + '\x90' * paddingLen)
+            executable = template.replace('\x90' * self._maxPayloadLen,
+                                          self._shellcode + '\x90' * paddingLen)
 
         return executable
-
-if __name__ == '__main__':
-    e = pe()
-    e._templateFileName = 'eggTemplate.dat'
-    f = file('genpe', 'w')
-    f.write(e.dump())
-    f.close()
