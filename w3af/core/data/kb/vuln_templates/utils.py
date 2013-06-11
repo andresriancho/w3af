@@ -45,7 +45,7 @@ def get_all_templates():
     
         # Please read help(__import__) to understand why I have to set
         # fromlist to something that's not empty.
-        module_name = '.'.join(location + [fname,])
+        module_name = 'w3af.core.data.kb.vuln_templates.%s' % fname
         module = __import__(module_name, fromlist=[None,])
 
         klasses = dir(module)

@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.kb.vuln_templates.utils import (get_all_templates,
-                                               get_template_names,
-                                               get_template_by_name)
+                                                    get_template_names,
+                                                    get_template_by_name)
 
 
 class TestUtils(unittest.TestCase):
