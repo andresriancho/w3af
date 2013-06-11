@@ -24,6 +24,7 @@ import time
 import unittest
 import Queue
 import SocketServer
+import types
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
@@ -193,8 +194,11 @@ class TestXUrllib(unittest.TestCase):
 
         def send(uri_opener, output):
             url = URL('http://moth/')
-            http_response = uri_opener.GET(url)
-            output.put(http_response)
+            try:
+                http_response = uri_opener.GET(url)
+                output.put(http_response)
+            except:
+                output.put(None)
 
         th = Process(target=send, args=(self.uri_opener, output))
         th.daemon = True
@@ -208,8 +212,11 @@ class TestXUrllib(unittest.TestCase):
 
         def send(uri_opener, output):
             url = URL('http://moth/')
-            http_response = uri_opener.GET(url)
-            output.put(http_response)
+            try:
+                http_response = uri_opener.GET(url)
+                output.put(http_response)
+            except:
+                output.put(None)
 
         th = Process(target=send, args=(self.uri_opener, output))
         th.daemon = True
@@ -220,6 +227,9 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(False)
 
         http_response = output.get()
+        self.assertNotIsInstance(http_response, types.NoneType,
+                                 'Error in send thread.')
+        
         th.join()
         
         self.assertEqual(http_response.get_code(), 200)
