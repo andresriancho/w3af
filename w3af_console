@@ -76,6 +76,8 @@ def _generate_run_commands(script_file, profile, force_profile):
     :param profile: The profile (-p) name
     :param force_profile: Should we run the profile? (-P)
     '''
+    commands_to_run = []
+
     if script_file is not None:
         try:
             fd = open(script_file)
@@ -83,7 +85,6 @@ def _generate_run_commands(script_file, profile, force_profile):
             print('Failed to open script file: "%s"' % script_file)
             return 2
         else:
-            commands_to_run = []
             for line in fd:   
                 line = line.strip()
                 if line != '' and line[0] != '#': # if not a comment..
@@ -98,6 +99,7 @@ def _generate_run_commands(script_file, profile, force_profile):
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
+    return commands_to_run
 
 def main():
     try:
