@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -57,7 +56,7 @@ class dom_xss(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Compile the regular expressions
-        self._scriptRe = re.compile(
+        self._script_re = re.compile(
             '< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
 
     def grep(self, request, response):
@@ -80,7 +79,7 @@ class dom_xss(GrepPlugin):
             v.set_url(response.get_url())
             v.add_to_highlight(vuln_code)
             
-            self.kb_append(self, 'dom_xss', v)
+            self.kb_append_uniq(self, 'dom_xss', v, filter_by='URL')
 
     def _smart_grep(self, response):
         '''
@@ -89,7 +88,7 @@ class dom_xss(GrepPlugin):
         :return: list of dom xss items
         '''
         res = []
-        match = self._scriptRe.search(response.get_body())
+        match = self._script_re.search(response.get_body())
 
         if not match:
             return res

@@ -28,7 +28,7 @@ class TestMOTW(PluginTest):
     motw_url = 'https://moth/w3af/grep/motw/'
 
     _run_configs = {
-        'cfg1': {
+        'cfg': {
             'target': motw_url,
             'plugins': {
                 'grep': (PluginConfig('motw'),),
@@ -42,11 +42,11 @@ class TestMOTW(PluginTest):
     }
 
     def test_found_vuln(self):
-        cfg = self._run_configs['cfg1']
+        cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         infos = self.kb.get('motw', 'motw')
 
-        self.assertEquals(1, len(infos))
+        self.assertEquals(1, len(infos), infos)
 
         self.assertEquals(set([severity.INFORMATION] * 2),
                           set([v.get_severity() for v in infos]))

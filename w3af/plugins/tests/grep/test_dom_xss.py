@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import w3af.core.data.constants.severity as severity
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-import w3af.core.data.constants.severity as severity
 
 
 class TestDOMXSS(PluginTest):
@@ -28,7 +28,7 @@ class TestDOMXSS(PluginTest):
     dom_xss_url = 'https://moth/w3af/grep/dom_xss/'
 
     _run_configs = {
-        'cfg1': {
+        'cfg': {
             'target': dom_xss_url,
             'plugins': {
                 'grep': (PluginConfig('dom_xss'),),
@@ -42,11 +42,11 @@ class TestDOMXSS(PluginTest):
     }
 
     def test_found_vuln(self):
-        cfg = self._run_configs['cfg1']
+        cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('dom_xss', 'dom_xss')
 
-        self.assertEquals(1, len(vulns))
+        self.assertEquals(1, len(vulns), vulns)
 
         v = vulns[0]
         self.assertEquals(severity.LOW, v.get_severity())
