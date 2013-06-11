@@ -27,6 +27,7 @@ import random
 from mock import patch
 from itertools import repeat
 
+from w3af import ROOT_PATH 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -50,16 +51,16 @@ class test_all(unittest.TestCase):
 
     # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
     #       remember about adding the patch...
-    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_image_with_image_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image.
         '''
-        file_path = os.path.join('plugins', 'tests', 'grep',
+        file_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep',
                                  'data', 'w3af.png')        
         body = file(file_path).read()
         hdrs = Headers({'Content-Type': 'image/png'}.items())
@@ -72,17 +73,17 @@ class test_all(unittest.TestCase):
 
     # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
     #       remember about adding the patch...
-    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))        
+    @patch('w3af.plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))        
     def test_image_with_text_html_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image with
         a text/html content type.
         '''
-        file_path = os.path.join('plugins', 'tests', 'grep',
+        file_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep',
                                  'data', 'w3af.png')        
         body = file(file_path).read()
         # Here is the change from the previous test:
@@ -116,11 +117,11 @@ class test_all(unittest.TestCase):
 
     # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
     #       remember about adding the patch...
-    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_all_grep_plugins(self, *args):
         '''
         Run a set of 5 html files through all grep plugins.
@@ -136,8 +137,8 @@ class test_all(unittest.TestCase):
                 for counter in xrange(1, 5):
 
                     file_name = 'test-' + str(counter) + '.html'
-                    file_path = os.path.join('plugins', 'tests', 'grep',
-                                             'data', file_name)
+                    file_path = os.path.join(ROOT_PATH, 'plugins', 'tests',
+                                             'grep', 'data', file_name)
 
                     body = file(file_path).read()
                     hdrs = Headers({'Content-Type': 'text/html'}.items())

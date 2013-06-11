@@ -20,5 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os
+import gettext
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
+
+# Translation stuff
+gettext.install('w3af', os.path.join(ROOT_PATH, 'locales'))

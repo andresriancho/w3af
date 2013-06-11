@@ -22,21 +22,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.data.misc.file_utils import days_since_file_update
 
 
 class TestFileUtils(unittest.TestCase):
 
     def test_days_since_file_update_true(self):
-        filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
+        filename = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'file_utils.py')
         result = days_since_file_update(filename, 0)
         self.assertTrue(result)
 
     def test_days_since_file_update_not_exists(self):
-        filename = os.path.join('core', 'data', 'misc', 'notexists.py')
+        filename = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'notexists.py')
         self.assertRaises(ValueError, days_since_file_update, filename, 0)
         
     def test_days_since_file_update_false(self):
-        filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
+        filename = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'file_utils.py')
         result = days_since_file_update(filename, 309 ** 32)
         self.assertFalse(result)

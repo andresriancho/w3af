@@ -23,6 +23,8 @@ import unittest
 import re
 import os
 
+from w3af import ROOT_PATH
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.pykto import NiktoTestParser, IsVulnerableHelper, Config
 
@@ -35,7 +37,8 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 class TestPykto(PluginTest):
 
     base_url = 'http://moth/w3af/'
-    DB_PATH = os.path.join('plugins', 'tests', 'crawl', 'pykto', 'scan_database.db')
+    DB_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
+                           'pykto', 'scan_database.db')
     
     _run_configs = {
         'cfg': {

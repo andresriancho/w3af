@@ -189,7 +189,7 @@ class w3af_core_plugins(object):
         :param plugin_name: The plugin name of the modified plugin ('xss', 'sqli', etc)
         '''
         try:
-            aModule = sys.modules['plugins.' + plugin_type +
+            aModule = sys.modules['w3af.plugins.' + plugin_type +
                                   '.' + plugin_name]
         except KeyError:
             msg = 'Tried to reload a plugin that was never imported! (%s.%s)'
@@ -203,8 +203,8 @@ class w3af_core_plugins(object):
         :return: A description of the plugin type passed as parameter
         '''
         try:
-            __import__('plugins.' + plugin_type)
-            aModule = sys.modules['plugins.' + plugin_type]
+            __import__('w3af.plugins.' + plugin_type)
+            aModule = sys.modules['w3af.plugins.' + plugin_type]
         except Exception:
             raise w3afException('Unknown plugin type: "' + plugin_type + '".')
         else:

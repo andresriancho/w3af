@@ -103,7 +103,7 @@ class ListItem(object):
     def __str__(self):
         return "<%s %s %i %s>" % (self.__class__, self.name, self.active, self.value)
 
-_pixmap_path = "core/ui/gui/comparator/pixmaps"
+_pixmap_path = "w3af/core/ui/gui/comparator/pixmaps"
 
 
 def load_pixbuf(fname, size=0):

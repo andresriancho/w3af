@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af import ROOT_PATH
+
 # pylint: disable=E0611
 # E0611: 24,0: No name 'util' in module 'LazyModule'
 # E0611: 26,0: No name 'reader' in module 'LazyModule'
@@ -42,7 +44,7 @@ class wordnet_loader(LazyCorpusLoader):
     def __load(self):
         # Find the corpus root directory.
         zip_location = os.path.join(
-            'plugins', 'crawl', 'wordnet', 'wordnet.zip')
+            ROOT_PATH, 'plugins', 'crawl', 'wordnet', 'wordnet.zip')
         root = ZipFilePathPointer(zip_location, 'wordnet/')
 
         # Load the corpus.

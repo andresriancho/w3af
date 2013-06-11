@@ -20,12 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestRequestHelp(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'request_help', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'request_help', 'images')
     
     def test_main_menu_help(self):
         # Make sure the focus is on the w3af_gui before we hit F1

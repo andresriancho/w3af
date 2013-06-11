@@ -2,9 +2,9 @@ import os
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
 from w3af.core.ui.console.tables import table
 from w3af.core.controllers.threads.threadpool import return_args
-
 from w3af.plugins.attack.payloads.base_payload import Payload
 
 
@@ -30,8 +30,8 @@ class rootkit_hunter(Payload):
         #    Rootkit Hunter Shell Script by Michael Boelen
         #
         #    TODO: Find a way to keep the DB updated!
-        for fname in file(os.path.join('plugins', 'attack', 'payloads',
-                                       'payloads', 'rootkit_hunter',
+        for fname in file(os.path.join(ROOT_PATH, 'plugins', 'attack',
+                                       'payloads', 'payloads', 'rootkit_hunter',
                                        'rootkit_hunter_files.db')):
             fname = fname.strip()
             if fname and not fname.startswith('#'):

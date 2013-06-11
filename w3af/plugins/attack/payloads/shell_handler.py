@@ -93,7 +93,6 @@ def _get_file_list(type_of_list, extension, force_extension=False):
     known_framework = []
     uncertain_framework = []
     path = os.path.join(ROOT_PATH, 'plugins', 'attack' , 'payloads', type_of_list)
-    path += os.path.sep
     
     if force_extension:
         filename = path + type_of_list + '.' + extension

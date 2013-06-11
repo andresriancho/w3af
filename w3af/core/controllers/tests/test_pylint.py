@@ -28,6 +28,8 @@ from pylint.reporters.text import TextReporter
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
+
 
 class WritableObject(object):
     def __init__(self):
@@ -46,8 +48,8 @@ class WritableObject(object):
 class PylintRunner(unittest.TestCase):
 
     maxDiff = None
-    pylint_plugins_dir = os.path.join('core', 'controllers', 'tests',
-                                      'pylint_plugins')
+    pylint_plugins_dir = os.path.join(ROOT_PATH, 'core', 'controllers',
+                                      'tests', 'pylint_plugins')
 
     def setUp(self):
         sys.path.append(self.pylint_plugins_dir)
@@ -56,30 +58,31 @@ class PylintRunner(unittest.TestCase):
         sys.path.remove(self.pylint_plugins_dir)
     
     def run_pylint(self, directory):
-        pylint_rc = os.path.join('core', 'controllers', 'tests', 'pylint.rc')
+        pylint_rc = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests',
+                                 'pylint.rc')
         pylint_args = [directory, '-E', '--rcfile=%s' % pylint_rc]
         pylint_output = WritableObject()
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
     
     def test_pylint_plugins(self):
-        pylint_output = self.run_pylint('plugins/')
+        pylint_output = self.run_pylint('%s/plugins/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_controllers(self):
-        pylint_output = self.run_pylint('core/controllers/')
+        pylint_output = self.run_pylint('%s/core/controllers/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_data(self):
-        pylint_output = self.run_pylint('core/data/')
+        pylint_output = self.run_pylint('%s/core/data/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_ui(self):
         raise SkipTest('Remove me after fix https://www.logilab.org/ticket/122793')
     
-        pylint_output = self.run_pylint('core/ui/')
+        pylint_output = self.run_pylint('%s/core/ui/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))

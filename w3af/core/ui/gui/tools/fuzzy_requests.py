@@ -24,6 +24,7 @@ import gobject
 import functools
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.ui.gui import reqResViewer, helpers, entries, fuzzygen
 from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
@@ -232,8 +233,8 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # cluster responses button
         image = gtk.Image()
-        image.set_from_file(os.path.join('core', 'ui', 'gui', 'data',
-                                         'cluster_data.png'))
+        image.set_from_file(os.path.join(ROOT_PATH, 'core', 'ui', 'gui',
+                                         'data', 'cluster_data.png'))
         image.show()
         self.clusterButton = gtk.Button(label='Cluster responses')
         self.clusterButton.connect("clicked", self._clusterData)

@@ -22,7 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 
-PAYLOAD_PATH = os.path.join('plugins', 'attack', 'payloads', 'payloads')
+from w3af import ROOT_PATH
+
+PAYLOAD_PATH = os.path.join(ROOT_PATH, 'plugins', 'attack', 'payloads',
+                            'payloads')
 
 
 def payload_to_file(payload_name):

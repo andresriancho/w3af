@@ -24,6 +24,7 @@ import shutil
 
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -51,9 +52,10 @@ class TestCrawlExceptions(PluginTest):
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join('plugins', 'tests', 'crawl',
+        self.src = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                                 'failing_spider.py')
-        self.dst = os.path.join('plugins', 'crawl', 'failing_spider.py')
+        self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                'failing_spider.py')
         shutil.copy(self.src, self.dst)
 
         super(TestCrawlExceptions, self).setUp()

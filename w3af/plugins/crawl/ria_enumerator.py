@@ -26,6 +26,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
+from w3af import ROOT_PATH
+
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afRunOnce
 from w3af.core.controllers.misc.decorators import runonce
@@ -45,8 +47,8 @@ class ria_enumerator(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # User configured parameters
-        self._wordlist = os.path.join('plugins', 'crawl', 'ria_enumerator',
-                                      'common_filenames.db')
+        self._wordlist = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                      'ria_enumerator', 'common_filenames.db')
 
         # This is a list of common file extensions for google gears manifest:
         self._extensions = ['', '.php', '.json', '.txt', '.gears']

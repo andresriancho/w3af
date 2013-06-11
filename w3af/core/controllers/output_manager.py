@@ -27,6 +27,7 @@ import threading
 
 from multiprocessing.dummy import Process
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
@@ -276,8 +277,8 @@ class output_manager(Process):
         :return: No value is returned.
         '''
         if OutputPluginName == 'all':
-            fileList = os.listdir(os.path.join('w3af', 'plugins', 'output'))
-            strReqPlugins = [os.path.splitext(f)[0] for f in fileList
+            file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
+            strReqPlugins = [os.path.splitext(f)[0] for f in file_list
                              if os.path.splitext(f)[1] == '.py']
             strReqPlugins.remove('__init__')
 

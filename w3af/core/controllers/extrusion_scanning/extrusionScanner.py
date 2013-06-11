@@ -25,6 +25,7 @@ import socket
 import time
 import threading
 
+from w3af import ROOT_PATH
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
@@ -240,10 +241,11 @@ class extrusionScanner(object):
         ### TODO! Implement this!
         if '6' in self._exec('python -c print+3+3'):
             # "python -c 'print 3+3'" fails with magic quotes on... but
-            # this trick of the print+3+3 works ( returns 6 ) and ALSO evades magic quotes
-            filename = os.path.join(
-                'core', 'controllers', 'extrusion_scanning',
-                'client', 'extrusionClient.py')
+            # this trick of the print+3+3 works ( returns 6 ) and ALSO evades
+            # magic quotes
+            filename = os.path.join(ROOT_PATH, 'core', 'controllers',
+                                    'extrusion_scanning', 'client',
+                                    'extrusionClient.py')
             fileContent = file(filename).read()
             extension = 'py'
             interpreter = 'python'

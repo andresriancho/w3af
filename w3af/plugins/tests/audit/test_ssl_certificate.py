@@ -25,6 +25,7 @@ import ssl
 import threading
 import random
 
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 PORT = random.randint(4443, 4599)
@@ -45,8 +46,8 @@ class TestSSLCertificate(PluginTest):
 
     def test_ssl_certificate(self):
         # Start the HTTPS server
-        certfile = os.path.join(
-            'plugins', 'tests', 'audit', 'certs', 'invalid_cert.pem')
+        certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
+                                'certs', 'invalid_cert.pem')
         s = ssl_server('localhost', PORT, certfile)
         s.start()
 

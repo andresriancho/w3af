@@ -20,13 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from nose.plugins.skip import SkipTest
 
 
 class TestDirFileBruter(PluginTest):
 
-    TEST_PATH = os.path.join('plugins', 'tests', 'crawl', 'dir_file_bruter')
+    TEST_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
+                             'dir_file_bruter')
 
     DIR_DB_PATH = os.path.join(TEST_PATH, 'test_dirs_small.db')
     FILE_DB_PATH = os.path.join(TEST_PATH, 'test_files_small.db')

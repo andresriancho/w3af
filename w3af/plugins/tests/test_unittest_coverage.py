@@ -23,9 +23,10 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.w3afCore import w3afCore
 
-TEST_PATH = os.path.join('plugins', 'tests')
+TEST_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests')
 
 
 @attr('smoke')

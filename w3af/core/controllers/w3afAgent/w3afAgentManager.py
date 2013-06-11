@@ -27,6 +27,7 @@ from multiprocessing.dummy import Process
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.w3afAgent.server.w3afAgentServer import w3afAgentServer
 from w3af.core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
@@ -179,7 +180,7 @@ class w3afAgentManager(Process):
         python = python.strip()
 
         if python.startswith('/'):
-            client = os.path.join('core', 'controllers', 'w3afAgent',
+            client = os.path.join(ROOT_PATH, 'core', 'controllers', 'w3afAgent',
                                   'client', 'w3afAgentClient.py')
             file_content = file(client).read()
             extension = 'py'

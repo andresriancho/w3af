@@ -22,6 +22,7 @@ import os
 import urllib2
 import threading
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
@@ -29,8 +30,8 @@ from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
 
 class TestProxy(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'proxy', 'images')
-    EXTRA_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'tools_menu', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'proxy', 'images')
+    EXTRA_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'tools_menu', 'images')
     
     def setUp(self):
         XpresserUnittest.setUp(self)

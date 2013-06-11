@@ -30,6 +30,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
+from w3af import ROOT_PATH
+
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.exceptions import w3afRunOnce
@@ -57,9 +59,10 @@ class pykto(CrawlPlugin):
         self._already_analyzed = ScalableBloomFilter()
 
         # User configured parameters
-        self._db_file = os.path.join('plugins', 'crawl', 'pykto', 'scan_database.db')
-        self._extra_db_file = os.path.join('plugins', 'crawl', 'pykto',
-                                           'w3af_scan_database.db')
+        self._db_file = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'pykto',
+                                     'scan_database.db')
+        self._extra_db_file = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                           'pykto', 'w3af_scan_database.db')
 
         self._cgi_dirs = ['/cgi-bin/']
         self._admin_dirs = ['/admin/', '/adm/']

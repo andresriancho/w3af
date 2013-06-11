@@ -22,6 +22,9 @@ import unittest
 import os
 import re
 
+from w3af import ROOT_PATH
+
+
 def recursive_listdir(path):
     basedir = path
 
@@ -41,7 +44,9 @@ class TestNoDebugUnittest(unittest.TestCase):
         
         debug_scan = re.compile('self._scan(.*?, *debug)')
         
-        for unittest_file in recursive_listdir(os.path.join('plugins', 'tests')):
+        for unittest_file in recursive_listdir(os.path.join(ROOT_PATH, 
+                                                            'plugins',
+                                                            'tests')):
 
             if not unittest_file.endswith('.py') or\
             not 'test_' in unittest_file:

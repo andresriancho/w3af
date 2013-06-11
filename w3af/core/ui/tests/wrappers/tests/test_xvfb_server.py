@@ -25,13 +25,14 @@ import time
 
 from mock import patch
 
+from w3af import ROOT_PATH
 from w3af.core.ui.tests.wrappers.xvfb_server import XVFBServer
 from w3af.core.ui.tests.wrappers.tests.utils import is_black_image
 
 
 class TestEnvironment(unittest.TestCase):
 
-    X_TEST_COMMAND = 'python %s' % os.path.join('core', 'ui', 'tests',
+    X_TEST_COMMAND = 'python %s' % os.path.join(ROOT_PATH, 'core', 'ui', 'tests',
                                                 'wrappers', 'tests', 'helloworld.py')
 
     def setUp(self):

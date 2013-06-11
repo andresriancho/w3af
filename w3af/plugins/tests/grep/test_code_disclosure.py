@@ -42,7 +42,7 @@ class test_code_disclosure(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_ASP_code_disclosure(self, *args):
         body = 'header <% Response.Write("Hello World!") %> footer'
         url = URL('http://www.w3af.com/')
@@ -53,7 +53,7 @@ class test_code_disclosure(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_PHP_code_disclosure(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')
@@ -64,7 +64,7 @@ class test_code_disclosure(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_blank(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -75,7 +75,7 @@ class test_code_disclosure(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure(self, *args):
         body = """Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer
         eu lacus accumsan arcu fermentum euismod. Donec pulvinar porttitor
@@ -96,7 +96,7 @@ class test_code_disclosure(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_xml(self, *args):
         body = '''
                 <?xml version="1.0"?>
@@ -114,7 +114,7 @@ class test_code_disclosure(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_analysis_content_type(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')

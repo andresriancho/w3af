@@ -22,16 +22,17 @@ import os
 
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFormAuth(PluginTest):
-    small_users_negative = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-users-negative.txt')
-    small_users_positive = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-users-positive.txt')
-    small_passwords = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-passwords.txt')
+    
+    BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'bruteforce')
+    
+    small_users_negative = os.path.join(BASE_PATH, 'small-users-negative.txt')
+    small_users_positive = os.path.join(BASE_PATH, 'small-users-positive.txt')
+    small_passwords = os.path.join(BASE_PATH, 'small-passwords.txt')
 
     target_post_url = 'http://moth/w3af/bruteforce/form_login/with_post.html'
     target_get_url = 'http://moth/w3af/bruteforce/form_login/with_get.html'

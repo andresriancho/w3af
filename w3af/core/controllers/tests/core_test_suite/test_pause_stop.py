@@ -22,13 +22,13 @@ import unittest
 import os
 import shutil
 import time
-import threading
 import pprint
 
 from multiprocessing.dummy import Process
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.plugins.tests.helper import create_target_option_list
@@ -44,8 +44,8 @@ class CountTestMixin(unittest.TestCase):
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join('core', 'controllers', 'tests', 'count.py')
-        self.dst = os.path.join('plugins', 'crawl', 'count.py')
+        self.src = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests', 'count.py')
+        self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'count.py')
         shutil.copy(self.src, self.dst)
 
         self.w3afcore = w3afCore()

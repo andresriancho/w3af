@@ -501,8 +501,9 @@ class ConsoleUI(object):
 #        term.restorePosition()
 
     def _random_message(self):
-        messages_file = os.path.join(
-            'core', 'ui', 'console', 'exitmessages.txt')
+        
+        messages_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                     'exitmessages.txt')
         f = file(messages_file, 'r')
         lines = f.readlines()
         idx = random.randrange(len(lines))

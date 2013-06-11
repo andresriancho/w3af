@@ -46,7 +46,7 @@ class TestGHDB(PluginTest):
     def test_ghdb_private(self):
         cfg = self._run_configs['cfg']
 
-        with patch('plugins.crawl.web_diff.om.out') as om_mock:
+        with patch('w3af.plugins.crawl.web_diff.om.out') as om_mock:
             self._scan(self.private_url, cfg['plugins'])
 
             msg = 'There is no point in searching google for "site:moth".' \
@@ -70,7 +70,7 @@ class TestGHDB(PluginTest):
             else:
                 return []
 
-        pmodule = 'plugins.crawl.ghdb.%s'
+        pmodule = 'w3af.plugins.crawl.ghdb.%s'
         with patch(pmodule % 'is_private_site') as private_site_mock:
             with patch.object(google, 'get_n_results') as google_mock_method:
 

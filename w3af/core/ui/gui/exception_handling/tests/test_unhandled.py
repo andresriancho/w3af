@@ -39,6 +39,6 @@ class TestUnhandled(unittest.TestCase):
     def test_handle_exception(self):
         raise SkipTest('For unknown reasons this test hangs by consuming tons of CPU and memory.')
     
-        with patch('core.ui.gui.exception_handling.unhandled.sys') as mock_sys:
+        with patch('w3af.core.ui.gui.exception_handling.unhandled.sys') as mock_sys:
             handle_crash(self.w3af_core, KeyboardInterrupt, Mock(), Mock())
             mock_sys.exit.called_once_with(0)

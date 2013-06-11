@@ -25,6 +25,8 @@ from itertools import repeat, izip
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
+
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afRunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
@@ -44,14 +46,15 @@ class dir_file_bruter(CrawlPlugin):
     :author: Andres Riancho ( andres@bonsai-sec.com )
     :author: Tomas Velazquez
     '''
+    
+    BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'dir_file_bruter')
+    
     def __init__(self):
         CrawlPlugin.__init__(self)
 
         # User configured parameters
-        self._dir_list = os.path.join('plugins', 'crawl', 'dir_file_bruter',
-                                      'common_dirs_small.db')
-        self._file_list = os.path.join('plugins', 'crawl', 'dir_file_bruter',
-                                      'common_files_small.db')
+        self._dir_list = os.path.join(self.BASE_PATH, 'common_dirs_small.db')
+        self._file_list = os.path.join(self.BASE_PATH, 'common_files_small.db')
 
         self._bf_directories = True
         self._bf_files = False

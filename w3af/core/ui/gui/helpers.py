@@ -28,6 +28,7 @@ import textwrap
 import gtk
 import os
 
+from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.ui.gui.constants import W3AF_ICON
 
@@ -348,7 +349,7 @@ class Throbber(gtk.ToolButton):
             self.set_icon_widget(self.img_static)
 
 
-def loadImage(filename, path='core/ui/gui/data/'):
+def loadImage(filename, path=GUI_DATA_PATH):
     '''Loads a pixbuf from disk.
 
     :param filename: the file name, full path
@@ -373,8 +374,7 @@ def loadIcon(stock_item_id):
     '''
     stock_item = getattr(gtk, stock_item_id)
 
-    local_icon = os.path.join('core', 'ui', 'gui', 'data', 'icons',
-                              '16', '%s.png' % stock_item)
+    local_icon = os.path.join(GUI_DATA_PATH, 'icons', '16', '%s.png' % stock_item)
     if os.path.exists(local_icon):
         im = gtk.Image()
         im.set_from_file(local_icon)

@@ -31,6 +31,7 @@ from xml.sax.handler import ContentHandler
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
@@ -43,7 +44,8 @@ class wordpress_fingerprint(CrawlPlugin):
     :author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
     '''
     # Wordpress version unique data, file/data/version
-    WP_VERSIONS_XML = os.path.join('plugins', 'crawl', 'wordpress_fingerprint',
+    WP_VERSIONS_XML = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                   'wordpress_fingerprint',
                                    'wp_versions.xml')
     
     def __init__(self):
@@ -51,7 +53,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
         # Internal variables
         self._exec = True
-        self._release_db = os.path.join('plugins', 'crawl',
+        self._release_db = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                         'wordpress_fingerprint', 'release.db')
 
     def crawl(self, fuzzable_request):

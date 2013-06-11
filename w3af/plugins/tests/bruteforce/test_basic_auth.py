@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from nose.plugins.attrib import attr
+
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -29,12 +31,11 @@ class TestBasicAuth(PluginTest):
     target_url_easy = 'http://moth/w3af/bruteforce/basic_auth/easy_guess/'
     target_url_impossible = 'http://moth/w3af/bruteforce/basic_auth/impossible_guess/'
 
-    small_users_negative = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-users-negative.txt')
-    small_users_positive = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-users-positive.txt')
-    small_passwords = os.path.join(
-        'plugins', 'tests', 'bruteforce', 'small-passwords.txt')
+    BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'bruteforce')
+
+    small_users_negative = os.path.join(BASE_PATH, 'small-users-negative.txt')
+    small_users_positive = os.path.join(BASE_PATH, 'small-users-positive.txt')
+    small_passwords = os.path.join(BASE_PATH, 'small-passwords.txt')
 
     _run_configs = {
         'positive': {

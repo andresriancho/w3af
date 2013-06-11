@@ -23,11 +23,14 @@ import sys
 import os
 import pprint
 import StringIO
+
+
+from w3af import ROOT_PATH
 #
 # Halberd imports, done this way so the user can run this plugin without having
 # to install halberd Also, the halberd version i'm using, has some changes.
 #
-halberd_dir = os.path.join('plugins', 'infrastructure', 'oHalberd')
+halberd_dir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure', 'oHalberd')
 # This insert in the first position of the path is to "step over" an installation
 # of halberd.
 sys.path.insert(0, halberd_dir)

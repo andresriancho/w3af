@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
@@ -28,12 +29,12 @@ class TestImportResults(PluginTest):
 
     base_url = 'http://moth/w3af/'
 
-    input_csv = os.path.join(
-        'plugins', 'tests', 'crawl', 'import_results', 'input-test.csv')
-    input_burp = os.path.join(
-        'plugins', 'tests', 'crawl', 'import_results', 'input-nobase64.burp')
-    input_burp_b64 = os.path.join(
-        'plugins', 'tests', 'crawl', 'import_results', 'input-base64.burp')
+    BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
+                             'import_results')
+
+    input_csv = os.path.join(BASE_PATH, 'input-test.csv')
+    input_burp = os.path.join(BASE_PATH, 'input-nobase64.burp')
+    input_burp_b64 = os.path.join(BASE_PATH, 'input-base64.burp')
 
     _run_configs = {
         'csv': {

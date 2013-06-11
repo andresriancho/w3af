@@ -28,6 +28,7 @@ from itertools import izip, repeat
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -46,9 +47,9 @@ class content_negotiation(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # User configured parameters
-        self._wordlist = os.path.join(
-            'plugins', 'crawl', 'content_negotiation',
-            'common_filenames.db')
+        self._wordlist = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                      'content_negotiation',
+                                      'common_filenames.db')
 
         # Internal variables
         self._already_tested_dir = ScalableBloomFilter()
@@ -56,7 +57,7 @@ class content_negotiation(CrawlPlugin):
         self._content_negotiation_enabled = None
         self._to_bruteforce = Queue.Queue()
         # I want to try 3 times to see if the remote host is vulnerable
-        # detection is not thaaat accurate!
+        # detection is not thaaaat accurate!
         self._tries_left = 3
 
     def crawl(self, fuzzable_request):

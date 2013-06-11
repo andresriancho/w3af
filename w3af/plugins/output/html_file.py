@@ -28,9 +28,10 @@ from string import Template
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
-from w3af.core.data.kb.vuln import Vuln
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.db.disk_list import DiskList
@@ -58,7 +59,7 @@ class html_file(OutputPlugin):
 
         # Internal variables
         self._initialized = False
-        self._style_output_file = os.path.join('plugins', 'output',
+        self._style_output_file = os.path.join(ROOT_PATH, 'plugins', 'output',
                                                'html_file', 'style.css')
 
         # These attributes hold the file pointers

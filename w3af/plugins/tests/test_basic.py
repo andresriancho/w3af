@@ -23,8 +23,8 @@ import os
 
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
@@ -143,11 +143,14 @@ class TestBasic(unittest.TestCase):
             self.w3afcore.plugins.get_plugin_type_desc(plugin_type)
 
     def test_no_kb_access_from_plugin(self):
-        for audit_plugin in os.listdir(os.path.join('plugins', 'audit')):
+        audit_path = os.path.join(ROOT_PATH, 'plugins', 'audit')
+        
+        for audit_plugin in os.listdir(audit_path):
             if not audit_plugin.endswith('.py'):
                 continue
             
-            joined_entry = os.path.join('plugins', 'audit', audit_plugin)
+            joined_entry = os.path.join(ROOT_PATH, 'plugins', 'audit',
+                                        audit_plugin)
             
             if os.path.isdir(joined_entry):
                 continue

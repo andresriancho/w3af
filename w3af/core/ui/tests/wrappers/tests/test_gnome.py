@@ -24,6 +24,7 @@ import time
 
 from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
 from w3af.core.ui.tests.wrappers.gnome import Gnome
 from w3af.core.ui.tests.wrappers.dogtail_unittest import DogtailUnittest
 from w3af.core.ui.tests.wrappers.tests.utils import is_black_image
@@ -31,7 +32,7 @@ from w3af.core.ui.tests.wrappers.tests.utils import is_black_image
 
 class TestGnome(DogtailUnittest):
 
-    X_TEST_COMMAND = 'python %s' % os.path.join('core', 'ui', 'tests',
+    X_TEST_COMMAND = 'python %s' % os.path.join(ROOT_PATH, 'core', 'ui', 'tests',
                                                 'wrappers', 'tests', 'helloworld.py')
 
     def __init__(self, methodName='runTest'):

@@ -23,6 +23,7 @@ import gtk
 import os
 import cgi
 
+from w3af import ROOT_PATH
 from w3af.core.ui.gui import entries, confpanel, helpers
 from w3af.core.controllers.exceptions import w3afException
 
@@ -331,10 +332,12 @@ class WizardChooser(entries.RememberingWindow):
     def _getWizards(self):
         '''Returns the existing wizards.'''
         wizs = []
-        for arch in os.listdir("core/controllers/wizard/wizards"):
+        wizard_path = os.path.join(ROOT_PATH, 'core/controllers/wizard/wizards')
+        
+        for arch in os.listdir(wizard_path):
             if arch.endswith(".py") and not arch.startswith("__"):
                 base = arch[:-3]
-                modbase = __import__("core.controllers.wizard.wizards." +
+                modbase = __import__("w3af.core.controllers.wizard.wizards." +
                                      base, fromlist=[None])
                 cls = getattr(modbase, base)
                 wizard_instance = cls(self.w3af)

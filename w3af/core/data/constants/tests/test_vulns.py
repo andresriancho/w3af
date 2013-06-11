@@ -23,12 +23,13 @@ import os
 import re
 import unittest
 
+from w3af import ROOT_PATH
 from w3af.core.data.constants.vulns import VULNS
 
        
 class TestVulnsConstants(unittest.TestCase):
     
-    LOCATION = os.path.join('core', 'data', 'constants', 'vulns.py')
+    LOCATION = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'vulns.py')
     
     def test_no_duplicated_ids(self):
         # Just skip the entire license header

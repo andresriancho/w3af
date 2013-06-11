@@ -25,6 +25,7 @@ from itertools import izip, repeat
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
                                                      password_bruteforcer)
@@ -45,11 +46,11 @@ class BruteforcePlugin(AuditPlugin):
 
         # Config params
         self._users_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'users.txt')
+            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'users.txt')
         self._passwd_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'passwords.txt')
+            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'passwords.txt')
         self._combo_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'combo.txt')
+            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'combo.txt')
         self._combo_separator = ":"
         self._use_emails = True
         self._use_SVN_users = True

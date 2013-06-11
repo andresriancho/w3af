@@ -25,6 +25,7 @@ import shutil
 from github import Github
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 
@@ -46,9 +47,10 @@ class TestConsoleBugReport(ConsoleTestHelper):
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join('plugins', 'tests', 'crawl',
+        self.src = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                                 'failing_spider.py')
-        self.dst = os.path.join('plugins', 'crawl', 'failing_spider.py')
+        self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                'failing_spider.py')
         shutil.copy(self.src, self.dst)
 
         super(TestConsoleBugReport, self).setUp()

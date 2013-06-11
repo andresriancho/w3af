@@ -64,7 +64,7 @@ class TestClamAV(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     @need_clamav
     def test_clamav_eicar(self, *args):
         body = clamd.EICAR
@@ -90,7 +90,7 @@ class TestClamAV(unittest.TestCase):
         self.assertEqual(finding.get_url().url_string, url.url_string)
         
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     @need_clamav
     def test_clamav_empty(self, *args):
         body = ''
@@ -110,7 +110,7 @@ class TestClamAV(unittest.TestCase):
         
         self.assertEqual(len(findings), 0, findings)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_clamav_workers(self, *args):
         
         WAIT_TIME = 3
@@ -147,7 +147,7 @@ class TestClamAV(unittest.TestCase):
         self.assertEqual(len(findings), 0, findings)
         self.assertLessEqual(time_spent, WAIT_TIME + DELTA)
 
-    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_clamav_eicar(self, *args):
         body = clamd.EICAR
         url = URL('http://www.w3af.com/')

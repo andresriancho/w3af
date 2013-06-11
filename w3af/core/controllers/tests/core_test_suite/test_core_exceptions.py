@@ -25,6 +25,7 @@ import shutil
 from mock import patch, call
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import (w3afMustStopException,
@@ -47,8 +48,10 @@ class TestCoreExceptions(unittest.TestCase):
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join('core', 'controllers', 'tests', 'exception_raise.py')
-        self.dst = os.path.join('plugins', 'crawl', 'exception_raise.py')
+        self.src = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests',
+                                'exception_raise.py')
+        self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',
+                                'exception_raise.py')
         shutil.copy(self.src, self.dst)
 
         self.w3afcore = w3afCore()
@@ -79,7 +82,7 @@ class TestCoreExceptions(unittest.TestCase):
         '''
         self.exception_plugin.exception_to_raise = w3afMustStopException
         
-        with patch('core.controllers.w3afCore.om.out') as om_mock:
+        with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
             
             error = "\n**IMPORTANT** The following error was detected by w3af"\
@@ -99,7 +102,7 @@ class TestCoreExceptions(unittest.TestCase):
         '''
         self.exception_plugin.exception_to_raise = w3afMustStopByUserRequest
         
-        with patch('core.controllers.w3afCore.om.out') as om_mock:
+        with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
             
             message = 'Test exception.'

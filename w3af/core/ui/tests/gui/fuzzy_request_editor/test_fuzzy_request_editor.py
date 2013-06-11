@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
-
 from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
@@ -44,8 +44,8 @@ Content-Type: application/x-www-form-urlencoded
 
 class TestFuzzyRequestEditor(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'fuzzy_request_editor', 'images')
-    EXTRA_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'tools_menu', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'fuzzy_request_editor', 'images')
+    EXTRA_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'tools_menu', 'images')
     
     def setUp(self):
         XpresserUnittest.setUp(self)

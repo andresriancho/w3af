@@ -24,6 +24,7 @@ import tempfile
 
 from itertools import repeat, izip
 
+from w3af import ROOT_PATH
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
@@ -45,7 +46,8 @@ class file_upload(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    TEMPLATE_DIR = os.path.join('core', 'data', 'constants', 'file_templates')
+    TEMPLATE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'constants',
+                                'file_templates')
 
     def __init__(self):
         AuditPlugin.__init__(self)

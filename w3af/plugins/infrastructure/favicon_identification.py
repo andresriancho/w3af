@@ -30,6 +30,7 @@ import os.path
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
@@ -50,8 +51,8 @@ class favicon_identification(InfrastructurePlugin):
         self._version = None
 
         # User configured parameters
-        self._db_file = os.path.join('plugins', 'infrastructure', 'favicon',
-                                     'favicon-md5')
+        self._db_file = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
+                                     'favicon', 'favicon-md5')
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):

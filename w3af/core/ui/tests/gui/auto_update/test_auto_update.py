@@ -22,13 +22,14 @@ import os
 import subprocess
 import datetime
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 from w3af.core.data.db.startup_cfg import StartUpConfig
 
 
 class TestAutoUpdate(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'auto_update', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'auto_update', 'images')
     
     def start_gui(self):
         '''

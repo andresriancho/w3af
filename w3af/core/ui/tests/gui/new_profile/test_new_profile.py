@@ -20,13 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestNewProfile(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'new_profile', 'images')
-    EXTRA_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'scan_offline_url', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'new_profile', 'images')
+    EXTRA_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'scan_offline_url', 'images')
     TARGET_EVAL = 'http://moth/w3af/audit/eval/eval.php?c='
     
     def setUp(self):

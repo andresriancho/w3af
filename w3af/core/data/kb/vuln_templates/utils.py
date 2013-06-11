@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import types
 
+from w3af import ROOT_PATH
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 
 
@@ -30,7 +31,7 @@ def get_all_templates():
     :return: A list with instances of all available templates
     '''
     templates = []
-    location = ['core', 'data', 'kb', 'vuln_templates']
+    location = [ROOT_PATH, 'core', 'data', 'kb', 'vuln_templates']
     template_path = os.path.join(*location)
     
     for fname in os.listdir(template_path):

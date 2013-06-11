@@ -34,7 +34,7 @@ def provides_cors_features(freq, url_opener):
     Method to detect if url provides CORS features.
 
     :param freq: A fuzzableRequest object.
-    :param url_opener: "core.data.url.ExtendedUrllib" class instance to use for
+    :param url_opener: "w3af.core.data.url.ExtendedUrllib" class instance to use for
                        HTTP request/response processing.
     :return: True if the URL provides CORS features, False otherwise.
     '''

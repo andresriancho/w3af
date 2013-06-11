@@ -29,14 +29,13 @@ from datetime import date
 from pprint import pformat
 
 import w3af.core.controllers.output_manager as om
-
 import w3af.core.data.constants.severity as severity
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 
@@ -54,8 +53,8 @@ class ssl_certificate(AuditPlugin):
 
         self._already_tested = set()
         self._min_expire_days = 30
-        self._ca_file = os.path.join('plugins', 'audit', 'ssl_certificate',
-                                     'ca.pem')
+        self._ca_file = os.path.join(ROOT_PATH, 'plugins', 'audit',
+                                     'ssl_certificate', 'ca.pem')
 
     def audit(self, freq, orig_response):
         '''
@@ -230,7 +229,7 @@ class ssl_certificate(AuditPlugin):
             - minExpireDays
             - CA PEM file path
 
-        Note: It's only usefull when testing HTTPS sites.
+        Note: It's only useful when testing HTTPS sites.
         '''
 
 #

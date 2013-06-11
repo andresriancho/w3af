@@ -22,15 +22,16 @@ import os
 
 from nose.plugins.skip import SkipTest
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestTwoScans(XpresserUnittest):
     
-    IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'two_scans', 'images')
+    IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'two_scans', 'images')
     
-    SCAN_IMAGES_1 =  os.path.join('core', 'ui', 'tests', 'gui', 'exploit', 'images')
-    SCAN_IMAGES_2 =  os.path.join('core', 'ui', 'tests', 'gui', 'new_profile', 'images')
+    SCAN_IMAGES_1 =  os.path.join(GUI_TEST_ROOT_PATH, 'exploit', 'images')
+    SCAN_IMAGES_2 =  os.path.join(GUI_TEST_ROOT_PATH, 'new_profile', 'images')
     
     TARGET_1 = 'http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php?id=1'
     TARGET_2 = 'http://moth/w3af/audit/xss/simple_xss.php?text=1'

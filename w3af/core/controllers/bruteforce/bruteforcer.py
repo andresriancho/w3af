@@ -38,8 +38,8 @@ class password_bruteforcer(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, url):
-        self.passwd_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'passwords.txt')
+        self.passwd_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                        'passwords.txt')
         self.l337_p4sswd = True
         self.use_profiling = True
         self.profiling_number = 50
@@ -82,8 +82,8 @@ class user_password_bruteforcer(object):
 
     def __init__(self, url):
         # Config params for user generation
-        self.users_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'users.txt')
+        self.users_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                       'users.txt')
         self.combo_file = ''
         self.combo_separator = ":"
         self.use_emails = True
@@ -91,8 +91,8 @@ class user_password_bruteforcer(object):
         self.pass_eq_user = True
 
         # Config params for password generation
-        self.passwd_file = os.path.join(
-            'core', 'controllers', 'bruteforce', 'passwords.txt')
+        self.passwd_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                        'passwords.txt')
         self.l337_p4sswd = True
         self.use_profiling = True
         self.profiling_number = 50

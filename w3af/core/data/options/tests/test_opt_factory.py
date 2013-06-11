@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.parsers.url import URL as URL_KLASS
 from w3af.core.data.options.opt_factory import opt_factory
@@ -33,8 +34,8 @@ from w3af.core.data.options.option_types import (
 class TestOptionFactory(unittest.TestCase):
 
     def test_factory_ok(self):
-        input_file = os.path.join(
-            'core', 'data', 'options', 'tests', 'test.txt')
+        input_file = os.path.join(ROOT_PATH, 'core', 'data', 'options',
+                                  'tests', 'test.txt')
         output_file = input_file
 
         data = {BOOL: ('true', True),
@@ -76,8 +77,8 @@ class TestOptionFactory(unittest.TestCase):
                           'unknown_type')
 
     def test_invalid_data(self):
-        input_file = os.path.join(
-            'core', 'data', 'foobar', 'does-not-exist.txt')
+        input_file = os.path.join(ROOT_PATH, 'core', 'data', 'foobar',
+                                  'does-not-exist.txt')
         output_file = input_file
 
         data = {BOOL: ['rucula'],

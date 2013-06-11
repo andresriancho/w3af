@@ -1,39 +1,21 @@
 #!/usr/bin/env python
+
+from __future__ import print_function
+
 import getopt
 import sys
 import os
-import gettext
 import base64
-
-# First of all, we need to change the working directory to the
-# directory of w3af
-current_dir = os.getcwd()
-script_dir = os.path.dirname(os.path.realpath(__file__)) or '.'
-os.chdir( script_dir )
-
-def back_to_current_dir():
-    os.chdir( current_dir )
-
-# Translation stuff
-gettext.install('w3af', 'locales/')
 
 # Perform the GTK UI dependency check, this will verify that the current system
 # has all the modules required to run w3af (including the core dependencies)
 from w3af.core.ui.gui.dependency_check.dependency_check import dependency_check
-
 dependency_check()
 
-# Make sure that the output manager is started before doing anything else, since
-# it is used by most w3af modules 
 import w3af.core.controllers.output_manager as om
-try:
-    om.out.set_output_plugins( ['console'] )
-except Exception, e:
-    print 'Something went wrong, w3af failed to start the output manager.'
-    print 'Exception: "%s"' % e
-    sys.exit(-9)
 
-usage_doc = '''
+      
+USAGE_DOC = '''
 w3af - Web Application Attack and Audit Framework
 
 Usage:
@@ -59,8 +41,20 @@ Options:
 For more info visit http://w3af.org/
 '''    
 
+def _configure_output_manager():
+    '''
+    Make sure that the output manager is started before doing anything else,
+    since it is used by most w3af modules
+    ''' 
+    try:
+        om.out.set_output_plugins( ['console'] )
+    except Exception, e:
+        print('Something went wrong, w3af failed to start the output manager.')
+        print('Exception: "%s"' % e)
+        sys.exit(-9)
+        
 def usage():
-    om.out.information(usage_doc)
+    print(USAGE_DOC)
 
 def main():
     try:
@@ -70,18 +64,20 @@ def main():
         # print help information and exit:
         usage()
         return -3
+    
     profile = None
     doupdate = None
+    
     for o, a in opts:
         if o in ( "-e"  ):
             # easter egg
             msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'\
                   'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
-            om.out.information( base64.b64decode( msg ) )
+            print( base64.b64decode( msg ) )
         if o in ('-p', '--profile'):
             # selected profile
             profile = a
-        if o == "-h":
+        if o in ('-h', '--help'):
             usage()
             return 0
         if o in ('-f', '--force-update'):
@@ -102,6 +98,6 @@ def main():
     gui_main(profile, doupdate)
 
 if __name__ == "__main__":
+    _configure_output_manager()
     err_code = main()
-    back_to_current_dir()
     sys.exit(err_code)

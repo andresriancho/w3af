@@ -1,41 +1,24 @@
 #!/usr/bin/env python
+
+from __future__ import print_function
+
 import getopt
 import sys
 import os
-import gettext
 import base64
  
-# First of all, we need to change the working directory to the w3af directory.
-current_dir = os.getcwd()
-script_dir = os.path.dirname(os.path.realpath(__file__)) or '.'
-os.chdir(script_dir)
-
-def back_to_current_dir():
-    os.chdir( current_dir )
-
-# Translation stuff
-gettext.install('w3af', 'locales/')
 
 # Check if I have all needed dependencies
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 dependency_check()
 
-# Make sure that the output manager is started before doing anything else, since
-# it is used by most w3af modules 
 from w3af.core.ui.console.console_ui import ConsoleUI
-import w3af.core.controllers.output_manager as om
-try:
-    om.out.set_output_plugins( ['console'] )
-except Exception, e:
-    print 'Something went wrong, w3af failed to start the output manager.'
-    print 'Exception: "%s"' % e
-    sys.exit(-9)
-
 from w3af.core.controllers.profiling.cpu_usage import dump_cpu_usage
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
+import w3af.core.controllers.output_manager as om
 
 
-usage_doc = '''
+USAGE_DOC = '''
 w3af - Web Application Attack and Audit Framework
 
 Usage:
@@ -69,18 +52,63 @@ Options:
 For more info visit http://w3af.org/
 '''
 
-def usage():
-    om.out.information(usage_doc)
+def _configure_output_manager():
+    '''
+    Make sure that the output manager is started before doing anything else,
+    since it is used by most w3af modules
+    ''' 
+    try:
+        om.out.set_output_plugins( ['console'] )
+    except Exception, e:
+        print('Something went wrong, w3af failed to start the output manager.')
+        print('Exception: "%s"' % e)
+        sys.exit(-9)
+
+def _usage():
+    print(USAGE_DOC)
+
+def _generate_run_commands(script_file, profile, force_profile):
+    '''
+    Given the user configuration, generate the commands to run in the console
+    user interface at startup.
+    
+    :param script_file: The script (-s) file name
+    :param profile: The profile (-p) name
+    :param force_profile: Should we run the profile? (-P)
+    '''
+    if script_file is not None:
+        try:
+            fd = open(script_file)
+        except:
+            print('Failed to open script file: "%s"' % script_file)
+            return 2
+        else:
+            commands_to_run = []
+            for line in fd:   
+                line = line.strip()
+                if line != '' and line[0] != '#': # if not a comment..
+                    commands_to_run.append( line )
+            fd.close() 
+    elif profile is not None:
+        
+        current_dir = os.getcwd()
+        commands_to_run = ["profiles use %s %s" % (profile, current_dir)]
+        
+        if force_profile is not None:
+            commands_to_run.append("start")
+            commands_to_run.append("exit")
+
 
 def main():
     try:
         long_options = ['script=', 'help', 'version', 'no-update',
                         'force-update', 'profile=', 'commit=', 'profile-run']
         opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:", long_options)
-    except getopt.GetoptError, e:
-        # print help information and exit:
-        usage()
+    except getopt.GetoptError:
+        # Print help information and exit
+        _usage()
         return -3
+    
     script_file = None
     force_profile = None
     profile = None
@@ -91,7 +119,7 @@ def main():
             # easter egg
             msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZG'\
                   'VzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
-            om.out.information( base64.b64decode( msg ) )
+            print(base64.b64decode(msg))
         if o in ('-s', '--script'):
             script_file = a
         if o in ('-P', '--profile-run'):
@@ -102,36 +130,17 @@ def main():
             # selected profile
             profile = a
         if o in ('-h', '--help'):
-            usage()
+            _usage()
             return 0
         if o in ('-v', '--version'):
-            print get_w3af_version()
+            print(get_w3af_version())
             return 0
         if o in ('-f', '--force-update'):
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
     
-    commands_to_run = []
-    if script_file is not None:
-        try:
-            fd = open( os.path.join(current_dir, script_file)  )
-        except:
-            om.out.error('Failed to open file : ' + script_file )
-            sys.exit(2)
-        else:
-            commands_to_run = []
-            for line in fd:   
-                line = line.strip()
-                if line != '' and line[0] != '#': # if not a comment..
-                    commands_to_run.append( line )
-            fd.close() 
-    elif profile is not None:
-        commands_to_run = ["profiles use %s %s" % (profile, current_dir)]
-        if force_profile is not None:
-            commands_to_run.append("start")
-            commands_to_run.append("exit")
-
+    commands_to_run = _generate_run_commands(script_file, profile, force_profile)
     console = ConsoleUI(commands=commands_to_run, do_upd=doupdate)
     
     if not console.accept_disclaimer():
@@ -141,9 +150,9 @@ def main():
 
 
 if __name__ == "__main__":
+    _configure_output_manager()
     exit_code = main()
     
-    back_to_current_dir()
     dump_cpu_usage()
     
     sys.exit(exit_code)

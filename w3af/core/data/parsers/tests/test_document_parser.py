@@ -25,6 +25,7 @@ import os
 
 from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.parsers.document_parser import document_parser_factory, DocumentParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -45,11 +46,11 @@ def _build_http_response(body_content, content_type):
 
 class TestDocumentParserFactory(unittest.TestCase):
 
-    PDF_FILE = os.path.join('core', 'data', 'parsers', 'tests', 'data',
-                            'links.pdf')
+    PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
+                            'data', 'links.pdf')
     
-    HTML_FILE = os.path.join('core', 'data', 'parsers', 'tests', 'data',
-                            'sharepoint-pl.html')
+    HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
+                             'data', 'sharepoint-pl.html')
 
     def test_html(self):
         parser = document_parser_factory(_build_http_response('', u'text/html'))

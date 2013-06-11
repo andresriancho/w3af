@@ -22,7 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import random
 import os
 
-UA_LIST = os.path.join('core', 'data', 'user_agent', 'user-agent-list.txt')
+from w3af import ROOT_PATH
+
+UA_LIST = os.path.join(ROOT_PATH, 'core', 'data', 'user_agent',
+                       'user-agent-list.txt')
 
 
 def get_random_user_agent():

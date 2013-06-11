@@ -24,10 +24,11 @@ import unittest
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
 from w3af.plugins.attack.payloads.payload_handler import get_payload_list
 
-TEST_PATH = os.path.join('plugins', 'attack', 'payloads', 'tests')
-PAYLOAD_PATH = os.path.join('plugins', 'attack', 'payloads', 'payloads')
+PAYLOAD_PATH = os.path.join(ROOT_PATH, 'plugins', 'attack', 'payloads', 'payloads')
+TEST_PATH = os.path.join(PAYLOAD_PATH, 'tests')
 
 UNABLE_TO_TEST = ('metasploit', 'msf_linux_x86_meterpreter_reverse',
                   'msf_windows_meterpreter_reverse_tcp',
@@ -38,7 +39,7 @@ UNABLE_TO_TEST = ('metasploit', 'msf_linux_x86_meterpreter_reverse',
 class TestUnittestCoverage(unittest.TestCase):
 
     def test_payloads(self):
-        self._analyze_unittests('grep')
+        self._analyze_unittests()
 
     def test_nothing_in_unable_to_test(self):
         if len(UNABLE_TO_TEST) > 0:
@@ -46,7 +47,7 @@ class TestUnittestCoverage(unittest.TestCase):
             #       which makes the payloads in UNABLE_TO_TEST very very very difficult to test
             raise SkipTest()
 
-    def _analyze_unittests(self, plugin_type):
+    def _analyze_unittests(self):
         payloads = get_payload_list()
 
         missing = []

@@ -28,9 +28,10 @@ from gi.repository import Notify
 
 from xpresser import Xpresser, ImageNotFound
 
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.gnome import Gnome
 from w3af.core.ui.tests.wrappers.utils import (set_display_to_self,
-                                          restore_original_display)
+                                               restore_original_display)
 
 def debug_notify(meth):
     
@@ -65,7 +66,7 @@ class ImageFound(ImageNotFound):
 
 class XpresserUnittest(unittest.TestCase):
     
-    GENERIC_IMAGES = os.path.join('core', 'ui', 'tests', 'gui', 'main_window', 'images')
+    GENERIC_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'main_window', 'images')
     EXTRA_IMAGES = None
     IMAGES = None
     

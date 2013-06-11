@@ -136,7 +136,7 @@ class test_http_vs_https_dist(unittest.TestCase):
 
         plugininst._has_permission = MagicMock(return_value=False)
 
-        with patch('plugins.infrastructure.http_vs_https_dist.om.out') as om_mock:
+        with patch('w3af.plugins.infrastructure.http_vs_https_dist.om.out') as om_mock:
             plugininst.discover(None)
             ecall = call.error(hvshsdist.PERM_ERROR_MSG)
             self.assertIn(ecall, om_mock.mock_calls)

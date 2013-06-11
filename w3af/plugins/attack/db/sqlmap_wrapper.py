@@ -23,6 +23,7 @@ import re
 import shlex
 import subprocess
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.constants.ports import SQLMAP_PROXY
 from w3af.core.controllers.daemons.proxy import Proxy
@@ -32,7 +33,7 @@ from w3af.core.controllers.exceptions import w3afProxyException
 class SQLMapWrapper(object):
     
     
-    SQLMAP_LOCATION = os.path.join('plugins', 'attack', 'db', 'sqlmap') 
+    SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
 

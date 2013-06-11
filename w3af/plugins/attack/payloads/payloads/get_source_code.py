@@ -1,5 +1,8 @@
 import os
+
 import w3af.core.data.kb.knowledge_base as kb
+
+from w3af import ROOT_PATH
 from w3af.plugins.attack.payloads.base_payload import Payload
 from w3af.core.ui.console.tables import table
 
@@ -15,8 +18,8 @@ class get_source_code(Payload):
             try:
                 os.makedirs(output_directory)
             except:
-                msg = 'The output directory "%s" does not exist and was unable'
-                msg += ' to create it.'
+                msg = 'The output directory "%s" does not exist and was'\
+                      ' unable to create it.'
                 raise ValueError(msg % output_directory)
 
         elif not os.access(output_directory, os.W_OK):

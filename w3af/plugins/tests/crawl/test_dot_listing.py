@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from w3af import ROOT_PATH
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.dot_listing import dot_listing
 
@@ -53,8 +55,8 @@ class TestDotListing(PluginTest):
         self.assertTrue(self.base_url + 'hidden.txt' in urls)
 
     def test_listing_extraction(self):
-        listing_files_path = os.path.join(
-            'plugins', 'tests', 'crawl', 'dot_listing')
+        listing_files_path = os.path.join(ROOT_PATH, 'plugins', 'tests',
+                                          'crawl', 'dot_listing')
         file_name_fmt = 'listing_test_%s.txt'
 
         dot_listing_inst = dot_listing()

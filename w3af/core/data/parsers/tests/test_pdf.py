@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.pdf import pdf_to_text, PDFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -31,9 +32,9 @@ from w3af.core.data.parsers.url import URL
 
 class TestPDF(unittest.TestCase):
     
-    SIMPLE_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+    SIMPLE_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                                  'data', 'simple.pdf')
-    LINKS_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+    LINKS_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                                 'data', 'links.pdf')
     
     def test_pdf_to_text(self):

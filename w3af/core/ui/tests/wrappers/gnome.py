@@ -22,6 +22,7 @@ import os
 import tempfile
 import commands
 
+from w3af import ROOT_PATH
 from w3af.core.ui.tests.wrappers.xvfb_server import XVFBServer
 from w3af.core.ui.tests.wrappers.constants import DISPLAY
 
@@ -39,7 +40,8 @@ class Gnome(XVFBServer):
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
-    XINITRC = os.path.join('core', 'ui', 'tests', 'wrappers', 'gnome.xinitrc')
+    XINITRC = os.path.join(ROOT_PATH, 'core', 'ui', 'tests', 'wrappers',
+                           'gnome.xinitrc')
 
     START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
     START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,

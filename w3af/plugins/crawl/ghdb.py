@@ -27,6 +27,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af import ROOT_PATH
+
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.decorators import runonce
@@ -49,7 +51,7 @@ class ghdb(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # Internal variables
-        self._ghdb_file = os.path.join('plugins', 'crawl',
+        self._ghdb_file = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                        'ghdb', 'GHDB.xml')
 
         # User configured variables

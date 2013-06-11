@@ -30,9 +30,9 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
-
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
 from w3af.core.controllers.misc.decorators import runonce
@@ -46,7 +46,8 @@ class phishtank(CrawlPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Special thanks to http://www.phishtank.com/ !
     '''
-    PHISHTANK_DB = os.path.join('plugins', 'crawl', 'phishtank', 'index.xml')
+    PHISHTANK_DB = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'phishtank',
+                                'index.xml')
 
     def __init__(self):
         CrawlPlugin.__init__(self)

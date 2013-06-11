@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -31,9 +32,9 @@ from w3af.core.data.parsers.url import URL
 
 class TestSWFParser(unittest.TestCase):
     
-    WIVET_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+    WIVET_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                                 'data', 'wivet1.swf')
-    DEMO_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+    DEMO_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                                'data', 'subscribe.swf')
     
     def parse(self, filename):
