@@ -30,7 +30,7 @@ class TestRequestHelp(XpresserUnittest):
     
     def test_main_menu_help(self):
         # Make sure the focus is on the w3af_gui before we hit F1
-        self.sleep(1.5)
+        self.click('insert_target_url_here')
         
         self.type(['<F1>'], False)
         self.find('configuring_the_scan_fragment')
