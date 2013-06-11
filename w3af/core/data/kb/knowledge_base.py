@@ -314,11 +314,11 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                            but could also be the plugin instance.
 
         :param location_b: The name of the variables under which the vuln
-                                 objects were saved. Typically the same name of
-                                 the plugin, or something like "vulns", "errors",
-                                 etc. In most cases this is NOT None. When set
-                                 to None, a dict with all the vuln objects found
-                                 by the plugin_name is returned.
+                           objects were saved. Typically the same name of
+                           the plugin, or something like "vulns", "errors",
+                           etc. In most cases this is NOT None. When set
+                           to None, a dict with all the vuln objects found
+                           by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
         '''
