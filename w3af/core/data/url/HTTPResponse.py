@@ -216,7 +216,7 @@ class HTTPResponse(object):
             'code': self.get_code(),
             'url': str(self.get_url()),
             'id': self.id and ' | id:%s' % self.id or '',
-            'fcache': self._from_cache and ' | fromCache:True' or ''
+            'fcache': self._from_cache and ' | fcache:True' or ''
         }
         return '<HTTPResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
 
