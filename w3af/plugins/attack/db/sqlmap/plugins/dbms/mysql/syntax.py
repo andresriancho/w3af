@@ -8,7 +8,7 @@ See the file 'doc/COPYING' for copying permission
 import binascii
 
 from lib.core.convert import utf8encode
-from w3af.plugins.generic.syntax import Syntax as GenericSyntax
+from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
     def __init__(self):

@@ -12,7 +12,7 @@ from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
-from w3af.plugins.generic.filesystem import Filesystem as GenericFilesystem
+from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
 class Filesystem(GenericFilesystem):
     def __init__(self):

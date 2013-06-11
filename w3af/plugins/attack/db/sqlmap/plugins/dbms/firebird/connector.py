@@ -16,7 +16,7 @@ from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.exception import SqlmapConnectionException
 from lib.core.settings import UNICODE_ENCODING
-from w3af.plugins.generic.connector import Connector as GenericConnector
+from plugins.generic.connector import Connector as GenericConnector
 
 class Connector(GenericConnector):
     """

@@ -8,12 +8,12 @@ See the file 'doc/COPYING' for copying permission
 from lib.core.enums import DBMS
 from lib.core.settings import MAXDB_SYSTEM_DBS
 from lib.core.unescaper import unescaper
-from w3af.plugins.dbms.maxdb.enumeration import Enumeration
-from w3af.plugins.dbms.maxdb.filesystem import Filesystem
-from w3af.plugins.dbms.maxdb.fingerprint import Fingerprint
-from w3af.plugins.dbms.maxdb.syntax import Syntax
-from w3af.plugins.dbms.maxdb.takeover import Takeover
-from w3af.plugins.generic.misc import Miscellaneous
+from plugins.dbms.maxdb.enumeration import Enumeration
+from plugins.dbms.maxdb.filesystem import Filesystem
+from plugins.dbms.maxdb.fingerprint import Fingerprint
+from plugins.dbms.maxdb.syntax import Syntax
+from plugins.dbms.maxdb.takeover import Takeover
+from plugins.generic.misc import Miscellaneous
 
 class MaxDBMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
     """

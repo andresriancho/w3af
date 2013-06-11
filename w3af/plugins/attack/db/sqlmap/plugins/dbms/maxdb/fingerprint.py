@@ -16,7 +16,7 @@ from lib.core.session import setDbms
 from lib.core.settings import MAXDB_ALIASES
 from lib.request import inject
 from lib.request.connect import Connect as Request
-from w3af.plugins.generic.fingerprint import Fingerprint as GenericFingerprint
+from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
 class Fingerprint(GenericFingerprint):
     def __init__(self):

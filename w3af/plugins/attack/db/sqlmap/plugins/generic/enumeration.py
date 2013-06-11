@@ -15,11 +15,11 @@ from lib.core.enums import DBMS
 from lib.core.session import setOs
 from lib.parse.banner import bannerParser
 from lib.request import inject
-from w3af.plugins.generic.custom import Custom
-from w3af.plugins.generic.databases import Databases
-from w3af.plugins.generic.entries import Entries
-from w3af.plugins.generic.search import Search
-from w3af.plugins.generic.users import Users
+from plugins.generic.custom import Custom
+from plugins.generic.databases import Databases
+from plugins.generic.entries import Entries
+from plugins.generic.search import Search
+from plugins.generic.users import Users
 
 class Enumeration(Custom, Databases, Entries, Search, Users):
     """

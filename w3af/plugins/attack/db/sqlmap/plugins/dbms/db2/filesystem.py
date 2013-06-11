@@ -5,7 +5,7 @@ Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from w3af.plugins.generic.filesystem import Filesystem as GenericFilesystem
+from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
 class Filesystem(GenericFilesystem):
     def __init__(self):

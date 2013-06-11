@@ -6,7 +6,7 @@ See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.exception import SqlmapUnsupportedFeatureException
-from w3af.plugins.generic.filesystem import Filesystem as GenericFilesystem
+from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
 class Filesystem(GenericFilesystem):
     def __init__(self):

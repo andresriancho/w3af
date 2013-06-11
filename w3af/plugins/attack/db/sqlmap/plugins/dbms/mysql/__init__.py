@@ -8,12 +8,12 @@ See the file 'doc/COPYING' for copying permission
 from lib.core.enums import DBMS
 from lib.core.settings import MYSQL_SYSTEM_DBS
 from lib.core.unescaper import unescaper
-from w3af.plugins.dbms.mysql.enumeration import Enumeration
-from w3af.plugins.dbms.mysql.filesystem import Filesystem
-from w3af.plugins.dbms.mysql.fingerprint import Fingerprint
-from w3af.plugins.dbms.mysql.syntax import Syntax
-from w3af.plugins.dbms.mysql.takeover import Takeover
-from w3af.plugins.generic.misc import Miscellaneous
+from plugins.dbms.mysql.enumeration import Enumeration
+from plugins.dbms.mysql.filesystem import Filesystem
+from plugins.dbms.mysql.fingerprint import Fingerprint
+from plugins.dbms.mysql.syntax import Syntax
+from plugins.dbms.mysql.takeover import Takeover
+from plugins.generic.misc import Miscellaneous
 
 class MySQLMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
     """

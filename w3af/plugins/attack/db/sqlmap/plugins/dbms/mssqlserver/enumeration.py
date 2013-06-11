@@ -26,7 +26,7 @@ from lib.core.exception import SqlmapNoneDataException
 from lib.core.settings import CURRENT_DB
 from lib.request import inject
 
-from w3af.plugins.generic.enumeration import Enumeration as GenericEnumeration
+from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
 class Enumeration(GenericEnumeration):
     def __init__(self):

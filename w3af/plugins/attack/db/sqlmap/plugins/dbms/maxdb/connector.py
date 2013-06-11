@@ -6,7 +6,7 @@ See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.exception import SqlmapUnsupportedFeatureException
-from w3af.plugins.generic.connector import Connector as GenericConnector
+from plugins.generic.connector import Connector as GenericConnector
 
 class Connector(GenericConnector):
     def __init__(self):

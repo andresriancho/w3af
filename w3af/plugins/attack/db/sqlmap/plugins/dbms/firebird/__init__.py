@@ -8,12 +8,12 @@ See the file 'doc/COPYING' for copying permission
 from lib.core.enums import DBMS
 from lib.core.settings import FIREBIRD_SYSTEM_DBS
 from lib.core.unescaper import unescaper
-from w3af.plugins.dbms.firebird.enumeration import Enumeration
-from w3af.plugins.dbms.firebird.filesystem import Filesystem
-from w3af.plugins.dbms.firebird.fingerprint import Fingerprint
-from w3af.plugins.dbms.firebird.syntax import Syntax
-from w3af.plugins.dbms.firebird.takeover import Takeover
-from w3af.plugins.generic.misc import Miscellaneous
+from plugins.dbms.firebird.enumeration import Enumeration
+from plugins.dbms.firebird.filesystem import Filesystem
+from plugins.dbms.firebird.fingerprint import Fingerprint
+from plugins.dbms.firebird.syntax import Syntax
+from plugins.dbms.firebird.takeover import Takeover
+from plugins.generic.misc import Miscellaneous
 
 class FirebirdMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
     """

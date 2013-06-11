@@ -24,7 +24,7 @@ from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
 
-from w3af.plugins.generic.filesystem import Filesystem as GenericFilesystem
+from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
 class Filesystem(GenericFilesystem):
     def __init__(self):

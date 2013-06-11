@@ -19,26 +19,26 @@ from lib.core.settings import MAXDB_ALIASES
 from lib.core.settings import SYBASE_ALIASES
 from lib.core.settings import DB2_ALIASES
 
-from w3af.plugins.dbms.mssqlserver import MSSQLServerMap
-from w3af.plugins.dbms.mssqlserver.connector import Connector as MSSQLServerConn
-from w3af.plugins.dbms.mysql import MySQLMap
-from w3af.plugins.dbms.mysql.connector import Connector as MySQLConn
-from w3af.plugins.dbms.oracle import OracleMap
-from w3af.plugins.dbms.oracle.connector import Connector as OracleConn
-from w3af.plugins.dbms.postgresql import PostgreSQLMap
-from w3af.plugins.dbms.postgresql.connector import Connector as PostgreSQLConn
-from w3af.plugins.dbms.sqlite import SQLiteMap
-from w3af.plugins.dbms.sqlite.connector import Connector as SQLiteConn
-from w3af.plugins.dbms.access import AccessMap
-from w3af.plugins.dbms.access.connector import Connector as AccessConn
-from w3af.plugins.dbms.firebird import FirebirdMap
-from w3af.plugins.dbms.firebird.connector import Connector as FirebirdConn
-from w3af.plugins.dbms.maxdb import MaxDBMap
-from w3af.plugins.dbms.maxdb.connector import Connector as MaxDBConn
-from w3af.plugins.dbms.sybase import SybaseMap
-from w3af.plugins.dbms.sybase.connector import Connector as SybaseConn
-from w3af.plugins.dbms.db2 import DB2Map
-from w3af.plugins.dbms.db2.connector import Connector as DB2Conn
+from plugins.dbms.mssqlserver import MSSQLServerMap
+from plugins.dbms.mssqlserver.connector import Connector as MSSQLServerConn
+from plugins.dbms.mysql import MySQLMap
+from plugins.dbms.mysql.connector import Connector as MySQLConn
+from plugins.dbms.oracle import OracleMap
+from plugins.dbms.oracle.connector import Connector as OracleConn
+from plugins.dbms.postgresql import PostgreSQLMap
+from plugins.dbms.postgresql.connector import Connector as PostgreSQLConn
+from plugins.dbms.sqlite import SQLiteMap
+from plugins.dbms.sqlite.connector import Connector as SQLiteConn
+from plugins.dbms.access import AccessMap
+from plugins.dbms.access.connector import Connector as AccessConn
+from plugins.dbms.firebird import FirebirdMap
+from plugins.dbms.firebird.connector import Connector as FirebirdConn
+from plugins.dbms.maxdb import MaxDBMap
+from plugins.dbms.maxdb.connector import Connector as MaxDBConn
+from plugins.dbms.sybase import SybaseMap
+from plugins.dbms.sybase.connector import Connector as SybaseConn
+from plugins.dbms.db2 import DB2Map
+from plugins.dbms.db2.connector import Connector as DB2Conn
 
 def setHandler():
     """

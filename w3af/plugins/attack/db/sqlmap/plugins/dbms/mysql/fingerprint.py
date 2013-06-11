@@ -19,7 +19,7 @@ from lib.core.session import setDbms
 from lib.core.settings import MYSQL_ALIASES
 from lib.core.settings import UNKNOWN_DBMS_VERSION
 from lib.request import inject
-from w3af.plugins.generic.fingerprint import Fingerprint as GenericFingerprint
+from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
 class Fingerprint(GenericFingerprint):
     def __init__(self):

@@ -19,7 +19,7 @@ from lib.core.enums import PLACE
 from lib.core.exception import SqlmapNoneDataException
 from lib.request import inject
 from lib.techniques.union.use import unionUse
-from w3af.plugins.generic.filesystem import Filesystem as GenericFilesystem
+from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
 class Filesystem(GenericFilesystem):
     def __init__(self):

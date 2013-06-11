@@ -27,7 +27,7 @@ from lib.takeover.icmpsh import ICMPsh
 from lib.takeover.metasploit import Metasploit
 from lib.takeover.registry import Registry
 
-from w3af.plugins.generic.misc import Miscellaneous
+from plugins.generic.misc import Miscellaneous
 
 class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
     """

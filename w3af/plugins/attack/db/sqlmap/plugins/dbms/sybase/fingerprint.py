@@ -15,7 +15,7 @@ from lib.core.enums import OS
 from lib.core.session import setDbms
 from lib.core.settings import SYBASE_ALIASES
 from lib.request import inject
-from w3af.plugins.generic.fingerprint import Fingerprint as GenericFingerprint
+from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
 class Fingerprint(GenericFingerprint):
     def __init__(self):

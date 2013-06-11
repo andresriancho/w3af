@@ -6,7 +6,7 @@ See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.exception import SqlmapUnsupportedFeatureException
-from w3af.plugins.generic.takeover import Takeover as GenericTakeover
+from plugins.generic.takeover import Takeover as GenericTakeover
 
 class Takeover(GenericTakeover):
     def __init__(self):

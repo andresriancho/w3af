@@ -13,7 +13,7 @@ from lib.core.data import paths
 from lib.core.enums import OS
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
-from w3af.plugins.generic.takeover import Takeover as GenericTakeover
+from plugins.generic.takeover import Takeover as GenericTakeover
 
 class Takeover(GenericTakeover):
     def __init__(self):

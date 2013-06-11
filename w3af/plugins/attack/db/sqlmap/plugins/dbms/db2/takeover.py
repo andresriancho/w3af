@@ -5,7 +5,7 @@ Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from w3af.plugins.generic.takeover import Takeover as GenericTakeover
+from plugins.generic.takeover import Takeover as GenericTakeover
 
 class Takeover(GenericTakeover):
     def __init__(self):

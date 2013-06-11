@@ -9,7 +9,7 @@ import binascii
 
 from lib.core.common import isDBMSVersionAtLeast
 from lib.core.settings import UNICODE_ENCODING
-from w3af.plugins.generic.syntax import Syntax as GenericSyntax
+from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
     def __init__(self):

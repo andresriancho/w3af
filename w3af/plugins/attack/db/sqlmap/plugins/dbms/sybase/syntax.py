@@ -5,7 +5,7 @@ Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from w3af.plugins.generic.syntax import Syntax as GenericSyntax
+from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
     def __init__(self):

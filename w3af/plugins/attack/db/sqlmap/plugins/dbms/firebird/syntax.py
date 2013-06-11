@@ -6,7 +6,7 @@ See the file 'doc/COPYING' for copying permission
 """
 
 from lib.core.common import isDBMSVersionAtLeast
-from w3af.plugins.generic.syntax import Syntax as GenericSyntax
+from plugins.generic.syntax import Syntax as GenericSyntax
 
 class Syntax(GenericSyntax):
     def __init__(self):

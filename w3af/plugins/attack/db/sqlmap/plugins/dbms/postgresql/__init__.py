@@ -8,12 +8,12 @@ See the file 'doc/COPYING' for copying permission
 from lib.core.enums import DBMS
 from lib.core.settings import PGSQL_SYSTEM_DBS
 from lib.core.unescaper import unescaper
-from w3af.plugins.dbms.postgresql.enumeration import Enumeration
-from w3af.plugins.dbms.postgresql.filesystem import Filesystem
-from w3af.plugins.dbms.postgresql.fingerprint import Fingerprint
-from w3af.plugins.dbms.postgresql.syntax import Syntax
-from w3af.plugins.dbms.postgresql.takeover import Takeover
-from w3af.plugins.generic.misc import Miscellaneous
+from plugins.dbms.postgresql.enumeration import Enumeration
+from plugins.dbms.postgresql.filesystem import Filesystem
+from plugins.dbms.postgresql.fingerprint import Fingerprint
+from plugins.dbms.postgresql.syntax import Syntax
+from plugins.dbms.postgresql.takeover import Takeover
+from plugins.generic.misc import Miscellaneous
 
 class PostgreSQLMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
     """

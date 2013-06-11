@@ -17,7 +17,7 @@ from lib.core.convert import utf8encode
 from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.exception import SqlmapConnectionException
-from w3af.plugins.generic.connector import Connector as GenericConnector
+from plugins.generic.connector import Connector as GenericConnector
 
 os.environ["NLS_LANG"] = ".AL32UTF8"
 
