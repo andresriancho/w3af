@@ -470,7 +470,7 @@ class ExtendedUrllib(object):
         amounts of seconds before retrying when a timeout occurs.
         '''
         self._increment_global_error_count(exception)
-        self._generic_send_error_handler(req, exception, grep, original_url)
+        return self._generic_send_error_handler(req, exception, grep, original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
         '''
@@ -479,7 +479,7 @@ class ExtendedUrllib(object):
         also possible when auth credentials are wrong for the URI
         '''
         self._increment_global_error_count(exception)
-        self._generic_send_error_handler(req, exception, grep, original_url)
+        return self._generic_send_error_handler(req, exception, grep, original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
         msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' %
