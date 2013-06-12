@@ -28,8 +28,8 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.search_engines.google import google as google
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import (w3afException, w3afRunOnce,
+                                              w3afMustStopException)
 from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.controllers.misc.decorators import runonce
 
@@ -56,8 +56,8 @@ class google_spider(CrawlPlugin):
 
         domain = fuzzable_request.get_url().get_domain()
         if is_private_site(domain):
-            msg = 'There is no point in searching google for "site:%s".'
-            msg += ' Google does\'nt index private pages.'
+            msg = 'There is no point in searching google for "site:%s".'\
+                  ' Google doesn\'t index private pages.'
             raise w3afException(msg % domain)
 
         try:
@@ -66,27 +66,8 @@ class google_spider(CrawlPlugin):
         except:
             pass
         else:
-            self.worker_pool.map(self._get_fuzzable_requests,
+            self.worker_pool.map(self.http_get_and_parse,
                                     [r.URL for r in g_results])
-
-    def _get_fuzzable_requests(self, url):
-        '''
-        Generate the fuzzable requests based on the URL, which is a result from
-        google search.
-
-        :param url: A URL from google.
-        '''
-        try:
-            response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = 'w3afException while fetching page in google_spider: "%s".'
-            om.out.debug(msg % w3)
-        except URLError, ue:
-            msg = 'URLError while fetching page in google_spider, error: "%s".'
-            om.out.debug(msg % ue)
-        else:
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
 
     def get_options(self):
         '''
