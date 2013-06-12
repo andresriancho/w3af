@@ -86,9 +86,6 @@ class TestEmailReport(PluginTest):
                 elif 'A persistent Cross Site Scripting vulnerability' in line:
                     pxss_count += 1
             
-            self.assertEqual(xss_count, 16)
-            self.assertEqual(pxss_count, 1)
-            
             self.assertEqual(len(xss_vulns), xss_count + pxss_count)
 
 # monkey-patch smtplib so we don't send actual emails
