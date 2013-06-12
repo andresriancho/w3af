@@ -22,7 +22,6 @@ import signal
 import subprocess
 import time
 import unittest
-import os
 
 from nose.plugins.attrib import attr
 
@@ -34,9 +33,8 @@ class TestHandleCtrlC(unittest.TestCase):
     
     def test_scan_ctrl_c(self):
         
-        script = 'core/ui/console/tests/data/spider_long.w3af'
-        script_path = os.path.join(ROOT_PATH, script)
-        cmd = ['python', 'w3af_console', '-s', script_path]
+        script = '%s/core/ui/console/tests/data/spider_long.w3af' % ROOT_PATH
+        cmd = ['python', 'w3af_console', '-s', script]
 
         process = subprocess.Popen(args=cmd,
                                    stdin=subprocess.PIPE,
@@ -64,7 +62,22 @@ class TestHandleCtrlC(unittest.TestCase):
         # Wait for the process to finish
         process.poll()
 
-        w3af_output = process.stdout.read()
+        # set signal handler
+        signal.signal(signal.SIGALRM, alarm_handler)
+        # produce SIGALRM in X seconds
+        signal.alarm(30)
+
+        # In some cases process.stdout.read() simply hang for ever, so I want
+        # to wait for 30 seconds (see signal.alarm) and then terminate the
+        # process
+        try:
+            w3af_output = process.stdout.read()
+            # cancel alarm
+            signal.alarm(0)
+        except Alarm:
+            process.terminate()
+            msg = 'w3af did not stop on Ctrl+C, read() timeout.'
+            self.assertTrue(False, msg)
         
         for estr in EXPECTED:
             self.assertIn(estr, w3af_output)
@@ -74,3 +87,9 @@ class TestHandleCtrlC(unittest.TestCase):
 
         for estr in NOT_EXPECTED:
             self.assertNotIn(estr, w3af_output)
+
+class Alarm(Exception):
+    pass
+
+def alarm_handler(signum, frame):
+    raise Alarm
