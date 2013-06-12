@@ -41,16 +41,15 @@ class BruteforcePlugin(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    BASE_CFG_PATH = os.path.join(ROOT_PATH, 'core', 'controllers', 'bruteforce')
+
     def __init__(self):
         AuditPlugin.__init__(self)
 
         # Config params
-        self._users_file = os.path.join(
-            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'users.txt')
-        self._passwd_file = os.path.join(
-            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'passwords.txt')
-        self._combo_file = os.path.join(
-            ROOT_PATH, 'core', 'controllers', 'bruteforce', 'combo.txt')
+        self._users_file = os.path.join(self.BASE_CFG_PATH, 'users.txt')
+        self._passwd_file = os.path.join(self.BASE_CFG_PATH, 'passwords.txt')
+        self._combo_file = os.path.join(self.BASE_CFG_PATH, 'combo.txt')
         self._combo_separator = ":"
         self._use_emails = True
         self._use_SVN_users = True
