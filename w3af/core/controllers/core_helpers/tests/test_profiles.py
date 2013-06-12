@@ -34,7 +34,7 @@ class TestCoreProfiles(unittest.TestCase):
     @attr('smoke')
     def test_use_profile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.use_profile('OWASP_TOP10', workdir=ROOT_PATH)
+        w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
 
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
 
@@ -46,7 +46,7 @@ class TestCoreProfiles(unittest.TestCase):
 
     def test_save_current_to_new_profile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.use_profile('OWASP_TOP10', workdir=ROOT_PATH)
+        w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
 
         audit = w3af_core.plugins.get_enabled_plugins('audit')
         disabled_plugin = audit[-1]
@@ -111,7 +111,7 @@ class TestCoreProfiles(unittest.TestCase):
         ***************************************************************************
         '''
         w3af_core = w3afCore()
-        valid, invalid = w3af_core.profiles.get_profile_list(ROOT_PATH)
+        valid, invalid = w3af_core.profiles.get_profile_list('.')
 
         self.assertTrue(len(valid) > 5)
         self.assertEqual(len(invalid), 0)
@@ -119,7 +119,7 @@ class TestCoreProfiles(unittest.TestCase):
         for profile_inst in valid:
             profile_name = profile_inst.get_name()
 
-            w3af_core.profiles.use_profile(profile_name, workdir=ROOT_PATH)
+            w3af_core.profiles.use_profile(profile_name, workdir='.')
 
     def test_cant_start_new_thread_bug(self):
         '''
@@ -127,10 +127,10 @@ class TestCoreProfiles(unittest.TestCase):
         properly fixed after the change in how sqlite threads were managed.
         '''
         w3af_core = w3afCore()
-        valid, _ = w3af_core.profiles.get_profile_list(ROOT_PATH)
+        valid, _ = w3af_core.profiles.get_profile_list('.')
 
         for _ in xrange(10):
             for profile_inst in valid:
                 profile_name = profile_inst.get_name()
 
-                w3af_core.profiles.use_profile(profile_name, workdir=ROOT_PATH)
+                w3af_core.profiles.use_profile(profile_name, workdir='.')

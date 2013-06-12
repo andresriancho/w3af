@@ -73,8 +73,8 @@ use_w3af_site = True
 [crawl.spider_man]
 
 [bruteforce.basic_auth]
-usersFile = core/controllers/bruteforce/users.txt
-passwdFile = core/controllers/bruteforce/passwords.txt
+usersFile = w3af/core/controllers/bruteforce/users.txt
+passwdFile = w3af/core/controllers/bruteforce/passwords.txt
 useSvnUsers = True
 stopOnFirst = True
 passEqUser = True
