@@ -241,15 +241,12 @@ class PhishTankErrorHandler(ErrorHandler):
 
     def error(self, exception):
         "Handle a recoverable error."
-        print exception
         pass
 
     def fatalError(self, exception):
         "Handle a non-recoverable error."
-        print exception
         pass
 
     def warning(self, exception):
         "Handle a warning."
-        print exception
         pass
