@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import poplib
-
+from mock import patch
 from nose.plugins.attrib import attr
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -28,6 +28,8 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 class TestEmailReport(PluginTest):
 
     xss_url = 'http://moth/w3af/audit/xss/'
+    to_addrs = 'w3af@mailinator.com'
+    from_addr = 'w3af@gmail.com'
 
     _run_configs = {
         'cfg': {
@@ -50,8 +52,8 @@ class TestEmailReport(PluginTest):
                         ('smtpServer',
                          'smtp.mailinator.com', PluginConfig.STR),
                         ('smtpPort', 25, PluginConfig.INT),
-                        ('toAddrs', 'w3af@mailinator.com', PluginConfig.LIST),
-                        ('fromAddr', 'w3af@gmail.com', PluginConfig.STR),
+                        ('toAddrs', to_addrs, PluginConfig.LIST),
+                        ('fromAddr', from_addr, PluginConfig.STR),
                     ),
                 )
             },
@@ -60,36 +62,58 @@ class TestEmailReport(PluginTest):
 
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
-
-        xss_vulns = self.kb.get('xss', 'xss')
-        xss_count = self._from_pop3_get_vulns()
-
-        self.assertGreaterEqual(len(xss_vulns), 10)
-        self.assertEqual(len(xss_vulns), xss_count)
-
-    def _from_pop3_get_vulns(self):
-        subject = None
-        xss_count = 0
-
-        pop_conn = poplib.POP3('pop.mailinator.com')
-        pop_conn.user('w3af')
-        pop_conn.pass_('somerand')
-
-        num_messages = len(pop_conn.list()[1])
-        for email_id in range(num_messages):
-            for email_line in pop_conn.retr(email_id + 1)[1]:
-                if email_line.startswith('Subject: '):
-                    subject = email_line
-                elif 'A Cross Site Scripting vulnerability was found at:' in email_line:
+        
+        with patch('w3af.plugins.output.email_report.smtplib.SMTP') as mock_smtp:
+            mock_smtp.return_value = DummySMTP()
+            
+            self._scan(cfg['target'], cfg['plugins'])
+    
+            xss_vulns = self.kb.get('xss', 'xss')
+            
+            self.assertEqual(len(inbox), 1)
+            
+            email_msg = inbox[0]
+            self.assertEqual(email_msg.from_address, self.from_addr)
+            self.assertEqual(email_msg.to_address, [self.to_addrs,])
+            
+            content = email_msg.fullmessage
+            xss_count = 0
+            pxss_count = 0
+            
+            for line in content.split('\n'):
+                if 'A Cross Site Scripting vulnerability was found at:' in line:
                     xss_count += 1
-                elif 'A persistent Cross Site Scripting vulnerability' in email_line:
-                    xss_count += 1
+                elif 'A persistent Cross Site Scripting vulnerability' in line:
+                    pxss_count += 1
+            
+            self.assertEqual(xss_count, 16)
+            self.assertEqual(pxss_count, 1)
+            
+            self.assertEqual(len(xss_vulns), xss_count + pxss_count)
 
-            pop_conn.dele(email_id + 1)
+# monkey-patch smtplib so we don't send actual emails
+smtp = None
+inbox = []
 
-        pop_conn.quit()
+class Message(object):
+    def __init__(self, from_address, to_address, fullmessage):
+        self.from_address = from_address
+        self.to_address = to_address
+        self.fullmessage = fullmessage
 
-        self.assertEqual(subject, 'Subject: [MAILINATOR] w3af report on http://moth/w3af/audit/xss/')
+class DummySMTP(object):
+    def __init__(self):
+        global smtp
+        smtp = self
 
-        return xss_count
+    def login(self, username, password):
+        self.username = username
+        self.password = password
+
+    def sendmail(self, from_address, to_address, fullmessage):
+        global inbox
+        inbox.append(Message(from_address, to_address, fullmessage))
+        return []
+
+    def quit(self):
+        self.has_quit=True
