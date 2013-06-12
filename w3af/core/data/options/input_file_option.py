@@ -42,7 +42,16 @@ class InputFileOption(BaseOption):
             self._value = value
             return
 
-        self._value = self.validate(value)
+        validated_value = self.validate(value)
+        
+        # I want to make the paths shorter, so we're going to make them
+        # relative, at least in the case where they are inside the cwd
+        current_dir = os.path.abspath(os.curdir)
+        configured_value_dir = os.path.abspath(os.path.dirname(value))
+        if configured_value_dir.startswith(current_dir):
+            self._value = os.path.relpath(validated_value)
+        else:
+            self._value = validated_value
 
     def validate(self, value):
 
