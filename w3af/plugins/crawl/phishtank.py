@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import codecs
 import os.path
 import socket
 
 from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
+from xml.sax.handler import ContentHandler, ErrorHandler
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
@@ -112,99 +111,22 @@ class phishtank(CrawlPlugin):
 
         :return: A list with the sites to match against the phishtank db
         '''
-        class PhishTankMatch(object):
-            '''
-            Represents a phishtank match between the site I'm scanning and
-            something in the index.xml file.
-            '''
-            def __init__(self, url, more_info_URL):
-                self.url = url
-                self.more_info_URL = more_info_URL
-
-        class PhishTankHandler(ContentHandler):
-            '''
-            <entry>
-                <url><![CDATA[http://cbisis...paypal.support/]]></url>
-                <phish_id>118884</phish_id>
-                <phish_detail_url>
-                    <![CDATA[http://www.phishtank.com/phish_detail.php?phish_id=118884]]>
-                </phish_detail_url>
-                <submission>
-                    <submission_time>2007-03-03T21:01:19+00:00</submission_time>
-                </submission>
-                <verification>
-                    <verified>yes</verified>
-                    <verification_time>2007-03-04T01:58:05+00:00</verification_time>
-                </verification>
-                <status>
-                    <online>yes</online>
-                </status>
-            </entry>
-            '''
-            def __init__(self, to_check):
-                self._to_check = to_check
-                
-                self.url = ''
-                self.phish_detail_url = ''
-                
-                self.inside_entry = False
-                self.inside_URL = False
-                self.inside_detail = False
-                
-                self.matches = []
-
-            def startElement(self, name, attrs):
-                if name == 'entry':
-                    self.inside_entry = True
-                elif name == 'url':
-                    self.inside_URL = True
-                    self.url = ''
-                elif name == 'phish_detail_url':
-                    self.inside_detail = True
-                    self.phish_detail_url = ''
-                return
-
-            def characters(self, ch):
-                if self.inside_URL:
-                    self.url += ch
-                if self.inside_detail:
-                    self.phish_detail_url += ch
-
-            def endElement(self, name):
-                if name == 'phish_detail_url':
-                    self.inside_detail = False
-                if name == 'url':
-                    self.inside_URL = False
-                if name == 'entry':
-                    self.inside_entry = False
-                    #
-                    #    Now I try to match the entry with an element in the
-                    #    to_check_list
-                    #
-                    for target_host in self._to_check:
-                        if target_host in self.url:
-                            phish_url = URL(self.url)
-                            target_host_url = URL(target_host)
-
-                            if target_host_url.get_domain() == phish_url.get_domain() or \
-                            phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
-
-                                phish_detail_url = URL(self.phish_detail_url)
-                                ptm = PhishTankMatch(phish_url,
-                                                     phish_detail_url)
-                                self.matches.append(ptm)
-
         try:
-            phishtank_db_fd = codecs.open(self.PHISHTANK_DB, 'r', 'utf-8',
-                                          errors='ignore')
+            # According to different sources, xml.sax knows how to handle
+            # encoding, so it will simply decode using the header:
+            #
+            # <?xml version="1.0" encoding="utf-8"?>
+            phishtank_db_fd = file(self.PHISHTANK_DB, 'r')
         except Exception, e:
             msg = 'Failed to open phishtank database file: "%s", exception: "%s".'
             raise w3afException(msg % (self.PHISHTANK_DB, e))
 
         parser = make_parser()
         pt_handler = PhishTankHandler(to_check)
+        pt_error_handler = PhishTankErrorHandler()
         parser.setContentHandler(pt_handler)
-        om.out.debug('Starting the phishtank xml parsing. ')
+        parser.setErrorHandler(pt_error_handler)
+        om.out.debug('Starting the phishtank XML parsing. ')
 
         try:
             parser.parse(phishtank_db_fd)
@@ -212,7 +134,7 @@ class phishtank(CrawlPlugin):
             msg = 'XML parsing error in phishtank DB, exception: "%s".'
             raise w3afException(msg % e)
 
-        om.out.debug('Finished xml parsing. ')
+        om.out.debug('Finished XML parsing. ')
 
         return pt_handler.matches
 
@@ -225,3 +147,109 @@ class phishtank(CrawlPlugin):
         If your site is in this database the chances are that you were hacked
         and your server is now being used in phishing attacks.
         '''
+
+class PhishTankMatch(object):
+    '''
+    Represents a phishtank match between the site I'm scanning and
+    something in the index.xml file.
+    '''
+    def __init__(self, url, more_info_URL):
+        self.url = url
+        self.more_info_URL = more_info_URL
+
+class PhishTankHandler(ContentHandler):
+    '''
+    <entry>
+        <url><![CDATA[http://cbisis...paypal.support/]]></url>
+        <phish_id>118884</phish_id>
+        <phish_detail_url>
+            <![CDATA[http://www.phishtank.com/phish_detail.php?phish_id=118884]]>
+        </phish_detail_url>
+        <submission>
+            <submission_time>2007-03-03T21:01:19+00:00</submission_time>
+        </submission>
+        <verification>
+            <verified>yes</verified>
+            <verification_time>2007-03-04T01:58:05+00:00</verification_time>
+        </verification>
+        <status>
+            <online>yes</online>
+        </status>
+    </entry>
+    '''
+    def __init__(self, to_check):
+        self._to_check = to_check
+        
+        self.url = ''
+        self.phish_detail_url = ''
+        
+        self.inside_entry = False
+        self.inside_URL = False
+        self.inside_detail = False
+        
+        self.matches = []
+
+    def startElement(self, name, attrs):
+        if name == 'entry':
+            self.inside_entry = True
+        elif name == 'url':
+            self.inside_URL = True
+            self.url = ''
+        elif name == 'phish_detail_url':
+            self.inside_detail = True
+            self.phish_detail_url = ''
+        return
+
+    def characters(self, ch):
+        if self.inside_URL:
+            self.url += ch
+        if self.inside_detail:
+            self.phish_detail_url += ch
+
+    def endElement(self, name):
+        if name == 'phish_detail_url':
+            self.inside_detail = False
+        if name == 'url':
+            self.inside_URL = False
+        if name == 'entry':
+            self.inside_entry = False
+            #
+            #    Now I try to match the entry with an element in the
+            #    to_check_list
+            #
+            for target_host in self._to_check:
+                if target_host in self.url:
+                    phish_url = URL(self.url)
+                    target_host_url = URL(target_host)
+
+                    if target_host_url.get_domain() == phish_url.get_domain() or \
+                    phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
+
+                        phish_detail_url = URL(self.phish_detail_url)
+                        ptm = PhishTankMatch(phish_url,
+                                             phish_detail_url)
+                        self.matches.append(ptm)
+
+class PhishTankErrorHandler(ErrorHandler):
+    """
+    If you create an object that implements this interface, then
+    register the object with your XMLReader, the parser will call the
+    methods in your object to report all warnings and errors. There
+    are three levels of errors available: warnings, (possibly)
+    recoverable errors, and unrecoverable errors. All methods take a
+    SAXParseException as the only parameter."""
+
+    def error(self, exception):
+        "Handle a recoverable error."
+        print exception
+        pass
+
+    def fatalError(self, exception):
+        "Handle a non-recoverable error."
+        print exception
+        pass
+
+    def warning(self, exception):
+        "Handle a warning."
+        print exception
+        pass
