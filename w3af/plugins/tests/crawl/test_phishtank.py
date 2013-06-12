@@ -100,9 +100,7 @@ class TestPhishtank(PluginTest):
 
             msg = 'The phishtank database is too old, in order to update it'\
                   ' please follow these steps:\n'\
-                  'cd plugins/crawl/phishtank/\n'\
-                  'wget -q -O- --header\="Accept-Encoding: gzip" http://data.phishtank.com/data/online-valid/ | gunzip > index.xml\n'\
-                  'git commit -m "Updating phishtank database." index.xml\n'\
-                  'git push\n'\
-                  'cd -\n'
+                  'wget -q -O- --header\="Accept-Encoding: gzip" http://data.phishtank.com/data/online-valid/ | gunzip > w3af/plugins/crawl/phishtank/index.xml\n'\
+                  'git commit -m "Updating phishtank database." w3af/plugins/crawl/phishtank/index.xml\n'\
+                  'git push\n'
             self.assertTrue(time_delta.days < 30, msg)
