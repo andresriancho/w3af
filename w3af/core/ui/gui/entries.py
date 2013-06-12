@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
 import gobject
-import threading
 
 from w3af.core.ui.gui import history
 from w3af.core.ui.gui import helpers
@@ -58,7 +57,8 @@ class ValidatedEntry(gtk.Entry):
         self.connect("key-release-event", self._key)
         self.orig_value = orig_value
         self.esc_key = gtk.gdk.keyval_from_name("Escape")
-
+        self.set_width_chars(50)
+        
         # color handling
         colormap = self.get_colormap()
         self.bg_normal = colormap.alloc_color("white")
