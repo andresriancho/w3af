@@ -48,6 +48,13 @@ class TestPhishtank(PluginTest):
             if match and 'CDATA' not in line:
                 return match.group(1)
 
+    def get_last_vulnerable_url(self, phishtank_inst):
+        for line in reversed(file(phishtank_inst.PHISHTANK_DB).readlines()):
+            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
+            match = re.search('<url>(.*?)</url>', line)
+            if match and 'CDATA' not in line:
+                return match.group(1)
+
     def test_phishtank_match(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
@@ -76,6 +83,18 @@ class TestPhishtank(PluginTest):
         self.assertEqual(ptm.url.url_string, vuln_url_str)
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
 
+    def test_xml_parsing_last_url(self):
+        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
+                                                               'phishtank')
+
+        vuln_url_str = self.get_last_vulnerable_url(phishtank_inst)
+        ptm_list = phishtank_inst._is_in_phishtank([vuln_url_str, ])
+        self.assertEqual(len(ptm_list), 1, ptm_list)
+
+        ptm = ptm_list[0]
+        self.assertEqual(ptm.url.url_string, vuln_url_str)
+        self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
+        
     def test_too_old_xml(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
