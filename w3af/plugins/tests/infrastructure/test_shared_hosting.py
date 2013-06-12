@@ -37,7 +37,7 @@ class TestSharedHosting(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        domains = self.kb.get('shared_hosting', 'domains')
+        domains = self.kb.raw_read('shared_hosting', 'domains')
         self.assertGreater(len(domains), 30, len(domains))
 
         infos = self.kb.get('shared_hosting', 'shared_hosting')
