@@ -163,7 +163,8 @@ class EncodeDecode(entries.RememberingWindow):
         out.set_text(u"")
         # go busy
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
-                              gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+                              gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD,
+                              0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
         while gtk.events_pending():
@@ -181,9 +182,11 @@ class EncodeDecode(entries.RememberingWindow):
             if proc.ok:
                 out.set_text(proc.result, use_repr)
             else:
-                msg = _("An error was generated during the execution:\n\t\t- Invalid input for that operation.\n\n")
-                msg += _("The string that you are trying to encode/decode can\'t be encoded/decoded using this algorithm.")
-                msg += _(" A detailed error follows:\n\t\t- ")
+                msg = _("An error was generated during the execution:\n\t\t-"
+                        " Invalid input for that operation.\n\n"
+                        "The string that you are trying to encode/decode"
+                        " can\'t be encoded/decoded using this algorithm."
+                        " A detailed error follows:\n\t\t- ")
                 out.set_text(msg + str(proc.exception), use_repr=False)
                 self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
@@ -565,14 +568,3 @@ _butNameFunc_dec = [
     (_("Hex Decoding"), hex_decoding),
 ]
 
-
-def _test_all():
-    '''To use these tests, from the w3af root directory, do:
-
-    >>> import w3af.core.ui.gui.encdec
-    >>> core.ui.gui.encdec._test_all()
-    '''
-    import doctest
-    glob = globals()
-    for func in (x[1] for x in _butNameFunc_enc + _butNameFunc_dec):
-        doctest.run_docstring_examples(func, glob)
