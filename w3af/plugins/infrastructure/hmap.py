@@ -120,8 +120,8 @@ class hmap(InfrastructurePlugin):
         ol = OptionList()
 
         d = 'Generate a fingerprint file.'
-        h = 'Define if we will generate a fingerprint file based on the'
-        h += ' findings made during this execution.'
+        h = 'Define if we will generate a fingerprint file based on the'\
+            ' findings made during this execution.'
         o = opt_factory('genFpF', self._gen_fp, d, 'boolean', help=h)
 
         ol.add(o)

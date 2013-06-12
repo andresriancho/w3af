@@ -924,8 +924,7 @@ def testServer(ssl, server, port, matchCount, generateFP):
 
     MATCH_COUNT = matchCount
     fingerprintDir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
-                                  'oHmap', 'known.servers')
-
+                                  'oHmap', 'known.servers/')
     # Get the fingerprint
     target_url = server
     fp = get_fingerprint(target_url)
