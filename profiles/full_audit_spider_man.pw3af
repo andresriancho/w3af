@@ -52,7 +52,7 @@ persistent_xss = True
 
 [audit.ssl_certificate]
 minExpireDays = 30
-caFileName = plugins/audit/ssl_certificate/ca.pem
+caFileName = w3af/plugins/audit/ssl_certificate/ca.pem
 
 [audit.xst]
 
