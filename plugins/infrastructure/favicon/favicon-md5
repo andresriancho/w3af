@@ -137,8 +137,8 @@ e3f28aab904e9edfd015f64dc93d487d:python-werkzeug (0.3.1) - cupoftee-examples
 69f8a727f01a7e9b90a258bc30aaae6a:quantlib-refman-html (0.9.0)
 b01625f4aa4cd64a180e46ef78f34877:quickplot (0.8.13)
 af83bba99d82ea47ca9dafc8341ec110:qwik (0.8.4.4ubuntu2)
-e9469705a8ac323e403d74c11425a62b:Roundcube (0.1.1)
-228ba3f6d946af4298b080e5c934487c:Roundcube (0.6 - 0.9)
+e9469705a8ac323e403d74c11425a62b:Roundcube (0.1 - 0.2)
+228ba3f6d946af4298b080e5c934487c:Roundcube (0.3 - 0.9)
 7f57bbd0956976e797b4e8eebdc6d733:selfhtml (8.1.1)
 69acfcb2659952bc37c54108d52fca70:solr (1.2.0) - docs
 ffc05799dee87a4f8901c458f7291d73:solr (1.2.0) - admin
