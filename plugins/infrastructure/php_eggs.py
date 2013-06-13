@@ -496,8 +496,9 @@ class php_eggs(InfrastructurePlugin):
         '''
         return '''
         This plugin tries to find the documented easter eggs that exist in PHP
-        and identify the remote PHP version using the easter egg content. The
-        easter eggs that this plugin verifies are:
+        and identifies the remote PHP version using the easter egg content.
+        Known PHP easter eggs are visible in versions 4.0 - 5.4.
+        The easter eggs that this plugin verifies are:
 
         PHP Credits, Logo, Zend Logo, PHP Logo 2:
             - http://php.net/?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000
