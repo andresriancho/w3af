@@ -32,8 +32,8 @@ from os.path import basename
 from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.controllers.exceptions import (w3afMustStopException,
-                                         w3afMustStopByUserRequest,
-                                         w3afMustStopByUnknownReasonExc)
+                                              w3afMustStopByUserRequest,
+                                              w3afMustStopByUnknownReasonExc)
 
 
 class ExceptionHandler(object):

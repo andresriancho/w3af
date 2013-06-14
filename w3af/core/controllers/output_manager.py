@@ -38,11 +38,13 @@ start_lock = threading.Lock()
 
 def start_thread_on_demand(func):
     '''
-    Given that the output manager has been migrated into a producer/consumer model,
-    the messages that are sent to it are added to a Queue and printed "at a random time".
-    The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
-    using the om (see functions below), which ends up with unordered messages printed
-    to the console.
+    Given that the output manager has been migrated into a producer/consumer
+    model, the messages that are sent to it are added to a Queue and printed
+    "when the om thread gets its turn".
+    
+    The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is
+    printed using the om (see functions below), which ends up with unordered
+    messages printed to the console.
     '''
     def od_wrapper(*args, **kwds):
         global start_lock

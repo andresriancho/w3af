@@ -26,7 +26,6 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import w3afException
-from w3af import ROOT_PATH
 
 
 class TestCoreProfiles(unittest.TestCase):
