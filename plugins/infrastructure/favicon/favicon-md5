@@ -60,8 +60,12 @@ ddd76f1cfe31499ce3db6702991cbc45:cream (0.41)
 74120b5bbc7be340887466ff6cfe66c6:cups (1.3.9) - doc
 abeea75cf3c1bac42bbd0e96803c72b9:doc-iana-20080601
 3ef81fad2a3deaeb19f02c9cf67ed8eb:dokuwiki (0.0.20080505) 
-e6a9dc66179d8c9f34288b16a02f987e:Drupal CMS (5.10) 
-bba9f1c29f100d265865626541b20a50:dtc (0.28.10) 
+f0ee98b4394dfdab17c16245dd799204:Drupal CMS
+a4819787db1dabe1a6b669d5d6df3bfd:Drupal CMS (2.x-4.x)
+e6a9dc66179d8c9f34288b16a02f987e:Drupal CMS (5.x-6.x) 
+b6341dfc213100c61db4fb8775878cec:Drupal CMS (7.x)
+c86974467c2ac7b6902189944f812b9a:dtc (0.17.x-0.24.x)
+bba9f1c29f100d265865626541b20a50:dtc (0.25.x-0.36.x)
 171429057ae2d6ad68e2cd6dcfd4adc1:ebug-http (0.31)
 f6e9339e652b8655d4e26f3e947cf212:eGroupWare (1.0.0.009, 1.4.004-2) (/phpgwapi/templates/idots/images/favicon.ico)
 093551287f13e0ee3805fee23c6f0e12:freevo (1.8.1) 
@@ -137,7 +141,8 @@ e3f28aab904e9edfd015f64dc93d487d:python-werkzeug (0.3.1) - cupoftee-examples
 69f8a727f01a7e9b90a258bc30aaae6a:quantlib-refman-html (0.9.0)
 b01625f4aa4cd64a180e46ef78f34877:quickplot (0.8.13)
 af83bba99d82ea47ca9dafc8341ec110:qwik (0.8.4.4ubuntu2)
-e9469705a8ac323e403d74c11425a62b:roundcube (0.1.1)
+e9469705a8ac323e403d74c11425a62b:Roundcube (0.1 - 0.2)
+228ba3f6d946af4298b080e5c934487c:Roundcube (0.3 - 0.9)
 7f57bbd0956976e797b4e8eebdc6d733:selfhtml (8.1.1)
 69acfcb2659952bc37c54108d52fca70:solr (1.2.0) - docs
 ffc05799dee87a4f8901c458f7291d73:solr (1.2.0) - admin
@@ -204,7 +209,6 @@ a7947b1675701f2247921cf4c2b99a78:Alexander Palmo Simple PHP Blog
 6c1452e18a09070c0b3ed85ce7cb3917:Atlassian Jira
 43ba066789e749f9ef591dc086f3cd14:Atlassian Bamboo
 a83dfece1c0e9e3469588f418e1e4942:Atlassian Bamboo
-f0ee98b4394dfdab17c16245dd799204:Drupal
 7b0d4bc0ca1659d54469e5013a08d240:Netgear (Infrant) ReadyNAS NV+
 cee40c0b35bded5e11545be22a40e363:OSSDL.de Openmailadmin
 4f88ba9f1298701251180e6b6467d43e:Xinit Systems Ltd. Openfiler
@@ -227,7 +231,7 @@ b7f98dd27febe36b7275f22ad73c5e84:MoinMoin
 05bc6d56d8df6d668cf7e9e11319f4e6:Jive Forums
 63740175dae089e479a70c5e6591946c:The Lyceum Project
 4cbb2cfc30a089b29cd06179f9cc82ff:Dragonfly
-9187f6607b402df8bbc2aeb69a07bbca:XOOPS
+9187f6607b402df8bbc2aeb69a07bbca:XOOPS (2.x)
 389a8816c5b87685de7d8d5fec96c85b:XOOPS
 a1c686eb6e771878cf6040574a175933:CivicPlus
 4d7fe200d85000aea4d193a10e550d04:Intland Software codeBeamer
