@@ -68,6 +68,12 @@ class w3afCore(object):
         Init some variables and files.
         Create the URI opener.
         '''
+        # This is more than just a debug message, it's a way to force the
+        # output manager thread to start it's work. I would start that thread
+        # on output manager instantiation but there are issues with starting
+        # threads at module import time.
+        om.out.debug('Created new w3afCore instance: %s' % id(self))
+        
         # Create some directories, do this every time before starting a new
         # scan and before doing any other core init because these are widely
         # used
