@@ -1,3 +1,4 @@
+2ab2aae806e8393b70970b2eaace82e0:Apache CouchDB (0.8.0-1.3.0)
 73778a17b0d22ffbb7d6c445a7947b92:Apache on Mac OS X
 71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
 d99217782f41e71bcaa8e663e6302473:Apache on Red Hat/Fedora
@@ -79,7 +80,6 @@ a18421fbf34123c03fb8b3082e9d33c8:chora2 (2.0.2)
 75069c2c6701b2be250c05ec494b1b31:chronicle (2.9) theme-blog.mail-scanning.com
 27c3b07523efd6c318a201cac58008ba:cimg (1.2.0.1) 
 ae59960e866e2730e99799ac034eacf7:webcit (7.37)
-2ab2aae806e8393b70970b2eaace82e0:couchdb (0.8.0-0.9.1)
 ddd76f1cfe31499ce3db6702991cbc45:cream (0.41)
 74120b5bbc7be340887466ff6cfe66c6:cups (1.3.9) - doc
 abeea75cf3c1bac42bbd0e96803c72b9:doc-iana-20080601
