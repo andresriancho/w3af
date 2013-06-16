@@ -11,6 +11,11 @@ a83dfece1c0e9e3469588f418e1e4942:Atlassian Bamboo
 01febf7c2bd75cd15dae3aa093d80552:Atlassian Crucible or Fisheye
 6c1452e18a09070c0b3ed85ce7cb3917:Atlassian Jira
 04d89d5b7a290334f5ce37c7e8b6a349:Atlassian Jira Bug Tracker
+de2b6edbf7930f5dd0ffe0528b2bbcf4:Barracuda Spam/Virus firewall appliance
+f51425ace97f807fe5840c4382580fd5:Beehive Forum (1.x)
+1a9a1ec2b8817a2f951c9f1793c9bc54:Bitweaver
+140e3eb3e173bfb8d15778a578a213aa:bmpx (0.40.14)
+ea84a69cb146a947fac2ac7af3946297:boost (1.34.1) 
 8894791e84f5cafebd47311d14a3703c:Joomla 1.7
 c9856f0a4dd7ad0c215a68052a04d9e8:Oracle
 6eb4a43cb64c97f76562af703893c8fd:XAMPP
@@ -21,6 +26,7 @@ dcea02a5797ce9e36f19b7590752563e:Parallels Plesk (x)
 9ceae7a3c88fc451d59e24d8d5f6f166:Parallels Plesk (8.2.0)
 2cee5e3ce2f5c4640a68fc208c286494:Parallels Plesk (10.2.0)
 ec49973c1991bf39fcdb53260467f39f:Parallels Plesk (11.0.9)
+9ceae7a3c88fc451d59e24d8d5f6f166:Plesk managed system
 6399cc480d494bf1fcd7d16c42b1c11b:penguin
 09b565a51e14b721a323f0ba44b2982a:Google web server
 506190fc55ceaa132f1bc305ed8472ca:SocialText
@@ -63,7 +69,6 @@ c0c4e7c0ac4da24ab8fc842d7f96723c:xsp (1.9.1)
 d6923071afcee9cebcebc785da40b226:autopsy (2.08)
 7513f4cf4802f546518f26ab5cfa1cad:axyl (2.6.0)
 de68f0ad7b37001b8241bce3887593c7:b2evolution (2.4.2)
-140e3eb3e173bfb8d15778a578a213aa:bmpx (0.40.14)
 4f12cccd3c42a4a478f067337fe92794:cacti (0.8.7b)
 c0533ae5d0ed638ba3fb3485d8250a28:CakePHP (1.1.x)
 66b3119d379aee26ba668fef49188dd3:cakephp (1.2.x-1.3x)
@@ -120,7 +125,6 @@ ed7d5c39c69262f4ba95418d4f909b10:jetty (5.1.14)
 d00d85c8fb3a11170c1280c454398d51:ktorrent (3.1.2) 
 fa21ab1b1e1b4c9516afbd63e91275a9:lastfmproxy (1.3b) 
 663ee93a41000b8959d6145f0603f599:LDAP Account Manager (2.2-4.x) 
-ea84a69cb146a947fac2ac7af3946297:boost (1.34.1) 
 eb3e307f44581916d9f1197df2fc9de3:flac (1.2.1) 
 669bc10baf11b43391294aac3e1b8c52:libitpp (4.0.4)
 b8fe2ec1fcc0477c0d0f00084d824071:lucene (2.3.2) 
@@ -208,14 +212,12 @@ eb6d4ce00ec36af7d439ebd4e5a395d7:Mailman
 d80e364c0d3138c7ecd75bf9896f2cad:Apache Tomcat (6.0.18), Alfresco Enterprise Content Management System
 a6b55b93bc01a6df076483b69039ba9c:Fog Creek Fogbugz (6.1.44)
 ee4a637a1257b2430649d6750cda6eba:Trimble Device Embedded Web Server
-9ceae7a3c88fc451d59e24d8d5f6f166:Plesk managed system
 69ae01d0c74570d4d221e6c24a06d73b:Roku Soundbridge
 2e9545474ee33884b5fb8a9a0b8806dd:Ampache
 639b61409215d770a99667b446c80ea1:Lotus Domino Server
 be6fb62815509bd707e69ee8dad874a1:i.LON server by Echelon
 a46bc7fc42979e9b343335bdd86d1c3e:NetScout NGenius
 192decdad41179599a776494efc3e720:JBoss Installation
-de2b6edbf7930f5dd0ffe0528b2bbcf4:Barracuda Spam/Virus firewall appliance
 386211e5c0b7d92efabd41390e0fc250:SparkWeb web-based collaboration client. http://www.igniterealtime.org/
 f89abd3f358cb964d6b753a5a9da49cf:LimeSurvey
 a7947b1675701f2247921cf4c2b99a78:Alexander Palmo Simple PHP Blog
@@ -240,7 +242,6 @@ b7f98dd27febe36b7275f22ad73c5e84:MoinMoin
 4cbb2cfc30a089b29cd06179f9cc82ff:Dragonfly
 a1c686eb6e771878cf6040574a175933:CivicPlus
 4d7fe200d85000aea4d193a10e550d04:Intland Software codeBeamer
-1a9a1ec2b8817a2f951c9f1793c9bc54:Bitweaver
 1cc16c64d0e471607677b036b3f06b6e:Roller Weblogger Project
 7563f8c3ebd4fd4925f61df7d5ed8129:Holger Zimmerman Pi3Web HTTP Server
 7f0f918a78ca8d4d5ff21ea84f2bac68:SubText
