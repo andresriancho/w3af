@@ -4,7 +4,10 @@ c9856f0a4dd7ad0c215a68052a04d9e8:Oracle
 389a8816c5b87685de7d8d5fec96c85b:XOOPS CMS
 9187f6607b402df8bbc2aeb69a07bbca:XOOPS CMS (2.x)
 09d310e97902eefd0065f01c09c830fb:Moodle
-ec49973c1991bf39fcdb53260467f39f:Plesk
+dcea02a5797ce9e36f19b7590752563e:Parallels Plesk (x)
+9ceae7a3c88fc451d59e24d8d5f6f166:Parallels Plesk (8.2.0)
+2cee5e3ce2f5c4640a68fc208c286494:Parallels Plesk (10.2.0)
+ec49973c1991bf39fcdb53260467f39f:Parallels Plesk (11.0.9)
 6399cc480d494bf1fcd7d16c42b1c11b:penguin
 09b565a51e14b721a323f0ba44b2982a:Google web server
 506190fc55ceaa132f1bc305ed8472ca:SocialText
@@ -16,7 +19,6 @@ b25dbe60830705d98ba3aaf0568c456a:Netscape iPlanet 6.0
 a28ebcac852795fe30d8e99a23d377c1:SunOne 6.1
 71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
 d41d8cd98f00b204e9800998ecf8427e:Zero byte favicon
-dcea02a5797ce9e36f19b7590752563e:Parallels Plesk 
 6f767458b952d4755a795af0e4e0aa17:Yahoo!
 5b0e3b33aa166c88cee57f83de1d4e55:DotNetNuke (http://www.dotnetnuke.com)
 7dbe9acc2ab6e64d59fa67637b1239df:Lotus-Domino
