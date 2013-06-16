@@ -1,13 +1,14 @@
 8894791e84f5cafebd47311d14a3703c:Joomla 1.7
 c9856f0a4dd7ad0c215a68052a04d9e8:Oracle
 6eb4a43cb64c97f76562af703893c8fd:XAMPP
+389a8816c5b87685de7d8d5fec96c85b:XOOPS CMS
+9187f6607b402df8bbc2aeb69a07bbca:XOOPS CMS (2.x)
 09d310e97902eefd0065f01c09c830fb:Moodle
 ec49973c1991bf39fcdb53260467f39f:Plesk
 6399cc480d494bf1fcd7d16c42b1c11b:penguin
 09b565a51e14b721a323f0ba44b2982a:Google web server
 506190fc55ceaa132f1bc305ed8472ca:SocialText
 2cc15cfae55e2bb2d85b57e5b5bc3371:PHPwiki (1.3.14) / gforge (4.6.99+svn6496) - wiki
-389a8816c5b87685de7d8d5fec96c85b:XOOPS cms
 f1876a80546b3986dbb79bad727b0374:NetScreen WebUI or 3Com Router
 226ffc5e483b85ec261654fe255e60be:Netscape 4.1
 b25dbe60830705d98ba3aaf0568c456a:Netscape iPlanet 6.0
@@ -96,12 +97,14 @@ ee3d6a9227e27a5bc72db3184dab8303:horde-sam (0.1+cvs20080316) - graphics
 32bf63ac2d3cfe82425ce8836c9ce87c:ikiwiki (2.56ubuntu1)
 f567fd4927f9693a7a2d6cacf21b51b6:Horde IMP (4.1.4 - 4.1.6, also used in Horde Groupware Webmail 1.0.1))
 919e132a62ea07fce13881470ba70293:Horde Groupware Webmail 1.0.1 (Ingo Theme, 1.1.5)
+a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail 1.0.1 (Kronolith Theme, 2.1.8)
+f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail 1.0.1 (Mnemo Theme, 2.1.2) 
+ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail 1.0.1 (Turba Theme, 2.1.7)
 ed7d5c39c69262f4ba95418d4f909b10:jetty (5.1.14)
 6900fab05a50a99d284405f46e5bc7f6:k3d (0.6.7.0) 
 24d1e355c00e79dc13b84d5455534fe7:kdelibs (3.5.10-4.1.4) 
 8ab2f1a55bcb0cac227828afd5927d39:kdenetwork (4.1.4)
 54667bea91124121e98da49e55244935:kolab-webadmin (2.1.0-20070510)
-a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail 1.0.1 (Kronolith Theme, 2.1.8)
 d00d85c8fb3a11170c1280c454398d51:ktorrent (3.1.2) 
 fa21ab1b1e1b4c9516afbd63e91275a9:lastfmproxy (1.3b) 
 663ee93a41000b8959d6145f0603f599:LDAP Account Manager (2.2-4.x) 
@@ -116,7 +119,6 @@ b8fe2ec1fcc0477c0d0f00084d824071:lucene (2.3.2)
 ebe293e1746858d2548bca99c43e4969:Mantis Bug Tracker (1.1.2, /bugs/images/favicon.ico)
 0d42576d625920bcd121261fc5a6230b:mathomatic (14.0.6)
 f972c37bf444fb1925a2c97812e2c1eb:mediatomb (0.11.0)
-f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail 1.0.1 (Mnemo Theme, 2.1.2) 
 933a83c6e9e47bd1e38424f3789d121d:Moodle (1.8.2, 1.9.x, multiple default themes) 
 b6652d5d71f6f04a88a8443a8821510f:Moodle (1.8.2, 1.9.x, Cornflower Theme, /theme/cornflower/favicon.ico)
 06b60d90ccfb79c2574c7fdc3ac23f05:movabletype-opensource (4.2~rc4)
@@ -135,6 +137,7 @@ c30bf7e6d4afe1f02969e0f523d7a251:nulog (2.0)
 4b30eec86e9910e663b5a9209e9593b6:phpldapadmin (1.1.0.5)
 02dd7453848213a7b5277556bcc46307:phpmyadmin (2.11.8.1) - pmd 
 d037ef2f629a22ddadcf438e6be7a325:phpmyadmin (2.11.8.1)
+4cfbb29d0d83685ba99323bc0d4d3513:PHPWind Forums (7.x-8.x)
 8190ead2eb45952151ab5065d0e56381:pootle (1.1.0)
 ba84999dfc070065f37a082ab0e36017:prewikka (0.9.14)
 0f45c2c79ebe90d6491ddb111e810a56:python-cherrypy (2.3.0-3.0.2)
@@ -164,7 +167,6 @@ cb740847c45ea3fbbd80308b9aa4530a:sork-vacation-h3 (3.0.1)
 d1bc9681dce4ad805c17bd1f0f5cee97:torrentflux (2.4) - themes/BlueFlux/
 8d13927efb22bbe7237fa64e858bb523:transmission (1.34)
 5b015106854dc7be448c14b64867dfa5:tulip (3.0.0~B6)
-ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail 1.0.1 (Turba Theme, 2.1.7)
 e7fc436d0bf31500ced7a7143067c337:twiki (4.1.2) - logos/favicon.ico
 9789c9ab400ea0b9ca8fcbd9952133bd:twiki (4.1.2) - webpreferences 
 2b52c1344164d29dd8fb758db16aadb6:vdr-plugin-live (0.2.0)
@@ -234,8 +236,6 @@ b7f98dd27febe36b7275f22ad73c5e84:MoinMoin
 05bc6d56d8df6d668cf7e9e11319f4e6:Jive Forums
 63740175dae089e479a70c5e6591946c:The Lyceum Project
 4cbb2cfc30a089b29cd06179f9cc82ff:Dragonfly
-9187f6607b402df8bbc2aeb69a07bbca:XOOPS (2.x)
-389a8816c5b87685de7d8d5fec96c85b:XOOPS
 a1c686eb6e771878cf6040574a175933:CivicPlus
 4d7fe200d85000aea4d193a10e550d04:Intland Software codeBeamer
 1a9a1ec2b8817a2f951c9f1793c9bc54:Bitweaver
@@ -253,4 +253,3 @@ ff3b533b061cee7cfbca693cc362c34a:Kayako SupportSuite
 8757fcbdbd83b0808955f6735078a287:Comsenz Technology Ltd Discuz!
 9fac8b45400f794e0799d0d5458c092b:Comsenz Technology Ltd Discuz!
 4e370f295b96eef85449c357aad90328:Comsenz Technology Ltd SupeSite
-4cfbb29d0d83685ba99323bc0d4d3513:PHPWind Forums 7
