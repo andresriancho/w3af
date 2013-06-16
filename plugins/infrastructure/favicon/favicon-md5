@@ -1,3 +1,8 @@
+73778a17b0d22ffbb7d6c445a7947b92:Apache on Mac OS X
+71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
+d99217782f41e71bcaa8e663e6302473:Apache on Red Hat/Fedora
+4644f2d45601037b8423d45e13194c93:Apache Tomcat (5.5.26), Alfresco Community
+31aa07fe236ee504c890a61d1f7f0a97:Apache2 (2.2.9) docs-manual
 8894791e84f5cafebd47311d14a3703c:Joomla 1.7
 c9856f0a4dd7ad0c215a68052a04d9e8:Oracle
 6eb4a43cb64c97f76562af703893c8fd:XAMPP
@@ -17,7 +22,6 @@ f1876a80546b3986dbb79bad727b0374:NetScreen WebUI or 3Com Router
 b25dbe60830705d98ba3aaf0568c456a:Netscape iPlanet 6.0
 41e2c893098b3ed9fc14b821a2e14e73:Netscape 6.0 (AOL)
 a28ebcac852795fe30d8e99a23d377c1:SunOne 6.1
-71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
 d41d8cd98f00b204e9800998ecf8427e:Zero byte favicon
 6f767458b952d4755a795af0e4e0aa17:Yahoo!
 5b0e3b33aa166c88cee57f83de1d4e55:DotNetNuke (http://www.dotnetnuke.com)
@@ -34,7 +38,6 @@ e44d22b74f7ee4435e22062d5adf4a6a:Wordpress (2.x)
 ecaa88f7fa0bf610a5a26cf545dcd3aa:3-byte invalid favicon: domain sellers
 c1201c47c81081c7f0930503cae7f71a:vBulletin forum
 edaaef7bbd3072a3a0c3fb3b29900bcb:Powered by Reynolds Web Solutions (Car sales CMS)
-d99217782f41e71bcaa8e663e6302473:Apache on Red Hat/Fedora
 a8fe5b8ae2c445a33ac41b33ccc9a120:Arris Touchstone Device
 d16a0da12074dae41980a6918d33f031:ST 605
 befcded36aec1e59ea624582fcb3225c:SpeedTouch
@@ -48,7 +51,6 @@ fa2b274fab800af436ee688e97da4ac4:Etherpad
 31c16dd034e6985b4ba929e251200580:Stephen Turner Analog (6.0)
 2d4cca83cf14d1adae178ad013bdf65b:Ant docs manual (1.7.1)
 032ecc47c22a91e7f3f1d28a45d7f7bc:Ant docs (1.7.1) / libjakarta-poi-java (3.0.2)
-31aa07fe236ee504c890a61d1f7f0a97:apache2 (2.2.9) docs-manual
 c0c4e7c0ac4da24ab8fc842d7f96723c:xsp (1.9.1)
 d6923071afcee9cebcebc785da40b226:autopsy (2.08)
 7513f4cf4802f546518f26ab5cfa1cad:axyl (2.6.0)
@@ -163,7 +165,6 @@ cb740847c45ea3fbbd80308b9aa4530a:sork-vacation-h3 (3.0.1)
 7c7b66d305e9377fa1fce9f9a74464d9:spe (0.8.4.h)
 0e2503a23068aac350f16143d30a1273:sql-ledger (2.8.15)
 1fd3fafc1d461a3d19e91dbbba03d0aa:tea (17.6.1)
-4644f2d45601037b8423d45e13194c93:Apache Tomcat (5.5.26), Alfresco Community
 1de863a5023e7e73f050a496e6b104ab:torrentflux (2.4)
 83dea3d5d8c6feddec84884522b61850:torrentflux (2.4) - themes/G4E/
 d1bc9681dce4ad805c17bd1f0f5cee97:torrentflux (2.4) - themes/BlueFlux/
@@ -188,7 +189,6 @@ ceb25c12c147093dc93ac8b2c18bebff:COMpact 5020 VoIP
 05656826682ab3147092991ef5de9ef3:RapidShare
 e19ffb2bc890f5bdca20f10bfddb288d:Rapid7 (NeXpose)
 1f8c0b08fb6b556a6587517a8d5f290b:owasp.org
-73778a17b0d22ffbb7d6c445a7947b92:Apache on Mac OS X
 799f70b71314a7508326d1d2f68f7519:JBoss Server
 bd0f7466d35e8ba6cedd9c27110c5c41:Serena Collage (4.6, servlet/images/collage_app.ico)
 dc0816f371699823e1e03e0078622d75:Aruba Network Devices (HTTP(S) login page)
