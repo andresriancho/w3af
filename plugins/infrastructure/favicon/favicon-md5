@@ -1,31 +1,58 @@
+2ab2aae806e8393b70970b2eaace82e0:Apache CouchDB (0.8.0-1.3.0)
+73778a17b0d22ffbb7d6c445a7947b92:Apache on Mac OS X
+71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
+d99217782f41e71bcaa8e663e6302473:Apache on Red Hat/Fedora
+4644f2d45601037b8423d45e13194c93:Apache Tomcat (5.5.26), Alfresco Community
+31aa07fe236ee504c890a61d1f7f0a97:Apache2 (2.2.9) docs-manual
+43ba066789e749f9ef591dc086f3cd14:Atlassian Bamboo
+a83dfece1c0e9e3469588f418e1e4942:Atlassian Bamboo
+12888a39a499eb041ca42bf456aca285:Atlassian Confluence or Crowd
+3341c6d3c67ccdaeb7289180c741a965:Atlassian Confluence or Crowd
+1275afc920a53a9679d2d0e8a5c74054:Atlassian Crowd
+01febf7c2bd75cd15dae3aa093d80552:Atlassian Crucible or Fisheye
+6c1452e18a09070c0b3ed85ce7cb3917:Atlassian Jira
+04d89d5b7a290334f5ce37c7e8b6a349:Atlassian Jira Bug Tracker
+de2b6edbf7930f5dd0ffe0528b2bbcf4:Barracuda Spam/Virus firewall appliance
+f51425ace97f807fe5840c4382580fd5:Beehive Forum (1.x)
+1a9a1ec2b8817a2f951c9f1793c9bc54:Bitweaver
+140e3eb3e173bfb8d15778a578a213aa:bmpx (0.40.14)
+ea84a69cb146a947fac2ac7af3946297:boost (1.34.1) 
 8894791e84f5cafebd47311d14a3703c:Joomla 1.7
 c9856f0a4dd7ad0c215a68052a04d9e8:Oracle
 6eb4a43cb64c97f76562af703893c8fd:XAMPP
+389a8816c5b87685de7d8d5fec96c85b:XOOPS CMS
+9187f6607b402df8bbc2aeb69a07bbca:XOOPS CMS (2.x)
 09d310e97902eefd0065f01c09c830fb:Moodle
-ec49973c1991bf39fcdb53260467f39f:Plesk
+dcea02a5797ce9e36f19b7590752563e:Parallels Plesk (x)
+9ceae7a3c88fc451d59e24d8d5f6f166:Parallels Plesk (8.2.0)
+2cee5e3ce2f5c4640a68fc208c286494:Parallels Plesk (10.2.0)
+ec49973c1991bf39fcdb53260467f39f:Parallels Plesk (11.0.9)
+9ceae7a3c88fc451d59e24d8d5f6f166:Plesk managed system
 6399cc480d494bf1fcd7d16c42b1c11b:penguin
 09b565a51e14b721a323f0ba44b2982a:Google web server
 506190fc55ceaa132f1bc305ed8472ca:SocialText
 2cc15cfae55e2bb2d85b57e5b5bc3371:PHPwiki (1.3.14) / gforge (4.6.99+svn6496) - wiki
-389a8816c5b87685de7d8d5fec96c85b:XOOPS cms
 f1876a80546b3986dbb79bad727b0374:NetScreen WebUI or 3Com Router
 226ffc5e483b85ec261654fe255e60be:Netscape 4.1
 b25dbe60830705d98ba3aaf0568c456a:Netscape iPlanet 6.0
 41e2c893098b3ed9fc14b821a2e14e73:Netscape 6.0 (AOL)
 a28ebcac852795fe30d8e99a23d377c1:SunOne 6.1
-71e30c507ca3fa005e2d1322a5aa8fb2:Apache on Redhat
 d41d8cd98f00b204e9800998ecf8427e:Zero byte favicon
-dcea02a5797ce9e36f19b7590752563e:Parallels Plesk 
 6f767458b952d4755a795af0e4e0aa17:Yahoo!
 5b0e3b33aa166c88cee57f83de1d4e55:DotNetNuke (http://www.dotnetnuke.com)
 7dbe9acc2ab6e64d59fa67637b1239df:Lotus-Domino
 fa54dbf2f61bd2e0188e47f5f578f736:Wordpress
 6cec5a9c106d45e458fc680f70df91b0:Wordpress - obsolete version
+b231ad66a2a9b0eb06f72c4c88973039:Wordpress
+e1e8bdc3ce87340ab6ebe467519cf245:Wordpress
+95103d0eabcd541527a86f23b636e794:Wordpress Multi-User (MU)
+e44d22b74f7ee4435e22062d5adf4a6a:Wordpress (2.x)
+3ead5afa19537170bb980924397b70d6:Wordpress (3.x) Twenty Ten theme
+28a122aa74f6929b0994fc544555c0b1:Wordpress (3.2-3.x) Twenty Eleven theme
 81ed5fa6453cf406d1d82233ba355b9a:E-zekiel
 ecaa88f7fa0bf610a5a26cf545dcd3aa:3-byte invalid favicon: domain sellers
 c1201c47c81081c7f0930503cae7f71a:vBulletin forum
 edaaef7bbd3072a3a0c3fb3b29900bcb:Powered by Reynolds Web Solutions (Car sales CMS)
-d99217782f41e71bcaa8e663e6302473:Apache on Red Hat/Fedora
 a8fe5b8ae2c445a33ac41b33ccc9a120:Arris Touchstone Device
 d16a0da12074dae41980a6918d33f031:ST 605
 befcded36aec1e59ea624582fcb3225c:SpeedTouch
@@ -39,12 +66,10 @@ fa2b274fab800af436ee688e97da4ac4:Etherpad
 31c16dd034e6985b4ba929e251200580:Stephen Turner Analog (6.0)
 2d4cca83cf14d1adae178ad013bdf65b:Ant docs manual (1.7.1)
 032ecc47c22a91e7f3f1d28a45d7f7bc:Ant docs (1.7.1) / libjakarta-poi-java (3.0.2)
-31aa07fe236ee504c890a61d1f7f0a97:apache2 (2.2.9) docs-manual
 c0c4e7c0ac4da24ab8fc842d7f96723c:xsp (1.9.1)
 d6923071afcee9cebcebc785da40b226:autopsy (2.08)
 7513f4cf4802f546518f26ab5cfa1cad:axyl (2.6.0)
 de68f0ad7b37001b8241bce3887593c7:b2evolution (2.4.2)
-140e3eb3e173bfb8d15778a578a213aa:bmpx (0.40.14)
 4f12cccd3c42a4a478f067337fe92794:cacti (0.8.7b)
 c0533ae5d0ed638ba3fb3485d8250a28:CakePHP (1.1.x)
 66b3119d379aee26ba668fef49188dd3:cakephp (1.2.x-1.3x)
@@ -55,7 +80,6 @@ a18421fbf34123c03fb8b3082e9d33c8:chora2 (2.0.2)
 75069c2c6701b2be250c05ec494b1b31:chronicle (2.9) theme-blog.mail-scanning.com
 27c3b07523efd6c318a201cac58008ba:cimg (1.2.0.1) 
 ae59960e866e2730e99799ac034eacf7:webcit (7.37)
-2ab2aae806e8393b70970b2eaace82e0:couchdb (0.8.0-0.9.1)
 ddd76f1cfe31499ce3db6702991cbc45:cream (0.41)
 74120b5bbc7be340887466ff6cfe66c6:cups (1.3.9) - doc
 abeea75cf3c1bac42bbd0e96803c72b9:doc-iana-20080601
@@ -68,6 +92,7 @@ c86974467c2ac7b6902189944f812b9a:dtc (0.17.x-0.24.x)
 bba9f1c29f100d265865626541b20a50:dtc (0.25.x-0.36.x)
 171429057ae2d6ad68e2cd6dcfd4adc1:ebug-http (0.31)
 f6e9339e652b8655d4e26f3e947cf212:eGroupWare (1.0.0.009, 1.4.004-2) (/phpgwapi/templates/idots/images/favicon.ico)
+eb3e307f44581916d9f1197df2fc9de3:flac (1.2.1) 
 093551287f13e0ee3805fee23c6f0e12:freevo (1.8.1) 
 56753c5386a70edba6190d49252f00bb:gallery (1.5.8)
 54b299f2f1c8b56c8c495f2ded6e3e0b:garlic-doc (1.6) 
@@ -78,7 +103,7 @@ c9339a2ecde0980f40ba22c2d237b94b:glpi (0.70.2)
 db1e3fe4a9ba1be201e913f9a401d794:gollem (1.0.3)
 921042508f011ae477d5d91b2a90d03f:gonzui (1.2+cvs20070129) 
 ecab73f909ddd28e482ababe810447c8:gosa (2.5.16.1)
-c16b0a5c9eb3bfd831349739d89704ec:gramps (3.0.1)
+c16b0a5c9eb3bfd831349739d89704ec:Gramps (3.x-4.x)
 63d5627fc659adfdd5b902ecafe9100f:gsoap (2.7.9l) 
 462794b1165c44409861fcad7e185631:hercules (3.05) 
 3995c585b76bd5aa67cb6385431d378a:horde-sam (0.1+cvs20080316) - silver
@@ -90,17 +115,17 @@ ee3d6a9227e27a5bc72db3184dab8303:horde-sam (0.1+cvs20080316) - graphics
 32bf63ac2d3cfe82425ce8836c9ce87c:ikiwiki (2.56ubuntu1)
 f567fd4927f9693a7a2d6cacf21b51b6:Horde IMP (4.1.4 - 4.1.6, also used in Horde Groupware Webmail 1.0.1))
 919e132a62ea07fce13881470ba70293:Horde Groupware Webmail 1.0.1 (Ingo Theme, 1.1.5)
+a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail 1.0.1 (Kronolith Theme, 2.1.8)
+f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail 1.0.1 (Mnemo Theme, 2.1.2) 
+ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail 1.0.1 (Turba Theme, 2.1.7)
 ed7d5c39c69262f4ba95418d4f909b10:jetty (5.1.14)
 6900fab05a50a99d284405f46e5bc7f6:k3d (0.6.7.0) 
 24d1e355c00e79dc13b84d5455534fe7:kdelibs (3.5.10-4.1.4) 
 8ab2f1a55bcb0cac227828afd5927d39:kdenetwork (4.1.4)
 54667bea91124121e98da49e55244935:kolab-webadmin (2.1.0-20070510)
-a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail 1.0.1 (Kronolith Theme, 2.1.8)
 d00d85c8fb3a11170c1280c454398d51:ktorrent (3.1.2) 
 fa21ab1b1e1b4c9516afbd63e91275a9:lastfmproxy (1.3b) 
-663ee93a41000b8959d6145f0603f599:ldap-account-manager (2.3.0) 
-ea84a69cb146a947fac2ac7af3946297:boost (1.34.1) 
-eb3e307f44581916d9f1197df2fc9de3:flac (1.2.1) 
+663ee93a41000b8959d6145f0603f599:LDAP Account Manager (2.2-4.x) 
 669bc10baf11b43391294aac3e1b8c52:libitpp (4.0.4)
 b8fe2ec1fcc0477c0d0f00084d824071:lucene (2.3.2) 
 12225e325909cee70c31f5a7ab2ee194:ramaze-ruby (0.3.9.1) 
@@ -110,7 +135,6 @@ b8fe2ec1fcc0477c0d0f00084d824071:lucene (2.3.2)
 ebe293e1746858d2548bca99c43e4969:Mantis Bug Tracker (1.1.2, /bugs/images/favicon.ico)
 0d42576d625920bcd121261fc5a6230b:mathomatic (14.0.6)
 f972c37bf444fb1925a2c97812e2c1eb:mediatomb (0.11.0)
-f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail 1.0.1 (Mnemo Theme, 2.1.2) 
 933a83c6e9e47bd1e38424f3789d121d:Moodle (1.8.2, 1.9.x, multiple default themes) 
 b6652d5d71f6f04a88a8443a8821510f:Moodle (1.8.2, 1.9.x, Cornflower Theme, /theme/cornflower/favicon.ico)
 06b60d90ccfb79c2574c7fdc3ac23f05:movabletype-opensource (4.2~rc4)
@@ -129,6 +153,7 @@ c30bf7e6d4afe1f02969e0f523d7a251:nulog (2.0)
 4b30eec86e9910e663b5a9209e9593b6:phpldapadmin (1.1.0.5)
 02dd7453848213a7b5277556bcc46307:phpmyadmin (2.11.8.1) - pmd 
 d037ef2f629a22ddadcf438e6be7a325:phpmyadmin (2.11.8.1)
+4cfbb29d0d83685ba99323bc0d4d3513:PHPWind Forums (7.x-8.x)
 8190ead2eb45952151ab5065d0e56381:pootle (1.1.0)
 ba84999dfc070065f37a082ab0e36017:prewikka (0.9.14)
 0f45c2c79ebe90d6491ddb111e810a56:python-cherrypy (2.3.0-3.0.2)
@@ -152,13 +177,11 @@ cb740847c45ea3fbbd80308b9aa4530a:sork-vacation-h3 (3.0.1)
 7c7b66d305e9377fa1fce9f9a74464d9:spe (0.8.4.h)
 0e2503a23068aac350f16143d30a1273:sql-ledger (2.8.15)
 1fd3fafc1d461a3d19e91dbbba03d0aa:tea (17.6.1)
-4644f2d45601037b8423d45e13194c93:Apache Tomcat (5.5.26), Alfresco Community
 1de863a5023e7e73f050a496e6b104ab:torrentflux (2.4)
 83dea3d5d8c6feddec84884522b61850:torrentflux (2.4) - themes/G4E/
 d1bc9681dce4ad805c17bd1f0f5cee97:torrentflux (2.4) - themes/BlueFlux/
 8d13927efb22bbe7237fa64e858bb523:transmission (1.34)
 5b015106854dc7be448c14b64867dfa5:tulip (3.0.0~B6)
-ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail 1.0.1 (Turba Theme, 2.1.7)
 e7fc436d0bf31500ced7a7143067c337:twiki (4.1.2) - logos/favicon.ico
 9789c9ab400ea0b9ca8fcbd9952133bd:twiki (4.1.2) - webpreferences 
 2b52c1344164d29dd8fb758db16aadb6:vdr-plugin-live (0.2.0)
@@ -178,7 +201,6 @@ ceb25c12c147093dc93ac8b2c18bebff:COMpact 5020 VoIP
 05656826682ab3147092991ef5de9ef3:RapidShare
 e19ffb2bc890f5bdca20f10bfddb288d:Rapid7 (NeXpose)
 1f8c0b08fb6b556a6587517a8d5f290b:owasp.org
-73778a17b0d22ffbb7d6c445a7947b92:Apache on Mac OS X
 799f70b71314a7508326d1d2f68f7519:JBoss Server
 bd0f7466d35e8ba6cedd9c27110c5c41:Serena Collage (4.6, servlet/images/collage_app.ico)
 dc0816f371699823e1e03e0078622d75:Aruba Network Devices (HTTP(S) login page)
@@ -187,35 +209,22 @@ f097f0adf2b9e95a972d21e5e5ab746d:Citrix Access Server
 80656aabfafe0f3559f71bb0524c4bb3:Macromedia Breeze
 48c02490ba335a159b99343b00decd87:Octeth Technologies oemPro (3.5.5.1)
 eb6d4ce00ec36af7d439ebd4e5a395d7:Mailman
-04d89d5b7a290334f5ce37c7e8b6a349:Atlassian Jira Bug Tracker
 d80e364c0d3138c7ecd75bf9896f2cad:Apache Tomcat (6.0.18), Alfresco Enterprise Content Management System
 a6b55b93bc01a6df076483b69039ba9c:Fog Creek Fogbugz (6.1.44)
 ee4a637a1257b2430649d6750cda6eba:Trimble Device Embedded Web Server
-9ceae7a3c88fc451d59e24d8d5f6f166:Plesk managed system
 69ae01d0c74570d4d221e6c24a06d73b:Roku Soundbridge
 2e9545474ee33884b5fb8a9a0b8806dd:Ampache
 639b61409215d770a99667b446c80ea1:Lotus Domino Server
 be6fb62815509bd707e69ee8dad874a1:i.LON server by Echelon
 a46bc7fc42979e9b343335bdd86d1c3e:NetScout NGenius
 192decdad41179599a776494efc3e720:JBoss Installation
-de2b6edbf7930f5dd0ffe0528b2bbcf4:Barracuda Spam/Virus firewall appliance
 386211e5c0b7d92efabd41390e0fc250:SparkWeb web-based collaboration client. http://www.igniterealtime.org/
 f89abd3f358cb964d6b753a5a9da49cf:LimeSurvey
 a7947b1675701f2247921cf4c2b99a78:Alexander Palmo Simple PHP Blog
-01febf7c2bd75cd15dae3aa093d80552:Atlassian Crucible or Fisheye
-1275afc920a53a9679d2d0e8a5c74054:Atlassian Crowd
-12888a39a499eb041ca42bf456aca285:Atlassian Confluence or Crowd
-3341c6d3c67ccdaeb7289180c741a965:Atlassian Confluence or Crowd
-6c1452e18a09070c0b3ed85ce7cb3917:Atlassian Jira
-43ba066789e749f9ef591dc086f3cd14:Atlassian Bamboo
-a83dfece1c0e9e3469588f418e1e4942:Atlassian Bamboo
 7b0d4bc0ca1659d54469e5013a08d240:Netgear (Infrant) ReadyNAS NV+
 cee40c0b35bded5e11545be22a40e363:OSSDL.de Openmailadmin
 4f88ba9f1298701251180e6b6467d43e:Xinit Systems Ltd. Openfiler
 4c3373870496151fd02a6f1185b0bb68:rPath Appliance Agent
-b231ad66a2a9b0eb06f72c4c88973039:Wordpress
-e1e8bdc3ce87340ab6ebe467519cf245:Wordpress
-95103d0eabcd541527a86f23b636e794:Wordpress Multi-User (MU)
 64ca706a50715e421b6c2fa0b32ed7ec:Parallels Plesk Control Panel
 f425342764f8c356479d05daa7013c2f:vBulletin forum
 740af61c776a3cb98da3715bdf9d3fc1:vBulletin forum
@@ -231,11 +240,8 @@ b7f98dd27febe36b7275f22ad73c5e84:MoinMoin
 05bc6d56d8df6d668cf7e9e11319f4e6:Jive Forums
 63740175dae089e479a70c5e6591946c:The Lyceum Project
 4cbb2cfc30a089b29cd06179f9cc82ff:Dragonfly
-9187f6607b402df8bbc2aeb69a07bbca:XOOPS (2.x)
-389a8816c5b87685de7d8d5fec96c85b:XOOPS
 a1c686eb6e771878cf6040574a175933:CivicPlus
 4d7fe200d85000aea4d193a10e550d04:Intland Software codeBeamer
-1a9a1ec2b8817a2f951c9f1793c9bc54:Bitweaver
 1cc16c64d0e471607677b036b3f06b6e:Roller Weblogger Project
 7563f8c3ebd4fd4925f61df7d5ed8129:Holger Zimmerman Pi3Web HTTP Server
 7f0f918a78ca8d4d5ff21ea84f2bac68:SubText
@@ -250,4 +256,3 @@ ff3b533b061cee7cfbca693cc362c34a:Kayako SupportSuite
 8757fcbdbd83b0808955f6735078a287:Comsenz Technology Ltd Discuz!
 9fac8b45400f794e0799d0d5458c092b:Comsenz Technology Ltd Discuz!
 4e370f295b96eef85449c357aad90328:Comsenz Technology Ltd SupeSite
-4cfbb29d0d83685ba99323bc0d4d3513:PHPWind Forums 7
