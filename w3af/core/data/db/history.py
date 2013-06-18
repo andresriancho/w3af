@@ -204,7 +204,7 @@ class HistoryItem(object):
         #    Ok... the file exists, but it might still be being written
         #
         req_res = open(fname, 'rb')
-        request_dict, response_dict = msgpack.load(req_res)
+        request_dict, response_dict = msgpack.load(req_res, use_list=True)
         req_res.close()
         
         request = HTTPRequest.from_dict(request_dict)
