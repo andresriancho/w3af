@@ -124,8 +124,57 @@ class php_eggs(InfrastructurePlugin):
         ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
         ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
         ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.0"] = [
+        ("1e04761e912831dd29b7a98785e7ac61", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.1"] = [
+        ("1e04761e912831dd29b7a98785e7ac61", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.2"] = [
+        ("22d03c3c0a9cff6d760a4ba63909faea", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.3"] = [
+        ("8a4a61f60025b43f11a7c998f02b1902", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.4"] = [
+        ("8a4a61f60025b43f11a7c998f02b1902", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.5"] = [
+        ("8a4a61f60025b43f11a7c998f02b1902", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.6"] = [
+        ("913ec921cf487109084a518f91e70859", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.7"] = [
+        ("913ec921cf487109084a518f91e70859", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.8"] = [
+        ("913ec921cf487109084a518f91e70859", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.3.9"] = [
+        ("913ec921cf487109084a518f91e70859", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
     EGG_DB["4.3.10"] = [
-        ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"),
+        ("8fbf48d5a2a64065fc26db3e890b9871", "PHP Credits"),
         ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
         ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
         ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
@@ -135,17 +184,12 @@ class php_eggs(InfrastructurePlugin):
         ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"),
         ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
     EGG_DB["4.3.11"] = [
-        ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"),
+        ("8fbf48d5a2a64065fc26db3e890b9871", "PHP Credits"),
         ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
-        ("a8ad323e837fa00771eda6b709f40e37", "PHP Logo 2"),
-        ("a8ad323e837fa00771eda6b709f40e37", "Zend Logo")]
+        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
     EGG_DB["4.3.2"] = [
         ("8a8b4a419103078d82707cf68226a482", "PHP Credits"),
-        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
-        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
-        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
-    EGG_DB["4.3.8"] = [
-        ("96714a0fbe23b5c07c8be343adb1ba90", "PHP Credits"),
         ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
         ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"),
         ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
