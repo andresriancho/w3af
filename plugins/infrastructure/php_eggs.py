@@ -49,6 +49,41 @@ class php_eggs(InfrastructurePlugin):
     # This is a list of hashes and description of the egg for every PHP version.
     #
     EGG_DB = {}
+    EGG_DB["4.0.0"] = [
+        ("7c75d38f7b26b7cc13ed1d7bbedd0bb8", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.1"] = [
+        ("31e2dd536176af3f7f142c18eef1aa4e", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.2"] = [
+        ("34591272f6dd5cf9953b65dfdb390259", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.3pl1"] = [
+        ("34591272f6dd5cf9953b65dfdb390259", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.4pl1"] = [
+        ("bee683d024c0065a6e7ae57458416f60", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.5"] = [
+        ("34040cf89a0574e7de5c643da6d9eab8", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
+    EGG_DB["4.0.6"] = [
+        ("5bd3e883d03543baf7f39749d526c5a4", "PHP Credits"),
+        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
+        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"),
+        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo")]
     EGG_DB["4.1.2"] = [
         ("744aecef04f9ed1bc39ae773c40017d1", "PHP Credits"),
         ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"),
