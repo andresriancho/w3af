@@ -58,6 +58,24 @@ fa2b274fab800af436ee688e97da4ac4:Etherpad
 0e14c2f52b93613b5d1527802523b23f:gforge (4.6.99+svn6496) 
 85138f44d577b03dfc738d3f27e04992:Gitweb
 09b565a51e14b721a323f0ba44b2982a:Google web server
+462794b1165c44409861fcad7e185631:hercules (3.05) 
+39308a30527336e59d1d166d48c7742c:Hewlett-Packard HPLIP (2.8.7) - doc
+7cc1a052c86cc3d487957f7092a6d8c3:Horde (3.2.1) - graphics/tango
+835306119474fefb6b38ae314a37943a:Horde Agora - Forum
+b64a1155b80e0b06272f8b842b83fa57:Horde Ansel - Photo Manager
+a18421fbf34123c03fb8b3082e9d33c8:Horde Chora - Code Repositories Viewer
+0e6a6ed665a9669b368d9a90b87976a9:Horde Gollem - File Manager
+db1e3fe4a9ba1be201e913f9a401d794:Horde Gollem - File Manager (1.0.3)
+919e132a62ea07fce13881470ba70293:Horde Groupware Webmail (1.0.1) - Ingo Theme, 1.1.5
+a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail (1.0.1) - Kronolith Theme, 2.1.8
+f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail (1.0.1) - Mnemo Theme, 2.1.2 
+81df3601d6dc13cbc6bd8212ef50dd29:Horde Groupware Webmail (1.0.1) - Nag Theme, 2.1.4
+ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail (1.0.1) - Turba Theme, 2.1.7
+f567fd4927f9693a7a2d6cacf21b51b6:Horde IMP (4.1.4 - 4.1.6, also used in Horde Groupware Webmail 1.0.1)
+3995c585b76bd5aa67cb6385431d378a:Horde SAM - Spam Assassin Module (0.1+cvs20080316) - silver
+ee3d6a9227e27a5bc72db3184dab8303:Horde SAM - Spam Assassin Module (0.1+cvs20080316) - graphics
+5e99522b02f6ecadbb3665202357d775:hplip (2.8.7) - installer
+43d4aa56dc796067b442c95976a864fd:hunchentoot (0.15.7) 
 e4a509e78afca846cd0e6c0672797de5:i3micro VRG
 8894791e84f5cafebd47311d14a3703c:Joomla 1.7
 a7fe149a9f2582f38576d14d9b1f0f55:LaCie Dashboard
@@ -97,24 +115,10 @@ eb3e307f44581916d9f1197df2fc9de3:flac (1.2.1)
 56753c5386a70edba6190d49252f00bb:gallery (1.5.8)
 54b299f2f1c8b56c8c495f2ded6e3e0b:garlic-doc (1.6) 
 c9339a2ecde0980f40ba22c2d237b94b:glpi (0.70.2)
-db1e3fe4a9ba1be201e913f9a401d794:gollem (1.0.3)
 921042508f011ae477d5d91b2a90d03f:gonzui (1.2+cvs20070129) 
 ecab73f909ddd28e482ababe810447c8:gosa (2.5.16.1)
 c16b0a5c9eb3bfd831349739d89704ec:Gramps (3.x-4.x)
 63d5627fc659adfdd5b902ecafe9100f:gsoap (2.7.9l) 
-462794b1165c44409861fcad7e185631:hercules (3.05) 
-39308a30527336e59d1d166d48c7742c:Hewlett-Packard HPLIP (2.8.7) - doc
-7cc1a052c86cc3d487957f7092a6d8c3:horde (3.2.1) - graphics/tango
-f567fd4927f9693a7a2d6cacf21b51b6:Horde IMP (4.1.4 - 4.1.6, also used in Horde Groupware Webmail 1.0.1))
-919e132a62ea07fce13881470ba70293:Horde Groupware Webmail 1.0.1 (Ingo Theme, 1.1.5)
-a5b126cdeaa3081f77a22b3e43730942:Horde Groupware Webmail 1.0.1 (Kronolith Theme, 2.1.8)
-f5f2df7eec0d1c3c10b58960f3f8fb26:Horde Groupware Webmail 1.0.1 (Mnemo Theme, 2.1.2) 
-81df3601d6dc13cbc6bd8212ef50dd29:Horde Groupware Webmail 1.0.1 (Nag Theme, 2.1.4)
-ff260e80f5f9ca4b779fbd34087f13cf:Horde Groupware Webmail 1.0.1 (Turba Theme, 2.1.7)
-3995c585b76bd5aa67cb6385431d378a:horde-sam (0.1+cvs20080316) - silver
-ee3d6a9227e27a5bc72db3184dab8303:horde-sam (0.1+cvs20080316) - graphics
-5e99522b02f6ecadbb3665202357d775:hplip (2.8.7) - installer
-43d4aa56dc796067b442c95976a864fd:hunchentoot (0.15.7) 
 32bf63ac2d3cfe82425ce8836c9ce87c:ikiwiki (2.56ubuntu1)
 ed7d5c39c69262f4ba95418d4f909b10:jetty (5.1.14)
 6900fab05a50a99d284405f46e5bc7f6:k3d (0.6.7.0) 
