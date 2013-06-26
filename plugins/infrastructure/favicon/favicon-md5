@@ -131,7 +131,8 @@ b8fe2ec1fcc0477c0d0f00084d824071:lucene (2.3.2)
 88733ee53676a47fc354a61c32516e82:Magento (1.x)
 5f8b52715c08dfc7826dad181c71dec8:mahara (1.0.4)
 eb6d4ce00ec36af7d439ebd4e5a395d7:Mailman
-ebe293e1746858d2548bca99c43e4969:Mantis Bug Tracker (1.1.2, /bugs/images/favicon.ico)
+ebe293e1746858d2548bca99c43e4969:Mantis Bug Tracker (1.1.x-1.2.8 /images/favicon.ico)
+701bb703b31f99da18251ca2e557edf0:Mantis Bug Tracker (1.2.9-1.2.15 /images/favicon.ico)
 0a99a23f6b1f1bddb94d2a2212598628:Maraschino - Frontend for XBMC HTPC
 0d42576d625920bcd121261fc5a6230b:mathomatic (14.0.6)
 f972c37bf444fb1925a2c97812e2c1eb:mediatomb (0.11.0)
