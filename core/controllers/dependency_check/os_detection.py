@@ -23,12 +23,17 @@ import platform
 
 
 curr_platform = platform.system().lower()
+distro = platform.dist()
 
 def is_mac():
     return 'darwin' in curr_platform or 'mac' in curr_platform
 
 def is_linux():
     return 'linux' in curr_platform
+
+def is_fedora():
+    if distro[0] == 'fedora':
+        return 'fedora' in curr_platform or 'fedora' in curr_platform
 
 def is_openbsd():
     return 'openbsd' in curr_platform
