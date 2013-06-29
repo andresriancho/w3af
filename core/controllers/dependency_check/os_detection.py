@@ -32,8 +32,7 @@ def is_linux():
     return 'linux' in curr_platform
 
 def is_fedora():
-    if distro[0] == 'fedora':
-        return 'fedora' in curr_platform or 'fedora' in curr_platform
+    return 'fedora' in distro[0]
 
 def is_openbsd():
     return 'openbsd' in curr_platform
