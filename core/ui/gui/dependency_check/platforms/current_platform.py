@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.dependency_check.os_detection import is_mac, is_openbsd
+from core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora 
 
 if is_mac():
     from .mac import (SYSTEM_NAME, PKG_MANAGER_CMD,
@@ -29,6 +29,11 @@ if is_mac():
 
 elif is_openbsd():
     from .openbsd import (SYSTEM_NAME, PKG_MANAGER_CMD,
+                          SYSTEM_PACKAGES, PIP_CMD,
+                          PIP_PACKAGES, os_package_is_installed,
+                          after_hook)
+elif is_fedora():
+    from .fedora import (SYSTEM_NAME, PKG_MANAGER_CMD,
                           SYSTEM_PACKAGES, PIP_CMD,
                           PIP_PACKAGES, os_package_is_installed,
                           after_hook)

@@ -29,10 +29,10 @@ PKG_MANAGER_CMD = 'sudo yum install'
 
 SYSTEM_PACKAGES = {
                    'PIP': ['python-pip'],
-                   'C_BUILD': ['python-devel-2.7', 'python-setuptools',
-                               'build-essential', 'libsqlite3x-devel'],
+                   'C_BUILD': ['python-devel', 'python-setuptools',
+                               'libsqlite3x-devel'],
                    'GIT': ['git'],
-                   'XML': ['libxml2-devel', 'libxslt1-devel']
+                   'XML': ['libxml2-devel', 'libxslt-devel']
                   }
 PIP_CMD = 'python-pip'
 
@@ -60,21 +60,21 @@ PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
                 PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
-    not_installed = 'is not installed and no info is available'
+    not_installed = 'is not installed'
     installed = 'Status: install ok installed'
     
     try:
         p = subprocess.Popen(['rpm', '-q', package_name], stdout=subprocess.PIPE,
                                                            stderr=subprocess.PIPE)
     except OSError:
-        # We're not on a fedora based system
+        # We're not on a debian based system
         return None
     else:
         dpkg_output = p.stdout.read()
 
         if not_installed in dpkg_output:
             return False
-        elif installed in dpkg_output:
+        elif package_name in dpkg_output:
             return True
         else:
             return None
