@@ -173,7 +173,7 @@ class HttpEditor(gtk.VBox, Searchable):
         
         if len(splitted_raw_text) == 1:
             # no postdata
-            headers = splitted_raw_text
+            headers = splitted_raw_text[0]
             data = ''
         else:
             # We'll always have 2 here, since we passed 1 as a second
