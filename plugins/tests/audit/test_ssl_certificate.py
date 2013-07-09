@@ -38,15 +38,16 @@ class TestSSLCertificate(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                'audit': (PluginConfig('ssl_certificate'),),
+                'audit': (PluginConfig('ssl_certificate',
+                                       ('minExpireDays', 36500, PluginConfig.INT)),),
             }
         }
     }
 
     def test_ssl_certificate(self):
         # Start the HTTPS server
-        certfile = os.path.join(
-            'plugins', 'tests', 'audit', 'certs', 'invalid_cert.pem')
+        certfile = os.path.join('plugins', 'tests', 'audit', 'certs',
+                                'invalid_cert.pem')
         s = ssl_server('localhost', PORT, certfile)
         s.start()
 
