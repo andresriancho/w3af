@@ -76,6 +76,26 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
 
     # All installed?
     if not failed_deps and not os_packages:
+        #check if scapy is correctly installed on OSX
+        try:
+            from scapy.all import traceroute
+        except OSError, ose:
+            if "Device not configured" in str(ose):
+                print 'Tried to import traceroute from scapy.all. There was an OSError including the message "Device not configured"' 
+                print "This is a bug in the scapy library and happens on OSX with MacPorts i.e. when Virtualbox is installed"
+                print "Please apply the following fix (example for python 2.7):"
+                print "Open the file /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scapy/arch/unix.py"
+                print 'Change line 34 from: f=os.popen("netstat -rn") # -f inet'
+                print '                 to: f=os.popen("netstat -rn|grep -v vboxnet") # -f inet'
+                print 'Original bug report:'
+                print 'http://bb.secdev.org/scapy/issue/418/scapy-error-in-mac-osx-leopard'
+                print ''
+                if exit_on_failure:
+                    sys.exit(1)
+                else:
+                    return True
+            raise ose
+        
         # False means: do not exit()
         return False
 
