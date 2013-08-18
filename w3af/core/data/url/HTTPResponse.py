@@ -312,10 +312,10 @@ class HTTPResponse(object):
             try:
                 parser = etree.HTMLParser(recover=True)
                 self._dom = etree.fromstring(self.body, parser)
-            except Exception:
-                msg = ('The HTTP body for "%s" could NOT be parsed by lxml.'
-                       % self.get_url())
-                om.out.debug(msg)
+            except Exception, e:
+                msg = 'The HTTP body for "%s" could NOT be parsed by lxml.'\
+                      ' The exception was: "%s".'
+                om.out.debug(msg % (self.get_url(), e))
         return self._dom
 
     def get_charset(self):
