@@ -54,6 +54,14 @@ class TestDiskList(unittest.TestCase):
             r = random.randint(1000, 1000 * 2)
             self.assertEqual(r in dl, False)
 
+    def test_to_unicode(self):
+        dl = DiskList()
+        dl.append(1)
+        dl.append(2)
+        dl.append(3)
+        
+        self.assertEqual(unicode(dl), u'<DiskList [1, 2, 3]>')
+            
     @attr('smoke')
     def test_string(self):
         dl = DiskList()
