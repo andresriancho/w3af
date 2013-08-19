@@ -19,17 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 import xml.dom.minidom
 
-from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.exceptions import w3afException
-from core.controllers.exceptions import w3afRunOnce
-from core.controllers.misc.decorators import runonce
-from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.kb.info import Info
-from core.data.parsers.url import URL
+import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.knowledge_base as kb
+
+from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
+from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.misc.decorators import runonce
+from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.kb.info import Info
+from w3af.core.data.parsers.url import URL
 
 
 class genexus_xml(CrawlPlugin):
@@ -54,21 +55,22 @@ class genexus_xml(CrawlPlugin):
         base_url = fuzzable_request.get_url().base_url()
         
         for file_name in ('execute.xml', 'DeveloperMenu.xml'):
-            execute_url = base_url.url_join(file_name)
-            http_response = self._uri_opener.GET(execute_url, cache=True)
-
+            genexus_url = base_url.url_join(file_name)
+            
+            http_response = self._uri_opener.GET(genexus_url, cache=True)
+            
             if '</ObjLink>' in http_response and not is_404(http_response):
                 # Save it to the kb!
                 desc = 'The "%s" file was found at: "%s", this file might'\
                        ' expose private URLs and requires a manual review. The'\
                        ' scanner will add all URLs listed in this file to the'\
                        ' crawl queue.'
-                desc =  desc % (file_name, execute_url)
+                desc =  desc % (file_name, genexus_url)
                 title_info = 'GeneXus "%s" file' % file_name
             
                 i = Info(title_info, desc, http_response.id, self.get_name())
-                i.set_url(execute_url)
-            
+                i.set_url(genexus_url)
+
                 kb.kb.append(self, file_name, i)
                 om.out.information(i.get_desc())
 
@@ -85,6 +87,7 @@ class genexus_xml(CrawlPlugin):
                 else:
                     raw_url_list = dom.getElementsByTagName("ObjLink")
                     parsed_url_list = []
+                    
                     for url in raw_url_list:
                         try:
                             url = url.childNodes[0].data
@@ -97,7 +100,7 @@ class genexus_xml(CrawlPlugin):
                             om.out.debug(msg % file_name)
                         else:
                             parsed_url_list.append(url)
-                            
+                    
                     self.worker_pool.map(self.http_get_and_parse,
                                          parsed_url_list)
 
