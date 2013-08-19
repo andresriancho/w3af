@@ -18,10 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import httpretty
-import re
-
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestGenexusXML(PluginTest):
@@ -66,35 +63,18 @@ class TestGenexusXML(PluginTest):
        </Object>
     </Objects>"""
 
-    def request_callback(self, method, uri, headers):
-        status = 404
-        body = 'Not found'
-        content_type = 'text/html'
-        
-        if 'execute.xml' in uri:
-            status = 200
-            body = self.EXECUTE_XML
-            content_type = 'application/xml'
 
-        if 'DeveloperMenu.xml' in uri:
-            status = 200
-            body = self.DEVELOPER_MENU_XML
-            content_type = 'application/xml'
-        
-        if 'hidden.aspx' in uri or 'foobar.aspx' in uri:
-            status = 200
-            body = 'Exists'
-        
-        headers['Content-Type'] = content_type
-        headers['status'] = status
-        
-        return (status, headers, body)
+    MOCK_RESPONSES = [
+                      MockResponse('/execute.xml', EXECUTE_XML,
+                                   content_type='application/xml'),
+                      MockResponse('/DeveloperMenu.xml', DEVELOPER_MENU_XML,
+                                   content_type='application/xml'),
+                      MockResponse('/hidden.aspx', 'Exists'),
+                      MockResponse('/foobar.aspx.aspx', 'Exists'),
+                      ] 
 
-    @httpretty.activate
-    def test_genexus_xml(self):
-        httpretty.register_uri(httpretty.GET, re.compile("http://moth/(.*)"),
-                               body=self.request_callback)
-                
+
+    def test_genexus_xml(self):                
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
