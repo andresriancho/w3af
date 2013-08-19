@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import math
 import time
 
+from functools import wraps
+
 
 def runonce(exc_class=Exception):
     '''
@@ -30,12 +32,15 @@ def runonce(exc_class=Exception):
         already been called.
     '''
     def runonce_meth(meth):
+        
+        @wraps(meth)
         def inner_runonce_meth(self, *args):
             if not getattr(self, '_already_executed', False):
                 self._already_executed = True
                 return meth(self, *args)
             raise exc_class()
         return inner_runonce_meth
+    
     return runonce_meth
 
 
@@ -65,6 +70,8 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
         raise ValueError("'delay' must be nonnegative.")
 
     def deco_retry(f):
+        
+        @wraps(f)
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries - 1, delay
 
@@ -84,4 +91,5 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
                 time.sleep(mdelay)
                 mdelay *= backoff
         return f_retry
+    
     return deco_retry
