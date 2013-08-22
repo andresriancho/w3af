@@ -105,3 +105,23 @@ def after_hook():
           ' switch to the Mac ports Python by using the following command:\n'\
           '    sudo port select python python27\n\n'
     print msg % sys.executable
+    
+    #check if scapy is correctly installed on OSX
+    try:
+        from scapy.all import traceroute
+    except OSError, ose:
+        if "Device not configured" in str(ose):
+            msg = 'Tried to import traceroute from scapy.all. '\
+                  'There was an OSError including the message "Device not configured".'\
+                  'This is a bug in the scapy library and happens on OSX with MacPorts'\
+                  ' i.e. when Virtualbox is installed.\n Please apply the following fix '\
+                  '(example for python 2.7):\nOpen the file /opt/local/Library/Framewo'\
+                  'rks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scapy'\
+                  '/arch/unix.py\n'\
+                  'Change line 34 from: f=os.popen("netstat -rn") # -f inet\n'\
+                  '                 to: f=os.popen("netstat -rn|grep -v vboxnet") # -f inet'\
+                  'Original bug report:\n'\
+                  'http://bb.secdev.org/scapy/issue/418/scapy-error-in-mac-osx-leopard\n\n'\
+            print msg % sys.executable
+        raise ose
+    
