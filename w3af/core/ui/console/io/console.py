@@ -100,14 +100,6 @@ def getch(buf=None):
     return result
 
 
-def wrapper(fun):
-    try:
-        setRawInputMode(True)
-        fun()
-    finally:
-        setRawInputMode(False)
-
-
 def ioctl_GWINSZ(fd):  # TABULATION FUNCTIONS
     try:  # Discover terminal width
         import fcntl

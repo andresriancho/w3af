@@ -19,8 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
+import re
 import unittest
 import urllib2
+import httpretty
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
@@ -54,10 +56,38 @@ class PluginTest(unittest.TestCase):
     def setUp(self):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
+        
+        if hasattr(self, 'MOCK_RESPONSES'):
+            httpretty.enable()
+
+            httpretty.register_uri(httpretty.GET,
+                                   re.compile("http://moth/(.*)"),
+                                   body=self.request_callback)
 
     def tearDown(self):
         self.w3afcore.quit()
         self.kb.cleanup()
+
+        if hasattr(self, 'MOCK_RESPONSES'):
+            httpretty.disable()
+
+    def request_callback(self, method, uri, headers):
+        status = 404
+        body = 'Not found'
+        content_type = 'text/html'
+        
+        for mock_response in self.MOCK_RESPONSES:
+            if uri.endswith(mock_response.url):
+                status = mock_response.status
+                body = mock_response.body
+                content_type = mock_response.content_type
+                
+                break
+            
+        headers['Content-Type'] = content_type
+        headers['status'] = status
+        
+        return status, headers, body
 
     @retry(tries=3, delay=0.5, backoff=2)
     def _verify_targets_up(self, target_list):
@@ -254,3 +284,11 @@ def create_target_option_list(*target):
     opts.add(opt)
     
     return opts
+
+class MockResponse(object):
+    def __init__(self, url, body, content_type='text/html', status=200): 
+        self.url = url
+        self.body = body
+        self.content_type = content_type
+        self.status = status
+        

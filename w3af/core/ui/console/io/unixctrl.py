@@ -19,12 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import sys
-from w3af.core.ui.console.io.common import *
-import w3af.core.controllers.output_manager as om
 import termios
 import tty
+import sys
+import os
+
+from w3af.core.ui.console.io.common import (KEY_UP, KEY_DOWN, KEY_RIGHT,
+                                            KEY_LEFT, KEY_HOME, KEY_END,
+                                            KEY_BACKSPACE)
+
+import w3af.core.controllers.output_manager as om
+
 
 LONGEST_SEQUENCE = 5
 
@@ -49,26 +54,33 @@ SEQ_PREFIX = '\x1B'
 def read(amt):
     return sys.stdin.read(amt)
 
-oldSettings = None
+old_settings = None
 
 
 def setRawInputMode(raw):
     '''
-    Sets the raw input mode, in linux.
+    Sets the raw input mode for the linux terminal.
+    
+    :param raw: Boolean to indicate if we want to turn raw mode on or off.
     '''
-    global oldSettings
-    if raw and oldSettings is None:
+    if not os.isatty(sys.stdin.fileno()):
+        return
+    
+    global old_settings
+    
+    if raw and old_settings is None:
         fd = sys.stdin.fileno()
         try:
-            oldSettings = termios.tcgetattr(fd)
+            old_settings = termios.tcgetattr(fd)
             tty.setraw(sys.stdin.fileno())
         except Exception, e:
             om.out.console('termios error: ' + str(e))
-    elif not (raw or oldSettings is None):
+    
+    elif not (raw or old_settings is None):
         try:
-            termios.tcsetattr(
-                sys.stdin.fileno(), termios.TCSADRAIN, oldSettings)
-            oldSettings = None
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN,
+                              old_settings)
+            old_settings = None
         except Exception, e:
             om.out.console('termios error: ' + str(e))
 
