@@ -250,6 +250,7 @@ class MainApp(object):
         self.is_running = False
         self.paused = False
         self.scanShould = "start"
+        self.stoppedByUser = False
         self.menuViews = {}
 
         # Create a UIManager instance
@@ -622,8 +623,8 @@ class MainApp(object):
         self.set_tabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
-        self.startstopbtns.change_internals(
-            "Stop", gtk.STOCK_MEDIA_STOP, _("Stop scan"))
+        self.startstopbtns.change_internals("Stop", gtk.STOCK_MEDIA_STOP,
+                                            _("Stop scan"))
         self.scanShould = "stop"
         self.stoppedByUser = False
         self.nb.set_current_page(1)
