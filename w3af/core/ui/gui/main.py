@@ -249,8 +249,8 @@ class MainApp(object):
         self.w3af.mainwin = self
         self.is_running = False
         self.paused = False
-        self.scanShould = "start"
-        self.stoppedByUser = False
+        self.scan_should = "start"
+        self.stopped_by_user = False
         self.menuViews = {}
 
         # Create a UIManager instance
@@ -525,7 +525,7 @@ class MainApp(object):
 
     def _scan_director(self, widget):
         '''Directs what to do with the Scan.'''
-        action = "_scan_" + self.scanShould
+        action = "_scan_" + self.scan_should
         func = getattr(self, action)
         func()
 
@@ -625,8 +625,8 @@ class MainApp(object):
         self.toolbut_pause.set_sensitive(True)
         self.startstopbtns.change_internals("Stop", gtk.STOCK_MEDIA_STOP,
                                             _("Stop scan"))
-        self.scanShould = "stop"
-        self.stoppedByUser = False
+        self.scan_should = "stop"
+        self.stopped_by_user = False
         self.nb.set_current_page(1)
         self.exploitallsens.set_sensitive(True, "stopstart")
 
@@ -683,7 +683,7 @@ class MainApp(object):
         self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
         self.sb(_("Stopping the scan..."), 15)
-        self.stoppedByUser = True
+        self.stopped_by_user = True
 
     def _scan_stopfeedback(self):
         '''Visual elements when stopped.
@@ -695,9 +695,9 @@ class MainApp(object):
                                            _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
-        self.scanShould = "clear"
+        self.scan_should = "clear"
         self.startstopbtns.set_sensitive(True)
-        if self.stoppedByUser:
+        if self.stopped_by_user:
             self.sb(_("The scan has stopped by user request"))
         else:
             self.sb(_("The scan has finished"))
@@ -729,7 +729,7 @@ class MainApp(object):
         # put the button in start
         self.startstopbtns.change_internals(
             _("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
-        self.scanShould = "start"
+        self.scan_should = "start"
         self.window.set_title(MAIN_TITLE)
 
         # This is done here in order to keep the logging facility.
