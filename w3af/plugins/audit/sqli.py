@@ -80,6 +80,7 @@ class sqli(AuditPlugin):
         # POSTGRE
         (r'PostgreSQL query failed:', dbms.POSTGRE),
         (r'supplied argument is not a valid PostgreSQL result', dbms.POSTGRE),
+        (r'unterminated quoted string at or near', dbms.POSTGRE),
         (r'pg_query\(\) \[:', dbms.POSTGRE),
         (r'pg_exec\(\) \[:', dbms.POSTGRE),
         # MYSQL
@@ -117,6 +118,8 @@ class sqli(AuditPlugin):
         (r'Unexpected end of command in statement', dbms.JAVA),
         # Coldfusion
         (r'\[Macromedia\]\[SQLServer JDBC Driver\]', dbms.MSSQL),
+        # SQLite
+        (r'could not prepare statement', dbms.SQLITE),
         # Generic errors..
         (r'SELECT .*? FROM .*?', dbms.UNKNOWN),
         (r'UPDATE .*? SET .*?', dbms.UNKNOWN),
