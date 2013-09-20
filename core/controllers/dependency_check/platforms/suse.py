@@ -32,7 +32,8 @@ SYSTEM_PACKAGES = {
                    'C_BUILD': ['python-devel', 
                                'sqlite3-devel'],
                    'GIT': ['git'],
-                   'XML': ['libxml2-devel', 'libxslt-devel']
+                   'XML': ['libxml2-devel', 'libxslt-devel'],
+                   'other' : ['python-webkitgtk']
                   }
 
 PIP_CMD = 'pip-2.7'
