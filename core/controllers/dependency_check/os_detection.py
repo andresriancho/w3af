@@ -34,5 +34,8 @@ def is_linux():
 def is_fedora():
     return 'fedora' in distro[0]
 
+def is_suse():
+    return 'SuSE' in distro[0]
+
 def is_openbsd():
     return 'openbsd' in curr_platform
