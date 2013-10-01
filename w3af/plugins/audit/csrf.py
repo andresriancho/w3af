@@ -42,6 +42,7 @@ COMMON_CSRF_NAMES = (
     'yii_anticsrf'                # http://www.yiiframework.com/
     '[_token]',                   # Symfony 2.x
     '_csrf_token',                # Symfony 1.4
+    'csrfmiddlewaretoken',        # Django 1.5
 )
 
 
