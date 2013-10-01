@@ -123,7 +123,8 @@ class sqli(AuditPlugin):
         (r'INSERT INTO .*?', dbms.UNKNOWN),
         (r'Unknown column', dbms.UNKNOWN),
         (r'where clause', dbms.UNKNOWN),
-        (r'SqlServer', dbms.UNKNOWN)
+        (r'SqlServer', dbms.UNKNOWN),
+        (r'syntax error', dbms.UNKNOWN)
     )
     _multi_re = multi_re(SQL_ERRORS)
 
