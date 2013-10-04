@@ -40,6 +40,8 @@ class IPOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
+        if value is None:
+            return None
         
         if not is_ip_address(value):
             msg = 'Invalid IP address specified ("%s")' % value
