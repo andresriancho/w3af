@@ -19,8 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
+import csv
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
+
+from w3af import ROOT_PATH
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -39,6 +44,8 @@ class user_dir(CrawlPlugin):
     Try to find user directories like "http://test/~user/" and identify the remote OS based on them.
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
+
+    DB_PATH = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'user_dir')
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -68,8 +75,8 @@ class user_dir(CrawlPlugin):
             response = self._uri_opener.GET(test_URL, cache=True,
                                             headers=self._headers)
         except:
-            raise w3afException(
-                'user_dir failed to create a non existent signature.')
+            msg = 'user_dir failed to create a non existent signature.'
+            raise w3afException(msg)
 
         response_body = response.get_body()
         self._non_existent = response_body.replace(non_existent_user, '')
@@ -86,7 +93,7 @@ class user_dir(CrawlPlugin):
                 self._advanced_identification(base_url, 'os')
 
             if self._identify_applications:
-                self._advanced_identification(base_url, 'apps')
+                self._advanced_identification(base_url, 'applications')
 
             # Report findings of remote OS, applications, users, etc.
             self._report_findings()
@@ -125,103 +132,29 @@ class user_dir(CrawlPlugin):
 
         return None
 
+    def _get_users_from_csv(self, ident):
+        '''
+        :return: A list of users from the user dir database.
+        '''
+        assert ident in ('applications', 'os'), 'Invalid identification'
+        users = []
+        
+        csv_db = os.path.join(self.DB_PATH, '%s.csv' % ident)
+        
+        file_handler = file(csv_db)
+        for csv_row in csv.reader(file_handler):
+            (desc, user) = csv_row
+            users.append((desc, user))
+        
+        return users
+
+
     def _advanced_identification(self, url, ident):
         '''
         :return: None, This method will save the results to the kb and print and
         informational message to the user.
         '''
-        def get_users_by_OS():
-            '''
-            :return: A list of tuples with ('OS', 'username-that-only-exists-in-OS')
-            '''
-            res = []
-            res.append(('Debian based distribution', 'Debian-exim'))
-            res.append(('Debian based distribution', 'debian-tor'))
-            res.append(('FreeBSD', 'kmem'))
-            return res
-
-        def get_users_by_app():
-            '''
-            :return: A list of tuples with ('app-name', 'username-that-only-exists-if-app-is-installed')
-            '''
-            res = []
-            # Mail
-            res.append(('Exim', 'Debian-exim'))
-            res.append(('Fetchmail', 'fetchmail'))
-            res.append(('Sendmail', 'smmsp'))
-            res.append(('Exim', 'eximuser'))
-
-            # Security
-            res.append(('Snort', 'snort'))
-            res.append(('TOR (The Onion Router)', 'debian-tor'))
-            res.append(('Privoxy (generally installed with TOR)', 'privoxy'))
-            res.append(('logwatch', 'logwatch'))
-            res.append(('Email filtering application using sendmail\'s milter interface', 'defang'))
-            res.append(('OpenVPN Daemon', 'openvpn'))
-            res.append(('Nagios', 'nagios'))
-            res.append(('ntop', 'ntop'))
-            res.append(
-                ('Big Sister is a network and system monitor', 'bigsis'))
-            res.append(('Packet Fence (not the openbsd pf)', 'pf'))
-            res.append(('A port scan detection tool', 'iplog'))
-            res.append(
-                ('A tool to detect and log TCP port scans', 'scanlogd'))
-
-            # X and related stuff
-            res.append(('Gnome', 'gdm'))
-            res.append(('Gnats Bug-Reporting System (admin)', 'gnats'))
-            res.append(('X Font server', 'xfs'))
-
-            # Clients
-            res.append(('NTP Time Synchronization Client', '_ntp'))
-            res.append(('NTP Time Synchronization Client', 'ntp'))
-
-            # Common services
-            res.append(('Apache web server', 'www-data'))
-            res.append(('Apache web server', 'apache'))
-            res.append(('SSH', 'sshd'))
-            res.append(('Bind', 'named'))
-            res.append(('MySQL', 'mysql'))
-            res.append(('PostgreSQL', 'postgres'))
-            res.append(('FreeRadius', 'radiusd'))
-            res.append(
-                ('IRCD-Hybrid is an Internet Relay Chat server', 'ircd'))
-
-            # Strange services
-            res.append(('heartbeat subsystem for High-Availability Linux',
-                       'hacluster'))
-            res.append(('Tinysnmp', 'tinysnmp'))
-            res.append(('TinyDNS', 'tinydns'))
-            res.append(('Plone', 'plone'))
-            res.append(('Rbldnsd is a small authoritate-only DNS nameserver',
-                       'rbldns'))
-            res.append(
-                ('Zope, the open source web application server', 'zope'))
-            res.append(('LDAPdns', 'ldapdns'))
-            res.append(('dnsbl', 'dnsbl'))
-            res.append(('pwhois', 'pwhois'))
-            res.append(('Interchange web application platform', 'interch'))
-            res.append(('A DHCP relay agent', 'dhcp-fwd'))
-            res.append(('Extensible Web+Application server written in Tcl',
-                       'tclhttpd'))
-            res.append(('A simple personal server for the WorldForge project',
-                       'cyphesis'))
-            res.append(('LDAP Update Monitor', 'lum'))
-
-            # Web apps
-            res.append(('OpenCM', 'opencm'))
-            res.append(('The Open Ticket Request System', 'otrs'))
-
-            # Anti virus
-            res.append(('Openfire', 'jive'))
-            res.append(('Kapersky antivirus SMTP Gateway', 'kavuser'))
-            res.append(('AMaViS A mail virus scanner', 'amavis'))
-            return res
-
-        if ident == 'os':
-            to_test = get_users_by_OS()
-        else:
-            to_test = get_users_by_app()
+        to_test = self._get_users_from_csv(ident)
 
         for data_related_to_user, user in to_test:
             url_user_list = self._create_dirs(url, user_list=[user, ])
@@ -269,8 +202,8 @@ class user_dir(CrawlPlugin):
             for u in OS_list:
                 om.out.information('- ' + u)
         elif self._identify_OS:
-            msg = 'Failed to identify the remote OS based on the users available in'
-            msg += ' the user_dir plugin database.'
+            msg = 'Failed to identify the remote OS based on the users'\
+                  ' available in the user_dir plugin database.'
             om.out.information(msg)
         OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
 
@@ -283,8 +216,8 @@ class user_dir(CrawlPlugin):
             for u in app_list:
                 om.out.information('- ' + u)
         elif self._identify_OS:
-            msg = 'Failed to identify any installed applications based on the users'
-            msg += ' available in the user_dir plugin database.'
+            msg = 'Failed to identify any installed applications based on the'\
+                  ' users available in the user_dir plugin database.'
             om.out.information(msg)
 
     def _create_dirs(self, url, user_list=None):
@@ -325,16 +258,19 @@ class user_dir(CrawlPlugin):
         '''
         :return: A list of option objects for this plugin.
         '''
-        d1 = 'Try to identify the remote operating system based on the remote users'
-        o1 = opt_factory('identify_os', self._identify_OS, d1, 'boolean')
-
-        d2 = 'Try to identify applications installed remotely using the available users'
-        o2 = opt_factory('identify_apps',
-                         self._identify_applications, d2, 'boolean')
-
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
+        
+        d = 'Try to identify the remote operating system based on the'\
+            ' remote users'
+        o = opt_factory('identify_os', self._identify_OS, d, 'boolean')
+        ol.add(o)
+        
+        d = 'Try to identify applications installed remotely using the'\
+             ' available users'
+        o = opt_factory('identify_apps', self._identify_applications, d,
+                        'boolean')
+        ol.add(o)
+        
         return ol
 
     def set_options(self, options_list):
