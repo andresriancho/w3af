@@ -67,6 +67,20 @@ FORM_WITHOUT_ACTION = u'''
 </form>
 '''
 
+FORM_MULTILINE_TAGS = u'''
+<form  class="form-horizontal" method="post" ><input type='hidden' name='csrfmiddlewaretoken' value='UN2BDAoRUTtlWlFtNCTFtjLZsLRYQQ1E' /> <div id="div_id_input" class="control-group"><label for="id_input" class="control-label requiredField">
+                What is your favorite food?<span class="asteriskField">*</span></label><div class="controls"><input class="form-control input-sm textinput textInput" id="id_input" maxlength="40" name="input" type="text" value="Burgers" /> </div></div><div  
+      style="padding: 10px;"><i class="icon-leaf"></i> Hint: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></div><div class="form-actions"><input type="submit"
+    name="/xss"
+    value="Submit"
+    
+        class="btn btn-primary btn-info pull-right"
+        id="submit-id-xss"
+    
+    
+    /> </div></form>
+'''
+
 # Textarea templates
 TEXTAREA_WITH_NAME_AND_DATA = u'''
 <textarea name="sample_name">
@@ -370,6 +384,23 @@ class TestHTMLParser(unittest.TestCase):
         p = _HTMLParser(r)
         p._parse(r)
         self.assertEquals(URL_INST, p.forms[0].get_action())
+
+    def test_form_multiline_tags(self):
+        '''
+        Found this form on the wild and was unable to parse it.
+        '''
+        resp = _build_http_response(URL_INST, FORM_MULTILINE_TAGS)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+        
+        self.assertEqual(1, len(p.forms))
+        form = p.forms[0]
+        
+        self.assertEquals(URL_INST, form.get_action())
+        self.assertEquals('POST', form.get_method())
+        self.assertIn('input', form)
+        self.assertIn('csrfmiddlewaretoken', form)
+
 
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared

@@ -75,6 +75,11 @@ class SQLiteDBMS(object):
         self.sql_executor = SQLiteExecutor(in_queue)
         self.sql_executor.start()
         
+        #
+        #    Performs sqlite database setup, this has the nice side-effect
+        #    that .result() will block until the thread is started and
+        #    processing tasks.
+        #
         future = self.sql_executor.setup(filename, autocommit, journal_mode,
                                          cache_size)
         # Raises an exception if an error was found during setup

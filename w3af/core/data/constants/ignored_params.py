@@ -29,5 +29,5 @@ IGNORED_PARAMETERS = [
     '__EVENTVALIDATION', '__dnnVariable', 'javax.faces.ViewState',
     'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64',
     'jsf_viewid', 'jsf_state', 'cfid', 'cftoken', 'ASP.NET_sessionid',
-    'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID'
+    'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID', 'csrfmiddlewaretoken',
 ]

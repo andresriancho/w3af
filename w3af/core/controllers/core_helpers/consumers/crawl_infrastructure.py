@@ -289,6 +289,8 @@ class crawl_infrastructure(BaseConsumer):
         base_urls_cf = cf.cf.get('baseURLs')
 
         fr_uri = fuzzable_request.get_uri()
+        method = fuzzable_request.get_method()
+        
         # No need to care about fragments
         # (http://a.com/foo.php#frag). Remove them
         fuzzable_request.set_uri(fr_uri.remove_fragment())
@@ -297,10 +299,10 @@ class crawl_infrastructure(BaseConsumer):
         if fr_uri.base_url() not in base_urls_cf:
             return False
         
-        if fr_uri in self._already_seen_urls:
+        if (method, fr_uri) in self._already_seen_urls:
             return False
         
-        self._already_seen_urls.add(fr_uri)
+        self._already_seen_urls.add((method, fr_uri))
 
         # Filter out the fuzzable requests that aren't important
         # (and will be ignored by audit plugins anyway...)
