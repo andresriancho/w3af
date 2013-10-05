@@ -34,9 +34,9 @@ elif is_openbsd():
                           after_hook)
 elif is_fedora():
     from .fedora import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                          SYSTEM_PACKAGES, PIP_CMD,
-                          PIP_PACKAGES, os_package_is_installed,
-                          after_hook)
+                         SYSTEM_PACKAGES, PIP_CMD,
+                         PIP_PACKAGES, os_package_is_installed,
+                         after_hook)
 else:
     from .linux import (SYSTEM_NAME, PKG_MANAGER_CMD,
                         SYSTEM_PACKAGES, PIP_CMD,
