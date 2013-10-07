@@ -67,6 +67,9 @@ class QueueSpeed(object):
         
         time_delta = last_item_time - first_item_time 
         
+        if time_delta == 0:
+            return None
+        
         # Calculate RPM and return it
         return 60.0 * all_items / time_delta
 
