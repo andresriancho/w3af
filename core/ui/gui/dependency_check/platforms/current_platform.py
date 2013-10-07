@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora 
+from core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora, is_suse 
 
 if is_mac():
     from .mac import (SYSTEM_NAME, PKG_MANAGER_CMD,
