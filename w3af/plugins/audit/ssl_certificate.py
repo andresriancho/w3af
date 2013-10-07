@@ -79,6 +79,12 @@ class ssl_certificate(AuditPlugin):
         '''
         Analyze the SSL cert and store the information in the KB.
         '''
+        self._is_ssl_v2(url, domain)
+        self._is_trusted_cert(url, domain)
+        self._cert_expiration_analysis(url, domain)
+        self._ssl_info_to_kb(url, domain)
+        
+    def _is_ssl_v2(self, url, domain):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # SSLv2 check
         # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
@@ -101,6 +107,7 @@ class ssl_certificate(AuditPlugin):
 
             self.kb_append(self, 'ssl_v2', v)
 
+    def _is_trusted_cert(self, url, domain):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             ssl_sock = ssl.wrap_socket(s,
@@ -141,28 +148,56 @@ class ssl_certificate(AuditPlugin):
             v.set_url(url)
             
             self.kb_append(self, tag, v)
-            return
 
         except Exception, e:
             om.out.debug(str(e))
+
+    def _get_cert(self, url, domain):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            ssl_sock = ssl.wrap_socket(s,
+                                       ssl_version=ssl.PROTOCOL_SSLv23)
+            ssl_sock.connect((domain, url.get_port()))
+        except:
+            msg = 'Failed to connect to "%s" to analyze SSL cert.'
+            om.out.debug(msg % domain)
             return
-
-        cert = ssl_sock.getpeercert()
-        cert_der = ssl_sock.getpeercert(binary_form=True)
-        cipher = ssl_sock.cipher()
-        ssl_sock.close()
-
-        exp_date = gmtime(ssl.cert_time_to_seconds(cert['notAfter']))
-        expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
-                       exp_date.tm_mday) - date.today()).days
-        if expire_days < self._min_expire_days:
-            desc = 'The certificate for "%s" will expire soon.' % domain
+        else:
+            cert = ssl_sock.getpeercert()
+            cert_der = ssl_sock.getpeercert(binary_form=True)
+            cipher = ssl_sock.cipher()
             
-            i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
-            i.set_url(url)
+            ssl_sock.close()
             
-            self.kb_append(self, 'ssl_soon_expire', i)
+            return cert, cert_der, cipher
+        
+    def _cert_expiration_analysis(self, url, domain):
+        cert, cert_der, cipher = self._get_cert(url, domain)
 
+        try:
+            exp_date = gmtime(ssl.cert_time_to_seconds(cert['notAfter']))
+        except ValueError:
+            msg = 'Invalid SSL certificate date format.'
+            om.out.debug(msg)
+        except KeyError:
+            msg = 'SSL certificate does not have notAfter field.'
+            om.out.debug(msg)
+        else:
+        
+            expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
+                           exp_date.tm_mday) - date.today()).days
+            
+            if expire_days < self._min_expire_days:
+                desc = 'The certificate for "%s" will expire soon.' % domain
+                
+                i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
+                i.set_url(url)
+                
+                self.kb_append(self, 'ssl_soon_expire', i)
+
+    def _ssl_info_to_kb(self, url, domain):
+        cert, cert_der, cipher = self._get_cert(url, domain)
+        
         # Print the SSL information to the log
         desc = 'This is the information about the SSL certificate used for'\
                ' %s site:\n%s' % (domain,
@@ -197,8 +232,8 @@ class ssl_certificate(AuditPlugin):
         h = 'If the certificate will expire in period of minExpireDays w3af'\
             ' will show an alert about it, which is useful for admins to'\
             ' remember to renew the certificate.'
-        o = opt_factory(
-            'minExpireDays', self._min_expire_days, d, 'integer', help=h)
+        o = opt_factory('minExpireDays', self._min_expire_days, d, 'integer',
+                        help=h)
         ol.add(o)
 
         d = 'CA PEM file path'

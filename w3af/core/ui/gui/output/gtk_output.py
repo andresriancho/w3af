@@ -110,7 +110,7 @@ class GtkOutput(OutputPlugin):
         '''
         to_remove = set()
         
-        for observer in observers:
+        for observer in observers.copy():
             try:
                 observer(m)
             except Exception, e:

@@ -38,39 +38,42 @@ class TestOptionFactory(unittest.TestCase):
                                   'tests', 'test.txt')
         output_file = input_file
 
-        data = {BOOL: ('true', True),
-                INT: ('1', 1),
-                FLOAT: ('1.0', 1.0),
-                STRING: ('hello world', 'hello world'),
-                URL: ('http://moth/', URL_KLASS('http://moth/')),
-                URL_LIST: ('http://moth/1 , http://moth/2',
+        data = {BOOL: [('true', True),],
+                INT: [('1', 1),],
+                FLOAT: [('1.0', 1.0),],
+                STRING: [('hello world', 'hello world'),],
+                URL: [('http://moth/', URL_KLASS('http://moth/')),],
+                URL_LIST: [('http://moth/1 , http://moth/2',
                            [URL_KLASS('http://moth/1'),
-                            URL_KLASS('http://moth/2')]),
-                IPPORT: ('127.0.0.1:8080', '127.0.0.1:8080'),
-                LIST: ('a,b,c', ['a', 'b', 'c']),
-                REGEX: ('.*', '.*'),
-                COMBO: (['a', 'b', 'c'], 'a'),
-                INPUT_FILE: (input_file, input_file),
-                OUTPUT_FILE: (output_file, output_file),
-                PORT: ('12345', 12345),
-                IP: ('127.0.0.1', '127.0.0.1')
+                            URL_KLASS('http://moth/2')]),],
+                IPPORT: [('127.0.0.1:8080', '127.0.0.1:8080'),],
+                LIST: [('a,b,c', ['a', 'b', 'c']),],
+                REGEX: [('.*', '.*'),],
+                COMBO: [(['a', 'b', 'c'], 'a'),],
+                INPUT_FILE: [(input_file, input_file),],
+                OUTPUT_FILE: [(output_file, output_file),],
+                PORT: [('12345', 12345),],
+                IP: [('127.0.0.1', '127.0.0.1'),
+                     (None, None)]
                 }
 
-        for _type, (user_value, parsed_value) in data.iteritems():
-            opt = opt_factory('name', user_value, 'desc', _type, 'help', 'tab1')
-
-            self.assertEqual(opt.get_name(), 'name')
-            self.assertEqual(opt.get_desc(), 'desc')
-            self.assertEqual(opt.get_type(), _type)
-            self.assertEqual(opt.get_default_value(), parsed_value)
-            self.assertEqual(opt.get_value(), parsed_value)
-            self.assertEqual(opt.get_help(), 'help')
-            self.assertEqual(opt.get_tabid(), 'tab1')
-
-            self.assertIsInstance(opt.get_name(), basestring)
-            self.assertIsInstance(opt.get_desc(), basestring)
-            self.assertIsInstance(opt.get_type(), basestring)
-            self.assertIsInstance(opt.get_help(), basestring)
+        for _type in data:
+            for user_value, parsed_value in data[_type]:
+                opt = opt_factory('name', user_value, 'desc', _type,
+                                  'help', 'tab1')
+    
+                self.assertEqual(opt.get_name(), 'name')
+                self.assertEqual(opt.get_desc(), 'desc')
+                self.assertEqual(opt.get_type(), _type)
+                self.assertEqual(opt.get_default_value(), parsed_value)
+                self.assertEqual(opt.get_value(), parsed_value)
+                self.assertEqual(opt.get_help(), 'help')
+                self.assertEqual(opt.get_tabid(), 'tab1')
+    
+                self.assertIsInstance(opt.get_name(), basestring)
+                self.assertIsInstance(opt.get_desc(), basestring)
+                self.assertIsInstance(opt.get_type(), basestring)
+                self.assertIsInstance(opt.get_help(), basestring)
 
     def test_factory_unknown_type(self):
         self.assertRaises(KeyError, opt_factory, 'name', 'value', 'desc',
@@ -87,6 +90,7 @@ class TestOptionFactory(unittest.TestCase):
                 URL: ['http://', '/', ''],
                 URL_LIST: ['http://moth/1 , http://moth:333333',],
                 IPPORT: ['127.0.0.1',],
+                IP: ['127.0.0.', '127.0.0', '3847398740'],
                 REGEX: ['.*(',],
                 INPUT_FILE: [input_file,],
                 OUTPUT_FILE: [output_file,],
