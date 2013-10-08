@@ -30,7 +30,7 @@ PKG_MANAGER_CMD = 'sudo yum install'
 SYSTEM_PACKAGES = {
                    'PIP': ['python-pip'],
                    'C_BUILD': ['python-devel', 'python-setuptools',
-                               'libsqlite3x-devel'],
+                               'libsqlite3x-devel', 'gcc'],
                    'GIT': ['git'],
                    'XML': ['libxml2-devel', 'libxslt-devel'],
                    'SSLDEV': ['openssl-devel'],
