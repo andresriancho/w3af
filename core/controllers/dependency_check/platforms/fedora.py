@@ -55,6 +55,7 @@ PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
                 PIPDependency('scapy.config', 'scapy-real'),
                 PIPDependency('guess_language', 'guess-language'),
                 PIPDependency('cluster', 'cluster'),
+                PIPDependency('six', 'six'),
                 PIPDependency('msgpack', 'msgpack-python',
                               SYSTEM_PACKAGES['C_BUILD']),
                 PIPDependency('ntlm', 'python-ntlm'),]
