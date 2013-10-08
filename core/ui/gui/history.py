@@ -65,38 +65,3 @@ class HistorySuggestion(object):
         fileh = open(self.filename, "w")
         cPickle.dump(self.history, fileh)
         fileh.close()
-
-if __name__ == "__main__":
-    import random
-    import string
-    import time
-
-    QUANT = 5000
-    LENGTH = 50
-    print "Testing History with %d elements" % QUANT
-
-    arch = "test_history.pickle"
-    if os.access(arch, os.F_OK):
-        os.remove(arch)
-    his = HistorySuggestion(arch)
-
-    texts = ["".join(random.choice(
-        string.letters) for x in xrange(LENGTH)) for y in xrange(QUANT)]
-
-    print "Storing the elements:",
-    tini = time.time()
-    for txt in texts:
-        his.insert(txt)
-    print "%.1f mseg/element" % ((time.time() - tini) * 1000 / QUANT)
-
-    print "Saving to disk:",
-    tini = time.time()
-    his.save()
-    print "%.1f mseg" % ((time.time() - tini) * 1000)
-
-    print "Loading from disk:",
-    tini = time.time()
-    HistorySuggestion(arch)
-    print "%.1f mseg" % ((time.time() - tini) * 1000)
-
-    os.remove(arch)
