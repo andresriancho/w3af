@@ -52,8 +52,10 @@ class HistorySuggestion(object):
 
         :return: a generator with the texts
         '''
-        info = sorted(
-            self.history.items(), key=operator.itemgetter(1), reverse=True)
+        info = sorted(self.history.items(),
+                      key=operator.itemgetter(1),
+                      reverse=True)
+        
         return [k for k, v in info]
 
     def insert(self, newtext):
@@ -62,6 +64,10 @@ class HistorySuggestion(object):
 
     def save(self):
         '''Saves the history information.'''
-        fileh = open(self.filename, "w")
-        cPickle.dump(self.history, fileh)
-        fileh.close()
+        try:
+            fileh = open(self.filename, "w")
+        except IOError:
+            pass
+        else:
+            cPickle.dump(self.history, fileh)
+            fileh.close()
