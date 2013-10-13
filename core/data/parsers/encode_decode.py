@@ -146,8 +146,13 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
             if not ele:
                 toapp = k + '='
             else:
-                ele = ele.encode(encoding) if is_unicode(ele) else str(ele)
+                if is_unicode(ele):
+                    ele = ele.encode(encoding)
+                else:
+                    ele = str(ele)
+                    
                 toapp = k + '=' + urllib.quote(ele, safe)
+                
             l.append(toapp)
 
     return '&'.join(l)
