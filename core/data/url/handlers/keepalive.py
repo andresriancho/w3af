@@ -597,9 +597,10 @@ class KeepAliveHandler(object):
             # Check if all our last 'resp_statuses' were timeouts and raise
             # a w3afMustStopException if this is the case.
             if len(resp_statuses) == self._curr_check_failures and \
-                    all(st == RESP_TIMEOUT for st in resp_statuses):
-                msg = ('w3af found too many consecutive timeouts. The remote '
-                       'webserver seems to be unresponsive; please verify manually.')
+            all(st == RESP_TIMEOUT for st in resp_statuses):
+                msg = ('w3af found too many consecutive timeouts. The remote'
+                       ' webserver seems to be unresponsive; please verify'
+                       ' manually.')
                 reason = 'Timeout while trying to reach target.'
                 raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
@@ -662,6 +663,7 @@ class KeepAliveHandler(object):
     
             if DEBUG:
                 om.out.debug("STATUS: %s, %s" % (resp.status, resp.reason))
+            
             resp._handler = self
             resp._host = host
             resp._url = req.get_full_url()
