@@ -34,9 +34,15 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
 
 
+APPLICATION = 'apps'
+OS = 'os'
+USER = 'user'
+
+
 class user_dir(CrawlPlugin):
     '''
     Try to find user directories like "http://test/~user/" and identify the remote OS based on them.
+    
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
@@ -68,8 +74,8 @@ class user_dir(CrawlPlugin):
             response = self._uri_opener.GET(test_URL, cache=True,
                                             headers=self._headers)
         except:
-            raise w3afException(
-                'user_dir failed to create a non existent signature.')
+            raise w3afException('user_dir failed to create a non existent'
+                                ' signature.')
 
         response_body = response.get_body()
         self._non_existent = response_body.replace(non_existent_user, '')
@@ -83,10 +89,10 @@ class user_dir(CrawlPlugin):
         # Only do this if I already know that users can be identified.
         if kb.kb.get('user_dir', 'users') != []:
             if self._identify_OS:
-                self._advanced_identification(base_url, 'os')
+                self._advanced_identification(base_url, OS)
 
             if self._identify_applications:
-                self._advanced_identification(base_url, 'apps')
+                self._advanced_identification(base_url, APPLICATION)
 
             # Report findings of remote OS, applications, users, etc.
             self._report_findings()
@@ -107,14 +113,14 @@ class user_dir(CrawlPlugin):
         if relative_distance_lt(response_body, self._non_existent, 0.7):
 
             # Avoid duplicates
-            if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
+            if user not in [u[USER] for u in kb.kb.get('user_dir', 'users')]:
                 desc = 'A user directory was found at: %s'
                 desc = desc % response.get_url()
                 
                 i = Info('Web user home directory', desc, response.id,
                          self.get_name())
                 i.set_url(response.get_url())
-                i['user'] = user
+                i[USER] = user
 
                 kb.kb.append(self, 'users', i)
 
@@ -130,97 +136,12 @@ class user_dir(CrawlPlugin):
         :return: None, This method will save the results to the kb and print and
         informational message to the user.
         '''
-        def get_users_by_OS():
-            '''
-            :return: A list of tuples with ('OS', 'username-that-only-exists-in-OS')
-            '''
-            res = []
-            res.append(('Debian based distribution', 'Debian-exim'))
-            res.append(('Debian based distribution', 'debian-tor'))
-            res.append(('FreeBSD', 'kmem'))
-            return res
-
-        def get_users_by_app():
-            '''
-            :return: A list of tuples with ('app-name', 'username-that-only-exists-if-app-is-installed')
-            '''
-            res = []
-            # Mail
-            res.append(('Exim', 'Debian-exim'))
-            res.append(('Fetchmail', 'fetchmail'))
-            res.append(('Sendmail', 'smmsp'))
-            res.append(('Exim', 'eximuser'))
-
-            # Security
-            res.append(('Snort', 'snort'))
-            res.append(('TOR (The Onion Router)', 'debian-tor'))
-            res.append(('Privoxy (generally installed with TOR)', 'privoxy'))
-            res.append(('logwatch', 'logwatch'))
-            res.append(('Email filtering application using sendmail\'s milter interface', 'defang'))
-            res.append(('OpenVPN Daemon', 'openvpn'))
-            res.append(('Nagios', 'nagios'))
-            res.append(('ntop', 'ntop'))
-            res.append(
-                ('Big Sister is a network and system monitor', 'bigsis'))
-            res.append(('Packet Fence (not the openbsd pf)', 'pf'))
-            res.append(('A port scan detection tool', 'iplog'))
-            res.append(
-                ('A tool to detect and log TCP port scans', 'scanlogd'))
-
-            # X and related stuff
-            res.append(('Gnome', 'gdm'))
-            res.append(('Gnats Bug-Reporting System (admin)', 'gnats'))
-            res.append(('X Font server', 'xfs'))
-
-            # Clients
-            res.append(('NTP Time Synchronization Client', '_ntp'))
-            res.append(('NTP Time Synchronization Client', 'ntp'))
-
-            # Common services
-            res.append(('Apache web server', 'www-data'))
-            res.append(('Apache web server', 'apache'))
-            res.append(('SSH', 'sshd'))
-            res.append(('Bind', 'named'))
-            res.append(('MySQL', 'mysql'))
-            res.append(('PostgreSQL', 'postgres'))
-            res.append(('FreeRadius', 'radiusd'))
-            res.append(
-                ('IRCD-Hybrid is an Internet Relay Chat server', 'ircd'))
-
-            # Strange services
-            res.append(('heartbeat subsystem for High-Availability Linux',
-                       'hacluster'))
-            res.append(('Tinysnmp', 'tinysnmp'))
-            res.append(('TinyDNS', 'tinydns'))
-            res.append(('Plone', 'plone'))
-            res.append(('Rbldnsd is a small authoritate-only DNS nameserver',
-                       'rbldns'))
-            res.append(
-                ('Zope, the open source web application server', 'zope'))
-            res.append(('LDAPdns', 'ldapdns'))
-            res.append(('dnsbl', 'dnsbl'))
-            res.append(('pwhois', 'pwhois'))
-            res.append(('Interchange web application platform', 'interch'))
-            res.append(('A DHCP relay agent', 'dhcp-fwd'))
-            res.append(('Extensible Web+Application server written in Tcl',
-                       'tclhttpd'))
-            res.append(('A simple personal server for the WorldForge project',
-                       'cyphesis'))
-            res.append(('LDAP Update Monitor', 'lum'))
-
-            # Web apps
-            res.append(('OpenCM', 'opencm'))
-            res.append(('The Open Ticket Request System', 'otrs'))
-
-            # Anti virus
-            res.append(('Openfire', 'jive'))
-            res.append(('Kapersky antivirus SMTP Gateway', 'kavuser'))
-            res.append(('AMaViS A mail virus scanner', 'amavis'))
-            return res
-
-        if ident == 'os':
+        if not ident in (OS, APPLICATION):
+            raise ValueError('Invalid ident parameter "%s"' % ident)
+        
+        if ident == OS:
             to_test = get_users_by_OS()
-        else:
+        elif ident == APPLICATION:
             to_test = get_users_by_app()
 
         for data_related_to_user, user in to_test:
@@ -231,14 +152,14 @@ class user_dir(CrawlPlugin):
                 
                 if http_response_id is not None:
 
-                    if ident == 'os':
+                    if ident == OS:
                         desc = 'The remote OS can be identified as "%s" based'\
                                ' on the remote user "%s" information that is'\
                                ' exposed by the web server.'
                         desc = desc % (data_related_to_user, user)
                         
                         name = 'Fingerprinted operating system'
-                    else:
+                    elif ident == APPLICATION:
                         desc = 'The remote server has "%s" installed, w3af'\
                                ' found this information based on the remote'\
                                ' user "%s".'
@@ -255,36 +176,35 @@ class user_dir(CrawlPlugin):
         Print all the findings to the output manager.
         :return : None
         '''
-        userList = [u['user'] for u in kb.kb.get('user_dir', 'users')]
-        if userList:
-            om.out.information('The following users were found on the remote operating system:')
-            for u in userList:
+        user_list = [u[USER] for u in kb.kb.get('user_dir', 'users')]
+        if user_list:
+            om.out.information('The following users were found on the remote'
+                               ' operating system:')
+            for u in user_list:
                 om.out.information('- ' + u)
 
-        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
+        OS_list = [u[OS] for u in kb.kb.get('user_dir', OS)]
         if OS_list:
-            om.out.information(
-                'The remote operating system was identifyed as:')
+            om.out.information('The remote operating system was identified as:')
             OS_list = list(set(OS_list))
             for u in OS_list:
                 om.out.information('- ' + u)
         elif self._identify_OS:
-            msg = 'Failed to identify the remote OS based on the users available in'
-            msg += ' the user_dir plugin database.'
+            msg = 'Failed to identify the remote OS based on the users' \
+                  ' available in the user_dir plugin database.'
             om.out.information(msg)
-        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
-
-        app_list = [u['application'] for u in kb.kb.get('user_dir',
-                                                        'applications')]
+        
+        app_list = [u[APPLICATION] for u in kb.kb.get('user_dir',
+                                                      APPLICATION)]
         if app_list:
-            om.out.information(
-                'The remote server has the following applications installed:')
+            om.out.information('The remote server has the following'
+                               'applications installed:')
             app_list = list(set(app_list))
             for u in app_list:
                 om.out.information('- ' + u)
         elif self._identify_OS:
-            msg = 'Failed to identify any installed applications based on the users'
-            msg += ' available in the user_dir plugin database.'
+            msg = 'Failed to identify any installed applications based on'\
+                  ' the users available in the user_dir plugin database.'
             om.out.information(msg)
 
     def _create_dirs(self, url, user_list=None):
@@ -310,10 +230,8 @@ class user_dir(CrawlPlugin):
         '''
         res = []
 
-        infoList = kb.kb.get('emails', 'emails')
-
-        for i in infoList:
-            res.append(i['user'])
+        for i in kb.kb.get('emails', 'emails'):
+            res.append(i[USER])
 
         # Add some common users:
         res.extend(['www-data', 'www', 'nobody', 'root', 'admin',
@@ -387,3 +305,94 @@ class user_dir(CrawlPlugin):
         will also identify the remote operating system and installed applications
         based on the user names that are available.
         '''
+
+def get_users_by_OS():
+    '''
+    :return: A list of tuples with ('OS', 'username-that-only-exists-in-OS')
+    '''
+    res = [
+           ('Debian based distribution', 'Debian-exim'),
+           ('Debian based distribution', 'debian-tor'),
+           ('FreeBSD', 'kmem')
+           ]
+    return res
+
+def get_users_by_app():
+    '''
+    :return: A list of tuples with ('app-name',
+                                    'username-that-only-exists-if-app-is-installed')
+    '''
+    res = [
+           # Mail
+           ('Exim', 'Debian-exim'),
+           ('Fetchmail', 'fetchmail'),
+           ('Sendmail', 'smmsp'),
+           ('Exim', 'eximuser'),
+        
+           # Security
+           ('Snort', 'snort'),
+           ('TOR (The Onion Router)', 'debian-tor'),
+           ('Privoxy (generally installed with TOR)', 'privoxy'),
+           ('logwatch', 'logwatch'),
+           ('Email filtering application using sendmail\'s milter interface', 'defang'),
+           ('OpenVPN Daemon', 'openvpn'),
+           ('Nagios', 'nagios'),
+           ('ntop', 'ntop'),
+            
+           ('Big Sister is a network and system monitor', 'bigsis'),
+           ('Packet Fence (not the openbsd pf)', 'pf'),
+           ('A port scan detection tool', 'iplog'),
+            
+           ('A tool to detect and log TCP port scans', 'scanlogd'),
+        
+           # X and related stuff
+           ('Gnome', 'gdm'),
+           ('Gnats Bug-Reporting System (admin)', 'gnats'),
+           ('X Font server', 'xfs'),
+        
+           # Clients
+           ('NTP Time Synchronization Client', '_ntp'),
+           ('NTP Time Synchronization Client', 'ntp'),
+        
+           # Common services
+           ('Apache web server', 'www-data'),
+           ('Apache web server', 'apache'),
+           ('SSH', 'sshd'),
+           ('Bind', 'named'),
+           ('MySQL', 'mysql'),
+           ('PostgreSQL', 'postgres'),
+           ('FreeRadius', 'radiusd'),
+            
+           ('IRCD-Hybrid is an Internet Relay Chat server', 'ircd'),
+        
+           # Strange services
+           ('heartbeat subsystem for High-Availability Linux',
+            'hacluster'),
+           ('Tinysnmp', 'tinysnmp'),
+           ('TinyDNS', 'tinydns'),
+           ('Plone', 'plone'),
+           ('Rbldnsd is a small authoritate-only DNS nameserver',
+            'rbldns'),
+            
+           ('Zope, the open source web application server', 'zope'),
+           ('LDAPdns', 'ldapdns'),
+           ('dnsbl', 'dnsbl'),
+           ('pwhois', 'pwhois'),
+           ('Interchange web application platform', 'interch'),
+           ('A DHCP relay agent', 'dhcp-fwd'),
+           ('Extensible Web+Application server written in Tcl',
+            'tclhttpd'),
+           ('A simple personal server for the WorldForge project',
+            'cyphesis'),
+           ('LDAP Update Monitor', 'lum'),
+        
+           # Web apps
+           ('OpenCM', 'opencm'),
+           ('The Open Ticket Request System', 'otrs'),
+        
+           # Anti virus
+           ('Openfire', 'jive'),
+           ('Kapersky antivirus SMTP Gateway', 'kavuser'),
+           ('AMaViS A mail virus scanner', 'amavis'),
+           ]
+    return res
