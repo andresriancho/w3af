@@ -109,7 +109,6 @@ EXTRA ATTRIBUTES AND METHODS
 
 # $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
 
-from collections import deque
 import urllib2
 import httplib
 import operator
@@ -119,6 +118,9 @@ import urllib
 import sys
 import time
 import ssl
+import copy
+
+from collections import deque
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
@@ -596,13 +598,21 @@ class KeepAliveHandler(object):
                                                       self._get_tail_filter())
             # Check if all our last 'resp_statuses' were timeouts and raise
             # a w3afMustStopException if this is the case.
-            if len(resp_statuses) == self._curr_check_failures and \
-            all(st == RESP_TIMEOUT for st in resp_statuses):
-                msg = ('w3af found too many consecutive timeouts. The remote'
-                       ' webserver seems to be unresponsive; please verify'
-                       ' manually.')
-                reason = 'Timeout while trying to reach target.'
-                raise w3afMustStopByKnownReasonExc(msg, reason=reason)
+            if len(resp_statuses) == self._curr_check_failures:
+                
+                # Only copy the resp_statuses when we want to iterate it to
+                # verify which responses are timeouts. This is done in order
+                # to avoid issues with "deque mutated during iteration" because
+                # other threads might be adding stuff to the deque while we
+                # run the "... for st in resp..."
+                resp_statuses_copy = copy.copy(resp_statuses)
+                
+                if all(st == RESP_TIMEOUT for st in resp_statuses_copy):
+                    msg = ('w3af found too many consecutive timeouts. The'
+                           ' remote webserver seems to be unresponsive; please'
+                           ' verify manually.')
+                    reason = 'Timeout while trying to reach target.'
+                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
