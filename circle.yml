@@ -1,0 +1,8 @@
+dependencies:
+  pre:
+    - w3af_console
+    - /tmp/w3af_dependency_install.sh
+  
+test:
+  override:
+    - nosetests -v --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/
