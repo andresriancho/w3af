@@ -1,7 +1,7 @@
 dependencies:
   pre:
-    - . w3af_console
-    - /tmp/w3af_dependency_install.sh
+    - python w3af_console
+    - bash /tmp/w3af_dependency_install.sh
   
 test:
   override:
