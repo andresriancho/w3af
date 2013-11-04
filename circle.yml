@@ -1,10 +1,10 @@
 dependencies:
   pre:
     - python w3af_console; true
-    - bash /tmp/w3af_dependency_install.sh
+    - bash /tmp/w3af_dependency_install.sh:
+        timeout: 600
   
 test:
   override:
     - nosetests -v --processes=32 --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/:
-        timeout: 600
 
