@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - python w3af_console
+    - python w3af_console; true
     - bash /tmp/w3af_dependency_install.sh
   
 test:
