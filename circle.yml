@@ -6,5 +6,5 @@ dependencies:
 test:
   override:
     - nosetests -v --processes=32 --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/:
-      timeout: 600
+        timeout: 600
 
