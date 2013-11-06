@@ -4,13 +4,19 @@ dependencies:
     - python -c 'from w3af.core.controllers.dependency_check.dependency_check import dependency_check;dependency_check()'; true
     - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+	# There are a couple of GUI dependencies which need to be installed 
+	# using "apt-get". Asked the circle guys to install them and they
+	# recommended me to run this command to make sure the virtualenv
+	# can access these packages  
+	- echo "/usr/lib/python2.7/dist-packages/" > venv/lib/python2.7/site-packages/dist-packages.pth
+
     # Install the GUI dependencies
     - python -c 'from w3af.core.ui.gui.dependency_check.dependency_check import dependency_check;dependency_check()'; true
     - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
     # Install the test dependencies
     - pip install mock pylint httpretty psutil logilab-astng SOAPpy
-    
+
 machine:
   python:
     version: 2.7.3
