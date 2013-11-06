@@ -26,7 +26,7 @@ SCRIPT_NAME = 'w3af_dependency_install.sh'
 
 
 def generate_helper_script(pkg_manager_cmd, os_packages,
-                           pip_cmd, failed_deps):
+                              pip_cmd, failed_deps):
     '''
     Generates a helper script to be run by the user to install all the
     dependencies.
