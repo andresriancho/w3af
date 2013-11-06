@@ -26,6 +26,7 @@ import logging
 from .lazy_load import lazy_load
 from .utils import verify_python_version, pip_installed
 from .helper_script import generate_helper_script
+from .helper_requirements_txt import generate_requirements_txt
 from .platforms.current_platform import (SYSTEM_NAME,
                                          PKG_MANAGER_CMD,
                                          SYSTEM_PACKAGES,
@@ -79,6 +80,8 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         # False means: do not exit()
         return False
 
+    generate_requirements_txt(pkg_manager_cmd, os_packages, pip_cmd,
+                              failed_deps)
     script_path = generate_helper_script(pkg_manager_cmd, os_packages,
                                          pip_cmd, failed_deps)
 
