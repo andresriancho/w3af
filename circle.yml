@@ -4,7 +4,10 @@ dependencies:
     - bash /tmp/w3af_dependency_install.sh:
         timeout: 600
 
-
+machine:
+  python:
+    version: 2.7.3
+    
 test:
   override:
     - nosetests -v --processes=32 --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/
