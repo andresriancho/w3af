@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - python w3af_console --no-update; true
+    - python -c 'from w3af.core.controllers.dependency_check.dependency_check import dependency_check;dependency_check()'; true
     - pip install -r requirements.txt
 
 machine:
