@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - python w3af_console; true
+    - python w3af_console --no-update; true
     - pip install -r requirements.txt
 
 machine:
