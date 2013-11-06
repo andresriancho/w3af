@@ -17,10 +17,7 @@ dependencies:
     # Install the test dependencies
     - pip install mock pylint httpretty psutil logilab-astng SOAPpy
 
-machine:
-  python:
-    version: 2.7.3
-    
+   
 test:
   override:
     - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/
