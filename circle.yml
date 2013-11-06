@@ -1,7 +1,8 @@
 dependencies:
   pre:
     - python w3af_console; true
-
+	- pip install -r requirements.txt
+	
 machine:
   python:
     version: 2.7.3
