@@ -16,13 +16,14 @@ if [ ! -d xpresser ]; then
 fi
 
 #
-# Required the guys from circleci to add gir1.2-notify-0.7 python-pyatspi2 to
-# my build for the xpresser tests to work well, also I need to link to the
+# Required the guys from circleci to add these to my build:
+#       * gir1.2-notify-0.7
+#       * python-pyatspi2
+#       * dbus-python
+# For the xpresser tests to work well, also I need to link to the
 # system library from my virtualenv:
 #
 if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
     ln -s /usr/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/dbus/ venv/lib/python2.7/dist-packages/
 fi
-
-# Module requirement tree: xpresser => pyatspi => dbus
-pip install dbus-python==0.84.0
