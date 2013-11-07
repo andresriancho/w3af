@@ -5,10 +5,10 @@ dependencies:
     - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     # Install GUI dependencies
-    - w3af/core/controllers/ci/install_gui_dependencies.sh
+    - w3af/w3af/core/controllers/ci/install_gui_dependencies.sh
     
     # Install the test dependencies
-    - w3af/core/controllers/ci/install_test_dependencies.sh
+    - w3af/w3af/core/controllers/ci/install_test_dependencies.sh
 
 machine:
   python:
