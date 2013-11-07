@@ -36,7 +36,7 @@ def hashlib_transform(module):
     if module.name == 'hashlib':
         fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
         
-        for hashfunc in ('sha1', 'md5'):
+        for hashfunc in ('sha1', 'md5', 'sha512'):
             module.locals[hashfunc] = fake.locals[hashfunc]
 
 def register(linter):
