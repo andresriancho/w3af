@@ -3,7 +3,16 @@
 #
 # Install all libs required to run our tests (which are available at pypi)
 #
-pip install mock pylint httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
+pip install mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
+
+#
+# Install the latest pylint from the repo to benefit from some bug fixes
+# like https://bitbucket.org/logilab/pylint/issue/74/pylint-full-documentation-fails-with-no
+#
+hg clone ssh://hg@bitbucket.org/logilab/pylint
+cd pylint
+python setup.py install
+cd ..
 
 #
 # Install xpresser
