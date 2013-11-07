@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # There are a couple of GUI dependencies which need to be installed 
 # using "apt-get". Asked the circle guys to install them and they
