@@ -27,7 +27,7 @@ cd ..
 # my build for the xpresser tests to work well, also I need to link to the
 # system library from my virtualenv:
 #
-if [ ! -d venv/lib/python2.7/dist-packages/pyatspi/ ]; then
+if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
     ln -s /usr/local/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
 fi
 
