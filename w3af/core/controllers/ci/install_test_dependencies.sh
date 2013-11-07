@@ -20,6 +20,7 @@ fi
 #       * gir1.2-notify-0.7
 #       * python-pyatspi2
 #       * dbus-python
+#       * python-pygame
 # For the xpresser tests to work well, also I need to link to the
 # system library from my virtualenv:
 #
@@ -27,4 +28,5 @@ if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
     ln -s /usr/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/dbus/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/_dbus_bindings.so venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/pygame/ venv/lib/python2.7/dist-packages/
 fi
