@@ -28,7 +28,8 @@ cd ..
 # system library from my virtualenv:
 #
 if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
-    ln -s /usr/local/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
 fi
 
-
+# Module requirement tree: xpresser => pyatspi => dbus
+pip install dbus-python==0.84.0
