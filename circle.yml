@@ -16,6 +16,7 @@ dependencies:
     - ln -s /usr/lib/python2.7/dist-packages/cairo venv/lib/python2.7/dist-packages/
     - ln -s /usr/lib/python2.7/dist-packages/pygtk.py venv/lib/python2.7/dist-packages/
     - ln -s /usr/lib/python2.7/dist-packages/gi venv/lib/python2.7/dist-packages/
+    - ln -s /usr/lib/python2.7/dist-packages/gtksourceview2.so venv/lib/python2.7/dist-packages/
 
     # Install the GUI dependencies
     - python -c 'from w3af.core.ui.gui.dependency_check.dependency_check import dependency_check;dependency_check()'; true
