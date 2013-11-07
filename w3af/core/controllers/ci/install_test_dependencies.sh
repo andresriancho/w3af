@@ -32,6 +32,7 @@ if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
 fi
 
 #
-# Dependency tree: xpresser => simplecv => scipy
+# Dependency tree: xpresser => simplecv => scipy => numpy
 #
+pip install numpy==1.8.0
 pip install scipy==0.13.0
