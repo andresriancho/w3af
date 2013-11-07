@@ -30,6 +30,9 @@ machine:
     version: 2.7.3
   
   post:
+    # This was required to avoid issues with different builds of python being
+    # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
+    # and the python which was put inside my virtualenv
     - pyenv global system
     
 test:
