@@ -26,4 +26,5 @@ fi
 if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
     ln -s /usr/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/dbus/ venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/_dbus_bindings.so venv/lib/python2.7/dist-packages/
 fi
