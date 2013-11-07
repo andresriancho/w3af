@@ -26,7 +26,6 @@ import unittest
 from pylint import lint
 from pylint.reporters.text import TextReporter
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
 
