@@ -49,7 +49,7 @@ class PluginTest(unittest.TestCase):
     Remember that nosetests can't find test generators in unittest.TestCase,
     see http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class ,
     '''
-
+    MOCK_RESPONSES = []
     runconfig = {}
     kb = kb.kb
 
@@ -57,7 +57,7 @@ class PluginTest(unittest.TestCase):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
         
-        if hasattr(self, 'MOCK_RESPONSES'):
+        if self.MOCK_RESPONSES:
             httpretty.enable()
 
             httpretty.register_uri(httpretty.GET,
@@ -68,7 +68,7 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.quit()
         self.kb.cleanup()
 
-        if hasattr(self, 'MOCK_RESPONSES'):
+        if self.MOCK_RESPONSES:
             httpretty.disable()
 
     def request_callback(self, method, uri, headers):
