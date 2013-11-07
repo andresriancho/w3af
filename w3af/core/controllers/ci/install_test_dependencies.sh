@@ -22,20 +22,20 @@ fi
 #       * dbus-python
 #       * python-pygame
 #       * python-opencv
+#       * python-numpy
+#       * python-scipy
 # For the xpresser tests to work well, also I need to link to the
 # system library from my virtualenv:
+#
+# Dependency tree: xpresser => simplecv => scipy => numpy
+#                                       => python-opencv
 #
 if [ ! -L venv/lib/python2.7/dist-packages/pyatspi ]; then
     ln -s /usr/lib/python2.7/dist-packages/pyatspi/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/dbus/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/_dbus_bindings.so venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/python2.7/dist-packages/pygame/ venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/numpy/ venv/lib/python2.7/dist-packages/
+    ln -s /usr/lib/python2.7/dist-packages/scipy/ venv/lib/python2.7/dist-packages/
     ln -s /usr/lib/pyshared/python2.7/cv2.so venv/lib/python2.7/dist-packages/
 fi
-
-#
-# Dependency tree: xpresser => simplecv => scipy => numpy
-#                                       => python-opencv
-#
-pip install numpy==1.8.0
-pip install scipy==0.13.0
