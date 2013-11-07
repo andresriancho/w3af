@@ -7,7 +7,7 @@ dependencies:
     # There are a couple of GUI dependencies which need to be installed 
     # using "apt-get". Asked the circle guys to install them and they
     # recommended me to run this command to make sure the virtualenv
-    # can access these packages  
+    # can access these packages
     - mkdir venv/lib/python2.7/dist-packages
     - ln -s /usr/lib/python2.7/dist-packages/glib/ venv/lib/python2.7/dist-packages/
     - ln -s /usr/lib/python2.7/dist-packages/gobject/ venv/lib/python2.7/dist-packages/
@@ -15,13 +15,14 @@ dependencies:
     - ln -s /usr/lib/python2.7/dist-packages/pygtk.pth venv/lib/python2.7/dist-packages/
     - ln -s /usr/lib/python2.7/dist-packages/cairo venv/lib/python2.7/dist-packages/
     - ln -s /usr/lib/python2.7/dist-packages/pygtk.py venv/lib/python2.7/dist-packages/
+    - ln -s /usr/lib/python2.7/dist-packages/gi venv/lib/python2.7/dist-packages/
 
     # Install the GUI dependencies
     - python -c 'from w3af.core.ui.gui.dependency_check.dependency_check import dependency_check;dependency_check()'; true
     - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
     # Install the test dependencies
-    - pip install mock pylint httpretty psutil logilab-astng SOAPpy
+    - pip install mock pylint httpretty psutil logilab-astng SOAPpy PIL
 
 machine:
   python:
@@ -32,5 +33,15 @@ machine:
     
 test:
   override:
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/
-
+    # The order in which these are run doesn't really matter, but I do need to
+    # take care of "grouping" (which directory is run) because of an incompatibility
+    # between "w3af/core/ui/gui/" and "w3af/core/ui/tests/" which comes from
+    # Gtk2 vs. Gtk3.
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/controllers/
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/data/
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/tests/
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/console/
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/gui/
+    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/plugins/
+        
+    # TODO: Run the tests which require moth
