@@ -9,18 +9,22 @@ pip install mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
 # Install the latest pylint from the repo to benefit from some bug fixes
 # like https://bitbucket.org/logilab/pylint/issue/74/pylint-full-documentation-fails-with-no
 #
-hg clone https://bitbucket.org/logilab/pylint
-cd pylint
-python setup.py install
-cd ..
+if [ ! -d pylint ]; then
+    hg clone https://bitbucket.org/logilab/pylint
+    cd pylint
+    python setup.py install
+    cd ..
+fi
 
 #
 # Install xpresser
 #
-bzr branch lp:xpresser
-cd xpresser/
-python setup.py install
-cd ..
+if [ ! -d xpresser ]; then
+    bzr branch lp:xpresser
+    cd xpresser/
+    python setup.py install
+    cd ..
+fi
 
 #
 # Required the guys from circleci to add gir1.2-notify-0.7 python-pyatspi2 to
