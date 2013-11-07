@@ -47,14 +47,6 @@ class WritableObject(object):
 class PylintRunner(unittest.TestCase):
 
     maxDiff = None
-    pylint_plugins_dir = os.path.join(ROOT_PATH, 'core', 'controllers',
-                                      'tests', 'pylint_plugins')
-
-    def setUp(self):
-        sys.path.append(self.pylint_plugins_dir)
-        
-    def tearDown(self):
-        sys.path.remove(self.pylint_plugins_dir)
     
     def run_pylint(self, directory):
         pylint_rc = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests',

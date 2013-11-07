@@ -19,8 +19,7 @@ persistent=no
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=hashlib_fix,scapy_fix,subprocess_fix,gi_repository_fix,httpretty_fix
-
+load-plugins=w3af.core.controllers.tests.pylint_plugins.hashlib_fix,w3af.core.controllers.tests.pylint_plugins.subprocess_fix,w3af.core.controllers.tests.pylint_plugins.gi_repository_fix,w3af.core.controllers.tests.pylint_plugins.scapy_fix,w3af.core.controllers.tests.pylint_plugins.httpretty_fix
 
 [MESSAGES CONTROL]
 
