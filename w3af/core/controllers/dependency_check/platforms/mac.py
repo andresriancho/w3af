@@ -41,7 +41,7 @@ SYSTEM_PACKAGES = {
                   }
 PIP_CMD = 'pip-2.7' 
 
-PHPLY_GIT = 'git+git://github.com/ramen/phply.git#egg=phply'
+PHPLY_GIT = 'git+http://github.com/ramen/phply.git#egg=phply'
 
 PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
                 PIPDependency('github', 'PyGithub'),
