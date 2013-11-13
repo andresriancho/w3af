@@ -1,7 +1,7 @@
 dependencies:
   pre:  
     # Install the core/console dependencies
-    - w3af/core/controllers/ci/install_gui_dependencies.sh
+    - w3af/core/controllers/ci/install_core_dependencies.sh
 
     # Install GUI dependencies
     - w3af/core/controllers/ci/install_gui_dependencies.sh
