@@ -30,7 +30,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     :param params: The parameters to pass to nosetests
     :return: (stdout, stderr, exit code) 
     '''
-    cmd = '%s %s -A %s %s' % (NOSETESTS, params, selector, directory)
+    cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
     cmd_args = shlex.split(cmd)
     
     p = subprocess.Popen(
