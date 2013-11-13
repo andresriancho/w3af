@@ -2,6 +2,7 @@
 
 import sys
 import shlex
+import subprocess
 
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-doctest --doctest-tests'
@@ -40,7 +41,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
         shell=False,
         universal_newlines=True
     )
-    p.communicate(dotcode)
+    p.communicate()
     return p.stdout, p.stderr, p.returncode
 
 
