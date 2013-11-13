@@ -5,8 +5,8 @@
 # between "w3af/core/ui/gui/" and "w3af/core/ui/tests/" which comes from
 # Gtk2 vs. Gtk3.
 
-PARAMS = '--with-doctest --doctest-tests -A'
-SELECTORS = 'smoke and not internet and not moth and not root'
+PARAMS="--with-doctest --doctest-tests -A"
+SELECTORS="smoke and not internet and not moth and not root"
 
 nosetests $PARAMS -A "$SELECTORS" w3af/core/controllers/
 nosetests $PARAMS -A "$SELECTORS" w3af/core/data/
