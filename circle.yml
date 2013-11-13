@@ -1,9 +1,8 @@
 dependencies:
   pre:  
-    # Install the console dependencies
-    - python -c 'from w3af.core.controllers.dependency_check.dependency_check import dependency_check;dependency_check()'; true
-    - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
+    # Install the core/console dependencies
+	- w3af/core/controllers/ci/install_gui_dependencies.sh
+	
     # Install GUI dependencies
     - w3af/core/controllers/ci/install_gui_dependencies.sh
     
