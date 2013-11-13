@@ -8,7 +8,7 @@ pip install pylint==0.28.0 mock httpretty psutil logilab-astng SOAPpy PIL Simple
 #
 # Install xpresser
 #
-if [ ! -d xpresser ]; then
+if [ ! -d "xpresser" ]; then
     bzr branch lp:xpresser
     cd xpresser/
     python setup.py install
