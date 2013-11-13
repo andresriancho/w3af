@@ -41,10 +41,10 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
         shell=False,
         universal_newlines=True
     )
-    p.communicate()
+    stdout, stderr = p.communicate()
     
-    print p.stdout
-    print p.stderr
+    print stdout
+    print stderr
     
     return p.stdout, p.stderr, p.returncode
 
