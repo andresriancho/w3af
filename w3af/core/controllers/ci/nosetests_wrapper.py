@@ -42,6 +42,10 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
         universal_newlines=True
     )
     p.communicate()
+    
+    print p.stdout
+    print p.stderr
+    
     return p.stdout, p.stderr, p.returncode
 
 
