@@ -55,7 +55,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     stdout, stderr = p.communicate()
     
     print clean_noise(stdout)
-    print stderr
+    print clean_noise(stderr)
     
     return stdout, stderr, p.returncode
 
