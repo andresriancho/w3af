@@ -67,8 +67,9 @@ class HTMLParser(SGMLParser):
     def _form_elems_generic_handler(self, tag, attrs):
         side = 'inside' if self._inside_form else 'outside'
         default = lambda *args: None
-        meth = getattr(
-            self, '_handle_' + tag + '_tag_' + side + '_form', default)
+        meth = getattr(self,
+                       '_handle_' + tag + '_tag_' + side + '_form',
+                       default)
         meth(tag, attrs)
 
     ## <form> handler methods
@@ -86,16 +87,19 @@ class HTMLParser(SGMLParser):
 
         # Get the action
         action = attrs.get('action', None)
-        missing_or_invalid_action = action is None
+        missing_action = action is None
 
-        if not missing_or_invalid_action:
+        if missing_action:
+            action = self._source_url
+        else:
             action = self._decode_url(action)
             try:
                 action = self._base_url.url_join(action, encoding=self._encoding)
             except ValueError:
-                missing_or_invalid_action = True
-        else:
-            action = self._source_url
+                # The URL in the action is invalid, the best thing we can do
+                # is to guess, and our best guess is that the URL will be the
+                # current one.
+                action = self._source_url
 
         # Create the form object and store everything for later use
         form_obj = form.Form(encoding=self._encoding)
