@@ -3,10 +3,13 @@
 import sys
 import shlex
 import subprocess
+import multiprocessing
 
 from termcolor import colored
+from concurrent import futures
 
 
+MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests'
 SELECTORS = ["smoke and not internet and not moth and not root",]
@@ -41,9 +44,6 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
     cmd_args = shlex.split(cmd)
 
-    print colored(cmd, 'green')
-    print '=' * len(cmd)
-    
     p = subprocess.Popen(
         cmd_args,
         stdin=subprocess.PIPE,
@@ -54,10 +54,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     )
     stdout, stderr = p.communicate()
     
-    print clean_noise(stdout)
-    print clean_noise(stderr)
-    
-    return stdout, stderr, p.returncode
+    return cmd, stdout, stderr, p.returncode
 
 def clean_noise(output_string):
     '''
@@ -72,21 +69,6 @@ def clean_noise(output_string):
     
     return output_string
 
-def run_selector(selector, params=NOSE_PARAMS):
-    '''
-    Run nosetests on all the TEST_DIRECTORIES using the selector and params.
-    
-    :param selector: A string with the names of the unittest tags we want to run
-    :param params: The parameters to pass to nosetests
-    '''
-    exit_codes = []
-    
-    for directory in TEST_DIRECTORIES:
-        stdout, stderr, exit_code = run_nosetests(selector, directory, params)
-        exit_codes.append(exit_code)
-        
-    return summarize_exit_codes(exit_codes)
-
 def summarize_exit_codes(exit_codes):
     '''
     Take a list of exit codes, if at least one of them is not 0, then return
@@ -97,14 +79,30 @@ def summarize_exit_codes(exit_codes):
     
     return 0
 
-if __name__ == '__main__':
-    selector_exit_codes = []
-    
-    for selector in SELECTORS:
-        selector_exit_code = run_selector(selector)
-        selector_exit_codes.append(selector_exit_code)
-            
-    # TODO: Run the tests which require moth
+def print_info_console(cmd, stdout, stderr, exit_code):
+    print colored(cmd, 'green')
+    print '=' * len(cmd)
 
+    print clean_noise(stdout)
+    print clean_noise(stderr)
+
+if __name__ == '__main__':
+    exit_codes = []
+    future_list = []
+    
+    # TODO: Run the tests which require moth
+    
+    with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        for selector in SELECTORS:
+            for directory in TEST_DIRECTORIES:
+                args = run_nosetests, selector, directory, NOSE_PARAMS
+                future_list.append(executor.submit(*args))
+                
+        for future in futures.as_completed(future_list):
+            cmd, stdout, stderr, exit_code = future.result()
+            exit_codes.append(exit_code)
+
+            print_info_console(cmd, stdout, stderr, exit_code)
+            
     # We need to set the exit code.
-    sys.exit(summarize_exit_codes(selector_exit_codes))
+    sys.exit(summarize_exit_codes(exit_codes))
