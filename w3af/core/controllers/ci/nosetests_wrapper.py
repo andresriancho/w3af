@@ -4,6 +4,9 @@ import sys
 import shlex
 import subprocess
 
+from termcolor import colored
+
+
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-doctest --doctest-tests'
 SELECTORS = ["smoke and not internet and not moth and not root",]
@@ -32,6 +35,9 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
     cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
     cmd_args = shlex.split(cmd)
+
+    print colored(cmd, 'green')
+    print '=' * len(cmd)
     
     p = subprocess.Popen(
         cmd_args,

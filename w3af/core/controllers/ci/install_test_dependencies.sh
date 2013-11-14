@@ -3,7 +3,7 @@
 #
 # Install all libs required to run our tests (which are available at pypi)
 #
-pip install pylint==0.28.0 mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
+pip install pylint==0.28.0 mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3 termcolor==1.1.0
 
 #
 # Install xpresser
