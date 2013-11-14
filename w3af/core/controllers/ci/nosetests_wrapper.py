@@ -8,7 +8,7 @@ from termcolor import colored
 
 
 NOSETESTS = 'nosetests'
-NOSE_PARAMS = '--with-doctest --doctest-tests'
+NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests'
 SELECTORS = ["smoke and not internet and not moth and not root",]
 TEST_DIRECTORIES = [
     # The order in which these are run doesn't really matter, but I do need to
