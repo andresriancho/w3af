@@ -116,6 +116,8 @@ if __name__ == '__main__':
             done_list.append(future)
             
             print_info_console(cmd, stdout, stderr, exit_code)
+            if exit_code != 0:
+                print colored('Build will end as failed.', 'red')
             print_status(future_list, done_list)
             
     # We need to set the exit code.
