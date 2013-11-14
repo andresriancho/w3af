@@ -22,3 +22,8 @@ machine:
 test:
   override:
     - w3af/core/controllers/ci/nosetests_wrapper.py
+    
+  post:
+    - coverage combine
+    - coveralls
+    
