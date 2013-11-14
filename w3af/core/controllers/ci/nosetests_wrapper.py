@@ -91,9 +91,14 @@ def print_info_console(cmd, stdout, stderr, exit_code):
     print clean_noise(stdout)
     print clean_noise(stderr)
 
+def print_status(future_list, done_list):
+    msg = 'Status: (%s/%s) ' % (len(done_list), len(future_list))
+    print colored(msg, 'yellow')
+
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
+    done_list = []
     
     # TODO: Run the tests which require moth
     
@@ -102,12 +107,16 @@ if __name__ == '__main__':
             for directory in TEST_DIRECTORIES:
                 args = run_nosetests, selector, directory, NOSE_PARAMS
                 future_list.append(executor.submit(*args))
-                
+        
+        print_status(future_list, done_list)
+        
         for future in futures.as_completed(future_list):
             cmd, stdout, stderr, exit_code = future.result()
             exit_codes.append(exit_code)
-
+            done_list.append(future)
+            
             print_info_console(cmd, stdout, stderr, exit_code)
+            print_status(future_list, done_list)
             
     # We need to set the exit code.
     sys.exit(summarize_exit_codes(exit_codes))
