@@ -23,6 +23,11 @@ TEST_DIRECTORIES = [
     'w3af/plugins/',
 ]
 
+NOISE = ['Xlib:  extension "RANDR" missing on display ":99".',
+         'WARNING: Failed to execute tcpdump. Check it is installed and in the PATH',
+         'Generating LALR tables',
+         'WARNING: 2 shift/reduce conflicts']
+
 def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
     Run nosetests like this:
@@ -49,11 +54,23 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     )
     stdout, stderr = p.communicate()
     
-    print stdout
+    print clean_noise(stdout)
     print stderr
     
     return stdout, stderr, p.returncode
 
+def clean_noise(output_string):
+    '''
+    Removes useless noise from the output
+    
+    :param output_string: The output string, stdout.
+    :return: A sanitized output string
+    '''
+    for noise in NOISE:
+        output_string = output_string.replace(noise + '\n', '')
+        output_string = output_string.replace(noise, '')
+    
+    return output_string
 
 def run_selector(selector, params=NOSE_PARAMS):
     '''
