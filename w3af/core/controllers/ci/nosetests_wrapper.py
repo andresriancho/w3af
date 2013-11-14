@@ -26,10 +26,15 @@ TEST_DIRECTORIES = [
     'w3af/plugins/',
 ]
 
-NOISE = ['Xlib:  extension "RANDR" missing on display ":99".',
+NOISE = [# Related with xvfb not having the randr extension
+         'Xlib:  extension "RANDR" missing on display ":99".',
+         # Related with scapy, we're not root, tcpdump is not available
          'WARNING: Failed to execute tcpdump. Check it is installed and in the PATH',
+         # Warnings/log messages related with phply
          'Generating LALR tables',
-         'WARNING: 2 shift/reduce conflicts']
+         'WARNING: 2 shift/reduce conflicts',
+         # Googled: only a warning related with the CV library
+         'libdc1394 error: Failed to initialize libdc1394']
 
 def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
