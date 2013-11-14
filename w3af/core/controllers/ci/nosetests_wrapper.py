@@ -94,6 +94,10 @@ def print_status(future_list, done_list):
     msg = 'Status: (%s/%s) ' % (len(done_list), len(future_list))
     print colored(msg, 'yellow')
 
+def print_will_fail(exit_code):
+    if exit_code != 0:
+        print colored('Build will end as failed.', 'red')
+
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
@@ -115,8 +119,7 @@ if __name__ == '__main__':
             done_list.append(future)
             
             print_info_console(cmd, stdout, stderr, exit_code)
-            if exit_code != 0:
-                print colored('Build will end as failed.', 'red')
+            print_will_fail(exit_code)
             print_status(future_list, done_list)
             
     # We need to set the exit code.
