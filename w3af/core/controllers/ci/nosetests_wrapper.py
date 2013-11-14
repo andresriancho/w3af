@@ -46,7 +46,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     print stdout
     print stderr
     
-    return p.stdout, p.stderr, p.returncode
+    return stdout, stderr, p.returncode
 
 
 def run_selector(selector, params=NOSE_PARAMS):
