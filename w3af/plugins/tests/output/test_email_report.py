@@ -25,6 +25,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('internet')
+@attr('moth')
 class TestEmailReport(PluginTest):
 
     xss_url = 'http://moth/w3af/audit/xss/'
