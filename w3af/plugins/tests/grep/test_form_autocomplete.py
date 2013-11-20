@@ -18,13 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
+@attr('ci_ready')
 class TestFormAutocomplete(PluginTest):
 
-    target_url = 'http://moth/w3af/grep/form_autocomplete/'
+    target_url = '%s/grep/form_autocomplete/' % get_moth_http()
 
     _run_configs = {
         'cfg1': {
@@ -44,9 +47,9 @@ class TestFormAutocomplete(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('form_autocomplete', 'form_autocomplete')
 
-        expected_results = ["index-form-default.html",
-                            "index-form-on.html",
-                            "index-form-on-field-on.html"]
+        expected_results = ["form-default.html",
+                            "form-on.html",
+                            "form-on-field-on.html"]
 
         self.assertEquals(3, len(vulns))
 
