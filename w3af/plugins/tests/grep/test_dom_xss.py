@@ -18,14 +18,19 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import w3af.core.data.constants.severity as severity
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
+import w3af.core.data.constants.severity as severity
 
+
+@attr('ci_ready')
+@attr('moth')
 class TestDOMXSS(PluginTest):
 
-    dom_xss_url = 'https://moth/w3af/grep/dom_xss/'
+    dom_xss_url = '%s/grep/dom_xss/' % get_moth_http()
 
     _run_configs = {
         'cfg': {
@@ -54,4 +59,4 @@ class TestDOMXSS(PluginTest):
         self.assertEquals(len(v.get_id()), 1)
         self.assertTrue('document.URL' in v.get_desc())
         self.assertEqual(
-            self.dom_xss_url + 'dom_xss_trivial.html', v.get_url().url_string)
+            self.dom_xss_url + 'dom-xss.html', v.get_url().url_string)
