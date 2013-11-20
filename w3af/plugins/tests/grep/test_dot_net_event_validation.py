@@ -25,7 +25,6 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('ci_ready')
-@attr('moth')
 class TestEventValidation(PluginTest):
 
     dot_net_event_validation_url = '%s/grep/dot_net_event_validation/' % get_moth_http()

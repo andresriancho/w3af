@@ -27,7 +27,6 @@ import w3af.core.data.constants.severity as severity
 
 
 @attr('ci_ready')
-@attr('moth')
 class TestDOMXSS(PluginTest):
 
     dom_xss_url = '%s/grep/dom_xss/' % get_moth_http()

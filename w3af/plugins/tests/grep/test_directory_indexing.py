@@ -27,7 +27,6 @@ import w3af.core.data.constants.severity as severity
 
 
 @attr('ci_ready')
-@attr('moth')
 class TestDirectoryIndexing(PluginTest):
 
     dir_indexing_url = '%s/grep/directory_indexing/index.html' % get_moth_http()

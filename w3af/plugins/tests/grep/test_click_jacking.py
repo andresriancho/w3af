@@ -27,7 +27,6 @@ import w3af.core.data.constants.severity as severity
 
 
 @attr('ci_ready')
-@attr('moth')
 class TestClickJacking(PluginTest):
 
     click_jacking_url = '%s/grep/click_jacking/' % get_moth_http()

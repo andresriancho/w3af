@@ -25,7 +25,6 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
  
  
 @attr('ci_ready')
-@attr('moth')
 class TestCSP(PluginTest):
  
     # Test scripts URLs

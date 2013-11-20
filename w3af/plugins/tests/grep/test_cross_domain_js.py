@@ -26,7 +26,6 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 @attr('ci_ready')
-@attr('moth')
 class TestCrossDomainJS(PluginTest):
 
     target_url = '%s/grep/cross_domain_js/' % get_moth_http()
