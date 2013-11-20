@@ -18,14 +18,19 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+
 import w3af.core.data.constants.severity as severity
 
 
+@attr('ci_ready')
+@attr('moth')
 class TestClickJacking(PluginTest):
 
-    click_jacking_url = 'http://moth/w3af/grep/click_jacking/'
+    click_jacking_url = '%s/grep/click_jacking/' % get_moth_http()
 
     _run_configs = {
         'cfg1': {
@@ -51,6 +56,6 @@ class TestClickJacking(PluginTest):
         v = vulns[0]
         self.assertEquals(severity.MEDIUM, v.get_severity())
         self.assertEquals('Click-Jacking vulnerability', v.get_name())
-        self.assertEquals(len(v.get_id()), 1)
-        self.assertTrue(
-            self.click_jacking_url + 'without_protection.php' in v.get_desc())
+        self.assertEquals(len(v.get_id()), 2, v.get_id())
+        self.assertIn(self.click_jacking_url + 'without_header.py',
+                      v.get_desc())
