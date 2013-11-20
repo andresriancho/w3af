@@ -46,17 +46,21 @@ class html_comments(GrepPlugin):
     HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
 
     INTERESTING_WORDS = (
+        # In English
         'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
-        'stupid', 'tonto', 'porqueria', 'ciudado', 'usuario', 'contrase',
-        'puta', 'secret', '@', 'email', 'security', 'captcha', 'pinga',
-        'cojones',
+        'pass', 'password', 'passwd', 'pwd', 'secret', 'stupid',
+        
+        # In Spanish
+        'tonto', 'porqueria', 'ciudado', 'usuario', 'contraseña',
+        'puta', 'email', 'security', 'captcha', 'pinga', 'cojones',
+        
         # some in Portuguese
         'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
         u'depósito', u'cartão', u'crédito', 'dados pessoais'
     )
 
-    _multi_in = multi_in(INTERESTING_WORDS)
+    _multi_in = multi_in([' %s ' % w for w in INTERESTING_WORDS])
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -87,9 +91,6 @@ class html_comments(GrepPlugin):
             if request.sent(comment):
                 continue
 
-            # show nice comments ;)
-            comment = comment.strip()
-
             if self._is_new(comment, response):
 
                 self._interesting_word(comment, request, response)
@@ -100,7 +101,7 @@ class html_comments(GrepPlugin):
         Find interesting words in HTML comments
         '''
         comment = comment.lower()
-        for word in self._multi_in.query(response.body):
+        for word in self._multi_in.query(comment):
             if (word, response.get_url()) not in self._already_reported_interesting:
                 desc = 'A comment with the string "%s" was found in: "%s".'\
                        ' This could be interesting.'
@@ -127,8 +128,10 @@ class html_comments(GrepPlugin):
         if html_in_comment and \
         (comment, response.get_url()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
+            comment = comment.strip()
             comment = comment.replace('\n', '')
             comment = comment.replace('\r', '')
+            comment = comment[:40]
             desc = 'A comment with the string "%s" was found in: "%s".'\
                    ' This could be interesting.'
             desc = desc % (comment, response.get_url())
