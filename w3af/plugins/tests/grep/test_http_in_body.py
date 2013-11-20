@@ -18,14 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 import w3af.core.data.constants.severity as severity
 
 
+@attr('ci_ready')
 class TestHttpInBody(PluginTest):
 
-    target_url = 'http://moth/w3af/grep/http_in_body/index.html'
+    target_url = '%s/grep/http_in_body/index.html' % get_moth_http()
 
     _run_configs = {
         'cfg': {
@@ -48,13 +51,15 @@ class TestHttpInBody(PluginTest):
         infos = self.kb.get('http_in_body', 'request')
         info = infos[0]
         self.assertEquals(1, len(infos))
-        self.assertEquals('http://moth/w3af/grep/http_in_body/http_request.html', str(info.get_url()))
+        self.assertEquals('%s/grep/http_in_body/http_request.html' % get_moth_http(),
+                          str(info.get_url()))
         self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertEquals('HTTP Request in HTTP body', info.get_name())
 
         infos = self.kb.get('http_in_body', 'response')
         info = infos[0]
         self.assertEquals(1, len(infos))
-        self.assertEquals('http://moth/w3af/grep/http_in_body/http_response.html', str(info.get_url()))
+        self.assertEquals('%s/grep/http_in_body/http_response.html' % get_moth_http(),
+                          str(info.get_url()))
         self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertEquals('HTTP Response in HTTP body', info.get_name())
