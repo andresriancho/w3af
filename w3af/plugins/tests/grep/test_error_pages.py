@@ -20,14 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+
 import w3af.core.data.constants.severity as severity
 
-
+@attr('ci_ready')
 @attr('smoke')
 class TestErrorPages(PluginTest):
 
-    target_url = 'http://moth/w3af/grep/error_pages/error_page.html'
+    target_url = '%s/grep/error_pages/index.html' % get_moth_http()
 
     _run_configs = {
         'cfg': {
