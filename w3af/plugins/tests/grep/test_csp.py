@@ -18,15 +18,20 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
+
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
  
  
+@attr('ci_ready')
+@attr('moth')
 class TestCSP(PluginTest):
  
-    #Test scripts URLs
-    base_url = 'http://moth'
-    csp_with_error_url = base_url + '/w3af/grep/csp/index.php'    
-    csp_without_error_url = base_url + '/w3af/grep/csp/csp_without_error.php'
+    # Test scripts URLs
+    base_url = get_moth_http()
+    csp_with_error_url = base_url + '/grep/csp/index.php'    
+    csp_without_error_url = base_url + '/grep/csp/csp_without_error.php'
 
     #Test configurations 
     _run_configs = {          
