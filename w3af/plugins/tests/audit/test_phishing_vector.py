@@ -18,13 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
+@attr('ci_ready')
 class TestPhishingVector(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/phishing_vector/'
+    target_url = '%s/audit/phishing_vector/' % get_moth_http()
 
     _run_configs = {
         'cfg': {
@@ -53,9 +56,9 @@ class TestPhishingVector(PluginTest):
 
         # Verify the specifics about the vulnerabilities
         expected = [
-            ('http_blacklist_phishing.php', 'section'),
-            ('iframe_phishing.php', 'url'),
-            ('frame_phishing.php', 'url'),
+            ('http_blacklist_phishing.py', 'url'),
+            ('iframe_phishing.py', 'url'),
+            ('frame_phishing.py', 'url'),
         ]
 
         found = [(str(v.get_url()), v.get_var()) for v in vulns]
