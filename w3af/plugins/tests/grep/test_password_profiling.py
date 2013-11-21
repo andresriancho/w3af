@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
+
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.grep.password_profiling import password_profiling
 
@@ -25,9 +28,10 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 
 
+@attr('ci_ready')
 class TestPasswordProfiling(PluginTest):
 
-    password_profiling_url = 'https://moth/w3af/grep/password_profiling/'
+    password_profiling_url = '%s/grep/password_profiling/' % get_moth_http()
 
     _run_configs = {
         'cfg1': {
@@ -59,8 +63,9 @@ class TestPasswordProfiling(PluginTest):
         # pylint: enable=E1103
         collected_passwords.sort(sortfunc)
 
-        self.assertEquals(collected_passwords[0], 'Password')
-        self.assertTrue('repeat' in collected_passwords)
+        self.assertIn('Password', collected_passwords)
+        self.assertIn('w3af', collected_passwords)
+        self.assertIn('repeat', collected_passwords)
 
     def test_merge_password_profiling(self):
         pp = password_profiling()
