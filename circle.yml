@@ -21,8 +21,9 @@ machine:
     
 test:
   override:
-    - w3af/core/controllers/ci/nosetests_wrapper.py
-    
+    - w3af/core/controllers/ci/nosetests_wrapper.py:
+        timeout: 360
+        
 #  post:
 #    - coverage combine
 #    - coveralls
