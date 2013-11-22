@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
+import urlparse
 
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.parsers.parser_cache as parser_cache
@@ -35,7 +36,6 @@ class global_redirect(AuditPlugin):
     Find scripts that redirect the browser to any site.
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
-
     TEST_URLS = ('http://www.w3af.org/',
                  '//w3af.org')
 
@@ -96,12 +96,25 @@ class global_redirect(AuditPlugin):
             if header_name in lheaders:
                 header_value = lheaders[header_name]
                 for test_url in self.TEST_URLS:
-                    if header_value.startswith(test_url):
-                        # The script sent a 302, and w3af followed the redirection
-                        # so the URL is now the test site
+                    if self._domains_are_equal(header_value, test_url):
+                        # The script sent a 302, and w3af followed the
+                        # redirection so the URL is now the test site
                         return True
 
         return False
+
+    def _domains_are_equal(self, redir_url, test_url):
+        '''
+        :return: True if the domain name for the redir_url (the one we got
+                 from the web application) and the test_url (the one we sent
+                 to the application) are equal.
+        '''
+        try:
+            redir_domain = urlparse.urlparse(redir_url).netloc
+            test_domain = urlparse.urlparse(test_url).netloc
+            return redir_domain == test_domain
+        except:
+            return False
 
     def _refresh_redirect(self, response, lheaders):
         '''Check for the *very strange* Refresh HTTP header, which looks like a
@@ -115,7 +128,7 @@ class global_redirect(AuditPlugin):
             if len(splitted_refresh) == 2:
                 _, url = splitted_refresh
                 for test_url in self.TEST_URLS:
-                    if url.startswith(test_url):
+                    if self._domains_are_equal(url, test_url):
                         return True
 
         return False
@@ -135,7 +148,7 @@ class global_redirect(AuditPlugin):
                 if match_url:
                     url = match_url.group(1)
                     for test_url in self.TEST_URLS:
-                        if url.startswith(test_url):
+                        if self._domains_are_equal(url, test_url):
                             return True
 
         return False

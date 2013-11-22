@@ -18,13 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGlobalRedirect(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/global_redirect/'
+    target_url = '%s/audit/global_redirect/' % get_moth_http()
 
     _run_configs = {
         'cfg': {
@@ -52,11 +54,11 @@ class TestGlobalRedirect(PluginTest):
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
-            ('java.php', 'url'),
-            ('meta.php', 'url'),
-            ('302.php', 'url'),
-            ('refresh-header.php', 'url'),
-            ('302-filtered.php', 'url')
+            ('redirect-javascript.py', 'url'),
+            ('redirect-meta.py', 'url'),
+            ('redirect-302.py', 'url'),
+            ('redirect-header-302.py', 'url'),
+            ('redirect-302-filtered.py', 'url')
         ]
 
         found = [(str(v.get_url()), v.get_var()) for v in vulns]
