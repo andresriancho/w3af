@@ -22,7 +22,7 @@ machine:
 test:
   override:
     - w3af/core/controllers/ci/nosetests_wrapper.py:
-        timeout: 360
+        timeout: 3600
         
 #  post:
 #    - coverage combine
