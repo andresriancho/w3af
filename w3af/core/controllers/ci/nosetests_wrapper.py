@@ -20,6 +20,8 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
+
+# TODO: Run the tests which require moth
 SELECTORS = ["smoke and not internet and not moth and not root",
              "internet and not smoke and not moth and not root",]
 TEST_DIRECTORIES = [
@@ -48,6 +50,7 @@ NOISE = [# Related with xvfb not having the randr extension
 def open_nosetests_output(directory):
     prefix = 'nose-' + directory.replace('/', '-')
     fhandler = tempfile.NamedTemporaryFile(prefix=prefix,
+                                           suffix='.log',
                                            dir=ARTIFACT_DIR,
                                            delete=False)
     
@@ -90,6 +93,10 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
             out = r.read(1)
             output_file.write(out)
             output_file.flush()
+            
+            # This simply helps avoid issues with circle's command timeout
+            if out.strip() == '.':
+                logging.info('.')
             
             # Write the output to the strings
             if r is p.stdout:
@@ -184,8 +191,6 @@ if __name__ == '__main__':
     done_list = []
     
     configure_logging()
-    
-    # TODO: Run the tests which require moth
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for selector in SELECTORS:
