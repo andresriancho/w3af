@@ -17,7 +17,7 @@ from fabric.colors import red, yellow, green
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
-MAX_WORKERS = multiprocessing.cpu_count()
+MAX_WORKERS = 1 #multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
 
