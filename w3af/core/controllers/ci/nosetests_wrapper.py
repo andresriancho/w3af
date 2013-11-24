@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import shlex
+import select
+import tempfile
 import subprocess
 import multiprocessing
 
 from termcolor import colored
 from concurrent import futures
 
-
+ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
@@ -37,6 +40,13 @@ NOISE = [# Related with xvfb not having the randr extension
          # Googled: only a warning related with the CV library
          'libdc1394 error: Failed to initialize libdc1394']
 
+def open_nosetests_output(directory):
+    prefix = 'nose-' + directory.replace('/', '-')
+    fhandler = tempfile.NamedTemporaryFile(prefix=prefix,
+                                           dir=ARTIFACT_DIR,
+                                           delete=False)
+    return fhandler
+
 def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
     Run nosetests like this:
@@ -58,7 +68,27 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
         shell=False,
         universal_newlines=True
     )
-    stdout, stderr = p.communicate()
+
+    # Init the outputs    
+    output_file = open_nosetests_output(directory)
+    stdout = stderr = ''
+    
+    while True:
+        reads, _, _ = select.select([p.stdout, p.stderr], [], [], 1)
+        for r in reads:
+            # Write to the output file
+            out = r.read(1)
+            output_file.write(out)
+            output_file.flush()
+            
+            # Write the output to the strings
+            if r is p.stdout:
+                stdout += out
+            else:
+                stderr += out
+    
+    # Wait for the process to finish and then set returncode   
+    p.poll()
     
     return cmd, stdout, stderr, p.returncode
 
