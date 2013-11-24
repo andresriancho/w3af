@@ -52,7 +52,7 @@ class html_comments(GrepPlugin):
         'pass', 'password', 'passwd', 'pwd', 'secret', 'stupid',
         
         # In Spanish
-        'tonto', 'porqueria', 'ciudado', 'usuario', 'contraseña',
+        'tonto', 'porqueria', 'cuidado', 'usuario', u'contraseña',
         'puta', 'email', 'security', 'captcha', 'pinga', 'cojones',
         
         # some in Portuguese
