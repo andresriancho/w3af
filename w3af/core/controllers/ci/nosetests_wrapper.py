@@ -147,7 +147,7 @@ def print_status(future_list, done_list):
 
 def print_will_fail(exit_code):
     if exit_code != 0:
-        logging.critical('Build will end as failed.', 'red')
+        logging.critical('Build will end as failed.')
 
 def configure_logging():
     logging.basicConfig(filename=LOG_FILE,
