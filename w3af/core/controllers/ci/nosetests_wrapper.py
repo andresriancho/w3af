@@ -96,7 +96,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
             
             # This simply helps avoid issues with circle's command timeout
             if out.strip() == '.':
-                logging.info('.')
+                print('.', end='')
             
             # Write the output to the strings
             if r is p.stdout:
