@@ -20,13 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')
+@attr('ci_ready')
 class TestCrossDomainJS(PluginTest):
 
-    target_url = 'http://moth/w3af/grep/cross_domain_js/'
+    target_url = '%s/grep/cross_domain_js/' % get_moth_http()
 
     _run_configs = {
         'cfg': {

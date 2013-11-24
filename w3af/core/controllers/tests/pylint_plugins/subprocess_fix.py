@@ -6,6 +6,8 @@ from logilab.astng.builder import ASTNGBuilder
 CODE_FIX = '''
 class Popen(object):
     stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
+    returncode = 0
     def communicate(*args, **kwds): pass
     def pid(*args, **kwds): pass
     def poll(*args, **kwds): pass

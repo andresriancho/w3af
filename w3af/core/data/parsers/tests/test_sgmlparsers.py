@@ -373,7 +373,7 @@ class TestHTMLParser(unittest.TestCase):
 
     def test_form_with_invalid_url_in_action(self):
         '''
-        If an invalid url is detected in the form's action then use base_url
+        If an invalid URL is detected in the form's action then use base_url
         '''
         body = '''
         <html>

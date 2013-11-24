@@ -18,14 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 import w3af.core.data.constants.severity as severity
 
 
+@attr('ci_ready')
 class TestSVNUsers(PluginTest):
 
-    svn_users_url = 'http://moth/w3af/grep/svn_users/'
+    svn_users_url = '%s/grep/svn_users/' % get_moth_http()
 
     _run_configs = {
         'cfg1': {
@@ -51,5 +54,5 @@ class TestSVNUsers(PluginTest):
         v = vulns[0]
         self.assertEquals(severity.LOW, v.get_severity())
         self.assertEquals('SVN user disclosure vulnerability', v.get_name())
-        self.assertEqual(
-            self.svn_users_url + 'svn_user.html', v.get_url().url_string)
+        self.assertEqual(self.svn_users_url + 'index.html',
+                         v.get_url().url_string)

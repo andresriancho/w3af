@@ -37,6 +37,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 def need_clamav(meth):
@@ -167,7 +168,7 @@ class TestClamAV(unittest.TestCase):
  
 class TestClamAVScan(PluginTest):
  
-    target_url = 'http://moth/w3af/grep/clamav/'
+    target_url = '%s/w3af/grep/clamav/' % get_moth_http()
 
     _run_configs = {          
         'cfg': {

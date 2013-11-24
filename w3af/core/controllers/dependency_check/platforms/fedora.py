@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import subprocess
 
-from core.controllers.dependency_check.pip_dependency import PIPDependency
+from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 
 SYSTEM_NAME = 'fedora'
 

@@ -19,13 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
+
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')
+@attr('ci_ready')
 class TestHTMLComments(PluginTest):
 
-    html_comments_url = 'https://moth/w3af/grep/html_comments/'
+    html_comments_url = '%s/grep/html_comments/' % get_moth_http()
 
     _run_configs = {
         'cfg1': {
@@ -49,8 +52,8 @@ class TestHTMLComments(PluginTest):
         infos_interesting = self.kb.get('html_comments',
                                         'interesting_comments')
 
-        self.assertEquals(1, len(infos_html))
-        self.assertEquals(1, len(infos_interesting))
+        self.assertEquals(1, len(infos_html), infos_html)
+        self.assertEquals(1, len(infos_interesting), infos_interesting)
 
         html_info = infos_html[0]
         interesting_info = infos_interesting[0]

@@ -1,6 +1,6 @@
 dependencies:
   pre:  
-    # Install the console dependencies
+    # Install the core/console dependencies
     - w3af/core/controllers/ci/install_core_dependencies.sh
 
     # Install GUI dependencies
@@ -21,15 +21,10 @@ machine:
     
 test:
   override:
-    # The order in which these are run doesn't really matter, but I do need to
-    # take care of "grouping" (which directory is run) because of an incompatibility
-    # between "w3af/core/ui/gui/" and "w3af/core/ui/tests/" which comes from
-    # Gtk2 vs. Gtk3.
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/controllers/
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/data/
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/tests/
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/console/
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/core/ui/gui/
-    - nosetests --with-doctest --doctest-tests -A "smoke and not internet and not moth and not root" w3af/plugins/
+    - w3af/core/controllers/ci/nosetests_wrapper.py:
+        timeout: 3600
         
-    # TODO: Run the tests which require moth
+#  post:
+#    - coverage combine
+#    - coveralls
+    
