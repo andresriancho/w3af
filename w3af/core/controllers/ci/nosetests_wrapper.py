@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import sys
 import shlex
 import select
+import logging
 import tempfile
 import subprocess
 import multiprocessing
 
-from termcolor import colored
 from concurrent import futures
+from fabric.colors import red, yellow, green
 
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
+LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
+
 MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
@@ -45,6 +50,9 @@ def open_nosetests_output(directory):
     fhandler = tempfile.NamedTemporaryFile(prefix=prefix,
                                            dir=ARTIFACT_DIR,
                                            delete=False)
+    
+    logging.debug('nosetests output file: %s' % fhandler.name)
+    
     return fhandler
 
 def run_nosetests(selector, directory, params=NOSE_PARAMS):
@@ -59,7 +67,9 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
     cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
     cmd_args = shlex.split(cmd)
-
+    
+    logging.debug('Starting: "%s"' % cmd)
+    
     p = subprocess.Popen(
         cmd_args,
         stdin=subprocess.PIPE,
@@ -89,6 +99,9 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     
     # Wait for the process to finish and then set returncode   
     p.poll()
+    output_file.close()
+    
+    logging.debug('Finished: "%s" with code "%s"' % (cmd, p.returncode))
     
     return cmd, stdout, stderr, p.returncode
 
@@ -116,23 +129,61 @@ def summarize_exit_codes(exit_codes):
     return 0
 
 def print_info_console(cmd, stdout, stderr, exit_code):
-    print colored(cmd, 'green')
+    logging.info(cmd)
     
-    print clean_noise(stdout)
-    print clean_noise(stderr)
+    logging.debug(clean_noise(stdout))
+    logging.debug(clean_noise(stderr))
 
 def print_status(future_list, done_list):
     msg = 'Status: (%s/%s) ' % (len(done_list), len(future_list))
-    print colored(msg, 'yellow')
+    logging.warning(msg)
 
 def print_will_fail(exit_code):
     if exit_code != 0:
-        print colored('Build will end as failed.', 'red')
+        logging.critical('Build will end as failed.', 'red')
 
+def configure_logging():
+    logging.basicConfig(filename=LOG_FILE,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M',
+                        filemode='w',
+                        level=logging.DEBUG)
+    
+    # define a Handler which writes INFO messages or higher to the sys.stderr
+    console = ColorLog()
+    console.setLevel(logging.DEBUG)
+    logging.getLogger('').addHandler(console)
+
+
+class ColorLog(logging.Handler):
+    """
+    A class to print colored messages to stdout
+    """
+
+    COLORS = {
+                logging.CRITICAL: red,
+                logging.ERROR: red,
+                logging.WARNING: yellow,
+                logging.INFO: green,
+                logging.DEBUG: lambda x: x,
+              }
+    
+    def __init__(self):
+        logging.Handler.__init__(self)
+
+    def usesTime(self):
+        return False
+
+    def emit(self, record):
+        color = self.COLORS.get(record.levelno, lambda x: x)
+        print(color(record.msg))
+        
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
     done_list = []
+    
+    configure_logging()
     
     # TODO: Run the tests which require moth
     
