@@ -24,12 +24,20 @@
 # which will be made available to the build system as an artifact.
 #
 import os
+import shlex
 import logging
 import tempfile
+import subprocess
+
+from utils import configure_logging
 
 
+DJANGO_MOTH_REPO = 'https://github.com/andresriancho/django-moth.git'
+DJANGO_MOTH_DIR = 'django-moth'
+VIRTUALENV_DIR = os.path.join(DJANGO_MOTH_DIR, 'venv')
 ARTIFACTS_DIR = os.environ.get('CIRCLE_ARTIFACTS', tempfile.gettempdir())
 INSTALL_DIR = tempfile.gettempdir()
+LOG_FILE = os.path.join(ARTIFACTS_DIR, 'setup-moth.log')
 
 
 def get_source_code():
@@ -38,7 +46,15 @@ def get_source_code():
     order to avoid getting the source code each time we run our tests. If the
     target directory already exists, we should simply "git pull".
     '''
-    pass
+    if os.path.exists(DJANGO_MOTH_DIR):
+        # CircleCI restored the cache and this was already there. We simply
+        # "git pull". This is possible because we ask circle to cache the
+        # django-moth directory.
+        run_cmd('git pull', cwd=DJANGO_MOTH_DIR)
+    else:
+        # We need to "git clone" the repository
+        run_cmd('git clone %s' % DJANGO_MOTH_REPO)
+        
 
 def install_dependencies():
     '''
@@ -49,16 +65,30 @@ def install_dependencies():
     already there, we just need to run "pip install -r requirements.txt" to get
     the new dependencies.
     '''
-    pass
+    if not os.path.exists(VIRTUALENV_DIR):
+        run_cmd('virtualenv %s' % VIRTUALENV_DIR)
+        
+    run_cmd('%s/bin/pip install -r %s/requirements.txt' % (VIRTUALENV_DIR,
+                                                           DJANGO_MOTH_DIR,))
 
 def start_daemons(log_directory=ARTIFACTS_DIR):
     '''
     Start the django application in HTTP and HTTPS.
     '''
-    pass
+    cmd = '%s/bin/python %s/start_daemons.py --log-directory=%s' % (VIRTUALENV_DIR,
+                                                                    DJANGO_MOTH_DIR,
+                                                                    log_directory)
+    run_cmd(cmd)
 
+def run_cmd(cmd, cwd=None):
+    logging.debug('[s] %s (cwd: %s)' % (cmd, cwd))
+    p = subprocess.Popen(shlex.split(cmd), cwd=cwd)
+    p.wait()
+    logging.debug('[e] %s (retcode: %s) (cwd: %s)' % (cmd, p.returncode, cwd))
+    return p.returncode
 
 if __name__ == '__main__':
+    configure_logging(LOG_FILE)
     get_source_code()
     install_dependencies()
     start_daemons()
