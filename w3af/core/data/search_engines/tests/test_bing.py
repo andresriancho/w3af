@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import random
 import unittest
 
 from nose.plugins.attrib import attr
@@ -32,12 +31,17 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 class test_bing(unittest.TestCase):
 
     def setUp(self):
-        self.query, self.limit = random.choice([('big bang theory', 200),
-                                                ('two and half man', 40),
-                                                ('doctor house', 60)])
         self.bing_se = bing(ExtendedUrllib())
 
-    def test_get_links_results(self):
+    def test_get_links_results_few(self):
+        self.query, self.limit = ('two and half man', 60)
+        self.get_links_results()
+        
+    def test_get_links_results_many(self):
+        self.query, self.limit = ('big bang theory', 200)
+        self.get_links_results()
+
+    def get_links_results(self):
         results = self.bing_se.get_n_results(self.query, self.limit)
         
         # Len of results must be le. than limit
