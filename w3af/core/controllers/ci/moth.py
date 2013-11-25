@@ -24,6 +24,9 @@ FMT = '/tmp/moth-%s.txt'
 HTTP_ADDRESS_FILE = FMT % 'http'
 HTTPS_ADDRESS_FILE = FMT % 'https'
 
+DEFAULT_MOTH = 'moth:80'
+DEFAULT_MOTHS = 'moth:443'
+
 
 def whereis_moth():
     '''
@@ -37,8 +40,18 @@ def whereis_moth():
              We need this function because when we run on CI we don't really
              know which ports are going to be free for the server to bind.
     '''
-    return {'http': file(HTTP_ADDRESS_FILE).read().strip(),
-            'https': file(HTTPS_ADDRESS_FILE).read().strip()}
+    try:
+        moth = file(HTTP_ADDRESS_FILE).read().strip()
+    except IOError:
+        moth = None
+    
+    try:
+        moths = file(HTTPS_ADDRESS_FILE).read().strip()
+    except IOError:
+        moths = None
+    
+    return {'http': moth or DEFAULT_MOTH,
+            'https': moths or DEFAULT_MOTHS}
 
 def get_moth_http():
     return 'http://%s' % whereis_moth()['http']
