@@ -33,7 +33,10 @@ TEST_DIRECTORIES = [
     # Gtk2 vs. Gtk3.
     'w3af/core/controllers/',
     'w3af/core/data/',
-    'w3af/core/ui/tests/',
+    
+    # See https://github.com/andresriancho/w3af/issues/759
+    #'w3af/core/ui/tests/',
+    
     'w3af/core/ui/console/',
     'w3af/core/ui/gui/',
     'w3af/plugins/',
