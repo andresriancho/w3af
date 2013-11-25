@@ -31,6 +31,7 @@ SYSTEM_PACKAGES = {
                    'PIP': ['python-pip'],
                    'C_BUILD': ['python2.7-dev', 'python-setuptools',
                                'build-essential', 'libsqlite3-dev'],
+                   'SSL_DEV': ['libssl-dev',],
                    'GIT': ['git'],
                    'XML': ['libxml2-dev', 'libxslt1-dev']
                   }
@@ -43,7 +44,7 @@ PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
                 PIPDependency('git.util', 'GitPython==0.3.2.RC1',
                               SYSTEM_PACKAGES['GIT']),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap',
-                              SYSTEM_PACKAGES['C_BUILD']),
+                              SYSTEM_PACKAGES['C_BUILD'] + SYSTEM_PACKAGES['SSL_DEV']),
                 PIPDependency('esmre', 'esmre'),
                 PIPDependency('phply', PHPLY_GIT, is_git=True),
                 PIPDependency('sqlite3', 'pysqlite'),
