@@ -12,7 +12,9 @@ import subprocess
 import multiprocessing
 
 from concurrent import futures
-from fabric.colors import red, yellow, green
+
+from utils import configure_logging
+
 
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
@@ -158,48 +160,13 @@ def print_will_fail(exit_code):
     if exit_code != 0:
         logging.critical('Build will end as failed.')
 
-def configure_logging():
-    logging.basicConfig(filename=LOG_FILE,
-                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        datefmt='%m-%d %H:%M',
-                        filemode='w',
-                        level=logging.DEBUG)
-    
-    # define a Handler which writes INFO messages or higher to the sys.stderr
-    console = ColorLog()
-    console.setLevel(logging.INFO)
-    logging.getLogger('').addHandler(console)
-
-
-class ColorLog(logging.Handler):
-    """
-    A class to print colored messages to stdout
-    """
-
-    COLORS = {
-                logging.CRITICAL: red,
-                logging.ERROR: red,
-                logging.WARNING: yellow,
-                logging.INFO: green,
-                logging.DEBUG: lambda x: x,
-              }
-    
-    def __init__(self):
-        logging.Handler.__init__(self)
-
-    def usesTime(self):
-        return False
-
-    def emit(self, record):
-        color = self.COLORS.get(record.levelno, lambda x: x)
-        print(color(record.msg))
-        
+   
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
     done_list = []
     
-    configure_logging()
+    configure_logging(LOG_FILE)
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for selector in SELECTORS:
