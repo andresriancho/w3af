@@ -95,10 +95,6 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
             output_file.write(out)
             output_file.flush()
             
-            # This simply helps avoid issues with circle's command timeout
-            if out.strip() == '.':
-                print('.', end='')
-            
             # Write the output to the strings
             if r is p.stdout:
                 stdout += out
@@ -138,8 +134,16 @@ def summarize_exit_codes(exit_codes):
 def print_info_console(cmd, stdout, stderr, exit_code):
     logging.info(cmd)
     
-    logging.debug(clean_noise(stdout))
-    logging.debug(clean_noise(stderr))
+    stdout = clean_noise(stdout)
+    stderr = clean_noise(stderr)
+    
+    # Print to the output
+    print(stdout)
+    print(stderr)
+    
+    # Write it to the output file
+    logging.debug(stdout)
+    logging.debug(stderr)
 
 def print_status(future_list, done_list):
     msg = 'Status: (%s/%s) ' % (len(done_list), len(future_list))
@@ -158,7 +162,7 @@ def configure_logging():
     
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = ColorLog()
-    console.setLevel(logging.DEBUG)
+    console.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console)
 
 
