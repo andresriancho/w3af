@@ -37,9 +37,10 @@ class motw(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        # The following regex matches a valid url as well as the text about:internet.
-        # Also it validates the number in the parenthesis. It should be a 4 digit number
-        # and must tell about the length of the url that follows
+        # The following regex matches a valid url as well as the text
+        # about:internet. Also it validates the number in the parenthesis.
+        # It should be a 4 digit number and must tell about the length of the
+        # URL that follows
         regex = r"""<!--\s*saved from url=\(([\d]{4})\)(https?://([-\w\.]+)"""
         regex += r"""+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?|about:internet)\s{1}\-\->"""
         self._motw_re = re.compile(regex)
