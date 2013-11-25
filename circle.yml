@@ -24,9 +24,10 @@ machine:
 test:
   override:
     - w3af/core/controllers/ci/nosetests_wrapper.py:
-        timeout: 600
-        
-  post:
-    - coverage combine
-    - coveralls
+        timeout: 360
+
+# https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
+#  post:
+#    - coverage combine
+#    - coveralls
     

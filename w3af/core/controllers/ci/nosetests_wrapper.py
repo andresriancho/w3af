@@ -19,7 +19,9 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
 MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
-NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
+# Not using code coverage (--with-cov --cov-report=xml) due to:
+# https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
+NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests'
 
 # TODO: Run the tests which require moth
 SELECTORS = ["smoke and not internet and not moth and not root",
