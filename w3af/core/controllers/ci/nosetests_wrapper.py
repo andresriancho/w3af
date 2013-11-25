@@ -17,9 +17,9 @@ from fabric.colors import red, yellow, green
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
-MAX_WORKERS = 1 #multiprocessing.cpu_count()
+MAX_WORKERS = multiprocessing.cpu_count()
 NOSETESTS = 'nosetests'
-NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-cov --cov-report=xml'
+NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests'
 
 # TODO: Run the tests which require moth
 SELECTORS = ["smoke and not internet and not moth and not root",
@@ -86,7 +86,8 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
     output_file = open_nosetests_output(directory)
     stdout = stderr = ''
     
-    while True:
+    # Read output while the process is alive
+    while p.poll() is None:
         reads, _, _ = select.select([p.stdout, p.stderr], [], [], 1)
         for r in reads:
             # Write to the output file
@@ -104,8 +105,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
             else:
                 stderr += out
     
-    # Wait for the process to finish and then set returncode   
-    p.poll()
+    # Close the output   
     output_file.close()
     
     logging.debug('Finished: "%s" with code "%s"' % (cmd, p.returncode))
