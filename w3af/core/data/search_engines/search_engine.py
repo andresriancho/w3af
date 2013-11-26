@@ -59,10 +59,18 @@ class SearchEngine(object):
                 om.out.error(msg)
                 raise w3afException(msg)
             else:
+                len_before = len(result)
                 result.update(list(search_results))
+                len_after = len(result)
+                
                 start += 10
-                if len(search_results) <= 10 or start >= limit:
-                    break
+                
+                # If I keep finding new links, and the length of the result is
+                # less than the limit, continue searching!
+                if len_after > len_before and len(result) < limit:
+                    continue
+                
+                break
 
         # Do some debug..
         if result:
