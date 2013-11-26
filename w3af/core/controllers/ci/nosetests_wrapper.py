@@ -27,7 +27,8 @@ NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests'
 
 # TODO: Run the tests which require moth
 SELECTORS = ["smoke and not internet and not moth and not root",
-             "internet and not smoke and not moth and not root",]
+             "internet and not smoke and not moth and not root",
+             "moth and ci_ready",]
 TEST_DIRECTORIES = [
     # The order in which these are run doesn't really matter, but I do need to
     # take care of "grouping" (which directory is run) because of an incompatibility
