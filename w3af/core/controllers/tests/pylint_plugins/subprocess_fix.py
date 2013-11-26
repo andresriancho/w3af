@@ -12,6 +12,7 @@ class Popen(object):
     def pid(*args, **kwds): pass
     def poll(*args, **kwds): pass
     def kill(*args, **kwds): pass
+    def wait(*args, **kwds): pass
     def send_signal(*args, **kwds): pass
     def terminate(*args, **kwds): pass
 '''
