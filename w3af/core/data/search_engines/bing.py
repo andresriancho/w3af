@@ -34,7 +34,8 @@ class bing(SearchEngine):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
     BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
-                               'onlinehelp.microsoft.com', 'go.microsoft.com'])
+                               'onlinehelp.microsoft.com', 'go.microsoft.com',
+                               'msn.com',])
 
     def __init__(self, urlOpener):
         SearchEngine.__init__(self)
@@ -68,9 +69,17 @@ class bing(SearchEngine):
             except ValueError:
                 pass
             else:
+                # Test for full match.
                 if url.get_domain() not in self.BLACKLISTED_DOMAINS:
-                    bing_result = BingResult(url)
-                    results.add(bing_result)
+                    
+                    # Now test for partial match
+                    for blacklisted_domain in self.BLACKLISTED_DOMAINS:
+                        if blacklisted_domain in url.get_domain():
+                            # ignore this domain.
+                            break
+                    else:
+                        bing_result = BingResult(url)
+                        results.add(bing_result)
 
         return results
 
