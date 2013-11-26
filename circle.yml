@@ -24,8 +24,7 @@ machine:
     
     # And we want to start the django-moth server
     # https://circleci.com/docs/background-process
-    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &"
-    - w3af/w3af/core/controllers/ci/setup_moth.py
+    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth.nohup
     
 test:
   override:
