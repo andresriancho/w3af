@@ -30,8 +30,6 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 @attr('internet')
 class test_bing(unittest.TestCase):
 
-    DELTA = 10
-
     def setUp(self):
         self.bing_se = bing(ExtendedUrllib())
 
@@ -46,10 +44,6 @@ class test_bing(unittest.TestCase):
     def get_links_results(self):
         results = self.bing_se.get_n_results(self.query, self.limit)
         
-        # Len of results must be le. than limit
-        self.assertGreaterEqual(len(results), self.limit)
-        self.assertLessEqual(len(results) + self.DELTA, self.limit)
-
         # I want to get real results
         domains = set([r.URL.get_domain() for r in results])
         self.assertGreater(len(domains), 3, results)
