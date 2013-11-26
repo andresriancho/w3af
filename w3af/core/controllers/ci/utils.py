@@ -1,6 +1,10 @@
 import logging
 
-from fabric.colors import red, yellow, green
+try:
+    from fabric.colors import red, yellow, green
+except ImportError:
+    # In case we don't have fabric
+    red = yellow = green = lambda x: x
 
 
 def configure_logging(log_file):

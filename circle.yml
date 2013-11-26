@@ -25,8 +25,6 @@ machine:
     # And we want to start the django-moth server
     # https://circleci.com/docs/background-process
     - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &"
-    - ls -la
-    - ls -la w3af/w3af/core/controllers/ci/
     - w3af/w3af/core/controllers/ci/setup_moth.py
     
 test:
