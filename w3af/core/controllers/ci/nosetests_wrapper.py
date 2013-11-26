@@ -89,7 +89,7 @@ def run_nosetests(selector, directory, params=NOSE_PARAMS):
         universal_newlines=True
     )
 
-    # Init the outputs    
+    # Init the outputs
     output_file = open_nosetests_output(directory)
     stdout = stderr = ''
     
