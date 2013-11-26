@@ -135,4 +135,5 @@ class SearchEngine(object):
         :param start: The first result item
         :param count: How many results to get from start
         '''
-        raise NotImplementedError('SearchEngine subclasses should implement the page_search method.')
+        raise NotImplementedError(
+            'SearchEngine subclasses should implement the page_search method.')
