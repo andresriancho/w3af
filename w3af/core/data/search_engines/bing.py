@@ -44,8 +44,8 @@ class bing(SearchEngine):
         '''
         Search the web with Bing.
 
-        This method is based from the msn.py file from the massive enumeration toolset,
-        coded by pdp and released under GPL v2.
+        This method is based from the msn.py file from the massive enumeration
+        toolset, coded by pdp and released under GPL v2.
         '''
         url = 'http://www.bing.com/search?'
         query = urllib.urlencode({'q': query,
@@ -65,10 +65,9 @@ class bing(SearchEngine):
         for url, _, _ in re_match:
             try:
                 url = URL(url)
-            except:
+            except ValueError:
                 pass
             else:
-                
                 if url.get_domain() not in self.BLACKLISTED_DOMAINS:
                     bing_result = BingResult(url)
                     results.add(bing_result)
