@@ -524,7 +524,7 @@ class ExtendedUrllib(object):
                       res.code)
                      )
 
-        from_cache = hasattr(res, 'from_cache')
+        from_cache = hasattr(res, 'from_cache') and res.from_cache
         flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,
                                                     grep)
         msg += flags
@@ -534,6 +534,7 @@ class ExtendedUrllib(object):
                                                    original_url=original_url_inst)
         http_resp.set_id(res.id)
         http_resp.set_wait_time(time.time() - start_time)
+        http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
         req_id = id(req)
