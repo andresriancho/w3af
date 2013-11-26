@@ -21,10 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from lxml import etree
 
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -41,7 +38,6 @@ class objects(GrepPlugin):
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//object | //applet')
         self._tag_names = ('object', 'applet')
-        self._already_analyzed = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -54,10 +50,7 @@ class objects(GrepPlugin):
         url = response.get_url()
         dom = response.get_dom()
 
-        if response.is_text_or_html() and dom is not None \
-        and url not in self._already_analyzed:
-
-            self._already_analyzed.add(url)
+        if response.is_text_or_html() and dom is not None:
 
             elem_list = self._tag_xpath(dom)
             for element in elem_list:

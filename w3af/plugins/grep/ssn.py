@@ -23,11 +23,9 @@ import re
 import itertools
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 from w3af.plugins.grep.ssndata.ssnAreasGroups import areas_groups_map
 
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 
@@ -38,13 +36,12 @@ class ssn(GrepPlugin):
     :author: dliz <dliz !at! users.sourceforge.net>
     '''
     # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
-    regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012])) ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
+    regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012]))'\
+            ' ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
     ssn_regex = re.compile(regex)
 
     def __init__(self):
         GrepPlugin.__init__(self)
-
-        self._already_inspected = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -54,27 +51,23 @@ class ssn(GrepPlugin):
         :param response: The HTTP response object
         :return: None.
         '''
-        uri = response.get_uri()
+        if not response.is_text_or_html() or response.get_code() != 200 \
+        or response.get_clear_text_body() is None:
+            return
 
-        if response.is_text_or_html() and response.get_code() == 200 \
-        and response.get_clear_text_body() is not None \
-        and uri not in self._already_inspected:
+        found_ssn, validated_ssn = self._find_SSN(response.get_clear_text_body())
+        
+        if validated_ssn:
+            uri = response.get_uri()
+            desc = 'The URL: "%s" possibly discloses a US Social Security'\
+                   ' Number: "%s".'
+            desc = desc % (uri, validated_ssn)
+            v = Vuln('US Social Security Number disclosure', desc,
+                     severity.LOW, response.id, self.get_name())
+            v.set_uri(uri)
 
-            # Don't repeat URLs
-            self._already_inspected.add(uri)
-
-            found_ssn, validated_ssn = self._find_SSN(
-                response.get_clear_text_body())
-            if validated_ssn:
-                desc = 'The URL: "%s" possibly discloses a US Social Security'\
-                       ' Number: "%s".'
-                desc = desc % (uri, validated_ssn)
-                v = Vuln('US Social Security Number disclosure', desc,
-                         severity.LOW, response.id, self.get_name())
-                v.set_uri(uri)
-
-                v.add_to_highlight(found_ssn)
-                self.kb_append_uniq(self, 'ssn', v, 'URL')
+            v.add_to_highlight(found_ssn)
+            self.kb_append_uniq(self, 'ssn', v, 'URL')
 
     def _find_SSN(self, body_without_tags):
         '''

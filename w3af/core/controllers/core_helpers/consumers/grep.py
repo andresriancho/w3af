@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class grep(BaseConsumer):
@@ -36,6 +37,7 @@ class grep(BaseConsumer):
         :param w3af_core: The w3af core that we'll use for status reporting
         '''
         super(grep, self).__init__(grep_plugins, w3af_core, create_pool=False)
+        self._already_analyzed = ScalableBloomFilter()
 
     def run(self):
         '''
@@ -57,6 +59,10 @@ class grep(BaseConsumer):
             else:
                 request, response = work_unit
                 
+                if not self.should_grep(request, response):
+                    self.in_queue.task_done()
+                    continue
+                
                 # Note that I'm NOT processing the grep plugin data in different
                 # threads. This is because it makes no sense (these are all CPU
                 # bound).
@@ -68,3 +74,13 @@ class grep(BaseConsumer):
                                               request, e)
 
                 self.in_queue.task_done()
+
+    def should_grep(self, request, response):
+        '''
+        :return: True if I should grep this request/response pair. This method
+                 replaces some of the logic that before was in grep_plugin.py,
+                 but because of the requirement of a central location to store
+                 a bloom filter was moved here.
+        '''
+        was_analyzed = self._already_analyzed.add(response.get_uri())
+        return not was_analyzed

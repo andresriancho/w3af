@@ -22,10 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 from lxml import etree
 
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -38,9 +35,6 @@ class ajax(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-
-        # Internal variables
-        self._already_inspected = ScalableBloomFilter()
 
         # Create the regular expression to search for AJAX
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
@@ -58,33 +52,31 @@ class ajax(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         '''
+        if not response.is_text_or_html():
+            return
+        
         url = response.get_url()
-        if response.is_text_or_html() and url not in self._already_inspected:
+        dom = response.get_dom()
+        # In some strange cases, we fail to normalize the document
+        if dom is None:
+            return
+        
+        script_elements = self._script_xpath(dom)
+        for element in script_elements:
+            # returns the text between <script> and </script>
+            script_content = element.text
 
-            # Don't repeat URLs
-            self._already_inspected.add(url)
+            if script_content is not None:
 
-            dom = response.get_dom()
-            # In some strange cases, we fail to normalize the document
-            if dom is None:
-                return
-            
-            script_elements = self._script_xpath(dom)
-            for element in script_elements:
-                # returns the text between <script> and </script>
-                script_content = element.text
-
-                if script_content is not None:
-
-                    res = self._ajax_regex_re.search(script_content)
-                    if res:
-                        desc = 'The URL: "%s" has AJAX code.' % url
-                        i = Info('AJAX code', desc, response.id,
-                                 self.get_name())
-                        i.set_url(url)
-                        i.add_to_highlight(res.group(0))
-                        
-                        self.kb_append_uniq(self, 'ajax', i, 'URL')
+                res = self._ajax_regex_re.search(script_content)
+                if res:
+                    desc = 'The URL: "%s" has AJAX code.' % url
+                    i = Info('AJAX code', desc, response.id,
+                             self.get_name())
+                    i.set_url(url)
+                    i.add_to_highlight(res.group(0))
+                    
+                    self.kb_append_uniq(self, 'ajax', i, 'URL')
 
     def get_long_desc(self):
         '''

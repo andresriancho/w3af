@@ -21,10 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from lxml import etree
 
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -42,7 +39,6 @@ class file_upload(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_inspected = ScalableBloomFilter()
         self._file_input_xpath = etree.XPath(FILE_INPUT_XPATH)
 
     def grep(self, request, response):
@@ -53,28 +49,27 @@ class file_upload(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         '''
+        if not response.is_text_or_html():
+            return
+        
+        dom = response.get_dom()
         url = response.get_url()
+        
+        # In some strange cases, we fail to normalize the document
+        if dom is not None:
 
-        if response.is_text_or_html() and not url in self._already_inspected:
-
-            self._already_inspected.add(url)
-            dom = response.get_dom()
-
-            # In some strange cases, we fail to normalize the document
-            if dom is not None:
-
-                # Loop through file inputs tags
-                for input_file in self._file_input_xpath(dom):
-                    msg = 'The URL: "%s" has form with file upload capabilities.'
-                    msg = msg % url
-                    
-                    i = Info('File upload form', msg, response.id,
-                             self.get_name())
-                    i.set_url(url)
-                    to_highlight = etree.tostring(input_file)
-                    i.add_to_highlight(to_highlight)
-                    
-                    self.kb_append_uniq(self, 'file_upload', i, 'URL')
+            # Loop through file inputs tags
+            for input_file in self._file_input_xpath(dom):
+                msg = 'The URL: "%s" has form with file upload capabilities.'
+                msg = msg % url
+                
+                i = Info('File upload form', msg, response.id,
+                         self.get_name())
+                i.set_url(url)
+                to_highlight = etree.tostring(input_file)
+                i.add_to_highlight(to_highlight)
+                
+                self.kb_append_uniq(self, 'file_upload', i, 'URL')
 
     def get_long_desc(self):
         '''

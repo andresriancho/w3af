@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.esmre.multi_in import multi_in
 from w3af.core.data.kb.info import Info
 
@@ -40,7 +39,6 @@ class wsdl_greper(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._already_inspected = ScalableBloomFilter()
         self._disco_strings = ['disco:discovery ']
 
     def grep(self, request, response):
@@ -51,11 +49,7 @@ class wsdl_greper(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         '''
-        uri = response.get_uri()
-        if response.get_code() == 200 and uri not in self._already_inspected:
-            
-            self._already_inspected.add(uri)
-
+        if response.get_code() == 200:
             self.analyze_wsdl(request, response)
             self.analyze_disco(request, response)
     

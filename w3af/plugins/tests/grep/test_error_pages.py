@@ -45,6 +45,7 @@ class TestErrorPages(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         infos = self.kb.get('error_pages', 'error_page')
+        self.assertEquals(1, len(infos))
         info = infos[0]
 
         self.assertEquals(1, len(infos), infos)

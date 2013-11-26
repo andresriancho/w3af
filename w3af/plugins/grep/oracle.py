@@ -19,10 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -37,7 +34,6 @@ class oracle(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_analyzed = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -47,21 +43,20 @@ class oracle(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         '''
-        url = response.get_url()
-        if response.is_text_or_html() and url not in self._already_analyzed:
-            self._already_analyzed.add(url)
+        if not response.is_text_or_html():
+            return
 
-            for msg in self.OAS_TAGS:
-                if msg in response:
-                    desc = 'The URL: "%s" was created using Oracle Application'\
-                           ' Server.'
-                    desc = desc % response.get_url()
-                    i = Info('Oracle application server', desc, response.id,
-                             self.get_name())
-                    i.set_url(url)
-                    i.add_to_highlight(msg)
-                    
-                    self.kb_append(self, 'oracle', i)
+        for msg in self.OAS_TAGS:
+            if msg in response:
+                desc = 'The URL: "%s" was created using Oracle Application'\
+                       ' Server.'
+                desc = desc % response.get_url()
+                i = Info('Oracle application server', desc, response.id,
+                         self.get_name())
+                i.set_url(response.get_url())
+                i.add_to_highlight(msg)
+                
+                self.kb_append(self, 'oracle', i)
 
     def get_long_desc(self):
         '''

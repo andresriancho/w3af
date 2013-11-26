@@ -21,11 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -38,7 +36,7 @@ class svn_users(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_inspected = ScalableBloomFilter()
+
         # Add the regex to match something like this:
         #
         #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $
@@ -56,28 +54,27 @@ class svn_users(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         '''
+        if not response.is_text_or_html():
+            return
+
         uri = response.get_uri()
-        if response.is_text_or_html() and uri not in self._already_inspected:
 
-            # Don't repeat URLs
-            self._already_inspected.add(uri)
+        for regex in self._regex_list:
+            for m in regex.findall(response.get_body()):
+                user = m[0]
+                
+                desc = 'The URL: "%s" contains a SVN versioning signature'\
+                       ' with the username "%s".'
+                desc = desc % (uri, user)
+                
+                v = Vuln('SVN user disclosure vulnerability', desc,
+                         severity.LOW, response.id, self.get_name())
 
-            for regex in self._regex_list:
-                for m in regex.findall(response.get_body()):
-                    user = m[0]
-                    
-                    desc = 'The URL: "%s" contains a SVN versioning signature'\
-                           ' with the username "%s".'
-                    desc = desc % (uri, user)
-                    
-                    v = Vuln('SVN user disclosure vulnerability', desc,
-                             severity.LOW, response.id, self.get_name())
-
-                    v.set_uri(uri)
-                    v['user'] = user
-                    v.add_to_highlight(user)
-                    
-                    self.kb_append_uniq(self, 'users', v, 'URL')
+                v.set_uri(uri)
+                v['user'] = user
+                v.add_to_highlight(user)
+                
+                self.kb_append_uniq(self, 'users', v, 'URL')
 
     def get_long_desc(self):
         '''

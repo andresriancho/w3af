@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -36,7 +35,6 @@ class blank_body(GrepPlugin):
     
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -48,11 +46,7 @@ class blank_body(GrepPlugin):
         '''
         if response.get_body() == '' and request.get_method() in self.METHODS\
         and response.get_code() not in self.HTTP_CODES\
-        and 'location' not in response.get_lower_case_headers()\
-        and response.get_url() not in self._already_reported:
-
-            #   report these informations only once
-            self._already_reported.add(response.get_url())
+        and 'location' not in response.get_lower_case_headers():
 
             desc = 'The URL: "%s" returned an empty body, this could indicate'\
                   ' an application error.'

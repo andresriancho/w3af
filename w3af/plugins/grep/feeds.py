@@ -21,10 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from lxml import etree
 
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -41,8 +38,7 @@ class feeds(GrepPlugin):
                             'feed': 'OPML',  # <feed version="..."
                             'opml': 'OPML'  # <opml version="...">
                             }
-        self._already_inspected = ScalableBloomFilter()
-
+        
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//rss | //feed | //opml')
 
@@ -58,27 +54,26 @@ class feeds(GrepPlugin):
         uri = response.get_uri()
 
         # In some strange cases, we fail to normalize the document
-        if uri not in self._already_inspected and dom is not None:
+        if dom is None:
+            return
 
-            self._already_inspected.add(uri)
+        # Find all feed tags
+        element_list = self._tag_xpath(dom)
 
-            # Find all feed tags
-            element_list = self._tag_xpath(dom)
+        for element in element_list:
 
-            for element in element_list:
+            feed_tag = element.tag
+            feed_type = self._feed_types[feed_tag.lower()]
+            version = element.attrib.get('version', 'unknown')
 
-                feed_tag = element.tag
-                feed_type = self._feed_types[feed_tag.lower()]
-                version = element.attrib.get('version', 'unknown')
-
-                fmt = 'The URL "%s" is a %s version %s feed.'
-                desc = fmt % (uri, feed_type, version)
-                i = Info('Content feed resource', desc, response.id,
-                         self.get_name())
-                i.set_uri(uri)
-                i.add_to_highlight(feed_type)
-                
-                self.kb_append_uniq(self, 'feeds', i, 'URL')
+            fmt = 'The URL "%s" is a %s version %s feed.'
+            desc = fmt % (uri, feed_type, version)
+            i = Info('Content feed resource', desc, response.id,
+                     self.get_name())
+            i.set_uri(uri)
+            i.add_to_highlight(feed_type)
+            
+            self.kb_append_uniq(self, 'feeds', i, 'URL')
 
     def get_long_desc(self):
         '''

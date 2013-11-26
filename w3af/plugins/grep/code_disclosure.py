@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
@@ -40,7 +38,6 @@ class code_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
 
         #   Internal variables
-        self._already_added = ScalableBloomFilter()
         self._first_404 = True
 
     def grep(self, request, response):
@@ -53,39 +50,38 @@ class code_disclosure(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         '''
-        if response.is_text_or_html() and \
-        response.get_url() not in self._already_added:
+        if not response.is_text_or_html():
+            return
+        
+        match, lang = is_source_file(response.get_body())
 
-            match, lang = is_source_file(response.get_body())
+        if match:
+            # Check also for 404
+            if not is_404(response):
+                desc = 'The URL: "%s" has a %s code disclosure vulnerability.'
+                desc = desc % (response.get_url(), lang)
+                
+                v = Vuln('Code disclosure vulnerability', desc,
+                         severity.LOW, response.id, self.get_name())
 
-            if match:
-                # Check also for 404
-                if not is_404(response):
-                    desc = 'The URL: "%s" has a %s code disclosure vulnerability.'
-                    desc = desc % (response.get_url(), lang)
-                    
-                    v = Vuln('Code disclosure vulnerability', desc,
-                             severity.LOW, response.id, self.get_name())
+                v.set_url(response.get_url())
+                v.add_to_highlight(match.group())
+                
+                self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
-                    v.set_url(response.get_url())
-                    v.add_to_highlight(match.group())
-                    
-                    self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
-                    self._already_added.add(response.get_url())
+            else:
+                self._first_404 = False
+                
+                desc = 'The URL: "%s" has a %s code disclosure'\
+                       ' vulnerability in the customized 404 script.'
+                desc = desc % (v.get_url(), lang)
+                
+                v = Vuln('Code disclosure vulnerability in 404 page', desc,
+                         severity.LOW, response.id, self.get_name())
 
-                else:
-                    self._first_404 = False
-                    
-                    desc = 'The URL: "%s" has a %s code disclosure'\
-                           ' vulnerability in the customized 404 script.'
-                    desc = desc % (v.get_url(), lang)
-                    
-                    v = Vuln('Code disclosure vulnerability in 404 page', desc,
-                             severity.LOW, response.id, self.get_name())
-
-                    v.set_url(response.get_url())
-                    v.add_to_highlight(match.group())
-                    self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
+                v.set_url(response.get_url())
+                v.add_to_highlight(match.group())
+                self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
     def get_long_desc(self):
         '''

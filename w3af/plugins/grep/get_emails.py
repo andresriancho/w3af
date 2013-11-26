@@ -27,7 +27,6 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -40,7 +39,6 @@ class get_emails(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_inspected = ScalableBloomFilter()
 
         # User configured variables
         self._only_target_domain = True
@@ -53,15 +51,11 @@ class get_emails(GrepPlugin):
         :param request: The HTTP response
         :return: None
         '''
-        uri = response.get_uri()
-        if uri not in self._already_inspected:
-            self._already_inspected.add(uri)
+        self._grep_worker(request, response, 'emails',
+                          response.get_url().get_root_domain())
 
-            self._grep_worker(request, response, 'emails',
-                              response.get_url().get_root_domain())
-
-            if not self._only_target_domain:
-                self._grep_worker(request, response, 'external_emails')
+        if not self._only_target_domain:
+            self._grep_worker(request, response, 'external_emails')
 
     def _grep_worker(self, request, response, kb_key, domain=None):
         '''

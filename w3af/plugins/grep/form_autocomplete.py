@@ -26,7 +26,6 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 # Find all form elements that don't include the'autocomplete' attribute;
@@ -52,7 +51,6 @@ class form_autocomplete(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_inspected = ScalableBloomFilter()
         self._autocomplete_forms_xpath = etree.XPath(AUTOCOMPLETE_FORMS_XPATH)
         self._pwd_input_xpath = etree.XPath(PWD_INPUT_XPATH)
         self._text_input_xpath = etree.XPath(TEXT_INPUT_XPATH)
@@ -70,42 +68,39 @@ class form_autocomplete(GrepPlugin):
         url = response.get_url()
         dom = response.get_dom()
 
-        if response.is_text_or_html() and dom is not None \
-        and not url in self._already_inspected:
+        if not response.is_text_or_html() or dom is None:
+            return
 
-            self._already_inspected.add(url)
+        autocompletable = lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
 
-            autocompletable = lambda inp: inp.get(
-                'autocomplete', 'on').lower() != 'off'
+        # Loop through "auto-completable" forms
+        for form in self._autocomplete_forms_xpath(dom):
 
-            # Loop through "auto-completable" forms
-            for form in self._autocomplete_forms_xpath(dom):
+            passwd_inputs = self._pwd_input_xpath(form)
 
-                passwd_inputs = self._pwd_input_xpath(form)
+            # Test existence of password-type inputs and verify that
+            # all inputs are autocompletable
+            if passwd_inputs and all(map(autocompletable,
+                                         chain(passwd_inputs,
+                                               self._text_input_xpath(form)))):
 
-                # Test existence of password-type inputs and verify that
-                # all inputs are autocompletable
-                if passwd_inputs and all(map(autocompletable,
-                                             chain(passwd_inputs,
-                                                   self._text_input_xpath(form)))):
+                desc = 'The URL: "%s" has a "<form>" element with ' \
+                       'auto-complete enabled.'
+                desc = desc % url
 
-                    desc = 'The URL: "%s" has a "<form>" element with ' \
-                           'auto-complete enabled.'
-                    desc = desc % url
+                i = Info('Auto-completable form', desc, response.id,
+                         self.get_name())
+                i.set_url(url)
 
-                    i = Info('Auto-completable form', desc, response.id,
-                             self.get_name())
-                    i.set_url(url)
+                form_str = etree.tostring(form)
+                to_highlight = form_str[:(form_str).find('>') + 1]
+                i.add_to_highlight(to_highlight)
 
-                    form_str = etree.tostring(form)
-                    to_highlight = form_str[:(form_str).find('>') + 1]
-                    i.add_to_highlight(to_highlight)
+                # Store and print
+                kb.kb.append(self, 'form_autocomplete', i)
+                om.out.information(desc)
 
-                    # Store and print
-                    kb.kb.append(self, 'form_autocomplete', i)
-                    om.out.information(desc)
-
-                    break
+                break
 
     def get_long_desc(self):
         '''

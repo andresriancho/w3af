@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 SCRIPT_SRC_XPATH = ".//script[@src]"
@@ -39,7 +38,6 @@ class cross_domain_js(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_inspected = ScalableBloomFilter()
         self._script_src_xpath = etree.XPath(SCRIPT_SRC_XPATH)
 
     def grep(self, request, response):
@@ -50,43 +48,42 @@ class cross_domain_js(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         '''
-        url = response.get_url()
+        if not response.is_text_or_html():
+            return
+        
+        url = response.get_url()        
+        dom = response.get_dom()
 
-        if response.is_text_or_html() and not url in self._already_inspected:
+        # In some strange cases, we fail to normalize the document
+        if dom is None:
+            return
+        
+        # Loop through script inputs tags
+        for script_src_tag in self._script_src_xpath(dom):
 
-            self._already_inspected.add(url)
-            dom = response.get_dom()
+            # This should be always False due to the XPATH we're using
+            # but you never know...
+            if not 'src' in script_src_tag.attrib:
+                continue
 
-            # In some strange cases, we fail to normalize the document
-            if dom is None:
-                return
-            
-            # Loop through script inputs tags
-            for script_src_tag in self._script_src_xpath(dom):
+            script_src = script_src_tag.attrib['src']
+            script_full_url = response.get_url().url_join(script_src)
+            script_domain = script_full_url.get_domain()
 
-                # This should be always False due to the XPATH we're using
-                # but you never know...
-                if not 'src' in script_src_tag.attrib:
-                    continue
-
-                script_src = script_src_tag.attrib['src']
-                script_full_url = response.get_url().url_join(script_src)
-                script_domain = script_full_url.get_domain()
-
-                if script_domain != response.get_url().get_domain():
-                    desc = 'The URL: "%s" has script tag with a source that points' \
-                           ' to a third party site ("%s"). This practice is not' \
-                           ' recommended as security of the current site is being' \
-                           ' delegated to that external entity.'
-                    desc = desc % (url, script_domain) 
-                    
-                    i = Info('Cross-domain javascript source', desc,
-                             response.id, self.get_name())
-                    i.set_url(url)
-                    to_highlight = etree.tostring(script_src_tag)
-                    i.add_to_highlight(to_highlight)
-                    
-                    self.kb_append_uniq(self, 'cross_domain_js', i, 'URL')
+            if script_domain != response.get_url().get_domain():
+                desc = 'The URL: "%s" has script tag with a source that points' \
+                       ' to a third party site ("%s"). This practice is not' \
+                       ' recommended as security of the current site is being' \
+                       ' delegated to that external entity.'
+                desc = desc % (url, script_domain) 
+                
+                i = Info('Cross-domain javascript source', desc,
+                         response.id, self.get_name())
+                i.set_url(url)
+                to_highlight = etree.tostring(script_src_tag)
+                i.add_to_highlight(to_highlight)
+                
+                self.kb_append_uniq(self, 'cross_domain_js', i, 'URL')
 
     def get_long_desc(self):
         '''

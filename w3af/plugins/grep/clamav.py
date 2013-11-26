@@ -30,7 +30,6 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -51,7 +50,6 @@ class clamav(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._already_analyzed = ScalableBloomFilter()
         self._properly_configured = None
         self._config_check_lock = threading.RLock()
         
@@ -82,12 +80,9 @@ class clamav(GrepPlugin):
         response.get_code() not in self.HTTP_CODES:
             return
         
-        if response.get_url() not in self._already_analyzed:
-            self._already_analyzed.add(response.get_url())
-            
-            args = (request, response)
-            self.worker_pool.apply_async(self._scan_http_response, args=args,
-                                         callback=self._report_result)
+        args = (request, response)
+        self.worker_pool.apply_async(self._scan_http_response, args=args,
+                                     callback=self._report_result)
 
     def _is_properly_configured(self):
         '''

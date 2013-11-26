@@ -23,7 +23,6 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.esmre.multi_re import multi_re
 from w3af.core.data.kb.info import Info
 
@@ -45,8 +44,6 @@ class http_in_body (GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._already_inspected = ScalableBloomFilter()
-
     def grep(self, request, response):
         '''
         Plugin entry point.
@@ -55,23 +52,19 @@ class http_in_body (GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         '''
-        uri = response.get_uri()
-        
         # 501 Code is "Not Implemented" which in some cases responds with
         # this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
         
         if response.get_code() != 501\
-        and response.is_text_or_html()\
-        and uri not in self._already_inspected:
+        and response.is_text_or_html():
             
-            # Don't repeat URLs
-            self._already_inspected.add(uri)
-
             body_without_tags = response.get_clear_text_body()
             if body_without_tags is None:
                 return
+
+            uri = response.get_uri()
 
             for match, _, _, reqres in self._multi_re.query(body_without_tags):
 

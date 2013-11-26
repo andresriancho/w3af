@@ -24,7 +24,6 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import w3afException
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -53,8 +52,7 @@ class meta_tags(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._already_inspected = ScalableBloomFilter()
-
+    
     def grep(self, request, response):
         '''
         Plugin entry point, search for meta tags.
@@ -63,13 +61,8 @@ class meta_tags(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         '''
-        uri = response.get_uri()
-
-        if not response.is_text_or_html() or uri in self._already_inspected\
-        or is_404(response):
+        if not response.is_text_or_html() or is_404(response):
             return
-
-        self._already_inspected.add(uri)
 
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)

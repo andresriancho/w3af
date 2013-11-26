@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 
 
@@ -48,8 +47,6 @@ class dot_net_event_validation(GrepPlugin):
         self._encryptedVs = re.compile(
             encryptedvs_regex, re.IGNORECASE | re.DOTALL)
 
-        self._already_analyzed = ScalableBloomFilter()
-
     def grep(self, request, response):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
@@ -59,12 +56,6 @@ class dot_net_event_validation(GrepPlugin):
         '''
         if not response.is_text_or_html():
             return
-
-        # First verify if we havent analyzed this URI yet
-        if request.get_url() in self._already_analyzed:
-            return
-
-        self._already_analyzed.add(request.get_url())
 
         res = self._viewstate.search(response.get_body())
         if res:

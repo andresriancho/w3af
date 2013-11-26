@@ -51,10 +51,9 @@ class GrepPlugin(Plugin):
         :return: If something is found it must be reported to the Output
             Manager and the KB.
         '''
-        # Only run once for each HTTP response
-        if response.get_from_cache():
-            return
-
+        # Also take a look at should_grep in grep.py to understand other
+        # filters which are applied before analyzing a response.
+        
         # This cache is here to avoid a query to the cf each time a request
         # goes to a grep plugin. Given that in the future the cf will be a
         # sqlite database, this is an important improvement.
