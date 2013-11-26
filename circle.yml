@@ -25,6 +25,7 @@ machine:
     # And we want to start the django-moth server
     # https://circleci.com/docs/background-process
     - nohup bash -c "w3af/core/controllers/ci/setup_moth.py &"
+    - pwd
     
 test:
   override:
