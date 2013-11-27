@@ -23,6 +23,8 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
+
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.url import URL
@@ -66,7 +68,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertIn('You are admin from MOTH/', http_response.body)
 
     def test_gzip(self):
-        url = URL('http://moth/')
+        url = URL(get_moth_http('/core/gzip/gzip.html'))
         res = self.uri_opener.GET(url, cache=False)
         headers = res.get_headers()
         content_encoding, _ = headers.iget('content-encoding', '')
@@ -77,10 +79,9 @@ class TestXUrllibIntegration(unittest.TestCase):
     def test_get_cookies(self):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)
 
-        url_sends_cookie = URL(
-            'http://moth/w3af/core/cookie_handler/set-cookie.php')
+        url_sends_cookie = URL(get_moth_http('/core/cookies/set-cookie.py'))
         self.uri_opener.GET(url_sends_cookie, cache=False)
 
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 1)
         cookie = [c for c in self.uri_opener.get_cookies()][0]
-        self.assertEqual('moth.local', cookie.domain)
+        self.assertEqual('127.0.0.1', cookie.domain)
