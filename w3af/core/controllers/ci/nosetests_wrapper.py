@@ -70,6 +70,17 @@ def open_nosetests_output(directory):
     
     return fhandler
 
+def normalize_test_name(test_name):
+    '''
+    Tests which are generated on the fly have names like:
+        foo.bar.spam(<foo.bar.spam instance at 0x837d680>,)
+        
+    Because of the on the fly generation, the 0x837d680 changes each time you
+    collect/run the test. We don't want that, and don't care about the address
+    so we replace them with 0xfffffff
+    '''
+    return re.sub('0x(.*?)>', '0xfffffff>', test_name.strip())
+
 def collect_all_tests():
     '''
     :return: A list with the names of all the tests (none is run). The list
@@ -108,7 +119,7 @@ def collect_all_tests():
     for line in collected_tests.splitlines():
         mo = test_name_re.match(line)
         if mo:
-            result.append(mo.group(1).strip())
+            result.append(normalize_test_name(mo.group(1)))
     
     logging.debug('Collected %s tests.' % len(result))
     
@@ -251,7 +262,7 @@ def get_run_tests(outputs):
             for line in output.splitlines():
                 mo = test_name_re.match(line)
                 if mo:
-                    result.append(mo.group(1).strip())
+                    result.append(normalize_test_name(mo.group(1)))
     
     result = list(set(result))        
     logging.debug('Run %s tests.' % len(result))
