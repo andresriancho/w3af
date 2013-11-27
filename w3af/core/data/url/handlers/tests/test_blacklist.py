@@ -27,6 +27,7 @@ from nose.plugins.attrib import attr
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+from w3af.core.controllers.ci.moth import get_moth_http
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.constants.response_codes import NO_CONTENT
@@ -47,7 +48,7 @@ class TestBlacklistHandler(unittest.TestCase):
         '''Verify that the blacklist handler works as expected'''
         
         # Configure the handler
-        blocked_url = URL('http://moth/abc/def/')
+        blocked_url = URL(get_moth_http('/abc/def/'))
         cf.cf.save('non_targets', [blocked_url,])
         
         opener = urllib2.build_opener(BlacklistHandler)
@@ -63,8 +64,8 @@ class TestBlacklistHandler(unittest.TestCase):
         '''Verify that the blacklist handler works as expected'''
         opener = urllib2.build_opener(BlacklistHandler)
         
-        request = urllib2.Request('http://moth/')
-        request.url_object = URL('http://moth/')
+        request = urllib2.Request(get_moth_http())
+        request.url_object = URL(get_moth_http())
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
@@ -73,7 +74,7 @@ class TestBlacklistHandler(unittest.TestCase):
         '''Get an instance of the extended urllib and verify that the blacklist
         handler still works, even when mixed with all the other handlers.'''
         # Configure the handler
-        blocked_url = URL('http://moth/abc/def/')
+        blocked_url = URL(get_moth_http('/abc/def/'))
         cf.cf.save('non_targets', [blocked_url,])
         
         settings = opener_settings.OpenerSettings()
@@ -94,8 +95,8 @@ class TestBlacklistHandler(unittest.TestCase):
         '''Get an instance of the extended urllib and verify that the blacklist
         handler still works, even when mixed with all the other handlers.'''
         # Configure the handler
-        blocked_url = URL('http://moth/abc/def/')
-        safe_url = URL('http://moth/')
+        blocked_url = URL(get_moth_http('/abc/def/'))
+        safe_url = URL(get_moth_http())
         cf.cf.save('non_targets', [blocked_url,])
         
         settings = opener_settings.OpenerSettings()
