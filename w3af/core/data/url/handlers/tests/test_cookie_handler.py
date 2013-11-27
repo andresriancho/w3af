@@ -27,6 +27,7 @@ import os
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.url import URL
@@ -36,10 +37,8 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 @attr('moth')
 class TestCookieHandler(unittest.TestCase):
 
-    URL_SENDS_COOKIE = URL(
-        'http://moth/w3af/core/cookie_handler/set-cookie.php')
-    URL_CHECK_COOKIE = URL(
-        'http://moth/w3af/core/cookie_handler/has-cookie.php')
+    URL_SENDS_COOKIE = URL(get_moth_http('/core/cookies/set-cookie.py'))
+    URL_CHECK_COOKIE = URL(get_moth_http('/core/cookies/get-cookie.py'))
 
     COOKIEJAR = '''\
         # Netscape HTTP Cookie File
