@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
 import shlex
 import select
@@ -24,6 +25,9 @@ NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
 NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests'
+
+# Parameters used to collect the list of tests
+NOSE_COLLECT_PARAMS = '--collect-only -v --with-doctest --doctest-tests'
 
 # TODO: Run the tests which require moth
 SELECTORS = ["smoke and not internet and not moth and not root",
@@ -65,6 +69,50 @@ def open_nosetests_output(directory):
     logging.debug('nosetests output file: %s' % fhandler.name)
     
     return fhandler
+
+def collect_all_tests():
+    '''
+    :return: A list with the names of all the tests (none is run). The list
+             looks like this:
+             
+                 ['test_plugin_desc (w3af.plugins.tests.test_basic.TestBasic)',
+                  'test_found_xss (w3af.plugins.tests.output.test_csv_file.TestCSVFile)']
+    '''
+    cmd = '%s %s' % (NOSETESTS, NOSE_COLLECT_PARAMS)
+    cmd_args = shlex.split(cmd)
+    
+    logging.debug('Collecting tests: "%s"' % cmd)
+    
+    p = subprocess.Popen(
+        cmd_args,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False,
+        universal_newlines=True
+    )
+
+    collected_tests = ''
+
+    # Read output while the process is alive
+    while p.poll() is None:
+        reads, _, _ = select.select([p.stdout, p.stderr], [], [], 1)
+        for r in reads:
+            collected_tests += r.read(1)
+    
+    p.wait()
+    
+    result = []
+    test_name_re = re.compile('(.*?) ... ok')
+    
+    for line in collected_tests.splitlines():
+        mo = test_name_re.match(line)
+        if mo:
+            result.append(mo.group(1))
+    
+    logging.debug('Collected %s tests.' % len(result))
+    
+    return result
 
 def run_nosetests(selector, directory, params=NOSE_PARAMS):
     '''
@@ -161,11 +209,54 @@ def print_will_fail(exit_code):
     if exit_code != 0:
         logging.critical('Build will end as failed.')
 
-   
+def print_summary(all_tests, run_tests):
+    '''
+    Print a summary of how many tests were run, how many are available, and
+    which ones are missing.
+    '''
+    logging.info('%s out of %s tests run' % (len(run_tests), len(all_tests)))
+    
+    missing = set(all_tests) - set(run_tests)
+    missing = list(missing)
+    missing.sort()
+    logging.debug('The following tests were not run:\n%s' % '\n'.join(missing))
+    
+    # This is just to make sure we don't have crap on the run_tests list
+    for test_name in run_tests:
+        if test_name not in all_tests:
+            raise RuntimeError('Parsing error on test "%"' % test_name)
+
+def get_run_tests(outputs):
+    '''
+    Merge all the information from the command outputs into one consolidated
+    list of tests which were run.
+    
+    :param outputs: A list containing (stdout, stderr) for each of the
+                    nosetests commands which were run.
+    :return: A list with the names of the tests which were run in the same
+             format as collect_all_tests to be able to compare them.
+    '''
+    test_name_re = re.compile('(.*?) ... .*?')
+    result = []
+    
+    for stdout, stderr in outputs:
+        for output in (stdout, stderr):
+            for line in output.splitlines():
+                mo = test_name_re.match(line)
+                if mo:
+                    result.append(mo.group(1))
+    
+    result = list(set(result))        
+    logging.debug('Run %s tests.' % len(result))
+    logging.debug('The following tests were run:\n%s' % '\n'.join(result))
+
+    return result
+
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
     done_list = []
+    outputs = []
     
     configure_logging(LOG_FILE)
     
@@ -181,10 +272,15 @@ if __name__ == '__main__':
             cmd, stdout, stderr, exit_code = future.result()
             exit_codes.append(exit_code)
             done_list.append(future)
+            outputs.append((stdout, stderr))
             
             print_info_console(cmd, stdout, stderr, exit_code)
             print_will_fail(exit_code)
             print_status(future_list, done_list)
-            
+    
+    all_tests = collect_all_tests()
+    run_tests = get_run_tests(outputs)
+    print_summary(all_tests, run_tests) 
+        
     # We need to set the exit code.
     sys.exit(summarize_exit_codes(exit_codes))
