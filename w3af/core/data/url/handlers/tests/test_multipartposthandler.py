@@ -28,12 +28,13 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.url.handlers.multipart import MultipartPostHandler, multipart_encode
 from w3af.core.controllers.misc.io import NamedStringIO
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
 class TestMultipartPostHandler(unittest.TestCase):
 
-    MOTH_FILE_UP_URL = 'http://moth/w3af/audit/file_upload/uploader.php'
+    MOTH_FILE_UP_URL = get_moth_http('/core/file_upload/upload.py')
 
     def setUp(self):
         self.opener = urllib2.build_opener(MultipartPostHandler)
@@ -44,8 +45,7 @@ class TestMultipartPostHandler(unittest.TestCase):
         data = {"MAX_FILE_SIZE": "10000",
                 "uploadedfile": open(temp[1], "rb")}
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
-        self.assertTrue('was successfully uploaded' in resp,
-                        'Response was:\n%s' % resp)
+        self.assertIn('was successfully uploaded', resp)
 
     def test_file_upload2(self):
         # Basically the same test but with list as values
@@ -54,8 +54,7 @@ class TestMultipartPostHandler(unittest.TestCase):
         data = {"MAX_FILE_SIZE": ["10000"],
                 "uploadedfile": [open(temp[1], "rb")]}
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
-        self.assertTrue('was successfully uploaded' in resp,
-                        'Response was:\n%s' % resp)
+        self.assertIn('was successfully uploaded', resp)
 
     def test_file_stringio_upload(self):
         data = {"MAX_FILE_SIZE": "10000",
