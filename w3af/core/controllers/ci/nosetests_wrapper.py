@@ -224,7 +224,7 @@ def print_summary(all_tests, run_tests):
     # This is just to make sure we don't have crap on the run_tests list
     for test_name in run_tests:
         if test_name not in all_tests:
-            raise RuntimeError('Parsing error on test "%"' % test_name)
+            raise RuntimeError('Parsing error on test "%s"' % test_name)
 
 def get_run_tests(outputs):
     '''
