@@ -25,6 +25,7 @@ import urllib2
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+from w3af.core.controllers.ci.moth import get_moth_http
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.constants.response_codes import FOUND
@@ -41,7 +42,7 @@ class TestRedirectHandler(unittest.TestCase):
     @attr('moth')
     def test_redirect_handler(self):
         '''Test the redirect handler using urllib2'''
-        redirect_url = URL('http://moth/w3af/audit/global_redirect/302.php?url=/')
+        redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
         opener = urllib2.build_opener(HTTP30XHandler)
         
         request = urllib2.Request(redirect_url.url_string)
@@ -54,7 +55,7 @@ class TestRedirectHandler(unittest.TestCase):
         '''Get an instance of the extended urllib and verify that the redirect
         handler still works, even when mixed with all the other handlers.'''
         # Configure the handler
-        redirect_url = URL('http://moth/w3af/audit/global_redirect/302.php?url=/')
+        redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()

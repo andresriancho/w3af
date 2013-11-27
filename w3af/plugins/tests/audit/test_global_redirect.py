@@ -18,15 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGlobalRedirect(PluginTest):
 
-    target_url = '%s/audit/global_redirect/' % get_moth_http()
+    target_url = get_moth_http('/audit/global_redirect/')
 
     _run_configs = {
         'cfg': {
