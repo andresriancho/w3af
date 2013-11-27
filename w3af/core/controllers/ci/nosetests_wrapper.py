@@ -103,7 +103,7 @@ def collect_all_tests():
     p.wait()
     
     result = []
-    test_name_re = re.compile('(.*?) ... ok')
+    test_name_re = re.compile('(.*?) \.\.\. ok')
     
     for line in collected_tests.splitlines():
         mo = test_name_re.match(line)
@@ -243,7 +243,7 @@ def get_run_tests(outputs):
     :return: A list with the names of the tests which were run in the same
              format as collect_all_tests to be able to compare them.
     '''
-    test_name_re = re.compile('(.*?) ... .*?')
+    test_name_re = re.compile('(.*?) \.\.\. .*?')
     result = []
     
     for stdout, stderr in outputs:
