@@ -123,19 +123,24 @@ def collect_all_tests():
     
     logging.debug('Collected %s tests.' % len(result))
     
+    result.sort()
     return result
 
-def run_nosetests(selector, directory, params=NOSE_PARAMS):
+def run_nosetests(directory, selector=None, params=NOSE_PARAMS):
     '''
     Run nosetests like this:
         nosetests $params -A $selector $directory
     
-    :param selector: A string with the names of the unittest tags we want to run
     :param directory: Which directory do we want nosetests to find tests in
+    :param selector: A string with the names of the unittest tags we want to run
     :param params: The parameters to pass to nosetests
     :return: (stdout, stderr, exit code) 
     '''
-    cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
+    if selector is not None:
+        cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
+    else:
+        cmd = '%s %s %s' % (NOSETESTS, params, directory)
+        
     cmd_args = shlex.split(cmd)
     
     logging.debug('Starting: "%s"' % cmd)
@@ -264,12 +269,22 @@ def get_run_tests(outputs):
                 if mo:
                     result.append(normalize_test_name(mo.group(1)))
     
-    result = list(set(result))        
+    result = list(set(result))
+    result.sort()
     logging.debug('Run %s tests.' % len(result))
     logging.debug('The following tests were run:\n%s' % '\n'.join(result))
 
     return result
 
+def nose_strategy():
+    '''
+    :return: A list with the tuples of (SELECTORS, TEST_DIRECTORIES) to run
+             nosetests on. This basically defines which tests to run.
+    '''
+    for selector in SELECTORS:
+        for directory in TEST_DIRECTORIES:
+            yield selector, directory
+            
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
@@ -279,10 +294,9 @@ if __name__ == '__main__':
     configure_logging(LOG_FILE)
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for selector in SELECTORS:
-            for directory in TEST_DIRECTORIES:
-                args = run_nosetests, selector, directory, NOSE_PARAMS
-                future_list.append(executor.submit(*args))
+        for selector, directory in nose_strategy():
+            args = run_nosetests, directory, selector, NOSE_PARAMS
+            future_list.append(executor.submit(*args))
         
         print_status(future_list, done_list)
         
