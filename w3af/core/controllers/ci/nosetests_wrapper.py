@@ -78,7 +78,7 @@ def collect_all_tests():
                  ['test_plugin_desc (w3af.plugins.tests.test_basic.TestBasic)',
                   'test_found_xss (w3af.plugins.tests.output.test_csv_file.TestCSVFile)']
     '''
-    cmd = '%s %s' % (NOSETESTS, NOSE_COLLECT_PARAMS)
+    cmd = '%s %s w3af/' % (NOSETESTS, NOSE_COLLECT_PARAMS)
     cmd_args = shlex.split(cmd)
     
     logging.debug('Collecting tests: "%s"' % cmd)
@@ -108,7 +108,7 @@ def collect_all_tests():
     for line in collected_tests.splitlines():
         mo = test_name_re.match(line)
         if mo:
-            result.append(mo.group(1))
+            result.append(mo.group(1).strip())
     
     logging.debug('Collected %s tests.' % len(result))
     
@@ -228,8 +228,10 @@ def print_summary(all_tests, run_tests):
         if test_name not in all_tests:
             parsing_errors.append(test_name)
     
-    if parsing_errors:        
-        raise RuntimeError('Parsing error on tests:\n%s' % '\n'.join(parsing_errors))
+    if parsing_errors:
+        logging.critical('Parsing error on tests:\n%s' % '\n'.join(parsing_errors))
+        msg = 'Parsing error on %s tests. See log for more info.'
+        raise RuntimeError(msg % len(parsing_errors))
 
 def get_run_tests(outputs):
     '''
@@ -249,7 +251,7 @@ def get_run_tests(outputs):
             for line in output.splitlines():
                 mo = test_name_re.match(line)
                 if mo:
-                    result.append(mo.group(1))
+                    result.append(mo.group(1).strip())
     
     result = list(set(result))        
     logging.debug('Run %s tests.' % len(result))
