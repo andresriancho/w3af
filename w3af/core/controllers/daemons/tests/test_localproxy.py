@@ -29,13 +29,15 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.controllers.daemons.localproxy import LocalProxy
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
 class TestLocalProxy(unittest.TestCase):
     
     IP = '127.0.0.1'
-
+    MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
+    
     def setUp(self):
         # Start the proxy server
         create_temp_dir()
@@ -64,7 +66,7 @@ class TestLocalProxy(unittest.TestCase):
     
     def test_no_trap(self):
         self._proxy.set_trap(False)
-        response = self.proxy_opener.open('http://moth/')
+        response = self.proxy_opener.open(get_moth_http())
         
         self.assertEqual(response.code, 200)
         
@@ -72,7 +74,7 @@ class TestLocalProxy(unittest.TestCase):
     def test_request_trapped_drop(self):
         def send_request(proxy_opener, result_queue):
             try:
-                proxy_opener.open('http://moth/')
+                proxy_opener.open(get_moth_http())
             except urllib2.HTTPError, he:
                 # Catch the 403 from the local proxy when the user
                 # drops the HTTP request.
@@ -88,7 +90,7 @@ class TestLocalProxy(unittest.TestCase):
         
         request = self._proxy.get_trapped_request()
         
-        self.assertEqual(request.get_url().url_string, 'http://moth/')
+        self.assertEqual(request.get_url().url_string, get_moth_http())
         self.assertEqual(request.get_method(), 'GET')
         
         self._proxy.drop_request(request)
@@ -100,7 +102,7 @@ class TestLocalProxy(unittest.TestCase):
     
     def test_request_trapped_send(self):
         def send_request(proxy_opener, result_queue):
-            response = proxy_opener.open('http://moth/')
+            response = proxy_opener.open(get_moth_http())
             result_queue.put(response)
         
         self._proxy.set_trap(True)
@@ -113,7 +115,7 @@ class TestLocalProxy(unittest.TestCase):
         
         request = self._proxy.get_trapped_request()
         
-        self.assertEqual(request.get_url().url_string, 'http://moth/')
+        self.assertEqual(request.get_url().url_string, get_moth_http())
         self.assertEqual(request.get_method(), 'GET')
         
         self._proxy.send_raw_request(request, request.dump_request_head(),
@@ -122,4 +124,4 @@ class TestLocalProxy(unittest.TestCase):
         response = result_queue.get()
         
         self.assertEqual(response.code, 200)
-        self.assertIn('Welcome', response.read())
+        self.assertIn(self.MOTH_MESSAGE, response.read())

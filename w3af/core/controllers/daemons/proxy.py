@@ -450,6 +450,11 @@ class Proxy(Process):
         except socket.error, se:
             raise w3afProxyException('Socket error while starting proxy: "%s"'
                                      % se.strerror)
+        else:
+            # This is here to support port == 0, which will bind to the first
+            # available/free port, which we don't know until the server really
+            # starts
+            self._port = self._server.server_port
 
     def get_bind_ip(self):
         '''

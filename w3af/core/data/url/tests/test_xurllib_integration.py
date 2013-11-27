@@ -33,7 +33,7 @@ from w3af.core.data.parsers.url import URL
 @attr('moth')
 class TestXUrllibIntegration(unittest.TestCase):
 
-    MOTH_MESSAGE = 'Welcome to the moth homepage!'
+    MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
