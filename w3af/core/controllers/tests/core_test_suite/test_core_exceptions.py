@@ -27,10 +27,11 @@ from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import (w3afMustStopException,
-                                         w3afMustStopByUnknownReasonExc,
-                                         w3afMustStopByUserRequest)
+                                              w3afMustStopByUnknownReasonExc,
+                                              w3afMustStopByUserRequest)
 from w3af.plugins.tests.helper import create_target_option_list
 
 
@@ -56,7 +57,7 @@ class TestCoreExceptions(unittest.TestCase):
 
         self.w3afcore = w3afCore()
         
-        target_opts = create_target_option_list(URL('http://moth/'))
+        target_opts = create_target_option_list(URL(get_moth_http()))
         self.w3afcore.target.set_options(target_opts)
 
         self.w3afcore.plugins.set_plugins(['exception_raise',], 'crawl')
