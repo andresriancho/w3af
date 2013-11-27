@@ -288,6 +288,14 @@ def nose_strategy():
     for selector in SELECTORS:
         for directory in TEST_DIRECTORIES:
             yield selector, directory
+
+def aggressive_nose_strategy():
+    '''
+    :return: A list with the tuples of (SELECTORS, TEST_DIRECTORIES) to run
+             nosetests on. This basically defines which tests to run.
+    '''
+    for directory in TEST_DIRECTORIES:
+        yield None, directory
             
 if __name__ == '__main__':
     exit_codes = []
@@ -298,7 +306,7 @@ if __name__ == '__main__':
     configure_logging(LOG_FILE)
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for selector, directory in nose_strategy():
+        for selector, directory in aggressive_nose_strategy():
             args = run_nosetests, directory, selector, NOSE_PARAMS
             future_list.append(executor.submit(*args))
         
