@@ -35,6 +35,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (w3afMustStopByUserRequest,
                                          w3afMustStopOnUrlError,
@@ -46,7 +47,7 @@ from w3af.core.controllers.exceptions import (w3afMustStopByUserRequest,
 @attr('smoke')
 class TestXUrllib(unittest.TestCase):
 
-    MOTH_MESSAGE = 'Welcome to the moth homepage!'
+    MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
@@ -55,7 +56,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.end()
         
     def test_basic(self):
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
@@ -64,35 +65,33 @@ class TestXUrllib(unittest.TestCase):
         self.assertNotEqual(http_response.id, None)
 
     def test_cache(self):
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)
-        self.assertTrue(self.MOTH_MESSAGE in http_response.body)
+        self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)
-        self.assertTrue(self.MOTH_MESSAGE in http_response.body)
+        self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
     def test_qs_params(self):
-        url = URL('http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt')
+        url = URL(get_moth_http('/audit/xss/simple_xss.py?text=123456abc'))
         http_response = self.uri_opener.GET(url, cache=False)
-        self.assertTrue('Showing the section content.' in http_response.body,
-                        http_response.body)
+        self.assertIn('123456abc', http_response.body)
 
-        url = URL('http://moth/w3af/audit/local_file_read/local_file_read.php?file=/etc/passwd')
+        url = URL(get_moth_http('/audit/xss/simple_xss.py?text=root:x:0'))
         http_response = self.uri_opener.GET(url, cache=False)
-        self.assertTrue(
-            'root:x:0:0:' in http_response.body, http_response.body)
+        self.assertIn('root:x:0', http_response.body)
 
     def test_POST(self):
-        url = URL('http://moth/w3af/audit/xss/data_receptor2.php')
-        data = DataContainer([('empresa', 'abc'), ('firstname', 'def')])
+        url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
+        data = DataContainer([('text', '123456abc'),])
         http_response = self.uri_opener.POST(url, data, cache=False)
-        self.assertTrue('def' in http_response.body, http_response.body)
+        self.assertIn('123456abc', http_response.body)
 
     def test_POST_special_chars(self):
-        url = URL('http://moth/w3af/audit/xss/data_receptor2.php')
+        url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
-        data = DataContainer([('empresa', test_data), ('firstname', 'def')])
+        data = DataContainer([('text', test_data),])
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 
@@ -169,7 +168,7 @@ class TestXUrllib(unittest.TestCase):
                 self.assertTrue(False, 'Not expecting this exception type.')
             except w3afMustStopOnUrlError:
                 self.assertTrue(True)
-            except w3afMustStopException, e:
+            except w3afMustStopException:
                 self.assertTrue(True)
                 break
         else:
@@ -179,13 +178,13 @@ class TestXUrllib(unittest.TestCase):
         
     def test_stop(self):
         self.uri_opener.stop()
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
 
     def test_pause_stop(self):
         self.uri_opener.pause(True)
         self.uri_opener.stop()
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
 
     def test_pause(self):
@@ -193,7 +192,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(True)
 
         def send(uri_opener, output):
-            url = URL('http://moth/')
+            url = URL(get_moth_http())
             try:
                 http_response = uri_opener.GET(url)
                 output.put(http_response)
@@ -211,7 +210,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(True)
 
         def send(uri_opener, output):
-            url = URL('http://moth/')
+            url = URL(get_moth_http())
             try:
                 http_response = uri_opener.GET(url)
                 output.put(http_response)
@@ -236,7 +235,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
     
     def test_removes_cache(self):
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         self.uri_opener.GET(url, cache=False)
         
         # Please note that this line, together with the tearDown() act as
@@ -254,11 +253,11 @@ class TestXUrllib(unittest.TestCase):
             self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
     
     def test_special_char_header(self):
-        url = URL('http://moth/w3af/core/header_fuzzing/cookie_echo.php')
-        header_content = u'á'
-        headers = Headers([('foo', header_content)])
+        url = URL(get_moth_http('/core/headers/echo-headers.py'))
+        header_content = u'name=ábc'
+        headers = Headers([('Cookie', header_content)])
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
-        self.assertEqual(header_content, http_response.body)
+        self.assertIn(header_content, http_response.body)
 
 class EmptyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
