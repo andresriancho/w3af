@@ -29,6 +29,7 @@ import os
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.exceptions import w3afException, w3afMustStopException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                               ConnectionManager,
@@ -38,6 +39,7 @@ from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
 
 
 @attr('moth')
+@attr('ci_ready')
 class TestKeepalive(unittest.TestCase):
 
     def setUp(self):
@@ -162,7 +164,7 @@ class TestKeepalive(unittest.TestCase):
 
         uri_opener = urllib2.build_opener(keep_alive_http)
         
-        response = uri_opener.open('http://moth/')
+        response = uri_opener.open(get_moth_http())
         html = response.read()
 
         time.sleep(wait)

@@ -25,6 +25,7 @@ import urllib2
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+from w3af.core.controllers.ci.moth import get_moth_http
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.constants.response_codes import NOT_FOUND
@@ -43,7 +44,7 @@ class TestErrorHandler(unittest.TestCase):
         Verify that the error handler works as expected, in other words, do NOT
         crash on response codes not in range 200-300.
         '''
-        fail_url = URL('http://moth/abc/def/do-not-exist.foo')
+        fail_url = URL(get_moth_http('/abc/def/do-not-exist.foo'))
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()

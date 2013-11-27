@@ -35,6 +35,7 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
 @attr('moth')
+@attr('ci_ready')
 class TestCookieHandler(unittest.TestCase):
 
     URL_SENDS_COOKIE = URL(get_moth_http('/core/cookies/set-cookie.py'))
