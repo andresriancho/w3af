@@ -24,8 +24,8 @@ FMT = '/tmp/moth-%s.txt'
 HTTP_ADDRESS_FILE = FMT % 'http'
 HTTPS_ADDRESS_FILE = FMT % 'https'
 
-DEFAULT_MOTH = 'moth:80'
-DEFAULT_MOTHS = 'moth:443'
+DEFAULT_MOTH = 'fallback:80'
+DEFAULT_MOTHS = 'fallback:443'
 
 
 def whereis_moth():
