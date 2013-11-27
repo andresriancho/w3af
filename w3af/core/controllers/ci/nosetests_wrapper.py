@@ -222,9 +222,14 @@ def print_summary(all_tests, run_tests):
     logging.debug('The following tests were not run:\n%s' % '\n'.join(missing))
     
     # This is just to make sure we don't have crap on the run_tests list
+    parsing_errors = []
+    
     for test_name in run_tests:
         if test_name not in all_tests:
-            raise RuntimeError('Parsing error on test "%s"' % test_name)
+            parsing_errors.append(test_name)
+    
+    if parsing_errors:        
+        raise RuntimeError('Parsing error on tests:\n%s' % '\n'.join(parsing_errors))
 
 def get_run_tests(outputs):
     '''
