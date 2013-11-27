@@ -28,6 +28,7 @@ from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.url import URL
 
+from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 
 
@@ -35,7 +36,7 @@ from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 @attr('smoke')
 class TestExtendedUrllibProxy(unittest.TestCase):
 
-    MOTH_MESSAGE = 'Welcome to the moth homepage!'
+    MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
@@ -63,12 +64,12 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener.end()
         
     def test_http_default_port_via_proxy(self):
-        url = URL('http://moth/')
+        url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
     def test_http_port_specification_via_proxy(self):
-        url = URL('http://moth:80/')
+        url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
@@ -78,7 +79,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
                ' https://github.com/andresriancho/w3af/issues/183'
         raise SkipTest(TODO)
     
-        url = URL('https://moth/')
+        url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
@@ -88,6 +89,6 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.assertEqual(http_response.get_code(), 400)
     
     def test_POST_via_proxy(self):
-        url = URL('http://moth/w3af/core/echo/post.php')
-        http_response = self.uri_opener.POST(url, data='abc=123', cache=False)
-        self.assertIn('[abc] => 123', http_response.body)
+        url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
+        http_response = self.uri_opener.POST(url, data='text=123456abc', cache=False)
+        self.assertIn('123456abc', http_response.body)
