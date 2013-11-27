@@ -49,6 +49,11 @@ TEST_DIRECTORIES = [
     'w3af/plugins/',
 ]
 
+AGGRESSIVE_STRATEGY = [
+                       ('w3af/core/ui/gui/', None),
+                       ('w3af/core/data/', None),
+                       ]
+
 NOISE = [# Related with xvfb not having the randr extension
          'Xlib:  extension "RANDR" missing on display ":99".',
          # Related with scapy, we're not root, tcpdump is not available
