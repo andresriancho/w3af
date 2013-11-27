@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestMOTW(PluginTest):
 
-    motw_url = '%s/grep/motw/' % get_moth_http()
+    motw_url = get_moth_http('/grep/motw/')
 
     _run_configs = {
         'cfg': {
