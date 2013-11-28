@@ -131,7 +131,7 @@ class sqli(AuditPlugin):
     )
     _multi_re = multi_re(SQL_ERRORS)
 
-    SQLI_STRINGS = (u"d'z\"0",)
+    SQLI_STRINGS = (u"a'b\"c'd\"",)
 
     def __init__(self):
         AuditPlugin.__init__(self)
