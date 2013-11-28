@@ -34,8 +34,9 @@ from w3af.core.data.options.option_types import (
 class TestOptionFactory(unittest.TestCase):
 
     def test_factory_ok(self):
-        input_file = os.path.join(ROOT_PATH, 'core', 'data', 'options',
-                                  'tests', 'test.txt')
+        input_file = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data',
+                                                  'options', 'tests',
+                                                  'test.txt'))
         output_file = input_file
 
         data = {BOOL: [('true', True),],
