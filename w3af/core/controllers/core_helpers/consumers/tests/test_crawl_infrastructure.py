@@ -27,11 +27,12 @@ import w3af.core.data.kb.config as cf
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestTimeLimit(PluginTest):
 
-    target_url = 'http://moth/'
+    target_url = get_moth_http()
 
     _run_configs = {
         'basic': {
