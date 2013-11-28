@@ -52,6 +52,8 @@ TEST_DIRECTORIES = [
 AGGRESSIVE_STRATEGY = [
                        ('w3af/core/ui/gui/', None),
                        ('w3af/core/data/', None),
+                       
+                       ('w3af/plugins/tests/grep/', None),
                        ]
 
 NOISE = [# Related with xvfb not having the randr extension
@@ -317,16 +319,20 @@ if __name__ == '__main__':
         
         print_status(future_list, done_list)
         
-        for future in futures.as_completed(future_list):
-            cmd, stdout, stderr, exit_code = future.result()
-            exit_codes.append(exit_code)
-            done_list.append(future)
-            outputs.append((stdout, stderr))
-            
-            print_info_console(cmd, stdout, stderr, exit_code)
-            print_will_fail(exit_code)
-            print_status(future_list, done_list)
-    
+        while len(done_list) < len(future_list):
+            try:
+                for future in futures.as_completed(future_list, timeout=120):
+                    cmd, stdout, stderr, exit_code = future.result()
+                    exit_codes.append(exit_code)
+                    done_list.append(future)
+                    outputs.append((stdout, stderr))
+                    
+                    print_info_console(cmd, stdout, stderr, exit_code)
+                    print_will_fail(exit_code)
+                    print_status(future_list, done_list)
+            except futures.TimeoutError:
+                print_status(future_list, done_list)
+                
     all_tests = collect_all_tests()
     run_tests = get_run_tests(outputs)
     print_summary(all_tests, run_tests) 
