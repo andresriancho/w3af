@@ -319,7 +319,7 @@ if __name__ == '__main__':
         
         print_status(future_list, done_list)
         
-        while len(done_list) < len(future_list):
+        while future_list:
             try:
                 for future in futures.as_completed(future_list, timeout=120):
                     cmd, stdout, stderr, exit_code = future.result()
@@ -332,6 +332,7 @@ if __name__ == '__main__':
                     print_status(future_list, done_list)
             except futures.TimeoutError:
                 print_status(future_list, done_list)
+                future_list = [f for f in future_list if f not in done_list]
                 
     all_tests = collect_all_tests()
     run_tests = get_run_tests(outputs)
