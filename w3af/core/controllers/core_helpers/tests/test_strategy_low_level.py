@@ -24,6 +24,7 @@ import threading
 from mock import Mock
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.core_helpers.strategy import w3af_core_strategy
 from w3af.core.controllers.exceptions import w3afMustStopException
@@ -33,8 +34,8 @@ from w3af.core.data.kb.knowledge_base import kb
 @attr('moth')
 class TestStrategy(unittest.TestCase):
     
-    TARGET_URL = 'http://moth/w3af/audit/sql_injection/select/'\
-                 'sql_injection_integer.php?id=1'
+    TARGET_URL = get_moth_http('/audit/sql_injection/'\
+                               'where_integer_qs.py?id=1')
     
     def test_strategy_run(self):
         core = w3afCore()
