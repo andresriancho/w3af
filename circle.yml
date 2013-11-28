@@ -12,6 +12,9 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_test_dependencies.sh
 
+    # Wait for the daemon to be available to run the tests
+    - w3af/core/controllers/ci/wait_for_moth.py
+
 machine:
   python:
     version: 2.7.3
@@ -25,9 +28,6 @@ machine:
     # And we want to start the django-moth server
     # https://circleci.com/docs/background-process
     - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
-    
-    # Wait for the daemon to be available to run the tests
-    - w3af/w3af/core/controllers/ci/wait_for_moth.py
     
 test:
   override:
