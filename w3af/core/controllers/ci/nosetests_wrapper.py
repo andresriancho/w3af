@@ -224,8 +224,8 @@ def print_info_console(cmd, stdout, stderr, exit_code):
     logging.debug(stdout)
     logging.debug(stderr)
 
-def print_status(future_list, done_list):
-    msg = 'Status: (%s/%s) ' % (len(done_list), len(future_list))
+def print_status(done_list, total_tests):
+    msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
 
 def print_will_fail(exit_code):
@@ -317,7 +317,8 @@ if __name__ == '__main__':
             args = run_nosetests, directory, selector, NOSE_PARAMS
             future_list.append(executor.submit(*args))
         
-        print_status(future_list, done_list)
+        total_tests = len(future_list)
+        print_status(done_list, total_tests)
         
         while future_list:
             try:
@@ -329,9 +330,9 @@ if __name__ == '__main__':
                     
                     print_info_console(cmd, stdout, stderr, exit_code)
                     print_will_fail(exit_code)
-                    print_status(future_list, done_list)
+                    print_status(done_list, total_tests)
             except futures.TimeoutError:
-                print_status(future_list, done_list)
+                print_status(done_list, total_tests)
                 future_list = [f for f in future_list if f not in done_list]
                 
     all_tests = collect_all_tests()
