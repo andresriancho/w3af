@@ -18,22 +18,35 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 import signal
 import subprocess
 import time
 import unittest
+import tempfile
 
 from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
 class TestHandleCtrlC(unittest.TestCase):
     
-    def test_scan_ctrl_c(self):
+    SCRIPT = '%s/core/ui/console/tests/data/spider_long.w3af' % ROOT_PATH
+    
+    def prepare_script(self):
+        fhandler = tempfile.NamedTemporaryFile(prefix='spider_long-',
+                                               suffix='.w3af',
+                                               dir=tempfile.tempdir,
+                                               delete=False)
+        fhandler.write(file(self.SCRIPT).read() % {'moth': get_moth_http()})
+        fhandler.close()
+        return fhandler.name
         
-        script = '%s/core/ui/console/tests/data/spider_long.w3af' % ROOT_PATH
+    def test_scan_ctrl_c(self):
+        script = self.prepare_script()
         cmd = ['python', 'w3af_console', '-s', script]
 
         process = subprocess.Popen(args=cmd,
@@ -43,13 +56,16 @@ class TestHandleCtrlC(unittest.TestCase):
                                    shell=False,
                                    universal_newlines=True)
         
-        # Let it run until the first new URL is found
-        while True:
+        # Let it run until the first new URL is found (and while the process
+        # is still running)
+        while process.poll() is None:
             w3af_output = process.stdout.readline()
             if 'New URL found by web_spider plugin' in w3af_output:
                 time.sleep(1)
                 break
-            
+        
+        self.assertIs(process.poll(), None, 'w3af died before we could send Ctrl+C')
+        
         # Send Ctrl+C
         process.send_signal(signal.SIGINT)
 
@@ -58,9 +74,6 @@ class TestHandleCtrlC(unittest.TestCase):
                     'The user stopped the scan.',
                     'w3af>>> exit',
                     )
-
-        # Wait for the process to finish
-        process.poll()
 
         # set signal handler
         signal.signal(signal.SIGALRM, alarm_handler)
@@ -87,6 +100,9 @@ class TestHandleCtrlC(unittest.TestCase):
 
         for estr in NOT_EXPECTED:
             self.assertNotIn(estr, w3af_output)
+        
+        # We don't need this anymore...
+        os.remove(script)
 
 class Alarm(Exception):
     pass

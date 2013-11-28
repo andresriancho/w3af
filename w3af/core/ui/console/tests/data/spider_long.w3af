@@ -1,11 +1,7 @@
 # webspider
 
 plugins
-output console,text_file
-output config text_file
-set output_file output-w3af.txt
-set verbose True
-back
+output console
 output config console
 set verbose False
 back
@@ -17,11 +13,9 @@ back
 back
 
 target
-set target http://moth/w3af/crawl/
+set target %(moth)s
 back
 
 start
-
-
 
 exit
