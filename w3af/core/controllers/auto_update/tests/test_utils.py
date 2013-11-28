@@ -19,10 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import subprocess
+
 import git
 
 from w3af.core.controllers.auto_update.utils import (is_git_repo, get_latest_commit,
-                                                get_current_branch)
+                                                     get_current_branch)
 
 
 class TestGitUtils(unittest.TestCase):
@@ -49,10 +51,8 @@ class TestGitUtils(unittest.TestCase):
         
         current_branch = get_current_branch()
         
-        for branch_name in ('threading2', 'master', 'jenkins-'):
-            if current_branch.startswith(branch_name):
-                break
-        else:
-            self.assertTrue(False, 'Unknown branch name "%s".' % current_branch)
+        branches = subprocess.check_output(['git', 'branch']).splitlines()
+        parsed_branch = [l.strip()[2:] for l in branches if l.startswith('*')][0]
         
+        self.assertEqual(current_branch, parsed_branch)
         
