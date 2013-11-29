@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from mock import patch
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -28,13 +29,13 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('moth')
 class TestEmailReport(PluginTest):
 
-    xss_url = 'http://moth/w3af/audit/xss/'
+    target_url = get_moth_http('/audit/xss/')
     to_addrs = 'w3af@mailinator.com'
     from_addr = 'w3af@gmail.com'
 
     _run_configs = {
         'cfg': {
-            'target': xss_url,
+            'target': target_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
