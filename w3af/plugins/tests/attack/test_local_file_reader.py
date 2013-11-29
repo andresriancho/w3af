@@ -20,23 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from w3af.plugins.tests.helper import PluginConfig, ReadExploitTest
 from w3af.core.data.kb.vuln_templates.local_file_read_template import LocalFileReadTemplate
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestFileReadShell(ReadExploitTest):
 
-    target_url = 'http://moth/w3af/audit/local_file_inclusion/'
-
+    target_url = get_moth_http('/audit/local_file_read/'\
+                               'local_file_read.py?file=section.txt')
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
                 'audit': (PluginConfig('lfi'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                )
-
             }
         }
     }
@@ -48,7 +43,7 @@ class TestFileReadShell(ReadExploitTest):
 
         # Assert the general results
         vulns = self.kb.get('lfi', 'lfi')
-        self.assertEquals(2, len(vulns), vulns)
+        self.assertEquals(1, len(vulns), vulns)
         
         vuln = vulns[0]
         
@@ -61,8 +56,11 @@ class TestFileReadShell(ReadExploitTest):
         lfit = LocalFileReadTemplate()
         
         options = lfit.get_options()
-        options['url'].set_value('http://moth/w3af/audit/local_file_inclusion/trivial_lfi.php')
-        options['data'].set_value('file=index.html')
+        
+        target_url = get_moth_http('/audit/local_file_read/local_file_read.py')
+        options['url'].set_value(target_url)
+        
+        options['data'].set_value('file=section.txt')
         options['vulnerable_parameter'].set_value('file')
         options['payload'].set_value('/etc/passwd')
         options['file_pattern'].set_value('root:x:0:0:')
