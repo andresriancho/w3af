@@ -23,6 +23,7 @@ import re
 
 from lxml import etree
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -30,12 +31,12 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 class TestHTMLOutput(PluginTest):
 
-    xss_url = 'http://moth/w3af/audit/xss/'
+    target_url = get_moth_http('/audit/xss/')
     OUTPUT_FILE = 'output-unittest.html'
 
     _run_configs = {
         'cfg': {
-            'target': xss_url,
+            'target': target_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
@@ -64,7 +65,7 @@ class TestHTMLOutput(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_html_get_vulns()
 
-        self.assertGreaterEqual(len(xss_vulns), 3)
+        self.assertGreaterEqual(len(xss_vulns), 2)
 
         self.assertEquals(
             set(sorted([v.get_url() for v in xss_vulns])),

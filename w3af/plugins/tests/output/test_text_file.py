@@ -23,6 +23,7 @@ import re
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -34,18 +35,13 @@ class TestTextFile(PluginTest):
     OUTPUT_FILE = 'output-unittest.txt'
     OUTPUT_HTTP_FILE = 'output-http-unittest.txt'
     
-    target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+    target_url = get_moth_http('/audit/sql_injection/where_integer_qs.py')
 
     _run_configs = {
         'cfg': {
-            'target': target_url + '?name=xxx',
+            'target': target_url + '?id=3',
             'plugins': {
                 'audit': (PluginConfig('sqli'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                ),
                 'output': (
                     PluginConfig(
                         'text_file',
