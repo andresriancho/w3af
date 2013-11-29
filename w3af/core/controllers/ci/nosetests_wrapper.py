@@ -89,8 +89,8 @@ NOISE = [# Related with xvfb not having the randr extension
          # Googled: only a warning related with the CV library
          'libdc1394 error: Failed to initialize libdc1394']
 
-def open_nosetests_output(directory):
-    prefix = 'nose-' + directory.replace('/', '-')
+def open_nosetests_output():
+    prefix = 'nose-'
     fhandler = tempfile.NamedTemporaryFile(prefix=prefix,
                                            suffix='.log',
                                            dir=ARTIFACT_DIR,
@@ -177,7 +177,7 @@ def run_nosetests(nose_cmd):
     )
 
     # Init the outputs
-    output_file = open_nosetests_output(directory)
+    output_file = open_nosetests_output()
     stdout = stderr = ''
     
     # Read output while the process is alive
