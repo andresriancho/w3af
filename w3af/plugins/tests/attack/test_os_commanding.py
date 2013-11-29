@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.vuln_templates.os_commanding_template import OSCommandingTemplate
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.plugins.attack.os_commanding import (FullPathExploitStrategy,
@@ -27,18 +28,13 @@ from w3af.plugins.attack.os_commanding import (FullPathExploitStrategy,
 
 class TestOSCommandingShell(ExecExploitTest):
 
-    target_url = 'http://moth/w3af/audit/os_commanding/'
+    target_url = get_moth_http('/audit/os_commanding/trivial_osc.py?cmd=ls')
 
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
                 'audit': (PluginConfig('os_commanding'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                )
             }
         }
     }
@@ -50,29 +46,14 @@ class TestOSCommandingShell(ExecExploitTest):
 
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
-        self.assertEquals(4, len(vulns))
-        self.assertEquals(
-            all(["OS commanding vulnerability" == v.get_name(
-            ) for v in vulns]),
-            True)
+        self.assertEquals(1, len(vulns))
+        
+        vuln = vulns[0]
+        self.assertEquals(vuln.get_name(), 'OS commanding vulnerability')
+        self.assertEquals(vuln.get_url().get_file_name(), 'trivial_osc.py')
+        self.assertEquals(vuln.get_mutant().get_var(), 'cmd')
 
-        # Verify the specifics about the vulnerabilities
-        EXPECTED = [
-            ('passthru.php', 'cmd'),
-            ('simple_osc.php', 'cmd'),
-            ('param_osc.php', 'param'),
-            ('blind_osc.php', 'cmd')
-        ]
-
-        found_vulns = [(v.get_url(
-        ).get_file_name(), v.get_mutant().get_var()) for v in vulns]
-
-        self.assertEquals(set(EXPECTED),
-                          set(found_vulns)
-                          )
-
-        vuln_to_exploit_id = [v.get_id() for v in vulns
-                              if v.get_url().get_file_name() == 'simple_osc.php'][0]
+        vuln_to_exploit_id = vuln.get_id()
 
         plugin = self.w3afcore.plugins.get_plugin_inst('attack',
                                                        'os_commanding')
@@ -113,7 +94,9 @@ class TestOSCommandingShell(ExecExploitTest):
         osct = OSCommandingTemplate()
         
         options = osct.get_options()
-        options['url'].set_value('http://moth/w3af/audit/os_commanding/simple_osc.php')
+        
+        target_url = get_moth_http('/audit/os_commanding/trivial_osc.py')
+        options['url'].set_value(target_url)
         options['data'].set_value('cmd=ls')
         options['vulnerable_parameter'].set_value('cmd')
         options['operating_system'].set_value('linux')

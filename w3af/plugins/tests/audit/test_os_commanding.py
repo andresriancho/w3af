@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestOSCommanding(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/os_commanding/'
+    target_url = get_moth_http('/audit/os_commanding/')
 
     _run_configs = {
         'cfg': {
@@ -47,16 +47,15 @@ class TestOSCommanding(PluginTest):
 
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
-        self.assertEquals(4, len(vulns))
+        self.assertEquals(3, len(vulns), vulns)
         self.assertTrue(all(
             ["OS commanding vulnerability" == v.get_name() for v in vulns]))
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
-            ('passthru.php', 'cmd'),
-            ('simple_osc.php', 'cmd'),
-            ('param_osc.php', 'param'),
-            ('blind_osc.php', 'cmd')
+            ('trivial_osc.py', 'cmd'),
+            ('param_osc.py', 'param'),
+            ('blind_osc.py', 'cmd')
         ]
 
         found_vulns = [(v.get_url(
