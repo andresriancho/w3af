@@ -27,7 +27,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestLang(PluginTest):
 
-    langs_url = '%s/grep/lang/%%s.html' % get_moth_http()
+    langs_url = get_moth_http('/grep/lang/%s.html')
 
     _run_configs = {
         'direct': {
@@ -38,7 +38,7 @@ class TestLang(PluginTest):
         },
 
         'crawl': {
-            'target': 'http://moth/w3af/grep/',
+            'target': get_moth_http('/grep/'),
             'plugins': {
                 'grep': (PluginConfig('lang'),),
                 'crawl': (

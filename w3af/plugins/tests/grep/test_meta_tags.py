@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestMetaTags(PluginTest):
 
-    meta_tags_url = '%s/grep/meta_tags/' % get_moth_http()
+    meta_tags_url = get_moth_http('/grep/meta_tags/')
 
     _run_configs = {
         'cfg1': {

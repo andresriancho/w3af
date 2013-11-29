@@ -28,7 +28,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestHttpInBody(PluginTest):
 
-    target_url = '%s/grep/http_in_body/index.html' % get_moth_http()
+    target_url = get_moth_http('/grep/http_in_body/index.html')
 
     _run_configs = {
         'cfg': {

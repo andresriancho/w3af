@@ -28,7 +28,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestSVNUsers(PluginTest):
 
-    svn_users_url = '%s/grep/svn_users/' % get_moth_http()
+    svn_users_url = get_moth_http('/grep/svn_users/')
 
     _run_configs = {
         'cfg1': {

@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestDOMXSS(PluginTest):
 
-    dom_xss_url = '%s/grep/dom_xss/' % get_moth_http()
+    dom_xss_url = get_moth_http('/grep/dom_xss/')
 
     _run_configs = {
         'cfg': {

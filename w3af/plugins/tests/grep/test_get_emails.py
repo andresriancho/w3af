@@ -27,7 +27,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestGetEmails(PluginTest):
 
-    get_emails_url = '%s/grep/get_emails/' % get_moth_http()
+    get_emails_url = get_moth_http('/grep/get_emails/')
 
     _run_configs = {
         'cfg1': {

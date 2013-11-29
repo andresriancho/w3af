@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestClickJacking(PluginTest):
 
-    click_jacking_url = '%s/grep/click_jacking/' % get_moth_http()
+    click_jacking_url = get_moth_http('/grep/click_jacking/')
 
     _run_configs = {
         'cfg1': {

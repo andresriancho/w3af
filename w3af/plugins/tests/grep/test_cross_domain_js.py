@@ -28,7 +28,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestCrossDomainJS(PluginTest):
 
-    target_url = '%s/grep/cross_domain_js/' % get_moth_http()
+    target_url = get_moth_http('/grep/cross_domain_js/')
 
     _run_configs = {
         'cfg': {

@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('ci_ready')
 class TestDirectoryIndexing(PluginTest):
 
-    dir_indexing_url = '%s/grep/directory_indexing/index.html' % get_moth_http()
+    dir_indexing_url = get_moth_http('/grep/directory_indexing/index.html')
 
     _run_configs = {
         'cfg1': {

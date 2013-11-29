@@ -28,7 +28,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestHTMLComments(PluginTest):
 
-    html_comments_url = '%s/grep/html_comments/' % get_moth_http()
+    html_comments_url = get_moth_http('/grep/html_comments/')
 
     _run_configs = {
         'cfg1': {

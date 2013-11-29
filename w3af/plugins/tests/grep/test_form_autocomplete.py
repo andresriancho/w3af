@@ -27,7 +27,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestFormAutocomplete(PluginTest):
 
-    target_url = '%s/grep/form_autocomplete/' % get_moth_http()
+    target_url = get_moth_http('/grep/form_autocomplete/')
 
     _run_configs = {
         'cfg1': {

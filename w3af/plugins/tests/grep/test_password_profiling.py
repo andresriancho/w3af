@@ -31,7 +31,7 @@ from w3af.core.data.parsers.url import URL
 @attr('ci_ready')
 class TestPasswordProfiling(PluginTest):
 
-    password_profiling_url = '%s/grep/password_profiling/' % get_moth_http()
+    password_profiling_url = get_moth_http('/grep/password_profiling/')
 
     _run_configs = {
         'cfg1': {

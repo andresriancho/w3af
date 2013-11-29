@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 @attr('smoke')
 class TestErrorPages(PluginTest):
 
-    target_url = '%s/grep/error_pages/index.html' % get_moth_http()
+    target_url = get_moth_http('/grep/error_pages/index.html')
 
     _run_configs = {
         'cfg': {

@@ -168,7 +168,7 @@ class TestClamAV(unittest.TestCase):
  
 class TestClamAVScan(PluginTest):
  
-    target_url = '%s/w3af/grep/clamav/' % get_moth_http()
+    target_url = get_moth_http('/grep/clamav/')
 
     _run_configs = {          
         'cfg': {
