@@ -46,7 +46,28 @@ TEST_DIRECTORIES = [
     
     'w3af/core/ui/console/',
     'w3af/core/ui/gui/',
-    'w3af/plugins/',
+
+    'w3af/plugins/audit/',
+    'w3af/plugins/attack/',
+    'w3af/plugins/auth/',
+    'w3af/plugins/bruteforce/',
+    'w3af/plugins/crawl/',
+    'w3af/plugins/evasion/',
+    'w3af/plugins/grep/',
+    'w3af/plugins/infrastructure/',
+    'w3af/plugins/mangle/',
+    'w3af/plugins/output/',
+    
+    'w3af/plugins/tests/audit/',
+    'w3af/plugins/tests/attack/',
+    'w3af/plugins/tests/auth/',
+    'w3af/plugins/tests/bruteforce/',
+    'w3af/plugins/tests/crawl/',
+    'w3af/plugins/tests/evasion/',
+    'w3af/plugins/tests/grep/',
+    'w3af/plugins/tests/infrastructure/',
+    'w3af/plugins/tests/mangle/',
+    'w3af/plugins/tests/output/',
 ]
 
 AGGRESSIVE_STRATEGY = [
