@@ -59,8 +59,9 @@ class form_auth(BruteforcePlugin):
             self._already_tested.append(freq_url)
 
             user_field, passwd_field = self._get_login_field_names(freq)
-            login_failed_result_list = self._id_failed_login_page(
-                freq, user_field, passwd_field)
+            login_failed_result_list = self._id_failed_login_page(freq,
+                                                                  user_field,
+                                                                  passwd_field)
 
             # Let the user know what we are doing
             om.out.information('Found a form login. The action of the '
@@ -163,7 +164,7 @@ class form_auth(BruteforcePlugin):
     def _matches_failed_login(self, resp_body, login_failed_result_list):
         '''
         :return: True if the resp_body matches the previously created
-        responses that are stored in self._login_failed_result_list.
+                 responses that are stored in login_failed_result_list.
         '''
         for login_failed_result in login_failed_result_list:
             if relative_distance_ge(resp_body, login_failed_result, 0.65):
@@ -196,9 +197,9 @@ class form_auth(BruteforcePlugin):
             if text == 1 and passwd == 1:
                 return True
             elif text == 0 and passwd == 1:
-                msg = 'Identified a form with a password field and no username field: "'
-                msg += freq.get_url() + '".'
-                om.out.information(msg)
+                msg = 'Identified a form with a password field and no username'\
+                      ' field: "%s".'
+                om.out.information(msg % freq.get_url())
                 return True
 
             #
@@ -283,43 +284,45 @@ class form_auth(BruteforcePlugin):
                 body = resp.get_body()
                 body = body.replace(user, '').replace(pwd, '')
 
-                if not self._matches_failed_login(body, login_failed_result_list):
-                    # Ok, this might be a valid combination.
-                    # Now test with a new invalid password to ensure our
-                    # previous possible found credentials are valid
-                    data_container[passwd_field][0] = rand_alnum(8)
-                    freq.set_dc(data_container)
-                    verif_resp = self._uri_opener.send_mutant(freq,
-                                                              cookies=False,
-                                                              grep=False)
-                    body = verif_resp.get_body()
-                    body = body.replace(user, '').replace(pwd, '')
+                if self._matches_failed_login(body, login_failed_result_list):
+                    return
+                
+                # Ok, this might be a valid combination.
+                # Now test with a new invalid password to ensure our
+                # previous possible found credentials are valid
+                data_container[passwd_field][0] = rand_alnum(8)
+                freq.set_dc(data_container)
+                verif_resp = self._uri_opener.send_mutant(freq,
+                                                          cookies=False,
+                                                          grep=False)
+                body = verif_resp.get_body()
+                body = body.replace(user, '').replace(pwd, '')
 
-                    if self._matches_failed_login(body, login_failed_result_list):
-                        freq_url = freq.get_url()
-                        self._found.add(freq_url)
+                if self._matches_failed_login(body, login_failed_result_list):
+                    freq_url = freq.get_url()
+                    self._found.add(freq_url)
+                    
+                    if user_field is not None:
+                        desc = ('Found authentication credentials to: '
+                                '"%s". A correct user and password combination'
+                                ' is: %s/%s' % (freq_url, user, pwd))
+                    else:
+                        # There is no user field!
+                        desc = ('Found authentication credentials to: '
+                                '"%s". The correct password is: "%s".'
+                                % (freq_url, pwd))
                         
-                        if user_field is not None:
-                            desc = ('Found authentication credentials to: '
-                                    '"%s". A correct user and password combination'
-                                    ' is: %s/%s' % (freq_url, user, pwd))
-                        else:
-                            # There is no user field!
-                            desc = ('Found authentication credentials to: '
-                                    '"%s". The correct password is: "%s".'
-                                    % (freq_url, pwd))
-                            
-                        v = Vuln.from_fr('Guessable credentials', desc,
-                                         severity.HIGH, resp.id,
-                                         self.get_name(), freq)
-                        v['user'] = user
-                        v['pass'] = pwd
-                        v['response'] = resp
+                    v = Vuln.from_fr('Guessable credentials', desc,
+                                     severity.HIGH, resp.id,
+                                     self.get_name(), freq)
+                    v['user'] = user
+                    v['pass'] = pwd
+                    v['response'] = resp
 
-                        kb.kb.append(self, 'auth', v)
+                    kb.kb.append(self, 'auth', v)
 
-                        om.out.vulnerability(desc, severity=severity.HIGH)
-                        return
+                    om.out.vulnerability(desc, severity=severity.HIGH)
+                    return
 
     def end(self):
         pass
