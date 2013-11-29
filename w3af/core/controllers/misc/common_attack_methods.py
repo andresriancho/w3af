@@ -170,7 +170,7 @@ class CommonAttackMethods(object):
                   ' responses and in this case the bodies seem to be different.'
             raise ValueError(msg)
         
-        etc_passwd_re = re.compile('[\w_-]*:x:\d*?:\d*?:[\w_-]*:[/\w_-]*:[/\w_-]*')
+        etc_passwd_re = re.compile('[\w_-]*:x:\d*?:\d*?:[\w_, -]*:[/\w_-]*:[/\w_-]*')
         mo = etc_passwd_re.search(body_a)
         
         if not mo:
