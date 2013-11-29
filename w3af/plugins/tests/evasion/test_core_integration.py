@@ -24,6 +24,7 @@ import unittest
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import create_target_option_list
@@ -43,7 +44,7 @@ class TestCoreIntegration(unittest.TestCase):
         self.w3afcore.plugins.set_plugins(['self_reference'], 'evasion')
         self.w3afcore.plugins.set_plugins(['sqli'], 'audit')
         
-        target_opts = create_target_option_list(URL('http://moth/'))
+        target_opts = create_target_option_list(URL(get_moth_http()))
         self.w3afcore.target.set_options(target_opts)
 
         # Verify env and start the scan
