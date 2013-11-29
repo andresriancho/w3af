@@ -275,8 +275,8 @@ class form_auth(BruteforcePlugin):
             freq.set_dc(data_container)
 
             try:
-                resp = self._uri_opener.send_mutant(
-                    freq, cookies=False, grep=False)
+                resp = self._uri_opener.send_mutant(freq, cookies=False,
+                                                    grep=False)
             except w3afMustStopOnUrlError:
                 return
             else:

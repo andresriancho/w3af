@@ -235,7 +235,7 @@ class BruteforcePlugin(AuditPlugin):
         site ( if "useSvnUsers" is set to True ).
 
         This plugin will take passwords from the file pointed by "passwdFile"
-        and the result of the password profiling plugin ( if "useProfiling"
+        and the result of the password profiling plugin (if "useProfiling"
         is set to True). The profilingNumber sets the number of results from
         the password profiling plugin to use in the password field.
 
