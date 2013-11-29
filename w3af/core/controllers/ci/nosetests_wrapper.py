@@ -261,6 +261,9 @@ def print_info_console(cmd, stdout, stderr, exit_code):
 def print_status(done_list, total_tests):
     msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
+    
+    if len(done_list) > total_tests:
+        raise RuntimeError('Done list has more items than total_tests!')
 
 def print_will_fail(exit_code):
     if exit_code != 0:
@@ -367,7 +370,10 @@ if __name__ == '__main__':
                     print_status(done_list, total_tests)
             except futures.TimeoutError:
                 print_status(done_list, total_tests)
-                future_list = [f for f in future_list if f not in done_list]
+            
+            # Filter future_list to avoid issues with tasks which are already
+            # finished/done
+            future_list = [f for f in future_list if f not in done_list]
                 
     all_tests = collect_all_tests()
     run_tests = get_run_tests(outputs)
