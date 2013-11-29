@@ -25,17 +25,18 @@ import json
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestCSVFile(PluginTest):
 
     OUTPUT_FILE = 'output-unittest.csv'
 
-    xss_url = 'http://moth/w3af/audit/xss/'
+    target_url = get_moth_http('/audit/xss/')
 
     _run_configs = {
         'cfg': {
-            'target': xss_url,
+            'target': target_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
@@ -64,7 +65,7 @@ class TestCSVFile(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_csv_get_vulns()
 
-        self.assertGreaterEqual(len(xss_vulns), 3)
+        self.assertGreaterEqual(len(xss_vulns), 2)
 
         self.assertEquals(
             set(sorted([v.get_url() for v in xss_vulns])),
