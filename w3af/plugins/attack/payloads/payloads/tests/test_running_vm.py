@@ -24,7 +24,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class test_running_vm(PayloadTestHelper):
 
-    EXPECTED_RESULT = {'running_vm': True}
+    EXPECTED_RESULT = {'running_vm': False}
 
     def test_running_vm(self):
         result = exec_payload(self.shell, 'running_vm', use_api=True)
