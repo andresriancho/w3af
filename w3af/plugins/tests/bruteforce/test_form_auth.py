@@ -24,6 +24,7 @@ from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestFormAuth(PluginTest):
@@ -34,12 +35,12 @@ class TestFormAuth(PluginTest):
     small_users_positive = os.path.join(BASE_PATH, 'small-users-positive.txt')
     small_passwords = os.path.join(BASE_PATH, 'small-passwords.txt')
 
-    target_post_url = 'http://moth/w3af/bruteforce/form_login/with_post.html'
-    target_get_url = 'http://moth/w3af/bruteforce/form_login/with_get.html'
-    target_password_only_url = 'http://moth/w3af/bruteforce/form_login/only-password.html'
-    target_negative_url = 'http://moth/w3af/bruteforce/form_login/impossible_login.html'
+    target_post_url = get_moth_http('/bruteforce/form/guessable_login_form.py')
+    target_get_url = get_moth_http('/bruteforce/form/guessable_login_form_get.py')
+    target_password_only_url = get_moth_http('/bruteforce/form/guessable_pass_only.py')
+    target_negative_url = get_moth_http('/bruteforce/form/impossible.py')
 
-    target_web_spider_url = 'http://moth/w3af/bruteforce/form_login/'
+    target_web_spider_url = get_moth_http('/bruteforce/form/')
 
     positive_test = {
         'target': None,
@@ -47,8 +48,11 @@ class TestFormAuth(PluginTest):
             'bruteforce': (PluginConfig('form_auth',
                                         ('usersFile', small_users_positive,
                                          PluginConfig.STR),
-                                        (
-                                        'passwdFile', small_passwords, PluginConfig.STR),),
+                                        ('passwdFile', small_passwords,
+                                         PluginConfig.INPUT_FILE),
+                                        ('useProfiling', False,
+                                         PluginConfig.BOOL),
+                                        ),
                            ),
         }
     }
@@ -60,7 +64,11 @@ class TestFormAuth(PluginTest):
                                         ('usersFile', small_users_negative,
                                          PluginConfig.STR),
                                         (
-                                        'passwdFile', small_passwords, PluginConfig.STR),),
+                                        'passwdFile', small_passwords,
+                                        PluginConfig.INPUT_FILE),
+                                        ('useProfiling', False,
+                                         PluginConfig.BOOL),
+                                        ),
                            )
         }
     }
@@ -76,8 +84,7 @@ class TestFormAuth(PluginTest):
         vuln = vulns[0]
 
         self.assertEquals(vuln.get_name(), 'Guessable credentials')
-        vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
-        self.assertEquals(vuln.get_url().url_string, vuln_url)
+        self.assertEquals(vuln.get_url().url_string, self.target_post_url)
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], '1234')
 
@@ -91,14 +98,13 @@ class TestFormAuth(PluginTest):
         vuln = vulns[0]
 
         self.assertEquals(vuln.get_name(), 'Guessable credentials')
-        vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
-        self.assertEquals(vuln.get_url().url_string, vuln_url)
+        self.assertEquals(vuln.get_url().url_string, self.target_get_url)
         self.assertEquals(vuln['user'], 'admin')
-        self.assertEquals(vuln['pass'], '1234')
+        self.assertEquals(vuln['pass'], 'admin')
 
     def test_found_credentials_password_only(self):
-        self._scan(
-            self.target_password_only_url, self.positive_test['plugins'])
+        self._scan(self.target_password_only_url,
+                   self.positive_test['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')
@@ -107,8 +113,8 @@ class TestFormAuth(PluginTest):
         vuln = vulns[0]
 
         self.assertEquals(vuln.get_name(), 'Guessable credentials')
-        vuln_url = 'http://moth/w3af/bruteforce/form_login/login-password-only.php'
-        self.assertEquals(vuln.get_url().url_string, vuln_url)
+        self.assertEquals(vuln.get_url().url_string,
+                          self.target_password_only_url)
         self.assertEquals(vuln['user'], 'password-only-form')
         self.assertEquals(vuln['pass'], '1234')
 
