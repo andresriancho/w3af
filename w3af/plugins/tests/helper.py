@@ -52,18 +52,24 @@ class PluginTest(unittest.TestCase):
     MOCK_RESPONSES = []
     runconfig = {}
     kb = kb.kb
-
+    target_url = None
+    
     def setUp(self):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
         
         if self.MOCK_RESPONSES:
             httpretty.enable()
-
+            
+            url = URL(self.target_url)
+            domain = url.get_domain()
+            proto = url.get_protocol()
+            re_str = "%s://%s/(.*)" % (proto, domain)
+            
             httpretty.register_uri(httpretty.GET,
-                                   re.compile("http://moth/(.*)"),
+                                   re.compile(re_str),
                                    body=self.request_callback)
-
+            
     def tearDown(self):
         self.w3afcore.quit()
         self.kb.cleanup()
