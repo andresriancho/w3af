@@ -51,8 +51,8 @@ class password_bruteforcer(object):
         TODO: I need a way to calculate the __len__ of this generator in order
               to avoid the "iterable = list(iterable)" in pool.py
         '''
-        pwd_chain = chain(self._special_passwords(),
-                          self._read_pwd_file())
+        pwd_chain = chain(self._read_pwd_file(),
+                          self._special_passwords(),)
 
         for pwd in unique_everseen(pwd_chain):
             yield pwd
@@ -64,8 +64,10 @@ class password_bruteforcer(object):
     def _special_passwords(self):
         yield self._url.get_domain()
         yield self._url.get_root_domain()
-        for pwd in get_profiling_results(self.profiling_number):
-            yield pwd
+        
+        if self.use_profiling:
+            for pwd in get_profiling_results(self.profiling_number):
+                yield pwd
 
     def _read_pwd_file(self):
         for line in file(self.passwd_file):
@@ -118,8 +120,8 @@ class user_password_bruteforcer(object):
         for user, pwd in self._combo():
             yield user, pwd
 
-        user_chain = chain(self._special_users(),
-                           self._user_from_file())
+        user_chain = chain(self._user_from_file(),
+                           self._special_users(),)
 
         for user in unique_everseen(user_chain):
 
