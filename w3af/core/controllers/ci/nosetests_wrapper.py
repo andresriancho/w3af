@@ -25,6 +25,8 @@ NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
 NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests'
+# One test can't run for more than this amount of seconds
+NOSE_TIMEOUT = 20
 
 # Parameters used to collect the list of tests
 NOSE_COLLECT_PARAMS = '--collect-only -v --with-doctest --doctest-tests'
@@ -154,24 +156,16 @@ def collect_all_tests():
     result.sort()
     return result
 
-def run_nosetests(directory, selector=None, params=NOSE_PARAMS):
+def run_nosetests(nose_cmd):
     '''
-    Run nosetests like this:
-        nosetests $params -A $selector $directory
+    Run nosetests and return the output
     
-    :param directory: Which directory do we want nosetests to find tests in
-    :param selector: A string with the names of the unittest tags we want to run
-    :param params: The parameters to pass to nosetests
+    :param nose_cmd: The nosetests command, with all parameters.
     :return: (stdout, stderr, exit code) 
     '''
-    if selector is not None:
-        cmd = '%s %s -A "%s" %s' % (NOSETESTS, params, selector, directory)
-    else:
-        cmd = '%s %s %s' % (NOSETESTS, params, directory)
-        
-    cmd_args = shlex.split(cmd)
+    cmd_args = shlex.split(nose_cmd)
     
-    logging.debug('Starting: "%s"' % cmd)
+    logging.debug('Starting: "%s"' % nose_cmd)
     
     p = subprocess.Popen(
         cmd_args,
@@ -187,9 +181,14 @@ def run_nosetests(directory, selector=None, params=NOSE_PARAMS):
     stdout = stderr = ''
     
     # Read output while the process is alive
-    while p.poll() is None:
-        reads, _, _ = select.select([p.stdout, p.stderr], [], [], 1)
+    idle_time = 0
+    select_timeout = 1
+    should_stop = False
+    
+    while p.poll() is None and not should_stop:
+        reads, _, _ = select.select([p.stdout, p.stderr], [], [], select_timeout)
         for r in reads:
+            idle_time = 0
             # Write to the output file
             out = r.read(1)
             output_file.write(out)
@@ -200,11 +199,18 @@ def run_nosetests(directory, selector=None, params=NOSE_PARAMS):
                 stdout += out
             else:
                 stderr += out
+        else:
+            idle_time += select_timeout
+            if idle_time > NOSE_TIMEOUT:
+                logging.warning('"%s" timeout waiting for output.' % nose_cmd)
+                should_stop = True
+                p.terminate()
+                p.returncode = -1
     
     # Close the output   
     output_file.close()
     
-    logging.debug('Finished: "%s" with code "%s"' % (cmd, p.returncode))
+    logging.debug('Finished: "%s" with code "%s"' % (nose_cmd, p.returncode))
     
     return cmd, stdout, stderr, p.returncode
 
