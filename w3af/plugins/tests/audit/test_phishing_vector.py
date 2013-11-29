@@ -27,7 +27,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 @attr('ci_ready')
 class TestPhishingVector(PluginTest):
 
-    target_url = '%s/audit/phishing_vector/' % get_moth_http()
+    target_url = get_moth_http('/audit/phishing_vector/')
 
     _run_configs = {
         'cfg': {
