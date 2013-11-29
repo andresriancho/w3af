@@ -105,7 +105,7 @@ class basic_auth(BruteforcePlugin):
                     v = Vuln('Guessable credentials', desc,
                              severity.HIGH, response.id, self.get_name())
                     v.set_url(url)
-
+                    
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response

@@ -24,12 +24,13 @@ from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestBasicAuth(PluginTest):
 
-    target_url_easy = 'http://moth/w3af/bruteforce/basic_auth/easy_guess/'
-    target_url_impossible = 'http://moth/w3af/bruteforce/basic_auth/impossible_guess/'
+    target_url_easy = get_moth_http('/auth/basic/weak/')
+    target_url_impossible = get_moth_http('/auth/basic/impossible/')
 
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'bruteforce')
 
