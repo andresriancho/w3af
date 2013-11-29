@@ -20,13 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.data.kb.config as cf
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class PayloadTestHelper(PluginTest):
 
-    target_url = 'https://moth/w3af/audit/local_file_read/'\
-                 'local_file_read.php?file=section.txt'
+    target_url = get_moth_http('/audit/local_file_read/'\
+                               'local_file_read.py?file=section.txt')
 
     _run_configs = {
         'cfg': {
