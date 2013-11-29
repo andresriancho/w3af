@@ -29,6 +29,7 @@ from w3af import ROOT_PATH
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
 
@@ -66,7 +67,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
         super(TestConsoleBugReport, self).tearDown()
         
     def test_buggy_scan(self):
-        target = 'http://moth/w3af/crawl/web_spider/follow_links/1.html'
+        target = get_moth_http('/grep/')
         commands_to_run = ['plugins',
                            'output console',
                            
