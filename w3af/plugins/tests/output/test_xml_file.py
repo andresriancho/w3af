@@ -27,27 +27,23 @@ from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')
 class TestXMLOutput(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+    target_url = get_moth_http('/audit/sql_injection/where_integer_qs.py')
 
     FILENAME = 'output-unittest.xml'
     XSD = os.path.join(ROOT_PATH, 'plugins', 'output', 'xml_file', 'report.xsd')
 
     _run_configs = {
         'cfg': {
-            'target': target_url + '?name=xxx',
+            'target': target_url + '?id=3',
             'plugins': {
                 'audit': (PluginConfig('sqli'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                ),
                 'output': (
                     PluginConfig(
                         'xml_file',
@@ -132,8 +128,8 @@ class XMLParser:
             
             data = ''.join(self._data_parts)
             
-            assert 'Fatal error:' in data
-            assert 'MySQL server' in data
+            assert 'syntax error' in data
+            assert 'near' in data
             
             self._inside_body = False
             self._data_parts = []
