@@ -56,7 +56,7 @@ class php_eggs(InfrastructurePlugin):
     # PHP versions 5.1.0 - 5.1.6
     # PHP versions 5.2.0 - 5.2.17
     # PHP versions 5.3.0 - 5.3.27
-    # PHP versions 5.4.0 - 5.4.20 (still in progress)
+    # PHP versions 5.4.0 - 5.4.22 (still in progress)
     # Remark: PHP versions 5.5.x has no PHP-Eggs.
     # Remark: PHP Logo 2 is not always available. 
     
@@ -764,6 +764,16 @@ class php_eggs(InfrastructurePlugin):
         ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
         ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo")]
     EGG_DB["5.4.20"] = [
+        ("ebf6d0333d67af5f80077438c45c8eaa", "PHP Credits"),
+        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
+        ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
+        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo")]
+    EGG_DB["5.4.21"] = [
+        ("ebf6d0333d67af5f80077438c45c8eaa", "PHP Credits"),
+        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
+        ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
+        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo")]
+    EGG_DB["5.4.22"] = [
         ("ebf6d0333d67af5f80077438c45c8eaa", "PHP Credits"),
         ("c48b07899917dfb5d591032007041ae3", "PHP Logo"),
         ("fb3bbd9ccc4b3d9e0b3be89c5ff98a14", "PHP Logo 2"),
