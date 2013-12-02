@@ -30,9 +30,7 @@ def open_nosetests_output(suffix, first, last):
     path_name = os.path.join(ARTIFACT_DIR, name)
     
     fhandler = file(path_name, 'wb')
-    fhandler.name = path_name
-    
-    logging.debug('nosetests output file: "%s"' % fhandler.name)
+    logging.debug('nosetests output file: "%s"' % path_name)
     
     return fhandler
 
