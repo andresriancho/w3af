@@ -66,11 +66,8 @@ def run_nosetests(nose_cmd):
     # Read output while the process is alive
     idle_time = 0
     select_timeout = 1
-    reads = []
     
-    # Make sure all the output is read, there were cases when the process ended
-    # and there were still bytes in stdout/stderr.
-    while p.poll() is None or reads:
+    while p.poll() is None:
         reads, _, _ = select.select([p.stdout, p.stderr], [], [], select_timeout)
         for r in reads:
             idle_time = 0
@@ -97,6 +94,26 @@ def run_nosetests(nose_cmd):
                 p.returncode = -1
                 break
     
+    # Make sure all the output is read, there were cases when the process ended
+    # and there were still bytes in stdout/stderr.
+    while True:
+        reads, _, _ = select.select([p.stdout, p.stderr], [], [], select_timeout)
+        
+        if not reads:
+            break
+        
+        for r in reads:
+            # Write to the output file
+            out = r.read(1)
+            output_file.write(out)
+            output_file.flush()
+            
+            # Write the output to the strings
+            if r is p.stdout:
+                stdout += out
+            else:
+                stderr += out
+        
     # Close the output   
     output_file.close()
     
