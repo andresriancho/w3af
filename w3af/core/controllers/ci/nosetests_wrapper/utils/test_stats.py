@@ -26,6 +26,7 @@ import subprocess
 
 from xunit import parse_xunit
 from xunit import normalize_test_names
+from nose.tools import nottest
 
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
                                                                   NOSETESTS,
@@ -93,6 +94,7 @@ def get_ignored_tests():
     '''
     return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR)
 
+@nottest
 def get_test_ids(nose_selector):
     '''
     Generate and parse .noseids and return the contents
