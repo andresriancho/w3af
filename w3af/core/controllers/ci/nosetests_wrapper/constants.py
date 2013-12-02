@@ -14,7 +14,8 @@ NOSE_PARAMS = '-v --with-yanc --with-doctest --doctest-tests --with-xunit --xuni
 NOSE_TIMEOUT = 20
 
 # Parameters used to collect the list of tests
-NOSE_COLLECT_PARAMS = '--collect-only -v --with-doctest --doctest-tests --with-xunit --xunit-file=%s'
+NOSE_COLLECT_PARAMS = '--with-id --collect-only -v --with-doctest'\
+                      '--doctest-tests --with-xunit --xunit-file=%s'
 
 NOSE_OUTPUT_PREFIX = 'nose-'
 NOSE_XUNIT_EXT = '.xml'
