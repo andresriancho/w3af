@@ -91,7 +91,7 @@ def run_nosetests(nose_cmd, first, last):
                 logging.warning('"%s" timeout waiting for output.' % nose_cmd)
                 
                 # Kill the nosetests command
-                p.terminate()
+                p.kill()
                 p.returncode = -1
                 break
     
