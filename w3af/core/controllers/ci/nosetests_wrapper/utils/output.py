@@ -6,8 +6,9 @@ from w3af.core.controllers.ci.nosetests_wrapper.utils.nosetests import clean_noi
 from w3af.core.controllers.ci.nosetests_wrapper.constants import NOSE_IGNORE_SELECTOR
 
 
-def print_info_console(cmd, stdout, stderr, exit_code):
-    logging.info(cmd)
+def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
+    fmt = '%s (%s)'
+    logging.info(fmt % (cmd, output_fname))
     
     stdout = clean_noise(stdout)
     stderr = clean_noise(stderr)

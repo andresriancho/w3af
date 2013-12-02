@@ -109,4 +109,4 @@ def run_nosetests(nose_cmd):
     
     logging.debug('Finished: "%s" with code "%s"' % (nose_cmd, p.returncode))
     
-    return nose_cmd, stdout, stderr, p.returncode
+    return nose_cmd, stdout, stderr, p.returncode, output_file.name

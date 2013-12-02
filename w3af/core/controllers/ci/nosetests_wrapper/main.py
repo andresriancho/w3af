@@ -67,11 +67,12 @@ if __name__ == '__main__':
         while future_list:
             try:
                 for future in futures.as_completed(future_list, timeout=120):
-                    cmd, stdout, stderr, exit_code = future.result()
+                    cmd, stdout, stderr, exit_code, output_fname = future.result()
                     exit_codes.append(exit_code)
                     done_list.append(future)
                     
-                    print_info_console(cmd, stdout, stderr, exit_code)
+                    print_info_console(cmd, stdout, stderr,
+                                       exit_code, output_fname)
                     print_will_fail(exit_code)
                     print_status(done_list, total_tests)
             except futures.TimeoutError:
