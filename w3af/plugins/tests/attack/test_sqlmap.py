@@ -18,15 +18,19 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
+
+from w3af.core.controllers.ci.moth import get_moth_http
+
 from w3af.plugins.tests.helper import PluginConfig, ReadExploitTest
 from w3af.core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 
 
+@attr('fails')
 class TestSQLMapShell(ReadExploitTest):
 
-    SQLI = 'http://moth/w3af/audit/sql_injection/select/'\
-           'sql_injection_string.php?name=andres'
-
+    SQLI = get_moth_http('/audit/sql_injection/where_string_single_qs.py?uname=pablo')
+    
     BSQLI = 'http://moth/w3af/audit/blind_sql_injection/forms/'
 
     _run_configs = {
@@ -34,11 +38,6 @@ class TestSQLMapShell(ReadExploitTest):
             'target': SQLI,
             'plugins': {
                 'audit': (PluginConfig('sqli'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                )
             }
         },
                     
@@ -63,14 +62,14 @@ class TestSQLMapShell(ReadExploitTest):
 
         # Assert the general results
         vulns = self.kb.get('sqli', 'sqli')
-        self.assertEquals(1, len(vulns))
+        self.assertEquals(1, len(vulns), vulns)
         self.assertEquals(
             all(["SQL injection" == v.get_name() for v in vulns]),
             True)
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
-            ('sql_injection_string.php', 'name'),
+            ('where_string_single_qs.py', 'uname'),
         ]
 
         found_vulns = [(v.get_url().get_file_name(),
@@ -106,9 +105,9 @@ class TestSQLMapShell(ReadExploitTest):
         sqlit = SQLiTemplate()
         
         options = sqlit.get_options()
-        options['url'].set_value('http://moth/w3af/audit/sql_injection/select/'
-                                 'sql_injection_string.php')
-        options['data'].set_value('name=andres')
+        path = '/audit/sql_injection/where_string_single_qs.py'
+        options['url'].set_value(get_moth_http(path))
+        options['data'].set_value('uname=andres')
         options['vulnerable_parameter'].set_value('name')
         sqlit.set_options(options)
 
