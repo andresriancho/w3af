@@ -132,7 +132,8 @@ def get_run_tests():
         if fname.startswith(NOSE_OUTPUT_PREFIX) and \
         fname.endswith(NOSE_XUNIT_EXT):
             
-            curr_test_suite, test_result = parse_xunit(fname)
+            path_fname = os.path.join(ARTIFACT_DIR, fname)
+            curr_test_suite, test_result = parse_xunit(path_fname)
             logging.debug(msg_fmt % (test_result.testsRun, fname))
             
             # Merge all the tests.
