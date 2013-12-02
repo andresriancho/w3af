@@ -3,6 +3,11 @@
 from __future__ import print_function
 
 import sys
+import os
+
+# Need this hack in order to be able to re-add the current path to the
+# python-path, since running a script seems to change it (?)
+sys.path.insert(0, os.path.abspath(os.curdir))
 
 from concurrent import futures
 
