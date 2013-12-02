@@ -44,9 +44,14 @@ def nose_strategy():
     test_ids = get_test_ids(NOSE_RUN_SELECTOR)
     
     for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):
+        
+        first = tests_to_run[0]
+        last = tests_to_run[-1]
+        
         tests_str = ' '.join([str(i) for i in tests_to_run])
         cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, tests_str)
-        yield cmd
+        
+        yield cmd, first, last
 
 
 if __name__ == '__main__':
@@ -57,8 +62,8 @@ if __name__ == '__main__':
     configure_logging(LOG_FILE)
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for nose_cmd in nose_strategy():
-            args = run_nosetests, nose_cmd
+        for nose_cmd, first, last in nose_strategy():
+            args = run_nosetests, nose_cmd, first, last
             future_list.append(executor.submit(*args))
         
         total_tests = len(future_list)

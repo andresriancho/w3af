@@ -1,3 +1,4 @@
+import os
 import logging
 import select
 import tempfile
@@ -24,18 +25,18 @@ def clean_noise(output_string):
     
     return output_string
 
-def open_nosetests_output(suffix='.log'):
-    prefix = NOSE_OUTPUT_PREFIX
-    fhandler = tempfile.NamedTemporaryFile(prefix=prefix,
-                                           suffix=suffix,
-                                           dir=ARTIFACT_DIR,
-                                           delete=False)
+def open_nosetests_output(suffix, first, last):
+    name = '%s_%s-%s.%s' % (NOSE_OUTPUT_PREFIX, first, last, suffix)
+    path_name = os.path.join(ARTIFACT_DIR, name)
+    
+    fhandler = file(path_name, 'wb')
+    fhandler.name = path_name
     
     logging.debug('nosetests output file: "%s"' % fhandler.name)
     
     return fhandler
 
-def run_nosetests(nose_cmd):
+def run_nosetests(nose_cmd, first, last):
     '''
     Run nosetests and return the output
     
@@ -44,8 +45,8 @@ def run_nosetests(nose_cmd):
     '''
     # Init the outputs
     stdout = stderr = ''
-    output_file = open_nosetests_output('.log')
-    xunit_output = open_nosetests_output(NOSE_XUNIT_EXT)
+    output_file = open_nosetests_output('.log', first, last)
+    xunit_output = open_nosetests_output(NOSE_XUNIT_EXT, first, last)
     
     # Configure the xunit output before running the command
     nose_cmd = nose_cmd % xunit_output.name
