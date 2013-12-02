@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
 import os
 import shlex
+import pickle
 import logging
 import subprocess
 
@@ -60,7 +61,7 @@ def _get_tests(fname, selector=None):
     
     normalize_test_names(test_suite)
     
-    logging.debug('Collected %s tests.' % len(test_result.testsRun))
+    logging.debug('Collected %s tests.' % test_result.testsRun)
     
     return test_suite
 
@@ -81,6 +82,28 @@ def get_ignored_tests():
              in the w3af framework source code, without any selectors.
     '''
     return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR)
+
+def get_test_ids(nose_selector):
+    '''
+    Generate and parse .noseids and return the contents
+    
+    :return: A list with the ids of the tests, based on the nose_selector
+             that we get as parameter.
+    '''
+    # Generate the .noseids file
+    _get_tests('id-collection.xml', nose_selector)
+    
+    '''
+    {'failed': ['2455'],
+     'ids': {1: ('/home/pablo/workspace/w3af/core/controllers/auto_update/tests/test_git_auto_update.py',
+                 'core.controllers.auto_update.tests.test_git_auto_update',
+                 None),
+             2: ('/home/pablo/workspace/w3af/core/controllers/auto_update/tests/test_git_auto_update.py',
+                 'core.controllers.auto_update.tests.test_git_auto_update',
+                 'TestGitAutoUpdate.test_is_git_repo'),
+    '''
+    nose_ids = pickle.load(file('.noseids'))
+    return nose_ids['ids'].keys()
 
 def get_run_tests():
     '''

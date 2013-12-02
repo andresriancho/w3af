@@ -5,7 +5,11 @@ import multiprocessing
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
+# How many nosetests commands to run at the same time
 MAX_WORKERS = multiprocessing.cpu_count()
+# How many tests to send to each process
+CHUNK_SIZE = 75
+
 NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
@@ -21,6 +25,7 @@ NOSE_OUTPUT_PREFIX = 'nose-'
 NOSE_XUNIT_EXT = '.xml'
 NOSE_RUN_SELECTOR = 'not ci_fails and not fails'
 NOSE_IGNORE_SELECTOR = 'ci_fails or fails'
+
 
 TEST_DIRECTORIES = [
     # The order in which these are run doesn't really matter, but I do need to

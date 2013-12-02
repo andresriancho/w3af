@@ -15,12 +15,13 @@ from w3af.core.controllers.ci.utils import configure_logging
 from w3af.core.controllers.ci.nosetests_wrapper.utils.nosetests import run_nosetests
 from w3af.core.controllers.ci.nosetests_wrapper.utils.test_stats import (get_all_tests,
                                                                          get_run_tests,
+                                                                         get_test_ids,
                                                                          get_ignored_tests)
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (LOG_FILE,
                                                                   MAX_WORKERS,
-                                                                  TEST_DIRECTORIES,
                                                                   NOSETESTS, NOSE_PARAMS,
-                                                                  NOSE_RUN_SELECTOR)
+                                                                  NOSE_RUN_SELECTOR,
+                                                                  CHUNK_SIZE)
 from w3af.core.controllers.ci.nosetests_wrapper.utils.output import (print_info_console,
                                                                      print_status,
                                                                      print_will_fail,
@@ -40,9 +41,10 @@ def nose_strategy():
     '''
     :return: A list with the nosetests commands to run.
     '''
-    for directory in TEST_DIRECTORIES:
-        cmd = '%s %s -A "%s" %s' % (NOSETESTS, NOSE_PARAMS, NOSE_RUN_SELECTOR,
-                                    directory)
+    test_ids = get_test_ids(NOSE_RUN_SELECTOR)
+    
+    for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):
+        cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, ' '.join(tests_to_run))
         yield cmd
             
 if __name__ == '__main__':
