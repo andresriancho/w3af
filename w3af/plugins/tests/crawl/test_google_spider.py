@@ -18,10 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
+@attr('fails')
 class TestGoogleSpider(PluginTest):
 
     base_url = 'http://www.bonsai-sec.com/'
