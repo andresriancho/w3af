@@ -774,4 +774,475 @@ inurl:gov
 # Date: 25/December/2012
 # Exploit Author: BeastarStealacar
 # Vendor Homepage: http://devil-zone.net/
-</textualDescription></signature><signature><signatureReferenceNumber>3827</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3827/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:/wp-content/w3tc/dbcache/</querystring><shortDescription>inurl:/wp-content/w3tc/dbcache/</shortDescription><textualDescription>- Jay Townsend</textualDescription></signature></searchEngineSignature>
+</textualDescription></signature><signature><signatureReferenceNumber>3827</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3827/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:/wp-content/w3tc/dbcache/</querystring><shortDescription>inurl:/wp-content/w3tc/dbcache/</shortDescription><textualDescription>- Jay Townsend</textualDescription></signature><signature><signatureReferenceNumber>3828</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3828/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=runtimevar softwareVersion=</querystring><shortDescription>runtimevar softwareVersion=</shortDescription><textualDescription>Hits: 807
+Config file from Thomson home routers, sometimes it contains password's and
+user's encrypted
+Contains ACS servers info from ISP's
+</textualDescription></signature><signature><signatureReferenceNumber>3829</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3829/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=site:login.*.*</querystring><shortDescription>site:login.*.*</shortDescription><textualDescription>DORK:site:login.*.*
+Description: Allow User To View
+Login Panel Of Many WebSites..
+Author:MTK
+DATED: 13-1-1
+</textualDescription></signature><signature><signatureReferenceNumber>3830</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3830/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:/control/userimage.html</querystring><shortDescription>inurl:/control/userimage.html</shortDescription><textualDescription>Mobotix webcam search. yet another newer search
+</textualDescription></signature><signature><signatureReferenceNumber>3831</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3831/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=ext:xml (&quot;proto='prpl-'&quot; | &quot;prpl-yahoo&quot; | &quot;prpl-silc&quot; | &quot;prpl-icq&quot;)</querystring><shortDescription>ext:xml (&quot;proto='prpl-'&quot; | &quot;prpl-yahoo&quot; | &quot;prpl-silc&quot; | &quot;prpl-icq&quot;)</shortDescription><textualDescription>*Google Search:*
+
+https://www.google.com/search?q=ext:xml%20(%22proto='prpl-'%22%20|%20%22prpl-yahoo%22%20|%20%22prpl-silc%22%20|%20%22prpl-icq%22) 
+
+
+*Description:*
+
+Find Accounds and Passwords from Pidgin Users.
+Google limit queries to 32 words so it?s impossible to search for all 
+Account-Types in one query!
+List of all Params: Feel free to build your own search query.
+proto='prpl-'; prpl-silc; prpl-simple; prpl-zephyr; prpl-bonjour; 
+prpl-qq; prpl-meanwhile; prpl-novell; prpl-gg; prpl-myspace; prpl-msn; 
+prpl-gtalk; prpl-icq; prpl-aim; prpl-yahoo; prpl-yahoojp; prpl-yah; 
+prpl-irc; prpl-yabber
+
+*Author:* la.usch.io
+</textualDescription></signature><signature><signatureReferenceNumber>3832</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3832/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=ext:gnucash</querystring><shortDescription>ext:gnucash</shortDescription><textualDescription>*Google Search:*
+
+http://www.google.com/search?q=ext:gnucash
+
+*Description:*
+
+Find Gnucash Databases containing juicy info.
+
+*Author:*
+
+http://la.usch.io
+https://www.twitter.com/la_usch
+
+--------------------------------------------------------
+
+Cheers
+
+L@usch
+Web: http://la.usch.io
+Twitter: https://www.twitter.com/la_usch
+
+
+</textualDescription></signature><signature><signatureReferenceNumber>3833</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3833/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:inc OR filetype:bak OR filetype:old mysql_connect OR mysql_pconnect</querystring><shortDescription>filetype:inc OR filetype:bak OR filetype:old mysql_connect OR mysql_pconnect</shortDescription><textualDescription>Aggregates previous mysql_(p)connect google dorks and adds a new filetype.
+Searches common file extensions used as backups by PHP developers. These
+extensions are normally not interpreted as code by their server, so their
+database connection credentials can be viewed in plaintext.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3834</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3834/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:config inurl:web.config inurl:ftp</querystring><shortDescription>filetype:config inurl:web.config inurl:ftp</shortDescription><textualDescription>This google dork to find sensitive information of MySqlServer , &quot;uid, and
+password&quot; in web.config through ftp..
+filetype:config  inurl:web.config   inurl:ftp
+
+-Altamimi
+</textualDescription></signature><signature><signatureReferenceNumber>3835</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3835/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=allintext: &quot;Please login to continue...&quot; &quot;ZTE Corporation. All rights reserved.&quot;</querystring><shortDescription>allintext: &quot;Please login to continue...&quot; &quot;ZTE Corporation. All rights reserved.&quot;</shortDescription><textualDescription>Reported by: Jasper Briels</textualDescription></signature><signature><signatureReferenceNumber>3836</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3836/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=&quot;index of&quot; inurl:root intitle:symlink</querystring><shortDescription>&quot;index of&quot; inurl:root intitle:symlink</shortDescription><textualDescription>Google Dork: index of&quot; inurl:root intitle:symlink
+
+Steal Others Symlink
+
+Author: Un0wn_X
+</textualDescription></signature><signature><signatureReferenceNumber>3837</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3837/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=&quot;index of&quot; inurl:sym</querystring><shortDescription>&quot;index of&quot; inurl:sym</shortDescription><textualDescription>Google Dork: &quot;index of&quot; inurl:sym
+
+You can Steal the symlinks of other Servers
+
+Author: Un0wn_X
+</textualDescription></signature><signature><signatureReferenceNumber>3838</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3838/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:&quot;php?id=&quot; intext:&quot;DB_Error Object &quot;</querystring><shortDescription>inurl:&quot;php?id=&quot; intext:&quot;DB_Error Object &quot;</shortDescription><textualDescription>Description: Files containing juicy info
+Author:ruben_linux
+</textualDescription></signature><signature><signatureReferenceNumber>3839</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3839/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=ext:sql intext:@hotmail.com intext :password</querystring><shortDescription>ext:sql intext:@hotmail.com intext :password</shortDescription><textualDescription>By ,
+NItish Mehta ,
+www.illuminativeworks.com/blog
+https://www.facebook.com/illuminativeworks
+Illuminative Works(CEO &amp; Founder )
+</textualDescription></signature><signature><signatureReferenceNumber>3840</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3840/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=inurl:advsearch.php?module= &amp; intext:sql syntax</querystring><shortDescription>inurl:advsearch.php?module= &amp; intext:sql syntax</shortDescription><textualDescription>Exploit Title : SQLI Exploit
+Google Dork : inurl:advsearch.php?module= &amp; intext:sql syntax
+Date : 19/3/2013
+Exploit Author : Scott Sturrock
+Email : f00bar'at'linuxmail'dot'org
+</textualDescription></signature><signature><signatureReferenceNumber>3841</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3841/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intext:THIS IS A PRIVATE SYSTEM AUTHORISED ACCESS ONLY inurl:login.aspx</querystring><shortDescription>intext:THIS IS A PRIVATE SYSTEM AUTHORISED ACCESS ONLY inurl:login.aspx</shortDescription><textualDescription>Category : Pages containing login portals
+Description : Dork for finding sensitive login portals
+Dork : intext:THIS IS A PRIVATE SYSTEM AUTHORISED ACCESS ONLY inurl:login.aspx
+Link : https://encrypted.google.com/#hl=en&amp;output=search&amp;sclient=psy-ab&amp;q=intext:THIS+IS+A+PRIVATE+SYSTEM+AUTHORISED+ACCESS+ONLY+inurl%3Alogin.aspx&amp;oq=intext:THIS+IS+A+PRIVATE+SYSTEM+AUTHORISED+ACCESS+ONLY+inurl%3Alogin.aspx&amp;gs_l=hp.3...852.852.0.983.1.1.0.0.0.0.121.121.0j1.1.0...0.0...1c.1.7.psy-ab.664iAsY450k&amp;pbx=1&amp;bav=on.2,or.r_qf.&amp;bvm=bv.44011176,d.d2k&amp;fp=7b93b16efbccc178&amp;biw=1362&amp;bih=667 
+Date : 20/3/2013
+Exploit Author: Scott Sturrock
+Email: f00bar'at'linuxmail'dot'org
+</textualDescription></signature><signature><signatureReferenceNumber>3842</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3842/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intext:YOU ARE ACCESSING A GOVERNMENT INFORMATION SYSTEM inurl:login.aspx</querystring><shortDescription>intext:YOU ARE ACCESSING A GOVERNMENT INFORMATION SYSTEM inurl:login.aspx</shortDescription><textualDescription>Category : Pages containing login portals
+Description : Dork for finding government login portals
+Dork : intext:YOU ARE ACCESSING A GOVERNMENT INFORMATION SYSTEM inurl:login.aspx
+Link : https://encrypted.google.com/#hl=en&amp;output=search&amp;sclient=psy-ab&amp;q=intext:YOU+ARE+ACCESSING+A+GOVERNMENT+INFORMATION+SYSTEM+inurl%3Alogin.aspx&amp;oq=intext:YOU+ARE+ACCESSING+A+GOVERNMENT+INFORMATION+SYSTEM+inurl%3Alogin.aspx&amp;gs_l=hp.3...894.894.0.1059.1.1.0.0.0.0.116.116.0j1.1.0...0.0...1c.1.7.psy-ab.lvawmQ4rKqA&amp;pbx=1&amp;bav=on.2,or.r_qf.&amp;bvm=bv.44011176,d.d2k&amp;fp=7b93b16efbccc178&amp;biw=1362&amp;bih=667 
+Date : 20/3/2013
+Author : Scott Sturrock
+Email: f00bar'at'linuxmail'dot'org
+</textualDescription></signature><signature><signatureReferenceNumber>3843</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3843/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intext:Computer Misuse Act inurl:login.aspx</querystring><shortDescription>intext:Computer Misuse Act inurl:login.aspx</shortDescription><textualDescription>Category : Pages containing login portals
+Description : Dork for finding sensitive login portals
+Dork : intext:Computer Misuse Act inurl:login.aspx
+Link : https://encrypted.google.com/#hl=en&amp;output=search&amp;sclient=psy-ab&amp;q=intext:Computer+Misuse+Act+inurl%3Alogin.aspx&amp;oq=intext:Computer+Misuse+Act+inurl%3Alogin.aspx&amp;gs_l=hp.3...1565.1565.0.1684.1.1.0.0.0.0.105.105.0j1.1.0...0.0...1c.1.7.psy-ab.ZaZN16Ureds&amp;pbx=1&amp;bav=on.2,or.r_qf.&amp;bvm=bv.44011176,d.ZWU&amp;fp=7b93b16efbccc178&amp;biw=1362&amp;bih=667 
+Date : 20/3/2013
+Author : Scott Sturrock
+Email: f00bar'at'linuxmail'dot'org
+</textualDescription></signature><signature><signatureReferenceNumber>3844</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3844/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:ini &quot;This is the default settings file for new PHP installations&quot;</querystring><shortDescription>filetype:ini &quot;This is the default settings file for new PHP installations&quot;</shortDescription><textualDescription>Finds PHP configuration files (php.ini) that have been placed in indexed
+folders. Php.ini defines a PHP installation's behavior, including magic
+quotes, register globals, and remote file operations. This can be useful
+for knowing which attacks (such as RFI) are possible against the server.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3845</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3845/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:php -site:php.net intitle:phpinfo &quot;published by the PHP Group&quot;</querystring><shortDescription>filetype:php -site:php.net intitle:phpinfo &quot;published by the PHP Group&quot;</shortDescription><textualDescription>Tries to reduce false positive results from similar dorks. Finds pages
+containing output from phpinfo(). This function is used to debug and test
+PHP installations by listing versions, extensions, configurations, server
+information, file system information, and execution environment. The output
+of this function should not be included in production environments and
+certain versions of this function are vulnerable to reflected XSS attacks.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3846</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3846/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:/voice/advanced/ intitle:Linksys SPA configuration</querystring><shortDescription>inurl:/voice/advanced/ intitle:Linksys SPA configuration</shortDescription><textualDescription>This allows you to look at linksys VOIP Router Config pages. 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3847</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3847/</link><category>Files containing usernames</category><querystring>http://www.google.com/search?q=inurl:&quot;/root/etc/passwd&quot; intext:&quot;home/*:&quot;</querystring><shortDescription>inurl:&quot;/root/etc/passwd&quot; intext:&quot;home/*:&quot;</shortDescription><textualDescription>inurl:&quot;/root/etc/passwd&quot; intext:&quot;home/*:&quot;
+</textualDescription></signature><signature><signatureReferenceNumber>3848</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3848/</link><category>Files containing usernames</category><querystring>http://www.google.com/search?q=intext:&quot;root:x:0:0:root:/root:/bin/bash&quot; inurl:*=/etc/passwd</querystring><shortDescription>intext:&quot;root:x:0:0:root:/root:/bin/bash&quot; inurl:*=/etc/passwd</shortDescription><textualDescription>Author: ./tic0 | Izzudin al-Qassam Cyber Fighter
+</textualDescription></signature><signature><signatureReferenceNumber>3849</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3849/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:sql insite:pass &amp;&amp; user</querystring><shortDescription>filetype:sql insite:pass &amp;&amp; user</shortDescription><textualDescription>Google Dork: filetype:sql insite:pass &amp;&amp; user
+
+We Can get login username and password details from .sql file.
+
+Author: BlacK_WooD
+</textualDescription></signature><signature><signatureReferenceNumber>3850</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3850/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=Serv-U (c) Copyright 1995-2013 Rhino Software, Inc. All Rights.Reserved.</querystring><shortDescription>Serv-U (c) Copyright 1995-2013 Rhino Software, Inc. All Rights.Reserved.</shortDescription><textualDescription># Category: FTP Login Portals
+# Description : Dork for finding FTP Login portals
+# Google Dork: Serv-U � Copyright 1995-2013 Rhino Software, Inc. All
+Rights.Reserved.
+# Date: 16/04/2013
+# Exploit Author: Arul Kumar.V
+# Vendor Homepage: www.serv-u.com
+#  Email : hackerarul@gmail.com
+
+
+Thank you
+</textualDescription></signature><signature><signatureReferenceNumber>3852</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3852/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=allintext: /iissamples/default/</querystring><shortDescription>allintext: /iissamples/default/</shortDescription><textualDescription>Searching for  &quot;allintext: /iissamples/default/&quot;  may provide interesting
+information about a mis-configured .asp server including raw source code
+for asp, directory structure and the IIS version ( especially useful when
+IIS is running on NT 4.0)
+
+the result provides a way to further explore directory structure for juicy
+info.
+
+Oleg.
+</textualDescription></signature><signature><signatureReferenceNumber>3853</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3853/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;VNC Viewer for Java&quot;</querystring><shortDescription>intitle:&quot;VNC Viewer for Java&quot;</shortDescription><textualDescription>VNC Viewer for Java
+
+~4N6 Security~
+</textualDescription></signature><signature><signatureReferenceNumber>3854</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3854/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:&quot;zendesk.com/attachments/token&quot; site:zendesk.com</querystring><shortDescription>inurl:&quot;zendesk.com/attachments/token&quot; site:zendesk.com</shortDescription><textualDescription>zendesk is good ticketing system . It has thousands of clients. with the
+above dork  you can see the clients internal file attachments of the
+tickets .
+
+These file can be opened by anyone because they are not maintaining any
+authentication token for this attachments
+
+Internal source codes, doubts, ip's , passwords, can be disclosed in the
+attachments
+</textualDescription></signature><signature><signatureReferenceNumber>3855</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3855/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;dasdec/dasdec.csp&quot;</querystring><shortDescription>inurl:&quot;dasdec/dasdec.csp&quot;</shortDescription><textualDescription>inurl:&quot;dasdec/dasdec.csp&quot;
+DASDEC II Emergency Alert System
+User Manual: http://www.digitalalertsystems.com/pdf/DASDEC_II_manual.pdf
+Default username: Admin
+Default password: dasdec
+</textualDescription></signature><signature><signatureReferenceNumber>3856</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3856/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=&quot;information_schema&quot; filetype:sql</querystring><shortDescription>&quot;information_schema&quot; filetype:sql</shortDescription><textualDescription>Dork: &quot;information_schema&quot; filetype:sql
+
+
+By: Cr4t3r
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3857</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3857/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intext:xampp-dav-unsecure:$apr1$6O9scpDQ$JGw2Tjz0jkrqfKh5hhiqD1</querystring><shortDescription>intext:xampp-dav-unsecure:$apr1$6O9scpDQ$JGw2Tjz0jkrqfKh5hhiqD1</shortDescription><textualDescription># Exploit Title: google dork for apache directory listing by url edit
+# Google Dork: intext:xampp-dav-unsecure:$apr1$6O9scpDQ$JGw2Tjz0jkrqfKh5hhiqD1
+ in this query you see that text file but by url we can travel in paren directory 
+# Date: 11/7/2013
+# Exploit Author: james love india
+# Tested on: windows xp sp2</textualDescription></signature><signature><signatureReferenceNumber>3858</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3858/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:index.of intext:.bash_history</querystring><shortDescription>intitle:index.of intext:.bash_history</shortDescription><textualDescription>the GHDB on subject (intitle:index.of intext:.bash_history) finds all
+home users directory path indexed. I've test it and google return 943
+results!
+
+-Andrea Menin</textualDescription></signature><signature><signatureReferenceNumber>3859</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3859/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;Cisco Integrated Management Controller Login&quot;</querystring><shortDescription>intitle:&quot;Cisco Integrated Management Controller Login&quot;</shortDescription><textualDescription>intitle:&quot;Cisco Integrated Management Controller Login&quot;
+
+The Cisco Integrated Management Controller (CIMC) is the management service
+for the C-Series servers. CIMC is built into the motherboard. This Google
+dork searches for the CIMC GUI login portal for remote access.
+
+ax_
+</textualDescription></signature><signature><signatureReferenceNumber>3860</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3860/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:/secure/Dashboard.jspa intitle:&quot;System Dashboard&quot;</querystring><shortDescription>inurl:/secure/Dashboard.jspa intitle:&quot;System Dashboard&quot;</shortDescription><textualDescription>Finds login pages and system dashboards for Atlassian's JIRA.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3861</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3861/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=&quot;Welcome to phpMyAdmin&quot; + &quot;Username:&quot; + &quot;Password:&quot; + &quot;Language:&quot; + &quot;Afrikaans&quot;</querystring><shortDescription>&quot;Welcome to phpMyAdmin&quot; + &quot;Username:&quot; + &quot;Password:&quot; + &quot;Language:&quot; + &quot;Afrikaans&quot;</shortDescription><textualDescription>Finds cPanel login pages.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3862</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3862/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:.php? intext:CHARACTER_SETS,COLLATIONS, ?intitle:phpmyadmin</querystring><shortDescription>inurl:.php? intext:CHARACTER_SETS,COLLATIONS, ?intitle:phpmyadmin</shortDescription><textualDescription>inurl:.php? intext:CHARACTER_SETS,COLLATIONS, ?intitle:phpmyadmin
+
+view phpMyAdmin of web sites
+
+Author: Un0wn_X
+Follow: @UnownSec
+E-Mail: unownsec@gmail.com
+</textualDescription></signature><signature><signatureReferenceNumber>3863</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3863/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:fluidgalleries/dat/login.dat</querystring><shortDescription>inurl:fluidgalleries/dat/login.dat</shortDescription><textualDescription>Works with every single fluidgalleries portofolio sites. Just decrypt the MD5 hash and login onto url.extension/admin.php with the username from the search result and with the decrypted MD5 hash. Dork by Kraze (kraze@programmer.net)
+</textualDescription></signature><signature><signatureReferenceNumber>3864</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3864/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:5000/webman/index.cgi</querystring><shortDescription>inurl:5000/webman/index.cgi</shortDescription><textualDescription>
+Synology nas login 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3865</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3865/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:wp-content/uploads/dump.sql</querystring><shortDescription>inurl:wp-content/uploads/dump.sql</shortDescription><textualDescription>
+This is *Mohan Pendyala* (penetration tester) from india.
+
+Google Dork: *inurl:wp-content/uploads/dump.sql*
+*
+*
+The *Dump.sql* file reveals total info about the database tables, Users,
+passwords..etc</textualDescription></signature><signature><signatureReferenceNumber>3866</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3866/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;Internet Security Appliance&quot; &amp; intext:&quot;Enter Password and click Login&quot;</querystring><shortDescription>intitle:&quot;Internet Security Appliance&quot; &amp; intext:&quot;Enter Password and click Login&quot;</shortDescription><textualDescription>#Summary: ZyWall Firewall login portal
+#Category: Various Online Devices
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3867</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3867/</link><category>Footholds</category><querystring>http://www.google.com/search?q=inurl:1337w0rm.php intitle:1337w0rm</querystring><shortDescription>inurl:1337w0rm.php intitle:1337w0rm</shortDescription><textualDescription>Finds websites that have 1337w0rm's CPanel cracker uploaded.
+Since the Cracker is relatively new, some sites might not use it. 
+
+-TehMysticaL
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3868</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3868/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;.:: Welcome to the Web-Based Configurator::.&quot; &amp; intext:&quot;Welcome to your router Configuration Interface&quot;</querystring><shortDescription>intitle:&quot;.:: Welcome to the Web-Based Configurator::.&quot; &amp; intext:&quot;Welcome to your router Configuration Interface&quot;</shortDescription><textualDescription>#Summary: ZyXEL router login portal
+#Category: Pages containing login portals
+#Author: g00gl3 5c0u7
+
+NOTE:
+currently exists this -&gt; http://www.exploit-db.com/ghdb/270/ but only shows
+8 results  against 63100 that i sent, also covers more models.
+</textualDescription></signature><signature><signatureReferenceNumber>3869</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3869/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intext:&quot;I'm using a public or shared computer&quot; &amp; intext:&quot;Remote Web Workplace&quot;</querystring><shortDescription>intext:&quot;I'm using a public or shared computer&quot; &amp; intext:&quot;Remote Web Workplace&quot;</shortDescription><textualDescription>#Summary: Windows Business Server 2003 Login portal
+#Category: Pages containing login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3870</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3870/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;/secure/login.aspx&quot;</querystring><shortDescription>inurl:&quot;/secure/login.aspx&quot;</shortDescription><textualDescription>#Summary: Several Web Pages Login Portal
+#Category: Pages containing login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3871</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3871/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;Weather Wing WS-2&quot;</querystring><shortDescription>intitle:&quot;Weather Wing WS-2&quot;</shortDescription><textualDescription>#Summary:Weather Wing (http://www.meteo-system.com/ws2.php) Portal.
+#Category: Various Online Divices
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3872</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3872/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;NetBotz Network Monitoring Appliance&quot;</querystring><shortDescription>intitle:&quot;NetBotz Network Monitoring Appliance&quot;</shortDescription><textualDescription>#Summary:Various Online Divices
+#Category: Pages containing login portals
+#Author: g00gl3 5c0u7</textualDescription></signature><signature><signatureReferenceNumber>3873</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3873/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;Transponder/EOL Configuration:&quot; inurl:asp</querystring><shortDescription>intitle:&quot;Transponder/EOL Configuration:&quot; inurl:asp</shortDescription><textualDescription>#Summary: Cheeta Technologies Transponder Configuration Portal (*
+http://www.cheetahtech.com).*
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3874</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3874/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intitle:&quot;WAMPSERVER Homepage&quot; &amp; intext:&quot;Server Configuration&quot;</querystring><shortDescription>intitle:&quot;WAMPSERVER Homepage&quot; &amp; intext:&quot;Server Configuration&quot;</shortDescription><textualDescription>#Summary: Wampserver Homepage free access (*http://www.wampserver.com/).*
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3875</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3875/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;Web Image Monitor&quot; &amp; inurl:&quot;/mainFrame.cgi&quot;</querystring><shortDescription>intitle:&quot;Web Image Monitor&quot; &amp; inurl:&quot;/mainFrame.cgi&quot;</shortDescription><textualDescription>#Summary: Several printers that use &quot;Web Image Monitor&quot; control panel (
+http://ricoh.pbworks.com/w/page/14063393/CSWebImageMonitor). Used default
+by Ricoh, Lanier and others.
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3876</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3876/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=inurl:8080 intitle:&quot;Dashboard [Jenkins]&quot;</querystring><shortDescription>inurl:8080 intitle:&quot;Dashboard [Jenkins]&quot;</shortDescription><textualDescription>#Summary: Acces to Jenkins Dashboard
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3877</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3877/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;Login - OTRS&quot; inurl:pl</querystring><shortDescription>intitle:&quot;Login - OTRS&quot; inurl:pl</shortDescription><textualDescription>#Summary: OTRS login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3878</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3878/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;WebMail | Powered by Winmail Server - Login&quot; &amp; (intext:&quot;Username&quot; &amp; intext:&quot;Password&quot;)</querystring><shortDescription>intitle:&quot;WebMail | Powered by Winmail Server - Login&quot; &amp; (intext:&quot;Username&quot; &amp; intext:&quot;Password&quot;)</shortDescription><textualDescription>#Summary: Winmail login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3879</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3879/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:8080 intitle:&quot;login&quot; intext:&quot;UserLogin&quot; &quot;English&quot;</querystring><shortDescription>inurl:8080 intitle:&quot;login&quot; intext:&quot;UserLogin&quot; &quot;English&quot;</shortDescription><textualDescription>#Summary: VoIP login portals
+#Category: Pages containing login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3880</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3880/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;::: Login :::&quot; &amp; intext:&quot;Customer Login&quot; &amp; &quot;Any time &amp; Any where&quot;</querystring><shortDescription>intitle:&quot;::: Login :::&quot; &amp; intext:&quot;Customer Login&quot; &amp; &quot;Any time &amp; Any where&quot;</shortDescription><textualDescription>#Summary: Surveillance login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3881</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3881/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:phpmyadmin/index.php &amp; (intext:username &amp; password &amp; &quot;Welcome to&quot;)</querystring><shortDescription>inurl:phpmyadmin/index.php &amp; (intext:username &amp; password &amp; &quot;Welcome to&quot;)</shortDescription><textualDescription>#Summary: PHP Admin login portals
+#Author: g00gl3 5c0u7
+</textualDescription></signature><signature><signatureReferenceNumber>3882</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3882/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:~~joomla3.txt filetype:txt</querystring><shortDescription>inurl:~~joomla3.txt filetype:txt</shortDescription><textualDescription>By this dork you can find juicy information joomla configuration files
+
+Author: Un0wn_X
+</textualDescription></signature><signature><signatureReferenceNumber>3883</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3883/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:txt inurl:wp-config.txt</querystring><shortDescription>filetype:txt inurl:wp-config.txt</shortDescription><textualDescription>Easily hunt the Wordpress configuration file in of remote web sites
+
+Author : Un0wn_X
+</textualDescription></signature><signature><signatureReferenceNumber>3884</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3884/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:txt inurl:~~Wordpress2.txt</querystring><shortDescription>filetype:txt inurl:~~Wordpress2.txt</shortDescription><textualDescription>This dork can be used to find symlinked Wordpress configuration files of
+other web sites
+</textualDescription></signature><signature><signatureReferenceNumber>3885</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3885/</link><category>Vulnerable Files</category><querystring>http://www.google.com/search?q=-site:simplemachines.org &quot;These are the paths and URLs to your SMF installation&quot;</querystring><shortDescription>-site:simplemachines.org &quot;These are the paths and URLs to your SMF installation&quot;</shortDescription><textualDescription>Dork:
+-site:simplemachines.org &quot;These are the paths and URLs to your SMF
+installation&quot;
+
+Details:
+This google dork finds sites with the Simple Machines repair_settings.php
+file uploaded to the root directory. This gives unauthenticated access to
+the SQL username and password for the forum.
+</textualDescription></signature><signature><signatureReferenceNumber>3886</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3886/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;index of&quot; myshare</querystring><shortDescription>intitle:&quot;index of&quot; myshare</shortDescription><textualDescription>Google search for shared HDD directories or shared directories on servers.
+Gives access to often unconsciously shared documents, programs or
+sensitive information.
+Also are often other directories on these drives accessible.
+
+Dork by :
+redN00ws
+</textualDescription></signature><signature><signatureReferenceNumber>3887</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3887/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;SPA504G Configuration&quot;</querystring><shortDescription>intitle:&quot;SPA504G Configuration&quot;</shortDescription><textualDescription>Dork : intitle:&quot;SPA504G Configuration&quot;
+Result : Gives access to Cisco SPA504G Configuration Utility for IP phones
+
+Screenshot Google Dork
+Dork found by :
+redN00ws
+</textualDescription></signature><signature><signatureReferenceNumber>3888</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3888/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=&quot;BEGIN RSA PRIVATE KEY&quot; filetype:key -github</querystring><shortDescription>&quot;BEGIN RSA PRIVATE KEY&quot; filetype:key -github</shortDescription><textualDescription>To find private RSA Private SSL Keys
+</textualDescription></signature><signature><signatureReferenceNumber>3889</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3889/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/cgi-mod/index.cgi&quot;</querystring><shortDescription>inurl:&quot;/cgi-mod/index.cgi&quot;</shortDescription><textualDescription>Returns login pages for various Barracuda Networks branded hardware spam
+filters and mail archivers.
+
+4N6 Security
+</textualDescription></signature><signature><signatureReferenceNumber>3890</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3890/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;RouterOS router configuration page&quot;</querystring><shortDescription>intitle:&quot;RouterOS router configuration page&quot;</shortDescription><textualDescription>Returns login portals for Microtik routers running RouterOS version 5
+and up.
+
+4N6 Security
+</textualDescription></signature><signature><signatureReferenceNumber>3891</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3891/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/webcm?getpage=&quot;</querystring><shortDescription>inurl:&quot;/webcm?getpage=&quot;</shortDescription><textualDescription>Returns various Actiontec (and often Qwest) branded routers' login pages.
+
+4N6 Security
+</textualDescription></signature><signature><signatureReferenceNumber>3892</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3892/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;Web Client for EDVS&quot;</querystring><shortDescription>intitle:&quot;Web Client for EDVS&quot;</shortDescription><textualDescription>Yet another DVR system. Probably requires Java to display.
+
+4N6 Security
+</textualDescription></signature><signature><signatureReferenceNumber>3893</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3893/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intitle:index.of intext:.ssh</querystring><shortDescription>intitle:index.of intext:.ssh</shortDescription><textualDescription>Find peoples ssh public and private keys
+
+- tmc / #havok
+</textualDescription></signature><signature><signatureReferenceNumber>3894</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3894/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:*/graphs* intitle:&quot;Traffic and system resource graphing&quot;</querystring><shortDescription>inurl:*/graphs* intitle:&quot;Traffic and system resource graphing&quot;</shortDescription><textualDescription>With this search you can view results for mikrotik graphics interfaces
+
+
+*Obrigado,*</textualDescription></signature><signature><signatureReferenceNumber>3895</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3895/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:*/webalizer/* intitle:&quot;Usage Statistics&quot;</querystring><shortDescription>inurl:*/webalizer/* intitle:&quot;Usage Statistics&quot;</shortDescription><textualDescription>*Obrigado,*
+</textualDescription></signature><signature><signatureReferenceNumber>3896</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3896/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;Comrex ACCESS Rack&quot;</querystring><shortDescription>intitle:&quot;Comrex ACCESS Rack&quot;</shortDescription><textualDescription>IP Codecs offering &quot;studio quality audio and video over wired and
+wireless IP circuits&quot;. Used in studio-grade radio broadcasting over the
+web. More product information here: http://www.comrex.com/products.html.
+This Google search will return (some, but not hundreds of) web-facing
+login portals for this type of device. Requires JavaScript and Flash for
+viewer to work. Default login: comrex comrex.
+
+4N6 Security
+</textualDescription></signature><signature><signatureReferenceNumber>3897</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3897/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=site%3Agithub.com+inurl%3Asftp-config.json+intext%3A%2Fwp-content%2F</querystring><shortDescription>site:github.com inurl:sftp-config.json intext:/wp-content/</shortDescription><textualDescription>Finds disclosed ftp FTP for Wordpress installs, which have been pushed to a public repo on GitHub.
+
+Credit: RogueCoder</textualDescription></signature><signature><signatureReferenceNumber>3898</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3898/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=site%3Agithub.com+inurl%3Asftp-config.json</querystring><shortDescription>site:github.com inurl:sftp-config.json</shortDescription><textualDescription>Find disclosed FTP login credentials in github repositories
+
+Credit: RogueCoder</textualDescription></signature><signature><signatureReferenceNumber>3899</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3899/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:github.com intext:sftp-conf.json +intext:/wp-content/</querystring><shortDescription>inurl:github.com intext:sftp-conf.json +intext:/wp-content/</shortDescription><textualDescription>Find FTP logins and full path disclosures pushed to github
+
+inurl:github.com intext:sftp-conf.json +intext:/wp-content/
+
+--
+RogueCoder</textualDescription></signature><signature><signatureReferenceNumber>3900</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3900/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=allinurl:&quot;owa/auth/logon.aspx&quot; -google -github</querystring><shortDescription>allinurl:&quot;owa/auth/logon.aspx&quot; -google -github</shortDescription><textualDescription>[+] Description - Find OWA login portals
+
+Regards,
+
+necrodamus
+
+http://www.twitter.com/necrodamus2600
+</textualDescription></signature><signature><signatureReferenceNumber>3901</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3901/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=ext:sql intext:@gmail.com intext:password</querystring><shortDescription>ext:sql intext:@gmail.com intext:password</shortDescription><textualDescription>author:haji
+</textualDescription></signature><signature><signatureReferenceNumber>3902</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3902/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:&quot;struts&quot; filetype:action</querystring><shortDescription>inurl:&quot;struts&quot; filetype:action</shortDescription><textualDescription>Google search for actoin files wich could be explotable via CVE-2013-2251
+&quot;Multiple Remote Command Execution Vulnerabilities in Apache Struts&quot;
+</textualDescription></signature><signature><signatureReferenceNumber>3903</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3903/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:php intext:&quot;PROJECT HONEY POT ADDRESS DISTRIBUTION SCRIPT&quot;</querystring><shortDescription>filetype:php intext:&quot;PROJECT HONEY POT ADDRESS DISTRIBUTION SCRIPT&quot;</shortDescription><textualDescription>Project Honey Pot anti-spammer detection (http://www.projecthoneypot.org/)
+
+Can identify the honeypot and get the site's honeypot keys
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3904</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3904/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:config &quot;fetch = +refs/heads/*:refs/remotes/origin/*&quot;</querystring><shortDescription>inurl:config &quot;fetch = +refs/heads/*:refs/remotes/origin/*&quot;</shortDescription><textualDescription>Git config file
+
+Easy way to find Git Repositories
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3905</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3905/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;IPCam Client&quot;</querystring><shortDescription>intitle:&quot;IPCam Client&quot;</shortDescription><textualDescription>Foscam IPCam
+
+By default these cameras attach to the myfoscam.org DDNS. So you could add
+site:myfoscam.org. On the otherhand if you're hunting for DDNS servers, you
+could negate that site and examine the other results.
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3906</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3906/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:/wp-content/uploads/ filetype:sql</querystring><shortDescription>inurl:/wp-content/uploads/ filetype:sql</shortDescription><textualDescription>Google dork for WordPress database backup file (sql):
+
+inurl:/wp-content/uploads/ filetype:sql
+
+By sm0k3 (http://sm0k3.net - Sm0k3 HQ)
+_________________
+
+With regards,
+sm0k3
+
+Any questions: info@sm0k3.net
+Administration issues: admin@sm0k3.net
+Want to submit an order: submit@sm0k3.net
+Jabber: sm0k3@im.sm0k3.net
+Blog: http://sm0k3.net
+</textualDescription></signature><signature><signatureReferenceNumber>3907</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3907/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=site:github.com inurl:&quot;known_hosts&quot; &quot;ssh-rsa&quot;</querystring><shortDescription>site:github.com inurl:&quot;known_hosts&quot; &quot;ssh-rsa&quot;</shortDescription><textualDescription>Finds SSH known_hosts files on GitHub.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3908</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3908/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=site:github.com inurl:&quot;id_rsa&quot; -inurl:&quot;pub&quot;</querystring><shortDescription>site:github.com inurl:&quot;id_rsa&quot; -inurl:&quot;pub&quot;</shortDescription><textualDescription>Finds private SSH keys on GitHub.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3909</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3909/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;/module.php/core/loginuserpass.php&quot;</querystring><shortDescription>inurl:&quot;/module.php/core/loginuserpass.php&quot;</shortDescription><textualDescription>Finds SimpleSAMLphp login pages.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3910</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3910/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;/jenkins/login&quot; &quot;Page generated&quot;</querystring><shortDescription>inurl:&quot;/jenkins/login&quot; &quot;Page generated&quot;</shortDescription><textualDescription>Finds login pages for Jenkins continuous integration servers.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>3911</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3911/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=&quot;inurl:/data/nanoadmin.php&quot;</querystring><shortDescription>&quot;inurl:/data/nanoadmin.php&quot;</shortDescription><textualDescription>Hi,
+
+I would like to submit this GHDB which allow to find out nanoCMS
+administration pages :
+
+
+*inurl:&quot;/data/nanoadmin.php&quot;*
+
+
+Best regards,
+Antonino Napoli
+</textualDescription></signature><signature><signatureReferenceNumber>3912</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3912/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:&quot;uploader by ghost-dz&quot; ext:php</querystring><shortDescription>intitle:&quot;uploader by ghost-dz&quot; ext:php</shortDescription><textualDescription>intitle:&quot;uploader by ghost-dz&quot; ext:php</textualDescription></signature><signature><signatureReferenceNumber>3913</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3913/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:bak (inurl:php | inurl:asp | inurl:rb)</querystring><shortDescription>filetype:bak (inurl:php | inurl:asp | inurl:rb)</shortDescription><textualDescription>This one could be used to find all sorts of backup data, but this example
+is limited to just common webapp extensions
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3914</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3914/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;index of&quot; intext:&quot;.ds_store&quot;</querystring><shortDescription>intitle:&quot;index of&quot; intext:&quot;.ds_store&quot;</shortDescription><textualDescription>Mac OSX directories
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3915</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3915/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:tar filetype:gz</querystring><shortDescription>inurl:tar filetype:gz</shortDescription><textualDescription>Tar files
+Contain user and group information (in addition to potentially useful files)
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3916</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3916/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;RT at a glance&quot; intext:&quot;quick search&quot;</querystring><shortDescription>intitle:&quot;RT at a glance&quot; intext:&quot;quick search&quot;</shortDescription><textualDescription>RT Request Tracker Ticket Database
+http://www.bestpractical.com/rt/
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3917</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3917/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:&quot;jmx-console/HtmlAdaptor&quot; intitle:Mbean</querystring><shortDescription>inurl:&quot;jmx-console/HtmlAdaptor&quot; intitle:Mbean</shortDescription><textualDescription>JBoss
+http://docs.jboss.org/jbossas/docs/Server_Configuration_Guide/4/html/Connecting_to_the_JMX_Server-Inspecting_the_Server___the_JMX_Console_Web_Application.html
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3918</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3918/</link><category>Footholds</category><querystring>http://www.google.com/search?q=filetype:php intext:&quot;!C99Shell v. 1.0 beta&quot;</querystring><shortDescription>filetype:php intext:&quot;!C99Shell v. 1.0 beta&quot;</shortDescription><textualDescription>php backdoor: c99 shell
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3919</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3919/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:xml inurl:sitemap</querystring><shortDescription>filetype:xml inurl:sitemap</shortDescription><textualDescription>Sitemaps, the opposite of Web Robots Exclusion
+
+Detail directory and page map
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3920</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3920/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=filetype:jnlp</querystring><shortDescription>filetype:jnlp</shortDescription><textualDescription>Java Web Start (Java Network Launch Protocol)
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3921</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3921/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:password jmxremote</querystring><shortDescription>filetype:password jmxremote</shortDescription><textualDescription>Passwords for Java Management Extensions (JMX Remote)
+Used by jconsole, Eclipse's MAT, Java Visual VM, JmxCli
+
+http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html
+
+-- 
+-[Voluntas Vincit Omnia]-
+website http://www.erisresearch.org/
+Google+ https://plus.google.com/u/0/114827336297709201563
+</textualDescription></signature><signature><signatureReferenceNumber>3922</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3922/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:mikrotik filetype:backup</querystring><shortDescription>inurl:mikrotik filetype:backup</shortDescription><textualDescription>mikrotik url backups uploaded..
+
+then.. credentials cracked via http://mikrotikpasswordrecovery.com
+
+Best Regards,
+
+kn0wl13dg3 - underc0de team.-    www.underc0de.org
+
+kn0w13dg3.blogspot.com
+</textualDescription></signature><signature><signatureReferenceNumber>3923</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3923/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:phpMyAdmin SQL Dump filetype:sql intext:INSERT INTO `admin` (`id`, `user`, `password`) VALUES -github</querystring><shortDescription>intext:phpMyAdmin SQL Dump filetype:sql intext:INSERT INTO `admin` (`id`, `user`, `password`) VALUES -github</shortDescription><textualDescription>intext:phpMyAdmin SQL Dump filetype:sql intext:INSERT INTO `admin` (`id`, `user`, `password`) VALUES -github
+
+How This Work?
+
+This dork will searches databases phpMyAdmin. Searches only sql formats and founds admin username and passwords to use this information to login as administrator
+
+Sorry for my english. I'm not a native speaker
+ 		 	   		  </textualDescription></signature></searchEngineSignature>
