@@ -10,6 +10,8 @@ pip install xunitparser==1.2.0
 # Install requirements for coveralls
 pip install coverage==3.6 nose-cov==1.6 coveralls==0.2
 
+pip install --upgrade -e 'git+https://github.com/andresriancho/nose.git#egg=nose'
+
 #
 # Install xpresser
 #
