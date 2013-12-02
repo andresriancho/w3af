@@ -32,6 +32,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
+@attr('fails')
 class TestHandleCtrlC(unittest.TestCase):
     
     SCRIPT = '%s/core/ui/console/tests/data/spider_long.w3af' % ROOT_PATH
