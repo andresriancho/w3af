@@ -66,9 +66,8 @@ def run_nosetests(nose_cmd):
     # Read output while the process is alive
     idle_time = 0
     select_timeout = 1
-    should_stop = False
     
-    while p.poll() is None and not should_stop:
+    while p.poll() is None:
         reads, _, _ = select.select([p.stdout, p.stderr], [], [], select_timeout)
         for r in reads:
             idle_time = 0
@@ -90,12 +89,20 @@ def run_nosetests(nose_cmd):
                 stdout += 'TIMEOUT\n'
                 logging.warning('"%s" timeout waiting for output.' % nose_cmd)
                 
-                # Stop the loop
-                should_stop = True
-                
                 # Kill the nosetests command
                 p.terminate()
                 p.returncode = -1
+                break
+    
+    # Make sure all the output is read, there were cases when the process ended
+    # and there were still bytes in stdout/stderr.
+    out = p.stdout.read()
+    stdout += out
+    output_file.write(out)
+    
+    out = p.stderr.read()
+    stderr += out
+    output_file.write(out)
     
     # Close the output   
     output_file.close()
