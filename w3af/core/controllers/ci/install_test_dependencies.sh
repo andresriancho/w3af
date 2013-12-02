@@ -5,6 +5,7 @@
 #
 pip install pylint==0.28.0 mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
 pip install termcolor==1.1.0 yanc==0.2.4 futures==2.1.5 fabric==1.8.0
+pip install xunitparser==1.2.0
 
 # Install requirements for coveralls
 pip install coverage==3.6 nose-cov==1.6 coveralls==0.2
