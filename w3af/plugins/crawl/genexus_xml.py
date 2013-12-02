@@ -30,7 +30,6 @@ from w3af.core.controllers.exceptions import w3afRunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
-from w3af.core.data.parsers.url import URL
 
 
 class genexus_xml(CrawlPlugin):
@@ -38,7 +37,7 @@ class genexus_xml(CrawlPlugin):
     Analyze the execute.xml and DeveloperMenu.xml files and find new URLs
     
     :author: Daniel Maldonado (daniel_5502@yahoo.com.ar)
-    http://caceriadespammers.com.ar
+    :url: http://caceriadespammers.com.ar
     '''
 
     def __init__(self):
