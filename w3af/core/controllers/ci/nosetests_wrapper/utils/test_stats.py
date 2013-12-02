@@ -55,7 +55,17 @@ def _get_tests(fname, selector=None):
     cmd_args = shlex.split(cmd)
     
     logging.debug('Collecting tests: "%s"' % cmd)
-    subprocess.check_call(cmd_args)
+    p = subprocess.Popen(
+        cmd_args,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False,
+        universal_newlines=True
+    )
+    
+    # Wait for it to finish
+    p.communicate()
 
     test_suite, test_result = parse_xunit(output_file)
     
