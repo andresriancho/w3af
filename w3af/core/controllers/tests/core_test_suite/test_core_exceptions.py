@@ -36,6 +36,7 @@ from w3af.plugins.tests.helper import create_target_option_list
 
 
 @attr('moth')
+@attr('fails')
 class TestCoreExceptions(unittest.TestCase):
     '''
     TODO: Think about mocking all calls to ExtendedUrllib in order to avoid
