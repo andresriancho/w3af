@@ -47,7 +47,8 @@ def nose_strategy():
         tests_str = ' '.join([str(i) for i in tests_to_run])
         cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, tests_str)
         yield cmd
-            
+
+
 if __name__ == '__main__':
     exit_codes = []
     future_list = []
