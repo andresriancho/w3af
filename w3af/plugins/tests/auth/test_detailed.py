@@ -20,40 +20,38 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestDetailed(PluginTest):
 
-    base_url = 'http://moth/w3af/auth/detailed/'
-
+    target_url = get_moth_http('/auth/detailed/')
+    
+    auth_url = URL(target_url + 'auth.py')
+    check_url = URL(target_url + 'home.py')
+    check_string = '<title>Home page</title>'
+    data_format = '%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85'
+    
     _run_config = {
-        'target': base_url,
+        'target': target_url,
         'plugins': {
         'crawl': (
         PluginConfig('web_spider',
                      ('only_forward', True, PluginConfig.BOOL),
-                     (
-        'ignore_regex', '.*logout.*', PluginConfig.STR)),
+                     ('ignore_regex', '.*logout.*', PluginConfig.STR)),
 
         ),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('detailed',
                                  ('username', 'admin', PluginConfig.STR),
-                                 ('password', 'admin', PluginConfig.STR),
-                                 ('username_field',
-                                  'username', PluginConfig.STR),
-                                 ('password_field',
-                                  'password', PluginConfig.STR),
-                                 (
-                                     'data_format', '%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85',
-                                  PluginConfig.STR),
-                                 ('auth_url', URL(base_url +
-                                  'auth.php'), PluginConfig.URL),
+                                 ('password', 'nimda', PluginConfig.STR),
+                                 ('username_field', 'username', PluginConfig.STR),
+                                 ('password_field', 'password', PluginConfig.STR),
+                                 ('data_format', data_format, PluginConfig.STR),
+                                 ('auth_url', auth_url, PluginConfig.URL),
                                  ('method', 'POST', PluginConfig.STR),
-                                 ('check_url', URL(base_url +
-                                  'home.php'), PluginConfig.URL),
-                                 ('check_string', '<title>Home page</title>',
-                                  PluginConfig.STR),
+                                 ('check_url', check_url, PluginConfig.URL),
+                                 ('check_string', check_string, PluginConfig.STR),
                                   ),
                          ),
         }
