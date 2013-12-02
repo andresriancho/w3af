@@ -34,7 +34,7 @@ class TestSQLMapUpdate(unittest.TestCase):
         #     https://www.kernel.org/pub/software/scm/git/docs/howto/using-merge-subtree.html
         setup_commands = ('git remote add -f sqlmap git://github.com/sqlmapproject/sqlmap.git',
                           'git merge -s ours --no-commit sqlmap/master',
-                          'git read-tree --prefix=plugins/attack/db/sqlmap/ -u sqlmap/master',
+                          'git read-tree --prefix=w3af/plugins/attack/db/sqlmap/ -u sqlmap/master',
                           "git commit -m 'Merging sqlmap into our subdirectory'")
         setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
         
