@@ -8,7 +8,7 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 # How many nosetests commands to run at the same time
 MAX_WORKERS = multiprocessing.cpu_count()
 # How many tests to send to each process
-CHUNK_SIZE = 75
+CHUNK_SIZE = 25
 
 NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
