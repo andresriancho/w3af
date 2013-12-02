@@ -96,24 +96,13 @@ def run_nosetests(nose_cmd):
     
     # Make sure all the output is read, there were cases when the process ended
     # and there were still bytes in stdout/stderr.
-    while True:
-        reads, _, _ = select.select([p.stdout, p.stderr], [], [], select_timeout)
-        
-        if not reads:
-            break
-        
-        for r in reads:
-            # Write to the output file
-            out = r.read(1)
-            output_file.write(out)
-            output_file.flush()
-            
-            # Write the output to the strings
-            if r is p.stdout:
-                stdout += out
-            else:
-                stderr += out
-        
+    c_stdout, c_stderr = p.communicate()
+    stdout += c_stdout
+    output_file.write(c_stdout)
+    
+    stderr += c_stderr
+    output_file.write(c_stderr)
+    
     # Close the output   
     output_file.close()
     
