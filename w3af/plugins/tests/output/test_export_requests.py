@@ -22,17 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import urllib
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.parsers.url import URL
 
 
 class TestExportRequests(PluginTest):
 
-    follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/1.html'
+    target_url = get_moth_http('/grep/form_autocomplete/')
 
     _run_configs = {
         'cfg': {
-            'target': follow_links_url,
+            'target': target_url,
             'plugins': {
                 'crawl': (
                     PluginConfig('web_spider',
