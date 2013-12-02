@@ -97,7 +97,7 @@ class Testwordpress_fingerprint(PluginTest):
 
         msg = 'The wp_versions.xml file is too old. The following commands need'\
               ' to be run in order to update it:\n'\
-              'cd plugins/crawl/wordpress_fingerprint/\n'\
+              'cd w3af/plugins/crawl/wordpress_fingerprint/\n'\
               'wget %s -O wp_versions.xml\n'\
               'git commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
               'git push\n'\
