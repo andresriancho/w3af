@@ -44,7 +44,8 @@ def nose_strategy():
     test_ids = get_test_ids(NOSE_RUN_SELECTOR)
     
     for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):
-        cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, ' '.join(tests_to_run))
+        tests_str = ' '.join([str(i) for i in tests_to_run])
+        cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, tests_str)
         yield cmd
             
 if __name__ == '__main__':
