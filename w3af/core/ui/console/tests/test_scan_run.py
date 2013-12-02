@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 
@@ -31,8 +32,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     '''
 
     def test_SQL_scan(self):
-        target = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-        qs = '?name=andres'
+        target = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        qs = '?uname=pablo'
         commands_to_run = ['plugins',
                            'output console,text_file',
                            'output config text_file',
@@ -69,8 +70,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
 
     @attr('smoke')
     def test_two_scans(self):
-        target_1 = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-        qs_1 = '?name=andres'
+        target_1 = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        qs_1 = '?uname=pablo'
         scan_commands_1 = ['plugins',
                            'output console,text_file',
                            'output config text_file',
@@ -93,7 +94,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                       'A SQL error was found in the response supplied by ',
                       'New URL found by web_spider plugin: "%s"' % target_1)
 
-        target_2 = 'http://moth/w3af/audit/xss/simple_xss.php'
+        target_2 = get_moth_http('/audit/xss/simple_xss.py')
         qs_2 = '?text=1'
         scan_commands_2 = ['plugins',
                            'output console,text_file',
