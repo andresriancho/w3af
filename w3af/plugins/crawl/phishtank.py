@@ -35,6 +35,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
 from w3af.core.controllers.misc.decorators import runonce
+from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 
 class phishtank(CrawlPlugin):
@@ -90,7 +91,10 @@ class phishtank(CrawlPlugin):
             return [socket.getfqdn(url.get_domain()), ]
 
         def root_domain(url):
-            return [url.get_root_domain(), ]
+            if not is_ip_address(url.get_domain()):
+                return [url.get_root_domain(), ]
+            
+            return []
 
         res = set()
         for func in (addrinfo, getfqdn, root_domain):

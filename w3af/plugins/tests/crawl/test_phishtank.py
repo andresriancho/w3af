@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import datetime
 import re
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -29,7 +30,7 @@ from w3af.core.data.constants.severity import MEDIUM
 
 class TestPhishtank(PluginTest):
 
-    safe_url = 'http://moth/'
+    safe_url = get_moth_http()
     phish_detail = 'http://www.phishtank.com/phish_detail.php?phish_id='
 
     def test_phishtank_no_match(self):
@@ -92,7 +93,7 @@ class TestPhishtank(PluginTest):
         self.assertEqual(len(ptm_list), 1, ptm_list)
 
         ptm = ptm_list[0]
-        self.assertEqual(ptm.url.url_string, vuln_url_str)
+        self.assertEqual(ptm.url.url_string, URL(vuln_url_str).url_string)
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
         
     def test_too_old_xml(self):
