@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.fuzzer.utils import rand_alpha, rand_alnum, rand_number
 
 
-class TestUtils(unittest.TestCase):
+class TestFuzzerUtils(unittest.TestCase):
     
     def test_rand_number(self):
         x = rand_number(length=1)
