@@ -117,8 +117,8 @@ class TestGHDB(PluginTest):
         msg = 'The GHDB database is too old, please update it by running the' \
               ' following command:'\
               '\n' \
-              'wget <secret>%02d_%02d_%s.xml -O plugins/crawl/ghdb/GHDB.xml\n' \
-              'git commit -m "Updating GHDB database." plugins/crawl/ghdb/GHDB.xml\n' \
+              'wget <secret>%02d_%02d_%s.xml -O w3af/plugins/crawl/ghdb/GHDB.xml --user-agent=Chrome\n' \
+              'git commit -m "Updating GHDB database." w3af/plugins/crawl/ghdb/GHDB.xml\n' \
               'git push\n' \
               '\n'\
               'Also remember to run this unittest again to verify that the' \
