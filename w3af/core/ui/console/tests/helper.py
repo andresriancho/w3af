@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 import unittest
-import pprint
 
 from mock import MagicMock
 
