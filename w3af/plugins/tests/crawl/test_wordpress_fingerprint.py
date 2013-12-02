@@ -114,7 +114,7 @@ class Testwordpress_fingerprint(PluginTest):
 
         msg = 'The releases.db database is too old. The following commands need'\
               ' to be run in order to update it:\n'\
-              'cd plugins/crawl/wordpress_fingerprint/\n'\
+              'cd w3af/plugins/crawl/wordpress_fingerprint/\n'\
               'python generate_release_db.py\n'\
               'git commit -m "Updating wordpress release.db file." release.db\n'\
               'git push\n'\
