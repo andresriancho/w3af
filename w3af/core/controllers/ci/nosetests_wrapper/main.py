@@ -44,7 +44,6 @@ if __name__ == '__main__':
     exit_codes = []
     future_list = []
     done_list = []
-    outputs = []
     
     configure_logging(LOG_FILE)
     
@@ -62,7 +61,6 @@ if __name__ == '__main__':
                     cmd, stdout, stderr, exit_code = future.result()
                     exit_codes.append(exit_code)
                     done_list.append(future)
-                    outputs.append((stdout, stderr))
                     
                     print_info_console(cmd, stdout, stderr, exit_code)
                     print_will_fail(exit_code)
@@ -75,9 +73,9 @@ if __name__ == '__main__':
             future_list = [f for f in future_list if f not in done_list]
                 
     all_tests = get_all_tests()
-    run_tests = get_run_tests(outputs)
+    run_tests = get_run_tests()
     ignored_tests = get_ignored_tests()
-    print_summary(all_tests, run_tests) 
+    print_summary(all_tests, run_tests, ignored_tests) 
         
     # We need to set the exit code.
     sys.exit(summarize_exit_codes(exit_codes))
