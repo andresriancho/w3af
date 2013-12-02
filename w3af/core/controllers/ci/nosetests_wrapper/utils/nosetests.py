@@ -96,6 +96,7 @@ def run_nosetests(nose_cmd):
     
     # Make sure all the output is read, there were cases when the process ended
     # and there were still bytes in stdout/stderr.
+    '''
     out = p.stdout.read()
     stdout += out
     output_file.write(out)
@@ -103,7 +104,7 @@ def run_nosetests(nose_cmd):
     out = p.stderr.read()
     stderr += out
     output_file.write(out)
-    
+    '''
     # Close the output   
     output_file.close()
     
