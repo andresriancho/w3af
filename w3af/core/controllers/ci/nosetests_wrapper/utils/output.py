@@ -62,7 +62,7 @@ def print_summary(all_tests, run_tests, ignored_tests):
     missing = unique_everseen(sorted([test.id() for test in ignored_tests._tests]))
     missing_str = '\n'.join(missing)
     
-    msg = 'The following %s tests were not run due to selector "%s":\n%s'
+    msg = 'The following %s tests were NOT run due to selector "%s":\n%s'
     logging.debug(msg % (len(ignored_tests._tests), NOSE_IGNORE_SELECTOR,
                          missing_str))
     
