@@ -44,7 +44,7 @@ class TestBingSpider(PluginTest):
 
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'], debug=True)
+        self._scan(cfg['target'], cfg['plugins'])
 
         urls = self.kb.get_all_known_urls()
 
