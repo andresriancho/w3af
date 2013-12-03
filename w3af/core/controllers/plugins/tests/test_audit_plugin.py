@@ -27,6 +27,7 @@ from w3af.core.data.kb.knowledge_base import kb
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.parsers.url import URL
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 
 
@@ -44,8 +45,8 @@ class TestAuditPlugin(unittest.TestCase):
     def test_audit_return_vulns(self):
         plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')
         
-        target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-        uri = URL(target_url + '?name=xxx')
+        target_url = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        uri = URL(target_url + '?uname=pablo')
         freq = HTTPQSRequest(uri)
         
         vulns = plugin_inst.audit_return_vulns(freq)
@@ -53,7 +54,7 @@ class TestAuditPlugin(unittest.TestCase):
         self.assertEqual(len(vulns), 1)
         
         vuln = vulns[0]
-        self.assertEquals("SELECT * FROM ", vuln['error'])
+        self.assertEquals("syntax error", vuln['error'])
         self.assertEquals("Unknown database", vuln['db'])
         self.assertEquals(target_url, str(vuln.get_url()))        
         
