@@ -20,12 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
-from nose.plugins.attrib import attr
 import compiler
 
 
 class TestW3afGUI(unittest.TestCase):
-    @attr('ci_fails')
     def test_compiles(self):
         try:
             compiler.compile(file('w3af_gui').read(), '/tmp/foo.tmp', 'exec')

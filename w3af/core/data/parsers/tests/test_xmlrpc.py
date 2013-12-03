@@ -23,13 +23,11 @@ import copy
 import unittest
 import xml.sax
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.xmlrpc import xmlrpc_read_handler, xmlrpc_write_handler
 
 
 class TestXMLRPC(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_reader(self):
         handler = xmlrpc_read_handler()
 
@@ -49,7 +47,6 @@ class TestXMLRPC(unittest.TestCase):
 
         self.assertEqual(handler.fuzzable_parameters, EXPECTED)
 
-    @attr('ci_fails')
     def test_writer(self):
         fuzzable_parameters = [[u'string', u'Foo bar'], [u'string',
                                                          u'Spam eggs']]

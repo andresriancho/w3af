@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.parser_cache import ParserCache
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -35,7 +34,6 @@ class TestParserCache(unittest.TestCase):
         self.headers = Headers([(u'content-type', u'text/html')])
         self.dpc = ParserCache()
         
-    @attr('ci_fails')
     def test_basic(self):
         resp1 = HTTPResponse(200, 'abc', self.headers, self.url, self.url)         
         resp2 = HTTPResponse(200, 'abc', self.headers, self.url, self.url)
@@ -45,7 +43,6 @@ class TestParserCache(unittest.TestCase):
         
         self.assertEqual(id(parser1), id(parser2))
     
-    @attr('ci_fails')
     def test_bug_13_Dec_2012(self):
         url1 = URL('http://w3af.com/foo/')
         url2 = URL('http://w3af.com/bar/')
@@ -63,7 +60,6 @@ class TestParserCache(unittest.TestCase):
         
         self.assertEqual(parsed_refs_1, parsed_refs_2)
     
-    @attr('ci_fails')
     def test_issue_188_invalid_url(self):
         # https://github.com/andresriancho/w3af/issues/188
         all_chars = ''.join([chr(i) for i in xrange(0,255)])

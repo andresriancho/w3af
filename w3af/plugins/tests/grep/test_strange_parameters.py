@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -43,7 +42,6 @@ class test_strange_parameters(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_strange_parameters_empty(self):
         body = ''
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -51,7 +49,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 0)
 
-    @attr('ci_fails')
     def test_strange_parameters_not_find_1(self):
         body = '<html><a href="/?id=3">x</a></html>'
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -59,7 +56,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 0)
 
-    @attr('ci_fails')
     def test_strange_parameters_not_find_2(self):
         body = '<html><a href="/?id=3&id=3&id=5&foo=bar">x</a></html>'
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -67,7 +63,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 0)
 
-    @attr('ci_fails')
     def test_strange_parameters_not_find_3(self):
         body = '<html><a href="http://moth/abc.jsp?id=3&id=3&id=5&foo=bar">x</a></html>'
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -75,7 +70,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 0)
 
-    @attr('ci_fails')
     def test_strange_parameters_find(self):
         body = '<html><a href="http://moth/abc.jsp?call=s(12,3)">x</a></html>'
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -83,7 +77,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 1)
 
-    @attr('ci_fails')
     def test_strange_parameters_find_sql(self):
         body = '<html><a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a></html>'
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
@@ -91,7 +84,6 @@ class test_strange_parameters(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strange_parameters',
                                         'strange_parameters')), 1)
 
-    @attr('ci_fails')
     def test_multi(self):
         body = '''<html>
                   <a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a>

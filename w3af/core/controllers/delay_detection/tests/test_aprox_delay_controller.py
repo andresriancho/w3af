@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import random
 
-from nose.plugins.attrib import attr
 from mock import MagicMock, Mock
 
 from w3af.core.controllers.delay_detection.aprox_delay_controller import AproxDelayController
@@ -62,7 +61,6 @@ class TestAproxDelayController(unittest.TestCase):
                   (False, (0.1, 0.1, 0.1, 0.13, 0.3, 0.1, 0.1, 0.1, 0.75))
                   ]
     
-    @attr('ci_fails')
     def test_delay_controlled(self):
         
         for expected_result, delays in self.TEST_SUITE:

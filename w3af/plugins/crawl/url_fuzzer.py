@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from nose.plugins.attrib import attr
 from itertools import chain, repeat, izip
 
 import w3af.core.controllers.output_manager as om
@@ -156,7 +155,6 @@ class url_fuzzer(CrawlPlugin):
                 return True
         return False
 
-    @attr('ci_fails')
     def _mutate_domain_name(self, url):
         '''
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
@@ -198,7 +196,6 @@ class url_fuzzer(CrawlPlugin):
                 domain_path_copy.set_file_name(filename_ext)
                 yield domain_path_copy
 
-    @attr('ci_fails')
     def _mutate_by_appending(self, url):
         '''
         Adds something to the end of the url (mutate the file being requested)
@@ -239,7 +236,6 @@ class url_fuzzer(CrawlPlugin):
                 url_copy.set_file_name(filename)
                 yield url_copy
 
-    @attr('ci_fails')
     def _mutate_file_type(self, url):
         '''
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
@@ -272,7 +268,6 @@ class url_fuzzer(CrawlPlugin):
                 url_copy.set_extension(filetype)
                 yield url_copy
 
-    @attr('ci_fails')
     def _mutate_path(self, url):
         '''
         Mutate the path instead of the file.

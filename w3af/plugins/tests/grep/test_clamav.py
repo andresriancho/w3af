@@ -23,7 +23,6 @@ import unittest
 import time
 import clamd
 
-from nose.plugins.attrib import attr
 from itertools import repeat
 from functools import wraps
 from mock import patch, Mock
@@ -68,7 +67,6 @@ class TestClamAV(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     @need_clamav
-    @attr('ci_fails')
     def test_clamav_eicar(self, *args):
         body = clamd.EICAR
         url = URL('http://www.w3af.com/')
@@ -95,7 +93,6 @@ class TestClamAV(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     @need_clamav
-    @attr('ci_fails')
     def test_clamav_empty(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -115,7 +112,6 @@ class TestClamAV(unittest.TestCase):
         self.assertEqual(len(findings), 0, findings)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_clamav_workers(self, *args):
         
         WAIT_TIME = 3
@@ -153,7 +149,6 @@ class TestClamAV(unittest.TestCase):
         self.assertLessEqual(time_spent, WAIT_TIME + DELTA)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_no_clamav_eicar(self, *args):
         body = clamd.EICAR
         url = URL('http://www.w3af.com/')
@@ -197,7 +192,6 @@ class TestClamAVScan(PluginTest):
         self.plugin.end()
         
     @need_clamav
-    @attr('ci_fails')
     def test_found_vuln(self):
         '''
         Test to validate case in which malware is identified while crawling.

@@ -23,7 +23,6 @@ import os
 
 import w3af.core.data.kb.config as cf
 
-from nose.plugins.attrib import attr
 from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_file_list import get_file_list
@@ -196,7 +195,6 @@ class w3af_core_profiles(object):
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages))
             raise w3afException(msg)
 
-    @attr('ci_fails')
     def get_profile_list(self, directory=HOME_DIR):
         '''
         :param directory: The directory from which profiles are loaded

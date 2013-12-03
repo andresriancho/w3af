@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from mock import patch, Mock
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -38,17 +37,14 @@ class TestAcceptDisclaimer(unittest.TestCase):
 
     @patch('w3af.core.ui.console.console_ui.StartUpConfig', new_callable=dummy_false)
     @patch('__builtin__.raw_input', return_value='')
-    @attr('ci_fails')
     def test_not_saved_not_accepted(self, mocked_startup_cfg, mocked_input):
         self.assertFalse(self.console_ui.accept_disclaimer())
 
     @patch('w3af.core.ui.console.console_ui.StartUpConfig', new_callable=dummy_false)
     @patch('__builtin__.raw_input', return_value='y')
-    @attr('ci_fails')
     def test_not_saved_accepted(self, mocked_startup_cfg, mocked_input):
         self.assertTrue(self.console_ui.accept_disclaimer())
 
     @patch('w3af.core.ui.console.console_ui.StartUpConfig', new_callable=dummy_true)
-    @attr('ci_fails')
     def test_saved(self, mocked_startup_cfg):
         self.assertTrue(self.console_ui.accept_disclaimer())

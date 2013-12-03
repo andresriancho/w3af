@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.data.parsers.encode_decode as enc_dec
 
-from nose.plugins.attrib import attr
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.data_container import DataContainer
 
@@ -35,7 +34,6 @@ class QueryString(DataContainer):
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(QueryString, self).__init__(init_val, encoding)
 
-    @attr('ci_fails')
     def __str__(self):
         '''
         >>> str(QueryString([('a','>'), ('b', ['a==1 && z >= 2','3>2'])]))

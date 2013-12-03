@@ -39,7 +39,6 @@ class TestMultipartPostHandler(unittest.TestCase):
     def setUp(self):
         self.opener = urllib2.build_opener(MultipartPostHandler)
 
-    @attr('ci_fails')
     def test_file_upload(self):
         temp = tempfile.mkstemp(suffix=".tmp")
         os.write(temp[0], '!--file content--')
@@ -48,7 +47,6 @@ class TestMultipartPostHandler(unittest.TestCase):
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
         self.assertIn('was successfully uploaded', resp)
 
-    @attr('ci_fails')
     def test_file_upload2(self):
         # Basically the same test but with list as values
         temp = tempfile.mkstemp(suffix=".tmp")
@@ -58,14 +56,12 @@ class TestMultipartPostHandler(unittest.TestCase):
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
         self.assertIn('was successfully uploaded', resp)
 
-    @attr('ci_fails')
     def test_file_stringio_upload(self):
         data = {"MAX_FILE_SIZE": "10000",
                 "uploadedfile": NamedStringIO('file content', name='test.txt')}
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data)
         self.assertTrue('was successfully uploaded' in resp.read())
 
-    @attr('ci_fails')
     def test_encode_vars(self):
         _, encoded = multipart_encode(
             [('a', 'b')], {}, boundary='fakeboundary')
@@ -73,7 +69,6 @@ class TestMultipartPostHandler(unittest.TestCase):
                    '\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)
 
-    @attr('ci_fails')
     def test_encode_vars_files(self):
         _vars = [('a', 'b')]
         _files = [('file', NamedStringIO('file content', name='test.txt'))]
@@ -86,7 +81,6 @@ class TestMultipartPostHandler(unittest.TestCase):
                    '\r\n\r\nfile content\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)
 
-    @attr('ci_fails')
     def test_encode_file_null(self):
         _files = [('file', NamedStringIO('\0hello world', name='test.txt'))]
 

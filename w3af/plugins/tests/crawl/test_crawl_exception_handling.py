@@ -69,7 +69,6 @@ class TestCrawlExceptions(PluginTest):
 
         super(TestCrawlExceptions, self).tearDown()
 
-    @attr('ci_fails')
     def test_spider_found_urls(self):
         cfg = self._run_configs['cfg']
 

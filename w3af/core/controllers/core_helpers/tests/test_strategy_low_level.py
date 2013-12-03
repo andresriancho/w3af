@@ -37,7 +37,6 @@ class TestStrategy(unittest.TestCase):
     TARGET_URL = get_moth_http('/audit/sql_injection/'\
                                'where_integer_qs.py?id=1')
     
-    @attr('ci_fails')
     def test_strategy_run(self):
         core = w3afCore()
         
@@ -81,7 +80,6 @@ class TestStrategy(unittest.TestCase):
         
         self.assertEqual(thread_names, expected_names)
         
-    @attr('ci_fails')
     def test_strategy_exception(self):
         core = w3afCore()
         
@@ -116,7 +114,6 @@ class TestStrategy(unittest.TestCase):
         
         self.assertEqual(thread_names, expected_names)
         
-    @attr('ci_fails')
     def test_strategy_verify_target_server(self):
         core = w3afCore()
         

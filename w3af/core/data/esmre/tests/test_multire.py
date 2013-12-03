@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import unittest
 
-from nose.plugins.attrib import attr
 from mock import Mock
 
 from w3af.core.controllers.tests.pylint_plugins.decorator import only_if_subclass
@@ -36,7 +35,6 @@ class BaseMultiReTest(unittest.TestCase):
     klass = Mock()
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_simplest(self):
         re_list = ['123', '456', '789']
         mre = self.klass(re_list)
@@ -50,7 +48,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('789', result[0][1])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_re(self):
         re_list = ['123.*456', 'abc.*def']
         mre = self.klass(re_list)
@@ -67,7 +64,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('abc.*def', result[0][1])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_re_with_obj(self):
         re_list = [('123.*456', None, None), ('abc.*def', 1, 2)]
         mre = self.klass(re_list)
@@ -85,7 +81,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(2, result[0][4])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_re_flags(self):
         re_list = ['123.*456', 'abc.*def']
         mre = self.klass(re_list, re.IGNORECASE)
@@ -95,7 +90,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('abc.*def', result[0][1])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_unicode_re(self):
         re_list = [u'ñ', u'ý']
         mre = self.klass(re_list)
@@ -109,7 +103,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('ñ', result[0][1])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_unicode_query(self):
         re_list = [u'abc', u'def']
         mre = self.klass(re_list)
@@ -124,7 +117,6 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('def', result[1][1])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_special_char(self):
         re_list = [u'\x00']
         mre = self.klass(re_list)

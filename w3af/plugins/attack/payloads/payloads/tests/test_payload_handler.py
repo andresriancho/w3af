@@ -22,7 +22,6 @@ import commands
 import unittest
 import os
 
-from nose.plugins.attrib import attr
 from w3af.plugins.attack.payloads.payload_handler import (payload_to_file,
                                                      is_payload,
                                                      exec_payload,
@@ -38,14 +37,12 @@ from w3af.core.data.kb.tests.test_vuln import MockVuln
 
 class TestPayloadHandler(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_payload_to_file(self):
         cpu_info_file = payload_to_file('cpu_info')
         expected_file = os.path.join(ROOT_PATH,
                                      'plugins/attack/payloads/payloads/cpu_info.py')
         self.assertEqual(cpu_info_file, expected_file)
 
-    @attr('ci_fails')
     def test_get_payload_list(self):
         payload_list = get_payload_list()
 
@@ -66,7 +63,6 @@ class TestPayloadHandler(unittest.TestCase):
         self.assertFalse('__init__' in payload_list)
         self.assertFalse('__init__.py' in payload_list)
 
-    @attr('ci_fails')
     def test_get_payload_instance(self):
         shell = FakeExecShell()
         for payload_name in get_payload_list():
@@ -74,7 +70,6 @@ class TestPayloadHandler(unittest.TestCase):
 
             self.assertTrue(payload_inst.require() in ('linux', 'windows'))
 
-    @attr('ci_fails')
     def test_runnable_payloads_exec(self):
         shell = FakeExecShell()
         runnable = runnable_payloads(shell)
@@ -88,7 +83,6 @@ class TestPayloadHandler(unittest.TestCase):
             all_but_exceptions
         )
 
-    @attr('ci_fails')
     def test_runnable_payloads_read(self):
         shell = FakeReadShell()
         runnable = runnable_payloads(shell)
@@ -104,13 +98,11 @@ class TestPayloadHandler(unittest.TestCase):
         for name in NOT_EXPECTED:
             self.assertFalse(name in runnable)
 
-    @attr('ci_fails')
     def test_exec_payload_exec(self):
         shell = FakeExecShell()
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
 
-    @attr('ci_fails')
     def test_exec_payload_read(self):
         shell = FakeReadShell()
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
@@ -128,7 +120,6 @@ class TestPayloadHandler(unittest.TestCase):
         self.assertGreater(int(result['cpu_cores']), 0)
         self.assertLess(int(result['cpu_cores']), 12)
 
-    @attr('ci_fails')
     def test_is_payload(self):
         self.assertTrue(is_payload('cpu_info'))
         self.assertFalse(is_payload('andres_riancho'))

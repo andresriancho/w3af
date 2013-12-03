@@ -23,7 +23,6 @@ import csv
 import base64
 import os
 
-from nose.plugins.attrib import attr
 from lxml import etree
 
 import w3af.core.controllers.output_manager as om
@@ -99,7 +98,6 @@ class import_results(CrawlPlugin):
                     for fr in fuzzable_request_list:
                         self.output_queue.put(fr)
 
-    @attr('ci_fails')
     def _obj_from_csv(self, csv_row):
         '''
         :return: A FuzzableRequest based on the csv_line.

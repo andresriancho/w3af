@@ -71,7 +71,6 @@ class TestBasic(unittest.TestCase):
                     plugin_type, plugin_name)
                 self.plugins[plugin_type].append(plugin)
 
-    @attr('ci_fails')
     def test_plugin_options(self):
 
         OPTION_TYPES = (
@@ -95,7 +94,6 @@ class TestBasic(unittest.TestCase):
                     self.assertIsInstance(opt.get_help(), basestring)
                     self.assertIsInstance(opt.get_value_str(), basestring)
 
-    @attr('ci_fails')
     def test_plugin_deps(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
@@ -114,7 +112,6 @@ class TestBasic(unittest.TestCase):
                                   self.w3afcore.plugins.get_plugin_list(plugin_type),
                                   msg)
 
-    @attr('ci_fails')
     def test_plugin_desc(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
@@ -137,17 +134,14 @@ class TestBasic(unittest.TestCase):
                                           plugin_type,
                                           plugin.get_name()))
 
-    @attr('ci_fails')
     def test_plugin_root_probability(self):
         for plugin in self.plugins['attack']:
             plugin.get_root_probability()
 
-    @attr('ci_fails')
     def test_plugin_type_description(self):
         for plugin_type in self.w3afcore.plugins.get_plugin_types():
             self.w3afcore.plugins.get_plugin_type_desc(plugin_type)
 
-    @attr('ci_fails')
     def test_no_kb_access_from_plugin(self):
         audit_path = os.path.join(ROOT_PATH, 'plugins', 'audit')
         
@@ -168,7 +162,6 @@ class TestBasic(unittest.TestCase):
                       ' going through kb_append_uniq or kb_append.'
                 self.assertTrue(False, msg % audit_plugin)
         
-    @attr('ci_fails')
     def test_plugin_is_of_correct_type(self):
         
         def defined_in_subclass(klass, attr):
@@ -241,14 +234,12 @@ class TestFailOnInvalidURL(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_fail_1(self):
         cfg = self._run_configs['cfg']
         self.assertRaises(ValueError,
                           self._scan, 'http://http://moth/', cfg['plugins'],
                           verify_targets=False)
 
-    @attr('ci_fails')
     def test_fail_2(self):
         cfg = self._run_configs['cfg']
         self.assertRaises(ValueError, self._scan, '', cfg['plugins'],

@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from mock import MagicMock
 
 from w3af.plugins.attack.payloads.base_payload import Payload
@@ -33,16 +32,13 @@ class TestBasePayload(unittest.TestCase):
     def setUp(self):
         self.bp = Payload(FakeReadShell())
     
-    @attr('ci_fails')
     def test_can_run(self):
         self.assertEqual(self.bp.can_run(), set())
     
-    @attr('ci_fails')
     def test_run_only_read(self):
         bp = Payload(FakeReadShell())
         self.assertRaises(AttributeError, bp.run, 'filename')
 
-    @attr('ci_fails')
     def test_run_execute(self):
         class Executable(Payload):
             called_run_execute = False

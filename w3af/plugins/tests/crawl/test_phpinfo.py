@@ -32,7 +32,6 @@ class TestPHPInfo(PluginTest):
     }
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_phpinfo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 

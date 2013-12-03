@@ -29,7 +29,6 @@ class TestKBAdd(ConsoleTestHelper):
     '''
     Basic test for the console UI.
     '''
-    @attr('ci_fails')
     def test_kb_add(self):
         commands_to_run = ['kb',
                                 'add dav',
@@ -51,7 +50,6 @@ class TestKBAdd(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
     
-    @attr('ci_fails')
     def test_kb_add_with_errors(self):
         commands_to_run = ['kb',
                                 'add',
@@ -72,7 +70,6 @@ class TestKBAdd(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_kb_add_back_without_config(self):
         commands_to_run = ['kb',
                                 'add',

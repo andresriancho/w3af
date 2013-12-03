@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -33,7 +32,6 @@ class TestUpdateURLs(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
 
-    @attr('ci_fails')
     def test_basic(self):
         u1 = URL('http://w3af.org/')
         r1 = FuzzableRequest(u1, method='GET')

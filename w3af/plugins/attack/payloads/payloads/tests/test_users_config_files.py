@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
 from os.path import expanduser
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -31,7 +30,6 @@ class test_users_config_files(PayloadTestHelper):
                            expanduser(u'~/.bashrc'),
                            expanduser(u'~/.bash_logout')])
 
-    @attr('ci_fails')
     def test_users_config_files(self):
         result = exec_payload(self.shell, 'users_config_files', use_api=True)
         

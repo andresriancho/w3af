@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
@@ -36,7 +35,6 @@ class TestOpenerSettings(unittest.TestCase):
     def setUp(self):
         self.os = OpenerSettings()
 
-    @attr('ci_fails')
     def test_options(self):
         opt_lst = self.os.get_options()
         self.os.set_options(opt_lst)
@@ -54,6 +52,5 @@ class TestOpenerSettings(unittest.TestCase):
             self.assertIsInstance(opt.get_help(), basestring)
             self.assertIsInstance(opt.get_value_str(), basestring)
 
-    @attr('ci_fails')
     def test_desc(self):
         self.os.get_desc()

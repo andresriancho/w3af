@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -48,7 +47,6 @@ class TestEval(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_eval_echo(self):
         cfg = self._run_configs['echo']
         self._scan(cfg['target'], cfg['plugins'])
@@ -63,7 +61,6 @@ class TestEval(PluginTest):
         self.assertEquals("c", vuln.get_var())
         self.assertEquals(self.target_echo, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_found_eval_delay(self):
         cfg = self._run_configs['delay']
         self._scan(cfg['target'], cfg['plugins'])

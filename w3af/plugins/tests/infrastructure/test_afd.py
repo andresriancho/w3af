@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -35,7 +34,6 @@ class TestAFD(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_http_url, cfg['plugins'])
@@ -65,7 +63,6 @@ class TestAFD(PluginTest):
 
         self.assertEqual(set(expected), set(values), values)
 
-    @attr('ci_fails')
     def test_afd_found_https(self):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_https_url, cfg['plugins'])
@@ -74,7 +71,6 @@ class TestAFD(PluginTest):
 
         self.assertEqual(len(infos), 1, infos)
 
-    @attr('ci_fails')
     def test_afd_not_found(self):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])

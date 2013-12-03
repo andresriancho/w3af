@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import urllib2
 
-from nose.plugins.attrib import attr
 from multiprocessing.dummy import Process
 from nose.plugins.skip import SkipTest
 
@@ -84,7 +83,6 @@ class TestSpiderman(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_spiderman_basic(self):
         '''
         The difficult thing with this test is that the scan will block until
@@ -129,6 +127,5 @@ class TestSpiderman(PluginTest):
         for _, e_url, _ in BROWSE_URLS:
             self.assertIn(e_url, kb_urls)
 
-    @attr('ci_fails')
     def test_https(self):
         raise SkipTest('FIXME: Need to add this test.')

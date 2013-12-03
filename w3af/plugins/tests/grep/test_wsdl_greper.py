@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -45,7 +44,6 @@ class test_wsdl_greper(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_wsdl_greper_empty(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -53,7 +51,6 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
 
-    @attr('ci_fails')
     def test_wsdl_greper_long(self):
         body = 'ABC ' * 10000
         headers = Headers([('content-type', 'text/html')])
@@ -61,7 +58,6 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
 
-    @attr('ci_fails')
     def test_wsdl_greper_positive(self):
         body = 'ABC ' * 100
         body += '/s:sequence'
@@ -71,7 +67,6 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 1)
 
-    @attr('ci_fails')
     def test_wsdl_greper_positive_disco(self):
         body = 'ABC ' * 100
         body += 'disco:discovery '

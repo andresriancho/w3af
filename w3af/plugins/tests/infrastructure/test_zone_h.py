@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -35,7 +34,6 @@ class TestZoneH(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_zone_h_positive(self):
         cfg = self._run_configs['cfg']
         self._scan(self.vuln_url, cfg['plugins'])
@@ -50,7 +48,6 @@ class TestZoneH(PluginTest):
         self.assertTrue(
             info.get_desc().startswith('The target site was defaced'))
 
-    @attr('ci_fails')
     def test_zone_h_negative(self):
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])

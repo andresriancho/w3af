@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.plugins.grep.xss_protection_header import xss_protection_header
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -40,7 +39,6 @@ class test_xss_protection_header(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_no_xss_protection_header(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -51,7 +49,6 @@ class test_xss_protection_header(unittest.TestCase):
         self.assertEqual(len(
             kb.kb.get('xss_protection_header', 'xss_protection_header')), 0)
 
-    @attr('ci_fails')
     def test_xss_protection_header_enable(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -63,7 +60,6 @@ class test_xss_protection_header(unittest.TestCase):
         self.assertEqual(len(
             kb.kb.get('xss_protection_header', 'xss_protection_header')), 0)
 
-    @attr('ci_fails')
     def test_xss_protection_header_disable(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -75,7 +71,6 @@ class test_xss_protection_header(unittest.TestCase):
         self.assertEqual(len(
             kb.kb.get('xss_protection_header', 'xss_protection_header')), 1)
 
-    @attr('ci_fails')
     def test_xss_protection_header_invalid(self):
         body = ''
         url = URL('http://www.w3af.com/')

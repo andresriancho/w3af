@@ -56,25 +56,21 @@ class PylintRunner(unittest.TestCase):
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
     
-    @attr('ci_fails')
     def test_pylint_plugins(self):
         pylint_output = self.run_pylint('%s/plugins/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
-    @attr('ci_fails')
     def test_pylint_core_controllers(self):
         pylint_output = self.run_pylint('%s/core/controllers/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
-    @attr('ci_fails')
     def test_pylint_core_data(self):
         pylint_output = self.run_pylint('%s/core/data/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
-    @attr('ci_fails')
     def test_pylint_core_ui(self):
         pylint_output = self.run_pylint('%s/core/ui/' % ROOT_PATH)
         output = pylint_output.read()

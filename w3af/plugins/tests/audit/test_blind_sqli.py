@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -34,7 +33,6 @@ class TestBlindSQLI(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_integer(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php'
         qs = '?id=1'
@@ -51,7 +49,6 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals("numeric", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_single_quote(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string.php'
         qs = '?email=andres@w3af.org'
@@ -68,7 +65,6 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals("stringsingle", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_single_quote_random(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php'
         qs = '?email=andres@w3af.org'
@@ -83,7 +79,6 @@ class TestBlindSQLI(PluginTest):
             vuln.get_name(), 'Blind SQL injection vulnerability')
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_delay_integer(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_integer.php'
         qs = '?id=1'
@@ -99,7 +94,6 @@ class TestBlindSQLI(PluginTest):
         self.assertTrue('time delays' in vuln.get_desc())
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_delay_string_single(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_single.php'
         qs = '?email=andres@w3af.org'
@@ -115,7 +109,6 @@ class TestBlindSQLI(PluginTest):
         self.assertTrue('time delays' in vuln.get_desc())
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_delay_string_double(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_double.php'
         qs = '?email=andres@w3af.org'
@@ -131,7 +124,6 @@ class TestBlindSQLI(PluginTest):
         self.assertTrue('time delays' in vuln.get_desc())
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_single_quote_form(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/forms/test_forms.html'
         self._scan(target_url, self._run_configs['cfg']['plugins'])
@@ -148,7 +140,6 @@ class TestBlindSQLI(PluginTest):
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals(action_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_false_positives(self):
         target_path = 'http://moth/w3af/audit/blind_sql_injection/'
         target_fnames = ('random_5_lines.php',

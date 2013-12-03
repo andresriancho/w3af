@@ -89,7 +89,6 @@ class TestGeneric(PluginTest):
     }
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -103,7 +102,6 @@ class TestGeneric(PluginTest):
         self.assertEquals(vuln.get_var(), 'section')
 
     @attr('internet')
-    @attr('ci_fails')
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from itertools import repeat
 from mock import patch
 
@@ -44,7 +43,6 @@ class test_code_disclosure(unittest.TestCase):
         self.plugin.end()
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_ASP_code_disclosure(self, *args):
         body = 'header <% Response.Write("Hello World!") %> footer'
         url = URL('http://www.w3af.com/')
@@ -56,7 +54,6 @@ class test_code_disclosure(unittest.TestCase):
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_PHP_code_disclosure(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')
@@ -68,7 +65,6 @@ class test_code_disclosure(unittest.TestCase):
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_no_code_disclosure_blank(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -80,7 +76,6 @@ class test_code_disclosure(unittest.TestCase):
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_no_code_disclosure(self, *args):
         body = """Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer
         eu lacus accumsan arcu fermentum euismod. Donec pulvinar porttitor
@@ -102,7 +97,6 @@ class test_code_disclosure(unittest.TestCase):
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_no_code_disclosure_xml(self, *args):
         body = '''
                 <?xml version="1.0"?>
@@ -121,7 +115,6 @@ class test_code_disclosure(unittest.TestCase):
             len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @attr('ci_fails')
     def test_no_analysis_content_type(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')

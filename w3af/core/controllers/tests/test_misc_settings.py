@@ -33,7 +33,6 @@ OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
 
 @attr('smoke')
 class TestMiscSettings(unittest.TestCase):
-    @attr('ci_fails')
     def test_basic(self):
         opt_lst = MiscSettings().get_options()
 

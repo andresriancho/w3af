@@ -29,7 +29,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     '''
     Basic test for the console UI.
     '''
-    @attr('ci_fails')
     def test_menu_browse_misc(self):
         commands_to_run = ['misc-settings', 'back', 'exit']
 
@@ -40,7 +39,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_menu_browse_http(self):
         commands_to_run = ['http-settings', 'back', 'exit']
 
@@ -51,7 +49,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_menu_browse_target(self):
         commands_to_run = ['target', 'back', 'exit']
 
@@ -62,7 +59,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_menu_plugin_desc(self):
         commands_to_run = ['plugins',
                            'infrastructure desc zone_h',
@@ -79,7 +75,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_menu_set_option_case01(self):
         commands_to_run = ['target', 'set target http://moth/', 'save', 'view',
                            'back', 'exit']
@@ -96,7 +91,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
         
-    @attr('ci_fails')
     def test_menu_set_option_manual_save(self):
         commands_to_run = ['target set target http://moth/',
                            'target view',
@@ -111,7 +105,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_menu_set_option_auto_save(self):
         commands_to_run = ['target set target http://moth/',
                            'target view',
@@ -125,7 +118,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
         
-    @attr('ci_fails')
     def test_menu_set_option_invalid_case01(self):
         # Invalid port
         commands_to_run = ['target', 'set target http://moth:301801/', 'view',

@@ -40,7 +40,6 @@ class TestRedirectHandler(unittest.TestCase):
         consecutive_number_generator.reset()
         
     @attr('moth')
-    @attr('ci_fails')
     def test_redirect_handler(self):
         '''Test the redirect handler using urllib2'''
         redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
@@ -52,7 +51,6 @@ class TestRedirectHandler(unittest.TestCase):
         self.assertEqual(response.code, FOUND)
 
     @attr('moth')
-    @attr('ci_fails')
     def test_handler_order(self):
         '''Get an instance of the extended urllib and verify that the redirect
         handler still works, even when mixed with all the other handlers.'''

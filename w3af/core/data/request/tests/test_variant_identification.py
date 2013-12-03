@@ -21,51 +21,42 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.request.variant_identification import are_variants
 from w3af.core.data.parsers.url import URL
 
 
 class TestVariantIdentification(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_eq(self):
         self.assertTrue(are_variants(URL('http://w3af.com/foo.php'),
                                      URL('http://w3af.com/foo.php')))
 
-    @attr('ci_fails')
     def test_diff_params(self):
         self.assertFalse(are_variants(URL('http://w3af.com/foo.php?x=1'),
                                       URL('http://w3af.com/foo.php?y=1')))
 
-    @attr('ci_fails')
     def test_diff_file_param(self):
         self.assertFalse(are_variants(URL('http://w3af.com/bar.php?id=1'),
                                       URL('http://w3af.com/foo.php?foo=1')))
 
-    @attr('ci_fails')
     def test_diff_domain(self):
         self.assertFalse(are_variants(URL('http://w3af.com/foo.php?id=1'),
                                       URL('http://bonsai-sec.com/foo.php?id=1')))
 
-    @attr('ci_fails')
     def test_diff_domain_params(self):
         self.assertFalse(
             are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
                          URL('http://w3af.org/foo.php?id=1')))
 
-    @attr('ci_fails')
     def test_same_params_diff_values(self):
         self.assertTrue(
             are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
                          URL('http://w3af.com/foo.php?id=333&foo=spam')))
 
-    @attr('ci_fails')
     def test_same_param_diff_value_type(self):
         self.assertFalse(are_variants(URL('http://w3af.com/foo.php?id=1111'),
                                       URL('http://w3af.com/foo.php?id=spam')))
 
-    @attr('ci_fails')
     def test_raises(self):
         self.assertRaises(AttributeError, are_variants,
                           'http://w3af.com/foo.php?id=1',

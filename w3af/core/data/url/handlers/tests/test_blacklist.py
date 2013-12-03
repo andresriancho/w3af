@@ -44,7 +44,6 @@ class TestBlacklistHandler(unittest.TestCase):
     def tearDown(self):
         cf.cf.save('non_targets', [])
     
-    @attr('ci_fails')
     def test_blacklist_handler_block(self):
         '''Verify that the blacklist handler works as expected'''
         
@@ -61,7 +60,6 @@ class TestBlacklistHandler(unittest.TestCase):
         self.assertEqual(response.code, NO_CONTENT)
     
     @attr('moth')
-    @attr('ci_fails')
     def test_blacklist_handler_pass(self):
         '''Verify that the blacklist handler works as expected'''
         opener = urllib2.build_opener(BlacklistHandler)
@@ -72,7 +70,6 @@ class TestBlacklistHandler(unittest.TestCase):
         
         self.assertEqual(response.code, 200)
     
-    @attr('ci_fails')
     def test_handler_order_block(self):
         '''Get an instance of the extended urllib and verify that the blacklist
         handler still works, even when mixed with all the other handlers.'''
@@ -94,7 +91,6 @@ class TestBlacklistHandler(unittest.TestCase):
         self.assertEqual(response.id, 1)
         
     @attr('moth')
-    @attr('ci_fails')
     def test_handler_order_pass(self):
         '''Get an instance of the extended urllib and verify that the blacklist
         handler still works, even when mixed with all the other handlers.'''

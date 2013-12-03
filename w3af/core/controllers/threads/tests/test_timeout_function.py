@@ -25,7 +25,6 @@ import sys
 import time
 import threading  # PYCHOK expected
 
-from nose.plugins.attrib import attr
 from w3af.core.controllers.threads.timeout_function import (
     timelimited, TimeLimited,
     TimeLimitExpired)
@@ -46,7 +45,6 @@ class TestTimeoutFunction(unittest.TestCase):
 
         self.assertTrue(result is x)
 
-    @attr('ci_fails')
     def test_timelimited_function(self):
         for t, s in ((2.0, 1),
                      (1.0, 20)):  # note, 20!
@@ -56,7 +54,6 @@ class TestTimeoutFunction(unittest.TestCase):
                 r = e
             self._check(t, s, r, timelimited)
 
-    @attr('ci_fails')
     def test_timeLimited_class_and_property(self):
         f = TimeLimited(time.sleep)
         for t, s in ((2.0, 1),
@@ -68,7 +65,6 @@ class TestTimeoutFunction(unittest.TestCase):
                 r = e
             self._check(t, s, r, f)
 
-    @attr('ci_fails')
     def test_TypeError(self):
         try:
             t = timelimited(0, None)
@@ -76,7 +72,6 @@ class TestTimeoutFunction(unittest.TestCase):
         except TypeError:
             pass
 
-    @attr('ci_fails')
     def test_ValueError(self):
         try:
             t = timelimited(-10, time.time)
@@ -84,7 +79,6 @@ class TestTimeoutFunction(unittest.TestCase):
         except ValueError:
             pass
 
-    @attr('ci_fails')
     def test_error_passing_from_thread(self):
         try:
             r = timelimited(1, lambda x: 1 / x, 0)
@@ -92,7 +86,6 @@ class TestTimeoutFunction(unittest.TestCase):
         except ZeroDivisionError:
             pass
 
-    @attr('ci_fails')
     def test_all_created_threads_stopped(self):
         for t in threading.enumerate():
             if t.isAlive() and repr(t).startswith('<_Timelimited('):

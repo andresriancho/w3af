@@ -26,7 +26,6 @@ import Queue
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
-from nose.plugins.attrib import attr
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
@@ -109,7 +108,6 @@ class Plugin(Configurable):
         '''
         return []
 
-    @attr('ci_fails')
     def get_desc(self):
         '''
         :return: A description of the plugin.

@@ -25,7 +25,6 @@ import random
 
 import w3af.core.controllers.output_manager as om
 
-from nose.plugins.attrib import attr
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -72,7 +71,6 @@ class Form(DataContainer):
         '''
         return self._action
 
-    @attr('ci_fails')
     def set_action(self, action):
         '''
         >>> f = Form()

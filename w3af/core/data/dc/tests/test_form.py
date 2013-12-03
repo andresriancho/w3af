@@ -83,7 +83,6 @@ ALL_FORMS = (form_with_radio, form_with_checkbox, form_select_cars)
 @attr('smoke')
 class test_form(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_new_form(self):
         # Create new forms and test internal structure
         for form_data in ALL_FORMS:
@@ -99,7 +98,6 @@ class test_form(unittest.TestCase):
                     self.assertTrue(evalue in new_form[ename])
                     self.assertTrue(evalue in new_form._selects[ename])
 
-    @attr('ci_fails')
     def test_tmb_variants(self):
         # 'top-middle-bottom' mode variants
         def filter_tmb(values):
@@ -135,7 +133,6 @@ class test_form(unittest.TestCase):
         # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), expected)
 
-    @attr('ci_fails')
     def test_tmb_variants_large(self):
         '''
         Note that this test has several changes from test_tmb_variants:
@@ -190,7 +187,6 @@ class test_form(unittest.TestCase):
         # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), expected)
 
-    @attr('ci_fails')
     def test_all_variants(self):
         # 'all' mode variants
         bigform_data = form_with_radio + form_select_misc
@@ -217,7 +213,6 @@ class test_form(unittest.TestCase):
         # Variants shouldn't duplicated
         self.assertEquals(expected, len(variants_set))
 
-    @attr('ci_fails')
     def test_t_b_variants(self):
         # 'top' and 'bottom' variants
         bigform_data = form_with_radio + form_select_cars + form_select_misc
@@ -241,7 +236,6 @@ class test_form(unittest.TestCase):
         for name, values in clean_data.items():
             self.assertEquals(values[-1], t_form_variants[0][name][0])
 
-    @attr('ci_fails')
     def test_max_variants(self):
         # Combinatoric explosion (mode="all"): total_variants = 2*5*5*5 =
         # 250 > dc.Form.TOP_VARIANTS = 150
@@ -250,7 +244,6 @@ class test_form(unittest.TestCase):
         self.assertEquals(form.Form.TOP_VARIANTS,
                           len([fv for fv in new_form.get_variants(mode="all")]) - 1)
 
-    @attr('ci_fails')
     def test_same_variants_generation(self):
         # Combinatoric explosion (mode="all"): total_variants = 250 > 150
         # Therefore will be used random variants generation. We should get the
@@ -263,7 +256,6 @@ class test_form(unittest.TestCase):
         for i in xrange(10):
             self.assertEquals(variants, get_all_variants())
 
-    @attr('ci_fails')
     def test_empty_select_all(self):
         '''
         This tests for handling of "select" tags that have no options inside.
@@ -277,7 +269,6 @@ class test_form(unittest.TestCase):
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="all")]
 
-    @attr('ci_fails')
     def test_empty_select_tb(self):
         '''
         This tests for handling of "select" tags that have no options inside.
@@ -293,7 +284,6 @@ class test_form(unittest.TestCase):
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="tb")]
 
-    @attr('ci_fails')
     def test_form_with_plus_value(self):
         '''
         This test verifies that a fix for the bug identified while scanning
@@ -322,21 +312,18 @@ class test_form(unittest.TestCase):
         new_form = create_form_helper(form_with_plus)
         self.assertEqual(str(new_form), 'eggs=&foo=bar%2Bspam')
 
-    @attr('ci_fails')
     def test_form_str_simple(self):
         form_data = [{'tagname': 'input', 'type':'text', 'name':
                       'abc', 'value':'123'}]
         new_form = create_form_helper(form_data)
         self.assertEqual(str(new_form), 'abc=123')
 
-    @attr('ci_fails')
     def test_form_str_simple_2(self):
         form_data = [{'tagname': 'input', 'type':'text', 'name':'abc', 'value':'123'},
                      {'tagname': 'input', 'type':'hidden', 'name':'def', 'value':'000'}]
         new_form = create_form_helper(form_data)
         self.assertEqual(str(new_form), 'abc=123&def=000')
 
-    @attr('ci_fails')
     def test_form_str_special_chars(self):
         form_data = [{'tagname': 'input', 'type':'text', 'name':'v', 'value':'áéíóú'},
                      {'tagname': 'input', 'type':'hidden', 'name':'c', 'value':'ñçÑÇ'}]
@@ -345,7 +332,6 @@ class test_form(unittest.TestCase):
         self.assertEqual(urllib.unquote(str(new_form)).decode('utf-8'),
                          u'c=ñçÑÇ&address=bsas&v=áéíóú')
 
-    @attr('ci_fails')
     def test_form_str_radio_select(self):
         new_form = create_form_helper(form_with_radio + form_with_checkbox +
                                       form_select_cars)

@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest as FuzzableRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
@@ -45,7 +44,6 @@ class test_path_disclosure(unittest.TestCase):
         self.plugin.end()
         kb.kb.cleanup()
 
-    @attr('ci_fails')
     def test_path_disclosure(self):
 
         res = HTTPResponse(
@@ -54,7 +52,6 @@ class test_path_disclosure(unittest.TestCase):
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
         self.assertEquals(len(infos), 0)
 
-    @attr('ci_fails')
     def test_path_disclosure_positive(self):
         res = HTTPResponse(200, 'header /etc/passwd footer',
                            self.header, self.url, self.url, _id=1)
@@ -66,7 +63,6 @@ class test_path_disclosure(unittest.TestCase):
         path = infos[0]['path']
         self.assertEqual(path, '/etc/passwd')
 
-    @attr('ci_fails')
     def test_path_disclosure_calculated_webroot(self):
         kb.kb.add_url(self.url)
         

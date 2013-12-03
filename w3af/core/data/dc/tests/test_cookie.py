@@ -21,13 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.dc.cookie import Cookie
 
 
 class TestCookieDc(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_basic(self):
         cookie_obj = Cookie('test=123; foobar=abc def; path=/')
         
@@ -38,7 +36,6 @@ class TestCookieDc(unittest.TestCase):
         self.assertEqual(cookie_obj['test'], ['123'])
         self.assertEqual(cookie_obj['foobar'], ['abc def'])
         
-    @attr('ci_fails')
     def test_repeated(self):
         cookie_obj = Cookie('test=123; test=abc def; path=/')
         

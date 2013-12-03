@@ -39,7 +39,6 @@ class TestErrorHandler(unittest.TestCase):
         consecutive_number_generator.reset()
     
     @attr('moth')
-    @attr('ci_fails')
     def test_error_handler_id(self):
         '''
         Verify that the error handler works as expected, in other words, do NOT

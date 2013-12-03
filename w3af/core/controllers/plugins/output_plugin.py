@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import inspect
 
 import w3af.core.data.constants.severity as severity
-from nose.plugins.attrib import attr
 from w3af.core.controllers.plugins.plugin import Plugin
 
 
@@ -132,7 +131,6 @@ class OutputPlugin(Plugin):
             string_to_clean = string_to_clean.replace(char, replace)
         return string_to_clean
 
-    @attr('ci_fails')
     def get_caller(self, which_stack_item=4):
         '''
         What I'm going to do is:

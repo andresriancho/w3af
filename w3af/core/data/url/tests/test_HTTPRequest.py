@@ -33,7 +33,6 @@ from w3af.core.data.dc.headers import Headers
 @attr('smoke')
 class TestHTTPRequest(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_basic(self):
         u = URL('http://www.w3af.com')
         req = HTTPRequest(u)
@@ -44,7 +43,6 @@ class TestHTTPRequest(unittest.TestCase):
                          'http://www.w3af.com/')
         
     
-    @attr('ci_fails')
     def test_to_from_dict(self):
         headers = Headers([('Host', 'www.w3af.com')])
         req = HTTPRequest(URL("http://www.w3af.com/"), data='spameggs',
@@ -58,7 +56,6 @@ class TestHTTPRequest(unittest.TestCase):
         self.assertEqual(req.__dict__.values(),
                          loaded_req.__dict__.values())
             
-    @attr('ci_fails')
     def test_dump_case01(self):
         expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
                                 'Hello: World',
@@ -70,7 +67,6 @@ class TestHTTPRequest(unittest.TestCase):
         
         self.assertEqual(req.dump(), expected)
 
-    @attr('ci_fails')
     def test_dump_case02(self):
         expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
                                  u'Hola: Múndo',

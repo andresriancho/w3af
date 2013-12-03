@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.plugins.grep.file_upload import file_upload
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -40,7 +39,6 @@ class test_file_upload(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_simple(self):
         body = 'header <form><input type="file"></form> footer'
         url = URL('http://www.w3af.com/')
@@ -53,7 +51,6 @@ class test_file_upload(unittest.TestCase):
         i = kb.kb.get('file_upload', 'file_upload')[0]
         self.assertEquals(i.get_name(), 'File upload form')
 
-    @attr('ci_fails')
     def test_complex(self):
         body = 'header <form><Input type="File"></form> footer'
         url = URL('http://www.w3af.com/')
@@ -66,7 +63,6 @@ class test_file_upload(unittest.TestCase):
         i = kb.kb.get('file_upload', 'file_upload')[0]
         self.assertEquals(i.get_name(), 'File upload form')
 
-    @attr('ci_fails')
     def test_none(self):
         body = 'header <form><noinput type="file"></form> footer'
         url = URL('http://www.w3af.com/')

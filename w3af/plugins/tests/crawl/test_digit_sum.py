@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -32,7 +31,6 @@ class TestDigitSum(PluginTest):
         'plugins': {'crawl': (PluginConfig('digit_sum',),)}
     }
 
-    @attr('ci_fails')
     def test_found_fname(self):
         self._scan(self.digit_sum_url + 'index-3-1.html',
                    self._run_config['plugins'])
@@ -45,7 +43,6 @@ class TestDigitSum(PluginTest):
             set((self.digit_sum_url + end) for end in EXPECTED_URLS)
         )
 
-    @attr('ci_fails')
     def test_found_qs(self):
         self._scan(self.digit_sum_url + 'index1.php?id=22',
                    self._run_config['plugins'])

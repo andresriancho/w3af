@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -29,11 +28,9 @@ class test_ldap_config_files(PayloadTestHelper):
 
     EXPECTED_RESULT = {}
 
-    @attr('ci_fails')
     def test_ldap_config_files(self):
         result = exec_payload(self.shell, 'ldap_config_files', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
 
-    @attr('ci_fails')
     def test_a_positive_test(self):
         raise SkipTest('FIXME: I need a positive test.')

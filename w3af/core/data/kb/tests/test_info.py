@@ -45,7 +45,6 @@ class TestInfo(unittest.TestCase):
     :author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    @attr('ci_fails')
     def test_convert_to_range(self):
         inf = MockInfo()
 
@@ -70,7 +69,6 @@ class TestInfo(unittest.TestCase):
         res = len(inf._convert_to_range_wrapper(range(0, 30000, 2)).split())
         self.assertEquals(15001, res)
 
-    @attr('ci_fails')
     def test_set_uri(self):
         i = MockInfo()
         self.assertRaises(TypeError, i.set_uri, 'http://www.w3af.com/')
@@ -79,7 +77,6 @@ class TestInfo(unittest.TestCase):
         i.set_uri(uri)
         self.assertEqual(i.get_uri(), uri)
 
-    @attr('ci_fails')
     def test_set_url(self):
         i = MockInfo()
         self.assertRaises(TypeError, i.set_url, 'http://www.w3af.com/?id=1')
@@ -92,7 +89,6 @@ class TestInfo(unittest.TestCase):
         self.assertEqual(i.get_uri(), uri)
         self.assertEqual(i.get_url(), url)
     
-    @attr('ci_fails')
     def test_set_desc(self):
         i = MockInfo()
         
@@ -102,11 +98,9 @@ class TestInfo(unittest.TestCase):
         i.set_desc(desc)
         self.assertTrue(i.get_desc().startswith(desc))
     
-    @attr('ci_fails')
     def test_pickleable(self):
         cPickle.dumps(MockInfo())
     
-    @attr('ci_fails')
     def test_from_info(self):
         url = URL('http://moth/')
         
@@ -129,7 +123,6 @@ class TestInfo(unittest.TestCase):
         self.assertEqual(inst1.get_var(), inst2.get_var())
         self.assertEqual(inst1.get_to_highlight(), inst2.get_to_highlight())
 
-    @attr('ci_fails')
     def test_from_mutant(self):
         dc = DataContainer()
         url = URL('http://moth/')

@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -43,7 +42,6 @@ class test_ssn(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_ssn_empty_string(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -52,7 +50,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('ssn', 'ssn')), 0)
 
-    @attr('ci_fails')
     def test_ssn_separated(self):
         body = 'header 771-12-9876 footer'
         headers = Headers([('content-type', 'text/html')])
@@ -60,7 +57,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 1)
 
-    @attr('ci_fails')
     def test_ssn_with_html(self):
         body = 'header <b>771</b>-<b>12</b>-<b>9878</b> footer'
         headers = Headers([('content-type', 'text/html')])
@@ -68,7 +64,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 1)
 
-    @attr('ci_fails')
     def test_ssn_with_complex_html(self):
         '''
         Test for false positive "...discloses a US Social Security Number: "12-56-1011"..."
@@ -86,7 +81,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
-    @attr('ci_fails')
     def test_ssn_together(self):
         body = 'header 771129876 footer'
         headers = Headers([('content-type', 'text/html')])
@@ -94,7 +88,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('ssn', 'ssn')), 1)
 
-    @attr('ci_fails')
     def test_ssn_extra_number(self):
         body = 'header 7711298761 footer'
         headers = Headers([('content-type', 'text/html')])
@@ -102,7 +95,6 @@ class test_ssn(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
-    @attr('ci_fails')
     def test_find_ssn(self):
         EXPECTED = set([(None, None),
                       ('771129876', '771-12-9876'),

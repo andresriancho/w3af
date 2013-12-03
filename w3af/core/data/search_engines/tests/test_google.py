@@ -52,7 +52,6 @@ class test_google(unittest.TestCase):
         opener = ExtendedUrllib()
         self.gse = google(opener)
 
-    @attr('ci_fails')
     def test_get_links_results_len(self):
         results = self.gse.get_n_results(self.query, self.limit)
 
@@ -66,7 +65,6 @@ class test_google(unittest.TestCase):
         # URLs should be unique
         self.assertTrue(len(results) == len(set([r.URL for r in results])))
 
-    @attr('ci_fails')
     def test_page_body(self):
         responses = self.gse.get_n_result_pages(self.query, self.limit)
 
@@ -98,7 +96,6 @@ class BaseGoogleAPISearch(unittest.TestCase):
     def setUp(self):
         self.opener = ExtendedUrllib()
 
-    @attr('ci_fails')
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:
             return
@@ -143,7 +140,6 @@ class BaseGoogleAPISearch(unittest.TestCase):
 
         self.assertTrue(related > 5, related)
 
-    @attr('ci_fails')
     def test_links_results_domain(self):
         if self.GoogleApiSearcher is None:
             return

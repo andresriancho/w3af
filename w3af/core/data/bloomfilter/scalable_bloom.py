@@ -20,7 +20,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from nose.plugins.attrib import attr
 from w3af.core.data.bloomfilter.bloomfilter import BloomFilter
 
 
@@ -28,7 +27,6 @@ class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2  # slower, but takes up less memory
     LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
 
-    @attr('ci_fails')
     def __init__(self, initial_capacity=10000, error_rate=0.001,
                  mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
         """Implements a space-efficient probabilistic data structure that
@@ -83,7 +81,6 @@ class ScalableBloomFilter(object):
         self.error_rate = error_rate
         self.filters = []
 
-    @attr('ci_fails')
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
 
@@ -100,7 +97,6 @@ class ScalableBloomFilter(object):
                 return True
         return False
 
-    @attr('ci_fails')
     def add(self, key):
         """Adds a key to this bloom filter.
         If the key already exists in this filter it will return True.

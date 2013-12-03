@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 
-from nose.plugins.attrib import attr
 from lxml import etree
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -59,7 +58,6 @@ class TestHTMLOutput(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

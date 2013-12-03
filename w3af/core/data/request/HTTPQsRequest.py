@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from nose.plugins.attrib import attr
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 
@@ -35,7 +34,6 @@ class HTTPQSRequest(FuzzableRequest):
     def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
         super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
 
-    @attr('ci_fails')
     def set_uri(self, uri):
         '''
         >>> r = HTTPQSRequest('http://www.w3af.com/')

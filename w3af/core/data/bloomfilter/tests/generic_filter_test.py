@@ -23,7 +23,6 @@ import unittest
 import random
 import string
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 
@@ -40,7 +39,6 @@ class GenericFilterTest(unittest.TestCase):
         random.seed(20)
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_bloom_int(self):
         for i in xrange(0, self.CAPACITY):
             self.filter.add(i)
@@ -61,7 +59,6 @@ class GenericFilterTest(unittest.TestCase):
             self.assertNotIn(r, self.filter)
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_bloom_string(self):
         randomly_generated_strings = []
 
@@ -80,7 +77,6 @@ class GenericFilterTest(unittest.TestCase):
             self.assertNotIn(saved_str[::-1], self.filter)
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_bloom_url_objects(self):        
         for i in xrange(0, self.CAPACITY):
             url_num = URL('http://moth/index%s.html' % i)

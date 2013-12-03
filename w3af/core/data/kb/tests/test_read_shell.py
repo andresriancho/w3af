@@ -21,14 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.kb.read_shell import ReadShell
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 
 
 class TestReadShell(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_help_format(self):
         shell = ReadShell(MockVuln(), None, None)
         _help = shell.help(None)
@@ -39,7 +37,6 @@ class TestReadShell(unittest.TestCase):
         # Note that I add an extra space
         self.assertNotIn('     help', _help)
     
-    @attr('ci_fails')
     def test_help_contents(self):
         shell = ReadShell(MockVuln(), None, None)
         _help = shell.help(None)
@@ -48,7 +45,6 @@ class TestReadShell(unittest.TestCase):
         self.assertNotIn('upload', _help)
         self.assertIn('read', _help)
 
-    @attr('ci_fails')
     def test_help_contents_specific(self):
         shell = ReadShell(MockVuln(), None, None)
         _help = shell.help('read')

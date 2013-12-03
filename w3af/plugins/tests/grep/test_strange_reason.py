@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -43,7 +42,6 @@ class test_strange_reason(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_strange_reason_empty(self):
         response = HTTPResponse(
             200, '', self.headers, self.url, self.url, _id=1, msg='Ok')
@@ -51,7 +49,6 @@ class test_strange_reason(unittest.TestCase):
         self.assertEquals(
             len(kb.kb.get('strange_reason', 'strange_reason')), 0)
 
-    @attr('ci_fails')
     def test_strange_reason_large(self):
         response = HTTPResponse(300, 'A' * 4096, self.headers,
                                 self.url, self.url, _id=1, msg='Multiple Choices')
@@ -59,7 +56,6 @@ class test_strange_reason(unittest.TestCase):
         self.assertEquals(
             len(kb.kb.get('strange_reason', 'strange_reason')), 0)
 
-    @attr('ci_fails')
     def test_strange_reason_found_200(self):
         response = HTTPResponse(
             200, 'A' * 4096, self.headers, self.url, self.url, _id=1, msg='Foo!')
@@ -67,7 +63,6 @@ class test_strange_reason(unittest.TestCase):
         self.assertEquals(
             len(kb.kb.get('strange_reason', 'strange_reason')), 1)
 
-    @attr('ci_fails')
     def test_strange_reason_found_300(self):
         response = HTTPResponse(300, 'A' * 2 ** 10, self.headers,
                                 self.url, self.url, _id=1, msg='Multiple')

@@ -35,39 +35,30 @@ class TestUnittestCoverage(unittest.TestCase):
     def setUp(self):
         self.w3afcore = w3afCore()
 
-    @attr('ci_fails')
     def test_audit(self):
         self._analyze_unittests('audit')
 
-    @attr('ci_fails')
     def test_attack(self):
         self._analyze_unittests('attack')
 
-    @attr('ci_fails')
     def test_output(self):
         self._analyze_unittests('output')
 
-    @attr('ci_fails')
     def test_auth(self):
         self._analyze_unittests('auth')
 
-    @attr('ci_fails')
     def test_crawl(self):
         self._analyze_unittests('crawl')
 
-    @attr('ci_fails')
     def test_infrastructure(self):
         self._analyze_unittests('infrastructure')
 
-    @attr('ci_fails')
     def test_grep(self):
         self._analyze_unittests('grep')
 
-    @attr('ci_fails')
     def test_evasion(self):
         self._analyze_unittests('evasion')
 
-    @attr('ci_fails')
     def test_mangle(self):
         self._analyze_unittests('mangle')
 

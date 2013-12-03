@@ -25,7 +25,6 @@ import httplib
 import threading
 import urllib2
 
-from nose.plugins.attrib import attr
 from lxml import etree
 from itertools import imap
 
@@ -410,7 +409,6 @@ class HTTPResponse(object):
             (k.lower(), v) for k, v in self.headers.iteritems())
         return Headers(lcase_headers.items())
 
-    @attr('ci_fails')
     def set_url(self, url):
         '''
         >>> url = URL('http://www.google.com')
@@ -432,7 +430,6 @@ class HTTPResponse(object):
     def get_url(self):
         return self._realurl
 
-    @attr('ci_fails')
     def set_uri(self, uri):
         '''
         >>> uri = URL('http://www.google.com/')

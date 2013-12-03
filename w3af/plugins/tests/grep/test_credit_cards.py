@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.plugins.grep.credit_cards import credit_cards
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -40,7 +39,6 @@ class test_credit_cards(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_find_credit_card(self):
         body = '378282246310005'
         url = URL('http://www.w3af.com/')
@@ -50,7 +48,6 @@ class test_credit_cards(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
-    @attr('ci_fails')
     def test_find_credit_card_spaces(self):
         body = '3566 0020 2036 0505'
         url = URL('http://www.w3af.com/')
@@ -60,7 +57,6 @@ class test_credit_cards(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
-    @attr('ci_fails')
     def test_find_credit_card_html(self):
         body = '<a> 378282246310005</a>'
         url = URL('http://www.w3af.com/')
@@ -70,7 +66,6 @@ class test_credit_cards(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
-    @attr('ci_fails')
     def test_not_find_credit_cards(self):
         invalid_cards = ('b71449635402848',  # Start with a letter
                          '356 600 20203605 05',
@@ -92,7 +87,6 @@ class test_credit_cards(unittest.TestCase):
                 len(kb.kb.get('credit_cards', 'credit_cards')), 0)
             kb.kb.clear('credit_cards', 'credit_cards')
 
-    @attr('ci_fails')
     def test_invalid_check_not_find_credit_card_spaces(self):
         body = '3566 0020 2036 0705'
         url = URL('http://www.w3af.com/')

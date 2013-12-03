@@ -31,7 +31,6 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     Run scans from the console UI.
     '''
 
-    @attr('ci_fails')
     def test_SQL_scan(self):
         target = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
         qs = '?uname=pablo'
@@ -70,7 +69,6 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         self.assertFalse(found_errors)
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_two_scans(self):
         target_1 = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
         qs_1 = '?uname=pablo'

@@ -39,7 +39,6 @@ class TestAllowedMethods(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_moth(self):
         '''
         test_moth in test_allowed_methods, test the "default" configuration for Apache+PHP.
@@ -59,7 +58,6 @@ class TestAllowedMethods(PluginTest):
         self.assertEqual(
             info.get_name(), 'Non existent methods default to GET')
 
-    @attr('ci_fails')
     def test_modsecurity(self):
         '''
         test_modsecurity in test_allowed_methods, test a different configuration:

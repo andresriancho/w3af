@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-from nose.plugins.attrib import attr
 from itertools import izip, repeat
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -167,7 +166,6 @@ class digit_sum(CrawlPlugin):
                             self._already_visited.add(fr_copy.get_uri())
                             yield fr_copy
 
-    @attr('ci_fails')
     def _do_combinations(self, a_string):
         '''
         >>> ds = digit_sum()
@@ -193,7 +191,6 @@ class digit_sum(CrawlPlugin):
 
         return res
 
-    @attr('ci_fails')
     def _find_digits(self, a_string):
         '''
         Finds digits in a string and returns a list with string sections.

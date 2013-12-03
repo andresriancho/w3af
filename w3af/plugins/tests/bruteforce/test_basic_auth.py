@@ -67,7 +67,6 @@ class TestBasicAuth(PluginTest):
     }
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_found_credentials(self):
         # Run the scan
         cfg = self._run_configs['positive']
@@ -85,7 +84,6 @@ class TestBasicAuth(PluginTest):
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], 'admin')
 
-    @attr('ci_fails')
     def test_not_found_credentials(self):
         # Run the scan
         cfg = self._run_configs['negative']

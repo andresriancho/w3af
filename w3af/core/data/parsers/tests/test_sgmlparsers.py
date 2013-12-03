@@ -167,7 +167,6 @@ class _SGMLParser(SGMLParser):
 @attr('smoke')
 class TestSGMLParser(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_parser_attrs(self):
         body_content = HTML_DOC % {'head': '', 'body': ''}
         p = _SGMLParser(_build_http_response(URL_INST, body_content))
@@ -186,7 +185,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals([], getattr(p, '_meta_redirs'))
         self.assertEquals([], getattr(p, '_meta_tags'))
 
-    @attr('ci_fails')
     def test_baseurl(self):
         body = HTML_DOC % {'head': BASE_TAG, 'body': ''}
         resp = _build_http_response(URL_INST, body)
@@ -194,7 +192,6 @@ class TestSGMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(URL('http://www.w3afbase.com/'), p._base_url)
 
-    @attr('ci_fails')
     def test_regex_urls(self):
         u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
         u2 = u'http://w3af.com/tésoro.php?id=GÓLD'
@@ -213,7 +210,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertTrue(u2 in urls)
         self.assertTrue(u3 in urls)
 
-    @attr('ci_fails')
     def test_meta_tags(self):
         body = HTML_DOC % \
             {'head': META_REFRESH + META_REFRESH_WITH_URL,
@@ -226,7 +222,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertTrue("600" in p.meta_redirs)
         self.assertEquals([URL('http://crawler.w3af.com/')], p.references[0])
 
-    @attr('ci_fails')
     def test_case_sensitivity(self):
         '''
         Ensure handler methods are *always* called with lowered-cased
@@ -268,7 +263,6 @@ class TestSGMLParser(unittest.TestCase):
             p.start = wrapped_start
             p._parse(resp)
 
-    @attr('ci_fails')
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
         p = _SGMLParser(_build_http_response(URL_INST, body))
@@ -276,7 +270,6 @@ class TestSGMLParser(unittest.TestCase):
                       u'name_with_ñ@w3af.it'])
         self.assertEquals(emails, p.get_emails())
 
-    @attr('ci_fails')
     def test_parsed_references(self):
         # The *parsed* urls *must* come both from valid tags and tag attributes
         # Also invalid urls like must be ignored (like javascript instructions)
@@ -295,7 +288,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals(
             'http://w3af.com/x.py?a=1', parsed_refs[0].url_string)
 
-    @attr('ci_fails')
     def test_reference_with_colon(self):
         body = '''
         <html>
@@ -330,7 +322,6 @@ class _HTMLParser(HTMLParser):
 @attr('smoke')
 class TestHTMLParser(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_forms(self):
         body = HTML_DOC % \
             {'head': '',
@@ -342,7 +333,6 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(2, len(p.forms))
 
-    @attr('ci_fails')
     def test_no_forms(self):
         # No form should be parsed
         body = HTML_DOC % \
@@ -355,7 +345,6 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(0, len(p.forms))
 
-    @attr('ci_fails')
     def test_form_without_meth(self):
         '''
         When the form has no 'method' => 'GET' will be used
@@ -369,7 +358,6 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals('GET', p.forms[0].get_method())
 
-    @attr('ci_fails')
     def test_form_without_action(self):
         '''
         If the form has no 'content' => HTTPResponse's url will be used
@@ -383,7 +371,6 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(URL_INST, p.forms[0].get_action())
 
-    @attr('ci_fails')
     def test_form_with_invalid_url_in_action(self):
         '''
         If an invalid URL is detected in the form's action then use base_url
@@ -398,7 +385,6 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(r)
         self.assertEquals(URL_INST, p.forms[0].get_action())
 
-    @attr('ci_fails')
     def test_form_multiline_tags(self):
         '''
         Found this form on the wild and was unable to parse it.
@@ -416,7 +402,6 @@ class TestHTMLParser(unittest.TestCase):
         self.assertIn('csrfmiddlewaretoken', form)
 
 
-    @attr('ci_fails')
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared
         # before and after). Also it must be equal to a form that includes
@@ -466,7 +451,6 @@ class TestHTMLParser(unittest.TestCase):
         # Finally assert that the parsed forms are equals
         self.assertEquals(f, p2.forms[0])
 
-    @attr('ci_fails')
     def test_textareas_in_out_form(self):
         body = HTML_DOC % \
             {'head': '',
@@ -487,7 +471,6 @@ class TestHTMLParser(unittest.TestCase):
         # Last <textarea> with empty name wasn't parsed
         self.assertEquals(2, len(f))
 
-    @attr('ci_fails')
     def test_selects_in_out_form(self):
         # Both <select> are expected to be parsed inside the form. Because
         # they have the same name/id the same entry will be used in the form

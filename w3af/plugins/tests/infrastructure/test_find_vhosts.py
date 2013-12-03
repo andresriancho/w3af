@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -35,7 +34,6 @@ class TestFindVhosts(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_find_vhosts(self):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
@@ -47,7 +45,6 @@ class TestFindVhosts(PluginTest):
         self.assertEqual('Virtual host identified', info.get_name())
         self.assertTrue('the virtual host name is: "intranet"' in info.get_desc(), info.get_desc())
 
-    @attr('ci_fails')
     def test_find_vhost_dead_link(self):
         cfg = self._run_configs['cfg']
         self._scan(self.dead_link_url, cfg['plugins'])

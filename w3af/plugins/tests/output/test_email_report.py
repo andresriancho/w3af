@@ -62,7 +62,6 @@ class TestEmailReport(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         

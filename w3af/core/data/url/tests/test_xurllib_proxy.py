@@ -63,19 +63,16 @@ class TestExtendedUrllibProxy(unittest.TestCase):
     def tearDown(self):
         self.uri_opener.end()
         
-    @attr('ci_fails')
     def test_http_default_port_via_proxy(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
-    @attr('ci_fails')
     def test_http_port_specification_via_proxy(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
-    @attr('ci_fails')
     def test_https_via_proxy(self):
         TODO = 'Skip this test because of a strange bug with the extended'\
                ' url library and w3af\'s local proxy daemon. More info here:'\
@@ -86,13 +83,11 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
-    @attr('ci_fails')
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertEqual(http_response.get_code(), 400)
     
-    @attr('ci_fails')
     def test_POST_via_proxy(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         http_response = self.uri_opener.POST(url, data='text=123456abc', cache=False)

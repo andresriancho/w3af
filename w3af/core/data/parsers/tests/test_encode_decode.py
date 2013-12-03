@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from urlparse import parse_qs
 
 from w3af.core.data.parsers.encode_decode import htmldecode, urlencode
@@ -30,27 +29,21 @@ from w3af.core.data.parsers.encode_decode import htmldecode, urlencode
 
 class TestHTMLDecode(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_simple(self):
         self.assertEqual(htmldecode('hola mundo'), 'hola mundo')
 
-    @attr('ci_fails')
     def test_tilde(self):
         self.assertEqual(htmldecode(u'hólá múndó'), u'hólá múndó')
 
-    @attr('ci_fails')
     def test_special_char(self):
         self.assertEqual(htmldecode(u'hola &#0443'), u'hola ƻ')
 
-    @attr('ci_fails')
     def test_charref(self):
         self.assertEqual(htmldecode(u'hola mundo &#x41'), u'hola mundo A')
 
-    @attr('ci_fails')
     def test_html_encoded(self):
         self.assertEqual(htmldecode(u'&aacute;'), u'á')
 
-    @attr('ci_fails')
     def test_bug_trigger_case01(self):
         '''
         u'í'.decode('utf-8')
@@ -61,23 +54,19 @@ class TestHTMLDecode(unittest.TestCase):
         html = u'Aquí encontrará'
         self.assertEqual(htmldecode(html), html)
     
-    @attr('ci_fails')
     def test_bug_trigger_case02(self):
         html_utf8_raw = 'Aqu\xc3\xad encontrar\xc3\xa1'
         html_unicode = 'Aqu\xc3\xad encontrar\xc3\xa1'.decode('utf-8')
         self.assertEqual(htmldecode(html_utf8_raw), html_unicode)
 
-    @attr('ci_fails')
     def test_bug_trigger_case03(self):
         html = u'\xed'
         self.assertEqual(htmldecode(html), html)
 
-    @attr('ci_fails')
     def test_bug_trigger_case04(self):
         html = u'\xed'
         self.assertEqual(htmldecode(html), html)
 
-    @attr('ci_fails')
     def test_html_invalid_utf8_entity_encoded(self):
         '''Test for invalid entity encoded chars'''
         samples = {
@@ -108,18 +97,14 @@ class TestHTMLDecode(unittest.TestCase):
 
 class TestURLEncode(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_simple(self):
         self.assertEqual(urlencode(parse_qs(u'a=1&a=c'), 'latin1'), 'a=1&a=c')
 
-    @attr('ci_fails')
     def test_tilde_case01(self):
         self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'latin1'), 'a=%E1&a=2')
 
-    @attr('ci_fails')
     def test_tilde_case02(self):
         self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'utf-8'), 'a=%C3%A1&a=2')
 
-    @attr('ci_fails')
     def test_raises(self):
         self.assertRaises(TypeError, urlencode, u'a=b&c=d', 'utf-8')

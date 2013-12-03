@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from functools import partial
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -61,38 +60,32 @@ class test_symfony(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_symfony_positive(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.symfony_detected(response))
 
-    @attr('ci_fails')
     def test_symfony_negative(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
         self.assertFalse(self.plugin.symfony_detected(response))
 
-    @attr('ci_fails')
     def test_symfony_override(self):
         self.plugin._override = True
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.symfony_detected(response))
 
-    @attr('ci_fails')
     def test_symfony_csrf_positive(self):
         response = self.http_resp(
             read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.csrf_detected(response.get_dom()))
 
-    @attr('ci_fails')
     def test_symfony_csrf_negative(self):
         response = self.http_resp(
             read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.assertFalse(self.plugin.csrf_detected(response.get_dom()))
 
-    @attr('ci_fails')
     def test_symfony_protected(self):
         response = self.http_resp(
             read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
@@ -100,7 +93,6 @@ class test_symfony(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('symfony', 'symfony')), 0)
 
-    @attr('ci_fails')
     def test_symfony_unprotected(self):
         request = FuzzableRequest(self.url, method='GET')
         response = self.http_resp(

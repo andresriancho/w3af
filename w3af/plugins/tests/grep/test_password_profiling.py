@@ -47,7 +47,6 @@ class TestPasswordProfiling(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_collected_passwords(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -68,7 +67,6 @@ class TestPasswordProfiling(PluginTest):
         self.assertIn('w3af', collected_passwords)
         self.assertIn('repeat', collected_passwords)
 
-    @attr('ci_fails')
     def test_merge_password_profiling(self):
         pp = password_profiling()
         
@@ -84,7 +82,6 @@ class TestPasswordProfiling(PluginTest):
         self.assertEqual(merged_map, {'foobar': 1, 'spameggs': 3,
                                       'charlotte': 3})
 
-    @attr('ci_fails')
     def test_merge_password_profiling_unknown_lang(self):
         pp = password_profiling()
         

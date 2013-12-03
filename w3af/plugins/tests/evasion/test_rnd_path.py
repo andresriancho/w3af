@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.plugins.evasion.rnd_path import rnd_path
@@ -29,7 +28,6 @@ from w3af.plugins.evasion.rnd_path import rnd_path
 
 class TestEvasion(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_add_path_to_base_url(self):
         rp = rnd_path()
 
@@ -39,7 +37,6 @@ class TestEvasion(unittest.TestCase):
         
         self.assertRegexpMatches(url_string, 'http://www.w3af.com/\w*/../')
         
-    @attr('ci_fails')
     def test_add_path_to_path_url(self):
         rp = rnd_path()
         
@@ -49,7 +46,6 @@ class TestEvasion(unittest.TestCase):
         
         self.assertRegexpMatches(url_string, 'http://www.w3af.com/\w*/../abc/')
     
-    @attr('ci_fails')
     def test_add_with_filename(self):
         rp = rnd_path()
         
@@ -59,7 +55,6 @@ class TestEvasion(unittest.TestCase):
         
         self.assertRegexpMatches(url_string, 'http://www.w3af.com/\w*/../abc/def.htm')
 
-    @attr('ci_fails')
     def test_add_with_qs(self):
         rp = rnd_path()
         

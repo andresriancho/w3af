@@ -24,7 +24,6 @@ import commands
 
 import w3af.core.data.kb.config as cf
 
-from nose.plugins.attrib import attr
 from w3af.core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
 from w3af.plugins.tests.helper import onlyroot
 
@@ -33,7 +32,6 @@ class TestExtrusionScanner(unittest.TestCase):
     '''
     Test the extrusion scanner's basic features.
     '''
-    @attr('ci_fails')
     def test_basic(self):
         es = extrusionScanner(commands.getoutput)
 
@@ -44,7 +42,6 @@ class TestExtrusionScanner(unittest.TestCase):
         self.assertTrue(es.is_available(54545, 'tcp'))
 
     @onlyroot
-    @attr('ci_fails')
     def test_scan(self):
         # FIXME: This unittest will only work in Linux
         cf.cf.save('interface', 'lo')
@@ -54,7 +51,6 @@ class TestExtrusionScanner(unittest.TestCase):
         inbound_port = es.get_inbound_port()
         self.assertEquals(inbound_port, 8080)
 
-    @attr('ci_fails')
     def test_zzz(self):
         '''
         Can't stop finding nosetests errors! It looks like SkipTest works except

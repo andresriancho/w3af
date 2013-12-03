@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginConfig, ReadExploitTest
 from w3af.core.data.kb.vuln_templates.local_file_read_template import LocalFileReadTemplate
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -37,7 +36,6 @@ class TestFileReadShell(ReadExploitTest):
         }
     }
 
-    @attr('ci_fails')
     def test_find_exploit_lfi(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -54,7 +52,6 @@ class TestFileReadShell(ReadExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'local_file_reader')
 
-    @attr('ci_fails')
     def test_from_template(self):
         lfit = LocalFileReadTemplate()
         

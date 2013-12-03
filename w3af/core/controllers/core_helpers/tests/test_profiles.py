@@ -31,7 +31,6 @@ from w3af.core.controllers.exceptions import w3afException
 class TestCoreProfiles(unittest.TestCase):
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_use_profile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
@@ -44,7 +43,6 @@ class TestCoreProfiles(unittest.TestCase):
         self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
         self.assertTrue('web_spider' in enabled_plugins['crawl'])
 
-    @attr('ci_fails')
     def test_save_current_to_new_profile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
@@ -75,7 +73,6 @@ class TestCoreProfiles(unittest.TestCase):
 
         w3af_core.profiles.remove_profile('unittest-OWASP_TOP10')
 
-    @attr('ci_fails')
     def test_remove_profile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.save_current_to_new_profile('unittest-remove')
@@ -84,14 +81,12 @@ class TestCoreProfiles(unittest.TestCase):
         self.assertRaises(
             w3afException, w3af_core.profiles.use_profile, 'unittest-remove')
 
-    @attr('ci_fails')
     def test_remove_profile_not_exists(self):
         w3af_core = w3afCore()
         self.assertRaises(
             w3afException, w3af_core.profiles.remove_profile, 'not-exists')
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_use_all_profiles(self):
         '''
         This test catches the errors in my profiles that generate these messages:
@@ -125,7 +120,6 @@ class TestCoreProfiles(unittest.TestCase):
 
             w3af_core.profiles.use_profile(profile_name, workdir='.')
 
-    @attr('ci_fails')
     def test_cant_start_new_thread_bug(self):
         '''
         This tests that https://github.com/andresriancho/w3af/issues/56 was

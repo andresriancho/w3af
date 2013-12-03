@@ -23,33 +23,27 @@ import subprocess
 
 import git
 
-from nose.plugins.attrib import attr
 from w3af.core.controllers.auto_update.utils import (is_git_repo, get_latest_commit,
                                                      get_current_branch)
 
 
 class TestGitUtils(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_is_git_repo(self):
         self.assertTrue(is_git_repo('.'))
     
-    @attr('ci_fails')
     def test_is_git_repo_negative(self):
         self.assertFalse(is_git_repo('/etc/'))
     
-    @attr('ci_fails')
     def test_get_latest_commit(self):
         latest_commit = get_latest_commit()
         
         self.assertEqual(len(latest_commit), 40)
         self.assertIsInstance(latest_commit, basestring)
         
-    @attr('ci_fails')
     def test_get_latest_commit_negative(self):
         self.assertRaises(git.exc.InvalidGitRepositoryError, get_latest_commit, '/etc/')
 
-    @attr('ci_fails')
     def test_get_current_branch(self):
         # For some strange reason jenkins creates a branch called
         # jenkins-<job name> during the build, which makes this test FAIL

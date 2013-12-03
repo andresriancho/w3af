@@ -50,7 +50,6 @@ class TestHTTPResponse(unittest.TestCase):
         url = URL('http://w3af.com')
         return HTTPResponse(200, body, headers, url, url)
 
-    @attr('ci_fails')
     def test_unicode_body_no_charset(self):
         '''
         A charset *must* be passed as arg when creating a new
@@ -58,7 +57,6 @@ class TestHTTPResponse(unittest.TestCase):
         '''
         self.assertRaises(AssertionError, self.resp.get_body)
 
-    @attr('ci_fails')
     def test_rawread_is_none(self):
         '''
         Guarantee that the '_raw_body' attr is set to None after
@@ -70,7 +68,6 @@ class TestHTTPResponse(unittest.TestCase):
         _ = resp.get_body()
         self.assertEquals(resp._raw_body, None)
 
-    @attr('ci_fails')
     def test_doc_type(self):
 
         # Text or HTML
@@ -108,7 +105,6 @@ class TestHTTPResponse(unittest.TestCase):
                 % (mimetype, HTTPResponse.DOC_TYPE_IMAGE)
             )
 
-    @attr('ci_fails')
     def test_parse_response_with_charset_in_both_headers(self):
         # Ensure that the responses' bodies are correctly decoded (charset in
         # both the http and html). Only http charset is expected to be used.
@@ -121,7 +117,6 @@ class TestHTTPResponse(unittest.TestCase):
                 Headers([('Content-Type', hvalue)]), htmlbody)
             self.assertEquals(body, resp.get_body())
 
-    @attr('ci_fails')
     def test_parse_response_with_charset_in_meta_header(self):
         # Ensure responses' bodies are correctly decoded (charset only
         # in the html meta header)
@@ -132,7 +127,6 @@ class TestHTTPResponse(unittest.TestCase):
             resp = self.create_resp(Headers(), htmlbody)
             self.assertEquals(body, resp.body)
 
-    @attr('ci_fails')
     def test_parse_response_with_no_charset_in_header(self):
         # No charset was specified, use the default as well as the default
         # error handling scheme
@@ -146,7 +140,6 @@ class TestHTTPResponse(unittest.TestCase):
                 resp.body
             )
 
-    @attr('ci_fails')
     def test_parse_response_with_wrong_charset(self):
         # A wrong or non-existant charset was set; try to decode the response
         # using the default charset and handling scheme
@@ -162,7 +155,6 @@ class TestHTTPResponse(unittest.TestCase):
                 resp.body
             )
 
-    @attr('ci_fails')
     def test_eval_xpath_in_dom(self):
         html = """
         <html>
@@ -178,14 +170,12 @@ class TestHTTPResponse(unittest.TestCase):
         resp = self.create_resp(headers, html)
         self.assertEquals(2, len(resp.get_dom().xpath('.//input')))
 
-    @attr('ci_fails')
     def test_dom_are_the_same(self):
         resp = self.create_resp(
             Headers([('Content-Type', 'text/html')]), "<html/>")
         domid = id(resp.get_dom())
         self.assertEquals(domid, id(resp.get_dom()))
 
-    @attr('ci_fails')
     def test_get_clear_text_body(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         clear_text = 'header ABC-DEF-XYZ footer'
@@ -193,7 +183,6 @@ class TestHTTPResponse(unittest.TestCase):
         resp = self.create_resp(headers, html)
         self.assertEquals(clear_text, resp.get_clear_text_body())
 
-    @attr('ci_fails')
     def test_get_lower_case_headers(self):
         headers = Headers([('Content-Type', 'text/html')])
         lcase_headers = Headers([('content-type', 'text/html')])
@@ -203,7 +192,6 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEqual(resp.get_lower_case_headers(), lcase_headers)
         self.assertIn('content-type', resp.get_lower_case_headers())
 
-    @attr('ci_fails')
     def test_pickleable_no_dom(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
@@ -214,7 +202,6 @@ class TestHTTPResponse(unittest.TestCase):
         
         self.assertEqual(unpickled_resp, resp)
 
-    @attr('ci_fails')
     def test_pickleable_dom(self):
         
         msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
@@ -239,7 +226,6 @@ class TestHTTPResponse(unittest.TestCase):
         unpickled_dom = unpickled_resp.get_dom()
         self.assertEqual(unpickled_dom, original_dom)
 
-    @attr('ci_fails')
     def test_from_dict(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
@@ -258,7 +244,6 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEqual(orig_resp.__dict__.values(),
                          loaded_resp.__dict__.values())
     
-    @attr('ci_fails')
     def test_from_dict_encodings(self):
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
@@ -276,7 +261,6 @@ class TestHTTPResponse(unittest.TestCase):
                 loaded_resp.body
             )
 
-    @attr('ci_fails')
     def test_not_None(self):
         url = URL('http://w3af.com')
         headers = Headers([('Content-Type', 'application/pdf')])

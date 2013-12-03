@@ -43,7 +43,6 @@ class MockVuln(Vuln):
 @attr('smoke')
 class TestVuln(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_from_vuln(self):
         url = URL('http://moth/')
         
@@ -66,7 +65,6 @@ class TestVuln(unittest.TestCase):
         self.assertEqual(inst1.get_var(), inst2.get_var())
         self.assertEqual(inst1.get_to_highlight(), inst2.get_to_highlight())
 
-    @attr('ci_fails')
     def test_from_mutant(self):
         dc = DataContainer()
         url = URL('http://moth/')

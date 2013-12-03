@@ -38,14 +38,12 @@ class TestXUrllibIntegration(unittest.TestCase):
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
         
-    @attr('ci_fails')
     def test_ntlm_auth_not_configured(self):
         self.uri_opener = ExtendedUrllib()
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('Must authenticate.', http_response.body)
 
-    @attr('ci_fails')
     def test_ntlm_auth_valid_creds(self):
         
         self.uri_opener = ExtendedUrllib()
@@ -69,7 +67,6 @@ class TestXUrllibIntegration(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('You are admin from MOTH/', http_response.body)
 
-    @attr('ci_fails')
     def test_gzip(self):
         url = URL(get_moth_http('/core/gzip/gzip.html'))
         res = self.uri_opener.GET(url, cache=False)
@@ -79,7 +76,6 @@ class TestXUrllibIntegration(unittest.TestCase):
                    'compress' in content_encoding
         self.assertTrue(test_res, content_encoding)
 
-    @attr('ci_fails')
     def test_get_cookies(self):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)
 

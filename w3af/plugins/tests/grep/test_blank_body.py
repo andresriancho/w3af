@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
@@ -44,7 +43,6 @@ class test_blank_body(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_blank_body(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -52,7 +50,6 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('blank_body', 'blank_body')), 1)
 
-    @attr('ci_fails')
     def test_blank_body_none(self):
         body = 'header body footer'
         headers = Headers([('content-type', 'text/html')])
@@ -60,7 +57,6 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
-    @attr('ci_fails')
     def test_blank_body_method(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -69,7 +65,6 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
-    @attr('ci_fails')
     def test_blank_body_code(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])

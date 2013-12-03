@@ -23,7 +23,6 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -43,7 +42,6 @@ class TestURLInSession(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @attr('ci_fails')
     def test_url_session_false(self):
         body = 'abc'
         url = URL('http://www.w3af.com/')
@@ -56,7 +54,6 @@ class TestURLInSession(unittest.TestCase):
         infos = kb.kb.get('url_session', 'url_session')
         self.assertEquals(len(infos), 0)
     
-    @attr('ci_fails')
     def test_url_session_in_url(self):
         body = 'abc'
         url = URL('http://www.w3af.com/?JSESSIONID=231badb19b93e44f47da1bd64a8147f2')
@@ -72,7 +69,6 @@ class TestURLInSession(unittest.TestCase):
         info = infos[0]
         self.assertEqual(info.get_name(), 'Session ID in URL')       
     
-    @attr('ci_fails')
     def test_url_session_in_body(self):
         url = 'http://www.w3af.com/?JSESSIONID=231badb19b93e44f47da1bd64a8147f2'
         body = 'abc <a href="%s">def</a> footer' % url
@@ -89,7 +85,6 @@ class TestURLInSession(unittest.TestCase):
         info = infos[0]
         self.assertEqual(info.get_name(), 'Session ID in URL')
     
-    @attr('ci_fails')
     def test_url_session_in_body_and_url(self):
         url = 'http://www.w3af.com/?JSESSIONID=231badb19b93e44f47da1bd64a8147f2'
         body = 'abc <a href="%s">def</a> footer' % url

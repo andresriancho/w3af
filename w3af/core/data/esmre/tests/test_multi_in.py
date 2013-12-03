@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from mock import Mock
 
 from w3af.core.controllers.tests.pylint_plugins.decorator import only_if_subclass
@@ -35,7 +34,6 @@ class BaseMultiInTest(unittest.TestCase):
     klass = Mock()
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_simplest(self):
         in_list = ['123', '456', '789']
         imi = self.klass(in_list)
@@ -49,7 +47,6 @@ class BaseMultiInTest(unittest.TestCase):
         self.assertEqual('789', result[0])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_assoc_obj(self):
         in_list = [('123456', None, None), ('abcdef', 1, 2)]
         imi = self.klass(in_list)
@@ -67,7 +64,6 @@ class BaseMultiInTest(unittest.TestCase):
         self.assertEqual(2, result[0][2])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_special_char(self):
         in_list = ['javax.naming.NameNotFoundException', '7', '8']
         imi = self.klass(in_list)
@@ -85,7 +81,6 @@ class BaseMultiInTest(unittest.TestCase):
         self.assertEqual('abc(def)', result[0])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_unicode(self):
         in_list = [u'ñ', u'ý']
         imi = self.klass(in_list)
@@ -98,7 +93,6 @@ class BaseMultiInTest(unittest.TestCase):
         self.assertEqual('ñ', result[0])
 
     @only_if_subclass
-    @attr('ci_fails')
     def test_null_byte(self):
         in_list = ['\x00']
         imi = self.klass(in_list)

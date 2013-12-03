@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from unittest.case import skip
 
 from w3af.core.data.parsers.url import URL
@@ -32,7 +31,6 @@ from w3af.plugins.evasion.shift_out_in_between_dots import shift_out_in_between_
 @skip('URL normalization breaks evasion. @see: 4fa67fbb')
 class TestEvasion(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_no_modification(self):
         sosibd = shift_out_in_between_dots()
 
@@ -42,7 +40,6 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(sosibd.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/')
 
-    @attr('ci_fails')
     def test_add_when_dotdot(self):
         sosibd = shift_out_in_between_dots()
         
@@ -52,7 +49,6 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(sosibd.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/.%0E%0F./')
 
-    @attr('ci_fails')
     def test_add_path_filename(self):
         sosibd = shift_out_in_between_dots()
         
@@ -65,3 +61,4 @@ class TestEvasion(unittest.TestCase):
         #    The plugins should not modify the original request
         #
         self.assertEqual(u.url_string, u'http://www.w3af.com/abc/def/.././jkl.htm')
+

@@ -40,7 +40,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         cf.cf.save('fuzzable_headers', [])
         cf.cf.save('form_fuzzing_mode', 'tmb')
 
-    @attr('ci_fails')
     def test_not_add_self(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -48,7 +47,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         request_lst = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual(len(request_lst), 0)
 
-    @attr('ci_fails')
     def test_add_self(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -61,7 +59,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(fr.get_url(), self.url)
         self.assertFalse('content-type' in fr.get_headers())
 
-    @attr('ci_fails')
     def test_redirect_location(self):
         body = ''
         redir_url = 'http://www.w3af.org/'
@@ -75,7 +72,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         redir_fr = redir_fr[0]
         self.assertEqual(redir_fr.get_url().url_string, redir_url)
 
-    @attr('ci_fails')
     def test_redirect_uri_relative(self):
         body = ''
         redir_url = '/foo.bar'
@@ -90,7 +86,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(redir_fr.get_url(
         ).url_string, self.url.url_string[:-1] + redir_url)
 
-    @attr('ci_fails')
     def test_body_parse_a(self):
         '''
         TODO: I need to decide if I'm going to implement this in create_fuzzable_requests
@@ -115,7 +110,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         fr = request_lst[0]
         self.assertEqual(fr.get_url().url_string, 'http://www.google.com/?id=1')
 
-    @attr('ci_fails')
     def test_body_parse_form(self):
         body = '''<form action="/foo.bar" method="POST">
                     A: <input name="a" />
@@ -135,7 +129,6 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(post_request.get_method(), 'POST')
         self.assertFalse('content-type' in post_request.get_headers())
 
-    @attr('ci_fails')
     def test_cookie(self):
         body = ''
         redir_url = '/foo.bar'

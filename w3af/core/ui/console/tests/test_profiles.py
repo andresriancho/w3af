@@ -51,7 +51,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         except:
             assert False, 'The %s profile does NOT exist!' % profile_name
         
-    @attr('ci_fails')
     def test_load_profile_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -69,7 +68,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -84,7 +82,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-    @attr('ci_fails')
     def test_save_as_profile(self):
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
@@ -101,7 +98,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         
         self._assert_exists('unittest')
 
-    @attr('ci_fails')
     def test_save_load_misc_settings(self):
         # Save the settings
         commands_to_run = ['misc-settings set msf_location /etc/',

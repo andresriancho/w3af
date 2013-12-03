@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.plugins.evasion.full_width_encode import full_width_encode
@@ -29,7 +28,6 @@ from w3af.plugins.evasion.full_width_encode import full_width_encode
 
 class TestEvasion(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_no_modification(self):
         fwe = full_width_encode()
 
@@ -38,7 +36,6 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(fwe.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/')
 
-    @attr('ci_fails')
     def test_modify_path_filename(self):
         fwe = full_width_encode()
         

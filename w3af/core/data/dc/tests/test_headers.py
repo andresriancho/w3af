@@ -21,28 +21,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.dc.headers import Headers
 
 
 class TestHeaders(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_empty(self):
         self.assertEquals(Headers([]), {})
 
-    @attr('ci_fails')
     def test_simple(self):
         headers = Headers([('a', 'b')])
 
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
-    @attr('ci_fails')
     def test_raises(self):
         self.assertRaises(TypeError, Headers, {})
         
-    @attr('ci_fails')
     def test_build_with_headers(self):
         headers = Headers([('a', 'b')])
         headers = Headers(headers)
@@ -50,25 +45,21 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
-    @attr('ci_fails')
     def test_str(self):
         headers = Headers([('a', 'b')])
 
         self.assertEqual(str(headers), 'a: b\r\n')
 
-    @attr('ci_fails')
     def test_str_multi(self):
         headers = Headers([('a', 'b'), ('1', '2')])
 
         self.assertEqual(str(headers), 'a: b\r\n1: 2\r\n')
 
-    @attr('ci_fails')
     def test_unicode(self):
         headers = Headers([('a', 'b')])
 
         self.assertEqual(unicode(headers), 'a: b\r\n')
 
-    @attr('ci_fails')
     def test_str_strange(self):
         header_value = ''.join(chr(i) for i in xrange(256))
         headers = Headers([(u'Hola', header_value)])
@@ -77,21 +68,18 @@ class TestHeaders(unittest.TestCase):
         # smart_unicode which might change in the future
         self.assertIn('Hola: \x00\x01\x02', str(headers))
         
-    @attr('ci_fails')
     def test_repeated_overwrite(self):
         headers = Headers([('a', 'b'), ('a', '3')])
 
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], '3')
 
-    @attr('ci_fails')
     def test_special_chars(self):
         headers = Headers([('á', 'ç')])
 
         self.assertIn(u'á', headers)
         self.assertEqual(headers[u'á'], u'ç')
 
-    @attr('ci_fails')
     def test_special_chars_build(self):
         headers_initial = Headers([('á', 'ç')])
         headers_from_headers = Headers(headers_initial)
@@ -99,7 +87,6 @@ class TestHeaders(unittest.TestCase):
         self.assertIn(u'á', headers_from_headers)
         self.assertEqual(headers_from_headers[u'á'], u'ç')
 
-    @attr('ci_fails')
     def test_add_later(self):
         headers = Headers([('a', 'b')])
         headers['c'] = '2'
@@ -109,7 +96,6 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('c', headers)
         self.assertEqual(headers['c'], '2')
 
-    @attr('ci_fails')
     def test_overwrite(self):
         headers = Headers([('a', 'b')])
         headers['a'] = '2'
@@ -117,14 +103,12 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], '2')
 
-    @attr('ci_fails')
     def test_headers_case_sensitive(self):
         upper_headers = Headers([('Abc', 'b')])
         lower_headers = Headers([('abc', 'b')])
 
         self.assertNotEqual(upper_headers, lower_headers)
 
-    @attr('ci_fails')
     def test_clone_with_list_values(self):
         headers = Headers([('a', 'b'), ('c', 'd')])
         cloned = headers.clone_with_list_values()
@@ -132,19 +116,17 @@ class TestHeaders(unittest.TestCase):
         self.assertEqual(cloned['a'], ['b'])
         self.assertEqual(cloned['c'], ['d'])
 
-    @attr('ci_fails')
     def test_from_string(self):
         headers_from_str = Headers.from_string('a: b\r\n')
         headers_from_obj = Headers([('a', 'b')])
         self.assertEqual(headers_from_str, headers_from_obj)
 
-    @attr('ci_fails')
     def test_to_str_from_string(self):
         headers_from_obj = Headers([('a', 'b')])
         headers_from_str = Headers.from_string(str(headers_from_obj))
         
         self.assertEqual(headers_from_str, headers_from_obj)
 
-    @attr('ci_fails')
     def test_from_invalid_string(self):
         self.assertRaises(ValueError, Headers.from_string, 'ab')
+

@@ -39,7 +39,6 @@ class TestCoreIntegration(unittest.TestCase):
     def tearDown(self):
         self.w3afcore.quit()
             
-    @attr('ci_fails')
     def test_send_mangled(self):
         
         self.w3afcore.plugins.set_plugins(['self_reference'], 'evasion')

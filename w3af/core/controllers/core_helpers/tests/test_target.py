@@ -40,7 +40,6 @@ OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
 @attr('smoke')
 class TestTarget(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_basic(self):
         opt_lst = w3af_core_target().get_options()
 
@@ -57,7 +56,6 @@ class TestTarget(unittest.TestCase):
             self.assertIsInstance(opt.get_help(), basestring)
             self.assertIsInstance(opt.get_value_str(), basestring)
 
-    @attr('ci_fails')
     def test_verify_url(self):
         ctarget = w3af_core_target()
 
@@ -67,7 +65,6 @@ class TestTarget(unittest.TestCase):
         self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com/')))
         self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com:39/')))
 
-    @attr('ci_fails')
     def test_verify_file_target(self):
         ctarget = w3af_core_target()
 

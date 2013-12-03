@@ -35,7 +35,6 @@ class test_pks(unittest.TestCase):
         create_temp_dir()
         self.pks_se = pks(ExtendedUrllib())
 
-    @attr('ci_fails')
     def test_get_result(self):
         result = self.pks_se.search('bonsai-sec.com')
         self.assertEqual(len(result), 2)

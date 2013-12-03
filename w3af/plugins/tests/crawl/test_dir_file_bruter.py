@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
-from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from nose.plugins.skip import SkipTest
@@ -98,7 +97,6 @@ class TestDirFileBruter(PluginTest):
                                            ),)}
     }
 
-    @attr('ci_fails')
     def test_directories(self):
         self._scan(self._run_directories['target'], self._run_directories['plugins'])
         urls = self.kb.get_all_known_urls()
@@ -111,7 +109,6 @@ class TestDirFileBruter(PluginTest):
             set((self.base_url + end) for end in EXPECTED_URLS)
         )
 
-    @attr('ci_fails')
     def test_files(self):
         self._scan(self._run_files['target'], self._run_files['plugins'])
         urls = self.kb.get_all_known_urls()
@@ -124,7 +121,6 @@ class TestDirFileBruter(PluginTest):
             set((self.directory_url + end) for end in EXPECTED_URLS)
         )
     
-    @attr('ci_fails')
     def test_directories_files(self):
         self._scan(self._run_directory_files['target'], self._run_directory_files['plugins'])
         urls = self.kb.get_all_known_urls()
@@ -137,14 +133,12 @@ class TestDirFileBruter(PluginTest):
             set((self.directory_url + end) for end in EXPECTED_URLS)
         )
     
-    @attr('ci_fails')
     def test_no_index(self):
         '''
         :see: test_directories , EXPECTED_URLS
         '''
         raise SkipTest('FIXME: The index/ in EXPECTED_URLS is a bug!')
 
-    @attr('ci_fails')
     def test_recursive(self):
         self._scan(
             self._run_recursive['target'], self._run_recursive['plugins'])
