@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
-import os
-import shutil
 import time
 import pprint
 
@@ -28,48 +26,44 @@ from multiprocessing.dummy import Process
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.misc.factory import factory
 from w3af.plugins.tests.helper import create_target_option_list
 
 
 @attr('moth')
 class CountTestMixin(unittest.TestCase):
+    PLUGIN = 'w3af.core.controllers.tests.count'
+    
     def setUp(self):
         '''
-        This is a rather complex setUp since I need to move the count.py
-        plugin to the plugin directory in order to be able to run it
-        afterwards.
+        This is a rather complex setUp since I need to create an instance of
+        the count.py plugin in memory, without copying it to any plugins
+        directory since that would generate issues with other tests.
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests', 'count.py')
-        self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'count.py')
-        shutil.copy(self.src, self.dst)
-
         self.w3afcore = w3afCore()
         
         target_opts = create_target_option_list(URL(get_moth_http()))
         self.w3afcore.target.set_options(target_opts)
 
-        self.w3afcore.plugins.set_plugins(['count',], 'crawl')
+        plugin_inst = factory(self.PLUGIN)
+        plugin_inst.set_url_opener(self.w3afcore.uri_opener)
+        plugin_inst.set_worker_pool(self.w3afcore.worker_pool)
 
+        self.w3afcore.plugins.plugins['crawl'] = [plugin_inst,]
+        self.w3afcore.plugins._plugins_names_dict['crawl'] = ['count',]
+        self.count_plugin = plugin_inst
+        
         # Verify env and start the scan
-        self.w3afcore.plugins.init_plugins()
+        self.w3afcore.plugins.initialized = True
         self.w3afcore.verify_environment()
         
-        self.count_plugin = self.w3afcore.plugins.plugins['crawl'][0]
-        
-    
     def tearDown(self):
         self.w3afcore.quit()
-        
-        # py and pyc file
-        for fname in (self.dst, self.dst + 'c'):
-            if os.path.exists(fname):
-                os.remove(fname)
 
 class TestW3afCorePause(CountTestMixin):
                 
