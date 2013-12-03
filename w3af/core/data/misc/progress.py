@@ -45,7 +45,6 @@ class Progress(object):
         self._current_value = 0.0
         self._first_amount_change_time = None
 
-    @attr('ci_fails')
     def inc(self):
         '''
         Add 1 unit to the current value.
@@ -83,7 +82,6 @@ class Progress(object):
             else:
                 self._eta = time_for_all_requests - time_already_elapsed
 
-    @attr('ci_fails')
     def get_progress(self):
         '''
         :return: The % done.
