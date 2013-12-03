@@ -25,6 +25,13 @@ import os
 
 from functools import wraps
 
+from nose.plugins.attrib import attr
+
+from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
+from w3af.core.ui.tests.wrappers.gnome import Gnome
+from w3af.core.ui.tests.wrappers.utils import (set_display_to_self,
+                                               restore_original_display)
+
 try:
     from gi.repository import Notify
     from xpresser import Xpresser, ImageNotFound
@@ -39,13 +46,10 @@ except ImportError:
     Notify = None
     Xpresser = None
     ImageNotFound = None
-    
-from nose.plugins.attrib import attr
-
-from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
-from w3af.core.ui.tests.wrappers.gnome import Gnome
-from w3af.core.ui.tests.wrappers.utils import (set_display_to_self,
-                                               restore_original_display)
+    ImageFound = None
+else:
+    class ImageFound(ImageNotFound):
+        pass
 
 def debug_notify(meth):
     
@@ -74,10 +78,6 @@ def debug_notify(meth):
             return result
     
     return debug
-
-class ImageFound(ImageNotFound):
-    pass
-
 
 @attr('ci_fails')
 class XpresserUnittest(unittest.TestCase):
