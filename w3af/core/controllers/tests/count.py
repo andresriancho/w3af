@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.parsers.url import URL
 
 
@@ -43,6 +44,6 @@ class count(CrawlPlugin):
 
     def crawl(self, fuzzable_req):
         for i in xrange(self.loops):
-            self._uri_opener.GET(URL('http://moth/%s' % i))
+            self._uri_opener.GET(URL(get_moth_http('/%s' % i)))
             self.count += 1
             time.sleep(0.5)
