@@ -24,6 +24,8 @@ import pickle
 import logging
 import subprocess
 
+from xml.etree import ElementTree
+
 from xunit import parse_xunit
 from xunit import normalize_test_names
 from nose.tools import nottest
@@ -133,7 +135,12 @@ def get_run_tests():
         fname.endswith(NOSE_XUNIT_EXT):
             
             path_fname = os.path.join(ARTIFACT_DIR, fname)
-            curr_test_suite, test_result = parse_xunit(path_fname)
+            try:
+                curr_test_suite, test_result = parse_xunit(path_fname)
+            except ElementTree.ParseError:
+                logging.warning('"%s" is an invalid XML file.' % fname)
+                continue
+            
             logging.debug(msg_fmt % (test_result.testsRun, fname))
             
             # Merge all the tests.
