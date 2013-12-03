@@ -37,6 +37,7 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
                                                                   NOSE_OUTPUT_PREFIX,
                                                                   NOSE_IGNORE_SELECTOR)
 
+@nottest
 def _get_tests(fname, selector=None):
     '''
     Collect tests and return them.
@@ -78,6 +79,7 @@ def _get_tests(fname, selector=None):
     
     return test_suite
 
+@nottest
 def get_all_tests():
     '''
     Collect all tests and return them
@@ -87,6 +89,7 @@ def get_all_tests():
     '''
     return _get_tests('all.xml')
 
+@nottest
 def get_ignored_tests():
     '''
     Collect all ignored tests and return them
@@ -119,6 +122,7 @@ def get_test_ids(nose_selector):
     nose_ids = pickle.load(file('.noseids'))
     return nose_ids['ids'].keys()
 
+@nottest
 def get_run_tests():
     '''
     Merge all the information from the command outputs into one consolidated
