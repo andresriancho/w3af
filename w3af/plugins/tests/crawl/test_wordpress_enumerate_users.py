@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -37,6 +38,7 @@ class TestWordpressEnumerateUsers(PluginTest):
         },
     }
 
+    @attr('ci_fails')
     def test_enumerate_users(self):
         cfg = self._run_configs['direct']
         self._scan(cfg['target'], cfg['plugins'])

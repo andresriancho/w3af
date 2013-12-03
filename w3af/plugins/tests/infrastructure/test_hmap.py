@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -33,6 +34,7 @@ class TestHmap(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_hmap_http(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -43,6 +45,7 @@ class TestHmap(PluginTest):
         info = infos[0]
         self.assertTrue('Apache/2' in info.get_desc(), info.get_desc())
 
+    @attr('ci_fails')
     def test_hmap_https(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'].replace('http', 'https'), cfg['plugins'])

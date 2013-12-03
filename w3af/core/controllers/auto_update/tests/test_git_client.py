@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import subprocess
 
+from nose.plugins.attrib import attr
 from mock import MagicMock
 from nose.plugins.skip import SkipTest
 
@@ -31,6 +32,7 @@ from w3af.core.controllers.auto_update.utils import get_current_branch
 
 class TestGitClient(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_get_URL(self):
         client = GitClient(W3AF_LOCAL_PATH)
         
@@ -42,6 +44,7 @@ class TestGitClient(unittest.TestCase):
         
         self.assertIn(client.URL, REPO_URLS)
     
+    @attr('ci_fails')
     def test_get_local_head_id(self):
         client = GitClient(W3AF_LOCAL_PATH)
         local_head = client.get_local_head_id()
@@ -57,6 +60,7 @@ class TestGitClient(unittest.TestCase):
         
         self.assertEqual(local_head, commit_id)
         
+    @attr('ci_fails')
     def test_get_remote_head_id(self):
         # For some strange reason jenkins creates a branch called
         # jenkins-<job name> during the build, which makes this test FAIL

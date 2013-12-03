@@ -55,6 +55,7 @@ class TestXUrllib(unittest.TestCase):
     def tearDown(self):
         self.uri_opener.end()
         
+    @attr('ci_fails')
     def test_basic(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
@@ -64,6 +65,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @attr('ci_fails')
     def test_cache(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)
@@ -73,6 +75,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
+    @attr('ci_fails')
     def test_qs_params(self):
         url = URL(get_moth_http('/audit/xss/simple_xss.py?text=123456abc'))
         http_response = self.uri_opener.GET(url, cache=False)
@@ -82,12 +85,14 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('root:x:0', http_response.body)
 
+    @attr('ci_fails')
     def test_POST(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         data = DataContainer([('text', '123456abc'),])
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
+    @attr('ci_fails')
     def test_POST_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
@@ -95,15 +100,18 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 
+    @attr('ci_fails')
     def test_unknown_url(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
+    @attr('ci_fails')
     def test_url_port_closed(self):
         # TODO: Change 2312 by an always closed/non-http port
         url = URL('http://127.0.0.1:2312/')
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
+    @attr('ci_fails')
     def test_url_port_not_http(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -114,6 +122,7 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
+    @attr('ci_fails')
     def test_url_port_not_http_many(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -135,6 +144,7 @@ class TestXUrllib(unittest.TestCase):
         else:
             self.assertTrue(False)
 
+    @attr('ci_fails')
     def test_timeout(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
@@ -150,6 +160,7 @@ class TestXUrllib(unittest.TestCase):
         
         self.uri_opener.settings.set_default_values()
 
+    @attr('ci_fails')
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
@@ -176,17 +187,20 @@ class TestXUrllib(unittest.TestCase):
         
         self.uri_opener.settings.set_default_values()
         
+    @attr('ci_fails')
     def test_stop(self):
         self.uri_opener.stop()
         url = URL(get_moth_http())
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
 
+    @attr('ci_fails')
     def test_pause_stop(self):
         self.uri_opener.pause(True)
         self.uri_opener.stop()
         url = URL(get_moth_http())
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
 
+    @attr('ci_fails')
     def test_pause(self):
         output = Queue.Queue()
         self.uri_opener.pause(True)
@@ -205,6 +219,7 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertRaises(Queue.Empty, output.get, True, 2)
 
+    @attr('ci_fails')
     def test_pause_unpause(self):
         output = Queue.Queue()
         self.uri_opener.pause(True)
@@ -234,6 +249,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(http_response.get_code(), 200)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
     
+    @attr('ci_fails')
     def test_removes_cache(self):
         url = URL(get_moth_http())
         self.uri_opener.GET(url, cache=False)
@@ -252,6 +268,7 @@ class TestXUrllib(unittest.TestCase):
             self.assertFalse(os.path.exists(test_db_path), test_db_path)
             self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
     
+    @attr('ci_fails')
     def test_special_char_header(self):
         url = URL(get_moth_http('/core/headers/echo-headers.py'))
         header_content = u'name=ábc'

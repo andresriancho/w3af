@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -41,6 +42,7 @@ class test_strange_headers(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_strange_headers_positive(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')
@@ -58,6 +60,7 @@ class test_strange_headers(unittest.TestCase):
         self.assertEqual(info.get_name(), 'Strange header')
         self.assertEqual(info.get_url(), url)
 
+    @attr('ci_fails')
     def test_strange_headers_negative(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')

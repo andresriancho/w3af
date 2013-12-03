@@ -66,6 +66,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
 
         super(TestConsoleBugReport, self).tearDown()
         
+    @attr('ci_fails')
     def test_buggy_scan(self):
         target = get_moth_http('/grep/')
         commands_to_run = ['plugins',

@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os.path
 import tempfile
 
+from nose.plugins.attrib import attr
 from itertools import repeat, izip
 
 from w3af import ROOT_PATH
@@ -118,6 +119,7 @@ class file_upload(AuditPlugin):
 
         return result
 
+    @attr('ci_fails')
     def _remove_files(self, fileh_filen_list):
         '''
         Close all open files and remove them from disk. This is the reverse of

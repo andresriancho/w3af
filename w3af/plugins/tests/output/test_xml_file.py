@@ -53,6 +53,7 @@ class TestXMLOutput(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

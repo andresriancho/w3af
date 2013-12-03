@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
@@ -26,6 +27,7 @@ class test_is_root(PayloadTestHelper):
 
     EXPECTED_RESULT = False
 
+    @attr('ci_fails')
     def test_is_root(self):
         result = exec_payload(self.shell, 'is_root', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)

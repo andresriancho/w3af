@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
@@ -63,6 +64,7 @@ class TestImportResults(PluginTest):
 
     }
 
+    @attr('ci_fails')
     def test_csv(self):
         '''
         Note that the CSV file has the following tests in it:
@@ -93,6 +95,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(set(urls),
                          EXPECTED_URLS)
 
+    @attr('ci_fails')
     def test_burp_b64(self):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
@@ -116,6 +119,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(set(urls),
                          EXPECTED_URLS)
 
+    @attr('ci_fails')
     def test_burp(self):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])

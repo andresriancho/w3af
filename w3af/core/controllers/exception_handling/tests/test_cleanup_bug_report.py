@@ -23,12 +23,14 @@ import unittest
 
 import w3af.core.data.kb.config as cf
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.data.parsers.url import URL
 
 
 class TestCleanupBugReport(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_cleanup_bug_report_simple(self):
         TESTS = [
                  ('foo', 'foo'),
@@ -39,6 +41,7 @@ class TestCleanupBugReport(unittest.TestCase):
         for _input, _expected in TESTS:
             self.assertEqual(cleanup_bug_report(_input), _expected)
 
+    @attr('ci_fails')
     def test_url_cleanup_no_path(self):
     
         target_url = URL('http://www.target.com/')
@@ -46,6 +49,7 @@ class TestCleanupBugReport(unittest.TestCase):
         self.assertEqual(cleanup_bug_report('start http://www.target.com/ end'),
                          'start http://domain/ end')
         
+    @attr('ci_fails')
     def test_url_cleanup_with_path(self):
     
         target_url = URL('http://www.target.com/abc/')

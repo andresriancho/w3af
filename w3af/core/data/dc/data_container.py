@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
+from nose.plugins.attrib import attr
 from collections import Iterable
 
 import w3af.core.data.parsers.encode_decode as enc_dec
@@ -70,6 +71,7 @@ class DataContainer(OrderedDict, DiskItem):
         '''
         return copy.deepcopy(self)
 
+    @attr('ci_fails')
     def __str__(self):
         '''
         Return string representation.
@@ -91,6 +93,7 @@ class DataContainer(OrderedDict, DiskItem):
         '''
         return enc_dec.urlencode(self, encoding=self.encoding)
 
+    @attr('ci_fails')
     def __unicode__(self):
         '''
         Return unicode representation

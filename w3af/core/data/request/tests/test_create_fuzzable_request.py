@@ -42,6 +42,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
 
+    @attr('ci_fails')
     def test_simplest(self):
         fr = create_fuzzable_request_from_parts(self.url)
 
@@ -49,6 +50,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), Headers())
         self.assertEqual(fr.get_method(), 'GET')
 
+    @attr('ci_fails')
     def test_headers(self):
         hdr = Headers([('foo', 'bar')])
         fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr)
@@ -57,6 +59,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'GET')
 
+    @attr('ci_fails')
     def test_headers_method(self):
         hdr = Headers([('foo', 'bar')])
         fr = create_fuzzable_request_from_parts(self.url, method='PUT',
@@ -66,6 +69,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'PUT')
 
+    @attr('ci_fails')
     def test_simple_post(self):
         post_data = 'a=b&d=3'
         hdr = Headers([('content-length', str(len(post_data)))])
@@ -80,6 +84,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertFalse('content-type' in fr.get_headers())
         self.assertIsInstance(fr, HTTPPostDataRequest)
 
+    @attr('ci_fails')
     def test_json_post(self):
         post_data = '{"1":"2"}'
         hdr = Headers([('content-length', str(len(post_data)))])
@@ -93,6 +98,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIsInstance(fr, JSONPostDataRequest)
 
+    @attr('ci_fails')
     def test_xmlrpc_post(self):
         post_data = '''<methodCall>
             <methodName>system.listMethods</methodName>
@@ -110,6 +116,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIsInstance(fr, XMLRPCRequest)
 
+    @attr('ci_fails')
     def test_multipart_post(self):
         boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
 
@@ -127,6 +134,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_dc(), {'a': ['bcd', ]})
         self.assertIsInstance(fr, HTTPPostDataRequest)
 
+    @attr('ci_fails')
     def test_invalid_multipart_post(self):
         _, post_data = multipart_encode([('a', 'bcd'), ], [])
 
@@ -155,6 +163,7 @@ class TestCreateFuzzableRequestRequest(unittest.TestCase):
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
 
+    @attr('ci_fails')
     def test_from_HTTPRequest(self):
         request = HTTPRequest(self.url)
         fr = create_fuzzable_request_from_request(request)
@@ -162,6 +171,7 @@ class TestCreateFuzzableRequestRequest(unittest.TestCase):
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_method(), 'GET')
 
+    @attr('ci_fails')
     def test_from_HTTPRequest_headers(self):
         hdr = Headers([('Foo', 'bar')])
         request = HTTPRequest(self.url, headers=hdr)

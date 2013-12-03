@@ -27,6 +27,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 @attr('slow')
 class test_spider(PayloadTestHelper):
 
+    @attr('ci_fails')
     def test_spider(self):
         result = exec_payload(self.shell, 'spider', args=(2,), use_api=True)
         self.assertTrue('/home/moth/keys.txt' in result)

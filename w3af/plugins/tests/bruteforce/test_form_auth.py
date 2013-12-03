@@ -74,6 +74,7 @@ class TestFormAuth(PluginTest):
     }
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_found_credentials_post(self):
         self._scan(self.target_post_url, self.positive_test['plugins'])
 
@@ -88,6 +89,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], '1234')
 
+    @attr('ci_fails')
     def test_found_credentials_get(self):
         self._scan(self.target_get_url, self.positive_test['plugins'])
 
@@ -102,6 +104,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], 'admin')
 
+    @attr('ci_fails')
     def test_found_credentials_password_only(self):
         self._scan(self.target_password_only_url,
                    self.positive_test['plugins'])
@@ -118,6 +121,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['user'], 'password-only-form')
         self.assertEquals(vuln['pass'], '1234')
 
+    @attr('ci_fails')
     def test_negative(self):
         self._scan(self.target_negative_url, self.negative_test['plugins'])
 

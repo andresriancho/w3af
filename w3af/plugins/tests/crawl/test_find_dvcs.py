@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.data.constants.severity as severity
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.find_dvcs import find_dvcs
 
@@ -37,6 +38,7 @@ class TestFindDVCS(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_dvcs(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -70,12 +72,14 @@ class TestFindDVCS(PluginTest):
             self.assertEqual(vuln_repo.get_name(), 'Source code repository')
             self.assertIn(repo, vuln_repo.get_desc().lower())
 
+    @attr('ci_fails')
     def test_ignore_file_blank(self):
         fdvcs = find_dvcs()
         files = fdvcs.ignore_file('')
 
         self.assertEqual(files, set())
 
+    @attr('ci_fails')
     def test_ignore_file_two_files_comment(self):
         fdvcs = find_dvcs()
         content = '''# Ignore these files

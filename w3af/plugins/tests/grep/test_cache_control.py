@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -42,6 +43,7 @@ class TestCacheControl(unittest.TestCase):
     def tearDown(self):
         kb.kb.cleanup()
 
+    @attr('ci_fails')
     def test_cache_control_http(self):
         '''
         No cache control, but the content is not sensitive (sent over http) so
@@ -59,6 +61,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
+    @attr('ci_fails')
     def test_cache_control_images(self):
         '''
         No cache control, but the content is not sensitive (is an image)
@@ -76,6 +79,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
+    @attr('ci_fails')
     def test_cache_control_empty_body(self):
         '''
         No cache control, but the content is not sensitive (since it is an
@@ -93,6 +97,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
         
+    @attr('ci_fails')
     def test_cache_control_correct_headers(self):
         '''
         Sensitive content with cache control headers so NO BUG is stored in KB.
@@ -111,6 +116,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
+    @attr('ci_fails')
     def test_cache_control_correct_meta(self):
         '''
         Sensitive content with cache control meta tags so no bug is stored in KB.
@@ -132,6 +138,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
+    @attr('ci_fails')
     def test_cache_control_incorrect_headers(self):
         '''
         Sensitive content with INCORRECT cache control headers bug should be
@@ -151,6 +158,7 @@ class TestCacheControl(unittest.TestCase):
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 1)
         
+    @attr('ci_fails')
     def test_cache_control_no_headers(self):
         '''
         Sensitive content without cache control headers so bug is stored in KB.

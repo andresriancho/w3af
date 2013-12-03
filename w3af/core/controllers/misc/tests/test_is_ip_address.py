@@ -21,17 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 
 class TestIsIPAddress(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_is_ip_address_true(self):
         self.assertTrue(is_ip_address('127.0.0.1'))
     
+    @attr('ci_fails')
     def test_is_ip_address_false_case01(self):
         self.assertFalse(is_ip_address('127.0.0.1.2'))
     
+    @attr('ci_fails')
     def test_is_ip_address_false_case02(self):
         self.assertFalse(is_ip_address('127.0.0.256'))
                 

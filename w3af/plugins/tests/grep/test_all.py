@@ -24,6 +24,7 @@ import os
 import cProfile
 import random
 
+from nose.plugins.attrib import attr
 from mock import patch
 from itertools import repeat
 
@@ -56,6 +57,7 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @attr('ci_fails')
     def test_image_with_image_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image.
@@ -78,6 +80,7 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))        
+    @attr('ci_fails')
     def test_image_with_text_html_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image with
@@ -95,6 +98,7 @@ class test_all(unittest.TestCase):
         for pinst in self._plugins:
             pinst.grep(request, response)
 
+    @attr('ci_fails')
     def test_options_for_grep_plugins(self):
         '''
         We're not going to assert anything here. What just want to see if
@@ -122,6 +126,7 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    @attr('ci_fails')
     def test_all_grep_plugins(self, *args):
         '''
         Run a set of 5 html files through all grep plugins.

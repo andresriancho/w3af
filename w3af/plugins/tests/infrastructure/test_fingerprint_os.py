@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -34,6 +35,7 @@ class TestFingerprintOS(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_moth(self):
         '''
         Test the "default" configuration for Apache+PHP.
@@ -45,6 +47,7 @@ class TestFingerprintOS(PluginTest):
 
         self.assertEqual('unix', os_str)
 
+    @attr('ci_fails')
     def test_modsecurity(self):
         '''
         Test a different configuration:

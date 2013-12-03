@@ -22,11 +22,13 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.plugins.attack.payloads.shell_handler import get_webshells, get_shell_code
 
 
 class TestShellHandler(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_get_shell_code_extension(self):
         shells = get_shell_code('php')
         
@@ -36,6 +38,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @attr('ci_fails')
     def test_get_shell_code_extension_force(self):
         shells = get_shell_code('php', True)
         
@@ -45,6 +48,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @attr('ci_fails')
     def test_get_shell_code_no_extension(self):
         shells = get_shell_code('')
         
@@ -54,6 +58,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @attr('ci_fails')
     def test_get_shell_code_invalid_extension(self):
         shells = get_shell_code('123456')
         
@@ -63,6 +68,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
         
+    @attr('ci_fails')
     def test_get_web_shell_extension(self):
         shells = get_webshells('php')
         
@@ -74,6 +80,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @attr('ci_fails')
     def test_get_web_shell_code_extension_force(self):
         shells = get_webshells('php', True)
 
@@ -84,18 +91,21 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @attr('ci_fails')
     def test_get_web_shell_code_no_extension(self):
         shells = get_webshells('')
         
         # All returned when invalid extension
         self.assertEqual(len(shells), 6)
 
+    @attr('ci_fails')
     def test_get_web_shell_code_invalid_extension(self):
         shells = get_webshells('123456')
         
         # All returned when invalid extension
         self.assertEqual(len(shells), 6)
     
+    @attr('ci_fails')
     def test_with_kb_data(self):
         kb.kb.raw_write('server_header', 'powered_by_string', ['ASP foo bar',])
         

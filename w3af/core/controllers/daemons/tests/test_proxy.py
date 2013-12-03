@@ -50,6 +50,7 @@ class TestProxy(unittest.TestCase):
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
+    @attr('ci_fails')
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open('http://moth').read()
 
@@ -73,6 +74,7 @@ class TestProxy(unittest.TestCase):
         del proxy_resp_headers['date']
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
+    @attr('ci_fails')
     def test_do_SSL_req_through_proxy(self):
         resp_body = self.proxy_opener.open('https://moth').read()
 
@@ -96,6 +98,7 @@ class TestProxy(unittest.TestCase):
         del proxy_resp_headers['date']
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
+    @attr('ci_fails')
     def test_proxy_req_ok(self):
         '''Test if self._proxy.stop() works as expected. Note that the check
         content is the same as the previous check, but it might be that this
@@ -108,12 +111,14 @@ class TestProxy(unittest.TestCase):
         # They must be very similar
         self.assertEqual(resp, proxy_resp)
     
+    @attr('ci_fails')
     def test_stop_no_requests(self):
         '''Test what happens if I stop the proxy without sending any requests
         through it'''
         # Note that the test is completed by self._proxy.stop() in tearDown
         pass
 
+    @attr('ci_fails')
     def test_stop_stop(self):
         '''Test what happens if I stop the proxy twice.'''
         # Note that the test is completed by self._proxy.stop() in tearDown

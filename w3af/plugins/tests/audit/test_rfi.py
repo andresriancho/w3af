@@ -71,6 +71,7 @@ class TestRFI(PluginTest):
 
     }
 
+    @attr('ci_fails')
     def test_found_rfi_with_w3af_site(self):
         cfg = self._run_configs['remote_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -84,6 +85,7 @@ class TestRFI(PluginTest):
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_found_rfi_with_local_server_rce(self):
         cfg = self._run_configs['local_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -96,6 +98,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote code execution", vuln.get_name())
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
+    @attr('ci_fails')
     def test_found_rfi_with_local_server_read(self):
         cfg = self._run_configs['local_read']
         self._scan(cfg['target'], cfg['plugins'])
@@ -108,6 +111,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote file inclusion", vuln.get_name())
         self.assertEquals(self.target_read, vuln.get_url().url_string)
 
+    @attr('ci_fails')
     def test_found_rfi_with_remote_server_read(self):
         cfg = self._run_configs['remote_read']
         self._scan(cfg['target'], cfg['plugins'])
@@ -120,6 +124,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote file inclusion", vuln.get_name())
         self.assertEquals(self.target_read, vuln.get_url().url_string)
 
+    @attr('ci_fails')
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
         webserver.start_webserver(

@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.plugins.grep.objects import objects
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -39,6 +40,7 @@ class test_objects(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_object(self):
         body = '''header
         <OBJECT
@@ -57,6 +59,7 @@ class test_objects(unittest.TestCase):
         i = kb.kb.get('objects', 'object')[0]
         self.assertTrue('"object"' in i.get_desc())
 
+    @attr('ci_fails')
     def test_applet(self):
         body = '''header
         <APPLET code="XYZApp.class" codebase="html/" align="baseline"
@@ -75,6 +78,7 @@ class test_objects(unittest.TestCase):
         i = kb.kb.get('objects', 'applet')[0]
         self.assertTrue('"applet"' in i.get_desc())
 
+    @attr('ci_fails')
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'
         url = URL('http://www.w3af.com/')

@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -41,6 +42,7 @@ class test_private_ip(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_private_ip_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -50,6 +52,7 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 0)
 
+    @attr('ci_fails')
     def test_private_ip_find(self):
         body = '<html><head>192.168.1.1</head></html>'
         url = URL('http://www.w3af.com/')
@@ -59,6 +62,7 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
 
+    @attr('ci_fails')
     def test_private_ip_broken_html(self):
         body = '<html><head>192.168.1.1</html>'
         url = URL('http://www.w3af.com/')
@@ -68,6 +72,7 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
 
+    @attr('ci_fails')
     def test_private_ip_find_10(self):
         body = 'header 10.2.34.2 footer'
         url = URL('http://www.w3af.com/')
@@ -77,6 +82,7 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
 
+    @attr('ci_fails')
     def test_private_ip_find_header(self):
         body = 'header content footer'
         url = URL('http://www.w3af.com/')
@@ -87,6 +93,7 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'header')), 1)
 
+    @attr('ci_fails')
     def test_private_ip_no(self):
         body = '<script> 1010.2.3.4 </script>'
         url = URL('http://www.w3af.com/')

@@ -42,6 +42,7 @@ class TestExceptionHandler(unittest.TestCase):
                                                  'http://www.w3af.org/')
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_handle_one(self):
 
         try:
@@ -74,6 +75,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.lineno, 48)
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_handle_multiple(self):
 
         for _ in xrange(10):
@@ -101,6 +103,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
         self.assertEquals(edata.filename, 'test_exception_handler.py')
 
+    @attr('ci_fails')
     def test_handle_threads_calls(self):
         
         def test2():
@@ -135,6 +138,7 @@ class TestExceptionHandler(unittest.TestCase):
         # the only way to do it without much effort
         self.assertEquals(edata.lineno, 107)
 
+    @attr('ci_fails')
     def test_handle_multi_calls(self):
 
         def test3():        

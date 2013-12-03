@@ -22,6 +22,7 @@ import unittest
 import os
 import re
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 
 
@@ -40,6 +41,7 @@ def recursive_listdir(path):
         
 class TestNoDebugUnittest(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_no_kb_access_from_plugin(self):
         
         debug_scan = re.compile('self._scan(.*?, *debug)')

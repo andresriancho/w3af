@@ -23,6 +23,7 @@ import unittest
 import re
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -50,6 +51,7 @@ class TestPykto(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_basic_pykto(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -69,23 +71,28 @@ class TestPykto(PluginTest):
 class TestIsVulnerableHelper(unittest.TestCase):
     # is_vuln = IsVulnerableHelper(match_1, match_1_or, match_1_and, fail_1, fail_2)
     
+    @attr('ci_fails')
     def test_checks_only_response_code_case01(self):
         is_vuln = IsVulnerableHelper(200, None, None, None, None)
         self.assertTrue( is_vuln.checks_only_response_code() )
     
+    @attr('ci_fails')
     def test_checks_only_response_code_case02(self):
         is_vuln = IsVulnerableHelper(200, 302, None, None, None)
         self.assertTrue( is_vuln.checks_only_response_code() )
 
+    @attr('ci_fails')
     def test_checks_only_response_code_case03(self):
         is_vuln = IsVulnerableHelper(200, re.compile('a'), None, None, None)
         self.assertFalse( is_vuln.checks_only_response_code() )
 
+    @attr('ci_fails')
     def test_checks_only_response_code_case04(self):
         is_vuln = IsVulnerableHelper(re.compile('a'), re.compile('b'),
                                      None, None, None)
         self.assertFalse( is_vuln.checks_only_response_code() )
 
+    @attr('ci_fails')
     def test_check_case01(self):
         is_vuln = IsVulnerableHelper(re.compile('abc'), None, None, None, None)
         url = URL('http://moth/')
@@ -93,6 +100,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertTrue( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case02(self):
         is_vuln = IsVulnerableHelper(re.compile('xyz'), None, None, None, None)
         url = URL('http://moth/')
@@ -100,6 +108,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertFalse( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case03(self):
         is_vuln = IsVulnerableHelper(re.compile('xyz'), re.compile('def'),
                                      None, None, None)
@@ -108,6 +117,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertTrue( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case04(self):
         is_vuln = IsVulnerableHelper(200, re.compile('def'),
                                      None, None, None)
@@ -116,6 +126,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertTrue( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case05(self):
         is_vuln = IsVulnerableHelper(200, 301, None, None, None)
         url = URL('http://moth/')
@@ -123,6 +134,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertTrue( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case06(self):
         is_vuln = IsVulnerableHelper(200, 301, re.compile('hello'), None, None)
         url = URL('http://moth/')
@@ -130,6 +142,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertTrue( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case07(self):
         is_vuln = IsVulnerableHelper(200, 301, re.compile('xyz'), None, None)
         url = URL('http://moth/')
@@ -137,6 +150,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertFalse( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case08(self):
         is_vuln = IsVulnerableHelper(200, 301, re.compile('def'),
                                      re.compile('xyz'), re.compile('abc'))
@@ -145,6 +159,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
                                      url, url)
         self.assertFalse( is_vuln.check(http_response) )
 
+    @attr('ci_fails')
     def test_check_case09(self):
         is_vuln = IsVulnerableHelper(200, 301, re.compile('def'),
                                      re.compile('xyz'), re.compile('spam'))
@@ -154,6 +169,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
         self.assertTrue( is_vuln.check(http_response) )
         
 class TestNiktoTestParser(PluginTest):
+    @attr('ci_fails')
     def test_updated_scan_db(self):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
 
@@ -169,6 +185,7 @@ class TestNiktoTestParser(PluginTest):
               'cd -'
         self.assertFalse(is_older, msg)
     
+    @attr('ci_fails')
     def test_not_too_many_ignores(self):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
@@ -181,6 +198,7 @@ class TestNiktoTestParser(PluginTest):
         
         self.assertLess(len(nikto_parser.ignored), 30, len(nikto_parser.ignored))
     
+    @attr('ci_fails')
     def test_parse_db_line_basic(self):
         '''
         This test reads a line from the DB and parses it, it's objective is to
@@ -221,6 +239,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(cart32_test_from_db.match_1, nikto_test.match_1)        
         self.assertEqual(cart32_test_from_db.message, nikto_test.message)
 
+    @attr('ci_fails')
     def test_parse_db_line_junk(self):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
@@ -238,6 +257,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertIn('/docs/', nikto_test.uri.url_string)
         self.assertEqual(len('/docs/') + 5, len(nikto_test.uri.get_path()))
 
+    @attr('ci_fails')
     def test_parse_db_line_no_vars(self):
         config = Config([],[],[],[],[])
         url = URL('http://moth/')
@@ -254,6 +274,7 @@ class TestNiktoTestParser(PluginTest):
     
         self.assertEqual('/docs/', nikto_test.uri.get_path())
 
+    @attr('ci_fails')
     def test_parse_db_line_cgidirs(self):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
@@ -270,6 +291,7 @@ class TestNiktoTestParser(PluginTest):
     
         self.assertEqual('/cgi-bin/', nikto_test.uri.get_path())
         
+    @attr('ci_fails')
     def test_parse_db_line_admin_dirs(self):
         admin_dirs = ['/adm/', '/admin/']
         
@@ -288,6 +310,7 @@ class TestNiktoTestParser(PluginTest):
                          [nt.uri.get_path() for nt in nikto_tests])
         
 
+    @attr('ci_fails')
     def test_parse_db_line_admin_users_two(self):
         admin_dirs = ['/adm/', '/admin/']
         users = ['sys', 'root']
@@ -306,6 +329,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(['/adm/sys', '/adm/root', '/admin/sys', '/admin/root'],
                          [nt.uri.get_path() for nt in nikto_tests])
         
+    @attr('ci_fails')
     def test_parse_db_line_raw_bytes(self):
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
@@ -321,6 +345,7 @@ class TestNiktoTestParser(PluginTest):
         else:
             self.assertTrue(False)
 
+    @attr('ci_fails')
     def test_parse_db_line_basic_w3af_scan_database(self):
         '''
         This test reads a line from the w3af scan database and parses it, it's

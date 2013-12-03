@@ -30,6 +30,7 @@ class test_arp_cache(PayloadTestHelper):
     # Not used because I want to be less specific in this case
     EXPECTED_RESULT = {u'192.168.56.1': (u'0a:00:27:00:00:00', u'eth1'), }
 
+    @attr('ci_fails')
     def test_arp_cache(self):
         result = exec_payload(self.shell, 'arp_cache', use_api=True)
         for ip_address, (mac, iface) in result.iteritems():

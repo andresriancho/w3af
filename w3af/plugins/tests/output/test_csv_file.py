@@ -22,6 +22,7 @@ import os
 import csv
 import json
 
+from nose.plugins.attrib import attr
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -58,6 +59,7 @@ class TestCSVFile(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

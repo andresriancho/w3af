@@ -38,6 +38,7 @@ class TestStrategy(PluginTest):
 
     @attr('smoke')
     @attr('moth')
+    @attr('ci_fails')
     def test_same_fr_set_object(self):
         cfg = self._run_configs['cfg']
 

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.pdf import pdf_to_text, PDFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -37,15 +38,18 @@ class TestPDF(unittest.TestCase):
     LINKS_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                                 'data', 'links.pdf')
     
+    @attr('ci_fails')
     def test_pdf_to_text(self):
         text = pdf_to_text(file(self.SIMPLE_SAMPLE).read())
         self.assertIn('Hello', text)
         self.assertIn('World', text)
 
+    @attr('ci_fails')
     def test_pdf_to_text_no_pdf(self):
         text = pdf_to_text('hello world')
         self.assertEqual('', text)
     
+    @attr('ci_fails')
     def test_pdf_parser(self):
         body = file(self.LINKS_SAMPLE).read()
         hdrs = Headers({'Content-Type': 'application/pdf'}.items())

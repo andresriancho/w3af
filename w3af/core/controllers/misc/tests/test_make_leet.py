@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.make_leet import make_leet
 
 
 class TestMakeLeet(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_make_leet(self):
         self.assertEqual(make_leet('adminstradores'), ['admin57radore5',
                                                        '4dm1nstr4d0r3s',

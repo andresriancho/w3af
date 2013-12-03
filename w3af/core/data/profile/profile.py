@@ -24,6 +24,7 @@ import ConfigParser
 import os
 import shutil
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.core_helpers.target import w3af_core_target
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.misc.homeDir import get_home_dir
@@ -69,6 +70,7 @@ class profile(object):
         # Save the profname variable
         self._profile_file_name = profname
 
+    @attr('ci_fails')
     def _get_real_profile_path(self, profilename, workdir):
         '''
         Return the complete path for `profilename`.

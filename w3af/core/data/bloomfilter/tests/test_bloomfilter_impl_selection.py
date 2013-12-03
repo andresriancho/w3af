@@ -21,12 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.data.bloomfilter.bloomfilter import BloomFilter
 from pybloomfilter import BloomFilter as CMmapFilter
 
 
 class TestImplementationSelection(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_correct_type(self):
         _filter = BloomFilter(1000, 0.01)
         self.assertIsInstance(_filter.bf, CMmapFilter)

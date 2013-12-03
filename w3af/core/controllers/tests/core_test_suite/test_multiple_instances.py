@@ -28,6 +28,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 @attr('smoke')
 class TestW3afCore(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_multiple_instances(self):
         '''Just making sure nothing crashes if I have more than 1 instance
         of w3afCore'''

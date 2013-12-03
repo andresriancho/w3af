@@ -52,6 +52,7 @@ class TestCSP(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_vuln(self):
         '''
         Test to validate case in which error are found:
@@ -80,6 +81,7 @@ class TestCSP(PluginTest):
                 counter += 1
         self.assertEquals(counter, len(expected_vulns_desc))        
 
+    @attr('ci_fails')
     def test_no_vuln(self):
         '''
         Test to validate case in which no error is found.

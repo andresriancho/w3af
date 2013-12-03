@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import socket
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 
 
@@ -36,6 +37,7 @@ class TestUpperDaemon(unittest.TestCase):
         self.upper_daemon.start()
         self.upper_daemon.wait_for_start()
     
+    @attr('ci_fails')
     def test_basic(self):
         sent = 'abc'
         

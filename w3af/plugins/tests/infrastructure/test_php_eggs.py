@@ -34,6 +34,7 @@ class TestPHPEggs(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_php_eggs_fingerprinted(self):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])

@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -44,6 +45,7 @@ class test_ajax(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_ajax_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -53,6 +55,7 @@ class test_ajax(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 0)
 
+    @attr('ci_fails')
     def test_ajax_find(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
         url = URL('http://www.w3af.com/')
@@ -62,6 +65,7 @@ class test_ajax(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
 
+    @attr('ci_fails')
     def test_ajax_broken_html(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
         url = URL('http://www.w3af.com/')
@@ -71,6 +75,7 @@ class test_ajax(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
 
+    @attr('ci_fails')
     def test_ajax_broken_2(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = URL('http://www.w3af.com/')
@@ -80,6 +85,7 @@ class test_ajax(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
 
+    @attr('ci_fails')
     def test_ajax_find_2(self):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
         url = URL('http://www.w3af.com/')
@@ -89,6 +95,7 @@ class test_ajax(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
 
+    @attr('ci_fails')
     def test_ajax_two(self):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
         url = URL('http://www.w3af.com/')

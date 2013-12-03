@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -41,6 +42,7 @@ class test_oracle(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_oracle_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -50,6 +52,7 @@ class test_oracle(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
 
+    @attr('ci_fails')
     def test_oracle_long(self):
         body = 'ABC ' * 10000
         url = URL('http://www.w3af.com/')
@@ -59,6 +62,7 @@ class test_oracle(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
 
+    @attr('ci_fails')
     def test_oracle_positive(self):
         body = 'ABC ' * 100
         body += '<!-- Created by Oracle '

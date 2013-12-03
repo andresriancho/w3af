@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.audit.cors_origin import cors_origin
 from w3af.core.data.parsers.url import URL
@@ -67,6 +68,7 @@ class TestCORSOrigin(PluginTest):
             200, '', Headers(), self.url, self.url, _id=3)
         self.request = FuzzableRequest(self.url)
 
+    @attr('ci_fails')
     def test_scan(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -82,6 +84,7 @@ class TestCORSOrigin(PluginTest):
         self.assertTrue(all([v.get_url().url_string.startswith(self.target_url)
                              for v in vulns]))
 
+    @attr('ci_fails')
     def test_allow_methods_no(self):
         allow_methods = 'GET, POST, Options'
         allow_origin = 'http://w3af.org/'
@@ -93,6 +96,7 @@ class TestCORSOrigin(PluginTest):
 
         self.assertEqual(vulns, [])
 
+    @attr('ci_fails')
     def test_allow_methods_strange(self):
 
         allow_methods = 'GET, POST, OPTIONS, FOO'
@@ -109,6 +113,7 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(vuln.get_name(), 'Uncommon CORS methods enabled')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_allow_methods_sensitive(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT'
@@ -125,6 +130,7 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(vuln.get_name(), 'Sensitive CORS methods enabled')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_allow_methods_sensitive_strange(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
@@ -142,6 +148,7 @@ class TestCORSOrigin(PluginTest):
             vuln.get_name(), 'Sensitive and strange CORS methods enabled')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_allow_methods_sensitive_strange_analyze_server_response(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
@@ -159,6 +166,7 @@ class TestCORSOrigin(PluginTest):
             vuln.get_name(), 'Sensitive and strange CORS methods enabled')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_allow_methods_sensitive_strange_call_max(self):
 
         allow_methods = 'GET, POST, OPTIONS, PUT, FOO'
@@ -188,6 +196,7 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(vuln.get_name(), 'Multiple CORS misconfigurations')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_universal_allow_not(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = 'http://w3af.org/'
@@ -199,6 +208,7 @@ class TestCORSOrigin(PluginTest):
 
         self.assertEqual(len(vulns), 0, vulns)
 
+    @attr('ci_fails')
     def test_universal_allow_yes(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = '*'
@@ -215,6 +225,7 @@ class TestCORSOrigin(PluginTest):
             vuln.get_name(), 'Access-Control-Allow-Origin set to "*"')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_universal_origin_echo_false(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = 'http://www.google.com/'
@@ -226,6 +237,7 @@ class TestCORSOrigin(PluginTest):
 
         self.assertEqual(len(vulns), 0, vulns)
 
+    @attr('ci_fails')
     def test_universal_origin_echo_without_credentials(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = 'http://moth/'
@@ -242,6 +254,7 @@ class TestCORSOrigin(PluginTest):
             vuln.get_name(), 'Insecure Access-Control-Allow-Origin')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_universal_origin_echo_with_credentials(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = 'http://moth/'
@@ -258,6 +271,7 @@ class TestCORSOrigin(PluginTest):
         ), 'Insecure Access-Control-Allow-Origin with credentials')
         self.assertNotEqual(vuln.get_desc(), None)
 
+    @attr('ci_fails')
     def test_universal_origin_allow_creds(self):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = '*'

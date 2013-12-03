@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.misc.encoding import smart_unicode
@@ -110,6 +111,7 @@ class Headers(DataContainer):
 
         super(Headers, self).__setitem__(k, v)
 
+    @attr('ci_fails')
     def __str__(self):
         '''
         After getting some strange encoding errors I started to research about

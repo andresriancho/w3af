@@ -49,6 +49,7 @@ class TestCookieHandler(unittest.TestCase):
         127.0.0.1\tFALSE\t/core/\tFALSE\t2736616305\tTestCookie\tsomething
         '''
 
+    @attr('ci_fails')
     def test_low_level(self):
         opener = urllib2.build_opener(CookieHandler)
         # With this request the CookieHandler should store a cookie in its
@@ -71,6 +72,7 @@ class TestCookieHandler(unittest.TestCase):
         with_cookie_res = opener.open(with_cookie_req).read()
         self.assertTrue('Cookie was sent.' in with_cookie_res)
 
+    @attr('ci_fails')
     def test_low_level_with_cookie_jar(self):
         # IMPORTANT NOTE: Please remember that the cookie expiration, 2736616305
         # above, is going to limit the date until which this unittest will PASS
@@ -97,6 +99,7 @@ class TestCookieHandler(unittest.TestCase):
         
         os.unlink(tmp_file.name)
 
+    @attr('ci_fails')
     def test_xurllib(self):
         uri_opener = ExtendedUrllib()
         uri_opener.GET(self.URL_SENDS_COOKIE)

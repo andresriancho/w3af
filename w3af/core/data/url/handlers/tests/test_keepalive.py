@@ -55,6 +55,7 @@ class TestKeepalive(unittest.TestCase):
         # The request obj mock
         self.req = Mock()
 
+    @attr('ci_fails')
     def test_get_and_remove_conn(self):
         '''
         Each requested connection must be closed by calling 'remove_connection'
@@ -92,6 +93,7 @@ class TestKeepalive(unittest.TestCase):
             host, conn_factory)
         conn_mgr_mock.remove_connection.assert_called_once_with(conn, host)
 
+    @attr('ci_fails')
     def test_timeout(self):
         """
         Ensure that kah raises 'URLTimeoutError' when timeouts occur and raises
@@ -124,6 +126,7 @@ class TestKeepalive(unittest.TestCase):
             host, conn_factory)
         conn_mgr.remove_connection.assert_called_once_with(conn, host)
 
+    @attr('ci_fails')
     def test_free_connection(self):
         """
         Ensure that conns are returned back to the pool when requests are
@@ -141,6 +144,7 @@ class TestKeepalive(unittest.TestCase):
 
         conn_mgr.free_connection.assert_called_once_with(conn)
 
+    @attr('ci_fails')
     def test_single_conn_mgr(self):
         '''
         We only want to use different instances of the ConnectionManager for
@@ -152,9 +156,11 @@ class TestKeepalive(unittest.TestCase):
         self.assertNotEqual(conn_mgr_http,conn_mgr_https)
     
     
+    @attr('ci_fails')
     def test_close_all_established_sockets(self):
         self.close_all_sockets(0)
 
+    @attr('ci_fails')
     def test_close_all_close_wait_sockets(self):
         # Give the socket time to move to close_wait
         self.close_all_sockets(20)
@@ -186,6 +192,7 @@ class test_connection_mgr(unittest.TestCase):
         self.cm = ConnectionManager()
         self.host = Mock()
 
+    @attr('ci_fails')
     def test_get_available_conn(self):
         '''
         Play with the pool, test, test... and test
@@ -213,6 +220,7 @@ class test_connection_mgr(unittest.TestCase):
         self.assertTrue(
             time.time() - t0 >= 2.9, "Method returned before expected time")
 
+    @attr('ci_fails')
     def test_replace_conn(self):
         cf = lambda h: Mock()
         bad_conn = Mock()
@@ -227,6 +235,7 @@ class test_connection_mgr(unittest.TestCase):
         # The len must be the same
         self.assertEquals(self.cm.get_connections_total(), old_len)
 
+    @attr('ci_fails')
     def test_remove_conn(self):
         # Rem a non existing conn
         non_exist_conn = Mock()

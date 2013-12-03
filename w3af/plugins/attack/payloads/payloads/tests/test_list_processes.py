@@ -29,6 +29,7 @@ class test_list_processes(PayloadTestHelper):
 
     EXPECTED_RESULT = set(['/sbin/getty -8 38400 tty4', 'cron'])
 
+    @attr('ci_fails')
     def test_list_processes(self):
         result = exec_payload(
             self.shell, 'list_processes', args=(2000,), use_api=True)

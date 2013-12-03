@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.is_source_file import is_source_file
 
 
 class TestIsSourceFile(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_php(self):
         source = 'foo <? echo "a"; ?> bar'
         match, lang = is_source_file(source)
@@ -34,6 +36,7 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, 'PHP')
     
+    @attr('ci_fails')
     def test_no_code_case01(self):
         source = 'foo <? echo "bar'
         match, lang = is_source_file(source)
@@ -41,6 +44,7 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
     
+    @attr('ci_fails')
     def test_no_code_case02(self):
         source = 'foo <?xml ?> "bar'
         match, lang = is_source_file(source)
@@ -48,6 +52,7 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
 
+    @attr('ci_fails')
     def test_no_code_case03(self):
         source = 'foo <?xpacket ?> "bar'
         match, lang = is_source_file(source)
@@ -55,6 +60,7 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
 
+    @attr('ci_fails')
     def test_no_code_case04(self):
         source = 'foo <?ypacket ?> "bar'
         match, lang = is_source_file(source)

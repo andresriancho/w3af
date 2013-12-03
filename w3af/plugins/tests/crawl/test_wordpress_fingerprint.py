@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.wordpress_fingerprint import FileFingerPrint
 from w3af.core.data.misc.file_utils import days_since_file_update
@@ -47,6 +48,7 @@ class Testwordpress_fingerprint(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_find_version(self):
         cfg = self._run_configs['direct']
         self._scan(cfg['target'], cfg['plugins'])
@@ -76,6 +78,7 @@ class Testwordpress_fingerprint(PluginTest):
              ' still be the same.', ])
         self.assertEqual(descriptions, expected_descriptions)
 
+    @attr('ci_fails')
     def test_xml_parsing_case01(self):
         wordpress_fingerprint_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                            'wordpress_fingerprint')
@@ -88,6 +91,7 @@ class Testwordpress_fingerprint(PluginTest):
                                      '0.71-gold')
         self.assertIn(wp_file_fp, wp_fingerprints)
 
+    @attr('ci_fails')
     def test_updated_wp_versions_xml(self):
         wp_fp_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'wordpress_fingerprint')
         url = 'https://raw.github.com/wpscanteam/wpscan/master/data/wp_versions.xml'
@@ -104,6 +108,7 @@ class Testwordpress_fingerprint(PluginTest):
               'cd -'
         self.assertFalse(is_older, msg % url)
         
+    @attr('ci_fails')
     def test_updated_release_db(self):
 
         wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',

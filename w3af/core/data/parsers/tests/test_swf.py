@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -49,6 +50,7 @@ class TestSWFParser(unittest.TestCase):
         parser = SWFParser(response)
         return parser
     
+    @attr('ci_fails')
     def test_swf_parser_wivet(self):
         parser = self.parse(self.WIVET_SAMPLE)
         parsed, re_refs = parser.get_references()
@@ -61,6 +63,7 @@ class TestSWFParser(unittest.TestCase):
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)
         
+    @attr('ci_fails')
     def test_swf_parser_subscribe(self):
         parser = self.parse(self.DEMO_SAMPLE)
         parsed, re_refs = parser.get_references()

@@ -426,6 +426,7 @@ class ConsoleUI(object):
     def _getLineStr(self):
         return ''.join(self._line)
 
+    @attr('ci_fails')
     def _parseLine(self, line=None):
         '''
         >>> console = ConsoleUI(do_upd=False)

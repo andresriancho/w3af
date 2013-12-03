@@ -21,19 +21,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.threads.threadpool import return_args
 
 
 class TestReturnArgs(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_basic(self):
         args_int = return_args(int)
         self.assertEqual((('3',), 3), args_int('3'))
 
+    @attr('ci_fails')
     def test_two_params(self):
         args_replace = return_args('foo123bar'.replace)
         self.assertEqual((('123', ''), 'foobar'), args_replace('123', ''))
 
+    @attr('ci_fails')
     def test_kwds(self):
         args_int_two = return_args(int, base=2)
         self.assertEqual((('1',), 1), args_int_two('1'))

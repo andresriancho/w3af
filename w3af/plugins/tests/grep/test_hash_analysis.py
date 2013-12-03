@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 
+from nose.plugins.attrib import attr
 from w3af.plugins.grep.hash_analysis import hash_analysis
 
 
 class test_hash_analysis(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_hash_analysis(self):
         p = hash_analysis()
         self.assertTrue(

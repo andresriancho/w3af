@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
@@ -52,12 +53,14 @@ class TestDocumentParserFactory(unittest.TestCase):
     HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                              'data', 'sharepoint-pl.html')
 
+    @attr('ci_fails')
     def test_html(self):
         parser = document_parser_factory(_build_http_response('', u'text/html'))
 
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
 
+    @attr('ci_fails')
     def test_pdf_case01(self):
         parser = document_parser_factory(
             _build_http_response(file(self.PDF_FILE).read(),
@@ -66,15 +69,18 @@ class TestDocumentParserFactory(unittest.TestCase):
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, PDFParser)
 
+    @attr('ci_fails')
     def test_no_parser(self):
         response = _build_http_response('%!23', u'application/bar')
         self.assertRaises(w3afException, document_parser_factory, response)
 
+    @attr('ci_fails')
     def test_no_parser_binary(self):
         all_chars = ''.join([chr(i) for i in xrange(0,255)])
         response = _build_http_response(all_chars, u'application/bar')
         self.assertRaises(w3afException, document_parser_factory, response)
         
+    @attr('ci_fails')
     def test_issue_106_invalid_url(self):
         '''
         Issue to verify https://github.com/andresriancho/w3af/issues/106

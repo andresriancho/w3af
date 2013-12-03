@@ -24,6 +24,7 @@ import unittest
 import tempfile
 import os
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.daemons.webserver import (start_webserver,
                                                 start_webserver_any_free_port)
 from w3af.core.data.constants.ports import REMOTEFILEINCLUDE
@@ -47,6 +48,7 @@ class TestWebserver(unittest.TestCase):
                 self.PORT = port
                 break
 
+    @attr('ci_fails')
     def test_GET_404(self):
         # Raises a 404
         self.assertRaises(urllib2.HTTPError, urllib2.urlopen,
@@ -58,6 +60,7 @@ class TestWebserver(unittest.TestCase):
         test_fh.write(self.TESTSTRING)
         test_fh.close()
 
+    @attr('ci_fails')
     def test_GET_exists(self):
         self._create_file()
         
@@ -66,6 +69,7 @@ class TestWebserver(unittest.TestCase):
         
         self.assertEqual(response_body, self.TESTSTRING)
     
+    @attr('ci_fails')
     def test_any_free_port(self):
         self._create_file()
         _, port = start_webserver_any_free_port(self.IP, self.tempdir)

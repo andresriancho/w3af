@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.parsers.url import parse_qs
 from w3af.core.data.url.HTTPRequest import HTTPRequest
@@ -29,6 +30,7 @@ from w3af.plugins.evasion.rnd_param import rnd_param
 
 class TestEvasion(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_add_when_empty(self):
         rp = rnd_param()
 
@@ -37,6 +39,7 @@ class TestEvasion(unittest.TestCase):
         qs = rp.modify_request( r ).url_object.querystring
         self.assertEqual(len(qs), 1)
 
+    @attr('ci_fails')
     def test_add_when_qs(self):
         rp = rnd_param()
                 
@@ -45,6 +48,7 @@ class TestEvasion(unittest.TestCase):
         qs = rp.modify_request( r ).url_object.querystring
         self.assertEqual(len(qs), 2)
 
+    @attr('ci_fails')
     def test_add_when_qs_and_postdata(self):
         rp = rnd_param()
         

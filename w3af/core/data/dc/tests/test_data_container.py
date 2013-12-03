@@ -22,12 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
+from nose.plugins.attrib import attr
 from w3af.core.data.dc.data_container import DataContainer
 from nose.plugins.skip import SkipTest
 
 
 class TestDataContainer(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_basic(self):
         dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
         
@@ -37,6 +39,7 @@ class TestDataContainer(unittest.TestCase):
         self.assertEqual(dc['a'], ['1'])
         self.assertEqual(dc['b'], ['2', '3'])
     
+    @attr('ci_fails')
     def test_str(self):
         dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
         str_dc = str(dc)
@@ -49,11 +52,13 @@ class TestDataContainer(unittest.TestCase):
         dc = DataContainer([(u'aaa', ('', ''))])
         self.assertEqual(str(dc), 'aaa=&aaa=')
     
+    @attr('ci_fails')
     def test_str_special_chars(self):
         dc = DataContainer([(u'a',['1']), (u'u', [u'Ú-ú-Ü-ü'])], 'latin1')
         decoded_str = urllib.unquote(str(dc)).decode('latin-1')
         self.assertEquals(u'a=1&u=Ú-ú-Ü-ü', decoded_str)
         
+    @attr('ci_fails')
     def test_unicode(self):
         dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
         udc = unicode(dc)

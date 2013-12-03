@@ -33,10 +33,12 @@ class test_bing(unittest.TestCase):
     def setUp(self):
         self.bing_se = bing(ExtendedUrllib())
 
+    @attr('ci_fails')
     def test_get_links_results_few(self):
         self.query, self.limit = ('two and half man', 60)
         self.get_links_results()
         
+    @attr('ci_fails')
     def test_get_links_results_many(self):
         self.query, self.limit = ('big bang theory', 200)
         self.get_links_results()

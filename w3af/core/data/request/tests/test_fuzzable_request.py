@@ -37,6 +37,7 @@ class TestFuzzableRequest(unittest.TestCase):
     def setUp(self):
         self.url = URL('http://w3af.com/a/b/c.php')
 
+    @attr('ci_fails')
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative
         fr = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
@@ -44,12 +45,14 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertTrue(fr.is_variant_of(fr_other))
         self.assertTrue(fr_other.is_variant_of(fr))
 
+    @attr('ci_fails')
     def test_variants_false_diff_meths(self):
         # Different methods
         fr_get = FuzzableRequest(self.url, method='GET', dc={'a': ['1']})
         fr_post = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
         self.assertFalse(fr_get.is_variant_of(fr_post))
 
+    @attr('ci_fails')
     def test_variants_false_diff_params_type(self):
         fr = FuzzableRequest(
             self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
@@ -57,11 +60,13 @@ class TestFuzzableRequest(unittest.TestCase):
             self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertFalse(fr.is_variant_of(fr_other))
 
+    @attr('ci_fails')
     def test_variants_false_nonetype_in_params(self):
         fr = FuzzableRequest(self.url, method='GET', dc={'a': [None]})
         fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['s']})
         self.assertFalse(fr.is_variant_of(fr_other))
 
+    @attr('ci_fails')
     def test_variants_true_similar_params(self):
         # change the url by adding a querystring. shouldn't affect anything.
         url = self.url.url_join('?a=z')
@@ -70,11 +75,13 @@ class TestFuzzableRequest(unittest.TestCase):
             self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertTrue(fr.is_variant_of(fr_other))
 
+    @attr('ci_fails')
     def test_variants_true_similar_params_two(self):
         fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']})
         fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['']})
         self.assertTrue(fr.is_variant_of(fr_other))
 
+    @attr('ci_fails')
     def test_dump_case01(self):
         expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
                                 'Hello: World',
@@ -88,6 +95,7 @@ class TestFuzzableRequest(unittest.TestCase):
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
 
+    @attr('ci_fails')
     def test_dump_case02(self):
         expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
                                  u'Hola: Múndo',
@@ -101,6 +109,7 @@ class TestFuzzableRequest(unittest.TestCase):
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
 
+    @attr('ci_fails')
     def test_dump_case03(self):
         header_value = ''.join(chr(i) for i in xrange(256))
         
@@ -117,6 +126,7 @@ class TestFuzzableRequest(unittest.TestCase):
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
 
+    @attr('ci_fails')
     def test_dump_mangle(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"),\
                              headers=Headers([('Host','www.w3af.com'),]))
@@ -138,11 +148,13 @@ class TestFuzzableRequest(unittest.TestCase):
         
         self.assertEqual(fr.dump(), expected)
 
+    @attr('ci_fails')
     def test_export_without_dc(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
         self.assertEqual(fr.export(),
                          'GET,http://www.w3af.com/,')
     
+    @attr('ci_fails')
     def test_export_with_dc(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
         d = DataContainer()
@@ -151,6 +163,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.export(),
                          'GET,http://www.w3af.com/?a=1,')
         
+    @attr('ci_fails')
     def test_equal(self):
         u = URL("""http://www.w3af.com/""")
         fr1 = FuzzableRequest(u)
@@ -165,6 +178,7 @@ class TestFuzzableRequest(unittest.TestCase):
         fr2 = FuzzableRequest(u, method='POST')
         self.assertNotEqual(fr1, fr2)
     
+    @attr('ci_fails')
     def test_set_url(self):
         self.assertRaises(TypeError, FuzzableRequest, 'http://www.google.com/')
         

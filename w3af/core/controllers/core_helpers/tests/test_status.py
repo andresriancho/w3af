@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from mock import Mock
 
 from w3af.core.controllers.core_helpers.status import w3af_core_status
@@ -30,6 +31,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 
 class TestStatus(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_simple(self):
         s = w3af_core_status(Mock())
         
@@ -63,6 +65,7 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_status(), 'Stopped.')
         self.assertFalse(s.is_running())
     
+    @attr('ci_fails')
     def test_queue_status_not_started(self):
         s = w3af_core_status(w3afCore())
         
@@ -77,4 +80,3 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_audit_qsize(), None)
         self.assertEqual(s.get_audit_current_fr(), None)
         self.assertEqual(s.get_audit_eta(), None)
-

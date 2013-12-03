@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import random
 
+from nose.plugins.attrib import attr
 from mock import MagicMock, Mock
 
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
@@ -71,6 +72,7 @@ class TestExactDelay(unittest.TestCase):
                   
                   ]
     
+    @attr('ci_fails')
     def test_delay_controlled(self):
         
         for expected_result, delays in self.TEST_SUITE:
@@ -90,6 +92,7 @@ class TestExactDelay(unittest.TestCase):
             controlled, responses = ed.delay_is_controlled()
             self.assertEqual(expected_result, controlled, delays)
     
+    @attr('ci_fails')
     def test_delay_controlled_random(self):
         for expected_result, delays in self.TEST_SUITE:
             

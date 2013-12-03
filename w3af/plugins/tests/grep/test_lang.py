@@ -50,6 +50,7 @@ class TestLang(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_id_es(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'es', cfg['plugins'])
@@ -57,6 +58,7 @@ class TestLang(PluginTest):
         lang = self.kb.raw_read('lang', 'lang')
         self.assertEquals('es', lang)
 
+    @attr('ci_fails')
     def test_id_en(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'en', cfg['plugins'])
@@ -64,6 +66,7 @@ class TestLang(PluginTest):
         lang = self.kb.raw_read('lang', 'lang')
         self.assertEquals('en', lang)
 
+    @attr('ci_fails')
     def test_id_en_crawl(self):
         cfg = self._run_configs['crawl']
         self._scan(self.langs_url % 'en', cfg['plugins'])

@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.levenshtein import relative_distance_boolean, relative_distance
 
 
 class TestLevenshtein(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_all(self):
         acceptance_tests = []
         acceptance_tests.append(('a', 'a', 1.0))

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import urllib
 
+from nose.plugins.attrib import attr
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import htmldecode
 from w3af.core.data.parsers.url import URL
@@ -182,6 +183,7 @@ class BaseParser(object):
 
         return res
 
+    @attr('ci_fails')
     def _decode_url(self, url_string):
         '''
         Decode `url_string` using urllib's url-unquote

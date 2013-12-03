@@ -71,9 +71,11 @@ class TestWebSpider(PluginTest):
         )
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_spider_found_urls(self):
         self.generic_follow_links_scan(self.follow_links_url)
 
+    @attr('ci_fails')
     def test_spider_found_urls_with_port(self):
         '''
         Test for issue https://github.com/andresriancho/w3af/issues/134
@@ -81,6 +83,7 @@ class TestWebSpider(PluginTest):
         self.generic_follow_links_scan(self.follow_links_80_url)
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_spider_urls_with_strange_charsets(self):
         cfg = self._run_configs['basic']
         self._scan(self.encoding_url + 'index.html', cfg['plugins'])
@@ -109,14 +112,17 @@ class TestWebSpider(PluginTest):
             set([u.url_string for u in urls])
         )
 
+    @attr('ci_fails')
     def test_spider_relative_urls_found_with_regex(self):
         raise SkipTest('FIXME: Need to test this feature!')
         self.relative_url
 
+    @attr('ci_fails')
     def test_spider_traverse_directories(self):
         raise SkipTest('FIXME: Need to test this feature!')
         self.dir_get_url
 
+    @attr('ci_fails')
     def test_wivet(self):
         clear_wivet()
 

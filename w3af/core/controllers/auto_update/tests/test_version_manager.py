@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import datetime
 
+from nose.plugins.attrib import attr
 from mock import MagicMock
 
 from w3af.core.data.db.startup_cfg import StartUpConfig
@@ -46,6 +47,7 @@ class TestVersionMgr(unittest.TestCase):
         '''
         self.vmgr = VersionMgr(W3AF_LOCAL_PATH, MagicMock(return_value=None))
 
+    @attr('ci_fails')
     def test_no_need_update(self):
         vmgr = self.vmgr
         vmgr._start_cfg = StartUpConfig()
@@ -54,6 +56,7 @@ class TestVersionMgr(unittest.TestCase):
         # Test no auto-update
         self.assertFalse(vmgr._has_to_update())
 
+    @attr('ci_fails')
     def test_has_to_update(self):
         '''
         Test [D]aily, [W]eekly and [M]onthly auto-update
@@ -73,6 +76,7 @@ class TestVersionMgr(unittest.TestCase):
 
             self.assertTrue(vmgr._has_to_update())
 
+    @attr('ci_fails')
     def test_added_new_dependencies(self):
         start = 'cb751e941bfa2063ebcef711642ed5d22ff9db87'
         end = '9c5f5614412dce67ac13411e1eebd754b4c6fb6a'
@@ -81,6 +85,7 @@ class TestVersionMgr(unittest.TestCase):
         
         self.assertTrue(self.vmgr._added_new_dependencies(changelog))
         
+    @attr('ci_fails')
     def test_not_added_new_dependencies(self):
         start = '479f30c95873c3e4f8370ceb91f8aeb74794d047'
         end = '87924241bf70c2321bc9f567e3d2ce62ee264fee'
@@ -89,6 +94,7 @@ class TestVersionMgr(unittest.TestCase):
         
         self.assertFalse(self.vmgr._added_new_dependencies(changelog))
 
+    @attr('ci_fails')
     def test_update_not_required_not_forced(self):
         '''
         Test that we don't perform any extra steps if the local installation
@@ -115,6 +121,7 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_already_latest_mock.call_count, 0)
         self.assertEqual(on_update_mock.call_count, 0)
     
+    @attr('ci_fails')
     def test_update_required_not_forced(self):
         '''
         Test that we check if we're on the latest version if the latest
@@ -147,6 +154,7 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_already_latest_mock.call_count, 1)
         self.assertEqual(on_update_mock.call_count, 0)
         
+    @attr('ci_fails')
     def test_update_required_outdated_not_forced(self):
         '''
         Test that we check if we're on the latest version if the latest

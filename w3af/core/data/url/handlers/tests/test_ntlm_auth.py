@@ -29,6 +29,7 @@ from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 @attr('moth')
 class TestNTLMHandler(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_auth_valid_creds(self):
         url = "http://moth/w3af/core/ntlm_auth/ntlm_v1/"
         user = u'moth\\admin'
@@ -45,6 +46,7 @@ class TestNTLMHandler(unittest.TestCase):
         response = urllib2.urlopen(url).read()
         self.assertTrue(response.startswith('You are admin from MOTH/'), response)
     
+    @attr('ci_fails')
     def test_auth_invalid_creds(self):
         url = "http://moth/w3af/core/ntlm_auth/ntlm_v1/"
         user = u'moth\\invalid'
@@ -60,6 +62,7 @@ class TestNTLMHandler(unittest.TestCase):
     
         self.assertRaises(urllib2.URLError, urllib2.urlopen, url)
 
+    @attr('ci_fails')
     def test_auth_invalid_proto(self):
         url = "http://moth/w3af/core/ntlm_auth/ntlm_v2/"
         user = u'moth\\admin'

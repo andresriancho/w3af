@@ -87,6 +87,7 @@ class TestXSS(PluginTest):
         return expected_data
 
     @attr('smoke')
+    @attr('ci_fails')
     def test_find_one_xss(self):
         '''
         Simplest possible test to verify that we identify XSSs.
@@ -106,6 +107,7 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
+    @attr('ci_fails')
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_PATH, cfg['plugins'])
@@ -161,6 +163,7 @@ class TestXSS(PluginTest):
                          set([severity.MEDIUM, severity.LOW]),
                          csp_vulns)
 
+    @attr('ci_fails')
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_302_URL, cfg['plugins'])
@@ -186,6 +189,7 @@ class TestXSS(PluginTest):
         )
 
 
+    @attr('ci_fails')
     def test_found_wavsep_get_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.WAVSEP_PATH, cfg['plugins'])

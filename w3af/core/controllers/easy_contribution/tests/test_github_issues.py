@@ -31,6 +31,7 @@ from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 @attr('internet')
 class TestGithubIssues(unittest.TestCase):
 
+    @attr('ci_fails')
     def test_report(self):
         gh = GithubIssues(OAUTH_TOKEN)
         gh.login()
@@ -49,14 +50,17 @@ class TestGithubIssues(unittest.TestCase):
         issue = repo.get_issue(ticket_id)
         issue.edit(state='closed')
 
+    @attr('ci_fails')
     def test_login_failed_token(self):
         gh = GithubIssues(OAUTH_TOKEN + 'foobar')
         self.assertFalse(gh.login())
 
+    @attr('ci_fails')
     def test_login_success_token(self):
         gh = GithubIssues(OAUTH_TOKEN)
         self.assertTrue(gh.login())
     
+    @attr('ci_fails')
     def test_login_failed_user_pass(self):
         gh = GithubIssues('foobar', 'testbar')
         self.assertFalse(gh.login())

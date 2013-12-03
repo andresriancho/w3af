@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -37,6 +38,7 @@ class TestDav(PluginTest):
         },
     }
 
+    @attr('ci_fails')
     def test_found_all_dav(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_vuln_all, cfg['plugins'])
@@ -55,6 +57,7 @@ class TestDav(PluginTest):
         self.assertTrue(all([self.target_vuln_all == str(
             v.get_url().get_domain_path()) for v in vulns]))
 
+    @attr('ci_fails')
     def test_no_privileges(self):
         '''
         DAV is configured but the directory doesn't have the file-system permissions
@@ -79,6 +82,7 @@ class TestDav(PluginTest):
         self.assertEquals(self.target_no_privs, info_url)
         self.assertEquals(self.target_no_privs, vuln_url)
 
+    @attr('ci_fails')
     def test_not_found_dav(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_safe_all, cfg['plugins'])

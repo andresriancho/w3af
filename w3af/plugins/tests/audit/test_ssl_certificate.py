@@ -25,6 +25,7 @@ import ssl
 import threading
 import random
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -44,6 +45,7 @@ class TestSSLCertificate(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_ssl_certificate(self):
         # Start the HTTPS server
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',

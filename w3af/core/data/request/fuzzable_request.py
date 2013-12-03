@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
+from nose.plugins.attrib import attr
 from itertools import chain, izip_longest
 from urllib import unquote
 
@@ -95,6 +96,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         return ''.join(str_res)
 
+    @attr('ci_fails')
     def sent(self, smth_instng):
         '''
         Checks if something similar to `smth_instng` was sent in the request.
@@ -170,6 +172,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def __hash__(self):
         return hash(str(self._uri))
 
+    @attr('ci_fails')
     def __str__(self):
         '''
         :return: A string representation of this fuzzable request.

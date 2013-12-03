@@ -40,6 +40,7 @@ class TestDirectoryIndexing(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])

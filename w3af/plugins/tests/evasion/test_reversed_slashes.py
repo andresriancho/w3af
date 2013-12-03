@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.plugins.evasion.reversed_slashes import reversed_slashes
@@ -28,6 +29,7 @@ from w3af.plugins.evasion.reversed_slashes import reversed_slashes
 
 class TestEvasion(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_no_modification(self):
         rs = reversed_slashes()
 
@@ -36,6 +38,7 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(rs.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/')
 
+    @attr('ci_fails')
     def test_path_file(self):
         rs = reversed_slashes()
         
@@ -44,6 +47,7 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(rs.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/abc\\def.htm')
 
+    @attr('ci_fails')
     def test_long_path_file(self):
         rs = reversed_slashes()
         
@@ -56,4 +60,3 @@ class TestEvasion(unittest.TestCase):
         #
         self.assertEqual(u.url_string,
                          u'http://www.w3af.com/abc/123/def.htm')
-

@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.plugins.grep.feeds import feeds
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -39,6 +40,7 @@ class test_feeds(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_rss(self):
         body = 'header <rss version="3"> footer'
         url = URL('http://www.w3af.com/')
@@ -52,6 +54,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('RSS' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @attr('ci_fails')
     def test_feed(self):
         body = 'header <feed foo="4" version="3"> footer'
         url = URL('http://www.w3af.com/')
@@ -65,6 +68,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('OPML' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @attr('ci_fails')
     def test_opml(self):
         body = 'header <opml version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
@@ -78,6 +82,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('OPML' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @attr('ci_fails')
     def test_no_feeds(self):
         body = 'header <nofeed version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
@@ -88,6 +93,7 @@ class test_feeds(unittest.TestCase):
 
         self.assertEquals(len(kb.kb.get('feeds', 'feeds')), 0)
 
+    @attr('ci_fails')
     def test_no_version(self):
         body = 'header <rss foo="3"> footer'
         url = URL('http://www.w3af.com/')

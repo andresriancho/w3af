@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -35,6 +36,7 @@ class test_user_defined_regex(unittest.TestCase):
     def setUp(self):
         self.plugin = user_defined_regex()
 
+    @attr('ci_fails')
     def test_user_defined_regex(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = URL('http://www.w3af.com/')

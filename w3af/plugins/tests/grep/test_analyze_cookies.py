@@ -23,6 +23,7 @@ import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -39,6 +40,7 @@ class TestAnalyzeCookies(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @attr('ci_fails')
     def test_analyze_cookies_negative(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -50,6 +52,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_simple_cookie(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -63,6 +66,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_collect(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -82,6 +86,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_collect_uniq(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -107,6 +112,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_secure_httponly(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -119,6 +125,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -131,6 +138,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_fingerprint(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -149,6 +157,7 @@ class TestAnalyzeCookies(unittest.TestCase):
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         self.assertTrue(any([True for i in security if 'The remote platform is: "PHP"' in i.get_desc()]))
 
+    @attr('ci_fails')
     def test_analyze_cookies_secure_over_http(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -167,6 +176,7 @@ class TestAnalyzeCookies(unittest.TestCase):
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         self.assertTrue(any([True for i in security if 'A cookie marked with the secure flag' in i.get_desc()]))
 
+    @attr('ci_fails')
     def test_analyze_cookies_no_httponly(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -185,6 +195,7 @@ class TestAnalyzeCookies(unittest.TestCase):
             len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         self.assertTrue(any([True for i in security if 'A cookie without the HttpOnly flag' in i.get_desc()]))
 
+    @attr('ci_fails')
     def test_analyze_cookies_with_httponly(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -198,6 +209,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_with_httponly_case_sensitive(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -211,6 +223,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_with_httponly_secure(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -224,6 +237,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -238,6 +252,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
 
+    @attr('ci_fails')
     def test_analyze_cookies_https_value_over_http(self):
         body = ''
         url = URL('https://www.w3af.com/')

@@ -58,12 +58,15 @@ class TestLocalProxy(unittest.TestCase):
         self._proxy.stop()
         self.assertNotIn(self._proxy, threading.enumerate())
         
+    @attr('ci_fails')
     def test_get_thread_name(self):
         self.assertEqual(self._proxy.name, 'LocalProxyThread')
     
+    @attr('ci_fails')
     def test_no_request(self):
         self.assertEqual(self._proxy.get_trapped_request(), None)
     
+    @attr('ci_fails')
     def test_no_trap(self):
         self._proxy.set_trap(False)
         response = self.proxy_opener.open(get_moth_http())
@@ -71,6 +74,7 @@ class TestLocalProxy(unittest.TestCase):
         self.assertEqual(response.code, 200)
         
     
+    @attr('ci_fails')
     def test_request_trapped_drop(self):
         def send_request(proxy_opener, result_queue):
             try:
@@ -100,6 +104,7 @@ class TestLocalProxy(unittest.TestCase):
         self.assertEqual(response.code, 403)
         self.assertIn('dropped by the user', response.read())
     
+    @attr('ci_fails')
     def test_request_trapped_send(self):
         def send_request(proxy_opener, result_queue):
             response = proxy_opener.open(get_moth_http())

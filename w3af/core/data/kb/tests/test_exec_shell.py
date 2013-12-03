@@ -21,12 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 
 
 class TestExecShell(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_help_format(self):
         shell = ExecShell(MockVuln(), None, None)
         _help = shell.help(None)
@@ -37,6 +39,7 @@ class TestExecShell(unittest.TestCase):
         # Note that I add an extra space
         self.assertNotIn('     help', _help)
     
+    @attr('ci_fails')
     def test_help_contents(self):
         shell = ExecShell(MockVuln(), None, None)
         _help = shell.help(None)
