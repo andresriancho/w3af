@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -36,6 +37,7 @@ class TestFrontpage(PluginTest):
         },
     }
 
+    @attr('ci_fails')
     def test_no_frontpage(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_vuln_all, cfg['plugins'])
@@ -48,6 +50,7 @@ class TestFrontpage(PluginTest):
                           set([v.get_name() for v in vulns])
                           )
 
+    @attr('ci_fails')
     def test_frontpage_upload(self):
         msg = 'FIXME: Need to setup a working frontpage environment and have'\
               ' a positive test also!'

@@ -46,6 +46,7 @@ class TestTimeLimit(PluginTest):
     }
 
     @attr('slow')
+    @attr('ci_fails')
     def test_spider_with_time_limit(self):
         #
         #    First scan

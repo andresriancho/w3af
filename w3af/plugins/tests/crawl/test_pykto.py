@@ -23,6 +23,7 @@ import unittest
 import re
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -50,6 +51,7 @@ class TestPykto(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_basic_pykto(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

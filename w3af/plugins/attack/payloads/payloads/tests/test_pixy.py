@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import tempfile
 
+from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -36,6 +37,7 @@ class test_pixy(PayloadTestHelper):
             self.shell, 'pixy', args=(temp_dir, temp_dir), use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
 
+    @attr('ci_fails')
     def test_a_positive_test(self):
         raise SkipTest('A positive test is needed here, BUT think twice about it'
                        ' since pixy is not supported anymore, and PHP SCA is getting'

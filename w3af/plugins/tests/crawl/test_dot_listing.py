@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -35,6 +36,7 @@ class TestDotListing(PluginTest):
         'plugins': {'crawl': (PluginConfig('dot_listing'),)}
     }
 
+    @attr('ci_fails')
     def test_dot_listing(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 

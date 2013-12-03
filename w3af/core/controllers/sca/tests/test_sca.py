@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.sca.sca import PhpSCA, Scope, CodeSyntaxError
@@ -216,6 +217,7 @@ class TestPHPSCA(unittest.TestCase):
         # Second system call
         self.assertTrue('OS_COMMANDING' in sys2.vulntypes)
 
+    @attr('ci_fails')
     def test_vuln_functions_2(self):
         code = '''
         <?

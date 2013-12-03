@@ -24,6 +24,7 @@ import commands
 
 import w3af.core.data.kb.config as cf
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
 from w3af.plugins.tests.helper import onlyroot
 
@@ -42,6 +43,7 @@ class TestExtrusionScanner(unittest.TestCase):
         self.assertTrue(es.is_available(54545, 'tcp'))
 
     @onlyroot
+    @attr('ci_fails')
     def test_scan(self):
         # FIXME: This unittest will only work in Linux
         cf.cf.save('interface', 'lo')

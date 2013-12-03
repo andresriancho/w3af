@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
 from w3af.core.data.misc.file_utils import days_since_newest_file_update
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 
@@ -27,6 +28,7 @@ from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 class TestSQLMapUpdate(unittest.TestCase):
     '''Verify that we have an updated version of sqlmap within w3af'''
     
+    @attr('ci_fails')
     def test_updated(self):
         days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)
         

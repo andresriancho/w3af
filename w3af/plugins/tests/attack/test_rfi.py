@@ -38,6 +38,7 @@ class TestRFI(ExecExploitTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_exploit_rfi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'] + '?file=section.php', cfg['plugins'])
@@ -53,6 +54,7 @@ class TestRFI(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')
     
+    @attr('ci_fails')
     def test_from_template(self):
         rfit = RFITemplate()
         

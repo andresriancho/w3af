@@ -73,6 +73,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
+    @attr('ci_fails')
     def test_https_via_proxy(self):
         TODO = 'Skip this test because of a strange bug with the extended'\
                ' url library and w3af\'s local proxy daemon. More info here:'\

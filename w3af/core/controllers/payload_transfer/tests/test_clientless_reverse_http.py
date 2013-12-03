@@ -26,6 +26,7 @@ import unittest
 
 import w3af.core.data.kb.config as cf
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.payload_transfer.clientless_reverse_http import ClientlessReverseHTTP
 from w3af.core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
@@ -72,6 +73,7 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         self.assertTrue(upload_success)
 
     @onlyroot
+    @attr('ci_fails')
     def test_upload_file_root(self):
         exec_method = commands.getoutput
         os = 'linux'

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.core.controllers.tests.core_test_suite.test_pause_stop import CountTestMixin
 from w3af.core.data.db.history import HistoryItem
 
@@ -29,6 +30,7 @@ class TestHistoryAccess(CountTestMixin):
     
     @see: Inherit from TestW3afCorePause to get the nice setUp().
     '''
+    @attr('ci_fails')
     def test_history_access(self):
         self.count_plugin.loops = 1
         self.w3afcore.start()

@@ -26,6 +26,7 @@ import fcntl
 import os
 import time
 
+from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.which import which
 from w3af.core.data.db.startup_cfg import StartUpConfig
 
@@ -53,6 +54,7 @@ class TestW3afConsole(unittest.TestCase):
         except SyntaxError, se:
             self.assertTrue(False, 'Error in w3af_console code "%s"' % se)
 
+    @attr('ci_fails')
     def test_get_prompt(self):
         # We want to get the prompt, not a disclaimer message
         startup_cfg = StartUpConfig()

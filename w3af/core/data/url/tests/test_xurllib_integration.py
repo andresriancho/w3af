@@ -38,12 +38,14 @@ class TestXUrllibIntegration(unittest.TestCase):
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
         
+    @attr('ci_fails')
     def test_ntlm_auth_not_configured(self):
         self.uri_opener = ExtendedUrllib()
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('Must authenticate.', http_response.body)
 
+    @attr('ci_fails')
     def test_ntlm_auth_valid_creds(self):
         
         self.uri_opener = ExtendedUrllib()

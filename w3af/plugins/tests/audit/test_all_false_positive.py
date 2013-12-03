@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from nose.plugins.skip import SkipTest
 
@@ -27,6 +28,7 @@ class TestAllFP(PluginTest):
 
     target_url = 'http://moth/w3af/core/base_false_positive/'
 
+    @attr('ci_fails')
     def test_false_positive(self):
         raise SkipTest('FIXME: This test takes too long to run.')
 

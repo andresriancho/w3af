@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.audit.cors_origin import cors_origin
 from w3af.core.data.parsers.url import URL
@@ -67,6 +68,7 @@ class TestCORSOrigin(PluginTest):
             200, '', Headers(), self.url, self.url, _id=3)
         self.request = FuzzableRequest(self.url)
 
+    @attr('ci_fails')
     def test_scan(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

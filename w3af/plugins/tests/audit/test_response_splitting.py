@@ -45,6 +45,7 @@ class TestResponseSplitting(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_direct(self):
         cfg = self._run_configs['cfg_direct']
         self._scan(cfg['target'], cfg['plugins'])
@@ -57,6 +58,7 @@ class TestResponseSplitting(PluginTest):
         self.assertEquals(self.direct_url, str(vuln.get_url()))
         self.assertEquals('header', vuln.get_var())
 
+    @attr('ci_fails')
     def test_found_error(self):
         cfg = self._run_configs['cfg_error']
         self._scan(cfg['target'], cfg['plugins'])

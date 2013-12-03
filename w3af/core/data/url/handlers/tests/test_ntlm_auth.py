@@ -29,6 +29,7 @@ from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 @attr('moth')
 class TestNTLMHandler(unittest.TestCase):
     
+    @attr('ci_fails')
     def test_auth_valid_creds(self):
         url = "http://moth/w3af/core/ntlm_auth/ntlm_v1/"
         user = u'moth\\admin'

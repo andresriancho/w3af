@@ -64,6 +64,7 @@ class TestLocalProxy(unittest.TestCase):
     def test_no_request(self):
         self.assertEqual(self._proxy.get_trapped_request(), None)
     
+    @attr('ci_fails')
     def test_no_trap(self):
         self._proxy.set_trap(False)
         response = self.proxy_opener.open(get_moth_http())

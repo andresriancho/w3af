@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.data.constants.severity as severity
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.find_dvcs import find_dvcs
 
@@ -37,6 +38,7 @@ class TestFindDVCS(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_dvcs(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

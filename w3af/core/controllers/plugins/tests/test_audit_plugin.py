@@ -42,6 +42,7 @@ class TestAuditPlugin(unittest.TestCase):
         self.w3af.quit()
         kb.cleanup()
     
+    @attr('ci_fails')
     def test_audit_return_vulns(self):
         plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')
         

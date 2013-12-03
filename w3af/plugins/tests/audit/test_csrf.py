@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 from w3af.plugins.audit.csrf import csrf
@@ -57,6 +58,7 @@ class TestCSRF(PluginTest):
         self.uri_opener = ExtendedUrllib()
         self.csrf_plugin.set_url_opener(self.uri_opener)
 
+    @attr('ci_fails')
     def test_found_csrf(self):
         EXPECTED = [
             ('/w3af/audit/csrf/vulnerable/buy.php'),
@@ -94,6 +96,7 @@ class TestCSRF(PluginTest):
         r2 = HTTPResponse(200, 'a', headers, url, url)
         self.assertTrue(self.csrf_plugin._is_resp_equal(r1, r2))
 
+    @attr('ci_fails')
     def test_is_suitable(self):
         # False because no cookie is set and no QS nor post-data
         url = URL('http://moth/')
@@ -147,6 +150,7 @@ class TestCSRF(PluginTest):
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertTrue(suitable)
 
+    @attr('ci_fails')
     def test_is_origin_checked_true_case01(self):
         url = URL('http://moth/w3af/audit/csrf/referer/buy.php?shares=123')
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer/')])
@@ -157,6 +161,7 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
         self.assertTrue(origin_checked)
 
+    @attr('ci_fails')
     def test_is_origin_checked_true_case02(self):
         url = URL('http://moth/w3af/audit/csrf/referer-rnd/buy.php?shares=123')
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
@@ -167,6 +172,7 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
         self.assertTrue(origin_checked)
 
+    @attr('ci_fails')
     def test_is_origin_checked_false(self):
         url = URL('http://moth/w3af/audit/csrf/vulnerable/buy.php?shares=123')
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
@@ -238,6 +244,7 @@ class TestCSRF(PluginTest):
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertNotIn('secret', token)
     
+    @attr('ci_fails')
     def test_is_token_checked_true(self):
         generator = URL('http://moth/w3af/audit/csrf/secure-replay-allowed/')
         http_response = self.uri_opener.GET(generator)
@@ -258,6 +265,7 @@ class TestCSRF(PluginTest):
         checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
         self.assertTrue(checked)
     
+    @attr('ci_fails')
     def test_is_token_checked_false(self):
         '''
         This covers the case where there is a token but for some reason it

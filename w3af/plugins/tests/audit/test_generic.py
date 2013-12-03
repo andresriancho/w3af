@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -42,6 +43,7 @@ class TestGeneric(PluginTest):
                          }
     }
 
+    @attr('ci_fails')
     def test_found_generic(self):
         cfg = self._run_configs['generic_only']
         self._scan(cfg['target'], cfg['plugins'])
@@ -55,6 +57,7 @@ class TestGeneric(PluginTest):
         self.assertEquals('Unidentified vulnerability', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
 
+    @attr('ci_fails')
     def test_found_generic_not_reported(self):
         cfg = self._run_configs['generic_sqli']
         self._scan(cfg['target'], cfg['plugins'])

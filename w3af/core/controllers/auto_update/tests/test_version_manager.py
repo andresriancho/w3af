@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import datetime
 
+from nose.plugins.attrib import attr
 from mock import MagicMock
 
 from w3af.core.data.db.startup_cfg import StartUpConfig
@@ -73,6 +74,7 @@ class TestVersionMgr(unittest.TestCase):
 
             self.assertTrue(vmgr._has_to_update())
 
+    @attr('ci_fails')
     def test_added_new_dependencies(self):
         start = 'cb751e941bfa2063ebcef711642ed5d22ff9db87'
         end = '9c5f5614412dce67ac13411e1eebd754b4c6fb6a'
@@ -115,6 +117,7 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_already_latest_mock.call_count, 0)
         self.assertEqual(on_update_mock.call_count, 0)
     
+    @attr('ci_fails')
     def test_update_required_not_forced(self):
         '''
         Test that we check if we're on the latest version if the latest
@@ -147,6 +150,7 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_already_latest_mock.call_count, 1)
         self.assertEqual(on_update_mock.call_count, 0)
         
+    @attr('ci_fails')
     def test_update_required_outdated_not_forced(self):
         '''
         Test that we check if we're on the latest version if the latest

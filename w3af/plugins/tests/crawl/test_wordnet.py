@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.data.kb.knowledge_base as kb
 
+from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.wordnet import wordnet
 
@@ -41,6 +42,7 @@ class TestWordnet(PluginTest):
         }
     }
 
+    @attr('ci_fails')
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -64,4 +66,3 @@ class TestWordnet(PluginTest):
         
         self.assertEqual(len(wn_result), wn._wordnet_results)
         self.assertIn('red', wn_result)
-

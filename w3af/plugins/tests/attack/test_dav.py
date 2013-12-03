@@ -38,6 +38,7 @@ class TestDAVShell(ExecExploitTest):
         },
     }
 
+    @attr('ci_fails')
     def test_found_exploit_dav(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -53,6 +54,7 @@ class TestDAVShell(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'dav')
     
+    @attr('ci_fails')
     def test_from_template(self):
         dt = DAVTemplate()
         
