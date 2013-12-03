@@ -35,10 +35,11 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
                                                                   NOSE_COLLECT_PARAMS,
                                                                   NOSE_XUNIT_EXT,
                                                                   NOSE_OUTPUT_PREFIX,
-                                                                  NOSE_IGNORE_SELECTOR)
+                                                                  NOSE_IGNORE_SELECTOR,
+                                                                  NOSE_COLLECT_IGNORE_PARAMS)
 
 @nottest
-def _get_tests(fname, selector=None):
+def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
     '''
     Collect tests and return them.
     
@@ -48,7 +49,7 @@ def _get_tests(fname, selector=None):
              in the w3af framework source code, without any selectors.
     '''
     output_file = os.path.join(ARTIFACT_DIR, fname)
-    collect_with_output = NOSE_COLLECT_PARAMS % output_file
+    collect_with_output = nose_params % output_file
     
     if selector is not None:
         cmd = '%s %s -A "%s" w3af/' % (NOSETESTS, collect_with_output,
@@ -97,7 +98,8 @@ def get_ignored_tests():
     :return: A test suite as returned by xunitparser with all the tests available
              in the w3af framework source code, without any selectors.
     '''
-    return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR)
+    return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR,
+                      NOSE_COLLECT_IGNORE_PARAMS)
 
 @nottest
 def get_test_ids(nose_selector):

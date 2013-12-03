@@ -21,6 +21,8 @@ NOSE_TIMEOUT = 180
 # Parameters used to collect the list of tests
 NOSE_COLLECT_PARAMS = '--with-id --collect-only -v --with-doctest'\
                       ' --doctest-tests --with-xunit --xunit-file=%s'
+NOSE_COLLECT_IGNORE_PARAMS = '--with-id --collect-only -v --with-xunit'\
+                             ' --xunit-file=%s'
 
 NOSE_OUTPUT_PREFIX = 'nose'
 NOSE_XUNIT_EXT = 'xml'
