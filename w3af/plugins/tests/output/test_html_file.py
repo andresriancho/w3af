@@ -22,6 +22,7 @@ import os
 import re
 
 from lxml import etree
+from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.tests.test_vuln import MockVuln
@@ -29,6 +30,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
+@attr('ci_fails')
 class TestHTMLOutput(PluginTest):
 
     target_url = get_moth_http('/audit/xss/')
