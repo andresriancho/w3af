@@ -43,7 +43,7 @@ def run_nosetests(nose_cmd, first, last):
     '''
     # Init the outputs
     stdout = stderr = ''
-    output_file = open_nosetests_output('.log', first, last)
+    output_file = open_nosetests_output('log', first, last)
     xunit_output = open_nosetests_output(NOSE_XUNIT_EXT, first, last)
     
     # Configure the xunit output before running the command

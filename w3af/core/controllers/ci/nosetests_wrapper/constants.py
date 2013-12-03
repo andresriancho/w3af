@@ -23,7 +23,7 @@ NOSE_COLLECT_PARAMS = '--with-id --collect-only -v --with-doctest'\
                       ' --doctest-tests --with-xunit --xunit-file=%s'
 
 NOSE_OUTPUT_PREFIX = 'nose-'
-NOSE_XUNIT_EXT = '.xml'
+NOSE_XUNIT_EXT = 'xml'
 NOSE_RUN_SELECTOR = 'not ci_fails and not fails'
 NOSE_IGNORE_SELECTOR = 'ci_fails or fails'
 
