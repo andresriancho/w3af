@@ -31,6 +31,7 @@ from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import create_target_option_list
 
 
@@ -50,7 +51,7 @@ class CountTestMixin(unittest.TestCase):
 
         self.w3afcore = w3afCore()
         
-        target_opts = create_target_option_list(URL('http://moth/'))
+        target_opts = create_target_option_list(URL(get_moth_http()))
         self.w3afcore.target.set_options(target_opts)
 
         self.w3afcore.plugins.set_plugins(['count',], 'crawl')
@@ -167,15 +168,26 @@ class TestW3afCorePause(CountTestMixin):
         #alive_threads = threading.enumerate()
         #self.assertEqual(len(alive_threads), 0, nice_repr(alive_threads))
 
+class StopCtrlCTest(unittest.TestCase):
     def test_stop_by_keyboardinterrupt(self):
         '''
         Verify that the Ctrl+C stops the scan.
         '''
-        mock_call = MagicMock(side_effect=KeyboardInterrupt())
         # pylint: disable=E0202
-        self.w3afcore.status.set_current_fuzzable_request = mock_call
+        w3afcore = w3afCore()
         
-        self.w3afcore.start()
+        mock_call = MagicMock(side_effect=KeyboardInterrupt())
+        w3afcore.status.set_current_fuzzable_request = mock_call
+        
+        target_opts = create_target_option_list(URL(get_moth_http()))
+        w3afcore.target.set_options(target_opts)
+        
+        w3afcore.plugins.set_plugins(['web_spider',], 'crawl')
+        
+        # Verify env and start the scan
+        w3afcore.plugins.init_plugins()
+        w3afcore.verify_environment()
+        w3afcore.start()
 
 def nice_repr(alive_threads):
     repr_alive = [repr(x) for x in alive_threads][:20]
