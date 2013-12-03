@@ -27,6 +27,7 @@ from functools import wraps
 
 try:
     from gi.repository import Notify
+    from xpresser import Xpresser, ImageNotFound
 except ImportError:
     # I'm mostly doing this to avoid import issues like:
     #
@@ -36,8 +37,9 @@ except ImportError:
     #
     # In CircleCI
     Notify = None
+    Xpresser = None
+    ImageNotFound = None
     
-from xpresser import Xpresser, ImageNotFound
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -51,9 +53,6 @@ def debug_notify(meth):
     
     @wraps(meth)
     def debug(self, *args, **kwds):
-        if Notify is None:
-            return
-        
         try:
             result = meth(self, *args, **kwds)
         except ImageNotFound, inf:
@@ -109,7 +108,7 @@ class XpresserUnittest(unittest.TestCase):
             if image_path is not None:
                 self.xp.load_images(image_path)
             
-        if Notify is not None: Notify.init('Xpresser')
+        Notify.init('Xpresser')
         
         self.start_gui()
         
