@@ -24,8 +24,19 @@ import subprocess
 import os
 
 from functools import wraps
-from gi.repository import Notify
 
+try:
+    from gi.repository import Notify
+except ImportError:
+    # I'm mostly doing this to avoid import issues like:
+    #
+    # When using gi.repository you must not import static modules like "gobject".
+    # Please change all occurrences of "import gobject" to
+    # "from gi.repository import GObject"
+    #
+    # In CircleCI
+    Notify = None
+    
 from xpresser import Xpresser, ImageNotFound
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -39,6 +50,9 @@ def debug_notify(meth):
     
     @wraps(meth)
     def debug(self, *args, **kwds):
+        if Notify is None:
+            return
+        
         try:
             result = meth(self, *args, **kwds)
         except ImageNotFound, inf:
@@ -92,7 +106,7 @@ class XpresserUnittest(unittest.TestCase):
             if image_path is not None:
                 self.xp.load_images(image_path)
             
-        Notify.init('Xpresser')
+        if Notify is not None: Notify.init('Xpresser')
         
         self.start_gui()
         
