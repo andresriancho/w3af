@@ -38,6 +38,7 @@ except ImportError:
     Notify = None
     
 from xpresser import Xpresser, ImageNotFound
+from nose.plugins.attrib import attr
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.gnome import Gnome
@@ -78,6 +79,8 @@ def debug_notify(meth):
 class ImageFound(ImageNotFound):
     pass
 
+
+@attr('ci_fails')
 class XpresserUnittest(unittest.TestCase):
     
     GENERIC_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'main_window', 'images')
