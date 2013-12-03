@@ -27,44 +27,6 @@ NOSE_XUNIT_EXT = 'xml'
 NOSE_RUN_SELECTOR = 'not ci_fails and not fails'
 NOSE_IGNORE_SELECTOR = 'ci_fails or fails'
 
-
-TEST_DIRECTORIES = [
-    # The order in which these are run doesn't really matter, but I do need to
-    # take care of "grouping" (which directory is run) because of an incompatibility
-    # between "w3af/core/ui/gui/" and "w3af/core/ui/tests/" which comes from
-    # Gtk2 vs. Gtk3.
-    'w3af/core/controllers/',
-    'w3af/core/data/',
-    
-    # See https://github.com/andresriancho/w3af/issues/759
-    #'w3af/core/ui/tests/',
-    
-    'w3af/core/ui/console/',
-    'w3af/core/ui/gui/',
-
-    'w3af/plugins/audit/',
-    'w3af/plugins/attack/',
-    'w3af/plugins/auth/',
-    'w3af/plugins/bruteforce/',
-    'w3af/plugins/crawl/',
-    'w3af/plugins/evasion/',
-    'w3af/plugins/grep/',
-    'w3af/plugins/infrastructure/',
-    'w3af/plugins/mangle/',
-    'w3af/plugins/output/',
-    
-    'w3af/plugins/tests/audit/',
-    'w3af/plugins/tests/attack/',
-    'w3af/plugins/tests/auth/',
-    'w3af/plugins/tests/bruteforce/',
-    'w3af/plugins/tests/crawl/',
-    'w3af/plugins/tests/evasion/',
-    'w3af/plugins/tests/grep/',
-    'w3af/plugins/tests/infrastructure/',
-    'w3af/plugins/tests/mangle/',
-    'w3af/plugins/tests/output/',
-]
-
 NOISE = [# Related with xvfb not having the randr extension
          'Xlib:  extension "RANDR" missing on display ":99".',
          # Related with scapy, we're not root, tcpdump is not available
