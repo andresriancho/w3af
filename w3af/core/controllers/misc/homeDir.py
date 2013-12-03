@@ -93,11 +93,15 @@ def verify_dir_has_perm(path, perm, levels=0):
     # From 1st to `levels`th
     for root, dirs, files in os.walk(path):
         currentlevel = len(root.split(os.path.sep)) - pdepth
+        
         if currentlevel > levels:
             break
         elif ".git" in dirs:
             dirs.remove(".git")
-        if not all(map(lambda p: os.access(p, perm),
-                       (os.path.join(root, f) for f in dirs + files))):
-            return False
+
+        for file_path in (os.path.join(root, f) for f in dirs + files):
+            if not os.access(file_path, perm):
+                print('No permissions for "%s".' % file_path)
+                return False
     return True
+
