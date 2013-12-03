@@ -395,7 +395,9 @@ class w3afCore(object):
         :return: None
         '''
         # Start by trying to create the home directory (linux: /home/user/.w3af/)
-        create_home_dir()
+        if not create_home_dir():
+            print('Failed to create the w3af home directory "%s".' % HOME_DIR)
+            sys.exit(-3)            
 
         # If this fails, maybe it is because the home directory doesn't exist
         # or simply because it ain't writable|readable by this user
