@@ -25,6 +25,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
 @attr('slow')
+@attr('fails')
 class test_spider(PayloadTestHelper):
 
     def test_spider(self):

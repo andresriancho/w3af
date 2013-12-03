@@ -33,6 +33,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
+@attr('fails')
 class TestLocalProxy(unittest.TestCase):
     
     IP = '127.0.0.1'
