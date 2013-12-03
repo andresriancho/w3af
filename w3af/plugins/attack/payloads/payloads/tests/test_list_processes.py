@@ -25,6 +25,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
 @attr('slow')
+@attr('ci_fails')
 class test_list_processes(PayloadTestHelper):
 
     EXPECTED_RESULT = set(['/sbin/getty -8 38400 tty4', 'cron'])
