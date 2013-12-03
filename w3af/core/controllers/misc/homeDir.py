@@ -78,6 +78,9 @@ def verify_dir_has_perm(path, perm, levels=0):
         the result of a bitwise "|" operator applied a combination of them.
     :param levels: Depth levels to test
     '''
+    if not os.path.exists(path):
+        raise RuntimeError('%s does NOT exist!' % path)
+    
     path = os.path.normpath(path)
     pdepth = len(path.split(os.path.sep))
 

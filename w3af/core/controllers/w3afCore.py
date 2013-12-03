@@ -42,7 +42,7 @@ from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.misc.homeDir import (create_home_dir,
-                                           verify_dir_has_perm, HOME_DIR)
+                                                verify_dir_has_perm, HOME_DIR)
 from w3af.core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
                                             TEMP_DIR)
 from w3af.core.controllers.exceptions import (w3afException, w3afMustStopException,
