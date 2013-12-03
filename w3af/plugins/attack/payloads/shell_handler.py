@@ -87,11 +87,12 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         - code
         - webshell
 
-    :return: A list with tuples of filename and extension for the webshells available in the
-    webshells directory.
+    :return: A list with tuples of filename and extension for the webshells
+             available in the webshells directory.
     '''
     known_framework = []
     uncertain_framework = []
+    
     path = os.path.join(ROOT_PATH, 'plugins', 'attack' , 'payloads', type_of_list)
     path += os.path.sep
     
@@ -104,7 +105,12 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         filename = ''
 
         file_list = [x for x in os.listdir(path) if x.startswith(type_of_list)]
-
+        
+        file_name = '%s.%s' % (type_of_list, extension)
+        if file_name in file_list: 
+            file_list.remove(file_name)
+            file_list.insert(0, file_name)
+        
         for shell_filename in file_list:
 
             filename = path + shell_filename
@@ -120,7 +126,8 @@ def _get_file_list(type_of_list, extension, force_extension=False):
             for h in powered_by_header_list:
                 if h.lower().count(real_extension):
                     known_framework.append((filename, real_extension))
-
+                    break
+                
             # extension here is the parameter passed by the user, that can be ''
             # (this happens in dav)
             uncertain_framework.append((filename, real_extension))
