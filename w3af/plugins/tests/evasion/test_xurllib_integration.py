@@ -33,7 +33,6 @@ from w3af.plugins.evasion.self_reference import self_reference
 @skip('URL normalization breaks evasion. @see: 4fa67fbb')
 class TestXurllibIntegration(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_send_mangled(self):
         xurllib = ExtendedUrllib()
         

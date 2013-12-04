@@ -32,7 +32,6 @@ from w3af.plugins.evasion.backspace_between_dots import backspace_between_dots
 @skip('URL normalization breaks evasion. @see: 4fa67fbb')
 class TestEvasion(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_no_modification(self):
         
         bbd = backspace_between_dots()
@@ -42,7 +41,6 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(bbd.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/')
 
-    @attr('ci_fails')
     def test_modify_basic(self):
         
         bbd = backspace_between_dots()
@@ -52,7 +50,6 @@ class TestEvasion(unittest.TestCase):
         self.assertEqual(bbd.modify_request( r ).url_object.url_string,
                          u'http://www.w3af.com/.%41%08./')
 
-    @attr('ci_fails')
     def test_modify_with_filename(self):
         
         bbd = backspace_between_dots()
