@@ -49,7 +49,7 @@ class TestEventValidation(PluginTest):
         vulns = self.kb.get('dot_net_event_validation',
                             'dot_net_event_validation')
 
-        self.assertEquals(3, len(vulns))
+        self.assertEquals(3, len(vulns), vulns)
 
         EXPECTED_VULNS = set(
             [('event_validation.html', 'decode the viewstate contents.'),
