@@ -33,6 +33,8 @@ test:
   override:
     - w3af/core/controllers/ci/nosetests_wrapper/main.py:
         timeout: 360
+        
+    - w3af/core/controllers/ci/nosetests_wrapper/teardown_moth.py
 
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
 #  post:
