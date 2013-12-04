@@ -31,6 +31,7 @@ from xunit import normalize_test_names
 from nose.tools import nottest
 
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
+                                                                  ID_FILE,
                                                                   NOSETESTS,
                                                                   NOSE_COLLECT_PARAMS,
                                                                   NOSE_XUNIT_EXT,
@@ -121,7 +122,7 @@ def get_test_ids(nose_selector):
                  'core.controllers.auto_update.tests.test_git_auto_update',
                  'TestGitAutoUpdate.test_is_git_repo'),
     '''
-    nose_ids = pickle.load(file('.noseids'))
+    nose_ids = pickle.load(file(ID_FILE))
     return nose_ids['ids'].keys()
 
 @nottest
