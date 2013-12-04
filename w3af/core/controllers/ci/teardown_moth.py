@@ -2,11 +2,7 @@
 
 import os
 import sys
-import logging
 import tempfile
-
-from utils import configure_logging
-
 
 ARTIFACTS_DIR = os.environ.get('CIRCLE_ARTIFACTS', tempfile.gettempdir())
 LOG_FILE = os.path.join(ARTIFACTS_DIR, 'django-moth.log')
@@ -22,10 +18,10 @@ def check_traceback_in_log():
     '''
     for line in file(LOG_FILE):
         if TRACEBACK in line:
-            logging.critical('Found a traceback in django-moth log.')
+            print('Found a traceback in django-moth.log check the build '\
+                  ' artifacts at CircleCI.')
             sys.exit(1)
 
 if __name__ == '__main__':
-    configure_logging()
     check_traceback_in_log()
     
