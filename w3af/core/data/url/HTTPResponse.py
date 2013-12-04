@@ -187,7 +187,7 @@ class HTTPResponse(object):
         #       inherits from dict() and doesn't mangle it too much
         sdict['code'], sdict['msg'], sdict['headers'] = (self.get_code(),
                                                          self.get_msg(),
-                                                         self.get_headers())
+                                                         dict(self.get_headers()))
         sdict['body'], sdict['time'], sdict['id'] = (self.get_body(),
                                                      self.get_wait_time(),
                                                      self.get_id())

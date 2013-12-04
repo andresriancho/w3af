@@ -85,7 +85,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict = serializable_dict
         
         sdict['method'], sdict['uri'] = self.get_method(), self.get_uri().url_string
-        sdict['headers'], sdict['data'] = self.get_headers(), self.get_data()
+        sdict['headers'], sdict['data'] = dict(self.get_headers()), self.get_data()
         sdict['cookies'] = self.cookies
         sdict['cache'] = self.get_from_cache
             
