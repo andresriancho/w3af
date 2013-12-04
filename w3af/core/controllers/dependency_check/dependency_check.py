@@ -132,8 +132,8 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
         
-        msg = 'After installing any missing operating system packages, use pip to'\
-              ' install the remaining modules:\n'
+        msg = 'After installing any missing operating system packages, use'\
+              ' pip to install the remaining modules:\n'
         
         if not_git_pkgs:
             cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
