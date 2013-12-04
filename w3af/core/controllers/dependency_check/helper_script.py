@@ -60,7 +60,7 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
-                cmd = 'sudo %s install -e %s' % (pip_cmd, missing_git_pkg)
+                cmd = 'sudo %s install %s' % (pip_cmd, missing_git_pkg)
                 script_file.write('%s\n' % cmd)
     
     script_file.close()
