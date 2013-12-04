@@ -61,7 +61,6 @@ if __name__ == '__main__':
     done_list = []
     
     configure_logging(LOG_FILE)
-    clear_noseids()
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for nose_cmd, first, last in nose_strategy():

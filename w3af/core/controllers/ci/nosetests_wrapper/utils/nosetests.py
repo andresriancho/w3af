@@ -11,18 +11,6 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
                                                                   NOSE_XUNIT_EXT)
 
 
-def clear_noseids():
-    '''
-    Remove the .noseids file which is cached by circle and if exists will
-    prevent new tests from being found.
-    '''
-    logging.debug('Removing .noseids file.')
-    try:
-        os.unlink('.noseids')
-    except:
-        cwd = os.path.realpath(os.getcwd())
-        logging.debug('.noseids file does NOT exist in "%s"!' % cwd)
-
 def clean_noise(output_string):
     '''
     Removes useless noise from the output
