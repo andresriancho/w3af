@@ -20,7 +20,8 @@ def clear_noseids():
     try:
         os.unlink('.noseids')
     except:
-        logging.debug('.noseids file does NOT exist!')
+        cwd = os.path.realpath(os.getcwd())
+        logging.debug('.noseids file does NOT exist in "%s"!' % cwd)
 
 def clean_noise(output_string):
     '''
