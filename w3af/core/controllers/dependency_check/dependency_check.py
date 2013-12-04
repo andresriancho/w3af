@@ -23,6 +23,12 @@ import sys
 import warnings
 import logging
 
+try:
+    import pip
+    USE_PIP_MODULE = True
+except ImportError:
+    USE_PIP_MODULE = False
+
 from .lazy_load import lazy_load
 from .utils import verify_python_version, pip_installed
 from .helper_script import generate_helper_script, generate_pip_install_non_git
@@ -53,13 +59,25 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     #    Check for missing python modules
     #
     failed_deps = []
-    for w3af_dependency in pip_packages:
-        try:
-            if not lazy_load(w3af_dependency.module_name):
-                failed_deps.append(w3af_dependency)
-        except KeyboardInterrupt:
-            print 'User exit with Ctrl+C.'
-            sys.exit(-1)
+    if USE_PIP_MODULE: pip_distributions = pip.get_installed_distributions()
+    
+    for w3af_req in pip_packages:
+        if USE_PIP_MODULE:
+            dependency_specs = w3af_req.package_name, w3af_req.package_version
+            for dist in pip_distributions:
+                if (dist.project_name, dist.version) == dependency_specs:
+                    # It's installed and the version matches!
+                    break
+            else:
+                failed_deps.append(w3af_req)
+        else:
+            # The pip module is not installed (really strange for new unixes)
+            try:
+                if not lazy_load(w3af_req.module_name):
+                    failed_deps.append(w3af_req)
+            except KeyboardInterrupt:
+                print 'User exit with Ctrl+C.'
+                sys.exit(-1)
     
     #
     #    Check for missing operating system packages
@@ -112,7 +130,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         #    Report missing pip packages
         #
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
-        git_pkgs = [fdep.package_name for fdep in failed_deps if fdep.is_git]
+        git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
         
         msg = 'After installing any missing operating system packages, use pip to'\
               ' install the remaining modules:\n'

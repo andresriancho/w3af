@@ -52,7 +52,7 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
     #    
     if failed_deps:
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
-        git_pkgs = [fdep.package_name for fdep in failed_deps if fdep.is_git]
+        git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
         
         if not_git_pkgs:
             cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
