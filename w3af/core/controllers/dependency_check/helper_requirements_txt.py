@@ -44,7 +44,10 @@ def generate_requirements_txt(pkg_manager_cmd, os_packages,
         missing_modules = [fdep.package_name for fdep in failed_deps]
         
         for module in missing_modules:
-            req_file.write('%s\n' % module)
+            if module.is_git:
+                req_file.write('%s\n' % module)
+            else:
+                req_file.write('%s==%s\n' % (module, module.package_version))
         
     req_file.close()
     return REQUIREMENTS_TXT

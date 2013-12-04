@@ -1,5 +1,5 @@
 '''
-mac.py
+test_os_detection.py
 
 Copyright 2013 Andres Riancho
 
@@ -19,14 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from w3af.core.controllers.dependency_check.platforms.mac import (SYSTEM_NAME,
-                                                             PKG_MANAGER_CMD,
-                                                             SYSTEM_PACKAGES,
-                                                             PIP_CMD,
-                                                             os_package_is_installed,
-                                                             after_hook)
+import unittest
 
-# I imported the information from the core, now I need to append the GUI
-# requirements to those lists!
-SYSTEM_PACKAGES['GRAPHVIZ'] = ['graphviz']
-SYSTEM_PACKAGES['GTK'] = ['py27-pygtksourceview', 'py27-pygtk']
+from w3af.core.controllers.dependency_check.os_detection import (is_mac,
+                                                                 is_fedora,
+                                                                 is_linux,
+                                                                 is_openbsd)
+
+
+class TestOSDetection(unittest.TestCase):
+    def test_only_one(self):
+        results = [is_mac(), is_fedora(), is_linux(), is_openbsd()]
+        self.assertEqual(1, results.count(True))
+        

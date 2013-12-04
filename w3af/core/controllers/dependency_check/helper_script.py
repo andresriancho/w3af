@@ -51,11 +51,11 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
     #    Report all missing python modules
     #    
     if failed_deps:
-        not_git_pkgs = [fdep.package_name for fdep in failed_deps if not fdep.is_git]
+        not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.package_name for fdep in failed_deps if fdep.is_git]
         
         if not_git_pkgs:
-            cmd = 'sudo %s install %s' % (pip_cmd, ' '.join(not_git_pkgs))
+            cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
             script_file.write('%s\n' % cmd)
         
         if git_pkgs:
@@ -65,3 +65,13 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
     
     script_file.close()
     return script_path
+
+
+def generate_pip_install_non_git(pip_cmd, not_git_pkgs):
+    install_specs = []
+    for fdep in not_git_pkgs:
+        install_specs.append('%s==%s' % (fdep.package_name,
+                                         fdep.package_version))
+        
+    cmd = 'sudo %s install %s' % (pip_cmd, ' '.join(install_specs))
+    return cmd

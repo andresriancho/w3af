@@ -20,9 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 class PIPDependency(object):
-    def __init__(self, module_name, package_name, os_packages=[], is_git=False):
+    def __init__(self, module_name, package_name, package_version, is_git=False):
         self.module_name = module_name
         self.package_name = package_name
-        self.os_packages = []
-        self.os_packages.extend(os_packages)
         self.is_git = is_git
+        self.package_version = package_version

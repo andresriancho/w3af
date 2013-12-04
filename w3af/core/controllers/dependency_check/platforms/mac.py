@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import subprocess
 import sys
 
-from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-
 SYSTEM_NAME = 'Mac OS X'
 
 PKG_MANAGER_CMD = 'sudo port install'
@@ -41,31 +39,6 @@ SYSTEM_PACKAGES = {
                   }
 PIP_CMD = 'pip-2.7' 
 
-PHPLY_GIT = 'git+http://github.com/ramen/phply.git#egg=phply'
-
-PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
-                PIPDependency('github', 'PyGithub'),
-                PIPDependency('git.util', 'GitPython==0.3.2.RC1',
-                              SYSTEM_PACKAGES['GIT']),
-                PIPDependency('pybloomfilter', 'pybloomfiltermmap',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('esmre', 'esmre'),
-                PIPDependency('phply', PHPLY_GIT, is_git=True),
-                PIPDependency('sqlite3', 'pysqlite'),
-                PIPDependency('nltk', 'nltk'),
-                PIPDependency('chardet', 'chardet'),
-                PIPDependency('pdfminer', 'pdfminer==20110515'),
-                PIPDependency('concurrent.futures', 'futures'),
-                PIPDependency('OpenSSL', 'pyOpenSSL'),
-                # http://lxml.de/installation.html
-                PIPDependency('lxml', 'lxml'),
-                PIPDependency('scapy.config', 'scapy-real==2.2.0-dev',
-                              SYSTEM_PACKAGES['SCAPY']),
-                PIPDependency('guess_language', 'guess-language'),
-                PIPDependency('cluster', 'cluster'),
-                PIPDependency('msgpack', 'msgpack-python',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
     not_installed = 'None of the specified ports are installed'

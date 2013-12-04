@@ -19,20 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 from w3af.core.controllers.dependency_check.platforms.openbsd import (SYSTEM_NAME,
                                                                  PKG_MANAGER_CMD,
                                                                  SYSTEM_PACKAGES,
                                                                  PIP_CMD,
-                                                                 PHPLY_GIT,
-                                                                 PIP_PACKAGES,
                                                                  os_package_is_installed,
                                                                  after_hook)
 
 # I imported the information from the core, now I need to append the GUI
 # requirements to those lists!
-
-PIP_PACKAGES.extend([PIPDependency('xdot', 'xdot'),])
-
 SYSTEM_PACKAGES['GRAPHVIZ'] = ['graphviz']
 SYSTEM_PACKAGES['GTK'] = ['gtksourceview', ]

@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import subprocess
 
-from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-
 SYSTEM_NAME = 'fedora'
 
 PKG_MANAGER_CMD = 'sudo yum install'
@@ -36,28 +34,6 @@ SYSTEM_PACKAGES = {
                   }
 PIP_CMD = 'python-pip'
 
-PHPLY_GIT = 'git+git://github.com/ramen/phply.git#egg=phply'
-
-PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
-                PIPDependency('github', 'PyGithub'),
-                PIPDependency('git.util', 'GitPython', SYSTEM_PACKAGES['GIT']),
-                PIPDependency('pybloomfilter', 'pybloomfiltermmap',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('esmre', 'esmre'),
-                PIPDependency('phply', PHPLY_GIT, is_git=True),
-                PIPDependency('sqlite3', 'pysqlite'),
-                PIPDependency('nltk', 'nltk'),
-                PIPDependency('chardet', 'chardet'),
-                PIPDependency('pdfminer', 'pdfminer'),
-                PIPDependency('concurrent.futures', 'futures'),
-                PIPDependency('OpenSSL', 'pyOpenSSL'),
-                PIPDependency('lxml', 'lxml', SYSTEM_PACKAGES['XML']),
-                PIPDependency('scapy.config', 'scapy-real'),
-                PIPDependency('guess_language', 'guess-language'),
-                PIPDependency('cluster', 'cluster'),
-                PIPDependency('msgpack', 'msgpack-python',
-                              SYSTEM_PACKAGES['C_BUILD']),
-                PIPDependency('ntlm', 'python-ntlm'),]
 
 def os_package_is_installed(package_name):
     not_installed = 'is not installed'

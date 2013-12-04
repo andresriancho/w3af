@@ -20,25 +20,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from w3af.core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora 
+from w3af.core.ui.gui.dependency_check.requirements import PIP_PACKAGES
 
 if is_mac():
     from .mac import (SYSTEM_NAME, PKG_MANAGER_CMD,
                       SYSTEM_PACKAGES, PIP_CMD,
-                      PIP_PACKAGES, os_package_is_installed,
+                      os_package_is_installed,
                       after_hook)
 
 elif is_openbsd():
     from .openbsd import (SYSTEM_NAME, PKG_MANAGER_CMD,
                           SYSTEM_PACKAGES, PIP_CMD,
-                          PIP_PACKAGES, os_package_is_installed,
+                          os_package_is_installed,
                           after_hook)
 elif is_fedora():
     from .fedora import (SYSTEM_NAME, PKG_MANAGER_CMD,
                          SYSTEM_PACKAGES, PIP_CMD,
-                         PIP_PACKAGES, os_package_is_installed,
+                         os_package_is_installed,
                          after_hook)
 else:
     from .linux import (SYSTEM_NAME, PKG_MANAGER_CMD,
                         SYSTEM_PACKAGES, PIP_CMD,
-                        PIP_PACKAGES, os_package_is_installed,
+                        os_package_is_installed,
                         after_hook)

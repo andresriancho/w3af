@@ -25,7 +25,7 @@ import logging
 
 from .lazy_load import lazy_load
 from .utils import verify_python_version, pip_installed
-from .helper_script import generate_helper_script
+from .helper_script import generate_helper_script, generate_pip_install_non_git
 from .helper_requirements_txt import generate_requirements_txt
 from .platforms.current_platform import (SYSTEM_NAME,
                                          PKG_MANAGER_CMD,
@@ -37,8 +37,8 @@ from .platforms.current_platform import (SYSTEM_NAME,
 
     
 def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
-                     system_name=SYSTEM_NAME, pkg_manager_cmd=PKG_MANAGER_CMD,
-                     pip_cmd=PIP_CMD, exit_on_failure=True):
+                       system_name=SYSTEM_NAME, pkg_manager_cmd=PKG_MANAGER_CMD,
+                       pip_cmd=PIP_CMD, exit_on_failure=True):
     '''
     This function verifies that the dependencies that are needed by the
     framework core are met.
@@ -88,12 +88,15 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     #
     #    Report the missing system packages
     #
+    msg = 'w3af\'s requirements are not met, one or more third-party'\
+          ' libraries need to be installed.\n\n'
+          
     if os_packages:
         missing_pkgs = ' '.join(os_packages)
         
-        msg = 'On %s systems please install the following operating'\
-              ' system packages before running the pip installer:\n'\
-              '    %s %s\n' 
+        msg += 'On %s systems please install the following operating'\
+               ' system packages before running the pip installer:\n'\
+               '    %s %s\n' 
         print msg % (system_name, pkg_manager_cmd, missing_pkgs)
         
     #
@@ -108,14 +111,15 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         #
         #    Report missing pip packages
         #
-        not_git_pkgs = [fdep.package_name for fdep in failed_deps if not fdep.is_git]
+        not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.package_name for fdep in failed_deps if fdep.is_git]
         
         msg = 'After installing any missing operating system packages, use pip to'\
               ' install the remaining modules:\n'
         
         if not_git_pkgs:
-            msg += '    sudo %s install %s\n' % (pip_cmd, ' '.join(not_git_pkgs))
+            cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
+            msg += '    %s\n' % cmd
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
