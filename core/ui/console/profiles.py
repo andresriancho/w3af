@@ -84,7 +84,13 @@ class profilesMenu(menu):
         '''
         Saves the current config to a new profile.
         '''
-        if not params:
+	
+	#assume a filename is set
+	filename_set = True
+	
+	if not params:
+	    #set to false if it isn't
+	    filename_set = False
             om.out.console('Parameter missing, please see the help:')
             self._cmd_help(['save_as'])
         else:
@@ -97,10 +103,11 @@ class profilesMenu(menu):
                     om.out.console(msg)
                     return                    
 
-        description = 'Profile generated using the console UI.'
-        self._w3af.profiles.save_current_to_new_profile(filename, description)
-        
-        om.out.console('Profile saved.')
+	if filename_set:
+        	description = 'Profile generated using the console UI.'
+        	self._w3af.profiles.save_current_to_new_profile(filename, description)
+   
+        	om.out.console('Profile saved.')
 
     def _para_use(self, params, part):
         if not params:
