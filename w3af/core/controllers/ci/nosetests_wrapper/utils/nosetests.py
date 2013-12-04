@@ -20,7 +20,7 @@ def clear_noseids():
     try:
         os.unlink('.noseids')
     except:
-        pass
+        logging.debug('.noseids file does NOT exist!')
 
 def clean_noise(output_string):
     '''
