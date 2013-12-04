@@ -26,7 +26,6 @@ import Queue
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
@@ -111,20 +110,12 @@ class Plugin(Configurable):
     def get_desc(self):
         '''
         :return: A description of the plugin.
-
-        >>> b = Plugin()
-        >>> b.__doc__ = 'abc'
-        >>> b.get_desc()
-        'abc'
-        >>> b = Plugin()
-        >>> b.__doc__ = '    abc\t'
-        >>> b.get_desc()
-        'abc'
         '''
         if self.__doc__ is not None:
             tmp = self.__doc__.replace('    ', '')
-            res = ''.join(i for i in tmp.split('\n') if i != '' and
-                          '@author' not in i)
+            
+            res = ''.join(l for l in tmp.split('\n') if l != '' and
+                          not l.startswith(':'))
         else:
             res = 'No description available for this plugin.'
         return res
