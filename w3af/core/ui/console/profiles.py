@@ -87,15 +87,16 @@ class profilesMenu(menu):
         if not params:
             om.out.console('Parameter missing, please see the help:')
             self._cmd_help(['save_as'])
-        else:
-            filename = params[0]
-            
-            valid = string.ascii_letters + string.digits + '_-'
-            for char in filename:
-                if char not in valid:
-                    msg = 'Invalid profile name. Use letters and digits only.'
-                    om.out.console(msg)
-                    return                    
+            return
+        
+        filename = params[0]
+        
+        valid = string.ascii_letters + string.digits + '_-'
+        for char in filename:
+            if char not in valid:
+                msg = 'Invalid profile name. Use letters and digits only.'
+                om.out.console(msg)
+                return                    
 
         description = 'Profile generated using the console UI.'
         self._w3af.profiles.save_current_to_new_profile(filename, description)

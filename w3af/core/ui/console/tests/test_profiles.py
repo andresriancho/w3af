@@ -98,6 +98,20 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         
         self._assert_exists('unittest')
 
+    def test_save_as_profile_no_param(self):
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'save_as',
+                           'exit']
+
+        expected = ('Parameter missing, please see the help',)
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
+        
     def test_save_load_misc_settings(self):
         # Save the settings
         commands_to_run = ['misc-settings set msf_location /etc/',
