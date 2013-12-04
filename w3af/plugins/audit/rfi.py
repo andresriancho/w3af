@@ -387,11 +387,10 @@ class rfi(AuditPlugin):
         ol = OptionList()
 
         d = 'IP address that the webserver will use to receive requests'
-        h = 'w3af runs a webserver to serve the files to the target web application \
-        when doing remote file inclusions. This setting configures where the webserver\
-        is going to listen for requests.'
-        o = opt_factory(
-            'listen_address', self._listen_address, d, STRING, help=h)
+        h = 'w3af runs a webserver to serve the files to the target web'\
+            ' application when doing remote file inclusions. This setting'\
+            ' configures where the webserver is going to listen for requests.'
+        o = opt_factory('listen_address', self._listen_address, d, STRING, help=h)
         ol.add(o)
 
         d = 'TCP port that the webserver will use to receive requests'
@@ -399,8 +398,9 @@ class rfi(AuditPlugin):
         ol.add(o)
 
         d = 'Use w3af site to test for remote file inclusion'
-        h = 'The plugin can use the w3af site to test for remote file inclusions, which is\
-        convenient when you are performing a test behind a NAT firewall.'
+        h = 'The plugin can use the w3af site to test for remote file'\
+            ' inclusions, which is convenient when you are performing a test'\
+            ' behind a NAT firewall.'
         o = opt_factory('use_w3af_site', self._use_w3af_site, d, BOOL, help=h)
         ol.add(o)
 
