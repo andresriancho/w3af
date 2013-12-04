@@ -21,6 +21,7 @@ while True:
     wait_time += DELTA
     
     if os.path.exists(HTTP_ADDRESS_FILE) and os.path.exists(HTTPS_ADDRESS_FILE):
+        time.sleep(DELTA * 2)
         print('')
         print('Started moth in %s seconds.' % wait_time)
         break  
