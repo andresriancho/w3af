@@ -113,6 +113,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                            'set only_forward True', 'back',
                            'grep path_disclosure',
                            'back',
+                           'plugins output',
                            'target',
                            'set target %s%s' % (target_2, qs_2), 'back',
                            'start',
