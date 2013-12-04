@@ -1,7 +1,6 @@
 import os
 import logging
 import select
-import tempfile
 import subprocess
 import shlex
 
@@ -11,6 +10,17 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
                                                                   NOSE_OUTPUT_PREFIX,
                                                                   NOSE_XUNIT_EXT)
 
+
+def clear_noseids():
+    '''
+    Remove the .noseids file which is cached by circle and if exists will
+    prevent new tests from being found.
+    '''
+    logging.debug('Removing .noseids file.')
+    try:
+        os.unlink('.noseids')
+    except:
+        pass
 
 def clean_noise(output_string):
     '''
