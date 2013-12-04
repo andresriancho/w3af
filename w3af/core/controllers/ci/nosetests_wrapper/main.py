@@ -76,10 +76,13 @@ if __name__ == '__main__':
                     exit_codes.append(exit_code)
                     done_list.append(future)
                     
-                    print_info_console(cmd, stdout, stderr,
-                                       exit_code, output_fname)
-                    print_will_fail(exit_code)
                     print_status(done_list, total_tests)
+                    
+                    if exit_code != 0:
+                        print_info_console(cmd, stdout, stderr,
+                                           exit_code, output_fname)
+                        print_will_fail(exit_code)
+                    
             except futures.TimeoutError:
                 print_status(done_list, total_tests)
             
