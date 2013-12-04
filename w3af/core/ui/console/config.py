@@ -85,53 +85,45 @@ class ConfigMenu(menu):
             om.out.console('Invalid call to set, please see the help:')
             self._cmd_help(['set'])
             
-        elif params[0] not in self._options:
+        if params[0] not in self._options:
             raise w3afException('Unknown option: "%s".' % params[0])
         
+        name = params[0]
+        value = ' '.join(params[1:])
+        
+        # This set_value might raise a w3afException, for example this
+        # might happen when the configuration parameter is an integer and
+        # the user sets it to 'abc'
+        try:
+            self._options[name].set_value(value)
+            self._plain_options[name] = value
+        except w3afException, e:
+            om.out.error(str(e))
         else:
-            name = params[0]
-            value = ' '.join(params[1:])
-            
-            # This set_value might raise a w3afException, for example this
-            # might happen when the configuration parameter is an integer and
-            # the user sets it to 'abc'
-            try:
-                self._options[name].set_value(value)
-                self._plain_options[name] = value
-            except w3afException, e:
-                om.out.error(str(e))
-            else:
-                if value not in self._memory[name]:
-                    self._memory[name].append(value)
+            if value not in self._memory[name]:
+                self._memory[name].append(value)
 
-            # All the options are set to the configurable on "back", this is
-            # to handle the issue of configuration parameters which depend on
-            # each other: https://github.com/andresriancho/w3af/issues/108
-            # @see: _cmd_back()
-            #
-            # There is an exception to that rule, calling:
-            #    w3af>>> target set target http://w3af.org/
-            #
-            # Is different from calling:
-            #    w3af>>> target
-            #    w3af/config:target>>> set target http://w3af.org/
-            #
-            # The first one has an implied save:
-            if self._child_call:
-                self._cmd_save([])
+        # All the options are set to the configurable on "back", this is
+        # to handle the issue of configuration parameters which depend on
+        # each other: https://github.com/andresriancho/w3af/issues/108
+        # @see: _cmd_back()
+        #
+        # There is an exception to that rule, calling:
+        #    w3af>>> target set target http://w3af.org/
+        #
+        # Is different from calling:
+        #    w3af>>> target
+        #    w3af/config:target>>> set target http://w3af.org/
+        #
+        # The first one has an implied save:
+        if self._child_call:
+            self._cmd_save([])
     
     def _cmd_save(self, tokens):
-        # Save the options using the corresponding setter
-        if isinstance(self._configurable, Plugin):
-            self._w3af.plugins.set_plugin_options(
-                self._configurable.get_type(),
-                self._configurable.get_name(),
-                self._options)
-        else:
-            self._configurable.set_options(self._options)
         try:
             # Save the options using the corresponding setter
             if isinstance(self._configurable, Plugin):
+                self._configurable.set_options(self._options)
                 self._w3af.plugins.set_plugin_options(
                     self._configurable.get_type(),
                     self._configurable.get_name(),
@@ -141,7 +133,7 @@ class ConfigMenu(menu):
                 
         except w3afException, e:
             msg = 'Identified an error with the user-defined settings:\n\n'\
-                  '    - %s\n\n'\
+                  '    - %s \n\n'\
                   'No information has been saved.'
             raise w3afException(msg % e)
         else:
