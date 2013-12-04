@@ -45,8 +45,8 @@ class xss(AuditPlugin):
     PAYLOADS = [
                 'RANDOMIZE</->',
                 'RANDOMIZE/*',
-                'RANDOMIZE"',
-                "RANDOMIZE'",
+                'RANDOMIZE"RANDOMIZE',
+                "RANDOMIZE'RANDOMIZE",
                 "RANDOMIZE`",
                 "RANDOMIZE ="
                 ]

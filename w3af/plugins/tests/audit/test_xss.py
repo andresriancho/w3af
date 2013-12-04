@@ -20,15 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+
 import w3af.core.data.constants.severity as severity
 
 
 class TestXSS(PluginTest):
 
-    XSS_PATH = 'http://moth/w3af/audit/xss/'
+    XSS_PATH = get_moth_http('/audit/xss/')
     XSS_302_URL = 'http://moth/w3af/audit/xss/302/'
-    XSS_URL_SMOKE = 'http://moth/w3af/audit/xss/'
+    XSS_URL_SMOKE = get_moth_http('/audit/xss/')
     
     WAVSEP_PATH = 'http://localhost:8080/wavsep/active/RXSS-Detection-Evaluation-GET/'
 
@@ -50,7 +52,7 @@ class TestXSS(PluginTest):
         },
 
         'smoke': {
-            'target': XSS_URL_SMOKE + 'simple_xss_no_js.php?text=1',
+            'target': XSS_URL_SMOKE + 'simple_xss.py?text=1',
             'plugins': {
                 'audit': (
                     PluginConfig(
@@ -87,7 +89,6 @@ class TestXSS(PluginTest):
         return expected_data
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_find_one_xss(self):
         '''
         Simplest possible test to verify that we identify XSSs.
@@ -98,7 +99,7 @@ class TestXSS(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
         
-        EXPECTED = [('simple_xss_no_js.php', 'text', ['text']), ]
+        EXPECTED = [('simple_xss.py', 'text', ['text']), ]
         expected_data = self.normalize_expected_data(self.XSS_URL_SMOKE,
                                                      EXPECTED)
         
@@ -106,6 +107,20 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
+
+    def test_no_false_positive_499(self):
+        '''
+        Avoiding false positives in the case where the payload is echoed back
+        inside an attribute and the quotes are removed.
+        
+        :see: https://github.com/andresriancho/w3af/pull/499
+        '''
+        cfg = self._run_configs['smoke']
+        self._scan(self.XSS_PATH + '499_check.py?text=1', cfg['plugins'])
+
+        xss_vulns = self.kb.get('xss', 'xss')
+        
+        self.assertEquals(0, len(xss_vulns), xss_vulns)
 
     @attr('ci_fails')
     def test_found_xss(self):
