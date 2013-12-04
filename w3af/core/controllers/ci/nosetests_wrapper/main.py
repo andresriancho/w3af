@@ -12,8 +12,7 @@ sys.path.insert(0, os.path.abspath(os.curdir))
 from concurrent import futures
 
 from w3af.core.controllers.ci.utils import configure_logging
-from w3af.core.controllers.ci.nosetests_wrapper.utils.nosetests import (run_nosetests,
-                                                                        clear_noseids)
+from w3af.core.controllers.ci.nosetests_wrapper.utils.nosetests import run_nosetests
 from w3af.core.controllers.ci.nosetests_wrapper.utils.test_stats import (get_all_tests,
                                                                          get_run_tests,
                                                                          get_test_ids,
