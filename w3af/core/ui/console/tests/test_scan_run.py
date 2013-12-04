@@ -33,6 +33,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
 
     def test_SQL_scan(self):
         target = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        target_path = get_moth_http('/audit/sql_injection/')
         qs = '?uname=pablo'
         commands_to_run = ['plugins',
                            'output console,text_file',
@@ -55,7 +56,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
 
         expected = ('SQL injection in ',
                     'A SQL error was found in the response supplied by ',
-                    'New URL found by web_spider plugin: "%s"' % target)
+                    'New URL found by web_spider plugin: "%s"' % target_path)
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
@@ -71,6 +72,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     @attr('smoke')
     def test_two_scans(self):
         target_1 = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        target_path_1 = get_moth_http('/audit/sql_injection/')
         qs_1 = '?uname=pablo'
         scan_commands_1 = ['plugins',
                            'output console,text_file',
@@ -92,9 +94,10 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
 
         expected_1 = ('SQL injection in ',
                       'A SQL error was found in the response supplied by ',
-                      'New URL found by web_spider plugin: "%s"' % target_1)
+                      'New URL found by web_spider plugin: "%s"' % target_path_1)
 
         target_2 = get_moth_http('/audit/xss/simple_xss.py')
+        target_path_2 = get_moth_http('/audit/xss/')
         qs_2 = '?text=1'
         scan_commands_2 = ['plugins',
                            'output console,text_file',
@@ -116,7 +119,7 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                            'exit']
 
         expected_2 = ('A Cross Site Scripting vulnerability was found at',
-                      'New URL found by web_spider plugin: "%s"' % target_2)
+                      'New URL found by web_spider plugin: "%s"' % target_path_2)
 
         scan_commands = scan_commands_1 + scan_commands_2
 
