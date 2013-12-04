@@ -295,7 +295,7 @@
         <parse>
             <item value="Title: AND boolean-based blind - WHERE or HAVING clause"/>
             <item value="r'back-end DBMS: active fingerprint: PostgreSQL &gt;= 8.4.0 and &lt; 9.0.0'"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user:    'postgres'"/>
             <item value="current database:    'testdb'"/>
             <item value="current user is DBA:    True"/>
@@ -338,7 +338,7 @@
         <parse>
             <item value="Title: PostgreSQL AND error-based - WHERE or HAVING clause"/>
             <item value="r'back-end DBMS: active fingerprint: PostgreSQL &gt;= 8.4.0 and &lt; 9.0.0'"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user:    'postgres'"/>
             <item value="current database:    'testdb'"/>
             <item value="current user is DBA:    True"/>
@@ -381,7 +381,7 @@
         <parse>
             <item value="Title: Generic UNION query (NULL) - 3 columns"/>
             <item value="r'back-end DBMS: active fingerprint: PostgreSQL &gt;= 8.4.0 and &lt; 9.0.0'"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user:    'postgres'"/>
             <item value="current database:    'testdb'"/>
             <item value="current user is DBA:    True"/>
@@ -424,7 +424,7 @@
         <parse>
             <item value="Title: Generic UNION query (NULL) - 3 columns"/>
             <item value="r'back-end DBMS: active fingerprint: PostgreSQL &gt;= 8.4.0 and &lt; 9.0.0'"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user:    'postgres'"/>
             <item value="current database:    'testdb'"/>
             <item value="current user is DBA:    True"/>
@@ -449,7 +449,7 @@
         </switches>
         <parse>
             <item value="Title: PostgreSQL &gt; 8.1 AND time-based blind"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user is DBA:    True"/>
         </parse>
     </case>
@@ -463,7 +463,7 @@
         </switches>
         <parse>
             <item value="Title: PostgreSQL &gt; 8.1 stacked queries"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user is DBA:    True"/>
         </parse>
     </case>
@@ -495,7 +495,7 @@
         <parse>
             <item value="Title: PostgreSQL inline queries"/>
             <item value="r'back-end DBMS: active fingerprint: PostgreSQL &gt;= 8.4.0 and &lt; 9.0.0'"/>
-            <item value="banner:    'PostgreSQL 8.4.13 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
+            <item value="banner:    'PostgreSQL 8.4.17 on i486-pc-linux-gnu, compiled by GCC gcc-4.4.real (Debian 4.4.5-8) 4.4.5, 32-bit'"/>
             <item value="current user:    'postgres'"/>
             <item value="current database:    'testdb'"/>
             <item value="current user is DBA:    True"/>
@@ -983,7 +983,6 @@
             <extensiveFp value="True"/>
             <level value="3"/>
             <risk value="2"/>
-            <timeSec value="2"/>
             <getBanner value="True"/>
         </switches>
         <parse>
@@ -3217,6 +3216,7 @@
     <!-- End of file system access switches -->
 
     <!-- Operating system access switches -->
+    <!--
     <case name="MySQL web shell - command execution">
         <switches>
             <url value="http://debiandev/sqlmap/mysql/get_int.php?id=1"/>
@@ -3240,6 +3240,7 @@
             <item value="r'Sending stage.+Linux.+uid=.+www-data'" console_output="True"/>
         </parse>
     </case>
+    -->
     <case name="PostgreSQL User-Defined Function (UDF) injection - command execution (UNION)">
         <switches>
             <url value="http://debiandev/sqlmap/pgsql/get_int.php?id=1"/>
@@ -3422,8 +3423,8 @@
         <switches>
             <url value="http://debiandev/sqlmap/mysql/basic/get_int.php?id=1"/>
             <tech value="E"/>
-            <aType value="Basic"/>
-            <aCred value="testuser:testpass"/>
+            <authType value="Basic"/>
+            <authCred value="testuser:testpass"/>
             <getBanner value="True"/>
         </switches>
         <parse>
@@ -3434,8 +3435,8 @@
         <switches>
             <url value="http://debiandev/sqlmap/mysql/digest/get_int.php?id=1"/>
             <tech value="E"/>
-            <aType value="Digest"/>
-            <aCred value="testuser:testpass"/>
+            <authType value="Digest"/>
+            <authCred value="testuser:testpass"/>
             <getBanner value="True"/>
         </switches>
         <parse>

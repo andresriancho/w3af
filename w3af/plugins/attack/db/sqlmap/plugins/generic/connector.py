@@ -28,7 +28,7 @@ class Connector:
         self.port = conf.port
         self.db = conf.dbmsDb
 
-    def connected(self):
+    def printConnected(self):
         infoMsg = "connection to %s server %s" % (conf.dbms, self.hostname)
         infoMsg += ":%d established" % self.port
         logger.info(infoMsg)
@@ -46,8 +46,10 @@ class Connector:
 
     def close(self):
         try:
-            self.cursor.close()
-            self.connector.close()
+            if self.cursor:
+                self.cursor.close()
+            if self.connector:
+                self.connector.close()
         except Exception, msg:
             logger.debug(msg)
         finally:

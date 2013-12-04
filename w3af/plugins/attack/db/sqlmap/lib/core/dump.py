@@ -5,11 +5,11 @@ Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import cgi
 import codecs
 import os
+import re
 import threading
-
-from xml.dom.minidom import getDOMImplementation
 
 from lib.core.common import Backend
 from lib.core.common import dataToDumpFile
@@ -74,7 +74,7 @@ class Dump(object):
         kb.dataOutputFlag = True
 
     def setOutputFile(self):
-        self._outputFile = "%s%slog" % (conf.outputPath, os.sep)
+        self._outputFile = os.path.join(conf.outputPath, "log")
         try:
             self._outputFP = codecs.open(self._outputFile, "ab" if not conf.flushSession else "wb", UNICODE_ENCODING)
         except IOError, ex:
@@ -143,7 +143,7 @@ class Dump(object):
     def currentDb(self, data):
         if Backend.isDbms(DBMS.MAXDB):
             self.string("current database (no practical usage on %s)" % Backend.getIdentifiedDbms(), data, content_type=CONTENT_TYPE.CURRENT_DB)
-        elif Backend.isDbms(DBMS.ORACLE):
+        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.PGSQL):
             self.string("current schema (equivalent to database on %s)" % Backend.getIdentifiedDbms(), data, content_type=CONTENT_TYPE.CURRENT_DB)
         else:
             self.string("current database", data, content_type=CONTENT_TYPE.CURRENT_DB)
@@ -212,7 +212,7 @@ class Dump(object):
                     if table and isListLike(table):
                         table = table[0]
 
-                    maxlength = max(maxlength, len(unsafeSQLIdentificatorNaming(normalizeUnicode(table) or str(table))))
+                    maxlength = max(maxlength, len(unsafeSQLIdentificatorNaming(normalizeUnicode(table) or unicode(table))))
 
             lines = "-" * (int(maxlength) + 2)
 
@@ -233,7 +233,7 @@ class Dump(object):
                         table = table[0]
 
                     table = unsafeSQLIdentificatorNaming(table)
-                    blank = " " * (maxlength - len(normalizeUnicode(table) or str(table)))
+                    blank = " " * (maxlength - len(normalizeUnicode(table) or unicode(table)))
                     self._write("| %s%s |" % (table, blank))
 
                 self._write("+%s+\n" % lines)
@@ -328,7 +328,7 @@ class Dump(object):
             for ctables in dbTables.values():
                 for tables in ctables.values():
                     for table in tables:
-                        maxlength1 = max(maxlength1, len(normalizeUnicode(table) or str(table)))
+                        maxlength1 = max(maxlength1, len(normalizeUnicode(table) or unicode(table)))
 
             for db, counts in dbTables.items():
                 self._write("Database: %s" % unsafeSQLIdentificatorNaming(db) if db else "Current database")
@@ -354,7 +354,7 @@ class Dump(object):
                     tables.sort(key=lambda x: x.lower() if isinstance(x, basestring) else x)
 
                     for table in tables:
-                        blank1 = " " * (maxlength1 - len(normalizeUnicode(table) or str(table)))
+                        blank1 = " " * (maxlength1 - len(normalizeUnicode(table) or unicode(table)))
                         blank2 = " " * (maxlength2 - len(str(count)))
                         self._write("| %s%s | %d%s |" % (table, blank1, count, blank2))
 
@@ -366,6 +366,7 @@ class Dump(object):
         replication = None
         rtable = None
         dumpFP = None
+        appendToFile = False
 
         if tableValues is None:
             return
@@ -379,16 +380,17 @@ class Dump(object):
             self._write(tableValues, content_type=CONTENT_TYPE.DUMP_TABLE)
             return
 
-        dumpDbPath = "%s%s%s" % (conf.dumpPath, os.sep, unsafeSQLIdentificatorNaming(db))
+        dumpDbPath = os.path.join(conf.dumpPath, re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(db)))
 
         if conf.dumpFormat == DUMP_FORMAT.SQLITE:
-            replication = Replication("%s%s%s.sqlite3" % (conf.dumpPath, os.sep, unsafeSQLIdentificatorNaming(db)))
+            replication = Replication(os.path.join(conf.dumpPath, "%s.sqlite3" % unsafeSQLIdentificatorNaming(db)))
         elif conf.dumpFormat in (DUMP_FORMAT.CSV, DUMP_FORMAT.HTML):
             if not os.path.isdir(dumpDbPath):
                 os.makedirs(dumpDbPath, 0755)
 
-            dumpFileName = "%s%s%s.%s" % (dumpDbPath, os.sep, unsafeSQLIdentificatorNaming(table), conf.dumpFormat.lower())
-            dumpFP = openFile(dumpFileName, "wb")
+            dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (unsafeSQLIdentificatorNaming(table), conf.dumpFormat.lower()))
+            appendToFile = os.path.isfile(dumpFileName) and any((conf.limitStart, conf.limitStop))
+            dumpFP = openFile(dumpFileName, "wb" if not appendToFile else "ab")
 
         count = int(tableValues["__infos__"]["count"])
         separator = str()
@@ -436,12 +438,15 @@ class Dump(object):
                                 colType = None
                                 break
 
-                    cols.append((column, colType if colType else Replication.TEXT))
+                    cols.append((unsafeSQLIdentificatorNaming(column), colType if colType else Replication.TEXT))
 
             rtable = replication.createTable(table, cols)
         elif conf.dumpFormat == DUMP_FORMAT.HTML:
-            documentNode = getDOMImplementation().createDocument(None, "table", None)
-            tableNode = documentNode.documentElement
+            dataToDumpFile(dumpFP, "<!DOCTYPE html>\n<html>\n<head>\n")
+            dataToDumpFile(dumpFP, "<meta http-equiv=\"Content-type\" content=\"text/html;charset=%s\">\n" % UNICODE_ENCODING)
+            dataToDumpFile(dumpFP, "<title>%s</title>\n" % ("%s%s" % ("%s." % db if METADB_SUFFIX not in db else "", table)))
+            dataToDumpFile(dumpFP, HTML_DUMP_CSS_STYLE)
+            dataToDumpFile(dumpFP, "\n</head>\n<body>\n<table>\n<thead>\n<tr>\n")
 
         if count == 1:
             self._write("[1 entry]")
@@ -450,38 +455,34 @@ class Dump(object):
 
         self._write(separator)
 
-        if conf.dumpFormat == DUMP_FORMAT.HTML:
-            headNode = documentNode.createElement("thead")
-            rowNode = documentNode.createElement("tr")
-            tableNode.appendChild(headNode)
-            headNode.appendChild(rowNode)
-            bodyNode = documentNode.createElement("tbody")
-            tableNode.appendChild(bodyNode)
-
         for column in columns:
             if column != "__infos__":
                 info = tableValues[column]
+
+                column = unsafeSQLIdentificatorNaming(column)
                 maxlength = int(info["length"])
                 blank = " " * (maxlength - len(column))
 
                 self._write("| %s%s" % (column, blank), newline=False)
 
-                if conf.dumpFormat == DUMP_FORMAT.CSV:
-                    if field == fields:
-                        dataToDumpFile(dumpFP, "%s" % safeCSValue(column))
-                    else:
-                        dataToDumpFile(dumpFP, "%s%s" % (safeCSValue(column), conf.csvDel))
-                elif conf.dumpFormat == DUMP_FORMAT.HTML:
-                    entryNode = documentNode.createElement("td")
-                    rowNode.appendChild(entryNode)
-                    entryNode.appendChild(documentNode.createTextNode(column))
+                if not appendToFile:
+                    if conf.dumpFormat == DUMP_FORMAT.CSV:
+                        if field == fields:
+                            dataToDumpFile(dumpFP, "%s" % safeCSValue(column))
+                        else:
+                            dataToDumpFile(dumpFP, "%s%s" % (safeCSValue(column), conf.csvDel))
+                    elif conf.dumpFormat == DUMP_FORMAT.HTML:
+                        dataToDumpFile(dumpFP, "<th>%s</th>" % cgi.escape(column).encode("ascii", "xmlcharrefreplace"))
 
                 field += 1
+
+        if conf.dumpFormat == DUMP_FORMAT.HTML:
+            dataToDumpFile(dumpFP, "\n</tr>\n</thead>\n<tbody>\n")
 
         self._write("|\n%s" % separator)
 
         if conf.dumpFormat == DUMP_FORMAT.CSV:
-            dataToDumpFile(dumpFP, "\n")
+            dataToDumpFile(dumpFP, "\n" if not appendToFile else "")
 
         elif conf.dumpFormat == DUMP_FORMAT.SQLITE:
             rtable.beginTransaction()
@@ -498,8 +499,7 @@ class Dump(object):
             values = []
 
             if conf.dumpFormat == DUMP_FORMAT.HTML:
-                rowNode = documentNode.createElement("tr")
-                bodyNode.appendChild(rowNode)
+                dataToDumpFile(dumpFP, "<tr>")
 
             for column in columns:
                 if column != "__infos__":
@@ -520,18 +520,21 @@ class Dump(object):
                     self._write("| %s%s" % (value, blank), newline=False, console=console)
 
                     if len(value) > MIN_BINARY_DISK_DUMP_SIZE and r'\x' in value:
-                        mimetype = magic.from_buffer(value, mime=True)
-                        if any(mimetype.startswith(_) for _ in ("application", "image")):
-                            if not os.path.isdir(dumpDbPath):
-                                os.makedirs(dumpDbPath, 0755)
+                        try:
+                            mimetype = magic.from_buffer(value, mime=True)
+                            if any(mimetype.startswith(_) for _ in ("application", "image")):
+                                if not os.path.isdir(dumpDbPath):
+                                    os.makedirs(dumpDbPath, 0755)
 
-                            filepath = os.path.join(dumpDbPath, "%s-%d.bin" % (column, randomInt(8)))
-                            warnMsg = "writing binary ('%s') content to file '%s' " % (mimetype, filepath)
-                            logger.warn(warnMsg)
+                                filepath = os.path.join(dumpDbPath, "%s-%d.bin" % (unsafeSQLIdentificatorNaming(column), randomInt(8)))
+                                warnMsg = "writing binary ('%s') content to file '%s' " % (mimetype, filepath)
+                                logger.warn(warnMsg)
 
-                            with open(filepath, "wb") as f:
-                                _ = safechardecode(value, True)
-                                f.write(_)
+                                with open(filepath, "wb") as f:
+                                    _ = safechardecode(value, True)
+                                    f.write(_)
+                        except magic.MagicException, err:
+                            logger.debug(str(err))
 
                     if conf.dumpFormat == DUMP_FORMAT.CSV:
                         if field == fields:
@@ -539,9 +542,7 @@ class Dump(object):
                         else:
                             dataToDumpFile(dumpFP, "%s%s" % (safeCSValue(value), conf.csvDel))
                     elif conf.dumpFormat == DUMP_FORMAT.HTML:
-                        entryNode = documentNode.createElement("td")
-                        rowNode.appendChild(entryNode)
-                        entryNode.appendChild(documentNode.createTextNode(value))
+                        dataToDumpFile(dumpFP, "<td>%s</td>" % cgi.escape(value).encode("ascii", "xmlcharrefreplace"))
 
                     field += 1
 
@@ -552,6 +553,8 @@ class Dump(object):
                     pass
             elif conf.dumpFormat == DUMP_FORMAT.CSV:
                 dataToDumpFile(dumpFP, "\n")
+            elif conf.dumpFormat == DUMP_FORMAT.HTML:
+                dataToDumpFile(dumpFP, "</tr>\n")
 
             self._write("|", console=console)
 
@@ -563,13 +566,7 @@ class Dump(object):
 
         elif conf.dumpFormat in (DUMP_FORMAT.CSV, DUMP_FORMAT.HTML):
             if conf.dumpFormat == DUMP_FORMAT.HTML:
-                dataToDumpFile(dumpFP, "<!DOCTYPE html>\n<html>\n<head>\n")
-                dataToDumpFile(dumpFP, "<meta http-equiv=\"Content-type\" content=\"text/html;charset=%s\">\n" % UNICODE_ENCODING)
-                dataToDumpFile(dumpFP, "<title>%s</title>\n" % ("%s%s" % ("%s." % db if METADB_SUFFIX not in db else "", table)))
-                dataToDumpFile(dumpFP, HTML_DUMP_CSS_STYLE)
-                dataToDumpFile(dumpFP, "\n</head>\n")
-                dataToDumpFile(dumpFP, tableNode.toxml())
-                dataToDumpFile(dumpFP, "\n</html>")
+                dataToDumpFile(dumpFP, "</tbody>\n</table>\n</body>\n</html>")
             else:
                 dataToDumpFile(dumpFP, "\n")
             dumpFP.close()

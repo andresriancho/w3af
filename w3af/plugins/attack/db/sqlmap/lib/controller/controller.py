@@ -54,6 +54,7 @@ from lib.core.settings import DEFAULT_GET_POST_DELIMITER
 from lib.core.settings import EMPTY_FORM_FIELDS_REGEX
 from lib.core.settings import IGNORE_PARAMETERS
 from lib.core.settings import LOW_TEXT_PERCENT
+from lib.core.settings import GOOGLE_ANALYTICS_COOKIE_PREFIX
 from lib.core.settings import HOST_ALIASES
 from lib.core.settings import REFERER_ALIASES
 from lib.core.settings import USER_AGENT_ALIASES
@@ -144,7 +145,7 @@ def _formatInjection(inj):
             vector = "%s%s" % (vector, comment)
         data += "    Type: %s\n" % PAYLOAD.SQLINJECTION[stype]
         data += "    Title: %s\n" % title
-        data += "    Payload: %s\n" % payload
+        data += "    Payload: %s\n" % urldecode(payload, unsafe="&", plusspace=(inj.place == PLACE.POST and kb.postSpaceToPlus))
         data += "    Vector: %s\n\n" % vector if conf.verbose > 1 else "\n"
 
     return data
@@ -253,7 +254,7 @@ def start():
 
     if conf.configFile and not kb.targets:
         errMsg = "you did not edit the configuration file properly, set "
-        errMsg += "the target url, list of targets or google dork"
+        errMsg += "the target URL, list of targets or google dork"
         logger.error(errMsg)
         return False
 
@@ -276,7 +277,7 @@ def start():
             testSqlInj = False
 
             if PLACE.GET in conf.parameters and not any([conf.data, conf.testParameter]):
-                for parameter in re.findall(r"([^=]+)=([^%s]+%s?|\Z)" % (conf.pDel or ";", conf.pDel or ";"), conf.parameters[PLACE.GET]):
+                for parameter in re.findall(r"([^=]+)=([^%s]+%s?|\Z)" % (conf.pDel or DEFAULT_GET_POST_DELIMITER, conf.pDel or DEFAULT_GET_POST_DELIMITER), conf.parameters[PLACE.GET]):
                     paramKey = (conf.hostname, conf.path, PLACE.GET, parameter[0])
 
                     if paramKey not in kb.testedParams:
@@ -287,8 +288,13 @@ def start():
                 if paramKey not in kb.testedParams:
                     testSqlInj = True
 
-            testSqlInj &= (conf.hostname, conf.path, None, None) not in kb.testedParams
-            testSqlInj &= conf.hostname not in kb.vulnHosts
+            if testSqlInj and conf.hostname in kb.vulnHosts:
+                if kb.skipVulnHost is None:
+                    message = "SQL injection vulnerability has already been detected "
+                    message += "against '%s'. Do you want to skip " % conf.hostname
+                    message += "further tests involving it? [Y/n]"
+                    kb.skipVulnHost = readInput(message, default="Y").upper() != 'N'
+                testSqlInj = not kb.skipVulnHost
 
             if not testSqlInj:
                 infoMsg = "skipping '%s'" % targetUrl
@@ -301,7 +307,7 @@ def start():
                 if conf.forms:
                     message = "[#%d] form:\n%s %s" % (hostCount, conf.method or HTTPMETHOD.GET, targetUrl)
                 else:
-                    message = "url %d:\n%s %s%s" % (hostCount, conf.method or HTTPMETHOD.GET, targetUrl, " (PageRank: %s)" % get_pagerank(targetUrl) if conf.googleDork and conf.pageRank else "")
+                    message = "URL %d:\n%s %s%s" % (hostCount, conf.method or HTTPMETHOD.GET, targetUrl, " (PageRank: %s)" % get_pagerank(targetUrl) if conf.googleDork and conf.pageRank else "")
 
                 if conf.cookie:
                     message += "\nCookie: %s" % conf.cookie
@@ -340,7 +346,7 @@ def start():
                         break
 
                 else:
-                    message += "\ndo you want to test this url? [Y/n/q]"
+                    message += "\ndo you want to test this URL? [Y/n/q]"
                     test = readInput(message, default="Y")
 
                     if not test or test[0] in ("y", "Y"):
@@ -350,7 +356,7 @@ def start():
                     elif test[0] in ("q", "Q"):
                         break
 
-                    infoMsg = "testing url '%s'" % targetUrl
+                    infoMsg = "testing URL '%s'" % targetUrl
                     logger.info(infoMsg)
 
             setupTargetEnv()
@@ -407,6 +413,7 @@ def start():
                     skip &= not (place == PLACE.USER_AGENT and intersect(USER_AGENT_ALIASES, conf.testParameter, True))
                     skip &= not (place == PLACE.REFERER and intersect(REFERER_ALIASES, conf.testParameter, True))
                     skip &= not (place == PLACE.HOST and intersect(HOST_ALIASES, conf.testParameter, True))
+                    skip &= not (place == PLACE.COOKIE and intersect((PLACE.COOKIE,), conf.testParameter, True))
 
                     if skip:
                         continue
@@ -446,7 +453,7 @@ def start():
                             logger.info(infoMsg)
 
                         # Ignore session-like parameters for --level < 4
-                        elif conf.level < 4 and parameter.upper() in IGNORE_PARAMETERS:
+                        elif conf.level < 4 and (parameter.upper() in IGNORE_PARAMETERS or parameter.upper().startswith(GOOGLE_ANALYTICS_COOKIE_PREFIX)):
                             testSqlInj = False
 
                             infoMsg = "ignoring %s parameter '%s'" % (place, parameter)
@@ -545,12 +552,12 @@ def start():
                     elif conf.string:
                         errMsg += " Also, you can try to rerun by providing a "
                         errMsg += "valid value for option '--string' as perhaps the string you "
-                        errMsg += "have choosen does not match "
+                        errMsg += "have chosen does not match "
                         errMsg += "exclusively True responses"
                     elif conf.regexp:
                         errMsg += " Also, you can try to rerun by providing a "
                         errMsg += "valid value for option '--regexp' as perhaps the regular "
-                        errMsg += "expression that you have choosen "
+                        errMsg += "expression that you have chosen "
                         errMsg += "does not match exclusively True responses"
 
                     raise SqlmapNotVulnerableException(errMsg)
@@ -598,14 +605,14 @@ def start():
         except SqlmapSilentQuitException:
             raise
 
-        except SqlmapBaseException, e:
-            e = getUnicode(e)
+        except SqlmapBaseException, ex:
+            errMsg = getUnicode(ex.message)
 
             if conf.multipleTargets:
-                e += ", skipping to the next %s" % ("form" if conf.forms else "url")
-                logger.error(e)
+                errMsg += ", skipping to the next %s" % ("form" if conf.forms else "URL")
+                logger.error(errMsg)
             else:
-                logger.critical(e)
+                logger.critical(errMsg)
                 return False
 
         finally:

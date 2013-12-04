@@ -19,7 +19,7 @@ try:
 except ImportError:
     pass
 
-_protocols = [ssl.PROTOCOL_SSLv23, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1]
+_protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
 
 class HTTPSConnection(httplib.HTTPSConnection):
     """
@@ -54,7 +54,7 @@ class HTTPSConnection(httplib.HTTPSConnection):
                 else:
                     sock.close()
             except ssl.SSLError, errMsg:
-                logger.debug("SSL connection error occured ('%s')" % errMsg)
+                logger.debug("SSL connection error occurred ('%s')" % errMsg)
 
         if not success:
             raise SqlmapConnectionException("can't establish SSL connection")
@@ -62,3 +62,11 @@ class HTTPSConnection(httplib.HTTPSConnection):
 class HTTPSHandler(urllib2.HTTPSHandler):
     def https_open(self, req):
         return self.do_open(HTTPSConnection if ssl else httplib.HTTPSConnection, req)
+
+# Bug fix (http://bugs.python.org/issue17849)
+
+def _(self, *args):
+    return self._readline()
+
+httplib.LineAndFileWrapper._readline = httplib.LineAndFileWrapper.readline
+httplib.LineAndFileWrapper.readline = _

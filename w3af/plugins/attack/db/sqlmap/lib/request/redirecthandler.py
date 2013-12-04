@@ -8,6 +8,7 @@ See the file 'doc/COPYING' for copying permission
 import urllib2
 import urlparse
 
+from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.common import getHostHeader
@@ -112,14 +113,15 @@ class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
         if redurl and kb.redirectChoice == REDIRECTION.YES:
             req.headers[HTTP_HEADER.HOST] = getHostHeader(redurl)
             if headers and HTTP_HEADER.SET_COOKIE in headers:
-                req.headers[HTTP_HEADER.COOKIE] = headers[HTTP_HEADER.SET_COOKIE].split(DEFAULT_COOKIE_DELIMITER)[0]
+                req.headers[HTTP_HEADER.COOKIE] = headers[HTTP_HEADER.SET_COOKIE].split(conf.cDel or DEFAULT_COOKIE_DELIMITER)[0]
             result = urllib2.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
         else:
             result = fp
 
+        threadData.lastRedirectURL = (threadData.lastRequestUID, redurl)
+
         result.redcode = code
         result.redurl = redurl
-
         return result
 
     http_error_301 = http_error_303 = http_error_307 = http_error_302

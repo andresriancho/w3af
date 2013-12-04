@@ -33,7 +33,7 @@ def tamper(payload, **kwargs):
 
     >>> random.seed(0)
     >>> tamper('SELECT id FROM users')
-    'SELECT%A0id%0BFROM%0Cusers'
+    'SELECT%0Bid%0DFROM%0Cusers'
     """
 
     # ASCII table:
@@ -42,8 +42,7 @@ def tamper(payload, **kwargs):
     #   FF      0C      new page
     #   CR      0D      carriage return
     #   VT      0B      vertical TAB        (MySQL and Microsoft SQL Server only)
-    #   -       A0      -                   (MySQL only)
-    blanks = ('%09', '%0A', '%0C', '%0D', '%0B', '%A0')
+    blanks = ('%09', '%0A', '%0C', '%0D', '%0B')
     retVal = payload
 
     if payload:

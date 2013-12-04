@@ -19,13 +19,16 @@ import time
 import urllib2
 import urlparse
 
+import lib.controller.checks
 import lib.core.common
 import lib.core.threads
 import lib.core.convert
+import lib.request.connect
 
 from lib.controller.checks import checkConnection
 from lib.core.common import Backend
 from lib.core.common import boldifyMessage
+from lib.core.common import checkFile
 from lib.core.common import dataToStdout
 from lib.core.common import getPublicTypeMembers
 from lib.core.common import extractRegexResult
@@ -57,6 +60,7 @@ from lib.core.convert import base64unpickle
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
+from lib.core.data import mergedOptions
 from lib.core.data import queries
 from lib.core.datatype import AttribDict
 from lib.core.datatype import InjectionDict
@@ -90,6 +94,7 @@ from lib.core.optiondict import optDict
 from lib.core.purge import purge
 from lib.core.settings import ACCESS_ALIASES
 from lib.core.settings import BURP_REQUEST_REGEX
+from lib.core.settings import BURP_XML_HISTORY_REGEX
 from lib.core.settings import CODECS_LIST_PAGE
 from lib.core.settings import CRAWL_EXCLUDE_EXTENSIONS
 from lib.core.settings import CUSTOM_INJECTION_MARK_CHAR
@@ -97,9 +102,11 @@ from lib.core.settings import DB2_ALIASES
 from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DEFAULT_TOR_HTTP_PORTS
 from lib.core.settings import DEFAULT_TOR_SOCKS_PORT
+from lib.core.settings import DUMMY_URL
 from lib.core.settings import FIREBIRD_ALIASES
 from lib.core.settings import INJECT_HERE_MARK
 from lib.core.settings import IS_WIN
+from lib.core.settings import KB_CHARS_BOUNDARY_CHAR
 from lib.core.settings import LOCALHOST
 from lib.core.settings import MAXDB_ALIASES
 from lib.core.settings import MAX_CONNECT_RETRIES
@@ -130,8 +137,8 @@ from lib.request.basic import checkCharEncoding
 from lib.request.connect import Connect as Request
 from lib.request.dns import DNSServer
 from lib.request.basicauthhandler import SmartHTTPBasicAuthHandler
-from lib.request.certhandler import HTTPSCertAuthHandler
 from lib.request.httpshandler import HTTPSHandler
+from lib.request.pkihandler import HTTPSPKIAuthHandler
 from lib.request.rangehandler import HTTPRangeHandler
 from lib.request.redirecthandler import SmartRedirectHandler
 from lib.request.templates import getPageTemplate
@@ -147,7 +154,7 @@ from xml.etree.ElementTree import ElementTree
 authHandler = urllib2.BaseHandler()
 httpsHandler = HTTPSHandler()
 keepAliveHandler = keepalive.HTTPHandler()
-proxyHandler = urllib2.BaseHandler()
+proxyHandler = urllib2.ProxyHandler()
 redirectHandler = SmartRedirectHandler()
 rangeHandler = HTTPRangeHandler()
 
@@ -178,7 +185,7 @@ def _urllib2Opener():
         if conf.proxy:
             warnMsg += "with HTTP(s) proxy"
             logger.warn(warnMsg)
-        elif conf.aType:
+        elif conf.authType:
             warnMsg += "with authentication methods"
             logger.warn(warnMsg)
         else:
@@ -189,7 +196,7 @@ def _urllib2Opener():
 
 def _feedTargetsDict(reqFile, addedTargetUrls):
     """
-    Parses web scarab and burp logs and adds results to the target url list
+    Parses web scarab and burp logs and adds results to the target URL list
     """
 
     def _parseWebScarabLog(content):
@@ -226,7 +233,10 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
         """
 
         if not re.search(BURP_REQUEST_REGEX, content, re.I | re.S):
-            reqResList = [content]
+            if re.search(BURP_XML_HISTORY_REGEX, content, re.I | re.S):
+                reqResList = [_.decode("base64") for _ in re.findall(BURP_XML_HISTORY_REGEX, content, re.I | re.S)]
+            else:
+                reqResList = [content]
         else:
             reqResList = re.finditer(BURP_REQUEST_REGEX, content, re.I | re.S)
 
@@ -241,10 +251,10 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
             else:
                 scheme, port = None, None
 
-            if not re.search(r"^[\n]*(GET|POST).*?\sHTTP\/", request, re.I | re.M):
+            if not re.search(r"^[\n]*(%s).*?\sHTTP\/" % "|".join(getPublicTypeMembers(HTTPMETHOD, True)), request, re.I | re.M):
                 continue
 
-            if re.search(r"^[\n]*(GET|POST).*?\.(%s)\sHTTP\/" % "|".join(CRAWL_EXCLUDE_EXTENSIONS), request, re.I | re.M):
+            if re.search(r"^[\n]*%s.*?\.(%s)\sHTTP\/" % (HTTPMETHOD.GET, "|".join(CRAWL_EXCLUDE_EXTENSIONS)), request, re.I | re.M):
                 continue
 
             getPostReq = False
@@ -257,24 +267,25 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
             newline = None
             lines = request.split('\n')
 
-            for line in lines:
+            for index in xrange(len(lines)):
+                line = lines[index]
+
+                if not line.strip() and index == len(lines) - 1:
+                    break
+
                 newline = "\r\n" if line.endswith('\r') else '\n'
                 line = line.strip('\r')
-                if len(line) == 0:
-                    if method == HTTPMETHOD.POST and data is None:
-                        data = ""
-                        params = True
+                match = re.search(r"\A(%s) (.+) HTTP/[\d.]+\Z" % "|".join(getPublicTypeMembers(HTTPMETHOD, True)), line) if not method else None
 
-                elif (line.startswith("GET ") or line.startswith("POST ")) and " HTTP/" in line:
-                    if line.startswith("GET "):
-                        index = 4
-                    else:
-                        index = 5
+                if len(line) == 0 and method in (HTTPMETHOD.POST, HTTPMETHOD.PUT) and data is None:
+                    data = ""
+                    params = True
 
-                    url = line[index:line.index(" HTTP/")]
-                    method = line[:index - 1]
+                elif match:
+                    method = match.group(1)
+                    url = match.group(2)
 
-                    if "?" in line and "=" in line:
+                    if any(_ in line for _ in ('?', '=', CUSTOM_INJECTION_MARK_CHAR)):
                         params = True
 
                     getPostReq = True
@@ -430,7 +441,8 @@ def _setMultipleTargets():
 
     if updatedTargetsCount > initialTargetsCount:
         infoMsg = "sqlmap parsed %d " % (updatedTargetsCount - initialTargetsCount)
-        infoMsg += "testable requests from the targets list"
+        infoMsg += "(parameter unique) requests from the "
+        infoMsg += "targets list ready to be tested"
         logger.info(infoMsg)
 
 def _adjustLoggingFormatter():
@@ -479,7 +491,21 @@ def _setCrawler():
     if not conf.crawlDepth:
         return
 
-    crawl(conf.url)
+    if not conf.bulkFile:
+        crawl(conf.url)
+    else:
+        targets = getFileItems(conf.bulkFile)
+        for i in xrange(len(targets)):
+            try:
+                target = targets[i]
+                crawl(target)
+
+                if conf.verbose in (1, 2):
+                    status = '%d/%d links visited (%d%%)' % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
+                    dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
+            except Exception, ex:
+                errMsg = "problem occurred while crawling at '%s' ('%s')" % (target, ex)
+                logger.error(errMsg)
 
 def _setGoogleDorking():
     """
@@ -580,7 +606,7 @@ def _setBulkMultipleTargets():
         raise SqlmapFilePathException(errMsg)
 
     for line in getFileItems(conf.bulkFile):
-        if re.search(r"[^ ]+\?(.+)", line, re.I):
+        if re.match(r"[^ ]+\?(.+)", line, re.I) or CUSTOM_INJECTION_MARK_CHAR in line:
             kb.targets.add((line.strip(), None, None, None))
 
 def _findPageForms():
@@ -608,7 +634,7 @@ def _findPageForms():
                     status = '%d/%d links visited (%d%%)' % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
                     dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
             except Exception, ex:
-                errMsg = "problem occured while searching for forms at '%s' ('%s')" % (target, ex)
+                errMsg = "problem occurred while searching for forms at '%s' ('%s')" % (target, ex)
                 logger.error(errMsg)
 
 def _setDBMSAuthentication():
@@ -802,7 +828,7 @@ def _setDBMS():
 
     if conf.dbms not in SUPPORTED_DBMS:
         errMsg = "you provided an unsupported back-end database management "
-        errMsg += "system. The supported DBMS are %s. " % ', '.join([d for d in DBMS_DICT])
+        errMsg += "system. The supported DBMS are %s. " % ', '.join([_ for _ in DBMS_DICT])
         errMsg += "If you do not know the back-end DBMS, do not provide "
         errMsg += "it and sqlmap will fingerprint it for you."
         raise SqlmapUnsupportedDBMSException(errMsg)
@@ -895,7 +921,7 @@ def _setTamperingFunctions():
                     function()
 
             if not found:
-                errMsg = "missing function 'tamper(payload, headers)' "
+                errMsg = "missing function 'tamper(payload, **kwargs)' "
                 errMsg += "in tamper script '%s'" % tfile
                 raise SqlmapGenericException(errMsg)
 
@@ -963,22 +989,28 @@ def _setHTTPProxy():
     """
     Check and set the HTTP/SOCKS proxy for all HTTP requests.
     """
-
     global proxyHandler
 
     if not conf.proxy:
-        if conf.hostname in ('localhost', '127.0.0.1') or conf.ignoreProxy:
-            proxyHandler = urllib2.ProxyHandler({})
+        if conf.proxyList:
+            conf.proxy = conf.proxyList[0]
+            conf.proxyList = conf.proxyList[1:] + conf.proxyList[:1]
 
-        return
+            infoMsg = "loading proxy '%s' from a supplied proxy list file" % conf.proxy
+            logger.info(infoMsg)
+        else:
+            if conf.hostname in ('localhost', '127.0.0.1') or conf.ignoreProxy:
+                proxyHandler.proxies = {}
+
+            return
 
     debugMsg = "setting the HTTP/SOCKS proxy for all HTTP requests"
     logger.debug(debugMsg)
 
-    proxySplit = urlparse.urlsplit(conf.proxy)
-    hostnamePort = proxySplit.netloc.split(":")
+    _ = urlparse.urlsplit(conf.proxy)
+    hostnamePort = _.netloc.split(":")
 
-    scheme = proxySplit.scheme.upper()
+    scheme = _.scheme.upper()
     hostname = hostnamePort[0]
     port = None
     username = None
@@ -994,8 +1026,8 @@ def _setHTTPProxy():
         errMsg = "proxy value must be in format '(%s)://url:port'" % "|".join(_[0].lower() for _ in getPublicTypeMembers(PROXY_TYPE))
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.pCred:
-        _ = re.search("^(.*?):(.*?)$", conf.pCred)
+    if conf.proxyCred:
+        _ = re.search("^(.*?):(.*?)$", conf.proxyCred)
         if not _:
             errMsg = "Proxy authentication credentials "
             errMsg += "value must be in format username:password"
@@ -1005,17 +1037,23 @@ def _setHTTPProxy():
             password = _.group(2)
 
     if scheme in (PROXY_TYPE.SOCKS4, PROXY_TYPE.SOCKS5):
+        proxyHandler.proxies = {}
+
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if scheme == PROXY_TYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, hostname, port, username=username, password=password)
         socks.wrapmodule(urllib2)
     else:
-        if conf.pCred:
+        socks.unwrapmodule(urllib2)
+
+        if conf.proxyCred:
             # Reference: http://stackoverflow.com/questions/34079/how-to-specify-an-authenticated-proxy-for-a-python-http-connection
-            proxyString = "%s@" % conf.pCred
+            proxyString = "%s@" % conf.proxyCred
         else:
             proxyString = ""
 
         proxyString += "%s:%d" % (hostname, port)
-        proxyHandler = urllib2.ProxyHandler({"http": proxyString, "https": proxyString})
+        proxyHandler.proxies = {"http": proxyString, "https": proxyString}
+
+    proxyHandler.__init__(proxyHandler.proxies)
 
 def _setSafeUrl():
     """
@@ -1031,7 +1069,7 @@ def _setSafeUrl():
             conf.safUrl = "http://" + conf.safUrl
 
     if conf.saFreq <= 0:
-        errMsg = "please provide a valid value (>0) for safe frequency (--safe-freq) while using safe url feature"
+        errMsg = "please provide a valid value (>0) for safe frequency (--safe-freq) while using safe URL feature"
         raise SqlmapSyntaxException(errMsg)
 
 def _setPrefixSuffix():
@@ -1073,46 +1111,51 @@ def _setAuthCred():
 
 def _setHTTPAuthentication():
     """
-    Check and set the HTTP(s) authentication method (Basic, Digest, NTLM or Certificate),
-    username and password for first three methods, or key file and certification file for
-    certificate authentication
+    Check and set the HTTP(s) authentication method (Basic, Digest, NTLM or PKI),
+    username and password for first three methods, or PEM private key file for
+    PKI authentication
     """
 
     global authHandler
 
-    if not conf.aType and not conf.aCred and not conf.aCert:
+    if not conf.authType and not conf.authCred and not conf.authPrivate:
         return
 
-    elif conf.aType and not conf.aCred:
+    elif conf.authType and not conf.authCred and not conf.authPrivate:
         errMsg = "you specified the HTTP authentication type, but "
         errMsg += "did not provide the credentials"
         raise SqlmapSyntaxException(errMsg)
 
-    elif not conf.aType and conf.aCred:
+    elif not conf.authType and conf.authCred:
         errMsg = "you specified the HTTP authentication credentials, "
         errMsg += "but did not provide the type"
         raise SqlmapSyntaxException(errMsg)
 
-    if not conf.aCert:
+    elif conf.authType.lower() not in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST, AUTH_TYPE.NTLM, AUTH_TYPE.PKI):
+        errMsg = "HTTP authentication type value must be "
+        errMsg += "Basic, Digest, NTLM or PKI"
+        raise SqlmapSyntaxException(errMsg)
+
+    if not conf.authPrivate:
         debugMsg = "setting the HTTP authentication type and credentials"
         logger.debug(debugMsg)
 
-        aTypeLower = conf.aType.lower()
+        aTypeLower = conf.authType.lower()
 
-        if aTypeLower not in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST, AUTH_TYPE.NTLM):
-            errMsg = "HTTP authentication type value must be "
-            errMsg += "Basic, Digest or NTLM"
-            raise SqlmapSyntaxException(errMsg)
-        elif aTypeLower in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST):
+        if aTypeLower in (AUTH_TYPE.BASIC, AUTH_TYPE.DIGEST):
             regExp = "^(.*?):(.*?)$"
             errMsg = "HTTP %s authentication credentials " % aTypeLower
-            errMsg += "value must be in format username:password"
+            errMsg += "value must be in format 'username:password'"
         elif aTypeLower == AUTH_TYPE.NTLM:
             regExp = "^(.*\\\\.*):(.*?)$"
             errMsg = "HTTP NTLM authentication credentials value must "
-            errMsg += "be in format DOMAIN\username:password"
+            errMsg += "be in format 'DOMAIN\username:password'"
+        elif aTypeLower == AUTH_TYPE.PKI:
+            errMsg = "HTTP PKI authentication require "
+            errMsg += "usage of option `--auth-pki`"
+            raise SqlmapSyntaxException(errMsg)
 
-        aCredRegExp = re.search(regExp, conf.aCred)
+        aCredRegExp = re.search(regExp, conf.authCred)
 
         if not aCredRegExp:
             raise SqlmapSyntaxException(errMsg)
@@ -1141,26 +1184,12 @@ def _setHTTPAuthentication():
 
             authHandler = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(kb.passwordMgr)
     else:
-        debugMsg = "setting the HTTP(s) authentication certificate"
+        debugMsg = "setting the HTTP(s) authentication PEM private key"
         logger.debug(debugMsg)
 
-        aCertRegExp = re.search("^(.+?),\s*(.+?)$", conf.aCert)
-
-        if not aCertRegExp:
-            errMsg = "HTTP authentication certificate option "
-            errMsg += "must be in format key_file,cert_file"
-            raise SqlmapSyntaxException(errMsg)
-
-        # os.path.expanduser for support of paths with ~
-        key_file = os.path.expanduser(aCertRegExp.group(1))
-        cert_file = os.path.expanduser(aCertRegExp.group(2))
-
-        for ifile in (key_file, cert_file):
-            if not os.path.exists(ifile):
-                errMsg = "File '%s' does not exist" % ifile
-                raise SqlmapSyntaxException(errMsg)
-
-        authHandler = HTTPSCertAuthHandler(key_file, cert_file)
+        key_file = os.path.expanduser(conf.authPrivate)
+        checkFile(key_file)
+        authHandler = HTTPSPKIAuthHandler(key_file)
 
 def _setHTTPMethod():
     """
@@ -1180,8 +1209,8 @@ def _setHTTPExtraHeaders():
         conf.headers = conf.headers.split("\n") if "\n" in conf.headers else conf.headers.split("\\n")
 
         for headerValue in conf.headers:
-            if headerValue.count(':') == 1:
-                header, value = (_.lstrip() for _ in headerValue.split(":"))
+            if headerValue.count(':') >= 1:
+                header, value = (_.lstrip() for _ in headerValue.split(":", 1))
 
                 if header and value:
                     conf.httpHeaders.append((header, value))
@@ -1359,6 +1388,10 @@ def _cleanupOptions():
     else:
         conf.progressWidth = width - 46
 
+    for key, value in conf.items():
+        if value and any(key.endswith(_) for _ in ("Path", "File")):
+            conf[key] = os.path.expanduser(value)
+
     if conf.testParameter:
         conf.testParameter = urldecode(conf.testParameter)
         conf.testParameter = conf.testParameter.replace(" ", "")
@@ -1374,6 +1407,9 @@ def _cleanupOptions():
         conf.rParam = re.split(PARAMETER_SPLITTING_REGEX, conf.rParam)
     else:
         conf.rParam = []
+
+    if conf.pDel and '\\' in conf.pDel:
+        conf.pDel = conf.pDel.decode("string_escape")
 
     if conf.skip:
         conf.skip = conf.skip.replace(" ", "")
@@ -1442,7 +1478,7 @@ def _cleanupOptions():
     if conf.csvDel:
         conf.csvDel = conf.csvDel.decode("string_escape")  # e.g. '\\t' -> '\t'
 
-    if conf.torPort and conf.torPort.isdigit():
+    if conf.torPort and isinstance(conf.torPort, basestring) and conf.torPort.isdigit():
         conf.torPort = int(conf.torPort)
 
     if conf.torType:
@@ -1512,6 +1548,7 @@ def _setConfAttributes():
     conf.parameters = {}
     conf.path = None
     conf.port = None
+    conf.proxyList = []
     conf.resultsFilename = None
     conf.resultsFP = None
     conf.scheme = None
@@ -1546,9 +1583,9 @@ def _setKnowledgeBaseAttributes(flushAll=True):
 
     kb.chars = AttribDict()
     kb.chars.delimiter = randomStr(length=6, lowercase=True)
-    kb.chars.start = ":%s:" % randomStr(length=3, lowercase=True)
-    kb.chars.stop = ":%s:" % randomStr(length=3, lowercase=True)
-    kb.chars.at, kb.chars.space, kb.chars.dollar, kb.chars.hash_ = (":%s:" % _ for _ in randomStr(length=4, lowercase=True))
+    kb.chars.start = "%s%s%s" % (KB_CHARS_BOUNDARY_CHAR, randomStr(length=3, lowercase=True), KB_CHARS_BOUNDARY_CHAR)
+    kb.chars.stop = "%s%s%s" % (KB_CHARS_BOUNDARY_CHAR, randomStr(length=3, lowercase=True), KB_CHARS_BOUNDARY_CHAR)
+    kb.chars.at, kb.chars.space, kb.chars.dollar, kb.chars.hash_ = ("%s%s%s" % (KB_CHARS_BOUNDARY_CHAR, _, KB_CHARS_BOUNDARY_CHAR) for _ in randomStr(length=4, lowercase=True))
 
     kb.commonOutputs = None
     kb.counters = {}
@@ -1573,8 +1610,10 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.errorIsNone = True
     kb.fileReadMode = False
     kb.forcedDbms = None
+    kb.forcePartialUnion = False
     kb.headersFp = {}
     kb.heuristicDbms = None
+    kb.heuristicMode = False
     kb.heuristicTest = None
     kb.hintValue = None
     kb.htmlFp = []
@@ -1585,6 +1624,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.ignoreTimeout = False
     kb.injection = InjectionDict()
     kb.injections = []
+    kb.laggingChecked = False
     kb.lastParserStatus = None
 
     kb.locks = AttribDict()
@@ -1633,9 +1673,11 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.resumeValues = True
     kb.safeCharEncode = False
     kb.singleLogFlags = set()
+    kb.skipVulnHost = None
     kb.reduceTests = None
     kb.stickyDBMS = False
     kb.stickyLevel = None
+    kb.storeHashesChoice = None
     kb.suppressResumeInfo = False
     kb.technique = None
     kb.testMode = False
@@ -1712,11 +1754,11 @@ def _useWizardInterface():
 
         while choice is None or choice not in ("", "1", "2", "3"):
             message = "Enumeration (--banner/--current-user/etc). Please choose:\n"
-            message += "[1] Basic (default)\n[2] Smart\n[3] All"
+            message += "[1] Basic (default)\n[2] Intermediate\n[3] All"
             choice = readInput(message, default='1')
 
             if choice == '2':
-                map(lambda x: conf.__setitem__(x, True), WIZARD.SMART)
+                map(lambda x: conf.__setitem__(x, True), WIZARD.INTERMEDIATE)
             elif choice == '3':
                 map(lambda x: conf.__setitem__(x, True), WIZARD.ALL)
             else:
@@ -1843,6 +1885,8 @@ def _mergeOptions(inputOptions, overrideOptions):
         if hasattr(conf, key) and conf[key] is None:
             conf[key] = value
 
+    mergedOptions.update(conf)
+
 def _setTrafficOutputFP():
     if conf.trafficFile:
         infoMsg = "setting file for logging HTTP traffic"
@@ -1873,6 +1917,12 @@ def _setDNSServer():
         errMsg += "as it will need to listen on privileged UDP port 53 "
         errMsg += "for incoming address resolution attempts"
         raise SqlmapMissingPrivileges(errMsg)
+
+def _setProxyList():
+    if not conf.proxyFile:
+        return
+
+    conf.proxyList = getFileItems(conf.proxyFile)
 
 def _setTorProxySettings():
     if not conf.tor:
@@ -1981,6 +2031,10 @@ def _basicOptionValidation():
         errMsg = "switch '--text-only' is incompatible with switch '--null-connection'"
         raise SqlmapSyntaxException(errMsg)
 
+    if conf.direct and conf.url:
+        errMsg = "option '-d' is incompatible with option '-u' ('--url')"
+        raise SqlmapSyntaxException(errMsg)
+
     if conf.titles and conf.nullConnection:
         errMsg = "switch '--titles' is incompatible with switch '--null-connection'"
         raise SqlmapSyntaxException(errMsg)
@@ -2022,11 +2076,23 @@ def _basicOptionValidation():
         raise SqlmapSyntaxException(errMsg)
 
     if conf.forms and not any((conf.url, conf.bulkFile)):
-        errMsg = "switch '--forms' requires usage of option '-u' (--url) or '-m'"
+        errMsg = "switch '--forms' requires usage of option '-u' ('--url') or '-m'"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.requestFile and conf.url:
-        errMsg = "option '-r' is incompatible with option '-u' (--url)"
+    if conf.requestFile and conf.url and conf.url != DUMMY_URL:
+        errMsg = "option '-r' is incompatible with option '-u' ('--url')"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.direct and conf.proxy:
+        errMsg = "option '-d' is incompatible with option '--proxy'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.direct and conf.tor:
+        errMsg = "option '-d' is incompatible with switch '--tor'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if not conf.tech:
+        errMsg = "option '--technique' can't be empty"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.tor and conf.ignoreProxy:
@@ -2066,7 +2132,7 @@ def _basicOptionValidation():
         raise SqlmapSyntaxException(errMsg)
 
     if conf.forms and any([conf.logFile, conf.direct, conf.requestFile, conf.googleDork]):
-        errMsg = "switch '--forms' is compatible only with options '-u' (--url) and '-m'"
+        errMsg = "switch '--forms' is compatible only with options '-u' ('--url') and '-m'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.timeSec < 1:
@@ -2082,6 +2148,11 @@ def _basicOptionValidation():
             errMsg = "value for option '--union-cols' must be a range with hyphon "
             errMsg += "(e.g. 1-10) or integer value (e.g. 5)"
             raise SqlmapSyntaxException(errMsg)
+
+    if conf.dbmsCred and ':' not in conf.dbmsCred:
+        errMsg = "value for option '--dbms-cred' must be in "
+        errMsg += "format <username>:<password> (e.g. \"root:pass\")"
+        raise SqlmapSyntaxException(errMsg)
 
     if conf.charset:
         _ = checkCharEncoding(conf.charset, False)
@@ -2102,6 +2173,8 @@ def _resolveCrossReferences():
     lib.core.threads.readInput = readInput
     lib.core.common.getPageTemplate = getPageTemplate
     lib.core.convert.singleTimeWarnMessage = singleTimeWarnMessage
+    lib.request.connect.setHTTPProxy = _setHTTPProxy
+    lib.controller.checks.setVerbosity = setVerbosity
 
 def initOptions(inputOptions=AttribDict(), overrideOptions=False):
     if not inputOptions.disableColoring:
@@ -2125,6 +2198,7 @@ def init():
     _purgeOutput()
     _checkDependencies()
     _basicOptionValidation()
+    _setProxyList()
     _setTorProxySettings()
     _setDNSServer()
     _adjustLoggingFormatter()

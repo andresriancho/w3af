@@ -26,7 +26,6 @@ from lib.core.data import logger
 from lib.core.enums import HTTP_HEADER
 from lib.core.enums import PLACE
 from lib.core.exception import SqlmapCompressionException
-from lib.core.htmlentities import htmlEntities
 from lib.core.settings import DEFAULT_COOKIE_DELIMITER
 from lib.core.settings import EVENTVALIDATION_REGEX
 from lib.core.settings import MAX_CONNECTION_TOTAL_SIZE
@@ -36,6 +35,7 @@ from lib.core.settings import PARSE_HEADERS_LIMIT
 from lib.core.settings import VIEWSTATE_REGEX
 from lib.parse.headers import headersParser
 from lib.parse.html import htmlParser
+from lib.utils.htmlentities import htmlEntities
 from thirdparty.chardet import detect
 
 def forgeHeaders(items=None):
@@ -58,17 +58,22 @@ def forgeHeaders(items=None):
     if conf.cj:
         if HTTP_HEADER.COOKIE in headers:
             for cookie in conf.cj:
+                if cookie.domain_specified and not conf.hostname.endswith(cookie.domain):
+                    continue
+
                 if ("%s=" % cookie.name) in headers[HTTP_HEADER.COOKIE]:
-                    if kb.mergeCookies is None:
+                    if conf.loadCookies:
+                        conf.httpHeaders = filter(None, ((item if item[0] != HTTP_HEADER.COOKIE else None) for item in conf.httpHeaders))
+                    elif kb.mergeCookies is None:
                         message = "you provided a HTTP %s header value. " % HTTP_HEADER.COOKIE
-                        message += "The target url provided its own cookies within "
+                        message += "The target URL provided its own cookies within "
                         message += "the HTTP %s header which intersect with yours. " % HTTP_HEADER.SET_COOKIE
                         message += "Do you want to merge them in futher requests? [Y/n] "
                         _ = readInput(message, default="Y")
                         kb.mergeCookies = not _ or _[0] in ("y", "Y")
 
                     if kb.mergeCookies:
-                        _ = lambda x: re.sub("(?i)%s=[^%s]+" % (cookie.name, DEFAULT_COOKIE_DELIMITER), "%s=%s" % (cookie.name, cookie.value), x)
+                        _ = lambda x: re.sub("(?i)%s=[^%s]+" % (cookie.name, conf.cDel or DEFAULT_COOKIE_DELIMITER), "%s=%s" % (cookie.name, cookie.value), x)
                         headers[HTTP_HEADER.COOKIE] = _(headers[HTTP_HEADER.COOKIE])
 
                         if PLACE.COOKIE in conf.parameters:
@@ -77,7 +82,7 @@ def forgeHeaders(items=None):
                         conf.httpHeaders = [(item[0], item[1] if item[0] != HTTP_HEADER.COOKIE else _(item[1])) for item in conf.httpHeaders]
 
                 elif not kb.testMode:
-                    headers[HTTP_HEADER.COOKIE] += "%s %s=%s" % (DEFAULT_COOKIE_DELIMITER, cookie.name, cookie.value)
+                    headers[HTTP_HEADER.COOKIE] += "%s %s=%s" % (conf.cDel or DEFAULT_COOKIE_DELIMITER, cookie.name, cookie.value)
 
         if kb.testMode:
             resetCookieJar(conf.cj)
@@ -132,8 +137,10 @@ def checkCharEncoding(encoding, warn=True):
         encoding = encoding.replace("5589", "8859")  # iso-5589 -> iso-8859
     elif "2313" in encoding:
         encoding = encoding.replace("2313", "2312")  # gb2313 -> gb2312
-    elif "x-euc" in encoding:
-        encoding = encoding.replace("x-euc", "euc")  # x-euc-kr -> euc-kr
+    elif encoding.startswith("x-"):
+        encoding = encoding[len("x-"):]              # x-euc-kr -> euc-kr  /  x-mac-turkish -> mac-turkish
+    elif "windows-cp" in encoding:
+        encoding = encoding.replace("windows-cp", "windows")  # windows-cp-1254 -> windows-1254
 
     # name adjustment for compatibility
     if encoding.startswith("8859"):
@@ -179,8 +186,9 @@ def getHeuristicCharEncoding(page):
     """
     retVal = detect(page)["encoding"]
 
-    infoMsg = "heuristics detected web page charset '%s'" % retVal
-    singleTimeLogMessage(infoMsg, logging.INFO, retVal)
+    if retVal:
+        infoMsg = "heuristics detected web page charset '%s'" % retVal
+        singleTimeLogMessage(infoMsg, logging.INFO, retVal)
 
     return retVal
 
@@ -277,7 +285,7 @@ def processResponse(page, responseHeaders):
         msg = extractErrorMessage(page)
 
         if msg:
-            logger.info("parsed error message: '%s'" % msg)
+            logger.warning("parsed DBMS error message: '%s'" % msg)
 
     if kb.originalPage is None:
         for regex in (EVENTVALIDATION_REGEX, VIEWSTATE_REGEX):

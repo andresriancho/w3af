@@ -49,6 +49,7 @@ class _ThreadData(threading.local):
         self.lastQueryDuration = 0
         self.lastRequestMsg = None
         self.lastRequestUID = 0
+        self.lastRedirectURL = None
         self.resumed = False
         self.retriesCount = 0
         self.seqMatcher = difflib.SequenceMatcher(None)
@@ -139,7 +140,7 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
             try:
                 thread.start()
             except threadError, errMsg:
-                errMsg = "error occured while starting new thread ('%s')" % errMsg
+                errMsg = "error occurred while starting new thread ('%s')" % errMsg
                 logger.critical(errMsg)
                 break
 

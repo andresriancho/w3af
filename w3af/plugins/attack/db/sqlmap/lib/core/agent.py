@@ -42,6 +42,8 @@ class Agent(object):
     """
 
     def payloadDirect(self, query):
+        query = self.cleanupPayload(query)
+
         if query.startswith("AND "):
             query = query.replace("AND ", "SELECT ", 1)
         elif query.startswith(" UNION ALL "):
@@ -99,7 +101,8 @@ class Agent(object):
             elif kb.postHint == POST_HINT.JSON:
                 origValue = extractRegexResult(r"(?s)\"\s*:\s*(?P<result>\d+\Z)", origValue) or extractRegexResult(r'(?s)(?P<result>[^"]+\Z)', origValue)
             else:
-                origValue = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"]+\Z)", origValue)
+                _ = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"]+\Z)", origValue) or ""
+                origValue = _.split('=', 1)[1] if '=' in _ else ""
         elif place == PLACE.CUSTOM_HEADER:
             paramString = origValue
             origValue = origValue.split(CUSTOM_INJECTION_MARK_CHAR)[0]
@@ -140,8 +143,7 @@ class Agent(object):
         elif place in (PLACE.USER_AGENT, PLACE.REFERER, PLACE.HOST):
             retVal = paramString.replace(origValue, self.addPayloadDelimiters(newValue))
         else:
-            retVal = paramString.replace("%s=%s" % (parameter, origValue),
-                                         "%s=%s" % (parameter, self.addPayloadDelimiters(newValue)))
+            retVal = re.sub(r"(\A|\b)%s=%s" % (re.escape(parameter), re.escape(origValue)), "%s=%s" % (parameter, self.addPayloadDelimiters(newValue.replace("\\", "\\\\"))), paramString)
 
         return retVal
 
@@ -216,7 +218,7 @@ class Agent(object):
             comment = kb.injection.data[kb.technique].comment if comment is None else comment
 
         if Backend.getIdentifiedDbms() == DBMS.ACCESS and comment == GENERIC_SQL_COMMENT:
-            comment = "%00"
+            comment = queries[DBMS.ACCESS].comment.query
 
         if comment is not None:
             expression += comment
@@ -249,7 +251,7 @@ class Agent(object):
             payload = payload.replace(_, randomStr())
 
         if origValue is not None:
-            payload = payload.replace("[ORIGVALUE]", origValue if origValue.isdigit() else "'%s'" % origValue)
+            payload = payload.replace("[ORIGVALUE]", origValue if origValue.isdigit() else unescaper.escape("'%s'" % origValue))
 
         if "[INFERENCE]" in payload:
             if Backend.getIdentifiedDbms() is not None:
@@ -476,7 +478,7 @@ class Agent(object):
         """
 
         retVal = field
-        if conf.db in table:
+        if conf.db and table and conf.db in table:
             table = table.split(conf.db)[-1].strip('.')
         try:
             columns = kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)][safeSQLIdentificatorNaming(table, True)]
@@ -523,7 +525,7 @@ class Agent(object):
         else:
             return query
 
-        if Backend.isDbms(DBMS.MYSQL):
+        if Backend.getIdentifiedDbms() in (DBMS.MYSQL,):
             if fieldsExists:
                 concatenatedQuery = concatenatedQuery.replace("SELECT ", "CONCAT('%s'," % kb.chars.start, 1)
                 concatenatedQuery += ",'%s')" % kb.chars.stop
@@ -539,7 +541,7 @@ class Agent(object):
             elif fieldsNoSelect:
                 concatenatedQuery = "CONCAT('%s',%s,'%s')" % (kb.chars.start, concatenatedQuery, kb.chars.stop)
 
-        elif Backend.getIdentifiedDbms() in (DBMS.PGSQL, DBMS.ORACLE, DBMS.SQLITE, DBMS.DB2, DBMS.FIREBIRD):
+        elif Backend.getIdentifiedDbms() in (DBMS.PGSQL, DBMS.ORACLE, DBMS.SQLITE, DBMS.DB2, DBMS.FIREBIRD, DBMS.HSQLDB):
             if fieldsExists:
                 concatenatedQuery = concatenatedQuery.replace("SELECT ", "'%s'||" % kb.chars.start, 1)
                 concatenatedQuery += "||'%s'" % kb.chars.stop
@@ -960,14 +962,16 @@ class Agent(object):
         Extracts payload from inside of the input string
         """
 
-        return extractRegexResult("(?s)%s(?P<result>.*?)%s" % (PAYLOAD_DELIMITER, PAYLOAD_DELIMITER), inpStr)
+        _ = re.escape(PAYLOAD_DELIMITER)
+        return extractRegexResult("(?s)%s(?P<result>.*?)%s" % (_, _), inpStr)
 
     def replacePayload(self, inpStr, payload):
         """
         Replaces payload inside the input string with a given payload
         """
 
-        return re.sub("(%s.*?%s)" % (PAYLOAD_DELIMITER, PAYLOAD_DELIMITER), ("%s%s%s" % (PAYLOAD_DELIMITER, payload, PAYLOAD_DELIMITER)).replace("\\", r"\\"), inpStr) if inpStr else inpStr
+        _ = re.escape(PAYLOAD_DELIMITER)
+        return re.sub("(%s.*?%s)" % (_, _), ("%s%s%s" % (PAYLOAD_DELIMITER, payload, PAYLOAD_DELIMITER)).replace("\\", r"\\"), inpStr) if inpStr else inpStr
 
     def runAsDBMSUser(self, query):
         if conf.dbmsCred and "Ad Hoc Distributed Queries" not in query:

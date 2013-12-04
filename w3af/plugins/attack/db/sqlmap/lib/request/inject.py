@@ -99,7 +99,7 @@ def _goInference(payload, expression, charsetType=None, firstChar=None, lastChar
         kb.inferenceMode = False
 
         if not kb.bruteMode:
-            debugMsg = "performed %d queries in %d seconds" % (count, calculateDeltaSeconds(start))
+            debugMsg = "performed %d queries in %.2f seconds" % (count, calculateDeltaSeconds(start))
             logger.debug(debugMsg)
 
     return value
@@ -116,7 +116,7 @@ def _goInferenceFields(expression, expressionFields, expressionFieldsList, paylo
 
         if isinstance(num, int):
             origExpr = expression
-            expression = agent.limitQuery(num, expression, field)
+            expression = agent.limitQuery(num, expression, field, expressionFieldsList[0])
 
         if "ROWNUM" in expressionFieldsList:
             expressionReplaced = expression
@@ -198,7 +198,7 @@ def _goInferenceProxy(expression, fromUser=False, batch=False, unpack=True, char
                     if isNumPosStrValue(count):
                         count = int(count)
 
-                        if batch:
+                        if batch or count == 1:
                             stopLimit = count
                         else:
                             message = "the SQL query provided can return "
@@ -360,6 +360,18 @@ def getValue(expression, blind=True, union=True, error=True, time=True, fromUser
                     value = _goUnion(forgeCaseExpression if expected == EXPECTED.BOOL else query, unpack, dump)
                     count += 1
                     found = (value is not None) or (value is None and expectingNone) or count >= MAX_TECHNIQUES_PER_VALUE
+
+                    if not found and not expected and kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.ORIGINAL:
+                        warnMsg = "something went wrong with full UNION "
+                        warnMsg += "technique (most probably because of "
+                        warnMsg += "limitation on retrieved number of entries). "
+                        warnMsg += "Falling back to partial UNION technique"
+                        singleTimeWarnMessage(warnMsg)
+
+                        kb.forcePartialUnion = True
+                        value = _goUnion(query, unpack, dump)
+                        found = (value is not None) or (value is None and expectingNone)
+                        kb.forcePartialUnion = False
 
                 if error and any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) and not found:
                     kb.technique = PAYLOAD.TECHNIQUE.ERROR if isTechniqueAvailable(PAYLOAD.TECHNIQUE.ERROR) else PAYLOAD.TECHNIQUE.QUERY

@@ -44,7 +44,7 @@ class Xp_cmdshell:
     def _xpCmdshellCreate(self):
         cmd = ""
 
-        if Backend.isVersionWithin(("2005", "2008")):
+        if Backend.isVersionWithin(("2005", "2008", "2012")):
             logger.debug("activating sp_OACreate")
 
             cmd = getSQLSnippet(DBMS.MSSQL, "activate_sp_oacreate")
@@ -106,7 +106,7 @@ class Xp_cmdshell:
 
         if output == "1":
             logger.info("xp_cmdshell extended procedure is usable")
-        elif isNoneValue(output):
+        elif isNoneValue(output) and conf.dbmsCred:
             errMsg = "it seems that the temporary directory ('%s') used for " % self.getRemoteTempPath()
             errMsg += "storing console output within the back-end file system "
             errMsg += "does not have writing permissions for the DBMS process. "
@@ -114,6 +114,8 @@ class Xp_cmdshell:
             errMsg += "--tmp-path switch or you will not be able to retrieve "
             errMsg += "the commands output"
             logger.error(errMsg)
+        elif isNoneValue(output):
+            logger.error("unable to retrieve xp_cmdshell output")
         else:
             logger.info("xp_cmdshell extended procedure is usable")
 
@@ -181,6 +183,8 @@ class Xp_cmdshell:
         return inject.goStacked(self.xpCmdshellForgeCmd(cmd), silent)
 
     def xpCmdshellEvalCmd(self, cmd, first=None, last=None):
+        output = None
+
         if conf.direct:
             output = self.xpCmdshellExecCmd(cmd)
 
@@ -209,7 +213,8 @@ class Xp_cmdshell:
 
             if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
                 output = inject.getValue(query, resumeValue=False, blind=False, time=False)
-            else:
+
+            if (output is None) or len(output)==0 or output[0] is None:
                 output = []
                 count = inject.getValue("SELECT COUNT(id) FROM %s" % self.cmdTblName, resumeValue=False, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 

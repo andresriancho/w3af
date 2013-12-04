@@ -34,13 +34,13 @@ from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import DBMS
 from lib.core.enums import PAYLOAD
 from lib.core.exception import SqlmapThreadException
-from lib.core.progress import ProgressBar
 from lib.core.settings import CHAR_INFERENCE_MARK
 from lib.core.settings import INFERENCE_BLANK_BREAK
 from lib.core.settings import INFERENCE_UNKNOWN_CHAR
 from lib.core.settings import INFERENCE_GREATER_CHAR
 from lib.core.settings import INFERENCE_EQUALS_CHAR
 from lib.core.settings import INFERENCE_NOT_EQUALS_CHAR
+from lib.core.settings import MAX_BISECTION_LENGTH
 from lib.core.settings import MAX_TIME_REVALIDATION_STEPS
 from lib.core.settings import PARTIAL_HEX_VALUE_MARKER
 from lib.core.settings import PARTIAL_VALUE_MARKER
@@ -49,6 +49,7 @@ from lib.core.threads import getCurrentThreadData
 from lib.core.threads import runThreads
 from lib.core.unescaper import unescaper
 from lib.request.connect import Connect as Request
+from lib.utils.progress import ProgressBar
 from lib.utils.xrange import xrange
 
 def bisection(payload, expression, length=None, charsetType=None, firstChar=None, lastChar=None, dump=False):
@@ -102,19 +103,19 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
             firstChar = 0
         elif dump and conf.firstChar is not None and (isinstance(conf.firstChar, int) or (isinstance(conf.firstChar, basestring) and conf.firstChar.isdigit())):
             firstChar = int(conf.firstChar) - 1
-        elif firstChar is None:
-            firstChar = 0
-        elif (isinstance(firstChar, basestring) and firstChar.isdigit()) or isinstance(firstChar, int):
+        elif isinstance(firstChar, basestring) and firstChar.isdigit() or isinstance(firstChar, int):
             firstChar = int(firstChar) - 1
+        else:
+            firstChar = 0
 
         if "LENGTH(" in expression.upper() or "LEN(" in expression.upper():
             lastChar = 0
         elif dump and conf.lastChar is not None and (isinstance(conf.lastChar, int) or (isinstance(conf.lastChar, basestring) and conf.lastChar.isdigit())):
             lastChar = int(conf.lastChar)
-        elif lastChar in (None, "0"):
-            lastChar = 0
-        elif (isinstance(lastChar, basestring) and lastChar.isdigit()) or isinstance(lastChar, int):
+        elif isinstance(lastChar, basestring) and lastChar.isdigit() or isinstance(lastChar, int):
             lastChar = int(lastChar)
+        else:
+            lastChar = 0
 
         if Backend.getDbms():
             _, _, _, _, _, _, fieldToCastStr, _ = agent.getFields(expression)
@@ -124,8 +125,10 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
         else:
             expressionUnescaped = unescaper.escape(expression)
 
-        if length and isinstance(length, basestring) and length.isdigit():
+        if isinstance(length, basestring) and length.isdigit() or isinstance(length, int):
             length = int(length)
+        else:
+            length = None
 
         if length == 0:
             return 0, ""
@@ -133,12 +136,14 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
         if length and (lastChar > 0 or firstChar > 0):
             length = min(length, lastChar or length) - firstChar
 
+        if length and length > MAX_BISECTION_LENGTH:
+            length = None
+
         showEta = conf.eta and isinstance(length, int)
         numThreads = min(conf.threads, length)
 
         if showEta:
             progress = ProgressBar(maxValue=length)
-            progressTime = []
 
         if timeBasedCompare and conf.threads > 1:
             warnMsg = "multi-threading is considered unsafe in time-based data retrieval. Going to switch it off automatically"
@@ -352,18 +357,6 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
 
                         return None
 
-        def etaProgressUpdate(charTime, index):
-            if len(progressTime) <= ((length * 3) / 100):
-                eta = 0
-            else:
-                midTime = sum(progressTime) / len(progressTime)
-                midTimeWithLatest = (midTime + charTime) / 2
-                eta = midTimeWithLatest * (length - index) / conf.threads
-
-            progressTime.append(charTime)
-            progress.update(index)
-            progress.draw(eta)
-
         # Go multi-threading (--threads > 1)
         if conf.threads > 1 and isinstance(length, int) and length > 1:
             threadData = getCurrentThreadData()
@@ -402,7 +395,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
 
                         if kb.threadContinue:
                             if showEta:
-                                etaProgressUpdate(time.time() - charStart, threadData.shared.index[0])
+                                progress.progress(time.time() - charStart, threadData.shared.index[0])
                             elif conf.verbose >= 1:
                                 startCharIndex = 0
                                 endCharIndex = 0
@@ -450,7 +443,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
             infoMsg = None
 
             # If we have got one single character not correctly fetched it
-            # can mean that the connection to the target url was lost
+            # can mean that the connection to the target URL was lost
             if None in value:
                 partialValue = "".join(value[:value.index(None)])
 
@@ -494,7 +487,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                         # Did we have luck?
                         if result:
                             if showEta:
-                                etaProgressUpdate(time.time() - charStart, len(commonValue))
+                                progress.progress(time.time() - charStart, len(commonValue))
                             elif conf.verbose in (1, 2) or hasattr(conf, "api"):
                                 dataToStdout(filterControlChars(commonValue[index - 1:]))
 
@@ -544,7 +537,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                 partialValue += val
 
                 if showEta:
-                    etaProgressUpdate(time.time() - charStart, index)
+                    progress.progress(time.time() - charStart, index)
                 elif conf.verbose in (1, 2) or hasattr(conf, "api"):
                     dataToStdout(filterControlChars(val))
 
@@ -576,7 +569,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
         infoMsg = "\r[%s] [INFO] retrieved: %s  %s\n" % (time.strftime("%X"), filterControlChars(finalValue), " " * retrievedLength)
         dataToStdout(infoMsg)
     else:
-        if conf.verbose in (1, 2) or showEta and not hasattr(conf, "api"):
+        if conf.verbose in (1, 2) and not showEta and not hasattr(conf, "api"):
             dataToStdout("\n")
 
         if (conf.verbose in (1, 2) and showEta) or conf.verbose >= 3:
@@ -604,7 +597,7 @@ def queryOutputLength(expression, payload):
     start = time.time()
     count, length = bisection(payload, lengthExprUnescaped, charsetType=CHARSET_TYPE.DIGITS)
 
-    debugMsg = "performed %d queries in %d seconds" % (count, calculateDeltaSeconds(start))
+    debugMsg = "performed %d queries in %.2f seconds" % (count, calculateDeltaSeconds(start))
     logger.debug(debugMsg)
 
     if length == " ":

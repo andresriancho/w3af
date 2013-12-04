@@ -33,6 +33,7 @@ class DBMS:
     PGSQL = "PostgreSQL"
     SQLITE = "SQLite"
     SYBASE = "Sybase"
+    HSQLDB = "HSQLDB"
 
 class DBMS_DIRECTORY_NAME:
     ACCESS = "access"
@@ -45,6 +46,7 @@ class DBMS_DIRECTORY_NAME:
     PGSQL = "postgresql"
     SQLITE = "sqlite"
     SYBASE = "sybase"
+    HSQLDB = "hsqldb"
 
 class CUSTOM_LOGGING:
     PAYLOAD = 9
@@ -76,10 +78,17 @@ class HTTPMETHOD:
     GET = "GET"
     POST = "POST"
     HEAD = "HEAD"
+    PUT = "PUT"
+    DELETE = "DETELE"
+    TRACE = "TRACE"
+    OPTIONS = "OPTIONS"
+    CONNECT = "CONNECT"
+    PATCH = "PATCH"
 
 class NULLCONNECTION:
     HEAD = "HEAD"
     RANGE = "Range"
+    SKIP_READ = "skip-read"
 
 class REFLECTIVE_COUNTER:
     MISS = "MISS"
@@ -103,6 +112,7 @@ class HASH:
     POSTGRES = r'(?i)\Amd5[0-9a-f]{32}\Z'
     MSSQL = r'(?i)\A0x0100[0-9a-f]{8}[0-9a-f]{40}\Z'
     MSSQL_OLD = r'(?i)\A0x0100[0-9a-f]{8}[0-9a-f]{80}\Z'
+    MSSQL_NEW = r'(?i)\A0x0200[0-9a-f]{8}[0-9a-f]{128}\Z'
     ORACLE = r'(?i)\As:[0-9a-f]{60}\Z'
     ORACLE_OLD = r'(?i)\A[01-9a-f]{16}\Z'
     MD5_GENERIC = r'(?i)\A[0-9a-f]{32}\Z'
@@ -236,7 +246,7 @@ class PAYLOAD:
 
 class WIZARD:
     BASIC = ("getBanner", "getCurrentUser", "getCurrentDb", "isDba")
-    SMART = ("getBanner", "getCurrentUser", "getCurrentDb", "isDba", "getUsers", "getDbs", "getTables", "getSchema", "excludeSysDbs")
+    INTERMEDIATE = ("getBanner", "getCurrentUser", "getCurrentDb", "isDba", "getUsers", "getDbs", "getTables", "getSchema", "excludeSysDbs")
     ALL = ("getBanner", "getCurrentUser", "getCurrentDb", "isDba", "getHostname", "getUsers", "getPasswordHashes", "getPrivileges", "getRoles", "dumpAll")
 
 class ADJUST_TIME_DELAY:
@@ -313,3 +323,4 @@ class AUTH_TYPE:
     BASIC = "basic"
     DIGEST = "digest"
     NTLM = "ntlm"
+    PKI = "pki"

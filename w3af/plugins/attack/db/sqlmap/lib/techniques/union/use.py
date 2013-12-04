@@ -50,6 +50,7 @@ from lib.core.threads import getCurrentThreadData
 from lib.core.threads import runThreads
 from lib.core.unescaper import unescaper
 from lib.request.connect import Connect as Request
+from lib.utils.progress import ProgressBar
 
 def _oneShotUnionUse(expression, unpack=True, limited=False):
     retVal = hashDBRetrieve("%s%s" % (conf.hexConvert, expression), checkConf=True)  # as union data is stored raw unconverted
@@ -61,12 +62,11 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
         # Prepare expression with delimiters
         injExpression = unescaper.escape(agent.concatQuery(expression, unpack))
 
-        where = PAYLOAD.WHERE.NEGATIVE if conf.limitStart or conf.limitStop else None
-
         # Forge the union SQL injection request
         vector = kb.injection.data[PAYLOAD.TECHNIQUE.UNION].vector
         kb.unionDuplicates = vector[7]
         query = agent.forgeUnionQuery(injExpression, vector[0], vector[1], vector[2], vector[3], vector[4], vector[5], vector[6], None, limited)
+        where = PAYLOAD.WHERE.NEGATIVE if conf.limitStart or conf.limitStop else vector[6]
         payload = agent.payload(newValue=query, where=where)
 
         # Perform the request
@@ -146,8 +146,8 @@ def configUnion(char=None, columns=None):
 def unionUse(expression, unpack=True, dump=False):
     """
     This function tests for an union SQL injection on the target
-    url then call its subsidiary function to effectively perform an
-    union SQL injection on the affected url
+    URL then call its subsidiary function to effectively perform an
+    union SQL injection on the affected URL
     """
 
     initTechnique(PAYLOAD.TECHNIQUE.UNION)
@@ -184,7 +184,8 @@ def unionUse(expression, unpack=True, dump=False):
        " FROM " in expression.upper() and ((Backend.getIdentifiedDbms() \
        not in FROM_DUMMY_TABLE) or (Backend.getIdentifiedDbms() in FROM_DUMMY_TABLE \
        and not expression.upper().endswith(FROM_DUMMY_TABLE[Backend.getIdentifiedDbms()]))) \
-       and not re.search(SQL_SCALAR_REGEX, expression, re.I):
+       and not re.search(SQL_SCALAR_REGEX, expression, re.I)\
+       or kb.forcePartialUnion:
         expression, limitCond, topLimit, startLimit, stopLimit = agent.limitCondition(expression, dump)
 
         if limitCond:
@@ -231,7 +232,12 @@ def unionUse(expression, unpack=True, dump=False):
             numThreads = min(conf.threads, (stopLimit - startLimit))
             threadData.shared.value = BigArray()
             threadData.shared.buffered = []
+            threadData.shared.counter = 0
             threadData.shared.lastFlushed = startLimit - 1
+            threadData.shared.showEta = conf.eta and (stopLimit - startLimit) > 1
+
+            if threadData.shared.showEta:
+                threadData.shared.progress = ProgressBar(maxValue=(stopLimit - startLimit))
 
             if stopLimit > TURN_OFF_RESUME_INFO_LIMIT:
                 kb.suppressResumeInfo = True
@@ -246,6 +252,8 @@ def unionUse(expression, unpack=True, dump=False):
                     while kb.threadContinue:
                         with kb.locks.limit:
                             try:
+                                valueStart = time.time()
+                                threadData.shared.counter += 1
                                 num = threadData.shared.limits.next()
                             except StopIteration:
                                 break
@@ -268,6 +276,8 @@ def unionUse(expression, unpack=True, dump=False):
                                 items = parseUnionPage(output)
 
                                 with kb.locks.value:
+                                    if threadData.shared.showEta:
+                                        threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
                                     # in case that we requested N columns and we get M!=N then we have to filter a bit
                                     if isListLike(items) and len(items) > 1 and len(expressionFieldsList) > 1:
                                         items = [item for item in items if isListLike(item) and len(item) == len(expressionFieldsList)]
@@ -285,13 +295,15 @@ def unionUse(expression, unpack=True, dump=False):
                             else:
                                 with kb.locks.value:
                                     index = None
+                                    if threadData.shared.showEta:
+                                        threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
                                     for index in xrange(len(threadData.shared.buffered)):
                                         if threadData.shared.buffered[index][0] >= num:
                                             break
                                     threadData.shared.buffered.insert(index or 0, (num, None))
                                 items = output.replace(kb.chars.start, "").replace(kb.chars.stop, "").split(kb.chars.delimiter)
 
-                            if conf.verbose == 1 and not (threadData.resumed and kb.suppressResumeInfo):
+                            if conf.verbose == 1 and not (threadData.resumed and kb.suppressResumeInfo) and not threadData.shared.showEta:
                                 status = "[%s] [INFO] %s: %s" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(",".join("\"%s\"" % _ for _ in flattenValue(arrayizeValue(items)))))
 
                                 if len(status) > width:
@@ -325,7 +337,7 @@ def unionUse(expression, unpack=True, dump=False):
     duration = calculateDeltaSeconds(start)
 
     if not kb.bruteMode:
-        debugMsg = "performed %d queries in %d seconds" % (kb.counters[PAYLOAD.TECHNIQUE.UNION], duration)
+        debugMsg = "performed %d queries in %.2f seconds" % (kb.counters[PAYLOAD.TECHNIQUE.UNION], duration)
         logger.debug(debugMsg)
 
     return value

@@ -13,6 +13,7 @@ import sys
 
 from lib.core.enums import DBMS
 from lib.core.enums import DBMS_DIRECTORY_NAME
+from lib.core.enums import OS
 from lib.core.revision import getRevisionNumber
 
 # sqlmap version and site
@@ -42,7 +43,7 @@ URI_QUESTION_MARKER = "__QUESTION_MARK__"
 ASTERISK_MARKER = "__ASTERISK_MARK__"
 REPLACEMENT_MARKER = "__REPLACEMENT_MARK__"
 
-PAYLOAD_DELIMITER = "\x00"
+PAYLOAD_DELIMITER = "__PAYLOAD_DELIMITER__"
 CHAR_INFERENCE_MARK = "%c"
 PRINTABLE_CHAR_REGEX = r"[^\x00-\x1f\x7f-\xff]"
 
@@ -52,11 +53,17 @@ PERMISSION_DENIED_REGEX = r"(command|permission|access)\s*(was|is)?\s*denied"
 # Regular expression used for recognition of generic maximum connection messages
 MAX_CONNECTIONS_REGEX = r"max.+connections"
 
-# Regular expression used for extracting results from google search
+# Regular expression used for extracting results from Google search
 GOOGLE_REGEX = r"url\?\w+=((?![^>]+webcache\.googleusercontent\.com)http[^>]+)&(sa=U|rct=j)"
+
+# Regular expression used for extracting results from DuckDuckGo search
+DUCKDUCKGO_REGEX = r'"u":"([^"]+)'
 
 # Regular expression used for extracting content from "textual" tags
 TEXT_TAG_REGEX = r"(?si)<(abbr|acronym|b|blockquote|br|center|cite|code|dt|em|font|h\d|i|li|p|pre|q|strong|sub|sup|td|th|title|tt|u)(?!\w).*?>(?P<result>[^<]+)"
+
+# Regular expression used for recognition of IP addresses
+IP_ADDRESS_REGEX = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
 
 # Dumping characters used in GROUP_CONCAT MySQL technique
 CONCAT_ROW_DELIMITER = ','
@@ -141,7 +148,7 @@ IS_WIN = subprocess.mswindows
 PLATFORM = os.name
 PYVERSION = sys.version.split()[0]
 
-# Database management system specific variables
+# DBMS system databases
 MSSQL_SYSTEM_DBS = ("Northwind", "master", "model", "msdb", "pubs", "tempdb")
 MYSQL_SYSTEM_DBS = ("information_schema", "mysql")                   # Before MySQL 5.0 only "mysql"
 PGSQL_SYSTEM_DBS = ("information_schema", "pg_catalog", "pg_toast")
@@ -159,6 +166,7 @@ MAXDB_SYSTEM_DBS = ("SYSINFO", "DOMAIN")
 SYBASE_SYSTEM_DBS = ("master", "model", "sybsystemdb", "sybsystemprocs")
 DB2_SYSTEM_DBS = ("NULLID", "SQLJ", "SYSCAT", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",\
                    "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS")
+HSQLDB_SYSTEM_DBS = ("INFORMATION_SCHEMA", "SYSTEM_LOB")
 
 MSSQL_ALIASES = ("microsoft sql server", "mssqlserver", "mssql", "ms")
 MYSQL_ALIASES = ("mysql", "my")
@@ -170,10 +178,11 @@ FIREBIRD_ALIASES = ("firebird", "mozilla firebird", "interbase", "ibase", "fb")
 MAXDB_ALIASES = ("maxdb", "sap maxdb", "sap db")
 SYBASE_ALIASES = ("sybase", "sybase sql server")
 DB2_ALIASES = ("db2", "ibm db2", "ibmdb2")
+HSQLDB_ALIASES = ("hsql", "hsqldb", "hs", "hypersql")
 
 DBMS_DIRECTORY_DICT = dict((getattr(DBMS, _), getattr(DBMS_DIRECTORY_NAME, _)) for _ in dir(DBMS) if not _.startswith("_"))
 
-SUPPORTED_DBMS = MSSQL_ALIASES + MYSQL_ALIASES + PGSQL_ALIASES + ORACLE_ALIASES + SQLITE_ALIASES + ACCESS_ALIASES + FIREBIRD_ALIASES + MAXDB_ALIASES + SYBASE_ALIASES + DB2_ALIASES
+SUPPORTED_DBMS = MSSQL_ALIASES + MYSQL_ALIASES + PGSQL_ALIASES + ORACLE_ALIASES + SQLITE_ALIASES + ACCESS_ALIASES + FIREBIRD_ALIASES + MAXDB_ALIASES + SYBASE_ALIASES + DB2_ALIASES + HSQLDB_ALIASES
 SUPPORTED_OS = ("linux", "windows")
 
 USER_AGENT_ALIASES = ("ua", "useragent", "user-agent")
@@ -253,6 +262,9 @@ WEBSCARAB_SPLITTER = "### Conversation"
 # Splitter used between requests in BURP log files
 BURP_REQUEST_REGEX = r"={10,}\s+[^=]+={10,}\s(.+?)\s={10,}"
 
+# Regex used for parsing XML Burp saved history items
+BURP_XML_HISTORY_REGEX = r'<request base64="true"><!\[CDATA\[([^]]+)'
+
 # Encoding used for Unicode data
 UNICODE_ENCODING = "utf8"
 
@@ -307,7 +319,7 @@ REFLECTED_MAX_REGEX_PARTS = 10
 # Chars which can be used as a failsafe values in case of too long URL encoding value
 URLENCODE_FAILSAFE_CHARS = "()|,"
 
-# Maximum length of urlencoded value after which failsafe procedure takes away
+# Maximum length of URL encoded value after which failsafe procedure takes away
 URLENCODE_CHAR_LIMIT = 2000
 
 # Default schema for Microsoft SQL Server DBMS
@@ -319,11 +331,17 @@ HASH_MOD_ITEM_DISPLAY = 11
 # Maximum integer value
 MAX_INT = sys.maxint
 
+# Options that need to be restored in multiple targets run mode
+RESTORE_MERGED_OPTIONS = ("col", "db", "dnsName", "privEsc", "tbl", "regexp", "string", "textOnly", "threads", "timeSec", "tmpPath", "uChar", "user")
+
 # Parameters to be ignored in detection phase (upper case)
 IGNORE_PARAMETERS = ("__VIEWSTATE", "__VIEWSTATEENCRYPTED", "__EVENTARGUMENT", "__EVENTTARGET", "__EVENTVALIDATION", "ASPSESSIONID", "ASP.NET_SESSIONID", "JSESSIONID", "CFID", "CFTOKEN")
 
 # Regular expression used for recognition of ASP.NET control parameters
 ASP_NET_CONTROL_REGEX = r"(?i)\Actl\d+\$"
+
+# Prefix for Google analytics cookie names
+GOOGLE_ANALYTICS_COOKIE_PREFIX = "__UTM"
 
 # Turn off resume console info to avoid potential slowdowns
 TURN_OFF_RESUME_INFO_LIMIT = 20
@@ -368,10 +386,10 @@ ITOA64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 DUMMY_SQL_INJECTION_CHARS = ";()'"
 
 # Simple check against dummy users
-DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]"
+DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b"
 
 # Extensions skipped by crawler
-CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jar", "tif", "bmp", "war", "ear", "mpg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "bin", "exe", "iso", "tar", "png", "pdf", "ps", "mp3", "zip", "rar", "gz")
+CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jpeg", "image", "jar", "tif", "bmp", "war", "ear", "mpg", "mpeg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "mkv", "bin", "iso", "tar", "png", "pdf", "ps", "wav", "mp3", "mp4", "au", "aiff", "aac", "zip", "rar", "7z", "gz", "flv", "mov")
 
 # Patterns often seen in HTTP headers containing custom injection marking character
 PROBLEMATIC_CUSTOM_INJECTION_PATTERNS = r"(\bq=[^;']+)|(\*/\*)"
@@ -430,6 +448,9 @@ DEFAULT_GET_POST_DELIMITER = '&'
 # Default delimiter in cookie values
 DEFAULT_COOKIE_DELIMITER = ';'
 
+# Unix timestamp used for forcing cookie expiration when provided with --load-cookies
+FORCE_COOKIE_EXPIRATION_TIME = "9999999999"
+
 # Skip unforced HashDB flush requests below the threshold number of cached items
 HASHDB_FLUSH_THRESHOLD = 32
 
@@ -437,7 +458,7 @@ HASHDB_FLUSH_THRESHOLD = 32
 HASHDB_FLUSH_RETRIES = 3
 
 # Unique milestone value used for forced deprecation of old HashDB values (e.g. when changing hash/pickle mechanism)
-HASHDB_MILESTONE_VALUE = "cAWxkLYCQT"  # r5129 "".join(random.sample(string.letters, 10))
+HASHDB_MILESTONE_VALUE = "cAWxkLYCQT"  # r5129 "".join(random.sample(string.ascii_letters, 10))
 
 # Warn user of possible delay due to large page dump in full UNION query injections
 LARGE_OUTPUT_THRESHOLD = 1024 ** 2
@@ -458,7 +479,7 @@ MAX_TOTAL_REDIRECTIONS = 10
 MAX_DNS_LABEL = 63
 
 # Alphabet used for prefix and suffix strings of name resolution requests in DNS technique (excluding hexadecimal chars for not mixing with inner content)
-DNS_BOUNDARIES_ALPHABET = re.sub("[a-fA-F]", "", string.letters)
+DNS_BOUNDARIES_ALPHABET = re.sub("[a-fA-F]", "", string.ascii_letters)
 
 # Alphabet used for heuristic checks
 HEURISTIC_CHECK_ALPHABET = ('"', '\'', ')', '(', '[', ']', ',', '.')
@@ -468,6 +489,9 @@ MAX_CONNECTION_CHUNK_SIZE = 10 * 1024 * 1024
 
 # Maximum response total page size (trimmed if larger)
 MAX_CONNECTION_TOTAL_SIZE = 100 * 1024 * 1024
+
+# Maximum (multi-threaded) length of entry in bisection algorithm
+MAX_BISECTION_LENGTH = 50 * 1024 * 1024
 
 # Mark used for trimming unnecessary content in large chunks
 LARGE_CHUNK_TRIM_MARKER = "__TRIMMED_CONTENT__"
@@ -485,7 +509,7 @@ CHECK_ZERO_COLUMNS_THRESHOLD = 10
 BOLD_PATTERNS = ("' injectable", "might be injectable", "' is vulnerable", "is not injectable", "test failed", "test passed", "live test final result", "test shows that")
 
 # Generic www root directory names
-GENERIC_DOC_ROOT_DIRECTORY_NAMES = ("htdocs", "wwwroot", "www")
+GENERIC_DOC_ROOT_DIRECTORY_NAMES = ("htdocs", "httpdocs", "public", "wwwroot", "www")
 
 # Maximum length of a help part containing switch/option name(s)
 MAX_HELP_OPTION_LENGTH = 18
@@ -512,7 +536,7 @@ INVALID_UNICODE_CHAR_FORMAT = r"\?%02x"
 SOAP_RECOGNITION_REGEX = r"(?s)\A(<\?xml[^>]+>)?\s*<([^> ]+)( [^>]+)?>.+</\2.*>\s*\Z"
 
 # Regular expression used for detecting JSON-like POST data
-JSON_RECOGNITION_REGEX = r'(?s)\A\s*\{.*"[^"]+"\s*:\s*("[^"]+"|\d+).*\}\s*\Z'
+JSON_RECOGNITION_REGEX = r'(?s)\A(\s*\[)*\s*\{.*"[^"]+"\s*:\s*("[^"]+"|\d+).*\}\s*(\]\s*)*\Z'
 
 # Regular expression used for detecting multipart POST data
 MULTIPART_RECOGNITION_REGEX = r"(?i)Content-Disposition:[^;]+;\s*name="
@@ -541,6 +565,21 @@ METASPLOIT_SESSION_TIMEOUT = 180
 # Reference: http://www.cookiecentral.com/faq/#3.5
 NETSCAPE_FORMAT_HEADER_COOKIES = "# Netscape HTTP Cookie File."
 
+# Prefixes used in brute force search for web server document root
+BRUTE_DOC_ROOT_PREFIXES = {
+    OS.LINUX: ("/var/www", "/var/www/%TARGET%", "/var/www/vhosts/%TARGET%", "/var/www/virtual/%TARGET%", "/var/www/clients/vhosts/%TARGET%", "/var/www/clients/virtual/%TARGET%"),
+    OS.WINDOWS: ("/xampp", "/Program Files/xampp/", "/wamp", "/Program Files/wampp/", "/Inetpub/wwwroot", "/Inetpub/wwwroot/%TARGET%", "/Inetpub/vhosts/%TARGET%")
+}
+
+# Suffixes used in brute force search for web server document root
+BRUTE_DOC_ROOT_SUFFIXES = ("", "html", "htdocs", "httpdocs", "php", "public", "src", "site", "build", "web", "sites/all", "www/build")
+
+# String used for marking target name inside used brute force web server document root
+BRUTE_DOC_ROOT_TARGET_MARK = "%TARGET%"
+
+# Character used as a boundary in kb.chars (preferably less frequent letter)
+KB_CHARS_BOUNDARY_CHAR = 'q'
+
 # CSS style used in HTML dump format
 HTML_DUMP_CSS_STYLE = """<style>
 table{
@@ -559,6 +598,9 @@ tr:nth-child(even) {
     background-color: #D3DFEE
 }
 td{
+    font-size:10px;
+}
+th{
     font-size:10px;
 }
 </style>"""

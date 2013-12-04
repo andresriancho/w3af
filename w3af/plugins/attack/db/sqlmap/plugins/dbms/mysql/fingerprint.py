@@ -116,9 +116,9 @@ class Fingerprint(GenericFingerprint):
             value += "\n%scomment injection fingerprint: %s" % (blank, comVer)
 
         if kb.bannerFp:
-            banVer = kb.bannerFp["dbmsVersion"] if 'dbmsVersion' in kb.bannerFp else None
+            banVer = kb.bannerFp["dbmsVersion"] if "dbmsVersion" in kb.bannerFp else None
 
-            if re.search("-log$", kb.data.banner):
+            if banVer and re.search("-log$", kb.data.banner):
                 banVer += ", logging enabled"
 
             banVer = Format.getDbms([banVer] if banVer else None)
@@ -181,7 +181,7 @@ class Fingerprint(GenericFingerprint):
             # Reference: http://bugs.mysql.com/bug.php?id=15855
 
             # Determine if it is MySQL >= 5.0.0
-            if inject.checkBooleanExpression("ISNULL(TIMESTAMPADD(MINUTE,[RANDNUM],0))"):
+            if inject.checkBooleanExpression("ISNULL(TIMESTAMPADD(MINUTE,[RANDNUM],NULL))"):
                 kb.data.has_information_schema = True
                 Backend.setVersion(">= 5.0.0")
                 setDbms("%s 5" % DBMS.MYSQL)
@@ -224,7 +224,6 @@ class Fingerprint(GenericFingerprint):
                 else:
                     Backend.setVersionList([">= 5.0.0", "< 5.0.3"])
 
-            # For cases when information_schema is missing
             elif inject.checkBooleanExpression("DATABASE() LIKE SCHEMA()"):
                 Backend.setVersion(">= 5.0.2")
                 setDbms("%s 5" % DBMS.MYSQL)

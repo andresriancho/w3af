@@ -98,16 +98,18 @@ class Task(object):
     def __init__(self, taskid):
         self.process = None
         self.output_directory = None
+        self.options = None
+        self._original_options = None
         self.initialize_options(taskid)
 
     def initialize_options(self, taskid):
-        dataype = {"boolean": False, "string": None, "integer": None, "float": None}
+        datatype = {"boolean": False, "string": None, "integer": None, "float": None}
         self.options = AttribDict()
 
         for _ in optDict:
             for name, type_ in optDict[_].items():
                 type_ = unArrayizeValue(type_)
-                self.options[name] = _defaults.get(name, dataype[type_])
+                self.options[name] = _defaults.get(name, datatype[type_])
 
         # Let sqlmap engine knows it is getting called by the API, the task ID and the file path of the IPC database
         self.options.api = True
@@ -119,6 +121,8 @@ class Task(object):
         self.options.disableColoring = True
         self.options.eta = False
 
+        self._original_options = AttribDict(self.options)
+
     def set_option(self, option, value):
         self.options[option] = value
 
@@ -128,13 +132,17 @@ class Task(object):
     def get_options(self):
         return self.options
 
+    def reset_options(self):
+        self.options = AttribDict(self._original_options)
+
     def set_output_directory(self):
         if not self.output_directory or not os.path.isdir(self.output_directory):
             self.output_directory = tempfile.mkdtemp(prefix="sqlmapoutput-")
             self.set_option("oDir", self.output_directory)
 
     def clean_filesystem(self):
-        shutil.rmtree(self.output_directory)
+        if self.output_directory:
+            shutil.rmtree(self.output_directory)
 
     def engine_start(self):
         self.process = Popen("python sqlmap.py --pickled-options %s" % base64pickle(self.options), shell=True, stdin=PIPE, close_fds=False)
@@ -179,8 +187,6 @@ class StdDbOut(object):
 
     def write(self, value, status=CONTENT_STATUS.IN_PROGRESS, content_type=None):
         if self.messagetype == "stdout":
-            insert = True
-
             if content_type is None:
                 if kb.partRun is not None:
                     content_type = PART_RUN_CONTENT_TYPES.get(kb.partRun)
@@ -197,14 +203,9 @@ class StdDbOut(object):
             if status == CONTENT_STATUS.COMPLETE:
                 if len(output) > 0:
                     for index in xrange(0, len(output)):
-                        if output[index][1] == CONTENT_STATUS.COMPLETE:
-                            insert = False
-                        else:
-                            conf.database_cursor.execute("DELETE FROM data WHERE id = ?", (output[index][0],))
+                        conf.database_cursor.execute("DELETE FROM data WHERE id = ?", (output[index][0],))
 
-                if insert:
-                    conf.database_cursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
-                                                 (self.taskid, status, content_type, jsonize(value)))
+                conf.database_cursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)", (self.taskid, status, content_type, jsonize(value)))
                 if kb.partRun:
                     kb.partRun = None
 
@@ -339,7 +340,8 @@ def task_list(taskid):
     """
     if is_admin(taskid):
         logger.debug("Listed task pull")
-        return jsonize({"tasks": tasks, "tasks_num": len(tasks)})
+        task_list = list(tasks)
+        return jsonize({"tasks": task_list, "tasks_num": len(tasks)})
     else:
         abort(401)
 
@@ -417,6 +419,8 @@ def scan_start(taskid):
 
     if taskid not in tasks:
         abort(500, "Invalid task ID")
+
+    tasks[taskid].reset_options()
 
     # Initialize sqlmap engine's options with user's provided options, if any
     for option, value in request.json.items():

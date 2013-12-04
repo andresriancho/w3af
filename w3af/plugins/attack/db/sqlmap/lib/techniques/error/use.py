@@ -47,6 +47,7 @@ from lib.core.threads import getCurrentThreadData
 from lib.core.threads import runThreads
 from lib.core.unescaper import unescaper
 from lib.request.connect import Connect as Request
+from lib.utils.progress import ProgressBar
 
 def _oneShotErrorUse(expression, field=None):
     offset = 1
@@ -94,7 +95,7 @@ def _oneShotErrorUse(expression, field=None):
                 payload = agent.payload(newValue=injExpression)
 
                 # Perform the request
-                page, headers = Request.queryPage(payload, content=True)
+                page, headers = Request.queryPage(payload, content=True, raise404=False)
 
                 incrementCounter(kb.technique)
 
@@ -162,7 +163,7 @@ def _oneShotErrorUse(expression, field=None):
 
     return safecharencode(retVal) if kb.safeCharEncode else retVal
 
-def _errorFields(expression, expressionFields, expressionFieldsList, num=None, emptyFields=None):
+def _errorFields(expression, expressionFields, expressionFieldsList, num=None, emptyFields=None, suppressOutput=False):
     values = []
     origExpr = None
 
@@ -188,10 +189,11 @@ def _errorFields(expression, expressionFields, expressionFieldsList, num=None, e
         if not kb.threadContinue:
             return None
 
-        if kb.fileReadMode and output and output.strip():
-            print
-        elif output is not None and not (threadData.resumed and kb.suppressResumeInfo) and not (emptyFields and field in emptyFields):
-            dataToStdout("[%s] [INFO] %s: %s\n" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(output)))
+        if not suppressOutput:
+            if kb.fileReadMode and output and output.strip():
+                print
+            elif output is not None and not (threadData.resumed and kb.suppressResumeInfo) and not (emptyFields and field in emptyFields):
+                dataToStdout("[%s] [INFO] %s: %s\n" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(output)))
 
         if isinstance(num, int):
             expression = origExpr
@@ -308,12 +310,18 @@ def errorUse(expression, dump=False):
                 if _ and _[0] in ("y", "Y"):
                     expression = expression[:expression.index(" ORDER BY ")]
 
+            numThreads = min(conf.threads, (stopLimit - startLimit))
+
             threadData = getCurrentThreadData()
             threadData.shared.limits = iter(xrange(startLimit, stopLimit))
-            numThreads = min(conf.threads, (stopLimit - startLimit))
             threadData.shared.value = BigArray()
             threadData.shared.buffered = []
+            threadData.shared.counter = 0
             threadData.shared.lastFlushed = startLimit - 1
+            threadData.shared.showEta = conf.eta and (stopLimit - startLimit) > 1
+
+            if threadData.shared.showEta:
+                threadData.shared.progress = ProgressBar(maxValue=(stopLimit - startLimit))
 
             if kb.dumpTable and (len(expressionFieldsList) < (stopLimit - startLimit) > CHECK_ZERO_COLUMNS_THRESHOLD):
                 for field in expressionFieldsList:
@@ -336,11 +344,13 @@ def errorUse(expression, dump=False):
                     while kb.threadContinue:
                         with kb.locks.limit:
                             try:
+                                valueStart = time.time()
+                                threadData.shared.counter += 1
                                 num = threadData.shared.limits.next()
                             except StopIteration:
                                 break
 
-                        output = _errorFields(expression, expressionFields, expressionFieldsList, num, emptyFields)
+                        output = _errorFields(expression, expressionFields, expressionFieldsList, num, emptyFields, threadData.shared.showEta)
 
                         if not kb.threadContinue:
                             break
@@ -350,6 +360,8 @@ def errorUse(expression, dump=False):
 
                         with kb.locks.value:
                             index = None
+                            if threadData.shared.showEta:
+                                threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
                             for index in xrange(len(threadData.shared.buffered)):
                                 if threadData.shared.buffered[index][0] >= num:
                                     break
@@ -381,7 +393,7 @@ def errorUse(expression, dump=False):
     duration = calculateDeltaSeconds(start)
 
     if not kb.bruteMode:
-        debugMsg = "performed %d queries in %d seconds" % (kb.counters[kb.technique], duration)
+        debugMsg = "performed %d queries in %.2f seconds" % (kb.counters[kb.technique], duration)
         logger.debug(debugMsg)
 
     return value

@@ -20,6 +20,7 @@ from lib.core.common import popValue
 from lib.core.common import pushValue
 from lib.core.common import readInput
 from lib.core.common import safeSQLIdentificatorNaming
+from lib.core.common import singleTimeWarnMessage
 from lib.core.common import unArrayizeValue
 from lib.core.common import unsafeSQLIdentificatorNaming
 from lib.core.data import conf
@@ -62,6 +63,12 @@ class Databases:
         if not kb.data.currentDb:
             kb.data.currentDb = unArrayizeValue(inject.getValue(query, safeCharEncode=False))
 
+        if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL):
+            warnMsg = "on %s you'll need to use " % Backend.getIdentifiedDbms()
+            warnMsg += "schema names for enumeration as the counterpart to database "
+            warnMsg += "names on other DBMSes"
+            singleTimeWarnMessage(warnMsg)
+
         return kb.data.currentDb
 
     def getDbs(self):
@@ -76,20 +83,14 @@ class Databases:
             warnMsg += "names will be fetched from 'mysql' database"
             logger.warn(warnMsg)
 
-        elif Backend.isDbms(DBMS.ORACLE):
-            warnMsg = "schema names are going to be used on Oracle "
+        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL):
+            warnMsg = "schema names are going to be used on %s " % Backend.getIdentifiedDbms()
             warnMsg += "for enumeration as the counterpart to database "
             warnMsg += "names on other DBMSes"
             logger.warn(warnMsg)
 
             infoMsg = "fetching database (schema) names"
-        elif Backend.isDbms(DBMS.DB2):
-            warnMsg = "schema names are going to be used on IBM DB2 "
-            warnMsg += "for enumeration as the counterpart to database "
-            warnMsg += "names on other DBMSes"
-            logger.warn(warnMsg)
 
-            infoMsg = "fetching database (schema) names"
         else:
             infoMsg = "fetching database names"
 
@@ -205,7 +206,7 @@ class Databases:
         if conf.db == CURRENT_DB:
             conf.db = self.getCurrentDb()
 
-        if conf.db and Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+        if conf.db and Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.HSQLDB):
             conf.db = conf.db.upper()
 
         if conf.db:
@@ -378,8 +379,13 @@ class Databases:
 
             conf.db = self.getCurrentDb()
 
+            if not conf.db:
+                errMsg = "unable to retrieve the current "
+                errMsg += "database name"
+                raise SqlmapNoneDataException(errMsg)
+
         elif conf.db is not None:
-            if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+            if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.HSQLDB):
                 conf.db = conf.db.upper()
 
             if  ',' in conf.db:
@@ -425,8 +431,7 @@ class Databases:
                 errMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
                 raise SqlmapNoneDataException(errMsg)
 
-        for tbl in tblList:
-            tblList[tblList.index(tbl)] = safeSQLIdentificatorNaming(tbl, True)
+        tblList = filter(None, (safeSQLIdentificatorNaming(_, True) for _ in tblList))
 
         if bruteForce is None:
             if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
@@ -510,7 +515,7 @@ class Databases:
                 infoMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
                 logger.info(infoMsg)
 
-                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
+                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB):
                     query = rootQuery.inband.query % (unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(conf.db))
                     query += condQuery
                 elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
@@ -549,6 +554,19 @@ class Databases:
                             name = safeSQLIdentificatorNaming(columnData[0])
 
                             if name:
+                                if conf.getComments:
+                                    _ = queries[Backend.getIdentifiedDbms()].column_comment
+                                    if hasattr(_, "query"):
+                                        if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+                                            query = _.query % (unsafeSQLIdentificatorNaming(conf.db.upper()), unsafeSQLIdentificatorNaming(tbl.upper()), unsafeSQLIdentificatorNaming(name.upper()))
+                                        else:
+                                            query = _.query % (unsafeSQLIdentificatorNaming(conf.db), unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(name))
+                                        comment = unArrayizeValue(inject.getValue(query, blind=False, time=False))
+                                    else:
+                                        warnMsg = "on %s it is not " % Backend.getIdentifiedDbms()
+                                        warnMsg += "possible to get column comments"
+                                        singleTimeWarnMessage(warnMsg)
+
                                 if len(columnData) == 1:
                                     columns[name] = None
                                 else:
@@ -661,6 +679,19 @@ class Databases:
                     column = unArrayizeValue(inject.getValue(query, union=False, error=False))
 
                     if not isNoneValue(column):
+                        if conf.getComments:
+                            _ = queries[Backend.getIdentifiedDbms()].column_comment
+                            if hasattr(_, "query"):
+                                if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
+                                    query = _.query % (unsafeSQLIdentificatorNaming(conf.db.upper()), unsafeSQLIdentificatorNaming(tbl.upper()), unsafeSQLIdentificatorNaming(column.upper()))
+                                else:
+                                    query = _.query % (unsafeSQLIdentificatorNaming(conf.db), unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(column))
+                                comment = unArrayizeValue(inject.getValue(query, union=False, error=False))
+                            else:
+                                warnMsg = "on %s it is not " % Backend.getIdentifiedDbms()
+                                warnMsg += "possible to get column comments"
+                                singleTimeWarnMessage(warnMsg)
+
                         if not onlyColNames:
                             if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
                                 query = rootQuery.blind.query2 % (unsafeSQLIdentificatorNaming(tbl), column, unsafeSQLIdentificatorNaming(conf.db))
