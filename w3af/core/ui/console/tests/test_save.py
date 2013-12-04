@@ -40,9 +40,9 @@ class TestSaveConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        expected_start_with = ('| file_wordlist  | /etc/passwd',
+        expected_start_with = (' /etc/passwd   ',
                                'The configuration has been saved.')
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
     def test_menu_save_with_dependencies_error(self):
