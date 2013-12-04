@@ -73,7 +73,6 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         self.assertTrue(upload_success)
 
     @onlyroot
-    @attr('ci_fails')
     def test_upload_file_root(self):
         exec_method = commands.getoutput
         os = 'linux'
