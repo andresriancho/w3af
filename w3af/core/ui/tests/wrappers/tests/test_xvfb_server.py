@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
-import Image
 import os
 import time
 
+from PIL import Image
 from nose.plugins.attrib import attr
 from mock import patch
 
