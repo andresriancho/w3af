@@ -28,7 +28,7 @@ class ScalableBloomFilter(object):
     LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
 
     def __init__(self, initial_capacity=10000, error_rate=0.001,
-                 mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
+                  mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
         positive rate
@@ -44,32 +44,6 @@ class ScalableBloomFilter(object):
             ScalableBloomFilter.LARGE_SET_GROWTH. SMALL_SET_GROWTH is slower
             but uses less memory. LARGE_SET_GROWTH is faster but consumes
             memory faster.
-
-        >>> b = ScalableBloomFilter(initial_capacity=512, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("test")
-        False
-        >>> "test" in b
-        True
-        >>> unicode_string = u'¡'
-        >>> b.add(unicode_string)
-        False
-        >>> unicode_string in b
-        True
-
-        >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> count = 12500
-        >>> for i in xrange(0, count):
-        ...     _ = sbf.add(i)
-        ...
-        >>> sbf.capacity > count
-        True
-        >>> sbf.capacity
-        30000
-        >>> len(sbf) <= count
-        True
-        >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
-        True
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")

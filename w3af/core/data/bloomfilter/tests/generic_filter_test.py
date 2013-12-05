@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 '''
 generic_filter_test.py
 
@@ -24,6 +25,7 @@ import random
 import string
 
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 
 
@@ -91,3 +93,30 @@ class GenericFilterTest(unittest.TestCase):
         for i in xrange(self.CAPACITY, self.CAPACITY * 2):
             url_char = URL('http://moth/index%s.html' % i)
             self.assertNotIn(url_char, self.filter)
+
+    @only_if_subclass
+    def test_unicode_string(self):
+        unicode_string = u'¡'
+        self.filter.add(unicode_string)
+        
+        self.assertIn(unicode_string, self.filter)
+
+    @only_if_subclass
+    def test_scale(self):
+        if not isinstance(self.filter, ScalableBloomFilter):
+            return
+        
+        count = 12500
+        for i in xrange(0, count):
+            self.filter.add(i)
+        
+        self.assertGreater(self.filter.capacity, count)
+        
+        self.assertEqual(self.filter.capacity, 50000)
+        self.assertLessEqual(len(self.filter), count)
+        
+        self.assertLessEqual(
+                             abs((len(self.filter) / float(count)) - 1.0),
+                             self.filter.error_rate
+                             )
+        
