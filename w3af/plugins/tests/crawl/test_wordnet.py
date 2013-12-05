@@ -22,22 +22,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.kb.knowledge_base as kb
 
 from nose.plugins.attrib import attr
+
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.wordnet import wordnet
 
 
 class TestWordnet(PluginTest):
 
-    target_url = 'http://moth/w3af/crawl/wordnet/'
+    target_url = get_moth_http('/crawl/wordnet/')
 
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-        'crawl': (PluginConfig('wordnet',
-                               ('wn_results', 20, PluginConfig.INT)),
-                  PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL)))
+                        'crawl': (PluginConfig('wordnet',
+                                               ('wn_results', 20, PluginConfig.INT)),
+                                  PluginConfig('web_spider',
+                                               ('only_forward', True, PluginConfig.BOOL)))
             },
         }
     }
@@ -45,12 +47,12 @@ class TestWordnet(PluginTest):
     @attr('ci_fails')
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(cfg['target'], cfg['plugins'], debug=True)
 
         expected_urls = (
-                         '', 'azure.html', 'blue.html', 'green.html', 'hide.php',
-                         'red.html', 'show.php', 'show.php?os=linux',
-                         'show.php?os=unix', 'show.php?os=windows',
+                         '', 'azure.html', 'blue.html', 'green.html', 'hide.py',
+                         'red.html', 'show.py', 'show.py?os=linux',
+                         'show.py?os=unix', 'show.py?os=windows',
         )
 
         frs = kb.kb.get_all_known_fuzzable_requests()
