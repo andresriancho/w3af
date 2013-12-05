@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
 import os
+import sys
 import shlex
 import pickle
 import logging
@@ -71,7 +72,13 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
     )
     
     # Wait for it to finish
-    p.communicate()
+    stdout, stderr = p.communicate()
+
+    if p.returncode != 0:
+        logging.critical('Error while collecting tests!')
+        logging.critical(stdout)
+        logging.critical(stderr)
+        sys.exit(1)
 
     test_suite, test_result = parse_xunit(output_file)
     
