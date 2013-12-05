@@ -25,14 +25,14 @@ REQUIREMENTS_TXT = 'requirements.txt'
 
 
 @only_ci
-def generate_requirements_txt(pkg_manager_cmd, os_packages,
-                                 pip_cmd, failed_deps):
+def generate_requirements_txt(failed_deps):
     '''
     We want to generate a requirements.txt file which can be detected
     by our build system in order to install the required modules.
     
     This code should only run on CircleCI
     
+    :param failed_deps: A list with missing PIPDependency objects
     :return: The path to the script name.
     '''
     req_file = file(REQUIREMENTS_TXT, 'w')
@@ -41,13 +41,11 @@ def generate_requirements_txt(pkg_manager_cmd, os_packages,
     #    Report all missing python modules
     #    
     if failed_deps:
-        missing_modules = [fdep.package_name for fdep in failed_deps]
-        
-        for module in missing_modules:
-            if module.is_git:
-                req_file.write('%s\n' % module)
+        for pkg in failed_deps:
+            if pkg.is_git:
+                req_file.write('%s\n' % pkg.git_src)
             else:
-                req_file.write('%s==%s\n' % (module, module.package_version))
+                req_file.write('%s==%s\n' % (pkg.package_name, pkg.package_version))
         
     req_file.close()
     return REQUIREMENTS_TXT

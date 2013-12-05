@@ -98,8 +98,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         # False means: do not exit()
         return False
 
-    generate_requirements_txt(pkg_manager_cmd, os_packages, pip_cmd,
-                              failed_deps)
+    generate_requirements_txt(failed_deps)
     script_path = generate_helper_script(pkg_manager_cmd, os_packages,
                                          pip_cmd, failed_deps)
 
