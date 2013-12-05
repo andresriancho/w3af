@@ -72,6 +72,9 @@ class Pool(ThreadPool):
         self._quick_get = self._outqueue.get
         
     def map_multi_args(self, func, iterable, chunksize=None):
+        '''
+        Block until all results are done (please note the .get())
+        '''
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()
 

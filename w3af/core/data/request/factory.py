@@ -111,8 +111,8 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         form_list = []
     else:
         form_list = dp.get_forms()
-        same_domain = lambda f: f.get_action(
-        ).get_domain() == resp.get_url().get_domain()
+        same_domain = lambda f: f.get_action().get_domain() == \
+                                resp.get_url().get_domain()
         form_list = [f for f in form_list if same_domain(f)]
 
     if not form_list:
