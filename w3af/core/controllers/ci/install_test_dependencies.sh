@@ -3,7 +3,8 @@
 #
 # Install all libs required to run our tests (which are available at pypi)
 #
-pip install pylint==0.28.0 mock httpretty psutil logilab-astng SOAPpy PIL SimpleCV==1.3
+pip install pylint==0.28.0 mock==1.0.1 httpretty==0.7.0 psutil==1.2.1
+pip install logilab-astng==0.24.3 SOAPpy==0.12.5 PIL==1.1.6 SimpleCV==1.3
 pip install termcolor==1.1.0 yanc==0.2.4 futures==2.1.5 fabric==1.8.0
 pip install xunitparser==1.2.0
 
