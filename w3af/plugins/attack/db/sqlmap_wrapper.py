@@ -112,7 +112,7 @@ class SQLMapWrapper(object):
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = ['python', 'sqlmap.py'] + final_params + target_params
-                
+        
         process = subprocess.Popen(args=all_params,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
@@ -138,8 +138,8 @@ class SQLMapWrapper(object):
                      stdout, sterr)
         '''
         process = self._run(custom_params)
-        stdout, stderr = process.communicate()                
-        return self.last_command, stdout, stderr
+        self.last_stdout, self.last_stderr = process.communicate()
+        return self.last_command, self.last_stdout, self.last_stderr
         
     def run_sqlmap_with_pipes(self, custom_params):
         '''

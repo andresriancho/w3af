@@ -24,6 +24,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -32,16 +33,15 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 @attr('moth')
 class TestSQLMapWrapper(unittest.TestCase):
     
-    SQLI_GET = 'http://moth/w3af/audit/sql_injection/select/'\
-               'sql_injection_string.php?name=andres'
+    SQLI_GET = get_moth_http('/audit/sql_injection/'
+                             'where_string_single_qs.py?uname=pablo')
 
-    SSL_SQLI_GET = 'http://moth/w3af/audit/sql_injection/select/'\
-                   'sql_injection_string.php?name=andres'
+    SSL_SQLI_GET = get_moth_https('/audit/sql_injection/'
+                                  'where_string_single_qs.py?uname=pablo')
 
-    SQLI_POST = 'http://moth/w3af/audit/sql_injection/select/'\
-                'sql_injection_string.php'
+    SQLI_POST = get_moth_http('/audit/sql_injection/where_integer_form.py')
     
-    DATA_POST = 'name=andres'
+    DATA_POST = 'text=1'
     
     def setUp(self):
         uri = URL(self.SQLI_GET)
@@ -69,12 +69,11 @@ class TestSQLMapWrapper(unittest.TestCase):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         
-    @attr('ci_fails')
     def test_verify_vulnerability(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
     
-    @attr('ci_fails')
+    @attr('fails')
     def test_verify_vulnerability_ssl(self):
         uri = URL(self.SSL_SQLI_GET)
         target = Target(uri)
@@ -83,11 +82,11 @@ class TestSQLMapWrapper(unittest.TestCase):
         
         self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         vulnerable = self.sqlmap.is_vulnerable()
-        self.assertTrue(vulnerable)
+        self.assertTrue(vulnerable, self.sqlmap.last_stdout)
 
     def test_verify_vulnerability_false(self):
-        not_vuln = 'http://moth/w3af/audit/sql_injection/select/'\
-                   'sql_injection_string.php?fake=invalid'
+        not_vuln = get_moth_http('/audit/sql_injection/'
+                                 'where_string_single_qs.py?fake=pablo')
         uri = URL(not_vuln)
         target = Target(uri)
         
@@ -96,14 +95,13 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertFalse(vulnerable)
         
-    @attr('ci_fails')
     def test_verify_vulnerability_POST(self):
         target = Target(URL(self.SQLI_POST), self.DATA_POST)
         
         self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         
         vulnerable = self.sqlmap.is_vulnerable()
-        self.assertTrue(vulnerable)
+        self.assertTrue(vulnerable, self.sqlmap.last_stdout)
         
     def test_wrapper_invalid_url(self):
         self.assertRaises(TypeError, SQLMapWrapper, self.SQLI_GET, self.uri_opener)
@@ -158,7 +156,6 @@ class TestSQLMapWrapper(unittest.TestCase):
         params = sqlmap.get_wrapper_params()
         self.assertNotIn('--disable-coloring', params)
         
-    @attr('ci_fails')
     def test_dbs(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -166,11 +163,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         cmd, process = self.sqlmap.dbs()
         output = process.stdout.read()
         
-        self.assertIn('fetching database names', output)
-        self.assertIn('available databases', output)
-        self.assertIn('information_schema', output)
+        self.assertIn('on SQLite it is not possible to enumerate databases', output)
 
-    @attr('ci_fails')
     def test_tables(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -178,11 +172,10 @@ class TestSQLMapWrapper(unittest.TestCase):
         cmd, process = self.sqlmap.tables()
         output = process.stdout.read()
         
-        self.assertIn('fetching tables for databases:', output)
-        self.assertIn('Database: information_schema', output)
-        self.assertIn('COLUMN_PRIVILEGES', output)
+        self.assertIn('auth_group_permissions', output)
+        self.assertIn('Database: SQLite_masterdb', output)
+        self.assertIn('django_content_type', output)
 
-    @attr('ci_fails')
     def test_users(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -190,11 +183,9 @@ class TestSQLMapWrapper(unittest.TestCase):
         cmd, process = self.sqlmap.users()
         output = process.stdout.read()
         
-        self.assertIn('debian-sys-maint', output)
-        self.assertIn('localhost', output)
-        self.assertIn('root', output)
+        self.assertIn('on SQLite it is not possible to enumerate the users',
+                      output)
 
-    @attr('ci_fails')
     def test_dump(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -202,23 +193,18 @@ class TestSQLMapWrapper(unittest.TestCase):
         cmd, process = self.sqlmap.dump()
         output = process.stdout.read()
         
-        self.assertIn('email', output)
-        self.assertIn('phone', output)
-        self.assertIn('address', output)
-        self.assertIn('47789900', output)
+        self.assertIn('django_session', output)
+        self.assertIn('auth_user_user_permissions', output)
         
-    @attr('ci_fails')
     def test_sqlmap(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, process = self.sqlmap.direct('--dump -D w3af_test -T users')
+        cmd, process = self.sqlmap.direct('--tables')
         output = process.stdout.read()
         
-        self.assertIn('email', output)
-        self.assertIn('phone', output)
-        self.assertIn('address', output)
-        self.assertIn('47789900', output)
+        self.assertIn('django_session', output)
+        self.assertIn('auth_user_user_permissions', output)
         
         self.assertNotIn('information_schema', output)
         self.assertNotIn('COLUMN_PRIVILEGES', output)
