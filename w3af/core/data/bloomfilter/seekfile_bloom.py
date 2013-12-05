@@ -82,11 +82,11 @@ class FileSeekBloomFilter(GenericBloomFilter):
                 return False
         return True
 
-    def to_str(self, key):
+    def to_bytes(self, key):
         '''
         :return: A string representation of @key.
         '''
-        return unicode(key)
+        return unicode(key).encode("utf-8")
     
     def generate_bits_for_key(self, key):
         '''
@@ -96,7 +96,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
         
         :return: A trail of bits to check in the file.
         '''
-        key_str = self.to_str(key)
+        key_str = self.to_bytes(key)
         m = hashlib.md5()
         # Both algorithms pass my unittests, but with sha512 it takes 2 more
         # seconds (26 vs. 28), so I'm going to leave md5.
