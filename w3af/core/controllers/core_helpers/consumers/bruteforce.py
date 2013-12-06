@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.threads.threadpool import return_args
 
@@ -49,11 +50,12 @@ class bruteforce(BaseConsumer):
             except w3afException, e:
                 om.out.error(str(e))
 
+    @task_decorator
     def _consume(self, work_unit):
 
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (
-                plugin.get_name(), work_unit))
+            stats = '%s plugin is testing: "%s"'
+            om.out.debug(stats % (plugin.get_name(), work_unit))
 
             self._threadpool.apply_async(return_args(self._bruteforce),
                                         (plugin, work_unit,),
@@ -65,6 +67,7 @@ class bruteforce(BaseConsumer):
                                  input_fuzzable_request,
                                  new_fuzzable_request))
 
+    @task_decorator
     def _bruteforce(self, plugin, fuzzable_request):
         '''
         Since threadpool's apply_async runs the callback only when the call to
@@ -79,10 +82,6 @@ class bruteforce(BaseConsumer):
                                  bruteforced by @plugin.
         :return: A list of the URL's that have been successfully bruteforced
         '''
-        # Please note that I add a task to self, this task is marked as DONE
-        # in the finally clause below
-        self._add_task()
-        
         res = set()
 
         # Status
@@ -93,15 +92,12 @@ class bruteforce(BaseConsumer):
                                                             fuzzable_request)
 
         # TODO: Report progress to the core.
-
         try:
             new_frs = plugin.bruteforce_wrapper(fuzzable_request)
         except Exception, e:
-            self.handle_exception(
-                'bruteforce', plugin.get_name(), fuzzable_request, e)
+            self.handle_exception('bruteforce', plugin.get_name(),
+                                  fuzzable_request, e)
         else:
             res.update(new_frs)
-        finally:
-            self._task_done(None)
             
         return res

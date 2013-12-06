@@ -23,6 +23,7 @@ import Queue
 import sys
 
 from multiprocessing.dummy import Process
+from functools import wraps
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
@@ -30,6 +31,27 @@ from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.queue_speed import QueueSpeed
+
+
+def task_decorator(method):
+    '''
+    Makes sure that for each task we call _add_task() and _task_done()
+    which will avoid some ugly race conditions.
+    '''
+    
+    @wraps(method)
+    def _wrapper(self, *args, **kwds):
+        self._add_task()
+        try:
+            result = method(self, *args, **kwds)
+        except:
+            self._task_done(None)
+            raise
+        else:
+            self._task_done(None)
+            return result
+    
+    return _wrapper
 
 
 class BaseConsumer(Process):
@@ -55,7 +77,7 @@ class BaseConsumer(Process):
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
         
-        self._tasks_in_progress_counter = 0
+        self._tasks_in_progress_counter = Queue.Queue()
         
         self._threadpool = None
          
@@ -87,8 +109,7 @@ class BaseConsumer(Process):
                 break
 
             else:
-
-                self._consume(work_unit)
+                self._consume_wrapper(work_unit)
                 self.in_queue.task_done()
 
     def _teardown(self):
@@ -96,6 +117,13 @@ class BaseConsumer(Process):
 
     def _consume(self, work_unit):
         raise NotImplementedError
+    
+    @task_decorator
+    def _consume_wrapper(self, work_unit):
+        '''
+        Just makes sure that all _consume methods are decorated as tasks.
+        '''
+        return self._consume(work_unit)
 
     def _task_done(self, result):
         '''
@@ -124,15 +152,17 @@ class BaseConsumer(Process):
         function raised an exception and you'll end up with tasks in progress
         that finished with an exception.
         '''
-        self._tasks_in_progress_counter -= 1
-        assert self._tasks_in_progress_counter >= 0, 'You can not _task_done()' \
-                                                     ' more than you _add_task().'
+        try:
+            self._tasks_in_progress_counter.get_nowait()
+        except Queue.Empty:
+            raise AssertionError('You can not _task_done()' 
+                                 ' more than you _add_task().')
 
     def _add_task(self):
         '''
         @see: _task_done()'s documentation.
         '''
-        self._tasks_in_progress_counter += 1
+        self._tasks_in_progress_counter.put(None)
 
     def in_queue_put(self, work):
         if work is not None:
@@ -154,7 +184,7 @@ class BaseConsumer(Process):
         or self.out_queue.qsize() > 0:
             return True
 
-        if self._tasks_in_progress_counter > 0:
+        if self._tasks_in_progress_counter.qsize() > 0:
             return True
 
         # This is a special case which loosely translates to: "If there are any

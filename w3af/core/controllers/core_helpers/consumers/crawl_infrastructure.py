@@ -25,10 +25,11 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.exceptions import w3afException, w3afRunOnce
 from w3af.core.controllers.threads.threadpool import return_args
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
@@ -90,7 +91,6 @@ class crawl_infrastructure(BaseConsumer):
                     break
 
                 else:
-
                     self._consume(work_unit)
                     self.in_queue.task_done()
 
@@ -108,6 +108,7 @@ class crawl_infrastructure(BaseConsumer):
                 om.out.error('The plugin "%s" raised an exception in the '
                              'end() method: %s' % (plugin.get_name(), e))
 
+    @task_decorator
     def _consume(self, work_unit):
         for plugin in self._consumer_plugins:
 
@@ -135,6 +136,7 @@ class crawl_infrastructure(BaseConsumer):
         
         self._route_plugin_results(plugin)
 
+    @task_decorator
     def _route_all_plugin_results(self):
         for plugin in self._consumer_plugins:
 
@@ -356,6 +358,7 @@ class crawl_infrastructure(BaseConsumer):
 
         return False
 
+    @task_decorator
     def _discover_worker(self, plugin, fuzzable_request):
         '''
         This method runs @plugin with FuzzableRequest as parameter and returns
@@ -373,10 +376,6 @@ class crawl_infrastructure(BaseConsumer):
 
         :return: A list with the newly found fuzzable requests.
         '''
-        # Please note that I add a task to self, this task is marked as DONE
-        # in the finally clause below
-        self._add_task()
-        
         om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
                                                          fuzzable_request.get_uri()))
 
@@ -411,6 +410,4 @@ class crawl_infrastructure(BaseConsumer):
                 ve = ValueError(msg)
                 self.handle_exception(plugin.get_type(), plugin.get_name(),
                                       fuzzable_request, ve)
-        
-        finally:
-            self._task_done(None)
+                

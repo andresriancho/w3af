@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.decorators import retry
-from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 from w3af.core.controllers.exceptions import w3afException
 
 
@@ -96,6 +97,7 @@ class audit(BaseConsumer):
             self._threadpool.apply_async(self._audit,
                                         (plugin, fuzzable_request, orig_resp))
 
+    @task_decorator
     def _audit(self, plugin, fuzzable_request, orig_resp):
         '''
         Since threadpool's apply_async runs the callback only when the call to
@@ -106,11 +108,8 @@ class audit(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
         '''
-        self._add_task()
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
-        finally:
-            self._task_done(None)

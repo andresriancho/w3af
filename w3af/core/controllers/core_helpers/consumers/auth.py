@@ -21,9 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
-from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 from w3af.core.controllers.core_helpers.consumers.constants import (POISON_PILL,
-                                                               FORCE_LOGIN)
+                                                                    FORCE_LOGIN)
 
 
 class auth(BaseConsumer):
@@ -71,26 +72,22 @@ class auth(BaseConsumer):
                     self._login()
                     self.in_queue.task_done()
 
+    # Adding task here because we want to let the rest of the world know
+    # that we're still doing something. The _task_done below will "undo"
+    # this action.
+    @task_decorator
     def _login(self):
         '''
         This is the method that actually calls the plugins in order to login
         to the web application.
         '''
-        # Adding task here because we want to let the rest of the world know
-        # that we're still doing something. The _task_done below will "undo"
-        # this action.
-        self._add_task()
-
         for plugin in self._consumer_plugins:
             try:
                 if not plugin.is_logged():
                     plugin.login()
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
-
-        # See comment above in _add_task
-        self._task_done(None)
-
+    
     def async_force_login(self):
         self.in_queue_put(FORCE_LOGIN)
 
