@@ -59,7 +59,10 @@ class w3af_core_strategy(object):
     '''
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
-
+        
+        self.set_consumers_to_none()
+        
+    def set_consumers_to_none(self):
         # Consumer threads
         self._grep_consumer = None
         self._audit_consumer = None
@@ -122,6 +125,8 @@ class w3af_core_strategy(object):
         for consumer in consumers:
             if consumer is not None:
                 consumer.terminate()
+        
+        self.set_consumers_to_none()
 
     def join_all_consumers(self):
         '''
