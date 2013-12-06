@@ -65,8 +65,8 @@ class crawl_infrastructure(BaseConsumer):
 
     def run(self):
         '''
-        Consume the queue items, sending them to the plugins which are then going
-        to find vulnerabilities, new URLs, etc.
+        Consume the queue items, sending them to the plugins which are then
+        going to find vulnerabilities, new URLs, etc.
         '''
 
         while True:
@@ -130,6 +130,7 @@ class crawl_infrastructure(BaseConsumer):
                                          callback=self._plugin_finished_cb)
             self._route_all_plugin_results()
 
+    @task_decorator
     def _plugin_finished_cb(self, ((plugin, fuzzable_request), plugin_result)):
         if not self._running:
             return
@@ -148,6 +149,7 @@ class crawl_infrastructure(BaseConsumer):
 
             self._route_plugin_results(plugin)
 
+    @task_decorator
     def _route_plugin_results(self, plugin):
         '''
         Retrieve the results from all plugins and put them in our output Queue.

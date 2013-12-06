@@ -197,10 +197,7 @@ class w3af_core_strategy(object):
 
             try:
                 result_item = url_producer.get_result(timeout=0.1)
-            except TimeoutError:
-                pass
-
-            except Queue.Empty:
+            except (TimeoutError, Queue.Empty) as _:
                 if not url_producer.has_pending_work():
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
@@ -220,14 +217,14 @@ class w3af_core_strategy(object):
                     # don't want to do anything with this data
                     fmt = '%s is returning objects of class %s instead of'\
                           ' FuzzableRequest.'
-                    msg = fmt % (url_producer, type(fuzzable_request_inst))
-                    assert isinstance(
-                        fuzzable_request_inst, FuzzableRequest), msg
+                    assert isinstance(fuzzable_request_inst, FuzzableRequest),\
+                           fmt % (url_producer, type(fuzzable_request_inst))
 
                     for url_consumer in output:
                         url_consumer.in_queue_put(fuzzable_request_inst)
 
                     # This is rather complex to digest... so pay attention :)
+                    #
                     # A consumer might be 100% idle (no tasks in input or
                     # output queues, no in progress work) and we still need
                     # to keep it alive, because output from another producer
