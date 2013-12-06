@@ -86,7 +86,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(redir_fr.get_url(
         ).url_string, self.url.url_string[:-1] + redir_url)
 
-    @attr('ci_fails')
+    
     def test_body_parse_a(self):
         '''
         TODO: I need to decide if I'm going to implement this in create_fuzzable_requests
