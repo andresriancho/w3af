@@ -336,8 +336,8 @@ class web_spider(CrawlPlugin):
         '''
         Check if the reference is inside the target directories.
 
-        :return: True if reference is an URL inside the directory structure of at least
-                 one of the target URLs.
+        :return: True if reference is an URL inside the directory structure of
+                 at least one of the target URLs.
         '''
         for domain_path in self._target_urls:
             if reference.url_string.startswith(domain_path.url_string):
@@ -351,17 +351,20 @@ class web_spider(CrawlPlugin):
         '''
         ol = OptionList()
 
-        d = 'When spidering, only search directories inside the one that was given as target'
+        d = 'When crawling only follow links to paths inside the one given'\
+            ' as target.'
         o = opt_factory('only_forward', self._only_forward, d, BOOL)
         ol.add(o)
 
-        d = 'When spidering, only follow links that match this regular expression '
-        d += '(ignore_regex has precedence over follow_regex)'
+        d = 'When crawling only follow which that match this regular'\
+            ' expression. Please note that ignore_regex has precedence over'\
+            ' follow_regex.'
         o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
         ol.add(o)
 
-        d = 'When spidering, DO NOT follow links that match this regular expression '
-        d += '(has precedence over follow_regex)'
+        d = 'When crawling, DO NOT follow links that match this regular'\
+            ' expression. Please note that ignore_regex has precedence over'\
+            ' follow_regex.'
         o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
         ol.add(o)
 
@@ -413,14 +416,14 @@ class web_spider(CrawlPlugin):
             - ignore_regex
             - follow_regex
 
-        IgnoreRegex and follow_regex are commonly used to configure the web_spider
-        to spider all URLs except the "logout" or some other more exciting link
-        like "Reboot Appliance" that would make the w3af run finish without the
-        expected result.
+        ignore_regex and follow_regex are commonly used to configure the
+        web_spider to spider all URLs except the "logout" or some other more
+        exciting link like "Reboot Appliance" that would make the w3af run
+        finish without the expected result.
 
         By default ignore_regex is an empty string (nothing is ignored) and
         follow_regex is '.*' (everything is followed). Both regular expressions
-        are normal regular expressions that are compiled with the python's re module.
+        are normal regular expressions that are compiled with Python's re module.
 
         The regular expressions are applied to the URLs that are found using the
         match function.
