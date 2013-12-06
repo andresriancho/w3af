@@ -214,6 +214,8 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         '''
+        assert self.is_alive(), 'Can NOT join a stopped consumer'
+        
         self.in_queue_put(POISON_PILL)
         self.in_queue.join()
 
