@@ -31,7 +31,6 @@ from w3af.core.controllers.w3afCore import w3afCore
 @attr('smoke')
 class Test_w3afCore_plugins(unittest.TestCase):
 
-    @attr('ci_fails')
     def test_get_plugin_types(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.get_plugin_types()
