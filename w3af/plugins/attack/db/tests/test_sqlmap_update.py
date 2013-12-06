@@ -28,7 +28,6 @@ from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 class TestSQLMapUpdate(unittest.TestCase):
     '''Verify that we have an updated version of sqlmap within w3af'''
     
-    @attr('ci_fails')
     def test_updated(self):
         days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)
         
