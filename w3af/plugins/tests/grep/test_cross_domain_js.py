@@ -47,7 +47,7 @@ class TestCrossDomainJS(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         infos = self.kb.get('cross_domain_js', 'cross_domain_js')
-        self.assertEquals(3, len(infos))
+        self.assertEquals(3, len(infos), infos)
 
         EXPECTED = set(['cross_domain_script_mixed.html',
                         'cross_domain_script_with_type.html',
