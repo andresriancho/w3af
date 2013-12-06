@@ -77,21 +77,7 @@ class web_spider(CrawlPlugin):
         :param fuzzable_req: A fuzzable_req instance that contains
                              (among other things) the URL to test.
         '''
-        if self._first_run:
-            # I have to set some variables, in order to be able to code
-            # the "only_forward" feature
-            self._first_run = False
-            self._target_urls = [i.get_domain_path() for i in cf.cf.get('targets')]
-
-            #    The following line triggered lots of bugs when the "stop" button
-            #    was pressed and the core did this: "cf.cf.save('targets', [])"
-            #self._target_domain = cf.cf.get('targets')[0].get_domain()
-            #    Changing it to something awful but bug-free.
-            targets = cf.cf.get('targets')
-            if not targets:
-                return
-            else:
-                self._target_domain = targets[0].get_domain()
+        self._handle_first_run()
 
         #
         # If it is a form, then smart_fill the parameters to send something that
@@ -122,6 +108,23 @@ class web_spider(CrawlPlugin):
 
         self._extract_links_and_verify(resp, fuzzable_req)
 
+    def _handle_first_run(self):
+        if self._first_run:
+            # I have to set some variables, in order to be able to code
+            # the "only_forward" feature
+            self._first_run = False
+            self._target_urls = [i.get_domain_path() for i in cf.cf.get('targets')]
+
+            #    The following line triggered lots of bugs when the "stop" button
+            #    was pressed and the core did this: "cf.cf.save('targets', [])"
+            #self._target_domain = cf.cf.get('targets')[0].get_domain()
+            #    Changing it to something awful but bug-free.
+            targets = cf.cf.get('targets')
+            if not targets:
+                return
+            else:
+                self._target_domain = targets[0].get_domain()
+                
     def _urls_to_verify_generator(self, resp, fuzzable_req):
         '''
         :param resp: HTTP response object
