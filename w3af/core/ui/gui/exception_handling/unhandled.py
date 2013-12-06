@@ -32,6 +32,9 @@ from w3af.core.controllers.exception_handling.helpers import create_crash_file
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
 
+DEBUG_THREADS = False
+
+
 def handle_crash(w3af_core, _type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(_type, KeyboardInterrupt):
@@ -63,16 +66,17 @@ def handle_keyboardinterrupt(w3af_core):
     helpers.end_threads()
         
     w3af_core.quit()
-
-    import threading
-    import pprint
-    
-    def nice_thread_repr(alive_threads):
-        repr_alive = [repr(x) for x in alive_threads]
-        repr_alive.sort()
-        return pprint.pformat(repr_alive)
-    
-    print nice_thread_repr(threading.enumerate())
+    print 'a'
+    if DEBUG_THREADS:
+        import threading
+        import pprint
+        
+        def nice_thread_repr(alive_threads):
+            repr_alive = [repr(x) for x in alive_threads]
+            repr_alive.sort()
+            return pprint.pformat(repr_alive)
+        
+        print nice_thread_repr(threading.enumerate())
         
     om.out.set_output_plugins(['console'])
     om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af, bye!'))

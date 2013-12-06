@@ -37,7 +37,6 @@ class TestUnhandled(unittest.TestCase):
         set_except_hook(self.w3af_core)
         self.assertTrue(True)
 
-    @attr('ci_fails')
     def test_handle_exception(self):
         raise SkipTest('For unknown reasons this test hangs by consuming tons of CPU and memory.')
     
