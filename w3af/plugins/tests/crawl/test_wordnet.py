@@ -47,7 +47,7 @@ class TestWordnet(PluginTest):
     @attr('ci_fails')
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'], debug=True)
+        self._scan(cfg['target'], cfg['plugins'])
 
         expected_urls = (
                          '', 'azure.html', 'blue.html', 'green.html', 'hide.py',
