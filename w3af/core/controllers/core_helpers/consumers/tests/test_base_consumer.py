@@ -31,7 +31,7 @@ from w3af.core.data.parsers.url import URL
 class TestBaseConsumer(unittest.TestCase):
 
     def setUp(self):
-        self.bc = BaseConsumer([], w3afCore())
+        self.bc = BaseConsumer([], w3afCore(), 'TestConsumer')
 
     def test_handle_exception(self):
         url = URL('http://moth/')
