@@ -56,7 +56,6 @@ class http_in_body (GrepPlugin):
         # this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        
         if response.get_code() != 501\
         and response.is_text_or_html():
             
@@ -65,7 +64,7 @@ class http_in_body (GrepPlugin):
                 return
 
             uri = response.get_uri()
-
+            
             for match, _, _, reqres in self._multi_re.query(body_without_tags):
 
                 if reqres == 'REQUEST':
@@ -90,15 +89,17 @@ class http_in_body (GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
+        item_fmt = '- %s  (id: %s)'
+        msg = 'The following URLs have an HTTP %s in the HTTP'\
+              ' response body:'
+        
         for info_type in ['request', 'response']:
-
             if kb.kb.get('http_in_body', info_type):
-                msg = 'The following URLs have an HTTP ' + \
-                    info_type + ' in the HTTP response body:'
-                om.out.information(msg)
+                
+                om.out.information(msg % info_type)
+                
                 for i in kb.kb.get('http_in_body', info_type):
-                    om.out.information(
-                        '- ' + i.get_uri() + '  (id:' + str(i.get_id()) + ')')
+                    om.out.information(item_fmt % (i.get_uri(), i.get_id()))
 
     def get_long_desc(self):
         '''
