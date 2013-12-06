@@ -71,7 +71,7 @@ class crawl_infrastructure(BaseConsumer):
         while True:
 
             try:
-                work_unit = self.in_queue.get(timeout=0.2)
+                work_unit = self.in_queue.get(timeout=0.1)
             except Queue.Empty:
                 self._route_all_plugin_results()
             else:
@@ -111,14 +111,14 @@ class crawl_infrastructure(BaseConsumer):
     def _consume(self, work_unit):
         for plugin in self._consumer_plugins:
 
+            if not self._running:
+                return
+
             if plugin in self._disabled_plugins:
                 continue
 
-            if not self._running:
-                return
-            
-            om.out.debug('%s plugin is testing: "%s"' % (
-                plugin.get_name(), work_unit))
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
+                                                         work_unit))
 
 
             # TODO: unittest what happens if an exception (which is not handled
@@ -138,11 +138,11 @@ class crawl_infrastructure(BaseConsumer):
     def _route_all_plugin_results(self):
         for plugin in self._consumer_plugins:
 
-            if plugin in self._disabled_plugins:
-                continue
-
             if not self._running:
                 return
+
+            if plugin in self._disabled_plugins:
+                continue
 
             self._route_plugin_results(plugin)
 
@@ -159,8 +159,8 @@ class crawl_infrastructure(BaseConsumer):
             
             else:
                 # The plugin has finished and now we need to analyze which of
-                # the returned fuzzable_request_list are new and should be put in the
-                # input_queue again.
+                # the returned fuzzable_request_list are new and should be put
+                # in the input_queue again.
                 if self._is_new_fuzzable_request(plugin, fuzzable_request):
 
                     # Update the list / set that lives in the KB

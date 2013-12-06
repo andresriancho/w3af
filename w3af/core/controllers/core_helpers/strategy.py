@@ -180,7 +180,7 @@ class w3af_core_strategy(object):
             finished, consumer_forced_end = route_result
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
-                                          consumer_forced_end):
+                                               consumer_forced_end):
         '''
         Loop once through all input consumers and route their results.
 
@@ -196,7 +196,7 @@ class w3af_core_strategy(object):
                 continue
 
             try:
-                result_item = url_producer.get_result(timeout=0.2)
+                result_item = url_producer.get_result(timeout=0.1)
             except TimeoutError:
                 pass
 
@@ -218,7 +218,8 @@ class w3af_core_strategy(object):
                     # Safety check, I need these to be FuzzableRequest objects
                     # if not, the url_producer is doing something wrong and I
                     # don't want to do anything with this data
-                    fmt = '%s is returning objects of class %s instead of FuzzableRequest.'
+                    fmt = '%s is returning objects of class %s instead of'\
+                          ' FuzzableRequest.'
                     msg = fmt % (url_producer, type(fuzzable_request_inst))
                     assert isinstance(
                         fuzzable_request_inst, FuzzableRequest), msg
