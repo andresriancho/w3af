@@ -69,13 +69,13 @@ class TestStrategy(unittest.TestCase):
         vulns = kb.get('sqli', 'sqli')
         self.assertEqual(len(vulns), 1)
         
+        # Tell the core that we've finished, this should kill the WorkerThreads
         core.exploit_phase_prerequisites = lambda: 42
         core.scan_end_hook()
         
         thread_names = [t.name for t in threading.enumerate()]
-        self.assertEqual(len(thread_names), 3, thread_names)
-        
         thread_names = set(thread_names)
+        
         expected_names = set(['MainThread', 'SQLiteExecutor', 'OutputManager'])
         
         self.assertEqual(thread_names, expected_names)
@@ -107,9 +107,8 @@ class TestStrategy(unittest.TestCase):
         core.scan_end_hook()
         
         thread_names = [t.name for t in threading.enumerate()]
-        self.assertEqual(len(thread_names), 3, thread_names)
-        
         thread_names = set(thread_names)
+        
         expected_names = set(['MainThread', 'SQLiteExecutor', 'OutputManager'])
         
         self.assertEqual(thread_names, expected_names)

@@ -199,7 +199,7 @@ class SQLiteExecutor(Process):
     DEBUG = False
     
     def __init__(self, in_queue):
-        super(SQLiteExecutor, self).__init__()
+        super(SQLiteExecutor, self).__init__(name='SQLiteExecutor')
         
         # Setting the thread to daemon mode so it dies with the rest of the
         # process, and a name so we can identify it during debugging sessions

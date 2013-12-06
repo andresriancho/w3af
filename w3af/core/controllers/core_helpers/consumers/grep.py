@@ -36,7 +36,8 @@ class grep(BaseConsumer):
         :param grep_plugins: Instances of grep plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(grep, self).__init__(grep_plugins, w3af_core, create_pool=False)
+        super(grep, self).__init__(grep_plugins, w3af_core, create_pool=False,
+                                   thread_name='Grep')
         self._already_analyzed = ScalableBloomFilter()
 
     def run(self):

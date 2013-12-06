@@ -44,10 +44,10 @@ from w3af.core.controllers.misc.number_generator import consecutive_number_gener
 from w3af.core.controllers.misc.homeDir import (create_home_dir,
                                                 verify_dir_has_perm, HOME_DIR)
 from w3af.core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
-                                            TEMP_DIR)
+                                                 TEMP_DIR)
 from w3af.core.controllers.exceptions import (w3afException, w3afMustStopException,
-                                         w3afMustStopByUnknownReasonExc,
-                                         w3afMustStopByUserRequest)
+                                              w3afMustStopByUnknownReasonExc,
+                                              w3afMustStopByUserRequest)
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.kb.knowledge_base import kb
@@ -370,6 +370,7 @@ class w3afCore(object):
             # pool in exploit_phase_prerequisites()
             self.worker_pool.terminate()
             self.worker_pool.join()
+            del self.worker_pool
             
             self.status.stop()
 

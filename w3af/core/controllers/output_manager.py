@@ -73,7 +73,7 @@ class output_manager(Process):
     )
 
     def __init__(self):
-        super(output_manager, self).__init__()
+        super(output_manager, self).__init__(name='OutputManager')
         self.daemon = True
         self.name = 'OutputManager'
 

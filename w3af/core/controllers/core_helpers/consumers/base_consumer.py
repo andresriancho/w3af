@@ -61,15 +61,15 @@ class BaseConsumer(Process):
     requests.
     '''
 
-    def __init__(self, consumer_plugins, w3af_core, thread_name='Consumer',
-                 create_pool=True):
+    def __init__(self, consumer_plugins, w3af_core, thread_name,
+                  create_pool=True):
         '''
         :param base_consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param thread_name: How to name the current thread
         :param create_pool: True to create a worker pool for this consumer
         '''
-        super(BaseConsumer, self).__init__()
+        super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
         self.in_queue = QueueSpeed()
         self._out_queue = Queue.Queue()
@@ -82,7 +82,7 @@ class BaseConsumer(Process):
         self._threadpool = None
          
         if create_pool:
-            self._threadpool = Pool(10, worker_names=thread_name)
+            self._threadpool = Pool(10, worker_names='%sWorker' % thread_name)
 
     def run(self):
         '''
