@@ -26,16 +26,17 @@ from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('smoke')
 class TestCrawlExceptions(PluginTest):
 
-    target_url = 'http://moth/w3af/crawl/web_spider/follow_links/'
+    target_url = get_moth_http('/grep/csp/')
 
     _run_configs = {
         'cfg': {
-            'target': target_url + '1.html',
+            'target': target_url,
             'plugins': {
                 'crawl': (
                     PluginConfig('failing_spider',
@@ -69,7 +70,6 @@ class TestCrawlExceptions(PluginTest):
 
         super(TestCrawlExceptions, self).tearDown()
 
-    @attr('ci_fails')
     def test_spider_found_urls(self):
         cfg = self._run_configs['cfg']
 
@@ -81,7 +81,7 @@ class TestCrawlExceptions(PluginTest):
         self.assertEqual(len(caught_exceptions), 1)
         
         edata = caught_exceptions[0]
-        self.assertEqual(edata.get_where(), 'crawl.failing_spider:44')
+        self.assertEqual(edata.get_where(), 'crawl.failing_spider:45')
         
         # I tried to make some more advanced unittests here, but it was
         # very difficult to get a result that was NOT random from failing_spider

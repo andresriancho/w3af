@@ -37,10 +37,11 @@ class failing_spider(web_spider):
 
     def crawl(self, fuzzable_req):
         '''
-        Raises an exception if the fuzzable_req ends with something in the blacklist.
+        Raises an exception if the fuzzable_req ends with something in the
+        blacklist.
         '''
         for ending in self.blacklist:
             if fuzzable_req.get_url().url_string.endswith(ending):
-                raise Exception('Test')
+                raise Exception('UnitTest')
 
         return super(failing_spider, self).crawl(fuzzable_req)

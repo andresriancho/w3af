@@ -66,9 +66,8 @@ class TestConsoleBugReport(ConsoleTestHelper):
 
         super(TestConsoleBugReport, self).tearDown()
         
-    @attr('ci_fails')
     def test_buggy_scan(self):
-        target = get_moth_http('/grep/')
+        target = get_moth_http('/grep/csp/')
         commands_to_run = ['plugins',
                            'output console',
                            
@@ -101,7 +100,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
         self.console.sh()
 
         caught_exceptions = self.console._w3af.exception_handler.get_all_exceptions()
-        self.assertEqual(len(caught_exceptions), 1)
+        self.assertEqual(len(caught_exceptions), 1, self._mock_stdout.messages)
         
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
