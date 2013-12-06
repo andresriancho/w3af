@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.handlers.cache import CacheHandler, SQLCachedResponse
 from w3af.core.data.parsers.url import URL
@@ -34,7 +33,6 @@ class TestCacheHandler(unittest.TestCase):
     def tearDown(self):
         CacheHandler().clear()
     
-    @attr('ci_fails')
     def test_basic(self):
         url = URL('http://www.w3af.org')
         request = HTTPRequest(url, cache=True)
