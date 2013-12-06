@@ -57,6 +57,8 @@ class BaseConsumer(Process):
         
         self._tasks_in_progress_counter = 0
         
+        self._threadpool = None
+         
         if create_pool:
             self._threadpool = Pool(10, worker_names=thread_name)
 
@@ -155,6 +157,14 @@ class BaseConsumer(Process):
         if self._tasks_in_progress_counter > 0:
             return True
 
+        # This is a special case which loosely translates to: "If there are any
+        # pending tasks in the threadpool, even if they haven't yet called the
+        # _add_task method, we know we have pending work to do".
+        if self._threadpool is not None:
+            if self._threadpool._inqueue.qsize() > 0 \
+            or self._threadpool._outqueue.qsize() > 0:
+                return True
+        
         return False
 
     @property
