@@ -202,7 +202,6 @@ class TestHTTPResponse(unittest.TestCase):
         
         self.assertEqual(unpickled_resp, resp)
 
-    @attr('ci_fails')
     def test_pickleable_dom(self):
         
         msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
