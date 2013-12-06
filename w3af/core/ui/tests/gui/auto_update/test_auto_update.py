@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import subprocess
 import datetime
+import sys
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
@@ -36,7 +37,7 @@ class TestAutoUpdate(XpresserUnittest):
         Need to override this method in order to avoid waiting for the "real"
         UI to load.
         '''
-        self.gui_process = subprocess.Popen(["python", "w3af_gui", "-n"],
+        self.gui_process = subprocess.Popen([sys.executable, "w3af_gui", "-n"],
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
