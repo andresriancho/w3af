@@ -25,9 +25,7 @@ import subprocess
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.constants.ports import SQLMAP_PROXY
 from w3af.core.controllers.daemons.proxy import Proxy
-from w3af.core.controllers.exceptions import w3afProxyException
 
 
 class SQLMapWrapper(object):
@@ -61,17 +59,11 @@ class SQLMapWrapper(object):
         '''
         host = '127.0.0.1'
         
-        for port in xrange(SQLMAP_PROXY, SQLMAP_PROXY+25):
-            try:
-                self.proxy = Proxy(host, port, uri_opener)
-            except w3afProxyException, pe:
-                pass
-            else:
-                self.proxy.start()
-                self.local_proxy_url = 'http://%s:%s/' % (host, port)
-                return
-        else:
-            raise pe
+        self.proxy = Proxy(host, 0, uri_opener)
+        self.proxy.start()
+        self.local_proxy_url = 'http://%s:%s/' % (host, self.proxy.get_bind_port())
+        
+        return
     
     def cleanup(self):
         self.proxy.stop()
