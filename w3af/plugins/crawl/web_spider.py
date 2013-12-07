@@ -170,6 +170,10 @@ class web_spider(CrawlPlugin):
 
                 for ref in unique_justseen(sorted(all_refs)):
 
+                    # Ignore myself
+                    if ref == resp.get_uri():
+                        continue
+
                     # I don't want w3af sending requests to 3rd parties!
                     if ref.get_domain() != self._target_domain:
                         continue
