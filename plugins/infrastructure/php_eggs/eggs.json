@@ -1,0 +1,18 @@
+{"meta":
+             {"description": "PHP Eggs database",
+              "plugin": "php_eggs.py",
+              "maintainers": ["@pvdl", "@w3af"],
+              "license": "GPL v2.0",}
+ "db": [
+    {"version":"4.4.1",
+     "credits":"55bc081f2d460b8e6eb326a953c0e71e",
+     "php_1":"11b9cfe306004fce599a1f8180b61266",
+     "php_2":"4b2c92409cf0bcf465d199e93a15ac3f",
+     "zend":"da2dae87b166b7709dbd4061375b74cb"},
+    {"version":"4.4.2",
+     "credits":"bed7ceff09e9666d96fdf3518af78e0e",
+     "php_1":"11b9cfe306004fce599a1f8180b61266",
+     "php_2":"4b2c92409cf0bcf465d199e93a15ac3f",
+     "zend":"da2dae87b166b7709dbd4061375b74cb",
+     "comments": "Extracted from Ubuntu 12.04 LTS"}
+]}
