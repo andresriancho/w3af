@@ -38,6 +38,7 @@ nose.cfg
 .project
 .pydevproject
 .settings/
+.idea
 
 # w3af stuff
 parser.out
