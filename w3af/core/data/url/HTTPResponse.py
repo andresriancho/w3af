@@ -364,8 +364,6 @@ class HTTPResponse(object):
         else:
             self._headers = headers
 
-        # Set the type, for easy access.
-        self._doc_type = HTTPResponse.DOC_TYPE_OTHER
         find_word = lambda w: content_type.find(w) != -1
 
         content_type_hvalue, _ = self._headers.iget('content-type', None)
@@ -393,6 +391,17 @@ class HTTPResponse(object):
                 elif any(imap(find_word,
                               ('text', 'html', 'xml', 'txt', 'javascript'))):
                     self._doc_type = HTTPResponse.DOC_TYPE_TEXT_OR_HTML
+
+        # Check if the doc type is still None, that would mean that none of the
+        # previous if statements matched.
+        #
+        # Note that I'm doing this here and not before the other if statements
+        # because that triggered a race condition with threads asking if the
+        # _doc_type was != None (which it was because I was setting it to
+        # DOC_TYPE_OTHER) and that raised all types of errors.
+        if self._doc_type is None:
+            self._doc_type = HTTPResponse.DOC_TYPE_OTHER
+
 
     headers = property(get_headers, set_headers)
     
