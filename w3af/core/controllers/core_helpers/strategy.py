@@ -197,7 +197,13 @@ class w3af_core_strategy(object):
             if len(_input) == len(finished | consumer_forced_end):
                 return
 
+            # No more results in the output queue, and had no pending work on
+            # the previous loop.
             if url_producer in finished:
+                continue
+
+            # Did the producer send a POISON_PILL?
+            if url_producer in consumer_forced_end:
                 continue
 
             try:
