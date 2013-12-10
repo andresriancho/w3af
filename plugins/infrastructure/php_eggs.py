@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import hashlib
+import json
 
 from itertools import repeat, izip
 from collections import namedtuple
@@ -45,8 +46,6 @@ class php_eggs(InfrastructurePlugin):
                 ('?=PHPE9568F35-D428-11d2-A769-00AA001ACF42', 'Zend Logo'),
                 ('?=PHPE9568F36-D428-11d2-A769-00AA001ACF42', 'PHP Logo 2')]
 
-    #
-    # This is a list of hashes and description of the egg for every PHP version.
     # PHP versions 4.0.0 - 4.0.6
     # PHP versions 4.1.0 - 4.1.3
     # PHP versions 4.2.0 - 4.2.3
@@ -60,7 +59,7 @@ class php_eggs(InfrastructurePlugin):
     # Remark: PHP versions 5.5.x has no PHP-Eggs.
     # Remark: PHP Logo 2 is not always available. 
     
-    
+    # Empty EGG_DB array, will be filled with external data
     EGG_DB = {}
 
     def __init__(self):
@@ -69,14 +68,21 @@ class php_eggs(InfrastructurePlugin):
         # Already analyzed extensions
         self._already_analyzed_ext = ScalableBloomFilter()
 
-        # Get data from external JSON file
-        data = self.get_jsondata("./php_eggs/eggs.json")
+        # User configured parameters
+        self._db_file = os.path.join('plugins', 'infrastructure', 'php_eggs', 'eggs.json')
+
+        # Get data from external JSON file and fill EGG_DB array
+        data = self.read_jsondata(self._db_file)
         php_eggs.EGG_DB = self.fill_egg_array(data)
 
     @runonce(exc_class=w3afRunOnce)
 
-    # JSON File handling for reading the JSON PHP-EGG Database 
-    def get_jsondata(self,jsonfile):
+    # File handling for reading a JSON file
+    def read_jsondata(self,jsonfile):
+        '''
+        Read a JSON file.
+        :return: Raw JSON data. 
+        '''
         json_data = open(jsonfile)
         filedata = json.load(json_data)
         json_data.close()
@@ -84,6 +90,10 @@ class php_eggs(InfrastructurePlugin):
 
     # Fill EGG array from JSON input file
     def fill_egg_array(self,json_egg_data):
+        '''
+        Fill an array with data from a JSON input file.
+        :return: An array with PHP-versions with corresponding MD5 hashes.
+        '''
         egg_array = {}
         for version in json_egg_data['db']:
             egg_array[str(version['version'])] = [
