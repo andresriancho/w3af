@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import hashlib
 import json
+import os.path
 
 from itertools import repeat, izip
 from collections import namedtuple
@@ -69,7 +70,8 @@ class php_eggs(InfrastructurePlugin):
         self._already_analyzed_ext = ScalableBloomFilter()
 
         # User configured parameters
-        self._db_file = os.path.join('plugins', 'infrastructure', 'php_eggs', 'eggs.json')
+        self.ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+        self._db_file = os.path.join(self.ROOT_PATH, 'php_eggs', 'eggs.json')
 
         # Get data from external JSON file and fill EGG_DB array
         data = self.read_jsondata(self._db_file)
