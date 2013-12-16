@@ -23,8 +23,13 @@ import user
 import os
 import shutil
 
+from w3af import ROOT_PATH
+
 HOME_DIR = os.path.join(user.home, '.w3af')
-W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-5])
+
+# Point to the directory where w3af_console , w3af_gui and profiles/ live
+# Also, the root of the git repository
+W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-5]) + os.path.sep
 
 
 def create_home_dir():
@@ -50,11 +55,24 @@ def create_home_dir():
 
     # and the profile directory
     home_profiles = os.path.join(home_path, 'profiles')
-    default_profiles = 'profiles' + os.path.sep
+
+    # I need to check in two different paths to support installing w3af as
+    # a module. Note the gen_data_files.py code in the w3af-module.
+    default_profiles_paths = [os.path.join(W3AF_LOCAL_PATH, 'profiles'),
+                              os.path.join(ROOT_PATH, 'profiles')]
+
     if not os.path.exists(home_profiles):
-        try:
-            shutil.copytree(default_profiles, home_profiles)
-        except OSError:
+        for default_profile_path in default_profiles_paths:
+            if not os.path.exists(default_profile_path):
+                continue
+
+            try:
+                shutil.copytree(default_profile_path, home_profiles)
+            except OSError:
+                return False
+            else:
+                break
+        else:
             return False
 
     return True
