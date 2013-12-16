@@ -97,7 +97,12 @@ def main():
     from w3af.core.ui.gui.main import main as gui_main
     gui_main(profile, doupdate)
 
-if __name__ == "__main__":
+
+def _main():
     _configure_output_manager()
     err_code = main()
     sys.exit(err_code)
+
+
+if __name__ == "__main__":
+    _main()

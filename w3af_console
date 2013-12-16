@@ -154,11 +154,14 @@ def main():
     return console.sh()
 
 
-if __name__ == "__main__":
+def _main():
     _configure_output_manager()
     exit_code = main()
-    
+
     dump_cpu_usage()
-    
+
     sys.exit(exit_code)
-    
+
+
+if __name__ == "__main__":
+    _main()
