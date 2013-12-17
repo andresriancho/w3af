@@ -59,7 +59,7 @@ def create_home_dir():
     # I need to check in two different paths to support installing w3af as
     # a module. Note the gen_data_files.py code in the w3af-module.
     default_profiles_paths = [os.path.join(W3AF_LOCAL_PATH, 'profiles'),
-                              os.path.join(ROOT_PATH, 'profiles')]
+                              os.path.join(ROOT_PATH, 'profiles'),]
 
     if not os.path.exists(home_profiles):
         for default_profile_path in default_profiles_paths:
