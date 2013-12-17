@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import user
 import os
+import sys
+import user
 import shutil
 
 from w3af import ROOT_PATH
@@ -59,7 +60,9 @@ def create_home_dir():
     # I need to check in two different paths to support installing w3af as
     # a module. Note the gen_data_files.py code in the w3af-module.
     default_profiles_paths = [os.path.join(W3AF_LOCAL_PATH, 'profiles'),
-                              os.path.join(ROOT_PATH, 'profiles'),]
+                              os.path.join(ROOT_PATH, 'profiles'),
+                              os.path.join(sys.prefix, 'profiles'),
+                              os.path.join(sys.exec_prefix, 'profiles'),]
 
     if not os.path.exists(home_profiles):
         for default_profile_path in default_profiles_paths:
