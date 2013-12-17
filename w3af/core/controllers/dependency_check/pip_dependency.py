@@ -19,15 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+
+
 class PIPDependency(object):
-    def __init__(self, module_name, package_name, package_version, git_src=None):
+    def __init__(self, module_name, package_name, package_version, git_src=None,
+                 tgz_src=None):
         self.module_name = module_name
         self.package_name = package_name
         self.package_version = package_version
 
         self.is_git = False
         self.git_src = None
+        self.tgz_src = None
                     
         if git_src is not None:
             self.is_git = True
             self.git_src = git_src
+            self.tgz_src = tgz_src
