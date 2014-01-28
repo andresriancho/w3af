@@ -66,6 +66,6 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
     script_file.close()
     
     # Make it executable
-    os.chmod(script_path, 755)
+    os.chmod(script_path, 0755)
     
     return script_path
