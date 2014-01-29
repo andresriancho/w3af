@@ -32,7 +32,7 @@ SYSTEM_PACKAGES = {
                    'SSL_DEV': ['libssl-dev',],
                    'GIT': ['git'],
                    'XML': ['libxml2-dev', 'libxslt1-dev'],
-                   'YAML': ['libyaml']
+                   'YAML': ['libyaml-dev']
                   }
 PIP_CMD = 'pip'
 
