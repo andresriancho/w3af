@@ -62,7 +62,10 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
             for missing_git_pkg in git_pkgs:
                 cmd = 'sudo %s install %s' % (pip_cmd, missing_git_pkg)
                 script_file.write('%s\n' % cmd)
-    
+
+    # Make it executable
+    os.chmod(script_path, 0755)
+
     script_file.close()
     return script_path
 
