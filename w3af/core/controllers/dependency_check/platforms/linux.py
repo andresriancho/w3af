@@ -31,7 +31,8 @@ SYSTEM_PACKAGES = {
                                'build-essential', 'libsqlite3-dev'],
                    'SSL_DEV': ['libssl-dev',],
                    'GIT': ['git'],
-                   'XML': ['libxml2-dev', 'libxslt1-dev']
+                   'XML': ['libxml2-dev', 'libxslt1-dev'],
+                   'YAML': ['libyaml']
                   }
 PIP_CMD = 'pip'
 
