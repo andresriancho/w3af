@@ -25,12 +25,12 @@ import logging
 
 try:
     import pip
-    USE_PIP_MODULE = True
+    HAS_PIP = True
 except ImportError:
-    USE_PIP_MODULE = False
+    HAS_PIP = False
 
 from .lazy_load import lazy_load
-from .utils import verify_python_version, pip_installed
+from .utils import verify_python_version
 from .helper_script import generate_helper_script, generate_pip_install_non_git
 from .helper_requirements_txt import generate_requirements_txt
 from .platforms.current_platform import (SYSTEM_NAME,
@@ -59,10 +59,10 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     #    Check for missing python modules
     #
     failed_deps = []
-    if USE_PIP_MODULE: pip_distributions = pip.get_installed_distributions()
+    if HAS_PIP: pip_distributions = pip.get_installed_distributions()
     
     for w3af_req in pip_packages:
-        if USE_PIP_MODULE:
+        if HAS_PIP:
             dependency_specs = w3af_req.package_name, w3af_req.package_version
             for dist in pip_distributions:
                 if (dist.project_name, dist.version) == dependency_specs:
@@ -90,7 +90,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     
     os_packages = list(set(missing_os_packages))
 
-    if not pip_installed():
+    if not HAS_PIP:
         os_packages.extend(system_packages['PIP'])
 
     # All installed?

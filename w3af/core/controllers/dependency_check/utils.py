@@ -40,13 +40,6 @@ def verify_python_version():
         print msg
         sys.exit(1)
 
-def pip_installed():
-    try:
-        return not bool(subprocess.call([PIP_CMD, 'help'],
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE))
-    except OSError:
-        return False
 
 def mem_test(when):
     from w3af.core.controllers.profiling.ps_mem import get_memory_usage, human
