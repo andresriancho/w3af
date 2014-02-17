@@ -140,7 +140,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
-                msg += '    sudo %s install %s\n' % (pip_cmd, missing_git_pkg)
+                msg += '    sudo %s install --ignore-installed %s\n' % (pip_cmd, missing_git_pkg)
         
         print msg
     
