@@ -1,4 +1,4 @@
-'''
+"""
 base_consumer.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Queue
 import sys
 
@@ -34,10 +34,10 @@ from w3af.core.data.misc.queue_speed import QueueSpeed
 
 
 def task_decorator(method):
-    '''
+    """
     Makes sure that for each task we call _add_task() and _task_done()
     which will avoid some ugly race conditions.
-    '''
+    """
     
     @wraps(method)
     def _wrapper(self, *args, **kwds):
@@ -55,20 +55,20 @@ def task_decorator(method):
 
 
 class BaseConsumer(Process):
-    '''
+    """
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the crawl plugins and identified vulnerabilities by performing various
     requests.
-    '''
+    """
 
     def __init__(self, consumer_plugins, w3af_core, thread_name,
                   create_pool=True):
-        '''
+        """
         :param base_consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param thread_name: How to name the current thread
         :param create_pool: True to create a worker pool for this consumer
-        '''
+        """
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
         self.in_queue = QueueSpeed()
@@ -85,10 +85,10 @@ class BaseConsumer(Process):
             self._threadpool = Pool(10, worker_names='%sWorker' % thread_name)
 
     def run(self):
-        '''
+        """
         Consume the queue items, sending them to the plugins which are then going
         to find vulnerabilities, new URLs, etc.
-        '''
+        """
 
         while True:
 
@@ -120,13 +120,13 @@ class BaseConsumer(Process):
     
     @task_decorator
     def _consume_wrapper(self, work_unit):
-        '''
+        """
         Just makes sure that all _consume methods are decorated as tasks.
-        '''
+        """
         return self._consume(work_unit)
 
     def _task_done(self, result):
-        '''
+        """
         The task_in_progress_counter is needed because we want to know if the
         consumer is processing something and let it finish. It is mainly used
         in the has_pending_work().
@@ -151,7 +151,7 @@ class BaseConsumer(Process):
         _task_done, the Python2.7 pool implementation won't call it if the
         function raised an exception and you'll end up with tasks in progress
         that finished with an exception.
-        '''
+        """
         try:
             self._tasks_in_progress_counter.get_nowait()
         except Queue.Empty:
@@ -159,9 +159,9 @@ class BaseConsumer(Process):
                                  ' more than you _add_task().')
 
     def _add_task(self):
-        '''
+        """
         @see: _task_done()'s documentation.
-        '''
+        """
         self._tasks_in_progress_counter.put(None)
 
     def in_queue_put(self, work):
@@ -174,12 +174,12 @@ class BaseConsumer(Process):
                 self.in_queue_put(work)
 
     def has_pending_work(self):
-        '''
+        """
         @see: _task_done() documentation
 
         :return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
-        '''
+        """
         if self.in_queue_size() > 0 \
         or self.out_queue.qsize() > 0:
             return True
@@ -203,28 +203,30 @@ class BaseConsumer(Process):
         #    This output queue can contain one of the following:
         #        * POISON_PILL
         #        * (plugin_name, fuzzable_request, AsyncResult)
-        #        * An exception
+        #        * An ExceptionData instance
         return self._out_queue
 
     def in_queue_size(self):
         return self.in_queue.qsize()
 
     def join(self):
-        '''
+        """
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
-        '''
-        assert self.is_alive(), 'Can NOT join a stopped consumer'
+        """
+        if not self.is_alive():
+            msg = 'Can NOT join a stopped consumer (class: %s)'
+            raise AssertionError(msg % self.__class__.__name__)
         
         self.in_queue_put(POISON_PILL)
         self.in_queue.join()
 
     def terminate(self):
-        '''
+        """
         Remove all queued work from in_queue and poison the loop so the consumer
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
-        '''
+        """
         while not self.in_queue.empty():
             self.in_queue.get()
             self.in_queue.task_done()
@@ -232,13 +234,13 @@ class BaseConsumer(Process):
         self.join()
 
     def get_result(self, timeout=0.5):
-        '''
+        """
         :return: The first result from the output Queue.
-        '''
+        """
         return self._out_queue.get(timeout=timeout)
 
     def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
-        '''
+        """
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and
         handle the exceptions.
@@ -247,7 +249,7 @@ class BaseConsumer(Process):
         :param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
         :param _exception: The exception object
-        '''
+        """
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)
 
