@@ -1,4 +1,4 @@
-'''
+"""
 homeDir.py
 
 Copyright 2008 Andres Riancho
@@ -18,15 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import sys
-import user
 import shutil
 
 from w3af import ROOT_PATH
 
-HOME_DIR = os.path.join(user.home, '.w3af')
+HOME_DIR = os.path.join(os.path.expanduser('~'), '.w3af')
 
 # Point to the directory where w3af_console , w3af_gui and profiles/ live
 # Also, the root of the git repository
@@ -34,10 +33,10 @@ W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-5]) + os.path.sep
 
 
 def create_home_dir():
-    '''
+    """
     Creates the w3af home directory, on linux: /home/user/.w3af/
     :return: True if success.
-    '''
+    """
     # Create .w3af inside home directory
     home_path = get_home_dir()
     if not os.path.exists(home_path):
@@ -82,15 +81,15 @@ def create_home_dir():
 
 
 def get_home_dir():
-    '''
+    """
     :return: The location of the w3af directory inside the home directory of
         the current user.
-    '''
+    """
     return HOME_DIR
 
 
 def verify_dir_has_perm(path, perm, levels=0):
-    '''
+    """
     Verify that home directory has `perm` access for current user. If at
     least one of them fails to have it the result will be False.
 
@@ -98,7 +97,7 @@ def verify_dir_has_perm(path, perm, levels=0):
     :param perm: Access rights. Possible values are os' R_OK, W_OK and X_OK or
         the result of a bitwise "|" operator applied a combination of them.
     :param levels: Depth levels to test
-    '''
+    """
     if not os.path.exists(path):
         raise RuntimeError('%s does NOT exist!' % path)
     
