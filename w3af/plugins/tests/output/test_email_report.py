@@ -1,4 +1,4 @@
-'''
+"""
 test_email_report.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from mock import patch
 from nose.plugins.attrib import attr
 
@@ -25,9 +25,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
-@attr('internet')
 @attr('moth')
-@attr('ci_fails')
 class TestEmailReport(PluginTest):
 
     target_url = get_moth_http('/audit/xss/')
@@ -95,11 +93,13 @@ class TestEmailReport(PluginTest):
 smtp = None
 inbox = []
 
+
 class Message(object):
     def __init__(self, from_address, to_address, fullmessage):
         self.from_address = from_address
         self.to_address = to_address
         self.fullmessage = fullmessage
+
 
 class DummySMTP(object):
     def __init__(self):
@@ -116,4 +116,4 @@ class DummySMTP(object):
         return []
 
     def quit(self):
-        self.has_quit=True
+        self.has_quit = True
