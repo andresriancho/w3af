@@ -27,20 +27,22 @@ from w3af.core.controllers.ci.nosetests_wrapper.utils.output import (print_info_
                                                                      print_will_fail,
                                                                      print_summary)
 
+
 def summarize_exit_codes(exit_codes):
-    '''
+    """
     Take a list of exit codes, if at least one of them is not 0, then return
     that number.
-    '''
+    """
     for ec in exit_codes:
         if ec != 0: return ec
     
     return 0
 
+
 def nose_strategy():
-    '''
+    """
     :return: A list with the nosetests commands to run.
-    '''
+    """
     test_ids = get_test_ids(NOSE_RUN_SELECTOR)
     
     for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):

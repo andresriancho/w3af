@@ -12,17 +12,18 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
 
 
 def clean_noise(output_string):
-    '''
+    """
     Removes useless noise from the output
     
     :param output_string: The output string, stdout.
     :return: A sanitized output string
-    '''
+    """
     for noise in NOISE:
         output_string = output_string.replace(noise + '\n', '')
         output_string = output_string.replace(noise, '')
     
     return output_string
+
 
 def open_nosetests_output(suffix, first, last):
     name = '%s_%s-%s.%s' % (NOSE_OUTPUT_PREFIX, first, last, suffix)
@@ -33,13 +34,14 @@ def open_nosetests_output(suffix, first, last):
     
     return fhandler
 
+
 def run_nosetests(nose_cmd, first, last):
-    '''
+    """
     Run nosetests and return the output
     
     :param nose_cmd: The nosetests command, with all parameters.
     :return: (stdout, stderr, exit code) 
-    '''
+    """
     # Init the outputs
     stdout = stderr = ''
     output_file = open_nosetests_output('log', first, last)
