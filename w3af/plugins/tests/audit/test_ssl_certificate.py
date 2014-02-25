@@ -25,6 +25,8 @@ import ssl
 import threading
 import random
 
+from nose.plugins.attrib import attr
+
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -33,18 +35,21 @@ PORT = random.randint(4443, 4599)
 
 class TestSSLCertificate(PluginTest):
 
-    target_url = 'https://localhost:%s/' % PORT
+    local_target_url = 'https://localhost:%s/' % PORT
+
+    remote_url = 'https://www.yandex.com/'
+    EXPECTED_STRINGS = ('yandex.ru', 'MOSCOW', 'RU', 'YANDEX')
 
     _run_configs = {
         'cfg': {
-            'target': target_url,
+            'target': None,
             'plugins': {
                 'audit': (PluginConfig('ssl_certificate'),),
             }
         }
     }
 
-    def test_ssl_certificate(self):
+    def test_ssl_certificate_local(self):
         # Start the HTTPS server
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
                                 'certs', 'invalid_cert.pem')
@@ -52,10 +57,13 @@ class TestSSLCertificate(PluginTest):
         s.start()
 
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(self.local_target_url, cfg['plugins'])
 
         s.stop()
 
+        #
+        #   Check the vulnerability
+        #
         vulns = self.kb.get('ssl_certificate', 'invalid_ssl_cert')
 
         self.assertEquals(1, len(vulns))
@@ -63,7 +71,27 @@ class TestSSLCertificate(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Invalid SSL certificate', vuln.get_name())
-        self.assertEquals(self.target_url, str(vuln.get_url()))
+        self.assertEquals(self.local_target_url, str(vuln.get_url()))
+
+    @attr('internet')
+    def test_ssl_certificate_yandex(self):
+        cfg = self._run_configs['cfg']
+        self._scan(self.remote_url, cfg['plugins'])
+
+        #
+        #   Check the certificate information
+        #
+        info = self.kb.get('ssl_certificate', 'certificate')
+        self.assertEquals(1, len(info))
+
+        # Now some tests around specific details of the found info
+        info = info[0]
+        self.assertEquals('SSL Certificate dump', info.get_name())
+        self.assertEquals(self.remote_url, str(info.get_url()))
+
+        for estring in self.EXPECTED_STRINGS:
+            self.assertIn(estring, info.get_desc())
+
 
 
 HTTP_RESPONSE = '''HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: 3\r\n\r\nabc'''

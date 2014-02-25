@@ -1,4 +1,4 @@
-'''
+"""
 ssl_certificate.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 import ssl
 import re
@@ -41,12 +41,12 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class ssl_certificate(AuditPlugin):
-    '''
+    """
     Check the SSL certificate validity (if https is being used).
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Taras ( oxdef@oxdef.info )
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -57,11 +57,11 @@ class ssl_certificate(AuditPlugin):
                                      'ssl_certificate', 'ca.pem')
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Get the cert and do some checks against it.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         url = freq.get_url()
         domain = url.get_domain()
 
@@ -76,9 +76,9 @@ class ssl_certificate(AuditPlugin):
                 self._analyze_ssl_cert(url, domain)
 
     def _analyze_ssl_cert(self, url, domain):
-        '''
+        """
         Analyze the SSL cert and store the information in the KB.
-        '''
+        """
         self._is_ssl_v2(url, domain)
         self._is_trusted_cert(url, domain)
         self._cert_expiration_analysis(url, domain)
@@ -153,24 +153,90 @@ class ssl_certificate(AuditPlugin):
             om.out.debug(str(e))
 
     def _get_cert(self, url, domain):
+        """
+        Get the certificate information for this domain:port
+
+        :param url: The URL we want to query (we get the port from here)
+        :param domain: The domain to connect to
+        :return: A tuple with:
+                    * cert
+                    * cert_der
+                    * cipher
+        """
+        for extract_method in (self._get_ca_signed_cert,
+                               self._self_signed_cert):
+            try:
+                return extract_method(url, domain)
+            except RuntimeError, rte:
+                om.out.debug(str(rte))
+
+        # If all fails raise rte
+        raise rte
+
+    def _self_signed_cert(self, url, domain):
+        """
+        Helper method to get a certificate when it is self signed
+
+        :param url: The URL we want to query (we get the port from here)
+        :param domain: The domain to connect to
+        :return: A tuple with:
+                    * cert
+                    * cert_der
+                    * cipher
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        try:
+            ssl_sock = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_SSLv23)
+            ssl_sock.connect((domain, url.get_port()))
+        except Exception:
+            msg = 'Failed to connect to %s with PROTOCOL_SSLv23.'
+            raise RuntimeError(msg % domain)
+        else:
+            return self._extract_cert_data(ssl_sock)
+
+    def _get_ca_signed_cert(self, url, domain):
+        """
+        Helper method to get a certificate when it is properly signed.
+
+        :param url: The URL we want to query (we get the port from here)
+        :param domain: The domain to connect to
+        :return: A tuple with:
+                    * cert
+                    * cert_der
+                    * cipher
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            ssl_sock = ssl.wrap_socket(s,
+            # When we use CERT_REQUIRED certificate is required and *validated*
+            ssl_sock = ssl.wrap_socket(s, ca_certs=self._ca_file,
+                                       cert_reqs=ssl.CERT_REQUIRED,
                                        ssl_version=ssl.PROTOCOL_SSLv23)
             ssl_sock.connect((domain, url.get_port()))
-        except:
-            msg = 'Failed to connect to "%s" to analyze SSL cert.'
-            om.out.debug(msg % domain)
-            return
+        except Exception:
+            msg = 'Failed to connect to %s with CERT_REQUIRED.'
+            raise RuntimeError(msg % domain)
         else:
-            cert = ssl_sock.getpeercert()
-            cert_der = ssl_sock.getpeercert(binary_form=True)
-            cipher = ssl_sock.cipher()
-            
-            ssl_sock.close()
-            
-            return cert, cert_der, cipher
-        
+            return self._extract_cert_data(ssl_sock)
+
+    def _extract_cert_data(self, ssl_sock):
+        """
+        Extract the cert, cert_der and cipher from a ssl socket connection.
+
+        :param ssl_sock: The SSL socket connection
+        :return: A tuple with:
+                    * cert
+                    * cert_der
+                    * cipher
+        """
+        cert = ssl_sock.getpeercert()
+        cert_der = ssl_sock.getpeercert(binary_form=True)
+        cipher = ssl_sock.cipher()
+
+        ssl_sock.close()
+
+        return cert, cert_der, cipher
+
     def _cert_expiration_analysis(self, url, domain):
         cert, cert_der, cipher = self._get_cert(url, domain)
 
@@ -209,8 +275,9 @@ class ssl_certificate(AuditPlugin):
         self.kb_append(self, 'certificate', i)
 
     def _dump_ssl_info(self, cert, cert_der, cipher):
-        '''Dump X509 certificate.'''
-
+        """
+        Dump X509 certificate.
+        """
         res = '\n== Certificate information ==\n'
         res += pformat(cert)
         res += '\n\n== Used cipher ==\n' + pformat(cipher)
@@ -222,9 +289,9 @@ class ssl_certificate(AuditPlugin):
         return res
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'Set minimal amount of days before expiration of the certificate'\
@@ -243,21 +310,21 @@ class ssl_certificate(AuditPlugin):
         return ol
 
     def set_options(self, options_list):
-        '''
+        """
         This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
 
         :param OptionList: A dictionary with the options for the plugin.
         :return: No value is returned.
-        '''
+        """
         self._min_expire_days = options_list['minExpireDays'].get_value()
         self._ca_file = options_list['caFileName'].get_value()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin audits SSL certificate parameters.
 
         One configurable parameter exists:
@@ -265,7 +332,7 @@ class ssl_certificate(AuditPlugin):
             - CA PEM file path
 
         Note: It's only useful when testing HTTPS sites.
-        '''
+        """
 
 #
 # This code taken from
@@ -301,13 +368,16 @@ def match_hostname(cert, hostname):
     """
     if not cert:
         raise ValueError("empty or no certificate")
+    
     dnsnames = []
     san = cert.get('subjectAltName', ())
+    
     for key, value in san:
         if key == 'DNS':
             if _dnsname_to_pat(value).match(hostname):
                 return
             dnsnames.append(value)
+    
     if not dnsnames:
         # The subject is only checked when there is no dNSName entry
         # in subjectAltName
@@ -319,10 +389,12 @@ def match_hostname(cert, hostname):
                     if _dnsname_to_pat(value).match(hostname):
                         return
                     dnsnames.append(value)
+    
     if len(dnsnames) > 1:
         raise CertificateError("hostname %s "
                                "doesn't match either of %s"
                                % (hostname, ', '.join(map(str, dnsnames))))
+    
     elif len(dnsnames) == 1:
         raise CertificateError("hostname %s "
                                "doesn't match %s"
