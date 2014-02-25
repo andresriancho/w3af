@@ -1,4 +1,4 @@
-'''
+"""
 strategy.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Queue
 
 from multiprocessing import TimeoutError
@@ -43,7 +43,7 @@ from w3af.core.controllers.exceptions import (w3afMustStopException,
 
 
 class w3af_core_strategy(object):
-    '''
+    """
     This is the simplest scan strategy which follows this logic:
 
         while new_things_found():
@@ -56,7 +56,7 @@ class w3af_core_strategy(object):
     new algorithms that are more performant.
 
     Use this strategy as a base for your experiments!
-    '''
+    """
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
         
@@ -76,13 +76,13 @@ class w3af_core_strategy(object):
         self._seed_producer = seed(self._w3af_core)
 
     def start(self):
-        '''
+        """
         Starts the work!
         User interface coders: Please remember that you have to call
         core.plugins.init_plugins() method before calling start.
 
         :return: No value is returned.
-        '''
+        """
         try:
             self.verify_target_server()
             
@@ -99,8 +99,10 @@ class w3af_core_strategy(object):
 
             self.join_all_consumers()
 
-        except Exception:
+        except Exception, e:
             self.terminate()
+
+            om.out.debug('strategy.start() is raising exception "%s"' % e)
             raise
 
     def stop(self):
@@ -112,29 +114,37 @@ class w3af_core_strategy(object):
         pass
 
     def terminate(self):
-        '''
+        """
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
-        '''
-        consumers = [self._grep_consumer,
-                     self._audit_consumer,
-                     self._auth_consumer,
-                     self._discovery_consumer,
-                     self._bruteforce_consumer]
+        """
+        consumers = {'grep', 'audit', 'auth', 'discovery', 'bruteforce'}
 
         for consumer in consumers:
-            if consumer is not None:
-                consumer.terminate()
-        
+
+            consumer_inst = getattr(self, '_%s_consumer' % consumer)
+
+            if consumer_inst is not None:
+                # Set it immediately to None to avoid any race conditions where
+                # the terminate() method is called twice (from different
+                # threads) and before the first call finishes
+                #
+                # The getattr/setattr tricks are required to make sure that "the
+                # real consumer instance" is set to None. Do not modify unless
+                # you know what you're doing!
+                setattr(self, '_%s_consumer' % consumer, None)
+
+                consumer_inst.terminate()
+
         self.set_consumers_to_none()
 
     def join_all_consumers(self):
-        '''
+        """
         Wait for the consumers to process all their work, the order seems to be
         important (not actually verified nor tested) but basically we first
         finish the consumers that generate URLs and then the ones that consume
         them.
-        '''
+        """
         self._teardown_crawl_infrastructure()        
         
         self._teardown_audit()
@@ -144,14 +154,14 @@ class w3af_core_strategy(object):
         self._teardown_grep()        
 
     def _fuzzable_request_router(self):
-        '''
+        """
         This is one of the most important methods, it will take things from the
         discovery Queue and store them in one or more Queues (audit, bruteforce,
         etc).
 
         Also keep in mind that is one of the only methods that will be run in
         the "main thread" and lives during the whole scan process.
-        '''
+        """
         _input = [self._seed_producer, self._discovery_consumer,
                   self._bruteforce_consumer]
         _input = filter(None, _input)
@@ -186,12 +196,12 @@ class w3af_core_strategy(object):
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                                consumer_forced_end):
-        '''
+        """
         Loop once through all input consumers and route their results.
 
         :return: (finished, consumer_forced_end) or None if we shouldn't call
                  this method anymore.
-        '''
+        """
         for url_producer in _input:
 
             if len(_input) == len(finished | consumer_forced_end):
@@ -248,11 +258,11 @@ class w3af_core_strategy(object):
         return finished, consumer_forced_end
 
     def _handle_all_consumer_exceptions(self, _other):
-        '''
+        """
         Get the exceptions raised by the consumers that do not return any
         data under normal circumstances, for example: grep and auth and handle
         them properly.
-        '''
+        """
         for other_consumer in _other:
             try:
                 result_item = other_consumer.get_result(timeout=0.2)
@@ -265,7 +275,7 @@ class w3af_core_strategy(object):
                     self._handle_consumer_exception(result_item)
 
     def _handle_consumer_exception(self, exception_data):
-        '''
+        """
         Give proper handling to an exception that was raised by one of the
         consumers. Usually this means calling the ExceptionHandler which
         will decide what to do with it.
@@ -273,11 +283,11 @@ class w3af_core_strategy(object):
         Please note that ExtendedUrllib can raise a w3afMustStopByUserRequest which
         should get through this piece of code and be re-raised in order to
         reach the try/except clause in w3afCore's start.
-        '''
+        """
         self._w3af_core.exception_handler.handle_exception_data(exception_data)
 
     def verify_target_server(self):
-        '''
+        """
         Well, it is more common than expected that the user configures a target
         which is offline, is not a web server, etc. So we're going to verify
         all that before even starting our work, and provide a nice error message
@@ -289,7 +299,7 @@ class w3af_core_strategy(object):
         
         :raises: A friendly exception with lots of details of what could have
                  happen.
-        '''
+        """
         sent_requests = 0
         
         msg = ('The remote web server is not answering our HTTP requests,'
@@ -335,11 +345,11 @@ class w3af_core_strategy(object):
                 raise w3afMustStopException(msg % e)
 
     def _setup_crawl_infrastructure(self):
-        '''
+        """
         Setup the crawl and infrastructure consumer:
             * Retrieve all plugins from the core,
             * Create the consumer instance and more,
-        '''
+        """
         crawl_plugins = self._w3af_core.plugins.plugins['crawl']
         infrastructure_plugins = self._w3af_core.plugins.plugins[
             'infrastructure']
@@ -354,12 +364,12 @@ class w3af_core_strategy(object):
             self._discovery_consumer.start()
 
     def _setup_grep(self):
-        '''
+        """
         Setup the grep consumer:
             * Create a Queue,
             * Set the Queue in xurllib
             * Start the consumer
-        '''
+        """
         grep_plugins = self._w3af_core.plugins.plugins['grep']
 
         if grep_plugins:
@@ -395,14 +405,14 @@ class w3af_core_strategy(object):
             self._discovery_consumer = None
 
     def _seed_discovery(self):
-        '''
+        """
         Create the first fuzzable request objects based on the targets and put
         them in the crawl_infrastructure consumer Queue.
 
         This will start the whole discovery process, since plugins are going
         to consume from that Queue and then put their results in it again in
         order to continue discovering.
-        '''
+        """
         #
         #    GET the initial target URLs in order to save them
         #    in a list and use them as our bootstrap URLs
@@ -410,13 +420,13 @@ class w3af_core_strategy(object):
         self._seed_producer.seed_output_queue(cf.cf.get('targets'))
 
     def _setup_bruteforce(self):
-        '''
+        """
         Create a bruteforce consumer instance with the bruteforce plugins
         and initialize it in order to start taking work from the input Queue.
 
         The input queue for this consumer is populated by the fuzzable request
         router.
-        '''
+        """
         bruteforce_plugins = self._w3af_core.plugins.plugins['bruteforce']
 
         if bruteforce_plugins:
@@ -425,14 +435,14 @@ class w3af_core_strategy(object):
             self._bruteforce_consumer.start()
 
     def force_auth_login(self):
-        '''Force a login in a sync way
+        """Force a login in a sync way
         :return: None.
-        '''
+        """
         if self._auth_consumer is not None:
             self._auth_consumer.force_login()
 
     def _setup_auth(self, timeout=5):
-        '''
+        """
         Start the thread that will make sure the xurllib always has a "fresh"
         session. The thread will call is_logged() and login() for each enabled
         auth plugin every "timeout" seconds.
@@ -440,7 +450,7 @@ class w3af_core_strategy(object):
         If there is a specific need to make sure that the session is fresh before
         performing any step, the developer needs to run the force_auth_login()
         method.
-        '''
+        """
         auth_plugins = self._w3af_core.plugins.plugins['auth']
 
         if auth_plugins:
@@ -449,9 +459,9 @@ class w3af_core_strategy(object):
             self._auth_consumer.force_login()
 
     def _setup_audit(self):
-        '''
+        """
         Starts the audit plugin consumer
-        '''
+        """
         om.out.debug('Called _setup_audit()')
 
         audit_plugins = self._w3af_core.plugins.plugins['audit']
