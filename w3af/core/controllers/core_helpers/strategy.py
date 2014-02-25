@@ -280,8 +280,8 @@ class w3af_core_strategy(object):
         consumers. Usually this means calling the ExceptionHandler which
         will decide what to do with it.
 
-        Please note that ExtendedUrllib can raise a w3afMustStopByUserRequest which
-        should get through this piece of code and be re-raised in order to
+        Please note that ExtendedUrllib can raise a w3afMustStopByUserRequest
+        which should get through this piece of code and be re-raised in order to
         reach the try/except clause in w3afCore's start.
         """
         self._w3af_core.exception_handler.handle_exception_data(exception_data)
