@@ -42,7 +42,7 @@ class test_route(PayloadTestHelper):
     def test_route(self):
         result = exec_payload(self.shell, 'route', use_api=True)
         routes = result['route']
-        print routes
+
         for route_info in routes:
             dest = route_info['Destination']
             gw = route_info['Gateway']
@@ -53,8 +53,9 @@ class test_route(PayloadTestHelper):
             self.assertEqual(gw.count('.'), 3)
             self.assertEqual(mask.count('.'), 3)
             
-            self.assertTrue(iface.startswith('eth') or \
-                            iface.startswith('wlan') or \
-                            iface.startswith('ppp') or \
-                            iface.startswith('vbox') or \
+            self.assertTrue(iface.startswith('eth') or
+                            iface.startswith('wlan') or
+                            iface.startswith('ppp') or
+                            iface.startswith('vbox') or
+                            iface.startswith('lxcbr') or
                             iface.startswith('lo'), iface)
