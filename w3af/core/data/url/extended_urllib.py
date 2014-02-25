@@ -1,4 +1,4 @@
-'''
+"""
 extended_urllib.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import httplib
 import socket
 import threading
@@ -55,11 +55,11 @@ MAX_ERROR_COUNT = 10
 
 
 class ExtendedUrllib(object):
-    '''
+    """
     This is a urllib2 wrapper.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
@@ -81,28 +81,28 @@ class ExtendedUrllib(object):
         self._ignore_errors_conf = False
 
     def pause(self, pause_yes_no):
-        '''
+        """
         When the core wants to pause a scan, it calls this method, in order to
         freeze all actions
 
         :param pause_yes_no: True if I want to pause the scan;
                              False to un-pause it.
-        '''
+        """
         self._user_paused = pause_yes_no
 
     def stop(self):
-        '''
+        """
         Called when the user wants to finish a scan.
-        '''
+        """
         self._user_stopped = True
 
     def _before_send_hook(self):
-        '''
+        """
         This is a method that is called before every request is sent. I'm using
         it as a hook implement:
             - The pause/stop feature
             - Memory debugging features
-        '''
+        """
         self._sleep_if_paused_die_if_stopped()
 
         self._memory_usage_counter += 1
@@ -111,9 +111,9 @@ class ExtendedUrllib(object):
             self._memory_usage_counter = 0
 
     def _sleep_if_paused_die_if_stopped(self):
-        '''
+        """
         This method sleeps until self._user_paused is False.
-        '''
+        """
         def analyze_state():
             # There might be errors that make us stop the process
             if self._error_stopped:
@@ -131,15 +131,15 @@ class ExtendedUrllib(object):
         analyze_state()
 
     def clear(self):
-        '''Clear all status set during the scanner run'''
+        """Clear all status set during the scanner run"""
         self._user_stopped = False
         self._user_paused = False
         self._error_stopped = False
 
     def end(self):
-        '''
+        """
         This method is called when the ExtendedUrllib is not going to be used anymore.
-        '''
+        """
         self._opener = None
         self.clear()
         self.settings.clear_cookies()
@@ -156,24 +156,24 @@ class ExtendedUrllib(object):
             self._opener = self.settings.get_custom_opener()
 
     def get_headers(self, uri):
-        '''
+        """
         :param uri: The URI we want to know the request headers
 
         :return: A Headers object with the HTTP headers that would be added by
                 the library when sending a request to uri.
-        '''
+        """
         req = HTTPRequest(uri)
         req = self._add_headers(req)
         return Headers(req.headers)
 
     def get_cookies(self):
-        '''
+        """
         :return: The cookies that this uri opener has collected during this scan.
-        '''
+        """
         return self.settings.get_cookies()
 
     def send_raw_request(self, head, postdata, fix_content_len=True):
-        '''
+        """
         In some cases the ExtendedUrllib user wants to send a request that was typed
         in a textbox or is stored in a file. When something like that happens,
         this library allows the user to send the request by specifying two
@@ -184,7 +184,7 @@ class ExtendedUrllib(object):
         :param fix_content_len: Indicates if the content length has to be fixed or not.
 
         :return: An HTTPResponse object.
-        '''
+        """
         # Parse the two strings
         fuzz_req = HTTPRequestParser(head, postdata)
 
@@ -208,7 +208,7 @@ class ExtendedUrllib(object):
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
                     cookies=True):
-        '''
+        """
         Sends a mutant to the remote web server.
 
         :param callback: If None, return the HTTP response object, else call
@@ -217,7 +217,7 @@ class ExtendedUrllib(object):
 
         :return: The HTTPResponse object associated with the request
                  that was just sent.
-        '''
+        """
         #
         # IMPORTANT NOTE: If you touch something here, the whole framework may
         # stop working!
@@ -254,7 +254,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True):
-        '''
+        """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
 
@@ -269,7 +269,7 @@ class ExtendedUrllib(object):
         :param cookies: Send stored cookies in request (or not)
 
         :return: An HTTPResponse object.
-        '''
+        """
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.GET() must be of '
                             'url.URL type.')
@@ -293,14 +293,14 @@ class ExtendedUrllib(object):
 
     def POST(self, uri, data='', headers=Headers(), grep=True,
              cache=False, cookies=True):
-        '''
+        """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
 
         :param uri: This is the url where to post.
         :param data: A string with the data for the POST.
         :return: An HTTPResponse object.
-        '''
+        """
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.POST() must be of '
                             'url.URL type.')
@@ -324,7 +324,7 @@ class ExtendedUrllib(object):
         return self._send(req, grep=grep)
 
     def get_remote_file_size(self, req, cache=True):
-        '''
+        """
         This method was previously used in the framework to perform a HEAD
         request before each GET/POST (ouch!) and get the size of the response.
         The bad thing was that I was performing two requests for each resource...
@@ -334,7 +334,7 @@ class ExtendedUrllib(object):
         to call it directly or something.
 
         :return: The file size of the remote file.
-        '''
+        """
         res = self.HEAD(req.get_full_url(), headers=req.headers,
                         data=req.get_data(), cache=cache)
 
@@ -363,12 +363,12 @@ class ExtendedUrllib(object):
             return 0
 
     def __getattr__(self, method_name):
-        '''
+        """
         This is a "catch-all" way to be able to handle every HTTP method.
 
         :param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
-        '''
+        """
         class AnyMethod(object):
 
             def __init__(self, xu, method):
@@ -377,11 +377,11 @@ class ExtendedUrllib(object):
 
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
                          grep=True, cookies=True):
-                '''
+                """
                 :return: An HTTPResponse object that's the result of
                     sending the request with a method different from
                     "GET" or "POST".
-                '''
+                """
                 if not isinstance(uri, URL):
                     raise TypeError('The uri parameter of AnyMethod.'
                                     '__call__() must be of url.URL type.')
@@ -426,12 +426,12 @@ class ExtendedUrllib(object):
             return False
 
     def _send(self, req, grep=True):
-        '''
+        """
         Actually send the request object.
 
         :param req: The HTTPRequest object that represents the request.
         :return: An HTTPResponse object.
-        '''
+        """
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
         self._before_send_hook()
@@ -464,20 +464,20 @@ class ExtendedUrllib(object):
                                              original_url_inst, start_time)
     
     def _handle_send_socket_error(self, req, exception, grep, original_url):
-        '''
+        """
         This error handling is separated from the other because at some point I
         want to have some type of backoff feature here that will wait increasing
         amounts of seconds before retrying when a timeout occurs.
-        '''
+        """
         self._increment_global_error_count(exception)
         return self._generic_send_error_handler(req, exception, grep, original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
-        '''
+        """
         I get to this section of the code if a 400 error is returned
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
-        '''
+        """
         self._increment_global_error_count(exception)
         return self._generic_send_error_handler(req, exception, grep, original_url)
         
@@ -496,12 +496,12 @@ class ExtendedUrllib(object):
     
     def _handle_send_success(self, req, res, grep, original_url,
                              original_url_inst, start_time):
-        '''
+        """
         Handle the case in "def _send" where the request was successful and
         we were able to get a valid HTTP response.
         
         :return: An HTTPResponse object.
-        '''
+        """
         # Everything went well!
         rdata = req.get_data()
         if not rdata:
@@ -548,9 +548,9 @@ class ExtendedUrllib(object):
         return http_resp
 
     def _retry(self, req, grep, urlerr):
-        '''
+        """
         Try to send the request again while doing some error handling.
-        '''
+        """
         req_id = id(req)
         
         if self._error_count.setdefault(req_id, 1) <= \
@@ -567,7 +567,7 @@ class ExtendedUrllib(object):
             raise w3afMustStopOnUrlError(urlerr, req)
 
     def _increment_global_error_count(self, error, parsed_traceback=[]):
-        '''
+        """
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException" subtype.
 
@@ -578,7 +578,7 @@ class ExtendedUrllib(object):
             ('trace_test.py', '5', 'abc')]
             Where ('filename', 'line-number', 'function-name')
 
-        '''
+        """
         if self._ignore_errors_conf:
             return
 
@@ -599,9 +599,9 @@ class ExtendedUrllib(object):
                                                 last_errors)
     
     def _handle_error_on_increment(self, error, parsed_traceback, last_errors):
-        '''
+        """
         Handle the error
-        '''
+        """
         # Stop using ExtendedUrllib instance
         self._error_stopped = True
 
@@ -671,13 +671,13 @@ class ExtendedUrllib(object):
             raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
 
     def ignore_errors(self, yes_no):
-        '''
+        """
         Let the library know if errors should be ignored or not. Basically,
         ignore all calls to "_increment_global_error_count" and don't raise the
         w3afMustStopException.
 
         :param yes_no: True to ignore errors.
-        '''
+        """
         self._ignore_errors_conf = yes_no
 
     def _zero_global_error_count(self):
@@ -699,10 +699,10 @@ class ExtendedUrllib(object):
         self._evasion_plugins = evasion_plugins
 
     def _evasion(self, request):
-        '''
+        """
         :param request: HTTPRequest instance that is going to be modified
         by the evasion plugins
-        '''
+        """
         for eplugin in self._evasion_plugins:
             try:
                 request = eplugin.modify_request(request)
@@ -734,11 +734,11 @@ class ExtendedUrllib(object):
 
 @contextmanager
 def raise_size_limit(respect_size_limit):
-    '''
+    """
     TODO: This is an UGLY hack that allows me to download oversized files,
           but it shouldn't be implemented like this! It should look more
           like the cookies attribute/parameter which uses the cookie_handler.
-    '''
+    """
     if not respect_size_limit:
         original_size = cf.cf.get('max_file_size')
         cf.cf.save('max_file_size', 10 ** 10)

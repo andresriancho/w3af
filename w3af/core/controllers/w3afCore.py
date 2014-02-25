@@ -270,8 +270,8 @@ class w3afCore(object):
 
     def stop(self):
         """
-        This method is called by the user interface layer, when the user "clicks"
-        on the stop button.
+        This method is called by the user interface layer, when the user
+        "clicks" on the stop button.
 
         :return: None. The stop method can take some seconds to return.
         """
@@ -421,6 +421,7 @@ class w3afCore(object):
                    'the correct permissions and ownership.' % TEMP_DIR)
             print msg
             sys.exit(-3)
+
 
 def handle_threading_error(scans_completed):
     """

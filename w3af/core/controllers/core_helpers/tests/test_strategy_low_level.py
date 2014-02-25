@@ -34,7 +34,7 @@ from w3af.core.data.kb.knowledge_base import kb
 @attr('moth')
 class TestStrategy(unittest.TestCase):
     
-    TARGET_URL = get_moth_http('/audit/sql_injection/'\
+    TARGET_URL = get_moth_http('/audit/sql_injection/'
                                'where_integer_qs.py?id=1')
 
     @attr('ci_fails')    
@@ -77,7 +77,7 @@ class TestStrategy(unittest.TestCase):
         thread_names = [t.name for t in threading.enumerate()]
         thread_names = set(thread_names)
         
-        expected_names = set(['MainThread', 'SQLiteExecutor', 'OutputManager'])
+        expected_names = {'MainThread', 'SQLiteExecutor', 'OutputManager'}
         
         self.assertEqual(thread_names, expected_names)
     
@@ -111,7 +111,7 @@ class TestStrategy(unittest.TestCase):
         thread_names = [t.name for t in threading.enumerate()]
         thread_names = set(thread_names)
         
-        expected_names = set(['MainThread', 'SQLiteExecutor', 'OutputManager'])
+        expected_names = {'MainThread', 'SQLiteExecutor', 'OutputManager'}
         
         self.assertEqual(thread_names, expected_names)
         

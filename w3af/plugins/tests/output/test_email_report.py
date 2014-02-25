@@ -62,21 +62,46 @@ class TestEmailReport(PluginTest):
     }
 
     def test_found_xss(self):
+        # monkey-patch smtplib so we don't send actual emails
+        smtp = None
+        inbox = []
+
+        class Message(object):
+            def __init__(self, from_address, to_address, fullmessage):
+                self.from_address = from_address
+                self.to_address = to_address
+                self.fullmessage = fullmessage
+
+        class DummySMTP(object):
+            def __init__(self):
+                smtp = self
+
+            def login(self, username, password):
+                self.username = username
+                self.password = password
+
+            def sendmail(self, from_address, to_address, fullmessage):
+                inbox.append(Message(from_address, to_address, fullmessage))
+                return []
+
+            def quit(self):
+                self.has_quit = True
+
         cfg = self._run_configs['cfg']
-        
+
         with patch('w3af.plugins.output.email_report.smtplib.SMTP') as mock_smtp:
             mock_smtp.return_value = DummySMTP()
-            
-            self._scan(cfg['target'], cfg['plugins'])
-    
+
+            self._scan(cfg['target'], cfg['plugins'], debug=True)
+
             xss_vulns = self.kb.get('xss', 'xss')
-            
+
             self.assertEqual(len(inbox), 1)
-            
             email_msg = inbox[0]
+
             self.assertEqual(email_msg.from_address, self.from_addr)
             self.assertEqual(email_msg.to_address, [self.to_addrs,])
-            
+
             content = email_msg.fullmessage
             xss_count = 0
             pxss_count = 0
@@ -89,31 +114,4 @@ class TestEmailReport(PluginTest):
             
             self.assertEqual(len(xss_vulns), xss_count + pxss_count)
 
-# monkey-patch smtplib so we don't send actual emails
-smtp = None
-inbox = []
 
-
-class Message(object):
-    def __init__(self, from_address, to_address, fullmessage):
-        self.from_address = from_address
-        self.to_address = to_address
-        self.fullmessage = fullmessage
-
-
-class DummySMTP(object):
-    def __init__(self):
-        global smtp
-        smtp = self
-
-    def login(self, username, password):
-        self.username = username
-        self.password = password
-
-    def sendmail(self, from_address, to_address, fullmessage):
-        global inbox
-        inbox.append(Message(from_address, to_address, fullmessage))
-        return []
-
-    def quit(self):
-        self.has_quit = True

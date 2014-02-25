@@ -56,3 +56,13 @@ class TestBaseConsumer(unittest.TestCase):
         self.bc.terminate()
         
         self.assertEqual(self.bc._teardown.call_count, 1)
+
+    def test_terminate_terminate(self):
+        self.bc.start()
+
+        self.bc._teardown = Mock()
+
+        self.bc.terminate()
+
+        self.assertEqual(self.bc._teardown.call_count, 1)
+        self.assertRaises(AssertionError, self.bc.terminate)

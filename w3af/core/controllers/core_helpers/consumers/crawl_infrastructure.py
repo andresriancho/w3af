@@ -1,4 +1,4 @@
-'''
+"""
 crawl_infrastructure.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Queue
 
 import w3af.core.controllers.output_manager as om
@@ -35,21 +35,21 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class crawl_infrastructure(BaseConsumer):
-    '''
+    """
     Consumer thread that takes fuzzable requests from the input Queue that is
     seeded by the core, sends each fr to all crawl and infrastructure plugins,
     get()'s the output from those plugins and puts them in the input Queue
     again for continuing with the discovery process.
-    '''
+    """
 
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
                  max_discovery_time):
-        '''
+        """
         :param in_queue: The input queue that will feed the crawl_infrastructure plugins
         :param crawl_infrastructure_plugins: Instances of crawl_infrastructure plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param max_discovery_time: The max time (in seconds) to use for the discovery phase
-        '''
+        """
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
                                                    thread_name='CrawlInfra')
@@ -64,10 +64,10 @@ class crawl_infrastructure(BaseConsumer):
         self._report_max_time = True
 
     def run(self):
-        '''
+        """
         Consume the queue items, sending them to the plugins which are then
         going to find vulnerabilities, new URLs, etc.
-        '''
+        """
 
         while True:
 
@@ -95,7 +95,7 @@ class crawl_infrastructure(BaseConsumer):
                     self.in_queue.task_done()
 
     def _teardown(self, plugin=None):
-        '''End plugins'''
+        """End plugins"""
         if plugin is None:
             to_teardown = self._consumer_plugins
         else:
@@ -151,9 +151,9 @@ class crawl_infrastructure(BaseConsumer):
 
     @task_decorator
     def _route_plugin_results(self, plugin):
-        '''
+        """
         Retrieve the results from all plugins and put them in our output Queue.
-        '''
+        """
         while True:
 
             try:
@@ -162,9 +162,9 @@ class crawl_infrastructure(BaseConsumer):
                 break
             
             else:
-                # The plugin has finished and now we need to analyze which of
-                # the returned fuzzable_request_list are new and should be put
-                # in the input_queue again.
+                # The plugin has queued some results and now we need to analyze
+                # which of the returned fuzzable requests are new and should be
+                # put in the input_queue again.
                 if self._is_new_fuzzable_request(plugin, fuzzable_request):
 
                     # Update the list / set that lives in the KB
@@ -182,10 +182,10 @@ class crawl_infrastructure(BaseConsumer):
                     break
 
     def _force_end(self):
-        '''
+        """
         I had to create this method in order to be able to quickly end the
         discovery phase from within the same thread.
-        '''
+        """
         # Clear all items in the input queue so no more work is performed
         while not self.in_queue.empty():
             self.in_queue.get()
@@ -199,13 +199,8 @@ class crawl_infrastructure(BaseConsumer):
         self.cleanup()
         self.show_summary()
 
-    def terminate(self):
-        super(crawl_infrastructure, self).terminate()
-        self.cleanup()
-        self.show_summary()
-
     def cleanup(self):
-        '''Remove the crawl and bruteforce plugins from memory.'''
+        """Remove the crawl and bruteforce plugins from memory."""
         self._w3af_core.plugins.plugins['crawl'] = []
         self._w3af_core.plugins.plugins['infrastructure'] = []
 
@@ -213,10 +208,10 @@ class crawl_infrastructure(BaseConsumer):
         self._consumer_plugins = []
 
     def show_summary(self):
-        '''
-        This method is called after the crawl and bruteforce phases finishes and
-        reports identified URLs and fuzzable requests to the user.
-        '''
+        """
+        This method is called after the crawl and infrastructure phases finishes
+        and reports identified URLs and fuzzable requests to the user.
+        """
         if not len(kb.kb.get_all_known_urls()):
             om.out.information('No URLs found during crawl phase.')
             return
@@ -243,11 +238,11 @@ class crawl_infrastructure(BaseConsumer):
         map(om.out.information, tmp_fr)
 
     def _should_stop_discovery(self):
-        '''
+        """
         :return: True if we should stop the crawl phase because of time limit
                  set by the user, or simply because the user wants to stop the
                  crawl phase.
-        '''
+        """
         if not self._running:
             return True
         
@@ -262,10 +257,10 @@ class crawl_infrastructure(BaseConsumer):
         return False
 
     def _remove_discovery_plugin(self, plugin_to_remove):
-        '''
+        """
         Remove plugins that don't want to be run anymore and raised a w3afRunOnce
         exception during the crawl phase.
-        '''
+        """
         for plugin_type in ('crawl', 'infrastructure'):
             if plugin_to_remove in self._w3af_core.plugins.plugins[plugin_type]:
 
@@ -283,13 +278,13 @@ class crawl_infrastructure(BaseConsumer):
                 break
 
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
-        '''
+        """
         :param plugin: The plugin that found these fuzzable requests
 
         :param fuzzable_request: A potentially new fuzzable request
 
         :return: True if @FuzzableRequest is new (never seen before).
-        '''
+        """
         base_urls_cf = cf.cf.get('baseURLs')
 
         fr_uri = fuzzable_request.get_uri()
@@ -362,7 +357,7 @@ class crawl_infrastructure(BaseConsumer):
 
     @task_decorator
     def _discover_worker(self, plugin, fuzzable_request):
-        '''
+        """
         This method runs @plugin with FuzzableRequest as parameter and returns
         new fuzzable requests and/or stores vulnerabilities in the knowledge base.
 
@@ -377,7 +372,7 @@ class crawl_infrastructure(BaseConsumer):
         TODO: unit-test this method
 
         :return: A list with the newly found fuzzable requests.
-        '''
+        """
         om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
                                                          fuzzable_request.get_uri()))
 
@@ -412,4 +407,3 @@ class crawl_infrastructure(BaseConsumer):
                 ve = ValueError(msg)
                 self.handle_exception(plugin.get_type(), plugin.get_name(),
                                       fuzzable_request, ve)
-                
