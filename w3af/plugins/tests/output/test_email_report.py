@@ -63,7 +63,6 @@ class TestEmailReport(PluginTest):
 
     def test_found_xss(self):
         # monkey-patch smtplib so we don't send actual emails
-        smtp = None
         inbox = []
 
         class Message(object):
