@@ -156,7 +156,9 @@ class PluginTest(unittest.TestCase):
 
         # Enable text output plugin for debugging
         if debug:
-            self.w3afcore.plugins.set_plugins(['text_file', ], 'output')
+            enabled_output = self.w3afcore.plugins.get_enabled_plugins('output')
+            enabled_output += ['text_file']
+            self.w3afcore.plugins.set_plugins(enabled_output, 'output')
 
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
