@@ -53,8 +53,10 @@ def whereis_moth():
     return {'http': moth or DEFAULT_MOTH,
             'https': moths or DEFAULT_MOTHS}
 
+
 def get_moth_http(path='/'):
     return 'http://%s%s' % (whereis_moth()['http'], path)
+
 
 def get_moth_https(path='/'):
     return 'https://%s%s' % (whereis_moth()['https'], path)
