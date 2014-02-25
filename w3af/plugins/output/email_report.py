@@ -1,4 +1,4 @@
-'''
+"""
 email_report.py
 
 This file is part of w3af, http://w3af.org/ .
@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import smtplib
 
 from email.mime.text import MIMEText
@@ -31,15 +31,15 @@ from w3af.core.data.options.option_list import OptionList
 
 
 class email_report(OutputPlugin):
-    '''Email report to specified addresses.
+    """Email report to specified addresses.
 
     :author: Taras (oxdef@oxdef.info)
-    '''
+    """
 
-    MSG_TMPL = '''Hello!
+    MSG_TMPL = """Hello!
     Target: %s has some vulnerabilities.
 
-    '''
+    """
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -103,12 +103,12 @@ class email_report(OutputPlugin):
             server.sendmail(self.fromAddr, self.toAddrs, msg.as_string())
             server.quit()
         except Exception, e:
-            msg = 'The SMTP settings in email_report plugin seem to be incorrect.'
-            msg += ' Original error: "%s".' % e
-            om.out.error(msg)
+            msg = 'The SMTP settings in email_report plugin seem to be'\
+                  ' incorrect. Original error: "%s".'
+            om.out.error(msg % e)
 
     def get_long_desc(self):
-        return '''
+        return """
         This plugin sends short report (only vulnerabilities) by email to
         specified addresses.
 
@@ -117,7 +117,7 @@ class email_report(OutputPlugin):
             - smtpPort
             - toAddrs
             - fromAddr
-        '''
+        """
 
     def do_nothing(self, *args, **kwds):
         pass
