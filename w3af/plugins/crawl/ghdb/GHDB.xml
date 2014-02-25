@@ -1245,4 +1245,75 @@ How This Work?
 This dork will searches databases phpMyAdmin. Searches only sql formats and founds admin username and passwords to use this information to login as administrator
 
 Sorry for my english. I'm not a native speaker
- 		 	   		  </textualDescription></signature></searchEngineSignature>
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3924</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3924/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:/administrator/index.php?autologin=1</querystring><shortDescription>inurl:/administrator/index.php?autologin=1</shortDescription><textualDescription>Title: google hacking username and password of joomla
+Google Dork: inurl:/administrator/index.php?autologin=1
+Date: 2013-11-30
+Author: Ashiyane Digital Security Team
+Software Link: www.joomla.org/
+Version: joomla 2.5
+Location: /administrator/index.php?autologin=1&amp;passwd=[password]&amp;username=[username]
+</textualDescription></signature><signature><signatureReferenceNumber>3925</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3925/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=allinurl:&quot;/main/auth/profile.php&quot; -github -google</querystring><shortDescription>allinurl:&quot;/main/auth/profile.php&quot; -github -google</shortDescription><textualDescription>[+] This dork will help you find Chamilo login portals.  Depending on the
+version, the site could be vulnerable to SQL injection.
+
+See Here-
+http://www.exploit-db.com/exploits/30012/
+
+
+Regards,
+
+necrodamus
+
+http://www.twitter.com/necrodamus2600
+</textualDescription></signature><signature><signatureReferenceNumber>3926</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3926/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:&quot;=[ 1n73ct10n privat shell ]=&quot;</querystring><shortDescription>intitle:&quot;=[ 1n73ct10n privat shell ]=&quot;</shortDescription><textualDescription>the dork is used to find uploaded 1n73ct10n Shell on website.
+found by Anon?M ID
+</textualDescription></signature><signature><signatureReferenceNumber>3927</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3927/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:&quot;WSO 2.4&quot; [ Sec. Info ], [ Files ], [ Console ], [ Sql ], [ Php ], [ Safe mode ], [ String tools ], [ Bruteforce ], [ Network ], [ Self remove ]</querystring><shortDescription>intitle:&quot;WSO 2.4&quot; [ Sec. Info ], [ Files ], [ Console ], [ Sql ], [ Php ], [ Safe mode ], [ String tools ], [ Bruteforce ], [ Network ], [ Self remove ]</shortDescription><textualDescription>dork to find uploaded WSO 2.4 shell by hackers.
+found by Anon?M ID
+</textualDescription></signature><signature><signatureReferenceNumber>3928</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3928/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:not accepted inurl:&quot;union+select&quot; inurl:&quot;id?=&quot;</querystring><shortDescription>intitle:not accepted inurl:&quot;union+select&quot; inurl:&quot;id?=&quot;</shortDescription><textualDescription>Find IDS and Mod security
+
+
+dork: intitle:not accepted inurl:&quot;union+select&quot; inurl:&quot;id?=&quot;
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3929</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3929/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=allinurl:&quot;zimbra/?zinitmode=http&quot; -google -github</querystring><shortDescription>allinurl:&quot;zimbra/?zinitmode=http&quot; -google -github</shortDescription><textualDescription>zimbra webmail login page lookup
+allinurl:&quot;zimbra/?zinitmode=http&quot; -google -github
+
+
+-- 
+-----------------------------------------------------------------
+*|JJohnny *RANDRIAMAMPIONONA              |
+|     Phone: (+261) 33 08 003 61                    |
+|      NSS Engineer | IS Security Enthusiast   |
+|  |----------------------------------------------------------------|
+</textualDescription></signature><signature><signatureReferenceNumber>3930</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3930/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intext:&quot;Access denied for&quot; intitle:&quot;Shopping cart&quot;</querystring><shortDescription>intext:&quot;Access denied for&quot; intitle:&quot;Shopping cart&quot;</shortDescription><textualDescription>Here is a Dork I use in conjunction with sqlmap, for shopping carts with
+MySQL
+Error messages.
+It got 80.000 results.
+
+intext:&quot;Access denied for&quot; intitle:&quot;Shopping cart&quot;
+</textualDescription></signature><signature><signatureReferenceNumber>3931</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3931/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=allinurl:/hide_my_wp=</querystring><shortDescription>allinurl:/hide_my_wp=</shortDescription><textualDescription>i just found a google dork that is
+file/path disclosure of
+Hide My WP plugin
+
+Google dork - allinurl:/hide_my_wp=
+
+it will show the plugin file folder and all file.
+
+ thanks
+
+kamrul hassan arman
+</textualDescription></signature><signature><signatureReferenceNumber>3932</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3932/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:&quot;/reports/rwservlet&quot; intext:&quot;Oracle&quot;</querystring><shortDescription>inurl:&quot;/reports/rwservlet&quot; intext:&quot;Oracle&quot;</shortDescription><textualDescription>Search Oracle Reports likely vulnerable to DB user/password disclosure
+(CVE-2012-3152
+and CVE-2012-3153)
+
+-- 
+Felipe Molina
+</textualDescription></signature><signature><signatureReferenceNumber>3933</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3933/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=intitle:&quot;pChart 2.x - examples&quot; intext:&quot;2.1.3&quot;</querystring><shortDescription>intitle:&quot;pChart 2.x - examples&quot; intext:&quot;2.1.3&quot;</shortDescription><textualDescription>The web application is vulnerable to Directory Traversal and XSS.
+The version number can be omitted, all prior versions prior than 2.1.4
+are vulnerable.
+Advisories and Vulnerabilities
+http://www.exploit-db.com/exploits/31173/
+http://www.pchart.net/advisory
+</textualDescription></signature><signature><signatureReferenceNumber>3934</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3934/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=&quot;[function.getimagesize]: failed to open stream: No such file or directory in&quot;</querystring><shortDescription>&quot;[function.getimagesize]: failed to open stream: No such file or directory in&quot;</shortDescription><textualDescription>Just another error that reveals full paths</textualDescription></signature><signature><signatureReferenceNumber>3935</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3935/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=site:bitbucket.org inurl:.bash_history</querystring><shortDescription>site:bitbucket.org inurl:.bash_history</shortDescription><textualDescription>Finding Sensitive data
+
+site:bitbucket.org inurl:.bash_history
+
+By Pharos
+</textualDescription></signature></searchEngineSignature>
