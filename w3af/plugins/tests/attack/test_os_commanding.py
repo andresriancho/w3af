@@ -40,7 +40,6 @@ class TestOSCommandingShell(ExecExploitTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_exploit_osc(self):
         # Run the scan
         cfg = self._run_configs['cfg']
