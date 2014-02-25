@@ -124,8 +124,13 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
 
         scan_commands = scan_commands_1 + scan_commands_2
 
-        self.console = ConsoleUI(commands=scan_commands, do_upd=False)
-        self.console.sh()
+        try:
+            self.console = ConsoleUI(commands=scan_commands, do_upd=False)
+            self.console.sh()
+        except AttributeError, ate:
+            for m in self._mock_stdout.messages:
+                print m
+            raise ate
 
         assert_result, msg = self.startswith_expected_in_output(expected_1)
         self.assertTrue(assert_result, msg)
