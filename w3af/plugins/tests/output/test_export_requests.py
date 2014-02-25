@@ -1,5 +1,5 @@
 # coding: utf8
-'''
+"""
 test_export_requests.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import urllib
 
@@ -42,8 +42,8 @@ class TestExportRequests(PluginTest):
                 ),
                 'output': (
                     PluginConfig('export_requests',
-                                 (
-                                 'output_file', 'output-fr.csv', PluginConfig.STR)),
+                                 ('output_file',
+                                  'output-fr.csv', PluginConfig.STR)),
                 )
             }
         },
@@ -54,21 +54,14 @@ class TestExportRequests(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        urls = self.kb.get_all_known_urls()
         freq = self.kb.get_all_known_fuzzable_requests()
 
         self.assertTrue(os.path.exists('output-fr.csv'))
-
         file_urls = self._get_urls_from_file()
 
         self.assertEquals(
             set(sorted(file_urls)),
-            set(sorted(urls))
-        )
-
-        self.assertEquals(
-            set(sorted(file_urls)),
-            set(sorted([fr.get_url() for fr in freq]))
+            set(sorted([fr.get_uri() for fr in freq]))
         )
 
     def _get_urls_from_file(self):
