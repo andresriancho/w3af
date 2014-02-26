@@ -34,7 +34,7 @@ test:
     # Since the auto_update feature needs the git repository history, we run
     # this command which will retrieve it (since CircleCI doesn't for perf).
     # In our case it is fine, and it will get cached.
-    - [[ ! -e .git/shallow ]] || git fetch --unshallow
+    - if [[ ! -e .git/shallow ]]; then git fetch --unshallow; fi
 
   override:
     - w3af/core/controllers/ci/nosetests_wrapper/main.py:
