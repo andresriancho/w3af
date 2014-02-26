@@ -9,9 +9,12 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import NOSE_IGNORE_SEL
 
 
 def unique_everseen(iterable, key=None):
-    "List unique elements, preserving order. Remember all elements ever seen."
+    """
+    List unique elements, preserving order. Remember all elements ever seen.
+
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
     # unique_everseen('ABBCcAD', str.lower) --> A B C D
+    """
     seen = set()
     seen_add = seen.add
     if key is None:

@@ -62,6 +62,10 @@ if __name__ == '__main__':
     done_list = []
     
     configure_logging(LOG_FILE)
+
+    # Generate the noseids pickle file so the nose commands can read the ids
+    # from there.
+    all_tests = get_all_tests()
     
     with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for nose_cmd, first, last in nose_strategy():
@@ -92,7 +96,6 @@ if __name__ == '__main__':
             # finished/done
             future_list = [f for f in future_list if f not in done_list]
                 
-    all_tests = get_all_tests()
     run_tests = get_run_tests()
     ignored_tests = get_ignored_tests()
     print_summary(all_tests, run_tests, ignored_tests) 
