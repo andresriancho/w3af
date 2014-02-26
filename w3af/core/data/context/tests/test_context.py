@@ -327,4 +327,8 @@ class TestContext(unittest.TestCase):
 
     def test_django_500_sample(self):
         html = file(os.path.join(self.SAMPLES_DIR, 'django-500.html')).read()
-        self.assertEqual(get_context(html, "QUBD5 ="), [])
+        contexts = get_context(html, "QUBD5 =")
+
+        self.assertEqual(len(contexts), 9)
+        for c in contexts:
+            self.assertIsInstance(c, HtmlText)
