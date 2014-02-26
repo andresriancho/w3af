@@ -1,4 +1,4 @@
-'''
+"""
 test_google.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import random
 import re
 import unittest
@@ -37,14 +37,14 @@ URL_REGEX = re.compile(
 
 @attr('internet')
 class test_google(unittest.TestCase):
-    '''
+    """
     This unittest verifies that the Google class works. Remember that this class
     internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to avoid
     being blocked by Google's anti-automation.
 
     @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
           tests on these particular search implementations.
-    '''
+    """
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 20),
                                                 ('two and half man', 20),
@@ -82,19 +82,23 @@ class test_google(unittest.TestCase):
                     break
             self.assertTrue(found)
 
+
 class BaseGoogleAPISearch(unittest.TestCase):
-    '''
+    """
     @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
           tests on these particular search implementations.
 
     This base class is not intended to be run by nosetests.
-    '''
+    """
     GoogleApiSearcher = None
 
     COUNT = 10
     
     def setUp(self):
         self.opener = ExtendedUrllib()
+
+    def tearDown(self):
+        self.opener.end()
 
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:
@@ -106,8 +110,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         start = 0
         # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
-        searcher = self.GoogleApiSearcher(
-            self.opener, query, start, self.COUNT)
+        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)
 
         self.assertEqual(searcher.status, IS_NEW)
 
@@ -149,8 +152,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         start = 0
         # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
-        searcher = self.GoogleApiSearcher(
-            self.opener, query, start, self.COUNT)
+        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)
 
         self.assertEqual(searcher.status, IS_NEW)
 

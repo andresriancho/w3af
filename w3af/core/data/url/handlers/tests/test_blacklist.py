@@ -1,4 +1,4 @@
-'''
+"""
 test_blacklist.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import urllib2
 
@@ -45,7 +45,7 @@ class TestBlacklistHandler(unittest.TestCase):
         cf.cf.save('non_targets', [])
     
     def test_blacklist_handler_block(self):
-        '''Verify that the blacklist handler works as expected'''
+        """Verify that the blacklist handler works as expected"""
         
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
@@ -61,7 +61,7 @@ class TestBlacklistHandler(unittest.TestCase):
     
     @attr('moth')
     def test_blacklist_handler_pass(self):
-        '''Verify that the blacklist handler works as expected'''
+        """Verify that the blacklist handler works as expected"""
         opener = urllib2.build_opener(BlacklistHandler)
         
         request = urllib2.Request(get_moth_http())
@@ -71,8 +71,8 @@ class TestBlacklistHandler(unittest.TestCase):
         self.assertEqual(response.code, 200)
     
     def test_handler_order_block(self):
-        '''Get an instance of the extended urllib and verify that the blacklist
-        handler still works, even when mixed with all the other handlers.'''
+        """Get an instance of the extended urllib and verify that the blacklist
+        handler still works, even when mixed with all the other handlers."""
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         cf.cf.save('non_targets', [blocked_url,])
@@ -92,8 +92,8 @@ class TestBlacklistHandler(unittest.TestCase):
         
     @attr('moth')
     def test_handler_order_pass(self):
-        '''Get an instance of the extended urllib and verify that the blacklist
-        handler still works, even when mixed with all the other handlers.'''
+        """Get an instance of the extended urllib and verify that the blacklist
+        handler still works, even when mixed with all the other handlers."""
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         safe_url = URL(get_moth_http())
