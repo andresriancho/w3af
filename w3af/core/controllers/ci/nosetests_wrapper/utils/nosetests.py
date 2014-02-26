@@ -85,8 +85,8 @@ def run_nosetests(nose_cmd, first, last):
             idle_time += select_timeout
             if idle_time > NOSE_TIMEOUT:
                 # Log everywhere I can:
-                output_file.write('TIMEOUT\n')
-                stdout += 'TIMEOUT\n'
+                output_file.write('TIMEOUT @ nosetests wrapper\n')
+                stdout += 'TIMEOUT @ nosetests wrapper\n'
                 logging.warning('"%s" timeout waiting for output.' % nose_cmd)
                 
                 # Kill the nosetests command

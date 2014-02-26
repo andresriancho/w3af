@@ -1,4 +1,4 @@
-'''
+"""
 collect_tests.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-'''
+"""
 import os
 import sys
 import shlex
@@ -42,14 +42,14 @@ from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
 
 @nottest
 def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
-    '''
+    """
     Collect tests and return them.
     
     :param fname: The tests will be written to fname in xunit format 
     :param selector: Tests are filtered based on selector
     :return: A test suite as returned by xunitparser with all the tests available
              in the w3af framework source code, without any selectors.
-    '''
+    """
     output_file = os.path.join(ARTIFACT_DIR, fname)
     collect_with_output = nose_params % output_file
     
@@ -90,37 +90,37 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
 
 @nottest
 def get_all_tests():
-    '''
+    """
     Collect all tests and return them
     
     :return: A test suite as returned by xunitparser with all the tests available
              in the w3af framework source code, without any selectors.
-    '''
+    """
     return _get_tests('all.xml')
 
 @nottest
 def get_ignored_tests():
-    '''
+    """
     Collect all ignored tests and return them
     
     :return: A test suite as returned by xunitparser with all the tests available
              in the w3af framework source code, without any selectors.
-    '''
+    """
     return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR,
                       NOSE_COLLECT_IGNORE_PARAMS)
 
 @nottest
 def get_test_ids(nose_selector):
-    '''
+    """
     Generate and parse .noseids and return the contents
     
     :return: A list with the ids of the tests, based on the nose_selector
              that we get as parameter.
-    '''
+    """
     # Generate the .noseids file
     _get_tests('id-collection.xml', nose_selector)
     
-    '''
+    """
     {'failed': ['2455'],
      'ids': {1: ('/home/pablo/workspace/w3af/core/controllers/auto_update/tests/test_git_auto_update.py',
                  'core.controllers.auto_update.tests.test_git_auto_update',
@@ -128,19 +128,19 @@ def get_test_ids(nose_selector):
              2: ('/home/pablo/workspace/w3af/core/controllers/auto_update/tests/test_git_auto_update.py',
                  'core.controllers.auto_update.tests.test_git_auto_update',
                  'TestGitAutoUpdate.test_is_git_repo'),
-    '''
+    """
     nose_ids = pickle.load(file(ID_FILE))
     return nose_ids['ids'].keys()
 
 @nottest
 def get_run_tests():
-    '''
+    """
     Merge all the information from the command outputs into one consolidated
     test suite which contains all tests which were run.
     
     :return: A list with the names of the tests which were run in the same
              format as collect_all_tests to be able to compare them.
-    '''
+    """
     test_suite = None
     msg_fmt = 'Reading %s run tests from: "%s"'
     
