@@ -87,7 +87,8 @@ if __name__ == '__main__':
                         print_will_fail(exit_code)
                     
             except futures.TimeoutError:
-                logging.warning('Hit futures.as_completed timeout. Waiting...')
+                logging.debug('Hit futures.as_completed timeout.')
+                logging.warning('Waiting...')
                 print_status(done_list, total_tests)
             
             # Filter future_list to avoid issues with tasks which are already
