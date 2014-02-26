@@ -1,4 +1,4 @@
-'''
+"""
 test_changelog.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 
 from nose.plugins.attrib import attr
@@ -26,7 +26,6 @@ from w3af.core.controllers.auto_update.changelog import ChangeLog
 
 class TestChangeLog(unittest.TestCase):
     
-    @attr('ci_fails')
     def test_changes_between(self):
         # Hashes from https://github.com/andresriancho/w3af/commits/threading2
         start = 'cb751e941bfa2063ebcef711642ed5d22ff9db87'
@@ -51,7 +50,6 @@ class TestChangeLog(unittest.TestCase):
         self.assertEqual(first_commit.changes, [('D', 'core/controllers/tests/pylint_plugins/pysvn_fix.py'),
                                                 ('M', 'core/controllers/tests/pylint.rc')])
     
-    @attr('ci_fails')
     def test_str(self):
         # Hashes from https://github.com/andresriancho/w3af/commits/threading2
         start = 'cb751e941bfa2063ebcef711642ed5d22ff9db87'
@@ -63,5 +61,4 @@ class TestChangeLog(unittest.TestCase):
         self.assertTrue(changelog_str.startswith('9c5f561441: Removing pysvn fixes for'))
         self.assertIn('    D core/controllers/tests/pylint_', changelog_str)
         self.assertIn('    M core/controllers/tests/pylint.rc', changelog_str)
-        
-        
+
