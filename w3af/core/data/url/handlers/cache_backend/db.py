@@ -1,4 +1,4 @@
-'''
+"""
 db.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sqlite3
 
 import w3af.core.controllers.output_manager as om
@@ -97,11 +97,11 @@ class SQLCachedResponse(CachedResponse):
 
     @staticmethod
     def exists_in_cache(req):
-        '''
+        """
         alias = gen_hash(req)
         histitem = HistoryItem()
         return bool(histitem.find([('alias', alias, "=")]))
-        '''
+        """
         return True
 
     @staticmethod
@@ -111,7 +111,7 @@ class SQLCachedResponse(CachedResponse):
     
     @staticmethod
     def clear():
-        '''
+        """
         Clear the cache (remove all files and directories associated with it).
-        '''
+        """
         return HistoryItem().clear()

@@ -1,4 +1,4 @@
-'''
+"""
 cache.py
 
 Copyright 2006 Andres Riancho
@@ -18,11 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 from w3af.core.data.url.handlers.cache_backend.db import SQLCachedResponse
-
 from w3af.core.controllers.misc.number_generator import (consecutive_number_generator
                                                     as core_num_gen)
 
@@ -33,7 +32,7 @@ CACHE_METHODS = ('GET', 'HEAD')
 
 
 class CacheHandler(urllib2.BaseHandler):
-    '''
+    """
     Stores responses in a persistent on-disk cache.
 
     If a subsequent GET request is made for the same URL, the stored
@@ -42,14 +41,14 @@ class CacheHandler(urllib2.BaseHandler):
     :author: Version 0.1 by Staffan Malmgren <staffan@tomtebo.org>
     :author: Version 0.2 by Andres Riancho
     :author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
-    '''
+    """
     def __init__(self):
         CacheClass.init()
 
     def clear(self):
-        '''
+        """
         Clear the cache (remove all files and directories associated with it).
-        '''
+        """
         return CacheClass.clear()
 
     def default_open(self, request):
@@ -69,6 +68,7 @@ class CacheHandler(urllib2.BaseHandler):
                 # Send None to the urllib2 framework, which means that we don't
                 # know how to handle the request, and we forward it to the next
                 # handler in the list.
+                raise
                 return None
             else:
                 return cache_response_obj
