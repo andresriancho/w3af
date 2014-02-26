@@ -1,4 +1,4 @@
-'''
+"""
 version_manager.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from datetime import date
 
 import w3af.core.controllers.output_manager as om
@@ -30,7 +30,7 @@ from w3af.core.data.db.startup_cfg import StartUpConfig
 
 
 class VersionMgr(object):
-    '''
+    """
     Perform SVN w3af code update and commit. When an instance is created loads
     data from a .conf file that will be used when actions are executed.
     Also provides some callbacks as well as events to register to.
@@ -55,7 +55,7 @@ class VersionMgr(object):
         ON_UPDATE_ADDED_DEP
         ON_UPDATE_CHECK
         ON_ACTION_ERROR
-    '''
+    """
 
     # Events constants
     ON_UPDATE = 1
@@ -76,13 +76,13 @@ class VersionMgr(object):
     BACK = 'BACK'
 
     def __init__(self, localpath=W3AF_LOCAL_PATH, log=None):
-        '''
+        """
         w3af version manager class. Handles the logic concerning the
         automatic update/commit process of the code.
 
         :param localpath: Working directory
         :param log: Default output function
-        '''
+        """
         self._localpath = localpath
         self._client = GitClient(localpath)
         self._client.add_observer(self._client_progress)
@@ -96,23 +96,23 @@ class VersionMgr(object):
         self._start_cfg = StartUpConfig()
     
     def _client_progress(self, op_code, cur_count, max_count, message):
-        '''
+        """
         The GitClient will call this method when it has progress to show
         for fetch() and pull().
         
         Please note that because I don't need it at this moment, I'm simply
         ignoring all parameters and just letting the observers know that this
         event was triggered.
-        '''
+        """
         self._notify(VersionMgr.ON_PROGRESS)
         
     def register_default_events(self, log):
-        '''
+        """
         Default events registration
         
         :param log: Log function to call for events
         :return: None, all saved in self._reg_funcs
-        '''
+        """
         # Registered functions
         self._reg_funcs = {}
         
@@ -132,7 +132,7 @@ class VersionMgr(object):
         self.register(VersionMgr.ON_UPDATE_ADDED_DEP, log, msg)
 
     def update(self, force=False):
-        '''
+        """
         Perform code update if necessary. Return three elems tuple with the
         ChangeLog of the changed files, the local and the final commit id.
 
@@ -141,7 +141,7 @@ class VersionMgr(object):
                   local_head_id: The local id before the update,
                   commit_id: The commit id after the update)
                   
-        '''
+        """
         if not force and not self._has_to_update():
             # No need to update based on user preferences
             return
@@ -172,11 +172,11 @@ class VersionMgr(object):
 
     def _user_confirmed_update(self, short_local_head_id, local_head_id,
                                 short_remote_head_id, remote_head_id):
-        '''
+        """
         Ask the user if he wants to update or not.
         
         :return: True if the user wants to update.
-        ''' 
+        """ 
         # Call callback function
         if self.callback_onupdate_confirm is not None:
             
@@ -194,11 +194,11 @@ class VersionMgr(object):
             return proceed_upd
     
     def __update_impl(self):
-        '''
+        """
         Finally call the Git client's pull!
         
         :return: (changelog, local_head_id, target_commit)
-        '''
+        """
         self._notify(VersionMgr.ON_UPDATE)
         
         try:
@@ -230,7 +230,7 @@ class VersionMgr(object):
         return (changelog, changelog.start, changelog.end)
 
     def reload_all_modules(self):
-        '''
+        """
         After an update, which changes .py files, it is a good idea
         to reload all modules (and get those changes from the py files into
         memory) before continuing.
@@ -243,38 +243,41 @@ class VersionMgr(object):
 
         But both failed. What I want to avoid are bugs like the ones related to
         the "complex type needs to implement..." DiskList.
-        '''
+        """
         pass
 
     def register(self, event, func, msg):
-        '''
+        """
         Register the caller to `event` so when it takes place call its `func`
         with `msg` as param.
-        '''
+        """
         self._reg_funcs[event] = (func, msg)
 
     def _notify(self, event, msg=''):
-        '''
+        """
         Call registered function for event. If `msg` is not empty use it.
-        '''
+        """
         observer_data = self._reg_funcs.get(event, None)
         if observer_data is not None:      
             f, _msg = observer_data
             f(msg or _msg)
 
     def _added_new_dependencies(self, changelog):
-        '''
+        """
         :return: True if the changelog shows any modifications to the
                  dependency_check.py files.
-        '''
+        """
+        dependency_controllers = ['dependency_check.py', 'pip_dependency.py']
+
         for commit in changelog.get_changes():
             for action, filename in commit.changes:
-                if filename.endswith('dependency_check.py') and action == 'M':
-                    return True
+                for dependency_file in dependency_controllers:
+                    if filename.endswith(dependency_file) and action == 'M':
+                        return True
         return False
 
     def _has_to_update(self):
-        '''
+        """
         Helper method that figures out if an update should be performed
         according to the startup cfg file.
         Some rules:
@@ -283,7 +286,7 @@ class VersionMgr(object):
             3) IF last_upd == 'two_days_ago' and freq == 'W' THEN return False.
 
         :return: Boolean value.
-        '''
+        """
         startcfg = self._start_cfg
         # That's it!
         if not startcfg.auto_upd:

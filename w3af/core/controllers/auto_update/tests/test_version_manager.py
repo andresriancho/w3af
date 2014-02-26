@@ -1,4 +1,4 @@
-'''
+"""
 test_version_manager.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 import datetime
 
@@ -34,7 +34,7 @@ from w3af.core.controllers.auto_update.git_client import GitClient
 class TestVersionMgr(unittest.TestCase):
 
     def setUp(self):
-        '''
+        """
         Given that nosetests test isolation is "incompatible" with w3af's
         kb, cf, etc. objects, and the tests written here are overwriting
         some classes that are loaded into sys.modules and then used in other
@@ -44,7 +44,7 @@ class TestVersionMgr(unittest.TestCase):
 
         I haven't been able to fix this issue... so I'm skipping these two
         tests!
-        '''
+        """
         self.vmgr = VersionMgr(W3AF_LOCAL_PATH, MagicMock(return_value=None))
 
     def test_no_need_update(self):
@@ -56,9 +56,9 @@ class TestVersionMgr(unittest.TestCase):
         self.assertFalse(vmgr._has_to_update())
 
     def test_has_to_update(self):
-        '''
+        """
         Test [D]aily, [W]eekly and [M]onthly auto-update
-        '''
+        """
         SC = StartUpConfig
         vmgr = self.vmgr
 
@@ -74,7 +74,6 @@ class TestVersionMgr(unittest.TestCase):
 
             self.assertTrue(vmgr._has_to_update())
 
-    @attr('ci_fails')
     def test_added_new_dependencies(self):
         start = 'cb751e941bfa2063ebcef711642ed5d22ff9db87'
         end = '9c5f5614412dce67ac13411e1eebd754b4c6fb6a'
@@ -92,10 +91,10 @@ class TestVersionMgr(unittest.TestCase):
         self.assertFalse(self.vmgr._added_new_dependencies(changelog))
 
     def test_update_not_required_not_forced(self):
-        '''
+        """
         Test that we don't perform any extra steps if the local installation
         was already updated today.
-        '''
+        """
         self.vmgr._start_cfg = start_cfg = StartUpConfig()
         start_cfg._autoupd = True
         start_cfg._freq = StartUpConfig.FREQ_DAILY
@@ -117,15 +116,14 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_already_latest_mock.call_count, 0)
         self.assertEqual(on_update_mock.call_count, 0)
     
-    @attr('ci_fails')
     def test_update_required_not_forced(self):
-        '''
+        """
         Test that we check if we're on the latest version if the latest
         local installation update was 3 days ago and the frequency is set to
         daily.
         
         The local repository is in the latest version (git pull is run before)
-        '''
+        """
         git_client = GitClient('.')
         git_client.pull()
         
@@ -152,7 +150,7 @@ class TestVersionMgr(unittest.TestCase):
         
     @attr('ci_fails')
     def test_update_required_outdated_not_forced(self):
-        '''
+        """
         Test that we check if we're on the latest version if the latest
         local installation update was 3 days ago and the frequency is set to
         daily.
@@ -160,7 +158,15 @@ class TestVersionMgr(unittest.TestCase):
         The local repository is NOT in the latest version. A 'git reset --hard'
         is run at the beginning of this test to reset the repo to a revision
         before the latest one.
-        '''
+
+        *****   WARNING     *****
+        *****   WARNING     *****
+
+        YOU DON'T WANT TO RUN THIS TEST WITH OTHERS SINCE IT WILL BREAK THEM!
+
+        *****   WARNING     *****
+        *****   WARNING     *****
+        """
         try:
             git_client = GitClient('.')
             head_id = git_client.get_local_head_id()
