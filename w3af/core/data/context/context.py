@@ -74,101 +74,11 @@ def normalize_html(data):
     return new_data
 
 
-def get_html_attr(byte_chunk):
-    attr_name = ''
-    inside_name = False
-    inside_value = False
-    data = byte_chunk.nhtml
-    open_angle_bracket = data.rfind('<')
-    quote_character = None
-    open_context = None
-    i = open_angle_bracket - 1
-
-    if open_angle_bracket <= data.rfind('>'):
-        return False
-
-    for s in data[open_angle_bracket:]:
-        i += 1
-
-        if s in ATTR_DELIMETERS and not quote_character:
-            quote_character = s
-            if inside_value and open_context:
-                open_context = i + 1
-            continue
-        elif s in ATTR_DELIMETERS and quote_character:
-            quote_character = None
-            inside_value = False
-            open_context = None
-            continue
-
-        if quote_character:
-            continue
-
-        if s == ' ':
-            inside_name = True
-            inside_value = False
-            attr_name = ''
-            continue
-
-        if s == '=':
-            inside_name = False
-            inside_value = True
-            open_context = i + 1
-            continue
-
-        if inside_name:
-            attr_name += s
-    attr_name = attr_name.lower()
-    return (attr_name, quote_character, open_context)
-
-
-def _inside_js(byte_chunk):
-    script_index = byte_chunk.nhtml.lower().rfind('<script')
-    
-    if script_index > byte_chunk.nhtml.lower().rfind('</script>') and \
-    byte_chunk.nhtml[script_index:].count('>'):
-        return True
-    
-    return False
-
-
-def _inside_style(byte_chunk):
-    style_index = byte_chunk.nhtml.lower().rfind('<style')
-    
-    if style_index > byte_chunk.nhtml.lower().rfind('</style>') and \
-    byte_chunk.nhtml[style_index:].count('>'):
-        return True
-    
-    return False
-
-
-def _inside_html_attr(byte_chunk, attrs):
-    attr_data = get_html_attr(byte_chunk)
-    if not attr_data:
-        return False
-    for attr in attrs:
-        if attr == attr_data[0]:
-            return True
-    return False
-
-
-def _inside_event_attr(byte_chunk):
-    if _inside_html_attr(byte_chunk, JS_EVENTS):
-        return True
-    return False
-
-
-def _inside_style_attr(byte_chunk):
-    if _inside_html_attr(byte_chunk, ['style']):
-        return True
-    return False
-
-
 def crop_js(byte_chunk, context='tag'):
     if context == 'tag':
         return ByteChunk(byte_chunk.nhtml[byte_chunk.nhtml.lower().rfind('<script')+1:])
     else:
-        attr_data = get_html_attr(byte_chunk)
+        attr_data = byte_chunk.html_attr
         if attr_data:
             return ByteChunk(byte_chunk.nhtml[attr_data[2]:])
 
@@ -179,7 +89,7 @@ def crop_style(byte_chunk, context='tag'):
     if context == 'tag':
         return ByteChunk(byte_chunk.nhtml[byte_chunk.nhtml.lower().rfind('<style')+1:])
     else:
-        attr_data = get_html_attr(byte_chunk)
+        attr_data = byte_chunk.html_attr
         if attr_data:
             return ByteChunk(byte_chunk.nhtml[attr_data[2]:])
 
@@ -187,11 +97,11 @@ def crop_style(byte_chunk, context='tag'):
 def inside_js(meth):
 
     def wrap(self, byte_chunk):
-        if _inside_js(byte_chunk):
+        if byte_chunk.inside_js:
             new_bc = crop_js(byte_chunk)
             return meth(self, new_bc)
 
-        if _inside_event_attr(byte_chunk):
+        if byte_chunk.inside_event_attr:
             new_bc = crop_js(byte_chunk, 'attr')
             return meth(self, new_bc)
 
@@ -203,11 +113,11 @@ def inside_style(meth):
     
     @wraps(meth)
     def wrap(self, byte_chunk):
-        if _inside_style(byte_chunk):
+        if byte_chunk.inside_style:
             new_bc = crop_style(byte_chunk)
             return meth(self, new_bc)
 
-        if _inside_style_attr(byte_chunk):
+        if byte_chunk.inside_style_attr:
             new_bc = crop_style(byte_chunk, 'attr')
             return meth(self, new_bc)
 
@@ -755,7 +665,7 @@ class ByteChunk(object):
 
     @cached_property
     def inside_html(self):
-        if _inside_js(self) or _inside_style(self):
+        if self.inside_js or self.inside_style:
             return False
 
         return True
@@ -771,4 +681,93 @@ class ByteChunk(object):
 
         return True
 
+    @cached_property
+    def html_attr(self):
+        attr_name = ''
+        inside_name = False
+        inside_value = False
+        data = self.nhtml
+        open_angle_bracket = data.rfind('<')
+        quote_character = None
+        open_context = None
+        i = open_angle_bracket - 1
 
+        if open_angle_bracket <= data.rfind('>'):
+            return False
+
+        for s in data[open_angle_bracket:]:
+            i += 1
+
+            if s in ATTR_DELIMETERS and not quote_character:
+                quote_character = s
+                if inside_value and open_context:
+                    open_context = i + 1
+                continue
+            elif s in ATTR_DELIMETERS and quote_character:
+                quote_character = None
+                inside_value = False
+                open_context = None
+                continue
+
+            if quote_character:
+                continue
+
+            if s == ' ':
+                inside_name = True
+                inside_value = False
+                attr_name = ''
+                continue
+
+            if s == '=':
+                inside_name = False
+                inside_value = True
+                open_context = i + 1
+                continue
+
+            if inside_name:
+                attr_name += s
+        attr_name = attr_name.lower()
+        return (attr_name, quote_character, open_context)
+
+    @cached_property
+    def inside_js(self):
+        script_index = self.nhtml.lower().rfind('<script')
+
+        if script_index > self.nhtml.lower().rfind('</script>') and \
+        self.nhtml[script_index:].count('>'):
+            return True
+
+        return False
+
+    @cached_property
+    def inside_style(self):
+        style_index = self.nhtml.lower().rfind('<style')
+
+        if style_index > self.nhtml.lower().rfind('</style>') and \
+        self.nhtml[style_index:].count('>'):
+            return True
+
+        return False
+
+    def inside_html_attr(self, attrs):
+        attr_data = self.html_attr
+        if not attr_data:
+            return False
+
+        for attr in attrs:
+            if attr == attr_data[0]:
+                return True
+
+        return False
+
+    @cached_property
+    def inside_event_attr(self):
+        if self.inside_html_attr(JS_EVENTS):
+            return True
+        return False
+
+    @cached_property
+    def inside_style_attr(self):
+        if self.inside_html_attr(['style']):
+            return True
+        return False
