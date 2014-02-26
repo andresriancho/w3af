@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import sys
 import os
+import logging
 
 # Need this hack in order to be able to re-add the current path to the
 # python-path, since running a script seems to change it (?)
@@ -86,6 +87,7 @@ if __name__ == '__main__':
                         print_will_fail(exit_code)
                     
             except futures.TimeoutError:
+                logging.warning('Hit futures.as_completed timeout. Waiting...')
                 print_status(done_list, total_tests)
             
             # Filter future_list to avoid issues with tasks which are already
