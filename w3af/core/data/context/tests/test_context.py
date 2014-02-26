@@ -1,4 +1,4 @@
-'''
+"""
 test_context.py
 
 Copyright 2012 Andres Riancho
@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
-
+"""
+import os
 import unittest
 
 from w3af.core.data.context.context import (get_context , get_contexts, HtmlText,
@@ -27,8 +27,13 @@ from w3af.core.data.context.context import (get_context , get_contexts, HtmlText
                                         HtmlAttr, HtmlAttrDoubleQuote2ScriptText,
                                         StyleComment, StyleText)
 
+
 class TestContext(unittest.TestCase):
-    HTML = '''
+
+    SAMPLES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'samples')
+
+    HTML = """
     <html>
         <head>
             <style>
@@ -78,18 +83,16 @@ class TestContext(unittest.TestCase):
             </script>
         </body>
     </html>
-    HTML_ATTR_SINGLE_QUOTE'''
-
+    HTML_ATTR_SINGLE_QUOTE"""
 
     def test_all(self):
         for context in get_contexts():
             found = False
             
             expected_context_name = context.get_name()
-            for contexts in get_context(self.HTML, expected_context_name):
-                for calculated_context in contexts:
-                    if calculated_context.get_name() == expected_context_name:
-                        found = True
+            for calculated_context in get_context(self.HTML, expected_context_name):
+                if calculated_context.get_name() == expected_context_name:
+                    found = True
             
             if not found:
                 msg = 'The analysis for %s context failed, got %r instead.' 
@@ -98,7 +101,7 @@ class TestContext(unittest.TestCase):
                 self.assertTrue(False, msg)
                 
     def test_style_comment_case01(self):
-        style_comment = '''
+        style_comment = """
         <html>
             <head>
                 <style>
@@ -108,14 +111,14 @@ class TestContext(unittest.TestCase):
                 </style>
             </head>
         </html>
-        '''
+        """
         self.assertEqual(
-                get_context(style_comment, StyleComment().get_name())[0][1].get_name(), 
+                get_context(style_comment, StyleComment().get_name())[1].get_name(),
                 StyleComment().get_name()
                )
 
     def test_style_comment_case02(self):
-        style_comment = '''
+        style_comment = """
         <html>
             <head>
                 <style>
@@ -128,191 +131,191 @@ class TestContext(unittest.TestCase):
                 </style>
             </head>
         </html>
-        '''
+        """
         
         self.assertEqual(
-                         get_context(style_comment, 'PAYLOAD')[0][0].get_name(), 
+                         get_context(style_comment, 'PAYLOAD')[0].get_name(),
                          StyleText().get_name()
                )
     
     def test_html_inside_js(self):
         self.assertEqual(
-                get_context(self.HTML, HtmlText().get_name())[2][0].get_name(), 
+                get_context(self.HTML, HtmlText().get_name())[2].get_name(),
                 ScriptSingleQuote().get_name()
                )
 
 
     def test_payload(self):
-        html = '''
+        html = """
         <html>
             <body>
                 &added=blah111%3C1%3E<br>::::: blahPAYLOAD<br>::::: :::::
             </body>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlText)
 
     def test_payload_double_script(self):
-        html = '''
+        html = """
         <html>
             <script>foo</script>
                 PAYLOAD
             <script>bar</script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlText)
 
     def test_payload_script_broken_double_open(self):
-        html = '''
+        html = """
         <html>
             <script>foo
                 PAYLOAD
             <script>bar</script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], ScriptText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptText)
 
     def test_payload_script_broken_double_close(self):
-        html = '''
+        html = """
         <html>
             <script>foo</script>
                 PAYLOAD
             </script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlText)
 
     def test_payload_html_inside_comment(self):
-        html = '''
+        html = """
         <html>
             <!-- <body>PAYLOAD</body> -->
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlComment)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlComment)
 
     def test_payload_html_inside_script_with_comment(self):
-        html = '''
+        html = """
         <html>
             <script>
                 <!-- <body>PAYLOAD</body> -->
             </script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], ScriptText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptText)
 
     def test_payload_a_single_quote(self):
-        html = '''
+        html = """
         <html>
             <a foo='PAYLOAD'>
                 bar
             </a>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlAttrSingleQuote)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlAttrSingleQuote)
 
     def test_payload_script_single_quote(self):
-        html = '''
+        html = """
         <html>
             <script foo='PAYLOAD'>
                 bar
             </script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlAttrSingleQuote)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlAttrSingleQuote)
 
     def test_payload_script_single_quote2(self):
-        html = '''
+        html = """
         <html>
 <script type="text/javascript">//<!--
   init({login:'',foo:'PAYLOAD'})
             </script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], ScriptSingleQuote)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptSingleQuote)
 
     def test_payload_text_can_break(self):
-        html = '''
+        html = """
         <html>
             <a>PAYLOAD<</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD<')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD<')[0]
         self.assertTrue(context.can_break('PAYLOAD<'))
 
     def test_payload_text_with_quotes(self):
-        html = '''
+        html = """
         <html>
             <a>Quoting the great Linus Torvalds: "PAYLOAD<"</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD<')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD<')[0]
         self.assertIsInstance(context, HtmlText)
         self.assertTrue(context.can_break('PAYLOAD<'))
 
     def test_payload_text_with_start_quote(self):
-        html = '''
+        html = """
         <html>
             <a>Quoting the great Linus Torvalds: "PAYLOAD<</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD<')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD<')[0]
         self.assertIsInstance(context, HtmlText)
         self.assertTrue(context.can_break('PAYLOAD<'))
 
     def test_payload_text_with_end_quote(self):
-        html = '''
+        html = """
         <html>
             <a>Quoting the great Linus Torvalds: PAYLOAD<"</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD<')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD<')[0]
         self.assertIsInstance(context, HtmlText)
         self.assertTrue(context.can_break('PAYLOAD<'))
 
     def test_payload_src(self):
-        html = '''
+        html = """
         <html>
             <img src="PAYLOAD" />
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD')[0]
         self.assertTrue(context.is_executable())
 
     def test_payload_handler(self):
-        html = '''
+        html = """
         <html>
             <a onclick="PAYLOAD">foo</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD')[0]
         self.assertTrue(context.is_executable())
 
     def test_payload_href(self):
-        html = '''
+        html = """
         <html>
             <a href="PAYLOAD">foo</a>
         </html>
-        '''
-        context = get_context(html, 'PAYLOAD')[0][0]
+        """
+        context = get_context(html, 'PAYLOAD')[0]
         self.assertTrue(context.is_executable())
 
     def test_payload_script_attr_value(self):
-        html = '''
+        html = """
         <html>
             <script foo=PAYLOAD foo2=aaa>
                 bar
             </script>
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlAttr)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlAttr)
 
     def test_payload_js2doublequote(self):
-        html = '''
+        html = """
         <html>
         <input type="button" value="ClickMe" onClick="PAYLOAD">
         </html>
-        '''
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][1], ScriptText)
+        """
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[1], ScriptText)
 
     def test_payload_empty(self):
         html = ''
@@ -320,4 +323,8 @@ class TestContext(unittest.TestCase):
 
     def test_payload_only_payload(self):
         html = 'PAYLOAD'
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0][0], HtmlText)
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlText)
+
+    def test_django_500_sample(self):
+        html = file(os.path.join(self.SAMPLES_DIR, 'django-500.html')).read()
+        self.assertEqual(get_context(html, "QUBD5 ="), [])

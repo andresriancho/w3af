@@ -1,4 +1,4 @@
-'''
+"""
 xss.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
@@ -32,16 +32,16 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.context.context import get_context
+from w3af.core.data.context.context import get_context_iter
 
 
 class xss(AuditPlugin):
-    '''
+    """
     Identify cross site scripting vulnerabilities.
     
     :author: Andres Riancho ( andres.riancho@gmail.com )
     :author: Taras ( oxdef@oxdef.info )
-    '''
+    """
     PAYLOADS = [
                 'RANDOMIZE</->',
                 'RANDOMIZE/*',
@@ -60,11 +60,11 @@ class xss(AuditPlugin):
         self._check_persistent_xss = True
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for XSS vulnerabilities.
         
         :param freq: A FuzzableRequest
-        '''
+        """
         fake_mutants = create_mutants(freq, ['',])
         
         # Run this in the worker pool in order to get different
@@ -72,18 +72,18 @@ class xss(AuditPlugin):
         self.worker_pool.map(self._check_xss_in_parameter, fake_mutants)
         
     def _check_xss_in_parameter(self, mutant):
-        '''
+        """
         Tries to identify (persistent) XSS in one parameter.
-        ''' 
+        """ 
         if not self._identify_trivial_xss(mutant):
             self._search_xss(mutant)
 
     def _report_vuln(self, mutant, response, mod_value):
-        '''
+        """
         Create a Vuln object and store it in the KB.
         
         :return: None
-        '''
+        """
         csp_protects = site_protected_against_xss_by_csp(response)
         vuln_severity = severity.LOW if csp_protects else severity.MEDIUM
         
@@ -105,12 +105,12 @@ class xss(AuditPlugin):
         self.kb_append_uniq(self, 'xss', v)
 
     def _identify_trivial_xss(self, mutant):
-        '''
+        """
         Identify trivial cases of XSS where all chars are echoed back and no
         filter and/or encoding is in place.
         
         :return: True in the case where a trivial XSS was identified.
-        '''
+        """
         payload = replace_randomize(''.join(self.PAYLOADS))
         
         trivial_mutant = mutant.copy()
@@ -129,12 +129,12 @@ class xss(AuditPlugin):
         return False
 
     def _search_xss(self, mutant):
-        '''
+        """
         Analyze the mutant for reflected XSS.
         
         @parameter mutant: A mutant that was used to test if the parameter
             was echoed back or not
-        '''
+        """
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
         mutant_list = create_mutants(
                                      mutant.get_fuzzable_req(),
@@ -147,11 +147,11 @@ class xss(AuditPlugin):
                                       self._analyze_echo_result)
 
     def _analyze_echo_result(self, mutant, response):
-        '''
+        """
         Do we have a reflected XSS?
         
         :return: None, record all the results in the kb.
-        '''
+        """
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((mutant, response.id))
@@ -163,23 +163,22 @@ class xss(AuditPlugin):
             
             mod_value = mutant.get_mod_value()
 
-            for contexts in get_context(response.get_body(), mod_value):
-                for context in contexts:
-                    if context.is_executable() or context.can_break(mod_value):
-                        self._report_vuln(mutant, response, mod_value)
-                        return
+            for context in get_context_iter(response.get_body(), mod_value):
+                if context.is_executable() or context.can_break(mod_value):
+                    self._report_vuln(mutant, response, mod_value)
+                    return
        
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         if self._check_persistent_xss:
             self._identify_persistent_xss()
         
         self._xss_mutants.cleanup()
     
     def _identify_persistent_xss(self):
-        '''
+        """
         This method is called to check for persistent xss. 
     
         Many times a xss isn't on the page we get after the GET/POST of
@@ -187,7 +186,7 @@ class xss(AuditPlugin):
         the pages that are known to the framework.
         
         :return: None, Vuln (if any) are saved to the kb.
-        '''
+        """
         # Get all known fuzzable requests from the core
         fuzzable_requests = kb.kb.get_all_known_fuzzable_requests()
         
@@ -197,35 +196,34 @@ class xss(AuditPlugin):
                                       grep=False, cache=False)    
     
     def _analyze_persistent_result(self, fuzzable_request, response):
-        '''
+        """
         After performing an HTTP request to "fuzzable_request" and getting
         "response" analyze if the response contains any of the information sent
         by any of the mutants.
         
         :return: None, Vuln (if any) are saved to the kb.
-        '''
+        """
         response_body = response.get_body()
         
         for mutant, mutant_response_id in self._xss_mutants:
             
             mod_value = mutant.get_mod_value()
             
-            for contexts in get_context(response_body, mod_value):
-                for context in contexts:
-                    if context.is_executable() or context.can_break(mod_value):
-                        self._report_persistent_vuln(mutant, response,
-                                                     mutant_response_id,
-                                                     mod_value,
-                                                     fuzzable_request)
-                        break
+            for context in get_context_iter(response_body, mod_value):
+                if context.is_executable() or context.can_break(mod_value):
+                    self._report_persistent_vuln(mutant, response,
+                                                 mutant_response_id,
+                                                 mod_value,
+                                                 fuzzable_request)
+                    break
     
     def _report_persistent_vuln(self, mutant, response, mutant_response_id,
                                 mod_value, fuzzable_request):
-        '''
+        """
         Report a persistent XSS vulnerability to the core.
         
         :return: None, a vulnerability is saved in the KB.
-        '''
+        """
         response_ids = [response.id, mutant_response_id]
         name = 'Persistent Cross-Site Scripting vulnerability'
         
@@ -256,12 +254,11 @@ class xss(AuditPlugin):
 
         om.out.vulnerability(v.get_desc())
         self.kb_append_uniq(self, 'xss', v)
-        
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
         
         d1 = 'Identify persistent cross site scripting vulnerabilities'
@@ -275,20 +272,20 @@ class xss(AuditPlugin):
         return ol
         
     def set_options(self, options_list):
-        '''
+        """
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
         
         @parameter options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
-        '''
+        """
         self._check_persistent_xss = options_list['persistent_xss'].get_value()
         
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds Cross Site Scripting (XSS) vulnerabilities.
         
         One configurable parameters exists:
@@ -300,7 +297,8 @@ class xss(AuditPlugin):
         The "persistent_xss" parameter makes the plugin store all data
         sent to the web application and at the end, request all URLs again
         searching for those specially crafted strings.
-        '''
+        """
+
 
 def replace_randomize(data):
     return data.replace("RANDOMIZE", rand_alnum(5))

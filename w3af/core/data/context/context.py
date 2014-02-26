@@ -1,4 +1,4 @@
-'''
+"""
 context.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from functools import wraps
 
 ATTR_DELIMETERS = ['"', '`', "'"]
@@ -26,6 +26,7 @@ JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus', 
             'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown', 
             'onkeypress', 'onkeyup', 'onload', 'onunload']
+
 
 class Context(object):
     name = ''
@@ -49,6 +50,7 @@ class Context(object):
     def save(self, data):
         self.data = data
 
+
 def normalize_html(meth):
     
     @wraps(meth)
@@ -71,6 +73,7 @@ def normalize_html(meth):
         return meth(self, new_data)
     
     return wrap
+
 
 def get_html_attr(data):
     attr_name = ''
@@ -118,6 +121,7 @@ def get_html_attr(data):
     attr_name = attr_name.lower()
     return (attr_name, quote_character, open_context)
 
+
 def _inside_js(data):
     script_index = data.lower().rfind('<script')
     
@@ -126,6 +130,7 @@ def _inside_js(data):
         return True
     
     return False
+
 
 def _inside_style(data):
     style_index = data.lower().rfind('<style')
@@ -136,6 +141,7 @@ def _inside_style(data):
     
     return False
 
+
 def _inside_html_attr(data, attrs):
     attr_data = get_html_attr(data)
     if not attr_data:
@@ -145,10 +151,12 @@ def _inside_html_attr(data, attrs):
             return True
     return False
 
+
 def _inside_event_attr(data):
     if _inside_html_attr(data, JS_EVENTS):
         return True
     return False
+
 
 def _inside_style_attr(data):
     if _inside_html_attr(data, ['style']):
@@ -165,6 +173,7 @@ def crop_js(data, context='tag'):
             return data[attr_data[2]:]
     return data
 
+
 def crop_style(data, context='tag'):
     if context == 'tag':
         return data[data.lower().rfind('<style')+1:]
@@ -172,6 +181,7 @@ def crop_style(data, context='tag'):
         attr_data = get_html_attr(data)
         if attr_data:
             return data[attr_data[2]:]
+
 
 def inside_js(meth):
     def wrap(self, data):
@@ -183,6 +193,7 @@ def inside_js(meth):
             return meth(self, data)
         return False
     return wrap
+
 
 def inside_style(meth):
     
@@ -197,6 +208,7 @@ def inside_style(meth):
         return False
     
     return wrap
+
 
 def inside_html(meth):
     
@@ -219,6 +231,7 @@ class HtmlContext(Context):
             return False
         return True
 
+
 class HtmlTag(HtmlContext):
 
     def __init__(self):
@@ -239,6 +252,7 @@ class HtmlTag(HtmlContext):
                 return True
         return False
 
+
 class HtmlText(HtmlContext):
 
     def __init__(self):
@@ -258,6 +272,7 @@ class HtmlText(HtmlContext):
             return True
         return False
 
+
 class HtmlComment(HtmlContext):
 
     def __init__(self):
@@ -275,6 +290,7 @@ class HtmlComment(HtmlContext):
             if i not in payload:
                 return False
         return True
+
 
 class HtmlAttr(HtmlContext):
 
@@ -309,6 +325,7 @@ class HtmlAttr(HtmlContext):
             if i not in payload:
                 return False
         return True
+
 
 class HtmlAttrQuote(HtmlAttr):
 
@@ -355,11 +372,13 @@ class HtmlAttrQuote(HtmlAttr):
                 return True
         return False
 
+
 class HtmlAttrSingleQuote(HtmlAttrQuote):
 
     def __init__(self):
         self.name = 'HTML_ATTR_SINGLE_QUOTE'
         self.quote_character = "'"
+
 
 class HtmlAttrDoubleQuote(HtmlAttrQuote):
 
@@ -367,11 +386,13 @@ class HtmlAttrDoubleQuote(HtmlAttrQuote):
         self.name = 'HTML_ATTR_DOUBLE_QUOTE'
         self.quote_character = '"'
 
+
 class HtmlAttrBackticks(HtmlAttrQuote):
 
     def __init__(self):
         self.name = 'HTML_ATTR_BACKTICKS'
         self.quote_character = '`'
+
 
 class ScriptContext(Context):
     
@@ -422,6 +443,7 @@ class ScriptMultiComment(ScriptContext):
                 return False
         return True
 
+
 class ScriptLineComment(ScriptContext):
 
     def __init__(self):
@@ -435,6 +457,7 @@ class ScriptLineComment(ScriptContext):
             if i not in payload:
                 return False
         return True
+
 
 class ScriptQuote(ScriptContext):
 
@@ -465,17 +488,20 @@ class ScriptQuote(ScriptContext):
             return True
         return False
 
+
 class ScriptSingleQuote(ScriptQuote):
 
     def __init__(self):
         self.name = 'SCRIPT_SINGLE_QUOTE'
         self.quote_character = "'"
 
+
 class ScriptDoubleQuote(ScriptQuote):
 
     def __init__(self):
         self.name = 'SCRIPT_DOUBLE_QUOTE'
         self.quote_character = '"'
+
 
 class StyleText(StyleContext):
 
@@ -505,6 +531,7 @@ class StyleText(StyleContext):
             if i not in payload:
                 return False
         return True
+
 
 class ScriptText(ScriptContext):
 
@@ -543,6 +570,7 @@ class ScriptText(ScriptContext):
     def is_executable(self):
         return True
 
+
 class StyleComment(StyleContext):
 
     def __init__(self):
@@ -556,6 +584,7 @@ class StyleComment(StyleContext):
             if i not in data:
                 return False
         return True
+
 
 class StyleQuote(StyleContext):
 
@@ -586,17 +615,20 @@ class StyleQuote(StyleContext):
             return True
         return False
 
+
 class StyleSingleQuote(StyleQuote):
 
     def __init__(self):
         self.name = 'STYLE_SINGLE_QUOTE'
         self.quote_character = "'"
 
+
 class StyleDoubleQuote(StyleQuote):
 
     def __init__(self):
         self.name = 'STYLE_DOUBLE_QUOTE'
         self.quote_character = '"'
+
 
 class HtmlAttrDoubleQuote2Script(HtmlAttrDoubleQuote):
 
@@ -618,6 +650,7 @@ class HtmlAttrDoubleQuote2Script(HtmlAttrDoubleQuote):
         #        data = data.lower().replace('&quote;', '"')
         return True
 
+
 class HtmlAttrDoubleQuote2ScriptText(HtmlAttrDoubleQuote2Script, ScriptText):
 
     def __init__(self):
@@ -636,45 +669,38 @@ class HtmlAttrDoubleQuote2ScriptText(HtmlAttrDoubleQuote2Script, ScriptText):
 
     def is_executable(self):
         return True
-   
+
+
 def get_contexts():
-    contexts = []
-    contexts.append(HtmlAttrSingleQuote())
-    contexts.append(HtmlAttrDoubleQuote())
-    contexts.append(HtmlAttrBackticks())
-    contexts.append(HtmlAttr())
-    contexts.append(HtmlTag())
-    contexts.append(HtmlText())
-    contexts.append(HtmlComment())
-    contexts.append(ScriptMultiComment())
-    contexts.append(ScriptLineComment())
-    contexts.append(ScriptSingleQuote())
-    contexts.append(ScriptDoubleQuote())
-    contexts.append(ScriptText())
-    contexts.append(StyleText())
-    contexts.append(StyleComment())
-    contexts.append(StyleSingleQuote())
-    contexts.append(StyleDoubleQuote())
+    contexts = [HtmlAttrSingleQuote(), HtmlAttrDoubleQuote(),
+                HtmlAttrBackticks(), HtmlAttr(), HtmlTag(), HtmlText(),
+                HtmlComment(), ScriptMultiComment(), ScriptLineComment(),
+                ScriptSingleQuote(), ScriptDoubleQuote(), ScriptText(),
+                StyleText(), StyleComment(), StyleSingleQuote(),
+                StyleDoubleQuote()]
     #contexts.append(HtmlAttrDoubleQuote2ScriptText())
     return contexts
 
+
 def get_context(data, payload):
-    '''
-    return list of tuples (<context>, index)
-    '''
+    """
+    :return: A list which contains lists of contexts
+    """
+    return [c for c in get_context_iter(data, payload)]
+
+
+def get_context_iter(data, payload):
+    """
+    :return: A context iterator
+    """
     chunks = data.split(payload)
     tmp = ''
-    result = []
 
     for chunk in chunks[:-1]:
         tmp += chunk
-        contexts = []
+
         for context in get_contexts():
             if context.match(tmp):
                 context.save(tmp)
-                contexts.append(context)
-        result.append(contexts)
-    return result
-
-
+                yield context
 
