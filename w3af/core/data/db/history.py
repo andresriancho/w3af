@@ -1,4 +1,4 @@
-'''
+"""
 history.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import os
@@ -49,7 +49,7 @@ def verify_has_db(meth):
 
 
 class HistoryItem(object):
-    '''Represents history item.'''
+    """Represents history item."""
 
     _db = None
     _DATA_TABLE = 'data_table'
@@ -96,9 +96,9 @@ class HistoryItem(object):
                 os.mkdir(self._session_dir)
     
     def init_db(self):
-        '''
+        """
         Init history table and indexes.
-        '''
+        """
         with self.history_lock:
             tablename = self.get_table_name()
             if not self._db.table_exists(tablename):
@@ -136,10 +136,10 @@ class HistoryItem(object):
     
     @verify_has_db
     def find(self, searchData, result_limit=-1, orderData=[], full=False):
-        '''Make complex search.
+        """Make complex search.
         search_data = {name: (value, operator), ...}
         orderData = [(name, direction)]
-        '''
+        """
         result = []
         sql = 'SELECT * FROM ' + self._DATA_TABLE
         where = WhereHelper(searchData)
@@ -167,7 +167,7 @@ class HistoryItem(object):
         return result
 
     def _load_from_row(self, row, full=True):
-        '''Load data from row with all columns.'''
+        """Load data from row with all columns."""
         self.id = row[0]
         self.url = row[1]
         self.code = row[2]
@@ -209,11 +209,11 @@ class HistoryItem(object):
         
         request = HTTPRequest.from_dict(request_dict)
         response = HTTPResponse.from_dict(response_dict)
-        return (request, response)
+        return request, response
 
     @verify_has_db
     def delete(self, _id=None):
-        '''Delete data from DB by ID.'''
+        """Delete data from DB by ID."""
         if _id is None:
             _id = self.id
             
@@ -229,7 +229,7 @@ class HistoryItem(object):
 
     @verify_has_db
     def load(self, _id=None, full=True, retry=True):
-        '''Load data from DB by ID.'''
+        """Load data from DB by ID."""
         if not _id:
             _id = self.id
 
@@ -267,13 +267,13 @@ class HistoryItem(object):
 
     @verify_has_db
     def read(self, _id, full=True):
-        '''Return item by ID.'''
+        """Return item by ID."""
         result_item = self.__class__()
         result_item.load(_id, full)
         return result_item
 
     def save(self):
-        '''Save object into DB.'''
+        """Save object into DB."""
         resp = self.response
         values = []
         values.append(resp.get_id())
@@ -335,26 +335,26 @@ class HistoryItem(object):
         return self._INDEX_COLUMNS
 
     def _update_field(self, name, value):
-        '''Update custom field in DB.'''
+        """Update custom field in DB."""
         sql = 'UPDATE ' + self._DATA_TABLE
         sql += ' SET ' + name + ' = ? '
         sql += ' WHERE id = ?'
         self._db.execute(sql, (value, self.id))
 
     def update_tag(self, value, force_db=False):
-        '''Update tag.'''
+        """Update tag."""
         self.tag = value
         if force_db:
             self._update_field('tag', value)
 
     def toggle_mark(self, force_db=False):
-        '''Toggle mark state.'''
+        """Toggle mark state."""
         self.mark = not self.mark
         if force_db:
             self._update_field('mark', int(self.mark))
 
     def clear(self):
-        '''Clear history and delete all trace files.'''
+        """Clear history and delete all trace files."""
         if self._db is None:
             return
 
