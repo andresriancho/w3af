@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from functools import wraps
 
-ATTR_DELIMETERS = {'"', '`', "'"}
-JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove', 
+ATTR_DELIMITERS = {'"', '`', "'"}
+JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus', 
             'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown', 
             'onkeypress', 'onkeyup', 'onload', 'onunload']
@@ -52,26 +52,50 @@ class Context(object):
 
 
 def normalize_html(data):
-    
-    data = data.replace("\\'", '')
-    data = data.replace('\\"', '')
-    new_data = ''
+    """
+    Replace the < and > tags inside attribute delimiters with their encoded
+    versions.
+
+    :param data: A string with an HTML
+    :return: Another string, with a modified HTML
+    """
+    #
+    #   These constants are here because of performance
+    #   https://wiki.python.org/moin/PythonSpeed/PerformanceTips
+    #
+    AMP_LT = '&lt;'
+    AMP_GT = '&gt;'
+    TAG_START = '<'
+    TAG_END = '>'
+    ATTR_DELIMITERS = {'"', '`', "'"}
+
+    # Fast search and replace when more than one char needs to be searched
+    repls = ("\\'", ''), ('\\"', '')
+    data = reduce(lambda a, kv: a.replace(*kv), repls, data)
+
+    # We'll use lists instead of strings for creating the result
+    new_data = []
+    append = new_data.append
     quote_character = None
 
     for s in data:
-        if s in ATTR_DELIMETERS:
+        if s in ATTR_DELIMITERS:
             if quote_character and s == quote_character:
                 quote_character = None
             elif not quote_character:
                 quote_character = s
-        elif s == '<' and quote_character:
-            s = '&lt;'
-        elif s == '>' and quote_character:
-            s = '&gt;'
 
-        new_data += s
+        elif quote_character and s == TAG_START:
+            append(AMP_LT)
+            continue
 
-    return new_data
+        elif quote_character and s == TAG_END:
+            append(AMP_GT)
+            continue
+
+        append(s)
+
+    return ''.join(new_data)
 
 
 def crop_js(byte_chunk, context='tag'):
@@ -224,7 +248,7 @@ class HtmlAttr(HtmlContext):
             return False
 
         for s in data[open_angle_bracket+1:]:
-            if s in ATTR_DELIMETERS:
+            if s in ATTR_DELIMITERS:
                 if quote_character and s == quote_character:
                     quote_character = None
                     continue
@@ -268,7 +292,7 @@ class HtmlAttrQuote(HtmlAttr):
             return False
 
         for s in data[open_angle_bracket+1:]:
-            if s in ATTR_DELIMETERS:
+            if s in ATTR_DELIMITERS:
                 if quote_character and s == quote_character:
                     quote_character = None
                     continue
@@ -698,12 +722,12 @@ class ByteChunk(object):
         for s in data[open_angle_bracket:]:
             i += 1
 
-            if s in ATTR_DELIMETERS and not quote_character:
+            if s in ATTR_DELIMITERS and not quote_character:
                 quote_character = s
                 if inside_value and open_context:
                     open_context = i + 1
                 continue
-            elif s in ATTR_DELIMETERS and quote_character:
+            elif s in ATTR_DELIMITERS and quote_character:
                 quote_character = None
                 inside_value = False
                 open_context = None
