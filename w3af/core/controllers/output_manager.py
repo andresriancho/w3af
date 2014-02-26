@@ -1,4 +1,4 @@
-'''
+"""
 output_manager.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import functools
 import os
 import sys
@@ -37,7 +37,7 @@ start_lock = threading.Lock()
 
 
 def start_thread_on_demand(func):
-    '''
+    """
     Given that the output manager has been migrated into a producer/consumer
     model, the messages that are sent to it are added to a Queue and printed
     "when the om thread gets its turn".
@@ -45,7 +45,7 @@ def start_thread_on_demand(func):
     The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is
     printed using the om (see functions below), which ends up with unordered
     messages printed to the console.
-    '''
+    """
     def od_wrapper(*args, **kwds):
         global start_lock
         with start_lock:
@@ -56,12 +56,12 @@ def start_thread_on_demand(func):
 
 
 class output_manager(Process):
-    '''
+    """
     This class manages output. It has a list of output plugins and sends the
     messages to every plugin on that list.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     METHODS = (
         'debug',
@@ -90,10 +90,10 @@ class output_manager(Process):
         self._w3af_core = w3af_core
 
     def run(self):
-        '''
+        """
         This method is one of the most important ones in the class, since it
         will consume the work units from the queue and send them to the plugins
-        '''
+        """
         while True:
             work_unit = self.in_queue.get()
 
@@ -116,7 +116,7 @@ class output_manager(Process):
         self.__end_output_plugins_impl()
 
     def process_all_messages(self):
-        '''Blocks until all messages are processed'''
+        """Blocks until all messages are processed"""
         self.in_queue.join()
 
     def _add_to_queue(self, *args, **kwds):
@@ -143,7 +143,7 @@ class output_manager(Process):
 
     @start_thread_on_demand
     def log_enabled_plugins(self, enabled_plugins, plugins_options):
-        '''
+        """
         This method logs to the output plugins the enabled plugins and their
         configuration.
 
@@ -153,12 +153,12 @@ class output_manager(Process):
 
         :param plugins_options: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
-        '''
+        """
         for o_plugin in self._output_plugin_instances:
             o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)
 
     def _call_output_plugins_action(self, actionname, *args, **kwds):
-        '''
+        """
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
         
@@ -166,7 +166,7 @@ class output_manager(Process):
         should NOT go to a specific plugin set specified in the ignore_plugins
         keyword argument.
         
-        '''
+        """
         encoded_params = []
 
         # http://docs.python.org/2/howto/unicode.html
@@ -246,11 +246,11 @@ class output_manager(Process):
         return self._output_plugin_instances
         
     def set_output_plugins(self, output_plugins):
-        '''
+        """
         :param output_plugins: A list with the names of Output Plugins that
                                   will be used.
         :return: No value is returned.
-        '''
+        """
         self._output_plugin_instances = []
         self._output_plugin_names = output_plugins
 
@@ -261,23 +261,23 @@ class output_manager(Process):
         return self._output_plugin_names
 
     def set_plugin_options(self, plugin_name, PluginsOptions):
-        '''
+        """
         :param PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
                                    { console:{'verbose': True} }
 
         :return: No value is returned.
-        '''
+        """
         self._plugin_options[plugin_name] = PluginsOptions
 
     def _add_output_plugin(self, OutputPluginName):
-        '''
+        """
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
 
         :param OutputPluginName: The name of the plugin to add to the list.
         :return: No value is returned.
-        '''
+        """
         if OutputPluginName == 'all':
             file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
             strReqPlugins = [os.path.splitext(f)[0] for f in file_list
@@ -302,14 +302,14 @@ class output_manager(Process):
             self._output_plugin_instances.append(plugin)
 
     def report_finding(self, info_inst):
-        '''
+        """
         The plugins call this in order to report an info/vuln object to the
         user. This is an utility function that simply calls information() or
         vulnerability() with the correct parameters, depending on the info_inst
         type and severity.
         
         :param info_inst: An Info class or subclass.
-        '''
+        """
         from w3af.core.data.kb.info import Info
         from w3af.core.data.kb.vuln import Vuln
         
@@ -322,14 +322,14 @@ class output_manager(Process):
 
     @start_thread_on_demand
     def __getattr__(self, name):
-        '''
+        """
         This magic method replaces all the previous debug/information/error... ones.
         It will basically return a func pointer to self.add_to_queue('debug', ...)
         where ... is completed later by the caller.
 
         @see: http://docs.python.org/library/functools.html for help on partial.
         @see: METHODS defined at the top of this class
-        '''
+        """
         if name in self.METHODS:
             return functools.partial(self._add_to_queue, name)
         else:

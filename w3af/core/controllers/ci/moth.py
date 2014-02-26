@@ -1,4 +1,4 @@
-'''
+"""
 moth.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 FMT = '/tmp/moth-%s.txt'
 HTTP_ADDRESS_FILE = FMT % 'http'
@@ -29,7 +29,7 @@ DEFAULT_MOTHS = 'fallback:443'
 
 
 def whereis_moth():
-    '''
+    """
     :return: The net location for the moth http and https daemon. For example,
              if the HTTP Django application was started on 127.0.0.1 port 8083
              and listens HTTPS on port 8341 we return:
@@ -39,7 +39,7 @@ def whereis_moth():
             
              We need this function because when we run on CI we don't really
              know which ports are going to be free for the server to bind.
-    '''
+    """
     try:
         moth = file(HTTP_ADDRESS_FILE).read().strip()
     except IOError:
