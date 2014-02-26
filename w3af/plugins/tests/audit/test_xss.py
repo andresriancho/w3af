@@ -1,4 +1,4 @@
-'''
+"""
 test_xss.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -65,34 +65,34 @@ class TestXSS(PluginTest):
     }
 
     def normalize_kb_data(self, xss_vulns):
-        '''
+        """
         Take the XSS vulns as input and translate them into a list of tuples
         which contain:
             - Vulnerable URL
             - Vulnerable parameter
             - All parameters that were sent
-        '''
+        """
         kb_data = [(str(m.get_url()), m.get_var(), tuple(sorted(m.get_dc().keys())))
                    for m in (xv.get_mutant() for xv in xss_vulns)]
         return kb_data
 
     def normalize_expected_data(self, target_url, expected):
-        '''
+        """
         Take a list with the expected vulnerabilities to be found  as input
         and translate them into a list of tuples which contain:
             - Vulnerable URL
             - Vulnerable parameter
             - All parameters that were sent
-        '''
+        """
         expected_data = [(target_url + e[0], e[1], tuple(sorted(e[2]))
                           ) for e in expected]
         return expected_data
 
     @attr('smoke')
     def test_find_one_xss(self):
-        '''
+        """
         Simplest possible test to verify that we identify XSSs.
-        '''
+        """
         cfg = self._run_configs['smoke']
         self._scan(cfg['target'], cfg['plugins'])
 
@@ -109,12 +109,12 @@ class TestXSS(PluginTest):
         )
 
     def test_no_false_positive_499(self):
-        '''
+        """
         Avoiding false positives in the case where the payload is echoed back
         inside an attribute and the quotes are removed.
         
         :see: https://github.com/andresriancho/w3af/pull/499
-        '''
+        """
         cfg = self._run_configs['smoke']
         self._scan(self.XSS_PATH + '499_check.py?text=1', cfg['plugins'])
 

@@ -1,4 +1,4 @@
-'''
+"""
 test_csrf.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -267,10 +267,10 @@ class TestCSRF(PluginTest):
     
     @attr('ci_fails')
     def test_is_token_checked_false(self):
-        '''
+        """
         This covers the case where there is a token but for some reason it
         is NOT verified by the web application.
-        '''
+        """
         generator = URL('http://moth/w3af/audit/csrf/vulnerable-token-ignored/')
         http_response = self.uri_opener.GET(generator)
         
@@ -288,4 +288,3 @@ class TestCSRF(PluginTest):
         token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
         checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
         self.assertFalse(checked)
-    
