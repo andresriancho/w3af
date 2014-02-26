@@ -267,7 +267,7 @@ class VersionMgr(object):
         :return: True if the changelog shows any modifications to the
                  dependency_check.py files.
         """
-        dependency_controllers = ['dependency_check.py', 'pip_dependency.py']
+        dependency_controllers = ['dependency_check.py', 'requirements.py']
 
         for commit in changelog.get_changes():
             for action, filename in commit.changes:
