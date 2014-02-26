@@ -212,7 +212,7 @@ execOneTime = True
 reportDavOnly = True
 
 [infrastructure.hmap]
-genFpF = False
+gen_fingerprint = False
 
 [misc-settings]
 fuzzCookie = False

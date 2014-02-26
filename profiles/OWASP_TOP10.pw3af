@@ -133,7 +133,7 @@ diff_ratio = 0.35
 [grep.objects]
 
 [infrastructure.hmap]
-genFpF = False
+gen_fingerprint = False
 
 [crawl.user_dir]
 identify_os = True
