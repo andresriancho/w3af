@@ -1,4 +1,4 @@
-'''
+"""
 test_strategy_low_level.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 import threading
 
@@ -37,7 +37,6 @@ class TestStrategy(unittest.TestCase):
     TARGET_URL = get_moth_http('/audit/sql_injection/'
                                'where_integer_qs.py?id=1')
 
-    @attr('ci_fails')    
     def test_strategy_run(self):
         core = w3afCore()
         
@@ -81,7 +80,6 @@ class TestStrategy(unittest.TestCase):
         
         self.assertEqual(thread_names, expected_names)
     
-    @attr('ci_fails')
     def test_strategy_exception(self):
         core = w3afCore()
         
