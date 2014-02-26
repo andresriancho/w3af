@@ -1,4 +1,4 @@
-'''
+"""
 test_halberd.py
 
 Copyright 2012 Andres Riancho
@@ -17,15 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
-
-from nose.plugins.attrib import attr
+"""
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestHalberd(PluginTest):
 
-    target_url = 'http://moth/w3af/infrastructure/halberd/halberd.php'
+    target_url = get_moth_http('/infrastructure/halberd/halberd.py')
 
     _run_configs = {
         'cfg': {
@@ -34,10 +33,9 @@ class TestHalberd(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_halberd(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(cfg['target'], cfg['plugins'], debug=True)
 
         infos = self.kb.get('halberd', 'halberd')
         self.assertEqual(len(infos), 0, infos)

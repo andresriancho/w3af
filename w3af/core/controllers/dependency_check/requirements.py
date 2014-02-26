@@ -1,4 +1,4 @@
-'''
+"""
 requirements.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 
 PHPLY_GIT = 'git+https://github.com/andresriancho/phply.git#egg=phply'
@@ -41,4 +41,5 @@ PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                 PIPDependency('guess_language', 'guess-language', '0.2'),
                 PIPDependency('cluster', 'cluster', '1.1.1b3'),
                 PIPDependency('msgpack', 'msgpack-python', '0.2.4'),
-                PIPDependency('ntlm', 'python-ntlm', '1.0.1'),]
+                PIPDependency('ntlm', 'python-ntlm', '1.0.1'),
+                PIPDependency('Halberd', 'halberd', '0.2.4'),]
