@@ -68,7 +68,6 @@ class CacheHandler(urllib2.BaseHandler):
                 # Send None to the urllib2 framework, which means that we don't
                 # know how to handle the request, and we forward it to the next
                 # handler in the list.
-                raise
                 return None
             else:
                 return cache_response_obj
