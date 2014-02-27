@@ -33,7 +33,6 @@ from w3af.core.controllers.ci.moth import get_moth_http
 
 
 @attr('moth')
-@attr('fails')
 class TestLocalProxy(unittest.TestCase):
     
     IP = '127.0.0.1'
@@ -65,14 +64,12 @@ class TestLocalProxy(unittest.TestCase):
     def test_no_request(self):
         self.assertEqual(self._proxy.get_trapped_request(), None)
     
-    @attr('ci_fails')
     def test_no_trap(self):
         self._proxy.set_trap(False)
         response = self.proxy_opener.open(get_moth_http())
         
         self.assertEqual(response.code, 200)
         
-    
     def test_request_trapped_drop(self):
         def send_request(proxy_opener, result_queue):
             try:
