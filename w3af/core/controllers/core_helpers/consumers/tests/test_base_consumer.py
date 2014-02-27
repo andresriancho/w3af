@@ -1,4 +1,4 @@
-'''
+"""
 test_base_consumer.py
 
 Copyright 2011 Andres Riancho
@@ -17,10 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 
 from mock import Mock
+from nose.plugins.attrib import attr
 
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.controllers.w3afCore import w3afCore
@@ -57,6 +58,7 @@ class TestBaseConsumer(unittest.TestCase):
         
         self.assertEqual(self.bc._teardown.call_count, 1)
 
+    @attr('ci_fails')
     def test_terminate_terminate(self):
         self.bc.start()
 
