@@ -110,7 +110,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         TODO: This function is called MANY times, and under some circumstances it's
         performance REALLY matters. We need to review this function.
 
-        >>> f = FuzzableRequest(URL("""http://example.com/a?p=d'z"0&paged=2"""))
+        >>> f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
         >>> f.sent('d%5C%27z%5C%220')
         True
 
