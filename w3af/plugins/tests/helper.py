@@ -139,20 +139,21 @@ class PluginTest(unittest.TestCase):
 
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
-            self.w3afcore.plugins.set_plugins(
-                [p.name for p in plugincfgs], ptype)
+            self.w3afcore.plugins.set_plugins([p.name for p in plugincfgs],
+                                              ptype)
 
             for pcfg in plugincfgs:
-                plugin_instance = self.w3afcore.plugins.get_plugin_inst(
-                    ptype, pcfg.name)
+                plugin_instance = self.w3afcore.plugins.get_plugin_inst(ptype,
+                                                                        pcfg.name)
                 default_option_list = plugin_instance.get_options()
                 unit_test_options = pcfg.options
+
                 for option in default_option_list:
                     if option.get_name() not in unit_test_options:
                         unit_test_options.add(option)
 
-                self.w3afcore.plugins.set_plugin_options(
-                    ptype, pcfg.name, unit_test_options)
+                self.w3afcore.plugins.set_plugin_options(ptype, pcfg.name,
+                                                         unit_test_options)
 
         # Enable text output plugin for debugging
         if debug:
@@ -175,6 +176,7 @@ class PluginTest(unittest.TestCase):
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
             msg = [e.get_summary() for e in caught_exceptions]
             self.assertEqual(len(caught_exceptions), 0, msg)
+
 
 class PluginConfig(object):
 

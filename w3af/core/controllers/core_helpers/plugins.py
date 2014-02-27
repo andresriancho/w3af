@@ -57,7 +57,8 @@ class w3af_core_plugins(object):
                                  'output': {}, 'attack': {}, 'auth': {},
                                  'infrastructure': {}}
 
-        # A dict with plugin types as keys and a list of plugin instances as values
+        # A dict with plugin types as keys and a list of plugin instances as
+        # values
         self.plugins = {'audit': [], 'grep': [], 'bruteforce': [], 'crawl': [],
                         'evasion': [], 'mangle': [], 'output': [], 'auth': [],
                         'infrastructure': []}
