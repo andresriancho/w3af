@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from nose.plugins.attrib import attr
 from w3af.core.data.misc.file_utils import days_since_newest_file_update
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 
@@ -52,4 +51,3 @@ class TestSQLMapUpdate(unittest.TestCase):
         msg = msg % (maintain_str, setup_str)
         
         self.assertLess(days, 30, msg)
-        
