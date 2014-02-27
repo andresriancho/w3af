@@ -262,3 +262,7 @@ class ExceptionData(object):
 
     def __str__(self):
         return self.get_details()
+
+    def __repr__(self):
+        return '<ExceptionData - %s:%s - "%s">' % (self.filename, self.lineno,
+                                                   self.exception)
