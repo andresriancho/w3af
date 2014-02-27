@@ -37,4 +37,3 @@ class CookieHandler(urllib2.HTTPCookieProcessor):
         return request
 
     https_request = http_request
-    

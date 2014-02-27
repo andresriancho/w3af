@@ -187,7 +187,9 @@ class Plugin(Configurable):
         but performs all the HTTP requests in parallel threads.
         """
         func = return_args(func, **kwds)
-        for (mutant,), http_response in self.worker_pool.imap_unordered(func, iterable):
+        imap_unordered = self.worker_pool.imap_unordered
+
+        for (mutant,), http_response in imap_unordered(func, iterable):
             callback(mutant, http_response)
 
 
