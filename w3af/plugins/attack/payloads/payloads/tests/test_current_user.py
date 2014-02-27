@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import getpass
-from nose.plugins.attrib import attr
+
 from nose.plugins.skip import SkipTest
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -32,12 +32,10 @@ class test_current_user(PayloadTestHelper):
     EXPECTED_RESULT = {'current': {'home': os.path.expanduser("~") + '/',
                                    'user': getpass.getuser()}}
 
-    @attr('ci_fails')
     def test_current_user(self):
         result = exec_payload(self.shell, 'current_user', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
 
-    @attr('ci_fails')
     def test_a_positive_test(self):
-        raise SkipTest(
-            'FIXME: I need a positive test where current user is found.')
+        raise SkipTest('FIXME: I need a positive test where current user'
+                       ' is found.')

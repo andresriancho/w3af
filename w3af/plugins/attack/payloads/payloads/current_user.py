@@ -27,8 +27,8 @@ class current_user(Payload):
 
         self_environ = self.shell.read('/proc/self/environ')
         if self_environ:
-            result['current'] = ({'user': default_user(
-                self_environ), 'home': default_home(self_environ)})
+            result['current'] = ({'user': default_user(self_environ),
+                                  'home': default_home(self_environ)})
 
         return result
 
