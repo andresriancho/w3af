@@ -91,7 +91,7 @@ class TestEmailReport(PluginTest):
         with patch('w3af.plugins.output.email_report.smtplib.SMTP') as mock_smtp:
             mock_smtp.return_value = DummySMTP()
 
-            self._scan(cfg['target'], cfg['plugins'], debug=True)
+            self._scan(cfg['target'], cfg['plugins'])
 
             xss_vulns = self.kb.get('xss', 'xss')
 
