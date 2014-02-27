@@ -84,8 +84,8 @@ class TestXSS(PluginTest):
             - Vulnerable parameter
             - All parameters that were sent
         """
-        expected_data = [(target_url + e[0], e[1], tuple(sorted(e[2]))
-                          ) for e in expected]
+        expected_data = [(target_url + e[0], e[1], tuple(sorted(e[2])))
+                         for e in expected]
         return expected_data
 
     @attr('smoke')
@@ -122,7 +122,6 @@ class TestXSS(PluginTest):
         
         self.assertEquals(0, len(xss_vulns), xss_vulns)
 
-    @attr('ci_fails')
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_PATH, cfg['plugins'])
@@ -132,33 +131,22 @@ class TestXSS(PluginTest):
         
         expected = [
             # Trivial
-            ('simple_xss.php', 'text', ['text']),
+            ('simple_xss.py', 'text', ['text']),
 
             # Simple filters
-            ('simple_xss_no_script_2.php', 'text', ['text']),
-            ('simple_xss_no_script.php', 'text', ['text']),
-            ('simple_xss_no_js.php', 'text', ['text']),
-            ('simple_xss_no_quotes.php', 'text', ['text']),
-            ('no_tag_xss.php', 'text', ['text']),
-            
-            # More complex filters
-            ('xss_filter_5.php', u'text', (u'text',)),
-            ('xss_filter_6.php', u'text', (u'text',)),
-            ('xss_filter_2.php', u'text', (u'text',)),
-            ('xss_filter_7.php', u'text', (u'text',)),
-            ('xss_filter.php', u'text', (u'text',)),
-            
+            ('script_insensitive_blacklist_xss.py', 'text', ['text']),
+            ('script_blacklist_xss.py', 'text', ['text']),
+
             # Forms with POST
-            ('data_receptor.php', 'firstname', ['user', 'firstname']),
-            ('data_receptor2.php', 'empresa', ['empresa', 'firstname']),
-            ('data_receptor3.php', 'user', ['user', 'pass']),
-                        
+            ('simple_xss_form.py', 'text', ['text']),
+            ('two_inputs_form.py', 'address', ['address', 'name']),
+
             # Persistent XSS
-            ('stored/writer.php', 'a', ['a']),
+            ('persistent_xss_form.py', 'text', ['text']),
             
             # XSS with CSP
-            ('xss_with_safe_csp.php', 'data', ['data']),
-            ('xss_with_weak_csp.php', 'data', ['data']),
+            ('xss_with_safe_csp.py', 'text', ['text']),
+            ('xss_with_weak_csp.py', 'text', ['text']),
         ]
         expected_data = self.normalize_expected_data(self.XSS_PATH,
                                                      expected)
@@ -170,7 +158,7 @@ class TestXSS(PluginTest):
         
         # Now we want to verify that the vulnerability with safe CSP has lower
         # severity than the one with weak CSP
-        csp_vulns = [v for v in xss_vulns if 'csp.php' in v.get_url()]
+        csp_vulns = [v for v in xss_vulns if 'csp.py' in v.get_url()]
         self.assertEqual(len(csp_vulns), 2)
         
         severities = [v.get_severity() for v in csp_vulns]
@@ -255,4 +243,3 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
-        
