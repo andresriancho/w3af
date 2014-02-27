@@ -1,4 +1,4 @@
-'''
+"""
 test_knowledge_base.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from mock import Mock, call
@@ -183,10 +183,10 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(kb.raw_read('a', 'b'), 3)
 
     def test_save_append(self):
-        '''
+        """
         Although calling raw_write and then append is highly discouraged,
         someone would want to use it.
-        '''
+        """
         i0 = MockInfo()
         self.assertRaises(TypeError, kb.raw_write, 'a', 'b', i0)
         
@@ -345,6 +345,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         pool.terminate()
         pool.join()
+        xurllib.end()
         
     def test_pickleable_shells_get_all(self):
         class FakeCore(object):
@@ -363,6 +364,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         core.worker_pool.terminate()
         core.worker_pool.join()
+        core.uri_opener.end()
     
     def test_get_by_uniq_id(self):
         i1 = MockInfo()
@@ -375,13 +377,13 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(kb.get_by_uniq_id(hash('foo')), None)
         
     def test_get_by_uniq_id_duplicated_ignores_second(self):
-        '''
+        """
         TODO: Analyze this case, i1 and i2 have both the same ID because they
               have all the same information (this is very very uncommon in a
               real w3af run).
               
               Note that in the get_by_uniq_id call i2 is not returned.
-        '''
+        """
         i1 = MockInfo()
         i2 = MockInfo()
         kb.append('a', 'b', i1)
@@ -391,9 +393,9 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(i1_copy, i1)
     
     def test_raw_write_list(self):
-        '''
+        """
         Test for _get_uniq_id which needs to be able to hash any object type.
-        '''
+        """
         kb.raw_write('a', 'b', [1,2,3])
         self.assertEqual(kb.raw_read('a','b'), [1,2,3])
     
@@ -419,4 +421,3 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(observer_1.call_count, 1)
         self.assertEqual(observer_2.call_count, 1)
-        
