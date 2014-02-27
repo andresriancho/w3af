@@ -346,6 +346,7 @@ class SQLiteExecutor(Process):
 
 temp_default_db = None
 
+
 def clear_default_temp_db_instance():
     global temp_default_db
     
@@ -353,6 +354,7 @@ def clear_default_temp_db_instance():
         temp_default_db.close()
         temp_default_db = None
         os.unlink('%s/main.db' % get_temp_dir())
+
 
 def get_default_temp_db_instance():
     global temp_default_db
@@ -362,6 +364,7 @@ def get_default_temp_db_instance():
         temp_default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
         
     return temp_default_db
+
 
 def get_default_persistent_db_instance():
     """
