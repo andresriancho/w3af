@@ -64,12 +64,18 @@ class PluginTest(unittest.TestCase):
             url = URL(self.target_url)
             domain = url.get_domain()
             proto = url.get_protocol()
-            re_str = "%s://%s/(.*)" % (proto, domain)
-            
+            port = url.get_port()
+
+            if (port == 80 and proto == 'http') or\
+            (port == 443 and proto == 'https'):
+                re_str = "%s://%s/(.*)" % (proto, domain)
+            else:
+                re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
+
             httpretty.register_uri(httpretty.GET,
                                    re.compile(re_str),
                                    body=self.request_callback)
-            
+
     def tearDown(self):
         self.w3afcore.quit()
         self.kb.cleanup()
@@ -81,7 +87,7 @@ class PluginTest(unittest.TestCase):
         status = 404
         body = 'Not found'
         content_type = 'text/html'
-        
+
         for mock_response in self.MOCK_RESPONSES:
             if uri.endswith(mock_response.url):
                 status = mock_response.status
