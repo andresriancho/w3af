@@ -138,7 +138,8 @@ class ExtendedUrllib(object):
 
     def end(self):
         """
-        This method is called when the ExtendedUrllib is not going to be used anymore.
+        This method is called when the ExtendedUrllib is not going to be used
+        anymore.
         """
         self._opener = None
         self.clear()
