@@ -105,8 +105,8 @@ class server_status(InfrastructurePlugin):
 
             # Check if the requested domain and the found one are equal.
             if domain == response.get_url().get_domain():
-                found_url = response.get_url(
-                ).get_protocol() + '://' + domain + path
+                proto = response.get_url().get_protocol()
+                found_url = proto + '://' + domain + path
                 found_url = URL(found_url)
 
                 # They are equal, request the URL and create the fuzzable
@@ -125,8 +125,7 @@ class server_status(InfrastructurePlugin):
             v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM,
                              response.id, self.get_name(), fuzzable_request)
 
-            self._shared_hosting_hosts = list(
-                set(self._shared_hosting_hosts))
+            self._shared_hosting_hosts = list(set(self._shared_hosting_hosts))
             v['also_in_hosting'] = self._shared_hosting_hosts
 
             kb.kb.append(self, 'shared_hosting', v)

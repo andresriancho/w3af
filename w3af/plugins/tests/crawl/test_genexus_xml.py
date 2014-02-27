@@ -65,16 +65,12 @@ class TestGenexusXML(PluginTest):
        </Object>
     </Objects>"""
 
-
-    MOCK_RESPONSES = [
-                      MockResponse('/execute.xml', EXECUTE_XML,
+    MOCK_RESPONSES = [MockResponse('/execute.xml', EXECUTE_XML,
                                    content_type='application/xml'),
                       MockResponse('/DeveloperMenu.xml', DEVELOPER_MENU_XML,
                                    content_type='application/xml'),
                       MockResponse('/hidden.aspx', 'Exists'),
-                      MockResponse('/foobar.aspx', 'Exists'),
-                      ] 
-
+                      MockResponse('/foobar.aspx', 'Exists')]
 
     def test_genexus_xml(self):                
         cfg = self._run_configs['cfg']
@@ -92,11 +88,9 @@ class TestGenexusXML(PluginTest):
 
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = set(['http://moth/hidden.aspx',
-                             'http://moth/foobar.aspx',
-                             'http://moth/execute.xml',
-                             'http://moth/DeveloperMenu.xml',
-                             'http://moth/',])
+        EXPECTED_URLS = {'http://moth/hidden.aspx', 'http://moth/foobar.aspx',
+                         'http://moth/execute.xml',
+                         'http://moth/DeveloperMenu.xml', 'http://moth/'}
         urls = set([u.url_string for u in urls])
 
         self.assertEqual(EXPECTED_URLS, urls)
