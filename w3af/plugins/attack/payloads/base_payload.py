@@ -1,5 +1,5 @@
-'''
-Payload.py
+"""
+payload.py
 
 Copyright 2009 Andres Riancho
 
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import textwrap
 
 import w3af.plugins.attack.payloads.payload_handler as payload_handler
@@ -35,10 +35,10 @@ class Payload(object):
         self.worker_pool = self.shell.worker_pool
 
     def can_run(self):
-        '''
+        """
         :return: True if this payload has any way of running with the "syscalls"
                  provided by the shell_obj.
-        '''
+        """
         available_syscalls = self.get_shell_syscalls()
         
         run_options = self.get_payload_implemented_methods()
@@ -46,12 +46,12 @@ class Payload(object):
         return available_syscalls.intersection(run_options)
 
     def exec_payload(self, payload_name, args=()):
-        '''
+        """
         Execute ANOTHER payload, by providing the other payload name.
 
         :param payload_name: The name of the payload I want to run.
         :return: The payload result.
-        '''
+        """
         try:
             return payload_handler.exec_payload(self.shell, payload_name,
                                                 args, use_api=True)
@@ -72,11 +72,11 @@ class Payload(object):
                 return msg % (self, payload_name)
 
     def run(self, *args):
-        '''
+        """
         :return: The result of running the payload using the most performant
                  way. Basically, if I can run commands using exec() I'll use
                  that, if not I'll use read().
-        '''
+        """
         available_syscalls = self.get_shell_syscalls()
         run_options = self.get_payload_implemented_methods()
 
@@ -89,10 +89,10 @@ class Payload(object):
             return self.run_read(*args)
 
     def run_api(self, *args):
-        '''
+        """
         :return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().
-        '''
+        """
         available_syscalls = self.get_shell_syscalls()
         run_options = self.get_payload_implemented_methods()
 
@@ -105,15 +105,15 @@ class Payload(object):
             return self.api_read(*args)
 
     def require(self):
-        '''
+        """
         :return: The operating system requirement to run this payload.
-        '''
+        """
         return 'linux'
 
     def read_multi(self, fname_iter):
-        '''
+        """
         :param fname_iter: An iterator that yields all the file names to read.
-        '''
+        """
         read_file = return_args(self.shell.read)
         results = self.worker_pool.imap_unordered(read_file, fname_iter)
         for (file_name,), content in results:
@@ -126,9 +126,9 @@ class Payload(object):
             return 'No help available for this payload.'
 
     def get_shell_syscalls(self, _filter=lambda x: x):
-        '''
+        """
         :return: A set with the syscalls that the shell implements
-        '''
+        """
         available_syscalls = []
         
         for syscall in SYSCALL_LIST:
@@ -146,11 +146,11 @@ class Payload(object):
         return set(available_syscalls)
     
     def get_payload_implemented_methods(self):
-        '''
+        """
         :return: A list of all methods that the current payload implements,
                  in other words, a list with ['execute', 'read'] if the
                  methods run_execute and run_read exist.
-        '''
+        """
         implemented_methods = []
         
         for syscall in SYSCALL_LIST:
@@ -165,4 +165,3 @@ class Payload(object):
                 implemented_methods.append(syscall)
         
         return set(implemented_methods)
-    
