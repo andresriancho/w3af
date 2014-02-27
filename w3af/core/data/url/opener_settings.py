@@ -384,9 +384,9 @@ class OpenerSettings(Configurable):
         Calls the cache handler and requires it to clear the cache, removing
         files and directories.
         
-        :return: True if the cache was sucessfully cleared.
+        :return: True if the cache was successfully cleared.
         """
-        if self._cache_hdler is not None: 
+        if self._cache_hdler is not None:
             return self._cache_hdler.clear()
         
         # The is no cache, clear always is successful in this case
