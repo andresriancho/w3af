@@ -84,6 +84,14 @@ def run_nosetests(nose_cmd, first, last):
         else:
             idle_time += select_timeout
             if idle_time > NOSE_TIMEOUT:
+                # There is a special case which happens with the first call to
+                # nose where the tests finish successfully (OK shown) but the
+                # nosetests process doesn't end. Handle that case here:
+                if stdout.strip().endswith('OK') and 'Ran ' in stdout:
+                    p.kill()
+                    p.returncode = 0
+                    break
+
                 # Log everywhere I can:
                 output_file.write('TIMEOUT @ nosetests wrapper\n')
                 stdout += 'TIMEOUT @ nosetests wrapper\n'
