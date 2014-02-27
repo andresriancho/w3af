@@ -76,7 +76,7 @@ class TestProxy(unittest.TestCase):
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
 
-        del proxy_resp_headers['connection']
+        del direct_resp_headers['transfer-encoding']
         del proxy_resp_headers['content-length']
 
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
