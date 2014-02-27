@@ -115,7 +115,8 @@ class TestVersionMgr(unittest.TestCase):
         self.assertEqual(on_update_check_mock.call_count, 0)
         self.assertEqual(on_already_latest_mock.call_count, 0)
         self.assertEqual(on_update_mock.call_count, 0)
-    
+
+    @attr('ci_fails')
     def test_update_required_not_forced(self):
         """
         Test that we check if we're on the latest version if the latest
@@ -123,6 +124,12 @@ class TestVersionMgr(unittest.TestCase):
         daily.
         
         The local repository is in the latest version (git pull is run before)
+
+        In CircleCI this fails with the following message:
+            You asked to pull from the remote 'origin', but did not specify
+            a branch. Because this is not the default configured remote
+            for your current branch, you must specify a branch on the command
+            line.
         """
         git_client = GitClient('.')
         git_client.pull()
