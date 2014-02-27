@@ -53,14 +53,14 @@ Please select the clustering method:
 """
 
 EXAMPLE_FUNCTION = """def customized_distance(a, b):
-    """
+    '''
     Calculates the distance between two responses "a" and "b".
 
     :param a: An HTTP response object.
     :param b: An HTTP response object.
     :return: The the distance between "a" and "b", where 0 means equal and 1
              means totally different.
-    """
+    '''
     if 'error' in b.get_body().lower() and 'error' in a.get_body().lower():
         # They are both error pages
         return 0.1
