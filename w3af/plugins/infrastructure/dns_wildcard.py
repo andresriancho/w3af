@@ -1,4 +1,4 @@
-'''
+"""
 dns_wildcard.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import socket
 
@@ -34,10 +34,10 @@ from w3af.core.data.kb.info import Info
 
 
 class dns_wildcard(InfrastructurePlugin):
-    '''
+    """
     Find out if www.site.com and site.com return the same page.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     SIMPLE_IP_RE = re.compile('\d?\d?\d\.\d?\d?\d\.\d?\d?\d\.\d?\d?\d')
 
@@ -46,12 +46,12 @@ class dns_wildcard(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Get www.site.com and site.com and compare responses.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
 
         # Only do all this if this is a domain name!
         if not self.SIMPLE_IP_RE.match(fuzzable_request.get_url().get_domain()):
@@ -74,9 +74,9 @@ class dns_wildcard(InfrastructurePlugin):
             self._test_IP(original_response, domain)
 
     def _test_IP(self, original_response, domain):
-        '''
+        """
         Check if http://ip(domain)/ == http://domain/
-        '''
+        """
         try:
             ip_address = socket.gethostbyname(domain)
         except:
@@ -108,9 +108,9 @@ class dns_wildcard(InfrastructurePlugin):
                 om.out.information(i.get_desc())
 
     def _test_DNS(self, original_response, dns_wildcard_url):
-        '''
+        """
         Check if http://www.domain.tld/ == http://domain.tld/
-        '''
+        """
         headers = Headers([('Host', dns_wildcard_url.get_domain())])
         try:
             modified_response = self._uri_opener.GET(
@@ -145,10 +145,10 @@ class dns_wildcard(InfrastructurePlugin):
                 om.out.information(i.get_desc())
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin compares the contents of www.site.com and site.com and tries
         to verify if the target site has a DNS wildcard configuration or not.
-        '''
+        """

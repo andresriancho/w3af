@@ -1,4 +1,4 @@
-'''
+"""
 oracle.py
 
 Copyright 2006 Andres Riancho
@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 
 
 class oracle(GrepPlugin):
-    '''
+    """
     Find Oracle applications.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     OAS_TAGS = ['<!-- Created by Oracle ',]
 
@@ -36,13 +36,13 @@ class oracle(GrepPlugin):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point. Grep for oracle applications.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
 
@@ -59,9 +59,9 @@ class oracle(GrepPlugin):
                 self.kb_append(self, 'oracle', i)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for oracle messages, versions, etc.
-        '''
+        """

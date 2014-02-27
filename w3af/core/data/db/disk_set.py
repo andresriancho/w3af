@@ -1,4 +1,4 @@
-'''
+"""
 DiskSet.py
 
 Copyright 2012 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import threading
 
 from w3af.core.data.db.disk_list import DiskList
 
 
 class DiskSet(DiskList):
-    '''
+    """
     A DiskList that only allows to add/append unique items.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         super(DiskSet, self).__init__()
@@ -37,13 +37,13 @@ class DiskSet(DiskList):
         self.lock = threading.RLock()
     
     def add(self, value):
-        '''
+        """
         Append a value to the DiskSet (only if the value is not already contained
         in this instance).
 
         :param value: The value to append.
         :return: True if the value was added. False if it existed and was not added.
-        '''
+        """
         with self.lock:
             if self.__contains__(value):
                 return False
@@ -52,11 +52,11 @@ class DiskSet(DiskList):
                 return True
 
     def update(self, value_list):
-        '''
+        """
         Extend the disk set with a list of items that is provided in @value_list
 
         :return: None
-        '''
+        """
         with self.lock:
             for value in value_list:
                 self.add(value)

@@ -8,11 +8,11 @@ from w3af.core.ui.console.tables import table
 
 
 class get_source_code(Payload):
-    '''
+    """
     Get the source code for all files that were spidered by w3af.
 
     Usage: get_source_code <output_directory>
-    '''
+    """
     def api_read(self, output_directory):
         if not os.path.isdir(output_directory):
             try:

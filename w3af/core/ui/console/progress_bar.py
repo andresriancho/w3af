@@ -1,4 +1,4 @@
-'''
+"""
 IMPORTANT:
     This file was taken from the great sqlmap project. Only some lines were changed to adapt the code to w3af.
 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import time
 
 import w3af.core.controllers.output_manager as om

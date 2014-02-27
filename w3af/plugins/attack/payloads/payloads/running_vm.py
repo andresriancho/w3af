@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class running_vm(Payload):
-    '''
+    """
     This payload check if the Server is running through a VM
-    '''
+    """
     def fname_generator(self):
         candidates = []
         candidates.append('0000:00:0f.0')

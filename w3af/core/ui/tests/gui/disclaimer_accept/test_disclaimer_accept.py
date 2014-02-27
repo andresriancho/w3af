@@ -1,4 +1,4 @@
-'''
+"""
 test_disclaimer_accept.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import subprocess
 
@@ -31,10 +31,10 @@ class TestDisclaimer(XpresserUnittest):
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'disclaimer_accept', 'images')
     
     def start_gui(self):
-        '''
+        """
         Need to override this method in order to avoid waiting for the "real"
         UI to load.
-        '''
+        """
         self.gui_process = subprocess.Popen(["python", "w3af_gui", "-n"],
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)

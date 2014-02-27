@@ -1,4 +1,4 @@
-'''
+"""
 detect_reverse_proxy.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -31,10 +31,10 @@ from w3af.core.data.kb.info import Info
 
 
 class detect_reverse_proxy(InfrastructurePlugin):
-    '''
+    """
     Find out if the remote web server has a reverse proxy.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -45,10 +45,10 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         # detect using GET
         if not kb.kb.get('detect_transparent_proxy', 'detect_transparent_proxy'):
             response = self._uri_opener.GET(
@@ -88,11 +88,11 @@ class detect_reverse_proxy(InfrastructurePlugin):
             om.out.information('The remote web server doesn\'t seem to have a reverse proxy.')
 
     def _report_finding(self, response):
-        '''
+        """
         Save the finding to the kb.
 
         :param response: The response that triggered the detection
-        '''
+        """
         desc = 'The remote web server seems to have a reverse proxy installed.'
 
         i = Info('Reverse proxy identified', desc, response.id, self.get_name())
@@ -102,10 +102,10 @@ class detect_reverse_proxy(InfrastructurePlugin):
         om.out.information(i.get_desc())
 
     def _has_proxy_headers(self, response):
-        '''
+        """
         Performs the analysis
         :return: True if the remote web server has a reverse proxy
-        '''
+        """
         for proxy_header in self._proxy_header_list:
             for response_header in response.get_headers():
                 if proxy_header.upper() == response_header.upper():
@@ -113,12 +113,12 @@ class detect_reverse_proxy(InfrastructurePlugin):
         return False
 
     def _has_proxy_content(self, response):
-        '''
+        """
         Performs the analysis of the response of the TRACE and TRACK command.
 
         :param response: The HTTP response object to analyze
         :return: True if the remote web server has a reverse proxy
-        '''
+        """
         response_body = response.get_body().upper()
         #remove duplicated spaces from body
         whitespace = re.compile('\s+')
@@ -134,21 +134,21 @@ class detect_reverse_proxy(InfrastructurePlugin):
         return False
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
         the current one.
-        '''
+        """
         return ['infrastructure.detect_transparent_proxy']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin tries to determine if the remote end has a reverse proxy
         installed.
 
         The procedure used to detect reverse proxies is to send a request to
         the remote server and analyze the response headers, if a Via header is
         found, chances are that the remote site has a reverse proxy.
-        '''
+        """

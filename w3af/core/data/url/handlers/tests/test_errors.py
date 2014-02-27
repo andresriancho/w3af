@@ -1,4 +1,4 @@
-'''
+"""
 test_errors.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import urllib2
 
@@ -40,10 +40,10 @@ class TestErrorHandler(unittest.TestCase):
     
     @attr('moth')
     def test_error_handler_id(self):
-        '''
+        """
         Verify that the error handler works as expected, in other words, do NOT
         crash on response codes not in range 200-300.
-        '''
+        """
         fail_url = URL(get_moth_http('/abc/def/do-not-exist.foo'))
         
         settings = opener_settings.OpenerSettings()

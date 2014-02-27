@@ -146,9 +146,9 @@ RESP_BAD = 2
 
 
 class URLTimeoutError(urllib2.URLError):
-    '''
+    """
     Our own URLError timeout exception. Basically a wrapper for socket.timeout.
-    '''
+    """
     def __init__(self):
         urllib2.URLError.__init__(self, (408, 'timeout'))
 
@@ -161,10 +161,10 @@ class URLTimeoutError(urllib2.URLError):
 
 
 def closeonerror(read_meth):
-    '''
+    """
     Decorator function. When calling decorated `read_meth` if an error occurs
     we'll proceed to invoke `inst`'s close() method.
-    '''
+    """
     def new_read_meth(inst):
         try:
             return read_meth(inst)
@@ -222,11 +222,11 @@ class HTTPResponse(httplib.HTTPResponse):
     encoding = property(get_encoding, set_encoding)
 
     def _raw_read(self, amt=None):
-        '''
+        """
         This is the original read function from httplib with a minor
         modification that allows me to check the size of the file being
         fetched, and throw an exception in case it is too big.
-        '''
+        """
         if self.fp is None:
             return ''
 
@@ -343,21 +343,21 @@ class HTTPResponse(httplib.HTTPResponse):
         return line_list
 
     def set_body(self, data):
-        '''
+        """
         This was added to make my life a lot simpler while implementing mangle
         plugins
-        '''
+        """
         self._multiread = data
 
 
 class ConnectionManager(object):
-    '''
+    """
     The connection manager must be able to:
         * keep track of all existing HTTPConnections
         * kill the connections that we're not going to use anymore
         * Create/reuse connections when needed.
         * Control the size of the pool.
-    '''
+    """
 
     def __init__(self):
         self._lock = threading.RLock()
@@ -367,13 +367,13 @@ class ConnectionManager(object):
         self._free_conns = []  # available connections
 
     def remove_connection(self, conn, host=None):
-        '''
+        """
         Remove a connection, it was closed by the server.
 
         :param conn: Connection to remove
         :param host: The host for to the connection. If passed, the connection
         will be removed faster.
-        '''
+        """
         # Just make sure we don't leak open connections
         conn.close()
 
@@ -414,21 +414,21 @@ class ConnectionManager(object):
                 om.out.debug(msg)
 
     def free_connection(self, conn):
-        '''
+        """
         Recycle a connection. Mark it as available for being reused.
-        '''
+        """
         if conn in self._used_cons:
             self._used_cons.remove(conn)
             self._free_conns.append(conn)
 
     def replace_connection(self, bad_conn, host, conn_factory):
-        '''
+        """
         Re-create a mal-functioning connection.
 
         :param bad_conn: The bad connection
         :param host: The host for the connection
         :param conn_factory: The factory function for new connection creation.
-        '''
+        """
         with self._lock:
             self.remove_connection(bad_conn, host)
             if DEBUG:
@@ -441,13 +441,13 @@ class ConnectionManager(object):
             return new_conn
 
     def get_available_connection(self, host, conn_factory):
-        '''
+        """
         Return an available connection ready to be reused
 
         :param host: Host for the connection.
         :param conn_factory: Factory function for connection creation. Receives
             <host> as parameter.
-        '''
+        """
         with self._lock:
             retry_count = 10
 
@@ -491,29 +491,29 @@ class ConnectionManager(object):
             raise w3afException(msg)
 
     def resize_pool(self, new_size):
-        '''
+        """
         Set a new pool size.
-        '''
+        """
         pass
 
     def get_all(self, host=None):
-        '''
+        """
         If <host> is passed return a list containing the created connections
         for that host. Otherwise return a dict with 'host: str' and
         'conns: list' as items.
 
         :param host: Host
-        '''
+        """
         if host:
             return list(self._hostmap.get(host, []))
         else:
             return dict(self._hostmap)
 
     def get_connections_total(self, host=None):
-        '''
+        """
         If <host> is None return the grand total of created connections;
         otherwise return the total of created conns. for <host>.
-        '''
+        """
         values = self._hostmap.values() if (host is None) \
             else [self._hostmap[host]]
         return reduce(operator.add, map(len, values or [[]]))
@@ -550,43 +550,43 @@ class KeepAliveHandler(object):
         self._get_tail_filter = lambda: deque(maxlen=self._curr_check_failures)
 
     def get_open_connections(self):
-        '''
+        """
         Return a list of connected hosts and the number of connections
         to each.  [('foo.com:80', 2), ('bar.org', 1)]
-        '''
+        """
         return [(host, len(li)) for (host, li) in self._cm.get_all().items()]
 
     def close_connection(self, host):
-        '''
+        """
         Close connection(s) to <host>
         host is the host:port spec, as in 'www.cnn.com:8080' as passed in.
         no error occurs if there is no connection to that host.
-        '''
+        """
         for conn in self._cm.get_all(host):
             self._cm.remove_connection(conn, host)
 
     def close_all(self):
-        '''
+        """
         Close all open connections
-        '''
+        """
         for conns in self._cm.get_all().values():
             for conn in conns:
                 self._cm.remove_connection(conn)
 
     def _request_closed(self, connection):
-        '''
+        """
         Tells us that this request is now closed and that the
         connection is ready for another request
-        '''
+        """
         self._cm.free_connection(connection)
 
     def _remove_connection(self, host, conn):
         self._cm.remove_connection(conn, host)
 
     def do_open(self, req):
-        '''
+        """
         Called by handler's url_open method.
-        '''
+        """
         host = req.get_host()
         if not host:
             raise urllib2.URLError('no host given')
@@ -672,13 +672,13 @@ class KeepAliveHandler(object):
             return resp
 
     def _reuse_connection(self, conn, req, host):
-        '''
+        """
         Start the transaction with a re-used connection
         return a response object (r) upon success or None on failure.
         This DOES not close or remove bad connections in cases where
         it returns.  However, if an unexpected exception occurs, it
         will close and remove the connection before re-raising.
-        '''
+        """
         try:
             self._start_transaction(conn, req)
             r = conn.getresponse()
@@ -718,9 +718,9 @@ class KeepAliveHandler(object):
         return r
 
     def _start_transaction(self, conn, req):
-        '''
+        """
         The real workhorse.
-        '''
+        """
         try:
             data = req.get_data()
             if data is not None:
@@ -754,9 +754,9 @@ class KeepAliveHandler(object):
                 conn.send(data)
 
     def _get_connection(self, host):
-        '''
+        """
         "Abstract" method.
-        '''
+        """
         raise NotImplementedError()
 
 
@@ -807,9 +807,9 @@ class _HTTPConnection(httplib.HTTPConnection):
 
 
 class ProxyHTTPConnection(_HTTPConnection):
-    '''
+    """
     this class is used to provide HTTPS CONNECT support.
-    '''
+    """
     _ports = {'http': 80, 'https': 443}
 
     def __init__(self, host, port=None, strict=None):
@@ -873,9 +873,9 @@ class ProxyHTTPConnection(_HTTPConnection):
 
 
 class ProxyHTTPSConnection(ProxyHTTPConnection):
-    '''
+    """
     this class is used to provide HTTPS CONNECT support.
-    '''
+    """
     default_port = 443
 
     # Customized response class

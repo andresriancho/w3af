@@ -1,4 +1,4 @@
-'''
+"""
 kb_add_wizard.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 
@@ -32,10 +32,10 @@ class KBAddWizard(object):
         pass
     
     def start_wizard(self):
-        '''
+        """
         get_template_names()
         
         template = get_template_by_name(chosen_template)
         ConfigDialog(_("Vulnerability settings"), self.w3af, template)
-        '''
+        """
         pass

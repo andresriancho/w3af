@@ -1,4 +1,4 @@
-'''
+"""
 output_manager.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 import w3af.core.controllers.output_manager as om
@@ -41,9 +41,9 @@ class OutputManagerHandler(urllib2.BaseHandler):
     https_response = http_response
 
     def _log_req_resp(self, request, response):
-        '''
+        """
         Send the request and the response to the output manager.
-        '''
+        """
         if not isinstance(response, HTTPResponse):
             url = request.url_object
             resp = HTTPResponse.from_httplib_resp(response,

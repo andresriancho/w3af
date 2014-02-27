@@ -1,4 +1,4 @@
-'''
+"""
 guardian.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 
@@ -33,7 +33,7 @@ from w3af.core.data.kb.shell import Shell
 
 
 class _Guarded(object):
-    '''Helper for the guardian.'''
+    """Helper for the guardian."""
     def __init__(self, objtype):
         self.icon = helpers.KB_ICONS[objtype, None]
         self.quant = 0
@@ -48,12 +48,12 @@ class _Guarded(object):
         return False
 
 class FoundObjectsGuardian(gtk.HBox):
-    '''Shows the objects found by the core.
+    """Shows the objects found by the core.
 
     :param w3af: the core
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, _w3af):
         super(FoundObjectsGuardian, self).__init__()
         self.w3af = _w3af
@@ -84,11 +84,11 @@ class FoundObjectsGuardian(gtk.HBox):
         self.show_all()
 
     def _update(self, location_a, location_b, value):
-        '''
+        """
         Updates the objects shown.
         
         Called by the knowledge base when a new item is added to it.
-        '''
+        """
         if isinstance(value, Shell):
             self.shll.inc()
             return
@@ -103,11 +103,11 @@ class FoundObjectsGuardian(gtk.HBox):
 
 
 class FoundExceptionsStatusBar(gtk.EventBox):
-    '''
+    """
     Shows the number of exceptions found during the scan in the status bar
 
     :author: Andres Riancho <andres.riancho =at= gmail.com>
-    '''
+    """
     def __init__(self, w3af):
         super(FoundExceptionsStatusBar, self).__init__()
         self.w3af = w3af
@@ -126,12 +126,12 @@ class FoundExceptionsStatusBar(gtk.EventBox):
         self.connect("button-press-event", self._report_bug)
 
     def show_all(self, num):
-        '''Updates the object and shows all.'''
+        """Updates the object and shows all."""
         self.exceptions.inc()
         super(FoundExceptionsStatusBar, self).show_all()
 
     def _report_bug(self, widg, evt):
-        '''User clicked on me, he wants to report a bug'''
+        """User clicked on me, he wants to report a bug"""
         handled.handle_exceptions(self.w3af)
         # TODO: Hide this status bar if and only if the user DID report
         # the exceptions to Github

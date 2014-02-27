@@ -1,4 +1,4 @@
-'''
+"""
 sca.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import itertools
 import sys
 import threading
@@ -75,10 +75,10 @@ class CodeSyntaxError(Exception):
 
 
 class PhpSCA(object):
-    '''
+    """
     PHP Static Code Analyzer class. Intended to detect and report code
     vulnerabilities given an php source input.
-    '''
+    """
 
     def __init__(self, code=None, file=None):
 
@@ -118,9 +118,9 @@ class PhpSCA(object):
         self.debugmode = False
 
     def _start(self):
-        '''
+        """
         Start AST traversal
-        '''
+        """
         with self._parselock:
             if not self._started:
                 self._started = True
@@ -134,13 +134,13 @@ class PhpSCA(object):
                 global_pnode.accept(self._visitor)
 
     def get_vulns(self):
-        '''
+        """
         Return a dict that maps vuln. types to FuncCall objects.
 
         Output example:
             {'XSS': [<'system' call at line 2>, <'echo' call at line 4>],
              'OS_COMMANDING': [<'system' call at line 6>]}
-        '''
+        """
         self._start()
         resdict = {}
         for f in self.get_func_calls(vuln=True):
@@ -164,10 +164,10 @@ class PhpSCA(object):
         return filter(filter_vuln, self._functions)
 
     def _visitor(self, node):
-        '''
+        """
         Visitor method for AST traversal. Used as arg for AST nodes' 'accept'
         method (Visitor Design Pattern)
-        '''
+        """
         def locatescope():
             while True:
                 currscope = self._scopes[-1]
@@ -218,9 +218,9 @@ class PhpSCA(object):
 
 
 class NodeRep(object):
-    '''
+    """
     Abstract Node representation for AST Nodes
-    '''
+    """
 
     MAX_LEVEL = sys.getrecursionlimit()
 
@@ -231,13 +231,13 @@ class NodeRep(object):
         self._ast_node = ast_node
 
     def _get_parent_nodes(self, startnode, nodetys=[phpast.Node]):
-        '''
+        """
         Yields parent nodes of type `type`.
 
         :param nodetys: The types of nodes to yield. Default to list
             containing base type.
         :param startnode: Start node.
-        '''
+        """
         parent = getattr(startnode, '_parent_node', None)
         while parent:
             if type(parent) in nodetys:
@@ -272,10 +272,10 @@ class NodeRep(object):
 
 
 class VariableDef(NodeRep):
-    '''
+    """
     Representation for the AST Variable Definition.
         (...)
-    '''
+    """
 
     USER_VARS = ('$_GET', '$_POST', '$_COOKIES', '$_REQUEST')
 
@@ -299,10 +299,10 @@ class VariableDef(NodeRep):
         self._taint_source = None
 
     def get_is_root(self):
-        '''
+        """
         A variable is said to be 'root' when it has no ancestor or when
         its ancestor's name is in USER_VARS
-        '''
+        """
         if self._is_root is None:
             if self.parent:
                 self._is_root = False
@@ -316,9 +316,9 @@ class VariableDef(NodeRep):
     is_root = property(get_is_root, set_is_root)
 
     def get_parent(self):
-        '''
+        """
         Get this var's parent variable
-        '''
+        """
         if self._is_root:
             return None
 
@@ -335,9 +335,9 @@ class VariableDef(NodeRep):
 
     @property
     def controlled_by_user(self):
-        '''
+        """
         Returns bool that indicates if this variable is tainted.
-        '''
+        """
         cbusr = self._controlled_by_user
 
         if cbusr is None:
@@ -355,10 +355,10 @@ class VariableDef(NodeRep):
 
     @property
     def taint_source(self):
-        '''
+        """
         Return the taint source for this Variable Definition if any; otherwise
         return None.
-        '''
+        """
         taintsrc = self._taint_source
         if taintsrc:
             return taintsrc
@@ -401,23 +401,23 @@ class VariableDef(NodeRep):
             (self.parent.is_tainted_for(vulnty) if self.parent else True)
 
     def deps(self):
-        '''
+        """
         Generator function. Yields this var's dependencies.
-        '''
+        """
         parent = self.parent
         while parent:
             yield parent
             parent = parent.parent
 
     def _get_ancestor_var(self, node):
-        '''
+        """
         Return the ancestor Variable for this var.
         For next example php code:
             <? $a = 'ls' . $_GET['bar'];
                $b = somefunc($a);
             ?>
         we got that $_GET is $a's ancestor as well as $a is for $b.
-        '''
+        """
         for n in NodeRep.parse(node):
             if type(n) is phpast.Variable:
                 nodetys = [phpast.FunctionCall]
@@ -430,9 +430,9 @@ class VariableDef(NodeRep):
 
 
 class FuncCall(NodeRep):
-    '''
+    """
     Representation for FunctionCall AST node.
-    '''
+    """
 
     # Potentially Vulnerable Functions Database
     PVFDB = {
@@ -499,12 +499,12 @@ class FuncCall(NodeRep):
 
     @staticmethod
     def get_vulnty_for(fname):
-        '''
+        """
         Return the vuln type for the given function name `fname`. Return None
         if no vuln type is associated.
 
         :param fname: Function name
-        '''
+        """
         for vulnty, pvfnames in FuncCall.PVFDB.iteritems():
             if any(fname == pvfn for pvfn in pvfnames):
                 return vulnty
@@ -512,11 +512,11 @@ class FuncCall(NodeRep):
 
     @staticmethod
     def get_vulnty_for_sec(sfname):
-        '''
+        """
         Return the the vuln. type secured by securing function `sfname`.
 
         :param sfname: Securing function name
-        '''
+        """
         for vulnty, sfnames in FuncCall.SFDB.iteritems():
             if any(sfname == sfn for sfn in sfnames):
                 return vulnty
@@ -560,11 +560,11 @@ class FuncCall(NodeRep):
 class Scope(object):
 
     def __init__(self, ast_node, parent_scope=None, builtins={}):
-        '''
+        """
         :param ast_node: AST node that originated this scope
         :param parent_scope: Parent scope
         :param builtins: Language's builtin variables
-        '''
+        """
         # AST node that defines this scope
         self._ast_node = ast_node
         self._parent_scope = parent_scope
@@ -603,10 +603,10 @@ class Param(object):
         self.var = self._parse_me(node, scope)
 
     def _parse_me(self, node, scope):
-        '''
+        """
         Traverse this AST subtree until either a Variable or FunctionCall node
         is found...
-        '''
+        """
         vardef = None
 
         for node in NodeRep.parse(node):

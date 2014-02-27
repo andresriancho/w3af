@@ -1,4 +1,4 @@
-'''
+"""
 vuln.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.kb.info import Info
 from w3af.core.data.constants.severity import INFORMATION, LOW, MEDIUM, HIGH
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
@@ -26,12 +26,12 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class Vuln(Info):
-    '''
+    """
     This class represents a web vulnerability.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, name, desc, severity, response_ids, plugin_name):
-        '''
+        """
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         
@@ -42,21 +42,21 @@ class Vuln(Info):
         :param response_ids: A list of response ids associated with this vuln
         
         :param plugin_name: The name of the plugin which identified the vuln
-        '''
+        """
         Info.__init__(self, name, desc, response_ids, plugin_name)
 
         self.set_severity(severity)
 
     @classmethod
     def from_mutant(cls, name, desc, severity, response_ids, plugin_name, mutant):
-        '''
+        """
         TODO: I wanted to use super(Vuln, cls).from_mutant here but I was
         unable to make it work. Refactoring required to avoid code duplication
         with info.py. The same applies to all classmethods
         
         :return: A vuln instance with the proper data set based on the values
                  taken from the mutant.
-        '''
+        """
         if not isinstance(mutant, Mutant):
             raise TypeError('Mutant expected in from_mutant.')
         
@@ -72,10 +72,10 @@ class Vuln(Info):
         
     @classmethod
     def from_fr(cls, name, desc, severity, response_ids, plugin_name, freq):
-        '''
+        """
         :return: A vuln instance with the proper data set based on the values
                  taken from the fuzzable request.
-        '''
+        """
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
         
@@ -89,9 +89,9 @@ class Vuln(Info):
     
     @classmethod
     def from_vuln(cls, other_vuln):
-        '''
+        """
         :return: A clone of other_vuln. 
-        '''
+        """
         if not isinstance(other_vuln, Vuln):
             raise TypeError('Vuln expected in from_vuln.')
         

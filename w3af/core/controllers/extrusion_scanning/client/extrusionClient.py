@@ -1,4 +1,4 @@
-'''
+"""
 extrusionClient.py
 
 Copyright 2006 Andres Riancho
@@ -18,19 +18,19 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import socket
 import sys
 
 
 class extrusionClient:
-    '''
+    """
     This class defines a simple client, that connects to every port that is passed to it
     in the constructor and closes the connection afterwards.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, host, tcpPorts, udpPorts):
         self._host = host
@@ -38,9 +38,9 @@ class extrusionClient:
         self._udpPorts = udpPorts
 
     def start(self):
-        '''
+        """
         Performs the connections.
-        '''
+        """
         def conn(sock, host, port):
             try:
                 sock.connect((host, port))

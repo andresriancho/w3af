@@ -1,4 +1,4 @@
-'''
+"""
 text_file.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 import os
 
@@ -34,11 +34,11 @@ from w3af.core.data.options.option_list import OptionList
 
 
 class text_file(OutputPlugin):
-    '''
+    """
     Prints all messages to a text file.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -92,11 +92,11 @@ class text_file(OutputPlugin):
                 msg % (os.path.abspath(self._http_file_name), e))
 
     def _write_to_file(self, msg):
-        '''
+        """
         Write to the log file.
 
         :param msg: The text to write.
-        '''
+        """
         if self._file is None:
             return
         
@@ -110,12 +110,12 @@ class text_file(OutputPlugin):
                          ignore_plugins=set([self.get_name()]))
 
     def _write_to_HTTP_log(self, msg):
-        '''
+        """
         Write to the HTTP log file.
 
         :param msg: The text to write (a string representation of the HTTP
                         request and response)
-        '''
+        """
         if self._http is None:
             return
         
@@ -129,13 +129,13 @@ class text_file(OutputPlugin):
                          ignore_plugins=set([self.get_name()]))
             
     def write(self, message, log_type, new_line=True):
-        '''
+        """
         Method that writes stuff to the text_file.
 
         :param message: The message to write to the file
         :param log_type: Type of message are we writing to the file
         :param new_line: Add a new line after the message
-        '''
+        """
         if not self._initialized:
             self._init()
 
@@ -157,46 +157,46 @@ class text_file(OutputPlugin):
         self._flush()
 
     def debug(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for debug messages.
-        '''
+        """
         if self.verbose:
             self.write(message, 'debug', new_line)
 
     def information(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for informational messages.
-        '''
+        """
         self.write(message, 'information', new_line)
 
     def error(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
-        '''
+        """
         self.write(message, 'error', new_line)
 
     def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
-        '''
+        """
         self.write(message, 'vulnerability', new_line)
 
     def console(self, message, new_line=True):
-        '''
+        """
         This method is used by the w3af console to print messages to the outside.
-        '''
+        """
         self.write(message, 'console', new_line)
 
     def log_enabled_plugins(self, plugins_dict, options_dict):
-        '''
+        """
         This method is called from the output manager object. This method should
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
@@ -204,7 +204,7 @@ class text_file(OutputPlugin):
         :param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
         :param optionsDict: A dict with the options for every plugin.
-        '''
+        """
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
         timestamp = '[ ' + the_time + ' - Enabled plugins ] '
@@ -227,10 +227,10 @@ class text_file(OutputPlugin):
         self._write_to_file(timestamp + to_print)
 
     def _flush(self):
-        '''
+        """
         textfile.flush is called every time a message is sent to this plugin.
         self._file.flush() is called every self._flush_number
-        '''
+        """
         if self._flush_counter % self._flush_number == 0:
             #   TODO: Remove this if I discover that it wasn't really needed.
             #   I just commented this because after some profiling I found that
@@ -241,7 +241,7 @@ class text_file(OutputPlugin):
             pass
 
     def set_options(self, option_list):
-        '''
+        """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using
@@ -250,7 +250,7 @@ class text_file(OutputPlugin):
         This method MUST be implemented on every plugin.
 
         :return: No value is returned.
-        '''
+        """
         self.verbose = option_list['verbose'].get_value()
         self._output_file_name = option_list['output_file'].get_value()
         self._http_file_name = option_list['http_output_file'].get_value()
@@ -258,9 +258,9 @@ class text_file(OutputPlugin):
         self._init()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'Enable if verbose output is needed'
@@ -279,11 +279,11 @@ class text_file(OutputPlugin):
         return ol
 
     def log_http(self, request, response):
-        '''
+        """
         log the http req / res to file.
         :param request: A fuzzable request object
         :param response: A HTTPResponse object
-        '''
+        """
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
 
@@ -301,14 +301,14 @@ class text_file(OutputPlugin):
         self._http.flush()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin writes the framework messages to a text file.
 
         Four configurable parameters exist:
             - output_file
             - http_output_file
             - verbose
-        '''
+        """

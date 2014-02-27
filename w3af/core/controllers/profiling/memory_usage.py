@@ -1,4 +1,4 @@
-'''
+"""
 memory_usage.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 DEBUG_MEMORY = False
 DEBUG_REFERENCES = False
@@ -41,10 +41,10 @@ if DEBUG_MEMORY:
 
 
 def dump_memory_usage():
-    '''
+    """
     This is a function that prints the memory usage of w3af in real time.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     if not DEBUG_MEMORY:
         return
     else:
@@ -96,10 +96,10 @@ def dump_memory_usage():
 
 
 def _extra_info(obj_ignore):
-    '''
+    """
     Takes an object and returns some extra information about it depending on the
     object type.
-    '''
+    """
     try:
         if isinstance(obj_ignore, dict):
             name = find_names(obj_ignore)

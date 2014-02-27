@@ -1,4 +1,4 @@
-''''
+"""'
 http_in_body.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -45,13 +45,13 @@ class http_in_body (GrepPlugin):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         # 501 Code is "Not Implemented" which in some cases responds with
         # this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
@@ -86,9 +86,9 @@ class http_in_body (GrepPlugin):
                     kb.kb.append(self, 'response', i)
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         item_fmt = '- %s  (id: %s)'
         msg = 'The following URLs have an HTTP %s in the HTTP'\
               ' response body:'
@@ -102,12 +102,12 @@ class http_in_body (GrepPlugin):
                     om.out.information(item_fmt % (i.get_uri(), i.get_id()))
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''\
+        """
+        return """\
         This plugin searches for HTTP responses that contain other HTTP
         request/responses in their response body. This situation is mostly seen
         when programmers enable some kind of debugging for the web application,
         and print the original request in the response HTML as a comment.
-        '''
+        """

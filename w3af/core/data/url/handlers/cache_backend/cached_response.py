@@ -1,4 +1,4 @@
-'''
+"""
 cached_response.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import StringIO
 import os
 import httplib
@@ -96,22 +96,22 @@ class CachedResponse(StringIO.StringIO):
         return self.url
 
     def _get_from_response(self, part):
-        '''
+        """
         Return the `part` string from the saved response.
 
         :param part: Possible values: PART_HEADER, PART_BODY, PART_CODE and
             PART_MSG
         @raise ValueError: If `part` is not an expected value this exception
             is raised.
-        '''
+        """
         raise NotImplementedError
 
     @staticmethod
     def _get_cache_location():
-        '''
+        """
         Return path for cache location. Also create directory if it doesn't
         exist. For class internal use intended.
-        '''
+        """
         cacheloc = os.path.join(CACHE_LOCATION, str(os.getpid()))
         if not os.path.exists(cacheloc):
             os.mkdir(cacheloc)
@@ -119,31 +119,31 @@ class CachedResponse(StringIO.StringIO):
 
     @staticmethod
     def exists_in_cache(request):
-        '''
+        """
         Verifies if a request is in the cache container
 
         :param reqid: Request object
         :return: Boolean value
         @raises NotImplementedError: if the method is not redefined
-        '''
+        """
         raise NotImplementedError
 
     @staticmethod
     def store_in_cache(request, response):
-        '''
+        """
         Saves data in request and response objects to the cache container
 
         :param request:
         :param response:
         @raises NotImplementedError: if the method is not redefined
-        '''
+        """
         raise NotImplementedError
 
     @staticmethod
     def init():
-        '''
+        """
         Takes all the actions needed for the CachedResponse class to work,
         in most cases this means creating a file, directory or databse.
-        '''
+        """
         raise NotImplementedError
 

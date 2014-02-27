@@ -1,4 +1,4 @@
-'''
+"""
 blind_sqli_response_diff.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 import cgi
 
@@ -32,13 +32,13 @@ from w3af.core.controllers.misc.diff import diff
 
 
 class blind_sqli_response_diff(object):
-    '''
+    """
     This class tests for blind SQL injection bugs using response diffs,
     the logic is here and not as an audit plugin because it is also used in
     attack plugins when trying to verify the vulnerability.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, uri_opener):
         # User configured variables
@@ -46,23 +46,23 @@ class blind_sqli_response_diff(object):
         self._uri_opener = uri_opener
 
     def set_eq_limit(self, eq_limit):
-        '''
+        """
         Most of the equal algorithms use a rate to tell if two responses
         are equal or not. 1 is 100% equal, 0 is totally different.
 
         :param eq_limit: The equal limit to use.
-        '''
+        """
         self._eq_limit = eq_limit
 
     def is_injectable(self, mutant):
-        '''
+        """
         Check if "parameter" of the fuzzable request object is injectable or not.
 
         @mutant: The mutant object that I have to inject to
         @param: A string with the parameter name to test
 
         :return: A vulnerability object or None if nothing is found
-        '''
+        """
         statements = self._get_statements(mutant)
         for statement_type in statements:
             vuln = self._find_bsql(mutant, statements[statement_type],
@@ -73,9 +73,9 @@ class blind_sqli_response_diff(object):
         return None
 
     def _get_statements(self, mutant, exclude_numbers=[]):
-        '''
+        """
         Returns a list of statement tuples.
-        '''
+        """
         res = {}
         rnd_num = int(rand_number(2, exclude_numbers))
         rnd_num_plus_one = rnd_num + 1
@@ -98,11 +98,11 @@ class blind_sqli_response_diff(object):
         return res
 
     def _find_bsql(self, mutant, statement_tuple, statement_type):
-        '''
+        """
         Is the main algorithm for finding blind SQL injections.
 
         :return: A vulnerability object or None if nothing is found
-        '''
+        """
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
 
@@ -196,9 +196,9 @@ class blind_sqli_response_diff(object):
         om.out.debug('[blind_sqli_debug] ' + msg)
 
     def equal_with_limit(self, body1, body2, compare_diff=False):
-        '''
+        """
         Determines if two pages are equal using a ratio.
-        '''
+        """
         if compare_diff:
             body1, body2 = diff(body1, body2)
 
@@ -208,7 +208,7 @@ class blind_sqli_response_diff(object):
         return cmp_res
 
     def send_clean(self, mutant):
-        '''
+        """
         Sends a mutant to the network (without using the cache) and then returns
         the HTTP response object and a sanitized response body (which doesn't
         contain any traces of the injected payload).
@@ -221,7 +221,7 @@ class blind_sqli_response_diff(object):
                     HTTP response,
                     Sanitized HTTP response body,
                  )
-        '''
+        """
         http_response = self._uri_opener.send_mutant(mutant, cache=False)
         clean_body = get_clean_body(mutant, http_response)
 
@@ -229,7 +229,7 @@ class blind_sqli_response_diff(object):
 
 
 def get_clean_body(mutant, response):
-    '''
+    """
     @see: Very similar to fingerprint_404.py get_clean_body() bug not quite
           the same maybe in the future I can merge both?
 
@@ -246,7 +246,7 @@ def get_clean_body(mutant, response):
     :param mutant: The mutant where I can get the value from.
     :param response: The HTTPResponse object to clean
     :return: A string that represents the "cleaned" response body.
-    '''
+    """
 
     body = response.body
 

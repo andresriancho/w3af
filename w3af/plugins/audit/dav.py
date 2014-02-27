@@ -1,4 +1,4 @@
-'''
+"""
 dav.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -30,11 +30,11 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 
 
 class dav(AuditPlugin):
-    '''
+    """
     Verify if the WebDAV module is properly configured.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -43,11 +43,11 @@ class dav(AuditPlugin):
         self._already_tested_dirs = ScalableBloomFilter()
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Searches for file upload vulns using PUT method.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         # Start
         domain_path = freq.get_url().get_domain_path()
         if domain_path not in self._already_tested_dirs:
@@ -71,9 +71,9 @@ class dav(AuditPlugin):
 
     #pylint: disable=C0103
     def _SEARCH(self, domain_path):
-        '''
+        """
         Test SEARCH method.
-        '''
+        """
         content = "<?xml version='1.0'?>\r\n"
         content += "<g:searchrequest xmlns:g='DAV:'>\r\n"
         content += "<g:sql>\r\n"
@@ -100,9 +100,9 @@ class dav(AuditPlugin):
 
     #pylint: disable=C0103
     def _PROPFIND(self, domain_path):
-        '''
+        """
         Test PROPFIND method
-        '''
+        """
         content = "<?xml version='1.0'?>\r\n"
         content += "<a:propfind xmlns:a='DAV:'>\r\n"
         content += "<a:prop>\r\n"
@@ -128,9 +128,9 @@ class dav(AuditPlugin):
 
     #pylint: disable=C0103
     def _PUT(self, domain_path):
-        '''
+        """
         Tests PUT method.
-        '''
+        """
         # upload
         url = domain_path.url_join(rand_alpha(5))
         rnd_content = rand_alnum(6)
@@ -182,21 +182,21 @@ class dav(AuditPlugin):
             self.kb_append(self, 'dav', i)
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
                  the current one.
-        '''
+        """
         return ['infrastructure.allowed_methods',
                 'infrastructure.server_header']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds WebDAV configuration errors. These errors are generally
         server configuration errors rather than a web application errors. To
         check for vulnerabilities of this kind, the plugin will try to PUT a
         file on a directory that has WebDAV enabled, if the file is uploaded
         successfully, then we have found a bug.
-        '''
+        """

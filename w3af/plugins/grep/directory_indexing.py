@@ -1,4 +1,4 @@
-'''
+"""
 directory_indexing.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -28,11 +28,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class directory_indexing(GrepPlugin):
-    '''
+    """
     Grep every response for directory indexing problems.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     DIR_INDEXING = (
         "<title>Index of /",
@@ -57,12 +57,12 @@ class directory_indexing(GrepPlugin):
         self._already_visited = ScalableBloomFilter()
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for directory indexing.
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -84,9 +84,9 @@ class directory_indexing(GrepPlugin):
             self.kb_append_uniq(self, 'directory', v, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every response directory indexing problems.
-        '''
+        """

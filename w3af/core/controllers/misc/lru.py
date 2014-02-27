@@ -1,4 +1,4 @@
-'''
+"""
 LRU.py
 
 Copyright 2006 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from __future__ import with_statement
 
 import threading
@@ -109,9 +109,9 @@ class LRU(object):
                 self.last = nobj.prev
             del self.d[obj]
 
-    '''
+    """
     @w3af note: I think that the following methods are never used in the framework.
-    '''
+    """
     def __iter__(self):
         cur = self.first
         while cur is not None:

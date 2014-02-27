@@ -5,12 +5,12 @@ files = []
 
 
 def check_files(file_list):
-    '''
+    """
     Verify if a list of files exist and have content.
 
     :param file_list: The list of files to check.
     :return: The list of files that exist.
-    '''
+    """
     checked = []
     for file in file_list:
         try:

@@ -1,4 +1,4 @@
-'''
+"""
 bruteforce.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
@@ -28,17 +28,17 @@ from w3af.core.controllers.threads.threadpool import return_args
 
 
 class bruteforce(BaseConsumer):
-    '''
+    """
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the crawl plugins and bruteforces logins by performing various requests.
-    '''
+    """
 
     def __init__(self, bruteforce_plugins, w3af_core):
-        '''
+        """
         :param in_queue: The input queue that will feed the bruteforce plugins
         :param bruteforce_plugins: Instances of bruteforce plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
-        '''
+        """
         super(bruteforce, self).__init__(bruteforce_plugins, w3af_core,
                                          thread_name='Bruteforcer')
 
@@ -69,7 +69,7 @@ class bruteforce(BaseConsumer):
 
     @task_decorator
     def _bruteforce(self, plugin, fuzzable_request):
-        '''
+        """
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to handle
         exceptions correctly here. Failure to do so will end up in _task_done not
@@ -81,7 +81,7 @@ class bruteforce(BaseConsumer):
         :param fuzzable_request: The fuzzable request that (if suitable) will be
                                  bruteforced by @plugin.
         :return: A list of the URL's that have been successfully bruteforced
-        '''
+        """
         res = set()
 
         # Status

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 encode_decode.py
 
 Copyright 2008 Andres Riancho
@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import urllib
 import sys
@@ -84,7 +84,7 @@ def htmldecode(text, use_repr=False):
 
 
 def urlencode(query, encoding, safe='/<>"\'=:()'):
-    '''
+    """
     This is my version of urllib.urlencode. It adds "/" as a safe character
     and also adds support for "repeated parameter names".
 
@@ -101,7 +101,7 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
         If the query arg is a sequence of two-element tuples, the order of the
         parameters in the output will match the order of parameters in the
         input.
-    '''
+    """
 
     if hasattr(query, "items"):
         # mapping objects

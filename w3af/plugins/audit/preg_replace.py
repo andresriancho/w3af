@@ -1,4 +1,4 @@
-'''
+"""
 preg_replace.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.controllers.output_manager as om
@@ -31,10 +31,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class preg_replace(AuditPlugin):
-    '''
+    """
     Find unsafe usage of PHPs preg_replace.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     PREG_PAYLOAD = ['a' + ')/' * 100, ]
     PREG_ERRORS = ('Compilation failed: unmatched parentheses at offset',
                    '<b>Warning</b>:  preg_replace() [<a',
@@ -46,11 +46,11 @@ class preg_replace(AuditPlugin):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for unsafe usage of PHP's preg_replace.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         # First I check If I get the error message from php
         mutants = create_mutants(freq, self.PREG_PAYLOAD,
                                  orig_resp=orig_response)
@@ -60,9 +60,9 @@ class preg_replace(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         #
         #   I will only report the vulnerability once.
         #
@@ -83,12 +83,12 @@ class preg_replace(AuditPlugin):
                     break
 
     def _find_preg_error(self, response):
-        '''
+        """
         This method searches for preg_replace errors in html's.
 
         :param response: The HTTP response object
         :return: A list of errors found on the page
-        '''
+        """
         res = []
         for error_match in self._multi_in.query(response.body):
             msg = 'An unsafe usage of preg_replace() function was found,'\
@@ -101,17 +101,17 @@ class preg_replace(AuditPlugin):
         return res
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
                  the current one.
-        '''
+        """
         return ['grep.error_500']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will find preg_replace vulnerabilities. This PHP function
         is vulnerable when the user can control the regular expression or the
         content of the string being analyzed and the regular expression has the
@@ -120,4 +120,4 @@ class preg_replace(AuditPlugin):
         Right now this plugin will only find preg_replace vulnerabilities when
         PHP is configured to show errors, but a new version will find "blind"
         preg_replace errors.
-        '''
+        """

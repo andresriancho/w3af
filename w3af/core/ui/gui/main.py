@@ -1,4 +1,4 @@
-'''
+"""
 main.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import absolute_import
 
 # Now that I know that I have them, import them!
@@ -81,10 +81,10 @@ class FakeShelve(dict):
 
 
 class AboutDialog(gtk.Dialog):
-    '''A dialog with the About information.
+    """A dialog with the About information.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(
             AboutDialog, self).__init__(_("About..."), None, gtk.DIALOG_MODAL,
@@ -109,7 +109,7 @@ class AboutDialog(gtk.Dialog):
         self.show_all()
 
     def _goWeb(self, w):
-        '''Opens the web site and closes the dialog.'''
+        """Opens the web site and closes the dialog."""
         try:
             webbrowser.open("http://w3af.org/")
         except Exception:
@@ -137,18 +137,18 @@ class WindowsCommunication(object):
         self.client = e
 
     def destroy(self):
-        '''Destroys the window.'''
+        """Destroys the window."""
         self.isActive = False
         return True
 
     def create(self, info=None):
-        '''Assures the window is shown.
+        """Assures the window is shown.
 
         Create a new window if not active, raises the previous one if already
         is created.
 
         :param info: info to sent initially to the window
-        '''
+        """
         if self.isActive:
             self.client.present()
         else:
@@ -159,25 +159,25 @@ class WindowsCommunication(object):
     __call__ = create
 
     def send(self, info):
-        '''Sends information to the window.
+        """Sends information to the window.
 
         :param info: info to sent initially to the window
-        '''
+        """
         if not self.isActive:
             self.create()
         self.callback(info)
 
     def enable(self, window, callback):
-        '''Enables the window.'''
+        """Enables the window."""
         self.client = window
         self.callback = callback
 
 
 class MainApp(object):
-    '''Main GTK application
+    """Main GTK application
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
 
     def __init__(self, profile, do_upd):
         disclaimer = DisclaimerController()
@@ -455,14 +455,14 @@ class MainApp(object):
             self.profiles.profile_changed(*args, **kwargs)
 
     def _editMenu(self, widget):
-        '''
+        """
         This handles the click action of the user over the edit menu.
 
         The main objective of this function is to disable the "Edit Plugin"
         option, if the user isn't focused over a plugin.
 
         :param widget: Not used
-        '''
+        """
         treeToUse = None
         if self.pcbody.out_plugin_tree.is_focus():
             treeToUse = self.pcbody.out_plugin_tree
@@ -481,11 +481,11 @@ class MainApp(object):
             ag.set_sensitive(True)
 
     def _edit_selected_plugin(self, widget):
-        '''
+        """
         This is the handler for the "Edit Plugin" menu option.
 
         :param widget: Not used
-        '''
+        """
         self.pcbody.edit_selected_plugin()
 
     def on_window_state_event(self, widget, event, data=None):
@@ -493,12 +493,12 @@ class MainApp(object):
         self.is_maximized = widget.get_window().get_state() & mask == mask
     
     def quit(self, widget, event, data=None):
-        '''Main quit.
+        """Main quit.
 
         :param widget: who sent the signal.
         :param event: the event that happened
         :param data: optional data to receive.
-        '''
+        """
         msg = _("Do you really want to quit?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION,
                                 gtk.BUTTONS_YES_NO, msg)
@@ -524,17 +524,17 @@ class MainApp(object):
             return False
 
     def _scan_director(self, widget):
-        '''Directs what to do with the Scan.'''
+        """Directs what to do with the Scan."""
         action = "_scan_" + self.scan_should
         func = getattr(self, action)
         func()
 
     def save_state_to_core(self, relaxedTarget=False):
-        '''Save the actual state to the core.
+        """Save the actual state to the core.
 
         :param relaxedTarget: if True, return OK even if the target wasn't saved ok
         :return: True if all went ok
-        '''
+        """
         # Clear everything
         for ptype in self.w3af.plugins.get_plugin_types():
             self.w3af.plugins.set_plugins([], ptype)
@@ -567,10 +567,10 @@ class MainApp(object):
         return True
 
     def _scan_start(self):
-        '''Starts the actual scanning.
+        """Starts the actual scanning.
 
         :param widget: the widget that generated the signal.
-        '''
+        """
         if not self.save_state_to_core():
             return
 
@@ -641,7 +641,7 @@ class MainApp(object):
             self.window.set_title("w3af - " + target_domain)
 
     def _scan_pause(self, widget):
-        '''Pauses the scan.'''
+        """Pauses the scan."""
         shall_pause = widget.get_active()
 
         # stop/start core and throbber
@@ -659,7 +659,7 @@ class MainApp(object):
             self.sb(_("The scan is paused"))
 
     def _scan_stop(self):
-        '''Stops the scanning.'''
+        """Stops the scanning."""
         def stop_scan_wrap():
             try:
                 self.w3af.stop()
@@ -686,11 +686,11 @@ class MainApp(object):
         self.stopped_by_user = True
 
     def _scan_stopfeedback(self):
-        '''Visual elements when stopped.
+        """Visual elements when stopped.
 
         This is separated because it's called when the process finishes by
         itself or by the user click.
-        '''
+        """
         self.startstopbtns.change_internals(_("Clear"), gtk.STOCK_CLEAR,
                                            _("Clear all the obtained results"))
         self.throbber.running(False)
@@ -703,10 +703,10 @@ class MainApp(object):
             self.sb(_("The scan has finished"))
 
     def _scan_finished(self):
-        '''
+        """
         This method is called when the scan finishes successfully of because
         of an exception.
-        '''
+        """
         # After the scan finishes, I want to be able to use the GtkOutput
         # features for exploitation
         om.out.set_output_plugin_inst(GtkOutput())
@@ -718,7 +718,7 @@ class MainApp(object):
             self.exceptions_sb.show_all(len(exception_list))
 
     def _scan_clear(self):
-        '''Clears core and gui, and fixes button to next step.'''
+        """Clears core and gui, and fixes button to next step."""
         # cleanup
         self.nb.set_current_page(0)
         self.w3af.cleanup()
@@ -736,10 +736,10 @@ class MainApp(object):
         om.out.set_output_plugin_inst(GtkOutput())
 
     def _scan_superviseStatus(self):
-        '''Handles the waiting until core actually stopped.
+        """Handles the waiting until core actually stopped.
 
         :return: True to be called again
-        '''
+        """
         if self.w3af.status.is_running():
             return True
 
@@ -754,10 +754,10 @@ class MainApp(object):
         return False
 
     def set_tabs(self, sensit):
-        '''Set the exploits tabs to real window or dummies labels.
+        """Set the exploits tabs to real window or dummies labels.
 
         :param sensit: if it's active or not
-        '''
+        """
         # the View menu
         for menu in self.menuViews.values():
             menu.set_sensitive(sensit)
@@ -786,29 +786,29 @@ class MainApp(object):
         self.notetabs[title] = newone
 
     def menu_config_http(self, action):
-        '''Configure HTTP options.'''
+        """Configure HTTP options."""
         configurable = self.w3af.uri_opener.settings
         confpanel.ConfigDialog(_("Configure HTTP settings"), self.w3af,
                                configurable)
 
     def menu_config_misc(self, action):
-        '''Configure Misc options.'''
+        """Configure Misc options."""
         configurable = MiscSettings()
         confpanel.ConfigDialog(
             _("Configure Misc settings"), self.w3af, configurable)
 
     def dyn_panels(self, widget, panel):
-        '''Turns on and off the Log Panel.'''
+        """Turns on and off the Log Panel."""
         active = widget.get_active()
         self.viewSignalRecipient.toggle_panels(panel, active)
 
     def nb_changed_page(self, notebook, page, page_num):
-        '''Changed the page in the Notebook.
+        """Changed the page in the Notebook.
 
         It manages which View will be visible in the Menu, and
         to which recipient the signal of that View should be
         directed.
-        '''
+        """
         ch = notebook.get_nth_page(page_num)
         page = notebook.get_tab_label(ch).get_text()
         self.w3af.helpChapters["main"] = self.helpChapter[page_num]
@@ -834,64 +834,64 @@ class MainApp(object):
             widg(page in where)
 
     def profile_action(self, action):
-        '''Do the action on the profile.'''
+        """Do the action on the profile."""
         methname = action + "_profile"
         method = getattr(self.profiles, methname)
         method()
 
     def activate_profile_actions(self, newstatus):
-        '''Activate profiles buttons.
+        """Activate profiles buttons.
 
         :param newstatus: if the profile changed or not.
-        '''
+        """
         for opt, stt in zip(self.profile_actions, newstatus):
             opt.set_sensitive(stt)
 
     def menu_help(self, action):
-        '''Shows the help message.'''
+        """Shows the help message."""
         helpers.open_help()
 
     def menu_about(self, action):
-        '''Shows the about message.'''
+        """Shows the about message."""
         dlg = AboutDialog(self.w3af)
         dlg.run()
 
     def report_bug(self, action):
-        '''Report bug to Sourceforge'''
+        """Report bug to Sourceforge"""
         user_reports_bug.user_reports_bug()
 
     def _exploit_all(self, action):
-        '''Exploits all vulns.'''
+        """Exploits all vulns."""
         exploitpage = self.notetabs[_("Exploit")]
         exploitpage.exploit_all()
 
     def _manual_request(self, action):
-        '''Generate manual HTTP requests.'''
+        """Generate manual HTTP requests."""
         ManualRequests(self.w3af)
 
     def _export_request(self, action):
-        '''Export HTTP requests to python, javascript, etc.'''
+        """Export HTTP requests to python, javascript, etc."""
         export_request.export_request(self.w3af)
 
     def _fuzzy_request(self, action):
-        '''Generate fuzzy HTTP requests.'''
+        """Generate fuzzy HTTP requests."""
         FuzzyRequests(self.w3af)
 
     def _encode_decode(self, action):
-        '''Generate fuzzy HTTP requests.'''
+        """Generate fuzzy HTTP requests."""
         encdec.EncodeDecode(self.w3af)
 
     def _compare(self, action):
-        '''Generate fuzzy HTTP requests.'''
+        """Generate fuzzy HTTP requests."""
         self.commCompareTool.create()
 
     def _proxy_tool(self, action):
-        '''Proxies the HTTP calls.'''
+        """Proxies the HTTP calls."""
         self.set_tabs(True)
         ProxiedRequests(self.w3af)
 
     def _wizards(self, action):
-        '''Execute the wizards machinery.'''
+        """Execute the wizards machinery."""
         wizard.WizardChooser(self.w3af)
 
     def help_f1(self, widget, event):

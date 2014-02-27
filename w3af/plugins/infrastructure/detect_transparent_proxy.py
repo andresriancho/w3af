@@ -1,4 +1,4 @@
-'''
+"""
 detect_transparent_proxy.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 
 import w3af.core.controllers.output_manager as om
@@ -31,20 +31,20 @@ from w3af.core.data.kb.info import Info
 
 
 class detect_transparent_proxy(InfrastructurePlugin):
-    '''
+    """
     Find out if your ISP has a transparent proxy installed.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         if self._is_proxyed_conn(fuzzable_request):
             desc = 'Your ISP seems to have a transparent proxy installed,'\
                    ' this can influence scan results in unexpected ways.'
@@ -58,12 +58,12 @@ class detect_transparent_proxy(InfrastructurePlugin):
             om.out.information('Your ISP has no transparent proxy.')
 
     def _is_proxyed_conn(self, fuzzable_request):
-        '''
+        """
         Make a connection to a "random" IP to port 80 and make a request for the
         URL we are interested in.
 
         :return: True if proxy is present.
-        '''
+        """
         random_ips = ['1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1',
                       '60.60.60.60', '44.44.44.44', '11.22.33.44', '11.22.33.11',
                       '7.99.7.99', '87.78.87.78']
@@ -80,13 +80,13 @@ class detect_transparent_proxy(InfrastructurePlugin):
         return True
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin tries to detect transparent proxies.
 
         The procedure for detecting transparent proxies is simple, I try to connect
         to a series of IP addresses, to the port 80, if all of them return an opened
         socket, then it's the proxy server responding.
-        '''
+        """

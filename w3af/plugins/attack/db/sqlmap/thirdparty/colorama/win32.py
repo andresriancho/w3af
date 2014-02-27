@@ -98,7 +98,7 @@ else:
         return num_written.value
 
     def FillConsoleOutputAttribute(stream_id, attr, length, start):
-        ''' FillConsoleOutputAttribute( hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten )'''
+        """ FillConsoleOutputAttribute( hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten )"""
         handle = handles[stream_id]
         attribute = WORD(attr)
         length = DWORD(length)

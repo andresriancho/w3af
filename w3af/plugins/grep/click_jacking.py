@@ -1,4 +1,4 @@
-'''
+"""
 click_jacking.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.db.disk_list import DiskList
@@ -27,11 +27,11 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 class click_jacking(GrepPlugin):
-    '''
+    """
     Grep every page for X-Frame-Options header.
 
     :author: Taras (oxdef@oxdef.info)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -42,9 +42,9 @@ class click_jacking(GrepPlugin):
         self._ids = DiskList()
 
     def grep(self, request, response):
-        '''
+        """
         TODO: need to check here for auth cookie?!
-        '''
+        """
         if not response.is_text_or_html():
             return
 
@@ -88,9 +88,9 @@ class click_jacking(GrepPlugin):
         self._ids.cleanup()
 
     def get_long_desc(self):
-        return '''
+        return """
         This plugin greps every page for X-Frame-Options header and so
         for possible ClickJacking attack against URL.
 
         Additional information: https://www.owasp.org/index.php/Clickjacking
-        '''
+        """

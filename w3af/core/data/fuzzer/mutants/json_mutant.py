@@ -1,4 +1,4 @@
-'''
+"""
 JSONMutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import json
 import cgi
 import copy
@@ -70,10 +70,10 @@ def _make_json_mutants(freq, mutant_str_list, fuzzable_param_list,
 
 # Now we define a function that does the work...
 def _fuzz_json(mutant_str_list, parsed_json_inst, append):
-    '''
+    """
     :return: A list with tuples containing (fuzzed list/dict/string/int that
              represents a JSON object, original value)
-    '''
+    """
     res = []
 
     if isinstance(parsed_json_inst, int):
@@ -133,9 +133,9 @@ def _fuzz_json(mutant_str_list, parsed_json_inst, append):
 
 
 class JSONMutant(PostDataMutant):
-    '''
+    """
     This class is a JSON mutant.
-    '''
+    """
     def __init__(self, freq):
         PostDataMutant.__init__(self, freq)
 
@@ -149,13 +149,13 @@ class JSONMutant(PostDataMutant):
         return headers
 
     def found_at(self):
-        '''
+        """
         I had to implement this again here instead of just inheriting from
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
 
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         res = ''
         res += '"' + self.get_url() + '", using HTTP method '
         res += self.get_method() + '. The sent JSON-data was: "'
@@ -166,10 +166,10 @@ class JSONMutant(PostDataMutant):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''
+        """
         if not isinstance(freq, HTTPPostDataRequest):
             return []
 

@@ -1,4 +1,4 @@
-'''
+"""
 factory.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import traceback
 
@@ -26,7 +26,7 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 def factory(module_name, *args):
-    '''
+    """
     This function creates an instance of a class thats inside a module
     with the same name.
 
@@ -38,7 +38,7 @@ def factory(module_name, *args):
 
     :param module_name: Which plugin do you need?
     :return: An instance.
-    '''
+    """
     try:
         __import__(module_name)
     except ImportError, ie:

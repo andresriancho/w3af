@@ -1,4 +1,4 @@
-'''
+"""
 test_spiderman.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import time
 import urllib2
 
@@ -46,9 +46,9 @@ class BrowserThread(Process):
         self.responses = []
 
     def run(self):
-        '''
+        """
         @see: Comment in test_spiderman_basic
-        '''
+        """
         time.sleep(5.0)
 
         proxy_cfg = {'http': 'http://127.0.0.1:44444/'}
@@ -86,7 +86,7 @@ class TestSpiderman(PluginTest):
 
     @attr('ci_fails')
     def test_spiderman_basic(self):
-        '''
+        """
         The difficult thing with this test is that the scan will block until
         we browse through the spider_man proxy to the spider_man.TERMINATE_URL,
         so we need to start a "browser thread" that will sleep for a couple
@@ -97,7 +97,7 @@ class TestSpiderman(PluginTest):
 
         The second assert will check that the proxy actually returned the expected
         HTTP response body to the browser.
-        '''
+        """
         bt = BrowserThread()
         bt.start()
 

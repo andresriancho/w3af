@@ -1,4 +1,4 @@
-'''
+"""
 Copyright 2009 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
@@ -16,30 +16,30 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 class WhereHelper(object):
-    '''Simple WHERE condition maker.'''
+    """Simple WHERE condition maker."""
     conditions = {}
     _values = []
 
     def __init__(self, conditions={}):
-        '''Construct object.'''
+        """Construct object."""
         self.conditions = conditions
 
     def values(self):
-        '''Return values for prep.statements.'''
+        """Return values for prep.statements."""
         if not self._values:
             self.sql()
         return self._values
 
     def _makePair(self, field, value, oper='=', conjunction='AND'):
-        '''Auxiliary method.'''
+        """Auxiliary method."""
         result = ' ' + conjunction + ' ' + field + ' ' + oper + ' ?'
         return (result, value)
 
     def sql(self, whereStr=True):
-        '''
+        """
         :return: SQL string.
 
         >>> w = WhereHelper( [ ('field', '3', '=') ] )
@@ -50,7 +50,7 @@ class WhereHelper(object):
         >>> w.sql()
         ' WHERE field = ? AND foo = ?'
         >>>
-        '''
+        """
         result = ''
         self._values = []
 

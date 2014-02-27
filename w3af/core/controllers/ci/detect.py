@@ -1,4 +1,4 @@
-'''
+"""
 detect.py
 
 Copyright 2013 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 
 def is_running_on_ci():
-    '''
+    """
     :return: True when running on CircleCI
-    '''
+    """
     return os.environ.get('CIRCLECI', 'false') == 'true'

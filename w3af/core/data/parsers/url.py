@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 url.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 import re
 import urllib
@@ -39,10 +39,10 @@ from w3af.core.data.db.disk_item import DiskItem
 
 
 def set_changed(meth):
-    '''
+    """
     Function to decorate methods in order to set the "self._changed" attribute
     of the object to True.
-    '''
+    """
     def wrapper(self, *args, **kwargs):
         self._changed = True
         return meth(self, *args, **kwargs)
@@ -103,12 +103,12 @@ def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
 
 
 def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
-    '''
+    """
     Parse a url encoded string (a=b&c=d) into a QueryString object.
 
     :param url_enc_str: The string to parse
     :return: A QueryString object (a dict wrapper).
-    '''
+    """
     if not isinstance(qstr, basestring):
         raise TypeError('parse_qs requires a basestring as input.')
     
@@ -141,24 +141,24 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
 
 
 class URL(DiskItem):
-    '''
+    """
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
-        '''
+        """
         :param data: Either a string representing a URL or a 6-elems tuple
             representing the URL components:
             <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
 
         Simple generic test, more detailed tests in each method!
 
-        '''
+        """
         self._already_calculated_url = None
         self._querystr = None
         self._changed = True
@@ -200,7 +200,7 @@ class URL(DiskItem):
     @classmethod
     def from_parts(cls, scheme, netloc, path, params,
                    qs, fragment, encoding=DEFAULT_ENCODING):
-        '''
+        """
         This is a "constructor" for the URL class.
         
         :param scheme: http/https
@@ -210,7 +210,7 @@ class URL(DiskItem):
         :param qs: query string
         :param fragment: #fragments
         :return: An instance of URL.
-        '''
+        """
         scheme = scheme or u'' 
         netloc = netloc or u''
         path = path or u''
@@ -224,12 +224,12 @@ class URL(DiskItem):
 
     @classmethod
     def from_URL(cls, src_url_obj):
-        '''
+        """
         :param src_url: The url object to use as "template" for the new one
         :return: An instance of URL with the same data as original_url_object
 
         This is a "constructor" for the URL class.
-        '''
+        """
         scheme = src_url_obj.get_protocol() or u''
         netloc = src_url_obj.get_domain() or u''
         path = src_url_obj.get_path() or u''
@@ -246,9 +246,9 @@ class URL(DiskItem):
 
     @property
     def url_string(self):
-        '''
+        """
         :return: A <unicode> representation of the URL
-        '''
+        """
         calc = self._already_calculated_url
 
         if self._changed or calc is None:
@@ -269,27 +269,27 @@ class URL(DiskItem):
         return self._encoding
 
     def has_query_string(self):
-        '''
+        """
         Analyzes the uri to check for a query string.
 
         :return: True if self has a query string.
-        '''
+        """
         return bool(self.querystring)
 
     def get_querystring(self):
-        '''
+        """
         Parses the query string and returns a QueryString
         (a dict like) object.
 
         :return: A QueryString Object that represents the query string.
-        '''
+        """
         return self._querystr
 
     @set_changed
     def set_querystring(self, qs):
-        '''
+        """
         Set the query string for this URL.
-        '''
+        """
         if isinstance(qs, DataContainer):
             self._querystr = qs
         elif isinstance(qs, dict):
@@ -304,39 +304,39 @@ class URL(DiskItem):
     querystring = property(get_querystring, set_querystring)
 
     def uri2url(self):
-        '''
+        """
         :return: Returns a string contaning the URL without the query string.
-        '''
+        """
         return URL.from_parts(
             self.scheme, self.netloc, self.path,
             None, None, None, encoding=self._encoding
         )
 
     def get_fragment(self):
-        '''
+        """
         :return: Returns the #fragment of the URL.
-        '''
+        """
         return self.fragment
 
     def remove_fragment(self):
-        '''
+        """
         :return: A URL containing the URL without the fragment.
-        '''
+        """
         params = (self.scheme, self.netloc, self.path,
                   self.params, unicode(self.querystring),
                   None)
         return URL.from_parts(*params, encoding=self._encoding)
 
     def base_url(self):
-        '''
+        """
         :return: A string contaning the URL without the query string and
                  without any path.
-        '''
+        """
         params = (self.scheme, self.netloc, None, None, None, None)
         return URL.from_parts(*params, encoding=self._encoding)
 
     def normalize_url(self):
-        '''
+        """
         This method was added to be able to avoid some issues which are
         generated by the different way browsers and urlparser.urljoin
         join the URLs. A clear example of this is the following case:
@@ -363,7 +363,7 @@ class URL(DiskItem):
         http://host.tld:80/foo/bar != http://host.tld/foo/bar , and
         http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
-        '''
+        """
         # net location normalization:
         net_location = self.get_net_location()
         protocol = self.get_protocol()
@@ -429,10 +429,10 @@ class URL(DiskItem):
             urlparse.urlparse(fixed_url)
 
     def get_port(self):
-        '''
+        """
         :return: The TCP port that is going to be used to contact the remote
                  end.
-        '''
+        """
         net_location = self.get_net_location()
         protocol = self.get_protocol()
         if ':' in net_location:
@@ -448,7 +448,7 @@ class URL(DiskItem):
                 return 80
 
     def url_join(self, relative, encoding=None):
-        '''
+        """
         Construct a full (''absolute'') URL by combining a ''base URL'' (self)
         with a ``relative URL'' (relative). Informally, this uses components
         of the base URL, in particular the addressing scheme, the network
@@ -464,7 +464,7 @@ class URL(DiskItem):
         :return: The joined URL.
 
         Example usage available in test_url.py
-        '''
+        """
         resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = URL(joined_url, resp_encoding)
@@ -472,17 +472,17 @@ class URL(DiskItem):
         return jurl_obj
 
     def get_domain(self):
-        '''
+        """
         :return: Returns the domain name for the url.
-        '''
+        """
         domain = self.netloc.split(':')[0]
         return domain
 
     @set_changed
     def set_domain(self, new_domain):
-        '''
+        """
         :return: Returns the domain name for the url.
-        '''
+        """
         if not re.match('[a-z0-9-\.]+([a-z0-9-]+)*$', new_domain):
             raise ValueError("'%s' is an invalid domain" % (new_domain))
 
@@ -490,34 +490,34 @@ class URL(DiskItem):
         self.netloc = self.netloc.replace(domain, new_domain)
 
     def is_valid_domain(self):
-        '''
+        """
         :param url: The url to parse.
         :return: Returns a boolean that indicates if <url>'s domain is valid
-        '''
+        """
         domain_re = '[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$'
         return re.match(domain_re, self.netloc) is not None
 
     def get_net_location(self):
-        '''
+        """
         :return: Returns the net location for the url.
-        '''
+        """
         return self.netloc
 
     def get_protocol(self):
-        '''
+        """
         :return: Returns the domain name for the url.
-        '''
+        """
         return self.scheme
 
     @set_changed
     def set_protocol(self, protocol):
-        '''
+        """
         :return: Returns the domain name for the url.
-        '''
+        """
         self.scheme = protocol
 
     def get_root_domain(self):
-        '''
+        """
         Get the root domain name. Examples:
 
         input: www.ciudad.com.ar
@@ -527,7 +527,7 @@ class URL(DiskItem):
         output: myself.ru
 
         Code taken from: http://getoutfoxed.com/node/41
-        '''
+        """
         # break authority into two parts: subdomain(s), and base authority
         # e.g. images.google.com --> [images, google.com]
         #      www.popo.com.au --> [www, popo.com.au]
@@ -562,9 +562,9 @@ class URL(DiskItem):
             return decompose_uri()
 
     def get_domain_path(self):
-        '''
+        """
         :return: Returns the domain name and the path for the url.
-        '''
+        """
         if self.path:
             res = self.scheme + '://' + self.netloc + \
                 self.path[:self.path.rfind('/') + 1]
@@ -573,16 +573,16 @@ class URL(DiskItem):
         return URL(res, self._encoding)
 
     def get_file_name(self):
-        '''
+        """
         :return: Returns the filename name for the given url.
-        '''
+        """
         return self.path[self.path.rfind('/') + 1:]
 
     @set_changed
     def set_file_name(self, new):
-        '''
+        """
         :return: Sets the filename name for the given URL.
-        '''
+        """
         if self.path == '/':
             self.path = '/' + new
 
@@ -591,9 +591,9 @@ class URL(DiskItem):
             self.path = self.path[:last_slash + 1] + new
 
     def get_extension(self):
-        '''
+        """
         :return: Returns the extension of the filename, if possible, else, ''.
-        '''
+        """
         fname = self.get_file_name()
         extension = fname[fname.rfind('.') + 1:]
         if extension == fname:
@@ -603,11 +603,11 @@ class URL(DiskItem):
 
     @set_changed
     def set_extension(self, extension):
-        '''
+        """
         :param extension: The new extension to set, without the '.'
         :return: None. The extension is set. An exception is raised if the
         original URL had no extension.
-        '''
+        """
         if not self.get_extension():
             raise Exception(
                 'You can only set a new extension to a URL that had one.')
@@ -621,15 +621,15 @@ class URL(DiskItem):
         self.set_file_name(new_filename)
 
     def all_but_scheme(self):
-        '''
+        """
         :return: Returns the domain name and the path for the url.
-        '''
+        """
         return self.netloc + self.path[:self.path.rfind('/') + 1]
 
     def get_path(self):
-        '''
+        """
         :return: Returns the path for the url:
-        '''
+        """
         return self.path
 
     @set_changed
@@ -637,17 +637,17 @@ class URL(DiskItem):
         self.path = path or u'/'
 
     def get_path_without_file(self):
-        '''
+        """
         :return: Returns the path for the url:
-        '''
+        """
         path = self.get_path()
         filename = self.get_file_name()
         return path.replace(filename, '', 1)
 
     def get_path_qs(self):
-        '''
+        """
         :return: Returns the domain name and the path for the url.
-        '''
+        """
         res = self.path
         if self.params != '':
             res += ';' + self.params
@@ -656,20 +656,20 @@ class URL(DiskItem):
         return res
 
     def url_decode(self):
-        '''
+        """
         @see: Unittests at test_url.py
         :return: A URL that represents the current URL without URL
                  encoded characters.
-        '''
+        """
         unquoted_url = urllib.unquote(str(self))
         enc = self._encoding
         return URL(unquoted_url.decode(enc, 'ignore'), enc)
 
     def url_encode(self):
-        '''
+        """
         @see: Unittests at test_url.py
         :return: String that represents the current URL
-        '''
+        """
         self_str = str(self)
         qs = ''
         qs_start_index = self_str.find('?')
@@ -681,9 +681,9 @@ class URL(DiskItem):
         return "%s%s" % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
 
     def get_directories(self):
-        '''
+        """
         Get a list of all directories and subdirectories.
-        '''
+        """
         res = []
 
         current_url = self.copy()
@@ -696,43 +696,43 @@ class URL(DiskItem):
         return res
 
     def has_params(self):
-        '''
+        """
         Analyzes the url to check for a params
 
         :return: True if the URL has params.
-        '''
+        """
         if self.params != '':
             return True
         return False
 
     def get_params_string(self):
-        '''
+        """
         :return: Returns the params inside the url.
-        '''
+        """
         return self.params
 
     def remove_params(self):
-        '''
+        """
         :return: Returns a new url object contaning the URL without the parameter.
-        '''
+        """
         parts = (self.scheme, self.netloc, self.path,
                  None, unicode(self.querystring), self.fragment)
         return URL.from_parts(*parts, encoding=self._encoding)
 
     @set_changed
     def set_param(self, param_string):
-        '''
+        """
         :param param_string: The param to set (e.g. "foo=aaa").
         :return: Returns the url containing param.
-        '''
+        """
         self.params = param_string
 
     def get_params(self, ignore_exc=True):
-        '''
+        """
         Parses the params string and returns a dict.
 
         :return: A QueryString object.
-        '''
+        """
         parsedData = None
         result = {}
         if self.has_params():
@@ -749,15 +749,15 @@ class URL(DiskItem):
         return result
 
     def __iter__(self):
-        '''
+        """
         Return iterator for self.url_string
-        '''
+        """
         return iter(self.url_string)
 
     def __eq__(self, other):
-        '''
+        """
         :return: True if the url_strings are equal
-        '''
+        """
         return isinstance(other, URL) and \
             self.url_string == other.url_string
 
@@ -768,9 +768,9 @@ class URL(DiskItem):
         return hash(self.url_string)
 
     def __str__(self):
-        '''
+        """
         :return: A string representation of myself
-        '''
+        """
         urlstr = smart_str(
             self.url_string,
             self._encoding,
@@ -779,28 +779,28 @@ class URL(DiskItem):
         return urlstr.replace(' ', '%20')
 
     def __unicode__(self):
-        '''
+        """
         :return: A unicode representation of myself
-        '''
+        """
         return self.url_string
 
     def __repr__(self):
-        '''
+        """
         :return: A string representation of myself for debugging
 
-        '''
+        """
         return '<URL for "%s">' % (self,)
 
     def __contains__(self, s):
-        '''
+        """
         :return: True if "s" in url_string
-        '''
+        """
         return s in self.url_string
 
     def __add__(self, other):
-        '''
+        """
         :return: This URL concatenated with the "other" string.
-        '''
+        """
         if not isinstance(other, basestring):
             msg = "cannot concatenate '%s' and '%s' objects"
             msg = msg % (other.__class__.__name__, self.__class__.__name__)
@@ -809,15 +809,15 @@ class URL(DiskItem):
         return self.url_string + other
 
     def __nonzero__(self):
-        '''
+        """
         Always evaluate as True
-        '''
+        """
         return True
 
     def __radd__(self, other):
-        '''
+        """
         :return: The "other" string concatenated with this URL.
-        '''
+        """
         if not isinstance(other, basestring):
             msg = "cannot concatenate '%s' and '%s' objects"
             msg = msg % (other.__class__.__name__, self.__class__.__name__)

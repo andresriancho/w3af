@@ -1,4 +1,4 @@
-'''
+"""
 server_status.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -35,11 +35,11 @@ from w3af.core.data.kb.info import Info
 
 
 class server_status(InfrastructurePlugin):
-    '''
+    """
     Find new URLs from the Apache server-status cgi.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -49,12 +49,12 @@ class server_status(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Get the server-status and parse it.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
-        '''
+        """
         base_url = fuzzable_request.get_url().base_url()
         server_status_url = base_url.url_join('server-status')
         response = self._uri_opener.GET(server_status_url, cache=True)
@@ -71,10 +71,10 @@ class server_status(InfrastructurePlugin):
                 return self._extract_urls(fuzzable_request, response)
 
     def _extract_server_version(self, fuzzable_request, response):
-        '''
+        """
         Get the server version from the HTML:
             <dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>
-        '''
+        """
         for version in re.findall('<dl><dt>Server Version: (.*?)</dt>',
                                   response.get_body()):
             # Save the results in the KB so the user can look at it
@@ -90,10 +90,10 @@ class server_status(InfrastructurePlugin):
             kb.kb.append(self, 'server', i)
 
     def _extract_urls(self, fuzzable_request, response):
-        '''
+        """
         Extract information from the server-status page and return fuzzable
         requests to the caller.
-        '''
+        """
         res = self._create_fuzzable_requests(response)
 
         # Now really parse the file and create custom made fuzzable requests
@@ -141,11 +141,11 @@ class server_status(InfrastructurePlugin):
         return res
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin fetches the server-status file used by Apache, and parses it.
         After parsing, new URLs are found, and in some cases, the plugin can deduce
         the existance of other domains hosted on the same server.
-        '''
+        """

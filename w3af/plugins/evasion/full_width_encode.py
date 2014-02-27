@@ -1,4 +1,4 @@
-'''
+"""
 full_width_encode.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
@@ -27,24 +27,24 @@ from w3af.core.data.parsers.url import parse_qs
 
 
 class full_width_encode(EvasionPlugin):
-    '''
+    """
     Evade detection using full width encoding.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         EvasionPlugin.__init__(self)
 
     def modify_request(self, request):
-        '''
+        """
         Mangles the request
 
         :param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
         :return: The modified request
 
-        '''
+        """
         # This is a test URL
         # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E
         # This is the content of index.asp :
@@ -87,23 +87,23 @@ class full_width_encode(EvasionPlugin):
         return mutant
 
     def get_priority(self):
-        '''
+        """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
         :return: An integer specifying the priority. 0 is run first, 100 last.
-        '''
+        """
         return 50
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This evasion plugin does full width encoding as described here:
             - http://www.kb.cert.org/vuls/id/739224
 
         Example:
             Input:      '/bar/foo.asp'
             Output :    '/b%uFF61r/%uFF66oo.asp'
-        '''
+        """

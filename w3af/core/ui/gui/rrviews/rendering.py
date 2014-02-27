@@ -50,7 +50,7 @@ from w3af.core.data.constants.encodings import UTF8
 
 
 def getRenderingView(w3af, parentView):
-    '''Return RenderingView with best web engine or raise exception.'''
+    """Return RenderingView with best web engine or raise exception."""
     if RENDERING_ENGINES['webkit']:
         return WebKitRenderingView(w3af, parentView)
     if RENDERING_ENGINES['moz']:
@@ -62,34 +62,34 @@ def getRenderingView(w3af, parentView):
 
 
 class RenderingView(gtk.VBox):
-    '''Rendering view.'''
+    """Rendering view."""
     def __init__(self, w3af, parentView):
-        '''Make object.'''
+        """Make object."""
         gtk.VBox.__init__(self)
         self.id = 'RenderingView'
         self.label = 'Rendered'
         self.parentView = parentView
 
     def show_object(self, obj):
-        '''Show object in view.'''
+        """Show object in view."""
         raise w3afException('Child MUST implment a clear() method.')
 
     def clear(self):
         raise w3afException('Child MUST implment a clear() method.')
 
     def get_object(self):
-        '''Return object (request or resoponse).'''
+        """Return object (request or resoponse)."""
         pass
 
     def highlight(self, text, tag):
-        '''Highlight word in the text.'''
+        """Highlight word in the text."""
         pass
 
 
 class GtkHtmlRenderingView(RenderingView):
-    '''GtkHTML2 web engine view.'''
+    """GtkHTML2 web engine view."""
     def __init__(self, w3af, parentView):
-        '''Make GtkHtmlRenderingView object.'''
+        """Make GtkHtmlRenderingView object."""
         super(GtkHtmlRenderingView, self).__init__(w3af, parentView)
         self._renderingWidget = gtkhtml2.View()
         swRenderedHTML = gtk.ScrolledWindow()
@@ -98,7 +98,7 @@ class GtkHtmlRenderingView(RenderingView):
         self.pack_start(swRenderedHTML)
 
     def show_object(self, obj):
-        '''Show object in view.'''
+        """Show object in view."""
         # It doesn't make sense to render something empty
         if not obj.is_text_or_html():
             return
@@ -122,14 +122,14 @@ class GtkHtmlRenderingView(RenderingView):
             print 'https://sourceforge.net/apps/trac/w3af/newticket'
 
     def clear(self):
-        '''Clear view.'''
+        """Clear view."""
         pass
 
 
 class MozRenderingView(RenderingView):
-    '''Gecko web engine view.'''
+    """Gecko web engine view."""
     def __init__(self, w3af, parentView):
-        '''Make MozRenderingView object.'''
+        """Make MozRenderingView object."""
         super(MozRenderingView, self).__init__(w3af, parentView)
         self._renderingWidget = gtkmozembed.MozEmbed()
         print self._renderingWidget
@@ -139,7 +139,7 @@ class MozRenderingView(RenderingView):
         self.pack_start(swRenderedHTML)
 
     def show_object(self, obj):
-        '''Show object in view.'''
+        """Show object in view."""
         mimeType = 'text/html'
         # mimeType = obj.content_type
         if obj.is_text_or_html():
@@ -147,14 +147,14 @@ class MozRenderingView(RenderingView):
             ), long(len(obj.get_body())), str(obj.get_uri()), mimeType)
 
     def clear(self):
-        '''Clear view.'''
+        """Clear view."""
         pass
 
 
 class WebKitRenderingView(RenderingView):
-    '''WebKit web engine view.'''
+    """WebKit web engine view."""
     def __init__(self, w3af, parentView):
-        '''Make WebKitRenderingView object.'''
+        """Make WebKitRenderingView object."""
         super(WebKitRenderingView, self).__init__(w3af, parentView)
         self._renderingWidget = webkit.WebView()
         # Settings
@@ -167,7 +167,7 @@ class WebKitRenderingView(RenderingView):
         self.pack_start(swRenderedHTML)
 
     def show_object(self, obj):
-        '''Show object in view.'''
+        """Show object in view."""
         mimeType = 'text/html'
         load_string = self._renderingWidget.load_string
 
@@ -187,5 +187,5 @@ class WebKitRenderingView(RenderingView):
             load_string(_("Can't render response"), mimeType, 'UTF-8', 'error')
 
     def clear(self):
-        '''Clear view.'''
+        """Clear view."""
         pass

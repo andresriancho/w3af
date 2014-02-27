@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 test_profile.py
 
 Copyright 2012 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from nose.plugins.attrib import attr
@@ -88,7 +88,7 @@ class TestCoreProfiles(unittest.TestCase):
 
     @attr('smoke')
     def test_use_all_profiles(self):
-        '''
+        """
         This test catches the errors in my profiles that generate these messages:
 
         ***************************************************************************
@@ -108,7 +108,7 @@ class TestCoreProfiles(unittest.TestCase):
         this message. If this warning does not disappear you can manually edit
         the profile file to fix it.
         ***************************************************************************
-        '''
+        """
         w3af_core = w3afCore()
         valid, invalid = w3af_core.profiles.get_profile_list('.')
 
@@ -121,10 +121,10 @@ class TestCoreProfiles(unittest.TestCase):
             w3af_core.profiles.use_profile(profile_name, workdir='.')
 
     def test_cant_start_new_thread_bug(self):
-        '''
+        """
         This tests that https://github.com/andresriancho/w3af/issues/56 was
         properly fixed after the change in how sqlite threads were managed.
-        '''
+        """
         w3af_core = w3afCore()
         valid, _ = w3af_core.profiles.get_profile_list('.')
 

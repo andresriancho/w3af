@@ -1,4 +1,4 @@
-'''
+"""
 wsdl_finder.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.url import URL
@@ -28,11 +28,11 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class wsdl_finder(CrawlPlugin):
-    '''
+    """
     Find web service definitions files.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     WSDL = ('?wsdl',
             '?WSDL')
@@ -44,12 +44,12 @@ class wsdl_finder(CrawlPlugin):
         self._already_tested = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         If url not in _tested, append a ?WSDL and check the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         url = fuzzable_request.get_url().uri2url()
         url_string = url.url_string
 
@@ -69,10 +69,10 @@ class wsdl_finder(CrawlPlugin):
             yield url_instance
 
     def _do_request(self, url_to_request):
-        '''
+        """
         Perform an HTTP request to the url_to_request parameter.
         :return: None.
-        '''
+        """
         try:
             self._uri_opener.GET(url_to_request, cache=True)
         except w3afException:
@@ -82,17 +82,17 @@ class wsdl_finder(CrawlPlugin):
             pass
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['grep.wsdl_greper']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds new web service descriptions and other web service
         related files by appending "?WSDL" to all URL's and checking the response.
-        '''
+        """

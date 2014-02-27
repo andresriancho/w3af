@@ -1,4 +1,4 @@
-'''
+"""
 combo_option.py
 
 Copyright 2008 Andres Riancho
@@ -18,23 +18,23 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import COMBO
 
 
 class ComboOption(BaseOption):
-    '''
+    """
     This class represents an ComboOption.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     _type = COMBO
 
     def __init__(self, name, default_value, desc, _help='', tabid=''):
-        '''
+        """
         :param name: The name of the ComboOption
         :param default_value: The default value of the ComboOption;
                              it is a list of the options that the
@@ -43,7 +43,7 @@ class ComboOption(BaseOption):
         :param help: The help of the ComboOption; a large description
                      of the ComboOption
         :param tabid: The tab id of the ComboOption
-        '''
+        """
         self._value = default_value[0]
         self._default_value = default_value[0]
         self._combo_options = default_value
@@ -57,11 +57,11 @@ class ComboOption(BaseOption):
         return self._combo_options
 
     def set_value(self, value):
-        '''
+        """
         :param value: The value parameter is set by the user interface, which
                       or example sends 'a' when the options of the combobox are
                       '1','2','a','f'
-        '''
+        """
         self._value = self.validate(value)
 
     def validate(self, value):

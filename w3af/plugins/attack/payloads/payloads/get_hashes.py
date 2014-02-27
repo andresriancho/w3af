@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class get_hashes(Payload):
-    '''
+    """
     Get the hashes from the /etc/shadow and /etc/passwd files (if any).
-    '''
+    """
     def api_read(self):
         result = {}
 

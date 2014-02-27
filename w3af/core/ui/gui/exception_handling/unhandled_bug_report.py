@@ -1,4 +1,4 @@
-'''
+"""
 unhandled_bug_report.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
@@ -27,14 +27,14 @@ from w3af.core.ui.gui.exception_handling.common_windows import (simple_base_wind
 
 
 class bug_report_window(simple_base_window, github_bug_report):
-    '''
+    """
     The first window that the user sees when an exception is raised and
     it bubbles up until gui's main.py or worse.
 
     Please note that in this case we're reporting ONE exception and then
     stopping the scan. Completely different from what you can see in
     handled.py .
-    '''
+    """
 
     MANUAL_BUG_REPORT = 'https://github.com/andresriancho/w3af/issues/new'
 

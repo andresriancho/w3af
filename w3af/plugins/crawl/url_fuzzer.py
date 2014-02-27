@@ -1,4 +1,4 @@
-'''
+"""
 url_fuzzer.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from itertools import chain, repeat, izip
 
 import w3af.core.controllers.output_manager as om
@@ -38,10 +38,10 @@ from w3af.core.data.kb.info import Info
 
 
 class url_fuzzer(CrawlPlugin):
-    '''
+    """
     Try to find backups, and other related files.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     _appendables = ('~', '.tar.gz', '.gz', '.7z', '.cab', '.tgz',
                     '.gzip', '.bzip2', '.inc', '.zip', '.rar', '.jar', '.java',
                     '.class', '.properties', '.bak', '.bak1', '.bkp', '.back',
@@ -64,12 +64,12 @@ class url_fuzzer(CrawlPlugin):
         self._seen = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         Searches for new Url's using fuzzing.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         url = fuzzable_request.get_url()
         self._headers = Headers([('Referer', url.url_string)])
 
@@ -103,10 +103,10 @@ class url_fuzzer(CrawlPlugin):
             self.worker_pool.map_multi_args(self._do_request, args)
 
     def _do_request(self, url, mutant):
-        '''
+        """
         Perform a simple GET to see if the result is an error or not, and then
         run the actual fuzzing.
-        '''
+        """
         response = self._uri_opener.GET(
             mutant, cache=True, headers=self._headers)
 
@@ -135,9 +135,9 @@ class url_fuzzer(CrawlPlugin):
                 self._seen.add(response.get_url())
 
     def _return_without_eval(self, uri):
-        '''
+        """
         This method tries to lower the false positives.
-        '''
+        """
         if not uri.has_query_string():
             return False
 
@@ -156,7 +156,7 @@ class url_fuzzer(CrawlPlugin):
         return False
 
     def _mutate_domain_name(self, url):
-        '''
+        """
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
             - http://www.foobar.com/foobar.zip
             - http://www.foobar.com/foobar.rar
@@ -181,7 +181,7 @@ class url_fuzzer(CrawlPlugin):
         >>> len(mutants) > 20
         True
 
-        '''
+        """
         domain = url.get_domain()
         domain_path = url.get_domain_path()
 
@@ -197,7 +197,7 @@ class url_fuzzer(CrawlPlugin):
                 yield domain_path_copy
 
     def _mutate_by_appending(self, url):
-        '''
+        """
         Adds something to the end of the url (mutate the file being requested)
 
         :param url: A URL to transform.
@@ -218,7 +218,7 @@ class url_fuzzer(CrawlPlugin):
         >>> len(list(mutants)) > 20
         True
 
-        '''
+        """
         if not url.url_string.endswith('/') and url.url_string.count('/') >= 3:
             #
             #   Only get here on these cases:
@@ -237,7 +237,7 @@ class url_fuzzer(CrawlPlugin):
                 yield url_copy
 
     def _mutate_file_type(self, url):
-        '''
+        """
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
             - http://www.foobar.com/asd.zip
             - http://www.foobar.com/asd.tgz
@@ -260,7 +260,7 @@ class url_fuzzer(CrawlPlugin):
         >>> len(mutants) > 20
         True
 
-        '''
+        """
         extension = url.get_extension()
         if extension:
             for filetype in chain(self._backup_exts, self._file_types):
@@ -269,7 +269,7 @@ class url_fuzzer(CrawlPlugin):
                 yield url_copy
 
     def _mutate_path(self, url):
-        '''
+        """
         Mutate the path instead of the file.
 
         :param url: A URL to transform.
@@ -294,7 +294,7 @@ class url_fuzzer(CrawlPlugin):
         True
         >>> URL('http://www.w3af.com/foo.zip') in mutants
         True
-        '''
+        """
         url_string = url.url_string
 
         if url_string.count('/') > 3:
@@ -306,12 +306,12 @@ class url_fuzzer(CrawlPlugin):
                 yield newurl
 
     def _verify_head_enabled(self, url):
-        '''
+        """
         Verifies if the requested URL permits a HEAD request.
         This was saved inside the KB by the plugin allowed_methods
 
         :return : Sets self._head to the correct value, nothing is returned.
-        '''
+        """
         allowed_methods_infos = kb.kb.get('allowed_methods', 'methods')
         allowed_methods = []
         for info in allowed_methods_infos:
@@ -326,9 +326,9 @@ class url_fuzzer(CrawlPlugin):
         return self._head
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
@@ -339,27 +339,27 @@ class url_fuzzer(CrawlPlugin):
         return ol
 
     def set_options(self, options_list):
-        '''
+        """
         This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
 
         :param OptionList: A dictionary with the options for the plugin.
         :return: No value is returned.
-        '''
+        """
         self._fuzz_images = options_list['fuzz_images'].get_value()
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['infrastructure.allowed_methods']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will try to find new URL's based on the input. If the input
         is for example:
             - http://host.tld/a.html
@@ -376,4 +376,4 @@ class url_fuzzer(CrawlPlugin):
 
         One configurable parameter exist:
             - fuzz_images
-        '''
+        """

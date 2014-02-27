@@ -1,4 +1,4 @@
-'''
+"""
 credit_cards.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -29,12 +29,12 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 def luhnCheck(value):
-    '''
+    """
     The Luhn check against the value which can be an array of digits,
     numeric string or a positive integer.
 
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     # Prepare the value to be analyzed.
     arr = []
     for c in value:
@@ -54,11 +54,11 @@ def luhnCheck(value):
 
 
 class credit_cards(GrepPlugin):
-    '''
+    """
     This plugin detects the occurrence of credit card numbers in web pages.
 
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -76,12 +76,12 @@ class credit_cards(GrepPlugin):
         self._cc_regex = re.compile(cc_regex, re.M)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for the credit cards.
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if response.is_text_or_html() and response.get_code() == 200 \
                 and response.get_clear_text_body() is not None:
 
@@ -100,9 +100,9 @@ class credit_cards(GrepPlugin):
                 self.kb_append_uniq(self, 'credit_cards', v, 'URL')
 
     def _find_card(self, body):
-        '''
+        """
         :return: A list of matching credit card numbers
-        '''
+        """
         res = []
 
         match_list = self._cc_regex.findall(body)
@@ -115,12 +115,12 @@ class credit_cards(GrepPlugin):
         return res
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugins scans every response page to find the strings that are
         likely to be credit card numbers. It can be tested against the following
         URL:
             - https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
-        '''
+        """

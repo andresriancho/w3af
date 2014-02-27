@@ -1,4 +1,4 @@
-'''
+"""
 rnd_param.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 
@@ -28,21 +28,21 @@ from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class rnd_param(EvasionPlugin):
-    '''
+    """
     Add a random parameter.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         EvasionPlugin.__init__(self)
 
     def modify_request(self, request):
-        '''
+        """
         Mangles the request
 
         :param request: HTTPRequest instance that is going to be modified
                         by the evasion plugin
         :return: The modified request
-        '''
+        """
         # First we mangle the URL
         qs = request.url_object.querystring.copy()
         qs = self._mutate(qs)
@@ -69,34 +69,34 @@ class rnd_param(EvasionPlugin):
         return new_req
 
     def _mutate(self, data):
-        '''
+        """
         Add a random parameter.
 
         :param data: A dict-like object.
         :return: The same object with one new key-value.
-        '''
+        """
         key = rand_alnum(5)
         value = rand_alnum(8)
         data[key] = value
         return data
 
     def get_priority(self):
-        '''
+        """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
         :return: An integer specifying the priority. 100 is run first, 0 last.
-        '''
+        """
         return 50
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This evasion plugin adds a random parameter.
 
         Example:
             Input:      '/bar/foo.asp'
             Output :    '/bar/foo.asp?alsfkj=f09'
-        '''
+        """

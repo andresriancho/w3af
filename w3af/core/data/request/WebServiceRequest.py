@@ -1,4 +1,4 @@
-'''
+"""
 WebServiceRequest.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import cgi
 
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
@@ -26,11 +26,11 @@ from w3af.core.data.dc.headers import Headers
 
 
 class WebServiceRequest(HTTPPostDataRequest):
-    '''
+    """
     This class represents a fuzzable request for a webservice method call.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, url, action, params,
                  ns, meth_name, headers=Headers()):
@@ -41,7 +41,7 @@ class WebServiceRequest(HTTPPostDataRequest):
         self.set_parameters(params)
 
     def get_data(self):
-        '''
+        """
         :return: XML with the remote method call
 
         POST /perl/soaplite.cgi HTTP/1.0
@@ -60,7 +60,7 @@ class WebServiceRequest(HTTPPostDataRequest):
         </ns1:BabelFish>
         </SOAP-ENV:Body>
         </SOAP-ENV:Envelope>
-        '''
+        """
         res = '<?xml version="1.0" encoding="UTF-8"?>\n'
         res += '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">\n'
         res += '<SOAP-ENV:Body>\n'
@@ -79,10 +79,10 @@ class WebServiceRequest(HTTPPostDataRequest):
         return res
 
     def get_headers(self):
-        '''
+        """
         web service calls MUST send a header with the action:
             -   SOAPAction: "urn:xmethodsBabelFish#BabelFish"
-        '''
+        """
         self._headers['SOAPAction'] = '"' + self.get_action() + '"'
         self._headers['Content-Type'] = 'text/xml'
 
@@ -117,9 +117,9 @@ class WebServiceRequest(HTTPPostDataRequest):
             self._dc[param.get_name()] = ''
 
     def __str__(self):
-        '''
+        """
         Return a str representation of this fuzzable request.
-        '''
+        """
         strRes = '[[webservice]] '
         strRes += self._url
         strRes += ' | Method: ' + self._method

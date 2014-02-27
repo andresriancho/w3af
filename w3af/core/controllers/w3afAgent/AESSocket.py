@@ -1,4 +1,4 @@
-'''
+"""
 AESSocket.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 """
 msg = "Nothing in this file is used in w3af. This was a test that was truncated by my personal\
@@ -32,11 +32,11 @@ from pyrijndael.pyRijndael import DecryptData
 from pyrijndael.pyRijndael import EncryptData
 
 def makeAESSocket( key , sock ):
-    '''
+    """
     :param key: A string that will be the key for AES algorithm
     :param sock: python socket
     :return: a socket that will encrypt / decrypt all data that it sends and receives
-    '''
+    """
     sock._original_recv = sock.recv
     sock._original_send = sock.send
     sock._key = key

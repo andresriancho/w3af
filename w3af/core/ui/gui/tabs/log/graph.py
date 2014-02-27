@@ -1,4 +1,4 @@
-'''
+"""
 graph.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from __future__ import division
 
 import gtk
@@ -47,10 +47,10 @@ class colors:
 
 
 class LogGraph(gtk.DrawingArea, MessageConsumer):
-    '''Defines a log visualization widget that shows an XY plot
+    """Defines a log visualization widget that shows an XY plot
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         gtk.DrawingArea.__init__(self)
         MessageConsumer.__init__(self)
@@ -77,9 +77,9 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         self.show()
     
     def draw_handler(self):
-        '''
+        """
         Draws the graph.
-        '''
+        """
         # gtk.MAPPED: the widget can be displayed on the screen.
         # flags: http://pygtk.org/docs/pygtk/class-gtkobject.html#method-gtkobject--flags
         if self.flags() & gtk.MAPPED:
@@ -92,11 +92,11 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         return True
     
     def handle_message(self, msg):
-        '''Adds a message to the all_messages DiskList which is then used as
+        """Adds a message to the all_messages DiskList which is then used as
         a source for drawing the graph.
 
         @returns: True to keep calling it, and False when all it's done.
-        '''
+        """
         yield super(LogGraph, self).handle_message(msg)
         
         mmseg = int(msg.get_real_time() * 1000)
@@ -108,10 +108,10 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         self.all_messages.append((mmseg, mtype, sever))
 
     def _redraw_all(self):
-        '''
+        """
         Redraws all the graph.
-        '''
-        '''Redraws all the graph.'''
+        """
+        """Redraws all the graph."""
         if self.gc is None:
             # sorry, not exposed yet...
             yield True
@@ -242,7 +242,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         return True
 
     def _calculateXTicks(self, width):
-        '''Returns the ticks X position and time.'''
+        """Returns the ticks X position and time."""
         paso = width / 10
         for i in range(10):
             punto = int(paso * i)

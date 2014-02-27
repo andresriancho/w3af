@@ -1,4 +1,4 @@
-'''
+"""
 find_vhosts.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 
 from itertools import izip, repeat
@@ -41,10 +41,10 @@ from w3af.core.data.kb.info import Info
 
 
 class find_vhosts(InfrastructurePlugin):
-    '''
+    """
     Modify the HTTP Host header and try to find virtual hosts.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -55,12 +55,12 @@ class find_vhosts(InfrastructurePlugin):
         self._can_resolve_domain_names = False
 
     def discover(self, fuzzable_request):
-        '''
+        """
         Find virtual hosts.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         analysis_result = self._analyze(fuzzable_request)
         self._report_results(fuzzable_request, analysis_result)
 
@@ -78,9 +78,9 @@ class find_vhosts(InfrastructurePlugin):
         return vhost_list
 
     def _report_results(self, fuzzable_request, analysis_result):
-        '''
+        """
         Report our findings
-        '''
+        """
         reported = set()
         for vhost, request_id in analysis_result:
             if vhost not in reported:
@@ -100,13 +100,13 @@ class find_vhosts(InfrastructurePlugin):
                 om.out.information(v.get_desc())
 
     def _get_dead_links(self, fuzzable_request):
-        '''
+        """
         Find every link on a HTML document verify if the domain is reachable or
         not; after that, verify if the web found a different name for the target
         site or if we found a new site that is linked. If the link points to a
         dead site then report it (it could be pointing to some private address
         or something...)
-        '''
+        """
         # Get some responses to compare later
         base_url = fuzzable_request.get_url().base_url()
         original_response = self._uri_opener.GET(
@@ -163,10 +163,10 @@ class find_vhosts(InfrastructurePlugin):
         return res
 
     def _verify_link_domain(self, parsed_references):
-        '''
+        """
         Verify each link in parsed_references and yield the ones that can NOT
         be resolved using DNS.
-        '''
+        """
         for link in parsed_references:
             domain = link.get_domain()
 
@@ -181,9 +181,9 @@ class find_vhosts(InfrastructurePlugin):
                     yield domain
 
     def _generic_vhosts(self, fuzzable_request):
-        '''
+        """
         Test some generic virtual hosts, only do this once.
-        '''
+        """
         # Get some responses to compare later
         base_url = fuzzable_request.get_url().base_url()
         original_response = self._uri_opener.GET(base_url, cache=True)
@@ -216,10 +216,10 @@ class find_vhosts(InfrastructurePlugin):
             yield vhost, vhost_response
 
     def _http_get_vhost(self, base_url, vhost):
-        '''
+        """
         Performs an HTTP GET to a URL using a specific vhost.
         :return: HTTPResponse object.
-        '''
+        """
         headers = Headers([('Host', vhost)])
         return self._uri_opener.GET(base_url, cache=False,
                                     headers=headers)
@@ -230,14 +230,14 @@ class find_vhosts(InfrastructurePlugin):
         return self._http_get_vhost(base_url, non_existant_domain)
 
     def _get_common_virtualhosts(self, base_url):
-        '''
+        """
 
         :param base_url: The target URL object.
 
         :return: A list of possible domain names that could be hosted in the same web
         server that "domain".
 
-        '''
+        """
         domain = base_url.get_domain()
         root_domain = base_url.get_root_domain()
 
@@ -258,10 +258,10 @@ class find_vhosts(InfrastructurePlugin):
             yield subdomain + '.' + root_domain.split('.')[0]
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin uses the HTTP Host header to find new virtual hosts. For
         example, if the intranet page is hosted in the same server that the
         public page, and the web server is misconfigured, this plugin will
@@ -269,4 +269,4 @@ class find_vhosts(InfrastructurePlugin):
 
         Please note that this plugin doesn't use any DNS technique to find
         these virtual hosts.
-        '''
+        """

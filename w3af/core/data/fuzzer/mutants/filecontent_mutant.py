@@ -1,4 +1,4 @@
-'''
+"""
 FileContentMutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
@@ -26,9 +26,9 @@ from w3af.core.data.fuzzer.utils import rand_alpha
 
 
 class FileContentMutant(Mutant):
-    '''
+    """
     This class is a filename mutant.
-    '''
+    """
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 
@@ -36,16 +36,16 @@ class FileContentMutant(Mutant):
         return 'file content'
 
     def get_data(self):
-        '''
+        """
         Override the default get_data() of the fuzzable request that contains a
         str(self._dc) <<---- that kills the file I contain in my DC.
-        '''
+        """
         return self._dc
 
     def found_at(self):
-        '''
+        """
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         res = '"' + self.get_uri() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
 
@@ -64,10 +64,10 @@ class FileContentMutant(Mutant):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''
+        """
         if not 'fuzz_form_files' in fuzzer_config:
             return []
 

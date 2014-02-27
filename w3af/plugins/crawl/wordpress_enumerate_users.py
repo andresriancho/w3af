@@ -1,4 +1,4 @@
-'''
+"""
 wordpress_username_enumeration.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -31,10 +31,10 @@ from w3af.core.data.kb.info import Info
 
 
 class wordpress_enumerate_users(CrawlPlugin):
-    '''
+    """
     Finds users in a WordPress installation.
     :author: Andres Tarantini ( atarantini@gmail.com )
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -43,11 +43,11 @@ class wordpress_enumerate_users(CrawlPlugin):
         self._exec = True
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         Find users in a WordPress installation
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         if not self._exec:
             raise w3afRunOnce()
         else:
@@ -102,8 +102,8 @@ class wordpress_enumerate_users(CrawlPlugin):
                 continue
 
     def _extract_from_body(self, response_author):
-        '''No redirect was made, try to fetch username from
-        title of the author's archive page'''
+        """No redirect was made, try to fetch username from
+        title of the author's archive page"""
         # Example strings:
         #    <title>admin | moth</title>
         #    <title>admin | Bonsai - Information Security Blog</title>
@@ -138,10 +138,10 @@ class wordpress_enumerate_users(CrawlPlugin):
         return False
 
     def _kb_info_user(self, url, response_id, username):
-        '''
+        """
         Put user in Kb
         :return: None, everything is saved in kb
-        '''
+        """
         desc = 'WordPress user "%s" found during username enumeration.'
         desc = desc % username
         
@@ -153,10 +153,10 @@ class wordpress_enumerate_users(CrawlPlugin):
         om.out.information(i.get_desc())
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds usernames in WordPress installations.
 
         The author's archive page is tried using "?author=ID" query and
@@ -164,4 +164,4 @@ class wordpress_enumerate_users(CrawlPlugin):
         redirect, the blog is affected by TALSOFT-2011-0526
         (http://seclists.org/fulldisclosure/2011/May/493) advisory. If no
         redirect is done, the plugin will try to fetch the username from title.
-        '''
+        """

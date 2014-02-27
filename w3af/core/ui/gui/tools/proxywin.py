@@ -53,7 +53,7 @@ class ProxiedRequests(entries.RememberingWindow):
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
     def __init__(self, w3af):
-        '''Constructor.'''
+        """Constructor."""
         super(ProxiedRequests, self).__init__(w3af, "proxytool",
                                               _("w3af - Proxy"),
                                               "Using_the_Proxy",
@@ -159,7 +159,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.show()
 
     def _init_options(self):
-        '''Init options.'''
+        """Init options."""
         self.like_initial = True
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
         

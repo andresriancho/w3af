@@ -1,4 +1,4 @@
-'''
+"""
 proxy.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import cStringIO
 import traceback
 import socket
@@ -75,9 +75,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.do_ALL()
 
     def _get_post_data(self):
-        '''
+        """
         :return: Post data preserving rfile
-        '''
+        """
         post_data = None
         if 'content-length' in self.headers.dict:
             cl = int(self.headers['content-length'])
@@ -90,14 +90,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         return post_data
 
     def _create_fuzzable_request(self):
-        '''
+        """
         Based on the attributes, return a fuzzable request object.
 
         Important variables used here:
             - self.headers : Stores the headers for the request
             - self.rfile : A file like object that stores the post_data
             - self.path : Stores the URL that was requested by the browser
-        '''
+        """
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
             base_path = "https://" + self.server.chainedHandler.path
@@ -116,9 +116,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         return fuzzable_request
 
     def do_ALL(self):
-        '''
+        """
         This method handles EVERY request that was send by the browser.
-        '''
+        """
         try:
             # Send the request to the remote webserver
             # The request parameters such as the URL, the headers, etc. are
@@ -136,14 +136,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 om.out.debug(msg)
 
     def _send_to_server(self, grep=False):
-        '''
+        """
         Send a request that arrived from the browser to the remote web server.
 
         Important variables used here:
             - self.headers : Stores the headers for the request
             - self.rfile : A file like object that stores the post_data
             - self.path : Stores the URL that was requested by the browser
-        '''
+        """
         self.headers['Connection'] = 'close'
 
         path = self.path
@@ -177,14 +177,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             return res
 
     def _send_error(self, exceptionObj, trace=None):
-        '''
+        """
         Send an error to the browser.
 
         Important methods used here:
             - self.send_header : Sends a header to the browser
             - self.end_headers : Ends the headers section
             - self.wfile : A file like object that represents the body of the response
-        '''
+        """
         try:
             self.send_response(400)
             self.send_header('Connection', 'close')
@@ -230,7 +230,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         #self.send_header('Date', self.date_time_string())
 
     def _send_to_browser(self, res):
-        '''
+        """
         Send a response that was sent by the remote web server to the browser
 
         Important methods used here:
@@ -238,7 +238,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             - self.end_headers : Ends the headers section
             - self.wfile : A file like object that represents the body
                 of the response
-        '''
+        """
         send_header = self.send_header
         try:
             self.send_response(res.get_code())
@@ -275,21 +275,21 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.wfile.close()
 
     def _verify_cb(self, conn, cert, errnum, depth, ok):
-        '''
+        """
         Used by set_verify to check that the SSL certificate if valid.
         In our case, we always return True.
-        '''
+        """
         om.out.debug(
             'Got this certificate from remote site: %s' % cert.get_subject())
         # I don't check for certificates, for me, they are always ok.
         return True
 
     def do_CONNECT(self):
-        '''
+        """
         Handle the CONNECT method.
         This method is not expected to be overwritten.
         To understand what happens here, please read comments for HTTPServerWrapper class
-        '''
+        """
         # Log what we are doing.
         self.log_request(200)
         soc = None
@@ -363,16 +363,16 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.connection.close()
 
     def log_message(self, format, *args):
-        '''
+        """
         I dont want messages written to stderr, please write them to the om.
-        '''
+        """
         message = "Local proxy daemon handling request: %s - %s" % (
             self.address_string(), format % args)
         om.out.debug(message)
 
 
 class Proxy(Process):
-    '''
+    """
     This class defines a simple HTTP proxy, it is mainly used for "complex"
     plugins.
 
@@ -412,13 +412,13 @@ class Proxy(Process):
         - https CONNECT ( thanks Sasha! )
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
 
     def __init__(self, ip, port, uri_opener, proxy_handler=w3afProxyHandler,
                  proxy_cert=SSL_CERT):
-        '''
+        """
         :param ip: IP address to bind
         :param port: Port to bind
         :param uri_opener: The uri_opener that will be used to open
@@ -427,7 +427,7 @@ class Proxy(Process):
             requests from the browser
         :param proxy_cert: Proxy certificate to use, this is needed
             for proxying SSL connections.
-        '''
+        """
         Process.__init__(self)
         self.daemon = True
         self.name = 'ProxyThread'
@@ -457,21 +457,21 @@ class Proxy(Process):
             self._port = self._server.server_port
 
     def get_bind_ip(self):
-        '''
+        """
         :return: The IP address where the proxy will listen.
-        '''
+        """
         return self._ip
 
     def get_bind_port(self):
-        '''
+        """
         :return: The TCP port where the proxy will listen.
-        '''
+        """
         return self._port
 
     def stop(self):
-        '''
+        """
         Stop the proxy by setting _go to False and creating a new request.
-        '''
+        """
         om.out.debug('Calling stop of proxy daemon.')
         if self._running:
             try:
@@ -489,9 +489,9 @@ class Proxy(Process):
                 self._running = False
 
     def is_running(self):
-        '''
+        """
         :return: True if the proxy daemon is running
-        '''
+        """
         return self._running
 
     def run(self):
@@ -553,7 +553,7 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
 
 
 class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
-    '''
+    """
     This is a dummy wrapper around HTTPServer.
     It is intended to be used only through process_request() method
     It also has chainedHandler attribute, which refers to a handler instance
@@ -574,7 +574,7 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
     SSL and works just as with plain sockets.
     Examples of what a second proxy handler would want to know from the original
     one is the CONNECT method path or urlOpener (see spider_man).
-    '''
+    """
     def __init__(self, handler, chainedHandler):
         self.RequestHandlerClass = handler
         self.chainedHandler = chainedHandler
@@ -582,9 +582,9 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
 
 #### And now some helper functions ####
 def wrap(socket_obj, ssl_connection, fun, *params):
-    '''
+    """
     A utility function that calls SSL read/write operation and handles errors.
-    '''
+    """
     while True:
         try:
             result = fun(*params)
@@ -621,10 +621,10 @@ def wrap(socket_obj, ssl_connection, fun, *params):
 
 
 class SSLConnectionWrapper(object):
-    '''
+    """
     This is a wrapper around an SSL connection which also implements a makefile
     method. Thus, it imitates a socket by an SSL connection.
-    '''
+    """
 
     def __init__(self, conn, socket):
         self._connection = conn
@@ -660,10 +660,10 @@ class SSLConnectionWrapper(object):
 
 
 class SSLConnectionFile(object):
-    '''
+    """
     This class pretends to be a file to be used as rfile or wfile in request
     handlers. Actually, it reads and writes data from and to SSL connection
-    '''
+    """
 
     def __init__(self, sslCon, socket):
         self.closed = False

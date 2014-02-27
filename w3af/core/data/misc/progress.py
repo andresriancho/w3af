@@ -1,4 +1,4 @@
-'''
+"""
 progress.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 
 
@@ -38,15 +38,15 @@ class Progress(object):
         self._eta = None
 
     def set_total_amount(self, value):
-        '''
+        """
         Set the max value that the progress "bar" will have.
-        '''
+        """
         self._max_value = value
         self._current_value = 0.0
         self._first_amount_change_time = None
 
     def inc(self):
-        '''
+        """
         Add 1 unit to the current value.
         >>> p = Progress()
         >>> p.set_total_amount(100)
@@ -54,7 +54,7 @@ class Progress(object):
         >>> p.get_progress()
         0.01
 
-        '''
+        """
         if self._current_value == self._max_value:
             # TODO: Find a way to show progress!
             #om.out.error('Current value can never be greater than max value!')
@@ -83,7 +83,7 @@ class Progress(object):
                 self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
-        '''
+        """
         :return: The % done.
 
         >>> p = Progress()
@@ -97,7 +97,7 @@ class Progress(object):
         >>> p.stop()
         >>> p.get_progress()
         0.0
-        '''
+        """
         # This if is to avoid division by zero
         if self._max_value == 0:
             return 0.0
@@ -106,19 +106,19 @@ class Progress(object):
         return self._current_value / self._max_value
 
     def stop(self):
-        '''
+        """
         This method is called from the core to indicate that the scan process
         has been stopped by the user, or an error has been found.
-        '''
+        """
         self._max_value = 0.0
         self._current_value = 0.0
         self._first_amount_change_time = None
         self._eta = None
 
     def get_eta(self):
-        '''
+        """
         :return: The ETA for this phase.
-        '''
+        """
         if not self._eta:
             return 0, 0, 0, 0
         else:

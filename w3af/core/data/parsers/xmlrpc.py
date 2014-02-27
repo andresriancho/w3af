@@ -1,4 +1,4 @@
-'''
+"""
 xmlrpc.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import xml.sax
 import cgi
 import base64
@@ -27,13 +27,13 @@ from xml.sax.handler import ContentHandler
 
 
 class xmlrpc_read_handler(ContentHandler):
-    '''
+    """
     Parse a XMLRPC request and save the fuzzable parameters in
     self.fuzzable_parameters.
 
     The user should call this function parse_xmlrpc and build_xmlrpc.
     The rest if for internal use.
-    '''
+    """
     def __init__(self):
 
         # The result
@@ -66,11 +66,11 @@ class xmlrpc_read_handler(ContentHandler):
 
 
 class xmlrpc_write_handler(ContentHandler):
-    '''
+    """
     Parse a XMLRPC request and save the fuzzable parameters in self.fuzzable_parameters.
 
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
-    '''
+    """
     def __init__(self, fuzzed_parameters):
 
         # The resulting XML string
@@ -118,7 +118,7 @@ class xmlrpc_write_handler(ContentHandler):
 
 
 def parse_xmlrpc(xml_string):
-    '''
+    """
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
 
     :param xml_string: The original XML string that we got from the browser.
@@ -126,14 +126,14 @@ def parse_xmlrpc(xml_string):
     :return: A handler that can then be used to access the result information from:
         - handler.fuzzable_parameters
         - handler.all_parameters
-    '''
+    """
     handler = xmlrpc_read_handler()
     xml.sax.parseString(xml_string, handler)
     return handler
 
 
 def build_xmlrpc(xml_string, fuzzed_parameters):
-    '''
+    """
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
 
     :param xml_string: The original XML string that we got from the browser.
@@ -142,7 +142,7 @@ def build_xmlrpc(xml_string, fuzzed_parameters):
     This list originally came from handler.fuzzable_parameters
 
     :return: The string with the new XMLRPC call to be sent to the server.
-    '''
+    """
     handler = xmlrpc_write_handler(fuzzed_parameters)
     xml.sax.parseString(xml_string, handler)
     return handler.fuzzed_xml_string

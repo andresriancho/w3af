@@ -55,13 +55,13 @@ signal.signal(signal.SIGSEGV, sigsegv_handler)
 
 
 class reqResViewer(gtk.VBox):
-    '''
+    """
     A widget with the request and the response inside.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Facundo Batista ( facundo@taniquetil.com.ar )
 
-    '''
+    """
     def __init__(self, w3af, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True,
                  editableRequest=False, editableResponse=False,
@@ -87,7 +87,7 @@ class reqResViewer(gtk.VBox):
         self.show()
 
     def _initTabbedLayout(self):
-        '''Init Tabbed layout. It's more convenient for quick view.'''
+        """Init Tabbed layout. It's more convenient for quick view."""
         nb = gtk.Notebook()
         nb.show()
         self.nb = nb
@@ -101,7 +101,7 @@ class reqResViewer(gtk.VBox):
         nb.append_page(self.info, gtk.Label(_("Info")))
 
     def _initSplittedLayout(self):
-        '''Init Splitted layout. It's more convenient for intercept.'''
+        """Init Splitted layout. It's more convenient for intercept."""
         self._vpaned = RememberingVPaned(self.w3af, 'trap_view')
         self._vpaned.show()
         self.pack_start(self._vpaned, True, True)
@@ -177,7 +177,7 @@ class reqResViewer(gtk.VBox):
         hbox.show()
 
     def _popupMenu(self, widget, event):
-        '''Show a Audit popup menu.'''
+        """Show a Audit popup menu."""
         _time = event.time
         # Get the information about the click
         #requestId = self._lstore[path][0]
@@ -325,20 +325,20 @@ class requestResponsePart(gtk.Notebook):
         self.enable_attached_widgets()
 
     def disable_attached_widgets(self):
-        '''
+        """
         When there is an error (for example in the parsing of the HTTP request)
         that is being shown in the Manual HTTP request editor, and we want to
         disable the "Send" button; then the raw.py calls this method to achieve
         exactly that.
-        '''
+        """
         if self.enableWidget:
             for widg in self.enableWidget:
                 widg(False)
 
     def enable_attached_widgets(self):
-        '''
+        """
         @see: disable_attached_widgets
-        '''
+        """
         if self.enableWidget:
             for widg in self.enableWidget:
                 widg(True)
@@ -451,9 +451,9 @@ class reqResWindow(RememberingWindow):
 
 
 class ThreadedURLImpact(threading.Thread):
-    '''Impacts an URL in a different thread.'''
+    """Impacts an URL in a different thread."""
     def __init__(self, w3af, request, plugin_name, plugin_type, event):
-        '''Init ThreadedURLImpact.'''
+        """Init ThreadedURLImpact."""
         threading.Thread.__init__(self)
         self.name = 'ThreadedURLImpact'
         self.daemon = True
@@ -467,7 +467,7 @@ class ThreadedURLImpact(threading.Thread):
         self.ok = False
 
     def run(self):
-        '''Start the thread.'''
+        """Start the thread."""
         try:
             # First, we check if the user choosed 'All audit plugins'
             if self.plugin_type == 'audit_all':

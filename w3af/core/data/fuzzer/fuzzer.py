@@ -1,4 +1,4 @@
-'''
+"""
 fuzzer.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
@@ -34,7 +34,7 @@ from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 
 def create_mutants(freq, mutant_str_list, append=False,
                    fuzzable_param_list=[], orig_resp=None):
-    '''
+    """
     :param freq: A fuzzable request with a DataContainer inside.
     :param mutant_str_list: a list with mutant strings to use
     :param append: This indicates if the content of mutant_str_list should
@@ -42,7 +42,7 @@ def create_mutants(freq, mutant_str_list, append=False,
     :param fuzzable_param_list: If [] then all params are fuzzed. If ['a'],
         then only 'a' is fuzzed.
     :return: A Mutant object List.
-    '''
+    """
     result = []
     fuzzer_config = _get_fuzzer_config(freq)
 
@@ -95,10 +95,10 @@ def create_mutants(freq, mutant_str_list, append=False,
 
 
 def _get_fuzzer_config(freq):
-    '''
+    """
     :return: This function verifies the configuration, and creates a map of
              things that can be fuzzed.
-    '''
+    """
     config = cf.cf
 
     fuzzer_config = {}

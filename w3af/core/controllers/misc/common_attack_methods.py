@@ -1,4 +1,4 @@
-'''
+"""
 CommonAttackMethods.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import difflib
 
@@ -40,7 +40,7 @@ class CommonAttackMethods(object):
         return self._header_length, self._footer_length
 
     def _guess_cut(self, body_a, body_b, expected_result):
-        '''
+        """
         Guesses the header and footer based on two responses and an expected result
         that should be in body_a.
 
@@ -57,7 +57,7 @@ class CommonAttackMethods(object):
         root:x:0:0:root:/root:/bin/bash
 
         :return: True if the cut could be defined
-        '''
+        """
         if expected_result not in body_a:
             return False
 
@@ -153,7 +153,7 @@ class CommonAttackMethods(object):
         return True
 
     def _define_cut_from_etc_passwd(self, body_a, body_b):
-        '''
+        """
         Defines the header and footer length based on the fact that we know the
         /etc/passwd file format.
         
@@ -164,7 +164,7 @@ class CommonAttackMethods(object):
         
         :return: None, we just set self._header_length and self._footer_length
                  or raise and exception if the method was not properly called.
-        '''
+        """
         if body_a != body_b:
             msg = '_define_cut_from_etc_passwd can only work with static'\
                   ' responses and in this case the bodies seem to be different.'
@@ -201,7 +201,7 @@ class CommonAttackMethods(object):
         return True
 
     def _define_exact_cut(self, body, expected_result):
-        '''
+        """
         Defines the section where the result of an attack will be.
 
         For example, when performing an OS Commanding attack, the command response
@@ -210,7 +210,7 @@ class CommonAttackMethods(object):
         information from the HTML.
 
         :return: True if the cut could be defined
-        '''
+        """
         if not expected_result in body:
             # I won't be able to define the cut
             return False
@@ -230,13 +230,13 @@ class CommonAttackMethods(object):
             return True
 
     def _cut(self, body):
-        '''
+        """
         After defining a cut, I can cut parts of an HTML and return the important
         sections.
 
         :param body: The HTML response that I need to cut to obtain the useful
                      information.
-        '''
+        """
         if self._header_length is None or self._footer_length is None:
             msg = ('You need to call _define_exact_cut() or _guess_cut() before'
                    'calling _cut().')

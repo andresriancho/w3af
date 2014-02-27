@@ -1,4 +1,4 @@
-'''
+"""
 mutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 
 from w3af.core.controllers.misc.io import NamedStringIO
@@ -32,9 +32,9 @@ from w3af.core.data.db.disk_item import DiskItem
 
 
 class Mutant(DiskItem):
-    '''
+    """
     This class is a wrapper for fuzzable requests that have been modified.
-    '''
+    """
     def __init__(self, freq, israw=False):
         super(Mutant, self).__init__()
         
@@ -67,14 +67,14 @@ class Mutant(DiskItem):
         self._freq = freq
 
     def set_var(self, var, index=0):
-        '''
+        """
         Set the name of the variable that this mutant modifies.
 
         :param var: The variable name that's being modified.
         :param index: The index. This was added to support repeated parameter names.
                       For example, if the data container holds a=123&a=456, and I
                       want to overwrite 456, index has to be 1.
-        '''
+        """
         self._var = var
         self._index = index
 
@@ -91,9 +91,9 @@ class Mutant(DiskItem):
         return self._original_value
 
     def set_mod_value(self, val):
-        '''
+        """
         Set the value of the variable that this mutant modifies.
-        '''
+        """
         try:
             self._freq._dc[self.get_var()][self._index] = val
         except Exception, e:
@@ -104,10 +104,10 @@ class Mutant(DiskItem):
             raise ValueError(msg % e)
 
     def get_mod_value(self):
-        '''
+        """
         :return: The value that was sent to the remote server and triggered the
                  vulnerability.
-        '''
+        """
         try:
             return self._freq._dc[self.get_var()][self._index]
         except:
@@ -128,11 +128,11 @@ class Mutant(DiskItem):
         return copy.deepcopy(self)
 
     def get_original_response_body(self):
-        '''
+        """
         The fuzzable request is a representation of a request; the original
         response body is the body of the response that is generated when w3af
         requests the fuzzable request for the first time.
-        '''
+        """
         if self._original_response_body is None:
             raise ValueError('[mutant error] You should set the original '
                              'response body before getting its value!')
@@ -152,12 +152,12 @@ class Mutant(DiskItem):
         return getattr(self._freq, name)
 
     def found_at(self):
-        '''
+        """
         Return a string representing WHAT was fuzzed. This string
         is used like this:
             - v.set_desc('SQL injection in a '+ v['db'] +
                         ' was found at: ' + mutant.found_at())
-        '''
+        """
         res = ['"%s", using HTTP method %s. The sent data was: "'
                % (self.get_url(), self.get_method())]
 
@@ -187,10 +187,10 @@ class Mutant(DiskItem):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''
+        """
         return Mutant._create_mutants_worker(freq, Mutant, mutant_str_list,
                                              fuzzable_param_list,
                                              append, fuzzer_config,
@@ -200,11 +200,11 @@ class Mutant(DiskItem):
     def _create_mutants_worker(freq, mutant_cls, mutant_str_list,
                                fuzzable_param_list, append,
                                fuzzer_config, data_container=None):
-        '''
+        """
         An auxiliary function to create_mutants.
 
         :return: A list of mutants.
-        '''
+        """
         if not issubclass(mutant_cls, Mutant):
             msg = 'mutant_cls parameter needs to be one of the known mutant'\
                   ' classes, not %s.'
@@ -290,7 +290,7 @@ AVOID_FILLING_FORM_TYPES = ['checkbox', 'radio', 'select', 'file']
 
 
 def mutant_smart_fill(freq, dc_copy, ignore_pname, ignore_index, fuzzer_config):
-    '''
+    """
     :param freq: The fuzzable request (original request instance) we're fuzzing
     :param ignore_pname: A parameter name to ignore
     :param ignore_index: The index we want to ignore
@@ -298,7 +298,7 @@ def mutant_smart_fill(freq, dc_copy, ignore_pname, ignore_index, fuzzer_config):
     :return: A data container that has been filled using smart_fill, ignoring
              the parameters that I'm fuzzing and filling the file inputs with
              valid image file.
-    '''
+    """
     for var_name_dc in dc_copy:
         for element_index_dc, element_value_dc in enumerate(dc_copy[var_name_dc]):
 

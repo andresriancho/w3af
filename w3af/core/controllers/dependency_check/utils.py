@@ -1,4 +1,4 @@
-'''
+"""
 utils.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import subprocess
 
@@ -26,9 +26,9 @@ from .platforms.current_platform import PIP_CMD
 
                                                          
 def verify_python_version():
-    '''
+    """
     Check python version eq 2.6 or 2.7
-    '''
+    """
     major, minor, micro, releaselevel, serial = sys.version_info
     if major == 2:
         if minor not in (6, 7):

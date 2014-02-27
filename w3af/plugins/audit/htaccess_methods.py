@@ -1,4 +1,4 @@
-'''
+"""
 htaccess_methods.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.constants.response_codes as http_constants
 
@@ -28,11 +28,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class htaccess_methods(AuditPlugin):
-    '''
+    """
     Find misconfigurations in Apache's "<LIMIT>" configuration.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     BAD_METHODS = set([http_constants.UNAUTHORIZED,
                        http_constants.NOT_IMPLEMENTED,
                        http_constants.METHOD_NOT_ALLOWED,
@@ -43,11 +43,11 @@ class htaccess_methods(AuditPlugin):
         self._already_tested = ScalableBloomFilter()
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for htaccess misconfigurations.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         response = self._uri_opener.GET(freq.get_url(), cache=True)
 
         if response.get_code() in self.BAD_METHODS:
@@ -58,7 +58,7 @@ class htaccess_methods(AuditPlugin):
         return not url.url_string in self._already_tested
 
     def _generate_urls(self, url):
-        '''
+        """
         Generate the URLs to test based on the initial URL we get from the core.
 
         Please note that I don't care much about duplicates coming out of this
@@ -97,7 +97,7 @@ class htaccess_methods(AuditPlugin):
         Content-Type: text/html
 
         ABC
-        '''
+        """
         yield url
 
         if url.get_extension():
@@ -115,10 +115,10 @@ class htaccess_methods(AuditPlugin):
             yield tmp_url.url_join('index.php')
 
     def _check_methods(self, url):
-        '''
+        """
         Perform some requests in order to check if we are able to retrieve
         some data with methods that may be wrongly enabled.
-        '''
+        """
         allowed_methods = []
         for method in ['GET', 'POST', 'ABCD', 'HEAD']:
             method_functor = getattr(self._uri_opener, method)
@@ -149,10 +149,10 @@ class htaccess_methods(AuditPlugin):
             self.kb_append(self, 'auth', v)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds .htaccess misconfigurations in the LIMIT configuration
         parameter.
 
@@ -168,4 +168,4 @@ class htaccess_methods(AuditPlugin):
 
         The configuration only allows authenticated users to perform GET requests,
         but POST requests (for example) can be performed by any user.
-        '''
+        """

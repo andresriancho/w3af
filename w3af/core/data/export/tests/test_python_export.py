@@ -1,4 +1,4 @@
-'''
+"""
 test_python_export.py
 
 Copyright 2012 Andres Riancho
@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import compiler
 
 from w3af.core.data.export.python_export import python_export
 
-EXPECTED_SIMPLE = '''import urllib2
+EXPECTED_SIMPLE = """import urllib2
 
 url = "http://www.w3af.org/"
 data = None
@@ -37,9 +37,9 @@ request = urllib2.Request(url, data, headers)
 response = urllib2.urlopen(request)
 response_body = response.read()
 print response_body
-'''
+"""
 
-EXPECTED_POST = '''import urllib2
+EXPECTED_POST = """import urllib2
 
 url = "http://www.w3af.org/"
 data = "a=1"
@@ -51,9 +51,9 @@ request = urllib2.Request(url, data, headers)
 response = urllib2.urlopen(request)
 response_body = response.read()
 print response_body
-'''
+"""
 
-EXPECTED_POST_REPEATED = '''import urllib2
+EXPECTED_POST_REPEATED = """import urllib2
 
 url = "http://www.w3af.org/"
 data = "a=1&a=2"
@@ -66,7 +66,7 @@ request = urllib2.Request(url, data, headers)
 response = urllib2.urlopen(request)
 response_body = response.read()
 print response_body
-'''
+"""
 
 
 class TestPythonExport(unittest.TestCase):

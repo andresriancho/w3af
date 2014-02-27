@@ -1,4 +1,4 @@
-'''
+"""
 test_timeout_function.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import time
 import sys
@@ -33,9 +33,9 @@ from w3af.core.controllers.threads.timeout_function import (
 class TestTimeoutFunction(unittest.TestCase):
 
     def _check(self, timeout, sleep, result, arg='OK'):
-        '''
+        """
         Utility function that helps with the assertions.
-        '''
+        """
         if timeout > sleep:
             x = None  # time.sleep(0) result
         elif isinstance(result, TimeLimitExpired):

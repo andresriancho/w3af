@@ -1,4 +1,4 @@
-'''
+"""
 cors_origin.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
@@ -34,13 +34,13 @@ from w3af.core.controllers.cors.utils import (build_cors_request,
 
 
 class cors_origin(AuditPlugin):
-    '''
+    """
     Inspect if application checks that the value of the "Origin" HTTP header is
     consistent with the value of the remote IP address/Host of the sender of
     the incoming HTTP request.
 
     :author: Dominique RIGHETTO (dominique.righetto@owasp.org)
-    '''
+    """
 
     MAX_REPEATED_REPORTS = 3
     SENSITIVE_METHODS = ('PUT', 'DELETE')
@@ -60,11 +60,11 @@ class cors_origin(AuditPlugin):
         self._allow_methods_counter = 0
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Plugin entry point.
 
         :param freq: A fuzzableRequest
-        '''
+        """
         # Detect if current url provides CORS features
         if not provides_cors_features(freq, self._uri_opener):
             return
@@ -73,9 +73,9 @@ class cors_origin(AuditPlugin):
         self.analyze_cors_security(url)
 
     def analyze_cors_security(self, url):
-        '''
+        """
         Send forged HTTP requests in order to test target application behavior.
-        '''
+        """
         origin_list = [self.origin_header_value, ]
 
         # TODO: Does it make any sense to add these Origins? If so, how will it
@@ -107,7 +107,7 @@ class cors_origin(AuditPlugin):
                                           allow_methods)
 
     def _filter_report(self, counter, section, vuln_severity, analysis_response):
-        '''
+        """
         :param counter: A string representing the name of the attr to increment
                         when a vulnerability is found by the decorated method.
 
@@ -119,7 +119,7 @@ class cors_origin(AuditPlugin):
 
         :param analysis_response: The vulnerability (if any) found by the
                                   analysis method.
-        '''
+        """
         if len(analysis_response):
 
             counter_val = getattr(self, counter)
@@ -151,12 +151,12 @@ class cors_origin(AuditPlugin):
 
     def _analyze_server_response(self, forged_req, url, origin, response,
                                  allow_origin, allow_credentials, allow_methods):
-        '''Analyze the server response and identify vulnerabilities which are'
+        """Analyze the server response and identify vulnerabilities which are'
         then saved to the KB.
 
         :return: A list of vulnerability objects with the identified vulns
                  (if any).
-        '''
+        """
         res = []
         for analysis_method in [self._universal_allow, self._origin_echo,
                                 self._universal_origin_allow_creds,
@@ -170,12 +170,12 @@ class cors_origin(AuditPlugin):
 
     def _allow_methods(self, forged_req, url, origin, response,
                        allow_origin, allow_credentials, allow_methods):
-        '''
+        """
         Report if we have sensitive methods enabled via CORS.
 
         :return: A list of vulnerability objects with the identified vulns
                  (if any).
-        '''
+        """
         if allow_methods is not None:
 
             # Access-Control-Allow-Methods: POST, GET, OPTIONS
@@ -238,12 +238,12 @@ class cors_origin(AuditPlugin):
 
     def _universal_allow(self, forged_req, url, origin, response,
                          allow_origin, allow_credentials, allow_methods):
-        '''
+        """
         Check if the allow_origin is set to *.
 
         :return: A list of vulnerability objects with the identified vulns
                  (if any).
-        '''
+        """
         if allow_origin == '*':
             msg = 'The remote Web application, specifically "%s", returned' \
                   ' an %s header with the value set to "*" which is insecure'\
@@ -265,7 +265,7 @@ class cors_origin(AuditPlugin):
 
     def _origin_echo(self, forged_req, url, origin, response,
                      allow_origin, allow_credentials_str, allow_methods):
-        '''
+        """
         First check if the @allow_origin is set to the value we sent
         (@origin) and if the allow_credentials is set to True. If this test
         is successful (most important vulnerability) then do not check for
@@ -273,7 +273,7 @@ class cors_origin(AuditPlugin):
 
         :return: A list of vulnerability objects with the identified vulns
                  (if any).
-        '''
+        """
         if allow_origin is not None:
             allow_origin = allow_origin.lower()
 
@@ -320,7 +320,7 @@ class cors_origin(AuditPlugin):
     def _universal_origin_allow_creds(self, forged_req, url, origin, response,
                                       allow_origin, allow_credentials_str,
                                       allow_methods):
-        '''
+        """
         Quote: "The above example would fail if the header was wildcarded as:
         Access-Control-Allow-Origin: *.  Since the Access-Control-Allow-Origin
         explicitly mentions http://foo.example, the credential-cognizant content
@@ -333,7 +333,7 @@ class cors_origin(AuditPlugin):
         it might be interesting for the developers and/or security admins.
 
         :return: Any implementation errors (as vuln objects) that might be found.
-        '''
+        """
         allow_credentials = False
         if allow_credentials_str is not None:
             allow_credentials = 'true' in allow_credentials_str.lower()
@@ -362,9 +362,9 @@ class cors_origin(AuditPlugin):
         return []
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         opt_list = OptionList()
 
         desc = "Origin HTTP header value"
@@ -387,10 +387,10 @@ class cors_origin(AuditPlugin):
             raise w3afException(msg)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         Inspect if application check that the value of the "Origin" HTTP header
         is consistent with the value of the remote IP address/Host of the sender
         of the incoming HTTP request.
@@ -402,4 +402,4 @@ class cors_origin(AuditPlugin):
                application behaviors.
         CORS : http://developer.mozilla.org/en-US/docs/HTTP_access_control
                http://www.w3.org/TR/cors
-        '''
+        """

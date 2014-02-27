@@ -1,4 +1,4 @@
-'''
+"""
 un_ssl.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 import w3af.core.data.constants.severity as severity
@@ -30,10 +30,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class un_ssl(AuditPlugin):
-    '''
+    """
     Find out if secure content can also be fetched using http.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -42,14 +42,14 @@ class un_ssl(AuditPlugin):
         self._run = True
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Check if the protocol specified in freq is https and fetch the same URL
         using http. ie:
             - input: https://w3af.org/
             - check: http://w3af.org/
 
         :param freq: A FuzzableRequest
-        '''
+        """
         if not self._run:
             return
         else:
@@ -106,9 +106,9 @@ class un_ssl(AuditPlugin):
                     self._run = False
 
     def _redirects_to_secure(self, insecure_response, secure_response):
-        '''
+        """
         :return: Is the insecure response redirecting to an HTTPS resource?
-        '''
+        """
         if insecure_response.was_redirected():
             redirect_target = insecure_response.get_redir_url()
             
@@ -118,13 +118,13 @@ class un_ssl(AuditPlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin verifies that URL's that are available using HTTPS aren't
         available over an insecure HTTP protocol.
 
         To detect this, the plugin simply requests "https://abc/a.asp" and
         "http://abc.asp" and if both are equal, a vulnerability is found.
-        '''
+        """

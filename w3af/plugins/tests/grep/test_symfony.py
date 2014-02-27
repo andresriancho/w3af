@@ -1,4 +1,4 @@
-'''
+"""
 test_symfony.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from functools import partial
@@ -40,13 +40,13 @@ class test_symfony(unittest.TestCase):
     NON_SYMFONY_HEADERS = Headers([('content-type', 'text/html')])
 
     EMPTY_BODY = ''
-    UNPROTECTED_BODY = '''<html><head></head><body><form action="login" method="post">
+    UNPROTECTED_BODY = """<html><head></head><body><form action="login" method="post">
                             <input type="text" name="signin" id="signin" /></form></body>
-                          </html>'''
-    PROTECTED_BODY = '''<html><head></head><body><form action="login" method="post">
+                          </html>"""
+    PROTECTED_BODY = """<html><head></head><body><form action="login" method="post">
                             <input type="text" name="signin" id="signin" /><input type="hidden"
                             name="signin[_csrf_token]" value="069092edf6b67d5c25fd07642a54f6e3"
-                            id="signin__csrf_token" /></form></body></html>'''
+                            id="signin__csrf_token" /></form></body></html>"""
 
     def setUp(self):
         create_temp_dir()

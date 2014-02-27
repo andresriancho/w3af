@@ -1,4 +1,4 @@
-'''
+"""
 test_filename_mutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.parsers.url import URL
@@ -97,12 +97,12 @@ class TestFileNameMutant(unittest.TestCase):
         self.assertEqual(expected_urls, generated_urls)
 
     def test_valid_results_double_encoding(self):
-        '''
+        """
         In this case the number of generated mutants is higher due to the
         encoded and double encoded versions which are returned. In the previous
         case, and given that both the encoded and double encoded versions were
         the same, the number of generated mutants was 4.
-        '''
+        """
         payloads = ['ls - la', ]
         freq = HTTPQSRequest(URL('http://www.w3af.com/bar.htm'))
 

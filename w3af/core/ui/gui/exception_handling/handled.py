@@ -1,4 +1,4 @@
-'''
+"""
 handled.py
 
 Copyright 2012 Andres Riancho
@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exception_handling.helpers import gettempdir, create_crash_file
 from w3af.core.ui.gui.exception_handling import handled_bug_report
 
 
 def handle_exceptions(w3af_core):
-    '''
+    """
     In w3af's new exception handling method, some exceptions raising from
     plugins are "allowed" and the scan is NOT stopped because of them.
 
@@ -36,7 +36,7 @@ def handle_exceptions(w3af_core):
 
     The main class in this game is core.controllers.core_helpers.exception_handler
     and you should read it before this one.
-    '''
+    """
     # Save the info to a file for later analysis by the user
     for edata in w3af_core.exception_handler.get_all_exceptions():
         edata_str = edata.get_details()

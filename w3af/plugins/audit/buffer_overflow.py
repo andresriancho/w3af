@@ -1,4 +1,4 @@
-'''
+"""
 buffer_overflow.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
@@ -32,10 +32,10 @@ from w3af.core.data.kb.info import Info
 
 
 class buffer_overflow(AuditPlugin):
-    '''
+    """
     Find buffer overflow vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     OVERFLOW_ERRORS = (
         '*** stack smashing detected ***:',
@@ -56,7 +56,7 @@ class buffer_overflow(AuditPlugin):
     BUFFER_TESTS = [rand_alpha(l) for l in [65, 257, 513, 1025, 2049]]
 
     def __init__(self):
-        '''
+        """
         Some notes:
             On Apache, when an overflow happends on a cgic script, this is written
             to the log:
@@ -86,25 +86,25 @@ class buffer_overflow(AuditPlugin):
                 </body></html>
 
             Note that this is an Apache error 500, not the more common PHP error 500.
-        '''
+        """
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for buffer overflow vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         mutants = create_mutants(freq, self.BUFFER_TESTS,
                                  orig_resp=orig_response)
 
         self.worker_pool.map(self._send_request, mutants)
 
     def _send_request(self, mutant):
-        '''
+        """
         Sends a mutant to the remote web server. I wrap urllib's _send_mutant
         just to handle errors in a different way.
-        '''
+        """
         try:
             response = self._uri_opener.send_mutant(mutant)
         except (w3afException, w3afMustStopException):
@@ -121,9 +121,9 @@ class buffer_overflow(AuditPlugin):
             self._analyze_result(mutant, response)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         for error_str in self._multi_in.query(response.body):
             # And not in the original response
             if error_str not in mutant.get_original_response_body() and \
@@ -139,21 +139,21 @@ class buffer_overflow(AuditPlugin):
                 self.kb_append_uniq(self, 'buffer_overflow', v)
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['grep.error_500']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds buffer overflow vulnerabilities.
 
         Users have to know that detecting a buffer overflow vulnerability will
         be only possible if the server is configured to return errors, and the
         application is developed in cgi-c or some other language that allows
         the programmer to do their own memory management.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 audit_plugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import inspect
 import threading
 
@@ -31,13 +31,13 @@ from w3af.core.data.request.variant_identification import are_variants
 
 
 class AuditPlugin(Plugin):
-    '''
+    """
     This is the base class for audit plugins, all audit plugins should inherit
     from it and implement the following methods :
         1. audit(...)
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         Plugin.__init__(self)
@@ -53,11 +53,11 @@ class AuditPlugin(Plugin):
                                             cache=False)
 
     def audit_return_vulns(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: The fuzzable_request instance to analyze for
                                  vulnerabilities.
         :return: The vulnerabilities found when running this audit plugin.
-        '''
+        """
         with self._audit_return_vulns_lock:
             
             self._store_kb_vulns = True
@@ -76,14 +76,14 @@ class AuditPlugin(Plugin):
                 return new_vulnerabilities
 
     def _audit_return_vulns_in_caller(self):
-        '''
+        """
         This is a helper method that returns True if the method audit_return_vulns
         is in the call stack.
         
         Please note that this method is *very* slow (because of the inspect
         module being slow) and should only be called when audit_return_vulns
         was previously called.
-        '''
+        """
         the_stack = inspect.stack()
 
         for _,_,_,function_name,_,_ in the_stack:
@@ -93,9 +93,9 @@ class AuditPlugin(Plugin):
         return False
 
     def kb_append_uniq(self, location_a, location_b, info):
-        '''
+        """
         kb.kb.append_uniq a vulnerability to the KB
-        '''
+        """
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
@@ -103,9 +103,9 @@ class AuditPlugin(Plugin):
         super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
         
     def kb_append(self, location_a, location_b, info):
-        '''
+        """
         kb.kb.append a vulnerability to the KB
-        '''
+        """
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
@@ -113,7 +113,7 @@ class AuditPlugin(Plugin):
         super(AuditPlugin, self).kb_append(location_a, location_b, info)
 
     def audit_with_copy(self, fuzzable_request, orig_resp):
-        '''
+        """
         :param freq: A FuzzableRequest
         :param orig_resp: The HTTP response we get from sending the freq
         
@@ -122,18 +122,18 @@ class AuditPlugin(Plugin):
         I copy the fuzzable request, to avoid cross plugin contamination.
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
-        '''
+        """
         return self.audit(fuzzable_request.copy(), orig_resp)
 
     def audit(self, freq, orig_resp):
-        '''
+        """
         The freq is a FuzzableRequest that is going to be modified and sent.
 
         This method MUST be implemented on every plugin.
 
         :param freq: A FuzzableRequest
         :param orig_resp: The HTTP response we get from sending the freq
-        '''
+        """
         msg = 'Plugin is not implementing required method audit'
         raise NotImplementedError(msg)
 
@@ -141,7 +141,7 @@ class AuditPlugin(Plugin):
         return not self._has_no_bug(fuzz_req, varname, pname, kb_varname)
 
     def _has_no_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
-        '''
+        """
         Test if the current combination of `fuzz_req`, `varname` hasn't
         already been reported to the knowledge base.
 
@@ -151,7 +151,7 @@ class AuditPlugin(Plugin):
             the vulnerability. Defaults to self.name.
         :param kb_varname: The name of the variable in the kb, where
             the vulnerability was saved. Defaults to self.name.
-        '''
+        """
         with self._plugin_lock:
             if not varname:
                 if hasattr(fuzz_req, 'get_var'):

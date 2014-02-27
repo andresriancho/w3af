@@ -1,4 +1,4 @@
-'''
+"""
 HTTPRequestParser.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urlparse
 
 from w3af.core.data.parsers.url import URL
@@ -28,10 +28,10 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 def check_version_syntax(version):
-    '''
+    """
     :return: True if the syntax of the version section of HTTP is valid; else
              raise an exception.
-    '''
+    """
     supportedVersions = ['1.0', '1.1']
     splittedVersion = version.split('/')
 
@@ -51,10 +51,10 @@ def check_version_syntax(version):
 
 
 def check_uri_syntax(uri, host=None):
-    '''
+    """
     :return: True if the syntax of the URI section of HTTP is valid; else
              raise an exception.
-    '''
+    """
     supported_schemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
     scheme = scheme.lower()
@@ -76,7 +76,7 @@ def check_uri_syntax(uri, host=None):
 
 
 def HTTPRequestParser(head, postdata):
-    '''
+    """
     This function parses HTTP Requests from a string to a FuzzableRequest.
 
     :param head: The head of the request.
@@ -86,7 +86,7 @@ def HTTPRequestParser(head, postdata):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
 
-    '''
+    """
     # Parse the request head, the strip() helps us deal with the \r (if any)
     splitted_head = head.split('\n')
     splitted_head = [h.strip() for h in splitted_head if h]

@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-'''
+"""
 form.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import operator
 import random
 
@@ -32,12 +32,12 @@ from w3af.core.data.parsers.url import URL
 
 
 class Form(DataContainer):
-    '''
+    """
     This class represents a HTML form.
 
     :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
-    '''
+    """
     # Max
     TOP_VARIANTS = 15
     MAX_VARIANTS_TOTAL = 10 ** 9
@@ -66,13 +66,13 @@ class Form(DataContainer):
         self._secret_value = "3_!21#47w@"
 
     def get_action(self):
-        '''
+        """
         :return: The Form action.
-        '''
+        """
         return self._action
 
     def set_action(self, action):
-        '''
+        """
         >>> f = Form()
         >>> f.set_action('http://www.google.com/')
         Traceback (most recent call last):
@@ -83,16 +83,16 @@ class Form(DataContainer):
         >>> f.set_action(action)
         >>> f.get_action() == action
         True
-        '''
+        """
         if not isinstance(action, URL):
             raise TypeError('The action of a Form must be of '
                             'url.URL type.')
         self._action = action
 
     def get_method(self):
-        '''
+        """
         :return: The Form method.
-        '''
+        """
         return self._method
 
     def set_method(self, method):
@@ -102,18 +102,18 @@ class Form(DataContainer):
         return self._files
 
     def _set_var(self, name, value):
-        '''
+        """
         Auxiliary setter for name=value
-        '''
+        """
         # added to support repeated parameter names
         vals = self.setdefault(name, [])
         vals.append(value)
 
     def add_file_input(self, attrs):
-        '''
+        """
         Adds a file input to the Form
         :param attrs: attrs=[("class", "screen")]
-        '''
+        """
         name = ''
 
         for attr in attrs:
@@ -135,7 +135,7 @@ class Form(DataContainer):
             self._types[name] = self.INPUT_TYPE_FILE
 
     def __str__(self):
-        '''
+        """
         This method returns a string representation of the Form object.
 
         Please note that if the form has radio/select/checkboxes the
@@ -144,7 +144,7 @@ class Form(DataContainer):
 
         @see: Unittest in test_form.py
         :return: string representation of the Form object.
-        '''
+        """
         d = dict(self)
         d.update(self._submit_map)
 
@@ -159,20 +159,20 @@ class Form(DataContainer):
         return urlencode(d, encoding=self.encoding)
 
     def add_submit(self, name, value):
-        '''
+        """
         This is something I hadn't thought about !
         <input type="submit" name="b0f" value="Submit Request">
-        '''
+        """
         self._submit_map[name] = value
 
     def add_input(self, attrs):
-        '''
+        """
         Adds an input to the Form object. Input examples:
             <INPUT type="text" name="email"><BR>
             <INPUT type="radio" name="sex" value="Male"> Male<BR>
 
         :param attrs: attrs=[("class", "screen")]
-        '''
+        """
         # Set the default input type to text.
         attr_type = self.INPUT_TYPE_TEXT
         name = value = ''
@@ -308,7 +308,7 @@ class Form(DataContainer):
                 try:
                     value = matrix[row_index][col_index]
                 except IndexError:
-                    '''
+                    """
                     This handles "select" tags that have no options inside.
 
                     The get_variants method should return a variant with the
@@ -316,7 +316,7 @@ class Form(DataContainer):
 
                     This case reported by Taras at
                     https://sourceforge.net/apps/trac/w3af/ticket/171015
-                    '''
+                    """
                     value = ''
 
                 if value != secret_value:
@@ -406,7 +406,7 @@ class Form(DataContainer):
                     yield decoded_path
 
     def _decodePath(self, path, matrix):
-        '''
+        """
         Decode the integer `path` into a tuple of ints where the ith-elem
         is the index to select from vector given by matrix[i].
 
@@ -416,7 +416,7 @@ class Form(DataContainer):
         :param path: integer
         :param matrix: list of lists
         :return: Tuple of integers
-        '''
+        """
         # Hack to make the algorithm work.
         matrix.append([1])
         get_count = lambda i: reduce(operator.mul, map(len, matrix[i + 1:]))
@@ -434,11 +434,11 @@ class Form(DataContainer):
         return decoded_path
 
     def _get_variantsCount(self, matrix, mode):
-        '''
+        """
 
         :param matrix:
         :param tmb:
-        '''
+        """
         if mode in ["t", "b"]:
             return 1
         elif mode == "tb":

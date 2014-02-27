@@ -1,4 +1,4 @@
-'''
+"""
 __init__.py
 
 Copyright 2007 Andres Riancho
@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 
 def get_long_description():
-    '''
+    """
     :return: The description for the plugin type.
-    '''
-    return '''Attack plugins exploit the vulnerabilities that were found by audit
+    """
+    return """Attack plugins exploit the vulnerabilities that were found by audit
     plugins in order to get a remote shell, or a local proxy that routes traffic
     through the target host.
-    '''
+    """

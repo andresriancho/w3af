@@ -1,4 +1,4 @@
-'''
+"""
 Copyright 2012 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import unittest
 
@@ -46,10 +46,10 @@ class TestStartUpConfig(unittest.TestCase):
         scfg.save()
 
     def test_load_not_exist(self):
-        '''
+        """
         This is a test to verify that the defaults are loaded when the file does not
         exist.
-        '''
+        """
         scfg = StartUpConfig('foo.conf')
 
         self.assertEqual(scfg.last_upd, date.today() - timedelta(days=31))
@@ -58,9 +58,9 @@ class TestStartUpConfig(unittest.TestCase):
         self.assertEqual(scfg.freq, 'D')
 
     def test_load_file_exists(self):
-        '''This is a test to verify that the things we saved were persited in
+        """This is a test to verify that the things we saved were persited in
         the actual file.
-        '''
+        """
         # Save
         scfg = StartUpConfig(self.CFG_FILE)
         scfg.last_upd = date.today()

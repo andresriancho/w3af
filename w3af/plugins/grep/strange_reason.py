@@ -1,4 +1,4 @@
-'''
+"""
 strange_reason.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.data.kb.info import Info
@@ -27,22 +27,22 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 class strange_reason(GrepPlugin):
-    '''
+    """
     Analyze HTTP response reason (Not Found, Ok, Internal Server Error).
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point. Analyze if the HTTP response reason messages are strange.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         response_code = response.get_code()
         msg_list = W3C_REASONS.get(response_code, None)
 
@@ -83,10 +83,10 @@ class strange_reason(GrepPlugin):
                     self.kb_append_uniq(self, 'strange_reason', i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         Analyze HTTP response reason messages sent by the remote web application
         and report uncommon findings.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 form_autocomplete.py
 
 Copyright 2010 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from itertools import chain
 from lxml import etree
 
@@ -40,12 +40,12 @@ TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 
 class form_autocomplete(GrepPlugin):
-    '''
+    """
     Grep every page for detection of forms with 'autocomplete' capabilities
     containing password-type inputs.
 
     :author: Javier Andalia (jandalia =at= gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -56,7 +56,7 @@ class form_autocomplete(GrepPlugin):
         self._text_input_xpath = etree.XPath(TEXT_INPUT_XPATH)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, test existance of HTML auto-completable forms
         containing password-type inputs. Either form's <autocomplete> attribute
         is not present or is 'off'.
@@ -64,7 +64,7 @@ class form_autocomplete(GrepPlugin):
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         url = response.get_url()
         dom = response.get_dom()
 
@@ -103,10 +103,10 @@ class form_autocomplete(GrepPlugin):
                 break
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''\
+        """
+        return """\
         This plugin greps every page for autocomplete-able forms containing 
         password-type inputs.
-        '''
+        """

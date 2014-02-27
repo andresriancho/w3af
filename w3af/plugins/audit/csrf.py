@@ -1,4 +1,4 @@
-'''
+"""
 csrf.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from math import log, floor
 
 import w3af.core.controllers.output_manager as om
@@ -47,12 +47,12 @@ COMMON_CSRF_NAMES = (
 
 
 class csrf(AuditPlugin):
-    '''
+    """
     Identify Cross-Site Request Forgery vulnerabilities.
     
     :author: Taras (oxdef@oxdef.info)
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -61,11 +61,11 @@ class csrf(AuditPlugin):
         self._equal_limit = 0.90
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests a URL for CSRF vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         if not self._is_suitable(freq):
             return
 
@@ -96,9 +96,9 @@ class csrf(AuditPlugin):
         self.kb_append_uniq(self, 'csrf', v)
 
     def _is_resp_equal(self, res1, res2):
-        '''
+        """
         @see: unittest for this method in test_csrf.py
-        '''
+        """
         if res1.get_code() != res2.get_code():
             return False
 
@@ -109,12 +109,12 @@ class csrf(AuditPlugin):
         return True
 
     def _is_suitable(self, freq):
-        '''
+        """
         For CSRF attack we need request with payload and persistent/session
         cookies.
 
         :return: True if the request can have a CSRF vulnerability
-        '''
+        """
         # Does the application send cookies?
         #
         # By checking like this we're loosing the opportunity to detect any
@@ -141,10 +141,10 @@ class csrf(AuditPlugin):
         return True
 
     def _is_origin_checked(self, freq, orig_response):
-        '''
+        """
         :return: True if the remote web application verifies the Referer before
                  processing the HTTP request.
-        '''
+        """
         fake_ref = 'http://www.w3af.org/'
         mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
@@ -158,9 +158,9 @@ class csrf(AuditPlugin):
         return False
 
     def _find_csrf_token(self, freq):
-        '''
+        """
         :return: A dict with the first identified token
-        '''
+        """
         result = {}
         dc = freq.get_dc()
         
@@ -181,13 +181,13 @@ class csrf(AuditPlugin):
         return result
 
     def _is_token_checked(self, freq, token, orig_response):
-        '''
+        """
         Please note that this method generates lots of false positives and
         negatives. Read the github issue for more information.
         
         :see: https://github.com/andresriancho/w3af/issues/120
         :return: True if the CSRF token is NOT verified by the web application
-        '''
+        """
         token_pname_lst = token.keys()
         token_value = token[token_pname_lst[0]]
         
@@ -251,13 +251,13 @@ class csrf(AuditPlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.
 
         The simplest type of csrf is checked to be vulnerable, the web application
         must have sent a permanent cookie, and the aplicacion must have query
         string parameters.
-        '''
+        """

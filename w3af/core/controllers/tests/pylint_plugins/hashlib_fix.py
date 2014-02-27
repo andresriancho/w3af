@@ -3,7 +3,7 @@
 from logilab.astng import MANAGER
 from logilab.astng.builder import ASTNGBuilder
 
-CODE_FIX = '''
+CODE_FIX = """
 class md5(object):
     def __init__(self, value): pass
     def hexdigest(self):
@@ -30,7 +30,7 @@ class sha512(object):
         return u''
     def digest(self):
         return u''
-'''
+"""
 
 def hashlib_transform(module):
     if module.name == 'hashlib':

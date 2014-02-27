@@ -41,11 +41,11 @@ LOG_FILE = os.path.join(ARTIFACTS_DIR, 'setup-moth.log')
 
 
 def get_source_code():
-    '''
+    """
     Download the source code to a location which Circle will then cache in
     order to avoid getting the source code each time we run our tests. If the
     target directory already exists, we should simply "git pull".
-    '''
+    """
     if os.path.exists(DJANGO_MOTH_DIR):
         # CircleCI restored the cache and this was already there. We simply
         # "git pull". This is possible because we ask circle to cache the
@@ -57,14 +57,14 @@ def get_source_code():
         
 
 def install_dependencies():
-    '''
+    """
     Create a virtualenv where all dependencies will be installed.
     
     Once again, do this in a location where circleci will cache in order to
     avoid installing all dependencies each time. Also, if the virtualenv is
     already there, we just need to run "pip install -r requirements.txt" to get
     the new dependencies.
-    '''
+    """
     if not os.path.exists(VIRTUALENV_DIR):
         run_cmd('virtualenv %s' % VIRTUALENV_DIR)
         
@@ -72,9 +72,9 @@ def install_dependencies():
                                                            DJANGO_MOTH_DIR,))
 
 def start_daemons(log_directory=ARTIFACTS_DIR):
-    '''
+    """
     Start the django application in HTTP and HTTPS.
-    '''
+    """
     cmd = '%s/bin/python %s/start_daemons.py --log-directory=%s' % (VIRTUALENV_DIR,
                                                                     DJANGO_MOTH_DIR,
                                                                     log_directory)

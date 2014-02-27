@@ -1,4 +1,4 @@
-'''
+"""
 is_source_file.py
 
 Copyright 2010 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 from w3af.core.data.esmre.multi_re import multi_re
 
@@ -35,12 +35,12 @@ _multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 
 def is_source_file(file_content):
-    '''
+    """
     :param file_content: The content of the http response body to analyze
     :return: A tuple with:
                 a re.match object if the file_content matches a source code file,
                 a string with the source code programming language
-    '''
+    """
     for match, _, _, lang in _multi_re.query(file_content):
         return (match, lang)
 

@@ -1,4 +1,4 @@
-'''
+"""
 dns_cache.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 
 import w3af.core.controllers.output_manager as om
@@ -26,7 +26,7 @@ from w3af.core.controllers.misc.lru import LRU
 
 
 def enable_dns_cache():
-    '''
+    """
     DNS cache trick
     This will speed up all the test! Before this dns cache voodoo magic every request
     to the HTTP server required a DNS query, this is slow on some networks so I added
@@ -41,7 +41,7 @@ def enable_dns_cache():
     #  Copyright 2001 - 2003 Trustix AS - <http://www.trustix.com>
     #  Copyright 2003 - 2004 Tor Hveem - <tor@bash.no>
     #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
-    '''
+    """
     om.out.debug('Enabling _dns_cache()')
 
     if not hasattr(socket, 'already_configured'):

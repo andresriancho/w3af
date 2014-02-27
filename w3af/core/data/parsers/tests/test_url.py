@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 test_url.py
 
 Copyright 2012 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import urllib2
 
@@ -44,23 +44,23 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.get_extension(), 'txt')
 
     def test_default_proto(self):
-        '''
+        """
         http is the default protocol, we can provide URLs with no proto
-        '''
+        """
         u = URL('w3af.com')
         self.assertEqual(u.get_domain(), 'w3af.com')
         self.assertEqual(u.get_protocol(), 'http')
 
     def test_just_path(self):
-        '''
+        """
         Can't specify the path without a domain and protocol
-        '''
+        """
         self.assertRaises(ValueError, URL, '/')
     
     def test_no_domain(self):
-        '''
+        """
         But we can't specify a URL without a domain!
-        '''
+        """
         self.assertRaises(ValueError, URL, 'http://')
     
     def test_case_insensitive_proto(self):
@@ -144,7 +144,7 @@ class TestURLParser(unittest.TestCase):
 
     @attr('ci_fails')
     def test_encode_plus(self):
-        msg = '''
+        msg = """
         When parsing an HTML document that has a link like the one below, can
         the browser (or in this case w3af) know the original intent of the web
         developer?
@@ -152,7 +152,7 @@ class TestURLParser(unittest.TestCase):
         Was he trying to put a space or a real "+" ? At the moment of writing
         these lines, w3af thinks that the user is trying to put a "+", so it
         will encode it as a %2B for sending to the wire.
-        '''
+        """
         raise SkipTest(msg)
 
         res_str = URL(u'https://w3af.com:443/file.asp?id=1+2').url_encode()
@@ -175,16 +175,16 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(res_str, EXPECTED)
 
     def test_decode_encode(self):
-        '''Encode and Decode should be able to run one on the result of the
-        other and return the original'''
+        """Encode and Decode should be able to run one on the result of the
+        other and return the original"""
         original = URL(u'https://w3af.com:443/file.asp?id=1%202')
         decoded = original.url_decode()
         encoded = decoded.url_encode()
         self.assertEqual(original.url_encode(), encoded)
 
     def test_encode_decode(self):
-        '''Encode and Decode should be able to run one on the result of the
-        other and return the original'''
+        """Encode and Decode should be able to run one on the result of the
+        other and return the original"""
         original = URL(u'https://w3af.com:443/file.asp?id=1%202')
         encoded = original.url_encode()
         decoded = URL(encoded).url_decode()
@@ -267,12 +267,12 @@ class TestURLParser(unittest.TestCase):
                          u'http://w3af.com/def/тест')
 
     def test_url_join_case06(self):
-        '''
+        """
         Opera and Chrome behave like this. For those browsers the URL
         leads to no good, so I'm going to do the same thing. If the user
         wants to specify a URL that contains a colon he should URL
         encode it.
-        '''
+        """
         u = URL('http://w3af.com/')
         self.assertRaises(ValueError, u.url_join, "d:url.html?id=13&subid=3")
 

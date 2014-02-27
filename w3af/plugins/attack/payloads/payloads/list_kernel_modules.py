@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class list_kernel_modules(Payload):
-    '''
+    """
     This payload displays a list of all modules loaded into the kernel
-    '''
+    """
     def api_read(self):
         result = {}
 

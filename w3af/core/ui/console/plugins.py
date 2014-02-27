@@ -1,4 +1,4 @@
-'''
+"""
 plugins.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 import sys
 import textwrap
@@ -32,11 +32,11 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class pluginsMenu(menu):
-    '''
+    """
     Menu for the list of plugins.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
 
-    '''
+    """
 
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
@@ -68,14 +68,14 @@ class pluginsMenu(menu):
         return self._children
 
     def execute(self, tokens):
-        '''
+        """
         This is a trick to make this console back-compatible.
         For example, command 'audit' means 'show all audit plugins',
         while command 'audit xss' means 'enable xss plugin'.
         At the same time, to show only enabled audit plugin, the command
         'list audit enabled' has to be used.
         That's an inconsistency, which needs a resolution.
-        '''
+        """
         if len(tokens) == 1 and tokens[0] in self._children:
             return self._cmd_list(tokens)
         return menu.execute(self, tokens)
@@ -109,10 +109,10 @@ class pluginsMenu(menu):
 
 
 class pluginsTypeMenu(menu):
-    '''
+    """
         Common menu for all types of plugins.
         The type of plugins is defined by the menu's own name.
-    '''
+    """
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
         plugins = w3af.plugins.get_plugin_list(name)

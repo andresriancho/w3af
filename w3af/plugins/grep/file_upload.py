@@ -1,4 +1,4 @@
-'''
+"""
 file_upload.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -29,11 +29,11 @@ FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
 
 
 class file_upload(GrepPlugin):
-    '''
+    """
     Find HTML forms with file upload capabilities.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -42,13 +42,13 @@ class file_upload(GrepPlugin):
         self._file_input_xpath = etree.XPath(FILE_INPUT_XPATH)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, verify if the HTML has a form with file uploads.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -72,9 +72,9 @@ class file_upload(GrepPlugin):
                 self.kb_append_uniq(self, 'file_upload', i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for forms with file upload capabilities.
-        '''
+        """

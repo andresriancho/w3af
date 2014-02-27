@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class os_fingerprint(Payload):
-    '''
+    """
     This payload detect OS.
-    '''
+    """
     def api_read(self):
         result = {}
 

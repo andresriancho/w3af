@@ -1,4 +1,4 @@
-'''
+"""
 changelog.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import git
 
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
@@ -38,9 +38,9 @@ ST_UNKNOWN = '?'
 PRINT_LINES = 20
 
 class Commit(object):
-    '''
+    """
     Wrapper around git.Commit for easy access to data.
-    '''
+    """
     def __init__(self, git_commit):
         self._git_commit = git_commit
         self._changes = []
@@ -69,11 +69,11 @@ class Commit(object):
     
     @property
     def changes(self):
-        '''
+        """
         self._changes holds (one of ACTIONS.values(), filename), for example:
             ('M', 'w3af_console')
             ('D', 'extlib/')
-        '''
+        """
         return self._changes
     
     def __str__(self):
@@ -88,9 +88,9 @@ def get_affected_file(file_diff):
     return affected_file
 
 class ChangeLog(object):
-    '''
+    """
     Easy access to all changes performed between two commits in a branch.
-    '''
+    """
     def __init__(self, start, end):
         self.start = start
         self.end = end

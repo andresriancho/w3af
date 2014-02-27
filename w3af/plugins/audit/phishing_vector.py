@@ -1,4 +1,4 @@
-'''
+"""
 phishing_vector.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 from lxml import etree
@@ -31,11 +31,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class phishing_vector(AuditPlugin):
-    '''
+    """
     Find phishing vectors.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -52,11 +52,11 @@ class phishing_vector(AuditPlugin):
                            'fTp://w3af.org/')
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Find those phishing vectors!
 
         :param freq: A FuzzableRequest
-        '''
+        """
         mutants = create_mutants(freq, self._test_urls)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -64,9 +64,9 @@ class phishing_vector(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         if self._has_bug(mutant):
             return
         
@@ -98,10 +98,10 @@ class phishing_vector(AuditPlugin):
 
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugins finds phishing vectors in web applications, for example,
         a bug of this type is found if I request the URL
         "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
@@ -109,4 +109,4 @@ class phishing_vector(AuditPlugin):
             ...
             <iframe src="http://attacker.tld">
             ....
-        '''
+        """

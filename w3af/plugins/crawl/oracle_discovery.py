@@ -1,4 +1,4 @@
-'''
+"""
 oracle_discovery.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -32,10 +32,10 @@ from w3af.core.data.kb.info import Info
 
 
 class oracle_discovery(CrawlPlugin):
-    '''
+    """
     Find Oracle applications on the remote web server.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     ORACLE_DATA = (
         # Example string:
@@ -57,12 +57,12 @@ class oracle_discovery(CrawlPlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
-        '''
+        """
         GET some files and parse them.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         base_url = fuzzable_request.get_url().base_url()
 
         for url, re_obj in self.ORACLE_DATA:
@@ -98,10 +98,10 @@ class oracle_discovery(CrawlPlugin):
                     om.out.debug(msg % (response.get_url(), body_start))
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin retrieves Oracle Application Server URLs and extracts
         information available on them.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 google.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import urllib
 import json
@@ -41,14 +41,14 @@ GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
 
 
 class google(SearchEngine):
-    '''
+    """
     This class is a wrapper for doing google searches. It allows the user to do
     GET requests to the mobile version, the Ajax API and the standard www.google.com
     page.
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
     :author: Floyd Fuh (floyd_fuh@yahoo.de)
-    '''
+    """
 
     def __init__(self, uri_opener):
         SearchEngine.__init__(self)
@@ -58,31 +58,31 @@ class google(SearchEngine):
         return self.search(query, 0, count=limit)
 
     def search(self, query, start, count=10):
-        '''
+        """
         Perform a google search and return the resulting links (URLs).
 
         :param query: The query that we want to perform in the search engine
         :param start: The first result item
         :param count: How many results to get from start
-        '''
+        """
         return self._do_ordered_search(query, start, count)
 
     def page_search(self, query, start, count=10):
-        '''
+        """
         Perform a *standard* google search and return the google result
         pages (HTML).
 
         :param query: The query that we want to perform in the search engine
         :param start: The first result item
         :param count: How many results to get from start
-        '''
+        """
         return GStandardSearch(self._uri_opener, query, start, count).pages
 
     def _do_ordered_search(self, query, start, count):
-        '''
+        """
         Do the Google search by calling the Google API searchers in the order
         specified in GOOGLE_PRIORITY_SEARCH_SEQ
-        '''
+        """
         res = []
         _globals = globals()
         curr_count = count
@@ -113,10 +113,10 @@ FINISHED_BAD = 2
 
 
 class GoogleAPISearch(object):
-    '''
+    """
     'Abstract' base class for the Google API search implementations. This class
     shouldn't be instantiated.
-    '''
+    """
 
     def __init__(self, uri_opener):
         self._status = IS_NEW
@@ -166,35 +166,35 @@ class GoogleAPISearch(object):
         return self._uri_opener.GET(url, headers=headers)
 
     def _do_google_search(self):
-        '''
+        """
         Perform the google search based on implementation. This method has
         to be overriden by subclasses.
-        '''
+        """
         pass
 
     def _extract_links(self, pages):
-        '''
+        """
         Return list of URLs found in pages. Must be overriden by subclasses.
-        '''
+        """
         pass
 
 
 class GAjaxSearch(GoogleAPISearch):
-    '''
+    """
     Search the web using Google's AJAX API. Note that Google restricts
     this API to return only the first 64 results.
-    '''
+    """
 
     GOOGLE_AJAX_SEARCH_URL = "http://ajax.googleapis.com/ajax/services/search/web?"
     GOOGLE_AJAX_MAX_RES_PER_PAGE = 8
     GOOGLE_AJAX_MAX_START_INDEX = 56
 
     def __init__(self, uri_opener, query, start=0, count=10):
-        '''
+        """
         :param query: query to perform
         :param start: start index.
         :param count: amount of results to fetch
-        '''
+        """
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
@@ -259,9 +259,9 @@ class GAjaxSearch(GoogleAPISearch):
 
 
 class GStandardSearch(GoogleAPISearch):
-    '''
+    """
     Search the web with standard Google webpage.
-    '''
+    """
 
     GOOGLE_SEARCH_URL = "http://www.google.com/search?"
 
@@ -272,11 +272,11 @@ class GStandardSearch(GoogleAPISearch):
     NEXT_PAGE_STR = '<strong>Next</strong></a></td>'
 
     def __init__(self, uri_opener, query, start=0, count=10):
-        '''
+        """
         :param query: query to perform
         :param start: start index.
         :param count: amount of results to fetch
-        '''
+        """
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
@@ -346,10 +346,10 @@ class GStandardSearch(GoogleAPISearch):
 
 
 class GMobileSearch(GStandardSearch):
-    '''
+    """
     Search the web using Google's Mobile search. Note that Google doesn't
     restrict the access to this page right now.
-    '''
+    """
     GOOGLE_SEARCH_URL = "http://www.google.com/xhtml?"
 
     # Used to extract URLs from Google responses
@@ -361,11 +361,11 @@ class GMobileSearch(GStandardSearch):
     NEXT_PAGE_STR = 'Next</span></a></td></tr>'
 
     def __init__(self, uri_opener, query, start=0, count=10):
-        '''
+        """
         :param query: query to perform
         :param start: start index.
         :param count: amount of results to fetch
-        '''
+        """
         GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
@@ -401,9 +401,9 @@ class GMobileSearch(GStandardSearch):
 
 
 class GoogleResult(object):
-    '''
+    """
     This is a dummy class that represents a search engine result.
-    '''
+    """
     def __init__(self, url):
         if not isinstance(url, URL):
             msg = 'The url __init__ parameter of a GoogleResult object must'

@@ -1,5 +1,5 @@
 # coding: utf8
-'''
+"""
 test_crawl_exception_handling.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import shutil
 
@@ -47,12 +47,12 @@ class TestCrawlExceptions(PluginTest):
     }
 
     def setUp(self):
-        '''
+        """
         This is a rather complex setUp since I need to move the failing_spider.py
         plugin to the plugin directory in order to be able to run it afterwards.
 
         In the tearDown method, I'll remove the file.
-        '''
+        """
         self.src = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                                 'failing_spider.py')
         self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',

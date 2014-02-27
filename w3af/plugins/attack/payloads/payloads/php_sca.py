@@ -1,4 +1,4 @@
-'''
+"""
 php_sca.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import tempfile
 
 import w3af.core.data.constants.severity as severity
@@ -42,10 +42,10 @@ class php_sca(Payload):
     }
 
     def api_read(self, localtmpdir=None):
-        '''
+        """
         :param localtmpdir: Local temporary directory where to save
                             the remote code.
-        '''
+        """
         def write_vuln_to_kb(vulnty, url, funcs):
             vulndata = php_sca.KB_DATA[vulnty]
             for f in funcs:

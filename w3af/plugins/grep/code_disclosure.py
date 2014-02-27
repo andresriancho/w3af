@@ -1,4 +1,4 @@
-'''
+"""
 code_disclosure.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
@@ -28,11 +28,11 @@ from w3af.core.controllers.misc.is_source_file import is_source_file
 
 
 class code_disclosure(GrepPlugin):
-    '''
+    """
     Grep every page for code disclosure vulnerabilities.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -41,7 +41,7 @@ class code_disclosure(GrepPlugin):
         self._first_404 = True
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for the code disclosures.
 
         Unit tests are available at plugins/grep/tests.
@@ -49,7 +49,7 @@ class code_disclosure(GrepPlugin):
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -84,14 +84,14 @@ class code_disclosure(GrepPlugin):
                 self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page in order to find code disclosures.
         Basically it greps for '<?.*?>' and '<%.*%>' using the re module and
         reports findings.
 
         Code disclosures are usually generated due to web server
         misconfigurations, or wierd web application "features".
-        '''
+        """

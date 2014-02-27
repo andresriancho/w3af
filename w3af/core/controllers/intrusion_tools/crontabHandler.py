@@ -1,4 +1,4 @@
-'''
+"""
 crontabHandler.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import w3afException
@@ -27,21 +27,21 @@ from w3af.core.controllers.intrusion_tools.execMethodHelpers import get_remote_t
 
 
 class crontabHandler(delayedExecution):
-    '''
+    """
     This class defines a crontab handler, that will:
         - add new commands to the crontab calculating time
         - return expected execution time
         - restore old crontab
-    '''
+    """
 
     def __init__(self, exec_method):
         self._exec_method = exec_method
         self._cronFile = get_remote_temp_file(self._exec_method)
 
     def can_delay(self):
-        '''
+        """
         :return: True if the remote user can add entries to his crontab
-        '''
+        """
         actualCron = self._exec('crontab -l 2>&1')
         if 'not allowed to use this program' in actualCron:
             om.out.debug('[crontabHandler] The user has no permission to create a cron entry.')
@@ -51,9 +51,9 @@ class crontabHandler(delayedExecution):
             return True
 
     def add_to_schedule(self, command_to_exec):
-        '''
+        """
         Adds a command to the cron.
-        '''
+        """
         actualCron = self._exec('crontab -l 2>&1')
         actualCron = actualCron.strip()
 
@@ -94,13 +94,13 @@ class crontabHandler(delayedExecution):
         om.out.debug('Successfully restored old crontab.')
 
     def _createCronLine(self, remoteDate, command_to_exec):
-        '''
+        """
         Creates a crontab line that executes the command one minute after the
         "date" parameter.
 
         :return: A tuple with the new line to add to the crontab, and the time
                  that it will take to run the command.
-        '''
+        """
         res_line = ''
         try:
             # date +"%d-%m-%H:%M:%S-%u"

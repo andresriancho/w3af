@@ -3,10 +3,10 @@ from w3af.core.ui.console.tables import table
 
 
 class users_config_files(Payload):
-    '''
+    """
     This payload uses "users_folders" payload to find ".rc" and other configuration files,
     some of them may contain sensitive information.
-    '''
+    """
 
     def fname_generator(self):
         users_result = self.exec_payload('users')

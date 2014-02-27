@@ -1,4 +1,4 @@
-'''
+"""
 cert_auth.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 import httplib
 
@@ -26,11 +26,11 @@ import w3af.core.controllers.output_manager as om
 
 
 class certHTTPSConnection(httplib.HTTPSConnection):
-    '''
+    """
     An HTTPSConnection abstraction for easy integration with urllib2.
 
     #FIXME: This file ain't used, because it wasn't actually working!
-    '''
+    """
     key_file = None
     cert_file = None
 
@@ -41,9 +41,9 @@ class certHTTPSConnection(httplib.HTTPSConnection):
 
 
 class certHTTPSHandler(urllib2.HTTPSHandler):
-    '''
+    """
     An https handler for urllib2 that knows what to do with cert and key files.
-    '''
+    """
     def __init__(self, debuglevel=0):
         urllib2.HTTPSHandler.__init__(self, debuglevel)
         self._sslCertFile = None
@@ -51,29 +51,29 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
         om.out.debug('Called __init__ of certHTTPSHandler.')
 
     def get_ssl_key_file(self):
-        '''
+        """
         :return: A string with the SSL key path and filename.
-        '''
+        """
         return self._sslKeyFile
 
     def set_ssl_key_file(self, keyFile):
-        '''
+        """
         :param keyFile: A string with the SSL key path and filename.
         :return: None
-        '''
+        """
         self._sslKeyFile = keyFile
 
     def get_ssl_cert_file(self):
-        '''
+        """
         :return: A string with the SSL cert path and filename.
-        '''
+        """
         return self._sslCertFile
 
     def set_ssl_cert_file(self, file):
-        '''
+        """
         :param file: A string with the SSL cert path and filename.
         :return: None
-        '''
+        """
         self._sslCertFile = file
 
     def https_open(self, req):

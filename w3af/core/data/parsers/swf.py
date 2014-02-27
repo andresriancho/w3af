@@ -1,4 +1,4 @@
-'''
+"""
 swf.py
 
 Copyright 2006 Andres Riancho
@@ -18,21 +18,21 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import zlib
 
 from w3af.core.data.parsers.baseparser import BaseParser
 
 
 class SWFParser(BaseParser):
-    '''
+    """
     This class is a SWF (flash) parser which just focuses on extracting URLs.
     
     The parser is based on "SWF File Format Specification Version 10"
     http://www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, HTTPResponse):
         BaseParser.__init__(self, HTTPResponse)
 
@@ -47,20 +47,20 @@ class SWFParser(BaseParser):
         self._parse(swf)
 
     def _is_compressed(self, swf_document):
-        '''
+        """
 
         :param swf_content: The SWF file.
         :return: True if the SWF is compressed
-        '''
+        """
         return swf_document.startswith('CWS')
 
     def _inflate(self, swf_document):
-        '''
+        """
         zlib.inflate the SWF file.
 
         :param swf_content: The SWF file.
         :return: A decompressed version of the SWF
-        '''
+        """
         compressed_data = swf_document[8:]
         try:
             uncompressed_data = zlib.decompress(compressed_data)
@@ -73,18 +73,18 @@ class SWFParser(BaseParser):
             return uncompressed_data
 
     def _parse(self, swf_body):
-        '''
+        """
         Parse the SWF bytecode.
         For now... don't decompile anything, just apply regular
         expressions to it.
 
         :param swf_body: SWF bytecode string
-        '''
+        """
         self._regex_url_parse(swf_body)
         self._0x83_getURL_parse(swf_body)
     
     def _0x83_getURL_parse(self, swf_body):
-        '''
+        """
         After reading a couple of SWF files with a hex editor it was possible
         to identify the following pattern:
         
@@ -97,7 +97,7 @@ class SWFParser(BaseParser):
         So, with this information I'll extract links!
         
         :return: Store new URLs in self._re_urls, None is returned.
-        '''
+        """
         for index, char in enumerate(swf_body):
             if char == '\x83' and swf_body[index+2] == '\x00':
                 # potential getURL with string as first parameter
@@ -127,7 +127,7 @@ class SWFParser(BaseParser):
                         self._re_urls.add(url)
 
     def get_references(self):
-        '''
+        """
         Searches for references on a page. w3af searches references in every
         html tag, including:
             - a
@@ -139,11 +139,11 @@ class SWFParser(BaseParser):
         :return: Two lists, one with the parsed URLs, and one with the URLs
                  that came out of a regular expression. The second list if less
                  trustworthy.
-        '''
+        """
         return ([], list(self._re_urls))
 
     def _return_empty_list(self, *args, **kwds):
-        '''
+        """
         This method is called (see below) when the caller invokes one of:
             - get_forms
             - get_comments
@@ -153,7 +153,7 @@ class SWFParser(BaseParser):
 
         :return: Because we are a PDF document, we don't have the same things that
         a nice HTML document has, so we simply return an empty list.
-        '''
+        """
         return []
 
     get_references_of_tag = get_forms = get_comments = _return_empty_list

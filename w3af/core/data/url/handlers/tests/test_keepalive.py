@@ -1,4 +1,4 @@
-'''
+"""
 test_keepalive.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 import unittest
 import time
@@ -56,10 +56,10 @@ class TestKeepalive(unittest.TestCase):
         self.req = Mock()
 
     def test_get_and_remove_conn(self):
-        '''
+        """
         Each requested connection must be closed by calling 'remove_connection'
         when the server doesn't support persistent HTTP Connections
-        '''
+        """
         kah = self.kahdler
         host = self.host
         conn = self.conn
@@ -142,10 +142,10 @@ class TestKeepalive(unittest.TestCase):
         conn_mgr.free_connection.assert_called_once_with(conn)
 
     def test_single_conn_mgr(self):
-        '''
+        """
         We only want to use different instances of the ConnectionManager for
         HTTP and HTTPS.
-        '''
+        """
         conn_mgr_http = id(HTTPHandler()._cm)
         conn_mgr_https = id(HTTPSHandler(':')._cm)
         
@@ -187,9 +187,9 @@ class test_connection_mgr(unittest.TestCase):
         self.host = Mock()
 
     def test_get_available_conn(self):
-        '''
+        """
         Play with the pool, test, test... and test
-        '''
+        """
         self.cm._host_pool_size = 1  # Only a single connection
         self.assertEquals(0, len(self.cm._hostmap))
         self.assertEquals(0, len(self.cm._used_cons))

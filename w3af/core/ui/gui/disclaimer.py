@@ -1,4 +1,4 @@
-'''
+"""
 main.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.ui.gui.constants import W3AF_ICON
@@ -37,11 +37,11 @@ def ask(msg):
 
 class DisclaimerController(object):
     def accept_disclaimer(self):
-        '''
+        """
         :return: True/False depending on the user's answer to our disclaimer.
                  Please note that in w3af_gui we'll stop if the user does
                  not accept the disclaimer.
-        '''
+        """
         startup_cfg = StartUpConfig()
 
         if startup_cfg.accepted_disclaimer:

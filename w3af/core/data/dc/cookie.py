@@ -1,4 +1,4 @@
-'''
+"""
 cookie.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -26,11 +26,11 @@ from w3af.core.data.dc.data_container import DataContainer
 
 
 class Cookie(DataContainer):
-    '''
+    """
     This class represents a cookie.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
 
         super(Cookie, self).__init__(encoding=encoding)
@@ -51,11 +51,11 @@ class Cookie(DataContainer):
         return value
 
     def __str__(self):
-        '''
+        """
         This method returns a string representation of the cookie Object.
 
         :return: string representation of the cookie object.
-        '''
+        """
         res = ''
         for parameter_name in self:
             for element_index in xrange(len(self[parameter_name])):

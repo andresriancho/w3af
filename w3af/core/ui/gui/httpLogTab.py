@@ -1,4 +1,4 @@
-'''
+"""
 httpLogTab.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a     copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 import gobject
 import pango
@@ -35,9 +35,9 @@ from w3af.core.data.options.option_list import OptionList
 
 
 class httpLogTab(entries.RememberingHPaned):
-    '''A tab that shows all HTTP requests and responses made by the framework.
+    """A tab that shows all HTTP requests and responses made by the framework.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, w3af, padding=10, time_refresh=False):
         """Init object."""
         super(httpLogTab, self).__init__(w3af, "pane-httplogtab", 300)
@@ -102,7 +102,7 @@ class httpLogTab(entries.RememberingHPaned):
         mainvbox.pack_start(self._vpan)
 
     def _popupMenu(self, tv, event):
-        '''Generate and show popup menu.'''
+        """Generate and show popup menu."""
         if event.button != 3:
             return
         # creates the whole menu only once
@@ -120,7 +120,7 @@ class httpLogTab(entries.RememberingHPaned):
         return True
 
     def _deleteSelected(self, widg=None):
-        '''Delete selected transactions.'''
+        """Delete selected transactions."""
         ids = []
         iters = []
         sel = self._lstoreTreeview.get_selection()
@@ -230,7 +230,7 @@ class httpLogTab(entries.RememberingHPaned):
         # Column for bookmark
         #TODO: Find a better way to do this. The "B" and the checkbox aren't nice
         #what we aim for is something like the stars in gmail.
-        '''
+        """
         renderer = gtk.CellRendererToggle()
         renderer.set_property('activatable', True)
         renderer.connect('toggled', self.toggle_bookmark, model)
@@ -238,7 +238,7 @@ class httpLogTab(entries.RememberingHPaned):
         column.add_attribute(renderer, "active", 1)
         column.set_sort_column_id(1)
         treeview.append_column(column)
-        '''
+        """
 
         # Column for METHOD
         column = gtk.TreeViewColumn(
@@ -308,12 +308,12 @@ class httpLogTab(entries.RememberingHPaned):
         return
 
     def refresh_results(self):
-        '''
+        """
         TODO: IMPROVEMENT: The find_request_response will read all items from
                            the DB again. If there are no new requests BUT we're
                            already showing 1K of them, all will be read. Not
                            good for performance.
-        '''
+        """
         self.find_request_response(refresh=True)
         return True
 

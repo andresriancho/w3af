@@ -1,4 +1,4 @@
-'''
+"""
 wizard.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 import os
 import cgi
@@ -52,7 +52,7 @@ class QuestOptions(gtk.VBox):
         self.show_all()
 
     def save_options(self):
-        '''Saves the changed options.'''
+        """Saves the changed options."""
         options = self.widg.options
         invalid = []
 
@@ -117,10 +117,10 @@ class QuestOptions(gtk.VBox):
 
 
 class Wizard(entries.RememberingWindow):
-    '''The wizard to help the user to create a profile.
+    """The wizard to help the user to create a profile.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, wizard):
         super(Wizard, self).__init__(
             w3af, "wizard", "w3af Wizard: " + wizard.get_name(), "Wizards",
@@ -168,7 +168,7 @@ class Wizard(entries.RememberingWindow):
         self.show_all()
 
     def _saveEverything(self):
-        '''Saves all the info to a profile.'''
+        """Saves all the info to a profile."""
         filename = self.panel.widg.get_children()[2].get_text()
         description = self.panel.widg.get_children()[0].get_text()
         if not filename:
@@ -192,7 +192,7 @@ class Wizard(entries.RememberingWindow):
         self.destroy()
 
     def _goNext(self, widg):
-        '''Shows the next question.'''
+        """Shows the next question."""
         if self.finalQ:
             self._saveEverything()
             return
@@ -206,7 +206,7 @@ class Wizard(entries.RememberingWindow):
             self._buildWindow(quest)
 
     def _goBack(self, widg):
-        '''Shows the previous question.'''
+        """Shows the previous question."""
         if not self.finalQ:
             if not self.panel.save_options():
                 return
@@ -217,10 +217,10 @@ class Wizard(entries.RememberingWindow):
         self._buildWindow(quest)
 
     def _buildWindow(self, question):
-        '''Builds the useful pane for a question.
+        """Builds the useful pane for a question.
 
         :param question: the question with the info to build.
-        '''
+        """
         self.qtitle.set_markup("<b>%s</b>" % question.get_question_title())
         self.quest.set_text(question.get_question_string())
         self.panel.set_quest_options(question)
@@ -228,7 +228,7 @@ class Wizard(entries.RememberingWindow):
         self.finalQ = False
 
     def _buildFinal(self):
-        '''End titles window.'''
+        """End titles window."""
         self.qtitle.set_markup("<b>The wizard has finished</b>")
         self.quest.set_text("There are no more questions, you correctly created a new "
                             "configuration for w3af.\n\nPlease provide a name and a "
@@ -239,7 +239,7 @@ class Wizard(entries.RememberingWindow):
 
 
 class SimpleRadioButton(gtk.VBox):
-    '''Simple to use radiobutton.'''
+    """Simple to use radiobutton."""
     def __init__(self, callback):
         super(SimpleRadioButton, self).__init__()
         self.selected = None
@@ -261,10 +261,10 @@ class SimpleRadioButton(gtk.VBox):
 
 
 class WizardChooser(entries.RememberingWindow):
-    '''Window that let's the user to choose a Wizard.
+    """Window that let's the user to choose a Wizard.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(WizardChooser, self).__init__(
             w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards",
@@ -315,11 +315,11 @@ class WizardChooser(entries.RememberingWindow):
         self.show_all()
 
     def _changedRB(self, widget):
-        '''The radiobutton changed.'''
+        """The radiobutton changed."""
         self.wizdesc.set_label(widget.get_wizard_description())
 
     def _goWizard(self, widget):
-        '''Runs the selected wizard.'''
+        """Runs the selected wizard."""
         # First, clean all the enabled plugins that the user may have selected:
         for ptype in self.w3af.plugins.get_plugin_types():
             self.w3af.plugins.set_plugins([], ptype)
@@ -331,7 +331,7 @@ class WizardChooser(entries.RememberingWindow):
         Wizard(self.w3af, self.rbuts.active)
 
     def _getWizards(self):
-        '''Returns the existing wizards.'''
+        """Returns the existing wizards."""
         wizs = []
         wizard_path = os.path.join(ROOT_PATH, 'core/controllers/wizard/wizards')
         

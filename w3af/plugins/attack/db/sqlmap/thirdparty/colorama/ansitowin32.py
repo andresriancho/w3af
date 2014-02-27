@@ -16,11 +16,11 @@ def is_a_tty(stream):
 
 
 class StreamWrapper(object):
-    '''
+    """
     Wraps a stream (such as stdout), acting as a transparent proxy for all
     attribute access apart from method 'write()', which is delegated to our
     Converter instance.
-    '''
+    """
     def __init__(self, wrapped, converter):
         # double-underscore everything to prevent clashes with names of
         # attributes on the wrapped stream object.
@@ -35,11 +35,11 @@ class StreamWrapper(object):
 
 
 class AnsiToWin32(object):
-    '''
+    """
     Implements a 'write()' method which, on Windows, will strip ANSI character
     sequences from the text, and if outputting to a tty, will convert them into
     win32 function calls.
-    '''
+    """
     ANSI_RE = re.compile('\033\[((?:\d|;)*)([a-zA-Z])')
 
     def __init__(self, wrapped, convert=None, strip=None, autoreset=False):
@@ -72,13 +72,13 @@ class AnsiToWin32(object):
 
 
     def should_wrap(self):
-        '''
+        """
         True if this class is actually needed. If false, then the output
         stream will not be affected, nor will win32 calls be issued, so
         wrapping stdout is not actually required. This will generally be
         False on non-Windows platforms, unless optional functionality like
         autoreset has been requested using kwargs to init()
-        '''
+        """
         return self.convert or self.strip or self.autoreset
 
 
@@ -128,11 +128,11 @@ class AnsiToWin32(object):
 
 
     def write_and_convert(self, text):
-        '''
+        """
         Write the given text to our wrapped stream, stripping any ANSI
         sequences from the text, and optionally converting them into win32
         calls.
-        '''
+        """
         cursor = 0
         for match in self.ANSI_RE.finditer(text):
             start, end = match.span()

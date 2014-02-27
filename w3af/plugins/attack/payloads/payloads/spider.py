@@ -7,7 +7,7 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class spider(Payload):
-    '''
+    """
     This payload crawls the remote file system and extracts information.
 
     The recursion_level is an integer (2 or 3 is recommended but any number can
@@ -15,14 +15,14 @@ class spider(Payload):
     the recursion_level, the more time it takes to complete the spider process.
 
     Usage: spider <recursion_level>
-    '''
+    """
     def api_read(self, recursion_level):
 
         def extract_files_from_payloads():
-            '''
+            """
             :return: A list of files that's mentioned in the other payloads
             I use this as a start point.
-            '''
+            """
             payload_files = self.exec_payload(
                 'apache_config_files')['apache_config'].keys()
             payload_files.extend(
@@ -44,21 +44,21 @@ class spider(Payload):
             payload_files.extend(
                 self.exec_payload('interesting_files').keys())
             #    This increases the run time of this plugin a lot!
-            '''
+            """
             pid_info = self.exec_payload('list_processes')
             for pid in pid_info:
                 filename = pid_info[pid]['cmd'].split(' ')[0]
                 payload_files.append( filename )
-            '''
+            """
 
             return payload_files
 
         def extract_files_from_file(filename, file_content):
-            '''
+            """
             :param filename: The filename to request to the remote end and parse
             :param file_content: The content of the file to analyze
             :return: A list of files referenced in "filename"
-            '''
+            """
             # Compile
             regular_expressions = []
             for common_dirs in get_common_directories():
@@ -78,9 +78,9 @@ class spider(Payload):
             return result
 
         def is_interesting_file(filename, file_content):
-            '''
+            """
             :return: True if the file seems interesting
-            '''
+            """
             keyword_list = []
             keyword_list.append('passwords')
             keyword_list.append('passwd')

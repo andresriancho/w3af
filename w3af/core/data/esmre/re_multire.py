@@ -1,4 +1,4 @@
-'''
+"""
 re_multire.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import re
 
@@ -26,14 +26,14 @@ from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
 class re_multire(object):
-    '''
+    """
     This is a wrapper around the re object that provides the plugins (users)
     with an easy to use API. This is a transition class that will be used by
     w3af users which don't have the esmre package installed.
-    '''
+    """
 
     def __init__(self, re_list, re_compile_flags=0):
-        '''
+        """
 
         :param re_list: A list with all the regular expressions that we want
         to match against one or more strings using the "query" function.
@@ -42,7 +42,7 @@ class re_multire(object):
         [ (re_str_1, obj1) , (re_str_2, obj2) ... , (re_str_N, objN)]. In the first
         case, if a match is found this class will return [ (match_obj, re_str_N, pattern_obj), ]
         in the second case we'll return [ (match_obj, re_str_N, pattern_obj, objN), ]
-        '''
+        """
         self._re_cache = {}
         self._assoc_obj = {}
 
@@ -61,7 +61,7 @@ class re_multire(object):
                     'Can NOT build re_multire with provided values.')
 
     def query(self, target_str):
-        '''
+        """
         Apply the regular expressions to the target_str and return a list
         according to the class __init__ documentation.
 
@@ -70,7 +70,7 @@ class re_multire(object):
         some magic of our own.
 
         See test_re.py for usage examples.
-        '''
+        """
         result = []
 
         if isinstance(target_str, unicode):

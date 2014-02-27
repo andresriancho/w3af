@@ -1,4 +1,4 @@
-'''
+"""
 aprox_delay_controller.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
 from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 
@@ -26,7 +26,7 @@ EXPONENTIALLY = 2
 
 
 class AproxDelayController(DelayMixIn):
-    '''
+    """
     Given that more than one vulnerability can be detected using time delays which
     are not 100% exact, just to name a couple: blind SQL injections using the
     MySQL's BENCHMARK and REDoS, I decided to create a generic class that will
@@ -54,7 +54,7 @@ class AproxDelayController(DelayMixIn):
     After sending the request, the algorithm will verify that the response
     was delayed at least multiplier * original_time to continue with the
     next step
-    '''
+    """
     DELTA = 0.5
 
     DELAY_SETTINGS = {LINEARLY: [1, 10, 100, 500],
@@ -62,14 +62,14 @@ class AproxDelayController(DelayMixIn):
                       }
 
     def __init__(self, mutant, delay_obj, uri_opener, delay_setting=LINEARLY):
-        '''
+        """
         :param mutant: The mutant that will be sent (one or more times) to the
                        remote server in order to detect the time delay.
 
         :param delay_obj: A delay object as defined in delay.py file. Basically
                           an object that contains the string that would delay
                           the remote server (ie. sleep(%s) )
-        '''
+        """
         if not isinstance(delay_obj, AproxDelay):
             raise TypeError('ExactDelayController requires ExactDelay as input')
         
@@ -85,7 +85,7 @@ class AproxDelayController(DelayMixIn):
         self.delay_setting = delay_setting
 
     def delay_is_controlled(self):
-        '''
+        """
         All the logic/magic is in this method. The logic is very simple:
             * First send the payload as-is, and record the original time
             * Send the payload multiplied by 10, and record the time
@@ -99,7 +99,7 @@ class AproxDelayController(DelayMixIn):
         We go up and down and change the multiplier in order to make sure
         that WE are controlling the delay and there is no other external factor
         in place.
-        '''
+        """
         responses = []
         
         multipliers_that_delay = []
@@ -131,10 +131,10 @@ class AproxDelayController(DelayMixIn):
         return None
     
     def multiplier_delays_response(self, multiplier, original_wait_time):
-        '''
+        """
         :return: (True if the multiplier delays the response,
                   The HTTP response)
-        '''
+        """
         delay_str = self.delay_obj.get_string_for_multiplier(multiplier)
 
         mutant = self.mutant.copy()

@@ -4,7 +4,7 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class portscan(Payload):
-    '''
+    """
     This payload portscans a given host or IP range.
 
     Usage: portscan ["auto"|<ip-address>] ["default"|<port-list>]
@@ -21,12 +21,12 @@ class portscan(Payload):
         payload auto default
         payload 127.0.0.1 default
         payload 127.0.0.1 8080,80
-    '''
+    """
 
     DEFAULT_PORTS = ['21', '22', '25', '80', '443', '3306']
 
     def api_is_open_port(self, target, ports):
-        '''
+        """
         If I have a way of telling if a port is open or not, for example
         using PHP's include() error messages, then I can perform a portscan
         by doing something similar to:
@@ -35,7 +35,7 @@ class portscan(Payload):
             open = self.shell.is_open_port( host, port )
             if open:
                 report_open( port )
-        '''
+        """
         ip_address_list = []
         if target != 'auto':
             ip_address_list = [target, ]

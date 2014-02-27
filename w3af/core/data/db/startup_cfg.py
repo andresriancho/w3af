@@ -1,4 +1,4 @@
-'''
+"""
 startup_cfg.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import ConfigParser
 
@@ -27,10 +27,10 @@ from w3af.core.controllers.misc.homeDir import get_home_dir
 
 
 class StartUpConfig(object):
-    '''
+    """
     Wrapper class for ConfigParser.ConfigParser.
     Holds the configuration for the VersionMgr update/commit process
-    '''
+    """
     CFG_FILE = os.path.join(get_home_dir(), 'startup.conf')
 
     ISO_DATE_FMT = '%Y-%m-%d'
@@ -57,15 +57,15 @@ class StartUpConfig(object):
     ### METHODS #
     
     def get_last_upd(self):
-        '''
+        """
         Getter method.
-        '''
+        """
         return self._lastupd
 
     def set_last_upd(self, datevalue):
-        '''
+        """
         :param datevalue: datetime.date value
-        '''
+        """
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
@@ -74,9 +74,9 @@ class StartUpConfig(object):
         return self._accepted_disclaimer
 
     def set_accepted_disclaimer(self, accepted_decision):
-        '''
+        """
         :param datevalue: datetime.date value
-        '''
+        """
         self._accepted_disclaimer = accepted_decision
         value = 'true' if accepted_decision else 'false'
         self._config.set(self._start_section, 'accepted-disclaimer',
@@ -99,9 +99,9 @@ class StartUpConfig(object):
         return self._autoupd
 
     def _load_cfg(self):
-        '''
+        """
         Loads configuration from config file.
-        '''
+        """
         config = self._config
         startsection = self._start_section
         if not config.has_section(startsection):
@@ -150,9 +150,9 @@ class StartUpConfig(object):
         return (auto_upd, freq, lastupd, lastrev, accepted_disclaimer)
 
     def save(self):
-        '''
+        """
         Saves current values to cfg file
-        '''
+        """
         with open(self._start_cfg_file, 'wb') as configfile:
             self._config.write(configfile)
     

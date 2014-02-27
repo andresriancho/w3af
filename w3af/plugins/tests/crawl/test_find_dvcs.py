@@ -1,4 +1,4 @@
-'''
+"""
 test_find_dvcs.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import w3af.core.data.constants.severity as severity
 
 from nose.plugins.attrib import attr
@@ -80,11 +80,11 @@ class TestFindDVCS(PluginTest):
 
     def test_ignore_file_two_files_comment(self):
         fdvcs = find_dvcs()
-        content = '''# Ignore these files
+        content = """# Ignore these files
         foo.txt
         bar*
         spam.eggs
-        '''
+        """
         files = fdvcs.ignore_file(content)
 
         self.assertEqual(files, set(['foo.txt', 'spam.eggs']))

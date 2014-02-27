@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-'''
+"""
 test_outputmanager.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 
 from mock import MagicMock, Mock
@@ -36,7 +36,7 @@ class TestOutputManager(unittest.TestCase):
                              'console', 'vulnerability')
 
     def test_output_plugins_actions(self):
-        '''Call all actions on output plugins'''
+        """Call all actions on output plugins"""
 
         msg = '<< SOME OUTPUT MESS@GE!! <<'
 
@@ -55,7 +55,7 @@ class TestOutputManager(unittest.TestCase):
             plugin_action.assert_called_once_with(msg, True)
 
     def test_output_plugins_actions_with_unicode_message(self):
-        '''Call all actions on output plugins using a unicode message'''
+        """Call all actions on output plugins using a unicode message"""
         msg = u'<< ÑñçÇyruZZ!! <<'
         utf8_encoded_msg = msg.encode('utf8')
 
@@ -74,16 +74,16 @@ class TestOutputManager(unittest.TestCase):
             plugin_action.assert_called_once_with(utf8_encoded_msg, True)
 
     def test_method_that_not_exists(self):
-        '''The output manager implements __getattr__ and we don't want it to
-        catch-all, just the ones I define!'''
+        """The output manager implements __getattr__ and we don't want it to
+        catch-all, just the ones I define!"""
         try:
             self.assertRaises(AttributeError, om.out.foobar, ('abc',))
         except AttributeError, ae:
             self.assertTrue(True, ae)
 
     def test_kwds(self):
-        '''The output manager implements __getattr__ with some added
-        functools.partial magic. This verifies that it works well with kwds'''
+        """The output manager implements __getattr__ with some added
+        functools.partial magic. This verifies that it works well with kwds"""
         msg = 'foo bar spam eggs'
         action = 'information'
 
@@ -101,8 +101,8 @@ class TestOutputManager(unittest.TestCase):
         plugin_action.assert_called_once_with(msg, False)
     
     def test_ignore_plugins(self):
-        '''The output manager implements ignore_plugins to avoid sending a
-        message to a specific plugin. Test this feature.'''
+        """The output manager implements ignore_plugins to avoid sending a
+        message to a specific plugin. Test this feature."""
         msg = 'foo bar spam eggs'
         action = 'information'
 

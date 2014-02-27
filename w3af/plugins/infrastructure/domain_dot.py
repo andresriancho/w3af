@@ -1,4 +1,4 @@
-'''
+"""
 domain_dot.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -30,12 +30,12 @@ from w3af.core.data.kb.info import Info
 
 
 class domain_dot(InfrastructurePlugin):
-    '''
+    """
     Send a specially crafted request with a dot after the domain
     (http://host.tld./) and analyze response.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -44,12 +44,12 @@ class domain_dot(InfrastructurePlugin):
         self._already_tested = set()
 
     def discover(self, fuzzable_request):
-        '''
+        """
         Sends the special request.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
-        '''
+        """
         domain = fuzzable_request.get_url().get_domain()
         extension = fuzzable_request.get_url().get_extension()
 
@@ -76,12 +76,12 @@ class domain_dot(InfrastructurePlugin):
                 self._analyze_response(original_response, response)
 
     def _analyze_response(self, original_resp, resp):
-        '''
+        """
         :param original_resp: The HTTPResponse object that holds the
                                   ORIGINAL response.
         :param resp: The HTTPResponse object that holds the content of
                          the response to analyze.
-        '''
+        """
         if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
             response_ids = [original_resp.id, resp.id]
             desc = '[Manual verification required] The response body for a ' \
@@ -98,10 +98,10 @@ class domain_dot(InfrastructurePlugin):
             kb.kb.append(self, 'domain_dot', i)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds misconfigurations in the virtual host settings by
         sending a specially crafted request with a trailing dot in the domain
         name. For example, if the input for this plugin is http://host.tld/ ,
@@ -111,4 +111,4 @@ class domain_dot(InfrastructurePlugin):
         application source code by requesting any of the files in the "dotted"
         domain like this:
             - http://host.tld/login.php
-        '''
+        """

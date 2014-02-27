@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class hostname(Payload):
-    '''
+    """
     This payload shows the server hostname
-    '''
+    """
     def api_read(self):
         result = {}
         result['hostname'] = []

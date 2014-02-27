@@ -1,4 +1,4 @@
-'''
+"""
 blank_body.py
 
 Copyright 2006 Andres Riancho
@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 
 
 class blank_body(GrepPlugin):
-    '''
+    """
     Find responses with empty body.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     METHODS = ('GET', 'POST')
     HTTP_CODES = (401, 304, 302, 301, 204)
@@ -37,13 +37,13 @@ class blank_body(GrepPlugin):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, find the blank bodies and report them.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if response.get_body() == '' and request.get_method() in self.METHODS\
         and response.get_code() not in self.HTTP_CODES\
         and 'location' not in response.get_lower_case_headers():
@@ -59,11 +59,11 @@ class blank_body(GrepPlugin):
             self.kb_append(self, 'blank_body', i)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds HTTP responses with a blank body, these responses may
         indicate errors or misconfigurations in the web application or the web
         server.
-        '''
+        """

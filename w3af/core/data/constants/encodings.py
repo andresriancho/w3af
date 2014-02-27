@@ -1,4 +1,4 @@
-'''
+"""
 encodings.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 UTF8 = 'utf-8'
 LATIN1 = 'latin1'
 DEFAULT_ENCODING = UTF8

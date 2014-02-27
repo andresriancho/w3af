@@ -1,4 +1,4 @@
-'''
+"""
 atHandler.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import w3afException
@@ -26,19 +26,19 @@ from w3af.core.controllers.intrusion_tools.delayedExecution import delayedExecut
 
 
 class atHandler(delayedExecution):
-    '''
+    """
     This class defines an "at" handler, that will:
         - add new commands to the crontab calculating time
         - return expected execution time
         - restore old crontab
-    '''
+    """
     def __init__(self, exec_method):
         self._exec_method = exec_method
 
     def can_delay(self):
-        '''
+        """
         :return: True if the remote user can add entries to his crontab
-        '''
+        """
         om.out.debug('[atHandler] Verifying if the remote user can run the at command.')
         res = self._exec('at')
 
@@ -48,9 +48,9 @@ class atHandler(delayedExecution):
             return True
 
     def add_to_schedule(self, command_to_exec):
-        '''
+        """
         Adds a command to the cron.
-        '''
+        """
         # Save this for later
         self._filename = command_to_exec.split(' ')[0]
 
@@ -78,7 +78,7 @@ class atHandler(delayedExecution):
             om.out.debug('Failed to remove task from "at" service.')
 
     def _create_at_command(self, time, command):
-        '''
+        """
         Creates an at command based on the time and command parameter.
 
         This is the format i'm expecting for the time parameter:
@@ -88,7 +88,7 @@ class atHandler(delayedExecution):
 
         :return: A tuple with the "at" command, and the time that it will take
                  to run the command.
-        '''
+        """
         res = 'at '
         try:
             time = time.split('\n')[0].split(':')[1:]

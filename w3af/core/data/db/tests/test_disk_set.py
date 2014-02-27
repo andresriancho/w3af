@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 Copyright 2012 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import threading
 

@@ -1,4 +1,4 @@
-'''
+"""
 find_dvcs.py
 
 Copyright 2011 Adam Baldwin
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import struct
 
 import w3af.core.controllers.output_manager as om
@@ -33,13 +33,13 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class find_dvcs(CrawlPlugin):
-    '''
+    """
     Search Git, Mercurial (HG), Bazaar (BZR), Subversion (SVN) and CVS
     repositories and checks for files containing
 
     :author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     :author: Tomas Velazquez (tomas.velazquezz - gmail.com)
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -91,12 +91,12 @@ class find_dvcs(CrawlPlugin):
         self._dvcs['cvs ignore']['function'] = self.ignore_file
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         For every directory, fetch a list of files and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
         if domain_path not in self._analyzed_dirs:
@@ -107,23 +107,23 @@ class find_dvcs(CrawlPlugin):
                                                test_generator)
 
     def _url_generator(self, domain_path):
-        '''
+        """
         Based on different URLs with directories, generate the URLs that need
         to be tested.
 
         :return: URLs
-        '''
+        """
         for repo in self._dvcs.keys():
             repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
             function = self._dvcs[repo]['function']
             yield repo_url, function, repo, domain_path
 
     def _clean_filenames(self, filenames):
-        '''
+        """
         Filter some characters from filenames.
 
         :return: A clear list of filenames.
-        '''
+        """
         resources = set()
 
         for line in filenames:
@@ -139,11 +139,11 @@ class find_dvcs(CrawlPlugin):
         return resources
 
     def _send_and_check(self, repo_url, repo_get_files, repo, domain_path):
-        '''
+        """
         Check if a repository index exists in the domain_path.
 
         :return: None, everything is saved to the self.out_queue.
-        '''
+        """
         http_response = self.http_get_and_parse(repo_url)
 
         if not is_404(http_response):
@@ -174,12 +174,12 @@ class find_dvcs(CrawlPlugin):
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def git_index(self, body):
-        '''
+        """
         Analyze the contents of the Git index and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
         signature = 'DIRC'
         offset = 12
@@ -210,12 +210,12 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def hg_dirstate(self, body):
-        '''
+        """
         Analyze the contents of the HG dirstate and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
         offset = 53
 
@@ -231,12 +231,12 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def bzr_checkout_dirstate(self, body):
-        '''
+        """
         Analyze the contents of the BZR dirstate and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
         header = '#bazaar dirstate flat format '
 
@@ -259,12 +259,12 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def svn_entries(self, body):
-        '''
+        """
         Analyze the contents of the SVN entries and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
         lines = body.split('\n')
         offset = 29
@@ -282,12 +282,12 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def cvs_entries(self, body):
-        '''
+        """
         Analyze the contents of the CVS entries and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
 
         for line in body.split('\n'):
@@ -300,13 +300,13 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def filter_special_character(self, line):
-        '''
+        """
         Analyze the possible regexp contents and extract filenames or
         directories without regexp.
 
         :param line: A regexp filename or directory.
         :return: A real filename or directory.
-        '''
+        """
         special_characters = ['*', '?', '[', ']', ':']
 
         for char in special_characters:
@@ -321,13 +321,13 @@ class find_dvcs(CrawlPlugin):
         return line
 
     def ignore_file(self, body):
-        '''
+        """
         Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file
         and extract filenames.
 
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
-        '''
+        """
         filenames = set()
         for line in body.split('\n'):
 
@@ -350,10 +350,10 @@ class find_dvcs(CrawlPlugin):
         return filenames
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin search git, hg, bzr, svn or cvs repositories and checks for files containing.
 
         For example, if the input is:
@@ -380,4 +380,4 @@ class find_dvcs(CrawlPlugin):
             - http://host.tld/.svnignore
             - http://host.tld/CVS/Entries
             - http://host.tld/.cvsignore
-        '''
+        """

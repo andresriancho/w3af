@@ -1,4 +1,4 @@
-'''
+"""
 OutputPlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import inspect
 
 import w3af.core.data.constants.severity as severity
@@ -26,7 +26,7 @@ from w3af.core.controllers.plugins.plugin import Plugin
 
 
 class OutputPlugin(Plugin):
-    '''
+    """
     This is the base class for data output, all output plugins should inherit
     from it and implement the following methods :
         1. debug( message, verbose )
@@ -35,7 +35,7 @@ class OutputPlugin(Plugin):
         4. vulnerability( message, verbose )
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         Plugin.__init__(self)
 
@@ -43,67 +43,67 @@ class OutputPlugin(Plugin):
         return 'output'
 
     def debug(self, message, new_line=True):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action for debug messages.
 
         :return: No value is returned.
-        '''
+        """
         raise NotImplementedError
 
     def information(self, message, new_line=True):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action for information messages.
 
         :return: No value is returned.
-        '''
+        """
         raise NotImplementedError
 
     def error(self, message, new_line=True):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
 
         :return: No value is returned.
-        '''
+        """
         raise NotImplementedError
 
     def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action for vulnerability messages.
 
         :return: No value is returned.
-        '''
+        """
         raise NotImplementedError
 
     def console(self, message, new_line=True):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action for console messages.
 
         :return: No value is returned.
-        '''
+        """
         raise NotImplementedError
 
     def log_http(self, request, response):
-        '''
+        """
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
         action to log HTTP requests and responses.
 
         :return: No value is returned.
-        '''
+        """
         pass
 
     def log_enabled_plugins(self, enabledPluginsDict, pluginOptionsDict):
-        '''
+        """
         This method logs to the output plugins the enabled plugins and their configuration.
 
         :param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
@@ -112,27 +112,27 @@ class OutputPlugin(Plugin):
 
         :param pluginOptionsDict: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
-        '''
+        """
         pass
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be
         run before the current one.
-        '''
+        """
         return []
 
     def _clean_string(self, string_to_clean):
-        '''
+        """
         :param string_to_clean: A string that should be cleaned before using
                                 it in a message object.
-        '''
+        """
         for char, replace in [('\0', '\\0'), ('\t', '\\t')]:  # ('\n','\\n'),('\r','\\r'),
             string_to_clean = string_to_clean.replace(char, replace)
         return string_to_clean
 
     def get_caller(self, which_stack_item=4):
-        '''
+        """
         What I'm going to do is:
             - inspect the stack and try to find a reference to a plugin
             - if a plugin is the caller, then i'll return something like audit.xss
@@ -152,7 +152,7 @@ class OutputPlugin(Plugin):
         >>> bop.get_caller()
         'doctest'
 
-        '''
+        """
         try:
             the_stack = inspect.stack()
 
@@ -173,7 +173,7 @@ class OutputPlugin(Plugin):
             return 'unknown-caller'
 
     def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
-        '''
+        """
         :return: A string with the information about enabled plugins and their
                  options.
 
@@ -181,7 +181,7 @@ class OutputPlugin(Plugin):
         :param plugins_list: A list of the names of the plugins of
                                  plugin_type that are enabled.
         :param plugins_options: The options for the plugins
-        '''
+        """
         response = ''
 
         # Only work if something is enabled

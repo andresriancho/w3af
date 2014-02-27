@@ -1,4 +1,4 @@
-'''
+"""
 config.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.menu import menu
@@ -28,11 +28,11 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class ConfigMenu(menu):
-    '''
+    """
     Generic menu for configuring the configurable items.
     It is used to configure plugins and set url and misc settings.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
 
     def __init__(self, name, console, w3af, parent, configurable):
         menu.__init__(self, 'config:' + name, console, w3af, parent)

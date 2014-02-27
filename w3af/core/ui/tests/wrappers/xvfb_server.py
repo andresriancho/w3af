@@ -1,4 +1,4 @@
-'''
+"""
 xvfb_server.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import subprocess
 import commands
 import shutil
@@ -32,14 +32,14 @@ from w3af.core.ui.tests.wrappers.utils import restore_original_display
 
 
 class XVFBServer(threading.Thread):
-    '''
+    """
     This class is a wrapper that helps me start/stop a Xvfb server and allows
     me to run any X client in it.
 
     For running LDTP tests we need to run Gnome (which actually provides the a11y
     features). Gnome is started once the Xvfb is ready and all the Gnome stuff
     is handled in gnome.py
-    '''
+    """
     WIDTH = 1024
     HEIGTH = 768
 
@@ -77,10 +77,10 @@ class XVFBServer(threading.Thread):
         return False
 
     def start_sync(self):
-        '''Launch the xvfb process and wait for it to start the X server
+        """Launch the xvfb process and wait for it to start the X server
 
         :return: True if the server is started.
-        '''
+        """
         i = 0
         self.start()
 
@@ -126,7 +126,7 @@ class XVFBServer(threading.Thread):
         return False
 
     def __del__(self):
-        '''Just in case, restore the DISPLAY to the original value again'''
+        """Just in case, restore the DISPLAY to the original value again"""
         try:
             self.stop()
             restore_original_display()
@@ -134,7 +134,7 @@ class XVFBServer(threading.Thread):
             pass
 
     def run_x_process(self, cmd, block=False, display=DISPLAY):
-        '''
+        """
         Run a new process (in most cases one that will open an X window) within
         the xvfb instance.
 
@@ -145,7 +145,7 @@ class XVFBServer(threading.Thread):
                       yet inside the xvfb and checks being run on them.
         :return: True if the process was run. Please note that the method will
                  return True for commands that do not exist, fail, etc.
-        '''
+        """
         if not self.is_running():
             return False
 
@@ -163,13 +163,13 @@ class XVFBServer(threading.Thread):
         return True
 
     def get_screenshot(self):
-        '''
+        """
         Verify useful for debugging! When a test does NOT pass we can take a
         screenshot of the current virtual X environment and "attach" it to the error
         log.
 
         Note: This requires Xvfb to be started with -fbdir
-        '''
+        """
         output_fname = None
 
         if self.is_running():
@@ -188,10 +188,10 @@ class XVFBServer(threading.Thread):
         return output_fname
 
     def start_vnc_server(self):
-        '''
+        """
         Starts a VNC server that will show what's being displayed in our Xvfb
         (magic++).
-        '''
+        """
         if self.is_running():
             args = ('x11vnc -display %s -shared -forever' % DISPLAY,)
             th = threading.Thread(target=commands.getoutput, args=args)
@@ -202,9 +202,9 @@ class XVFBServer(threading.Thread):
             return True
 
     def start_vnc_client(self):
-        '''
+        """
         Requires "sudo apt-get install xvnc4viewer"
-        '''
+        """
         if not self.vnc_server_running:
             self.start_vnc_server()
             time.sleep(3)

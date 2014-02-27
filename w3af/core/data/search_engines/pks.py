@@ -1,4 +1,4 @@
-'''
+"""
 pks.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -29,22 +29,22 @@ from w3af.core.data.parsers.url import URL
 
 
 class pks(SearchEngine):
-    '''
+    """
     This class is a wrapper for doing PKS searches on the MIT PKS server.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, uri_opener):
         SearchEngine.__init__(self)
         self._uri_opener = uri_opener
 
     def search(self, hostname):
-        '''
+        """
         Searches a PKS server, and returns all emails related to hostname.
 
         :param hostname: The hostname from which we want to get emails from.
-        '''
+        """
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'\
                   ' name (as returned by URL.get_root_domain).'

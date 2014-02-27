@@ -1,4 +1,4 @@
-'''
+"""
 fingerprint_os.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -30,10 +30,10 @@ from w3af.core.data.parsers.url import URL
 
 
 class fingerprint_os(InfrastructurePlugin):
-    '''
+    """
     Fingerprint the remote operating system using the HTTP protocol.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -41,24 +41,24 @@ class fingerprint_os(InfrastructurePlugin):
         self._exec = True
 
     def discover(self, fuzzable_request):
-        '''
+        """
         It calls the "main" and writes the results to the kb.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         if not self._exec:
             raise w3afRunOnce()
 
         self._exec = not self._find_OS(fuzzable_request)
 
     def _find_OS(self, fuzzable_request):
-        '''
+        """
         Analyze responses and determine if remote web server runs on windows
         or *nix.
 
         @Return: None, the knowledge is saved in the knowledgeBase
-        '''
+        """
         freq_url = fuzzable_request.get_url()
         filename = freq_url.get_file_name()
         dirs = freq_url.get_directories()[:-1]  # Skipping "domain level" dir.
@@ -96,10 +96,10 @@ class fingerprint_os(InfrastructurePlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin fingerprints the remote web server and tries to determine the
         Operating System family (Windows, Unix, etc.).
 
@@ -108,4 +108,4 @@ class fingerprint_os(InfrastructurePlugin):
         input URL is http://host.tld/abc/def.html then the plugin verifies if the
         response for that resource and the http://host.tld/abc\\def.html is the same;
         which indicates that the server is running Windows.
-        '''
+        """

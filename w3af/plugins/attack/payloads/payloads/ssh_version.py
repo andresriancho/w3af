@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class ssh_version(Payload):
-    '''
+    """
     This payload shows the current SSH Server Version
-    '''
+    """
     def api_read(self):
         result = {}
         result['ssh_version'] = ''

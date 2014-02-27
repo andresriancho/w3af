@@ -1,4 +1,4 @@
-'''
+"""
 fingerprint_404.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import cgi
@@ -40,11 +40,11 @@ IS_EQUAL_RATIO = 0.90
 
 
 class fingerprint_404(object):
-    '''
+    """
     Read the 404 page(s) returned by the server.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     _instance = None
 
@@ -76,12 +76,12 @@ class fingerprint_404(object):
         self._worker_pool = worker_pool
 
     def generate_404_knowledge(self, url):
-        '''
+        """
         Based on a URL, request something that we know is going to be a 404.
         Afterwards analyze the 404's and summarise them.
 
         :return: A list with 404 bodies.
-        '''
+        """
         #
         #    This is the case when nobody has properly configured
         #    the object in order to use it.
@@ -150,10 +150,10 @@ class fingerprint_404(object):
 
     @retry(tries=2, delay=0.5, backoff=2)
     def _send_404(self, url404, store=True):
-        '''
+        """
         Sends a GET request to url404 and saves the response in self._response_body_list .
         :return: The HTTP response body.
-        '''
+        """
         # I don't use the cache, because the URLs are random and the only thing that
         # cache does is to fill up disk space
         response = self._uri_opener.GET(url404, cache=False, grep=False)
@@ -167,7 +167,7 @@ class fingerprint_404(object):
         return response
 
     def is_404(self, http_response):
-        '''
+        """
         All of my previous versions of is_404 were very complex and tried to
         struggle with all possible cases. The truth is that in most "strange"
         cases I was failing miserably, so now I changed my 404 detection once
@@ -185,7 +185,7 @@ class fingerprint_404(object):
 
         :param http_response: The HTTP response which we want to know if it
                                   is a 404 or not.
-        '''
+        """
         #
         #   First we handle the user configured exceptions:
         #
@@ -283,23 +283,23 @@ class fingerprint_404(object):
             return self._fingerprinted_as_200(http_response)
 
     def _fingerprinted_as_404(self, http_response):
-        '''
+        """
         Convenience function so that I don't forget to update the LRU
         :return: True
-        '''
+        """
         self.is_404_LRU[http_response.get_url().get_path()] = True
         return True
 
     def _fingerprinted_as_200(self, http_response):
-        '''
+        """
         Convenience function so that I don't forget to update the LRU
         :return: False
-        '''
+        """
         self.is_404_LRU[http_response.get_url().get_path()] = False
         return False
 
     def _single_404_check(self, http_response, html_body):
-        '''
+        """
         Performs a very simple check to verify if this response is a 404 or not.
 
         It takes the original URL and modifies it by pre-pending a "not-" to the
@@ -311,7 +311,7 @@ class fingerprint_404(object):
         :param html_body: The original HTML body after passing it by a cleaner
 
         :return: True if the original response was a 404 !
-        '''
+        """
         response_url = http_response.get_url()
         filename = response_url.get_file_name()
         if not filename:
@@ -350,7 +350,7 @@ def is_404(http_response):
 
 
 def get_clean_body(response):
-    '''
+    """
     @see: blind_sqli_response_diff.get_clean_body()
 
     Definition of clean in this method:
@@ -366,7 +366,7 @@ def get_clean_body(response):
 
     :param response: The HTTPResponse object to clean
     :return: A string that represents the "cleaned" response body of the response.
-    '''
+    """
 
     body = response.body
 

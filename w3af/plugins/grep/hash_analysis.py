@@ -1,4 +1,4 @@
-'''
+"""
 hash_analysis.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -27,11 +27,11 @@ from w3af.core.data.kb.info import Info
 
 
 class hash_analysis(GrepPlugin):
-    '''
+    """
     Identify hashes in HTTP responses.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -42,13 +42,13 @@ class hash_analysis(GrepPlugin):
         self._split_re = re.compile('[^\w]')
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, identify hashes in the HTTP response.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         # I know that by doing this I loose the chance of finding hashes in
         # PDF files, but... this is much faster
         if not response.is_text_or_html():
@@ -87,11 +87,11 @@ class hash_analysis(GrepPlugin):
                                                  response.get_url()) )
 
     def _has_hash_distribution(self, possible_hash):
-        '''
+        """
         :param possible_hash: A string that may be a hash.
         :return: True if the possible_hash has an equal (aprox.) distribution
         of numbers and letters and only has hex characters (0-9, a-f)
-        '''
+        """
         numbers = 0
         letters = 0
         for char in possible_hash:
@@ -117,11 +117,11 @@ class hash_analysis(GrepPlugin):
             return False
 
     def _get_hash_type(self, possible_hash):
-        '''
+        """
         :param possible_hash: A string that may be a hash.
         :return: The hash type if the string seems to be a md5 / sha1 hash.
         None otherwise.
-        '''
+        """
         # When adding something here, please review the code above where
         # we also check the length.
         hash_type_len = {
@@ -139,9 +139,9 @@ class hash_analysis(GrepPlugin):
         return None
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin identifies hashes in HTTP responses.
-        '''
+        """

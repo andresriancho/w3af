@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class running_honeypot(Payload):
-    '''
+    """
     This payload check if the server is a Honeypot or is running one.
-    '''
+    """
     def api_read(self):
         result = {}
         result['running_honeypot'] = False

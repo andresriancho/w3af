@@ -1,4 +1,4 @@
-'''
+"""
 php_eggs.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import hashlib
 
 from itertools import repeat, izip
@@ -36,10 +36,10 @@ from w3af.core.data.kb.info import Info
 
 
 class php_eggs(InfrastructurePlugin):
-    '''
+    """
     Fingerprint the PHP version using documented easter eggs that exist in PHP.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     PHP_EGGS = [('?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000', 'PHP Credits'),
                 ('?=PHPE9568F34-D428-11d2-A769-00AA001ACF42', 'PHP Logo'),
                 ('?=PHPE9568F35-D428-11d2-A769-00AA001ACF42', 'Zend Logo'),
@@ -787,13 +787,13 @@ class php_eggs(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Nothing strange, just do some GET requests to the eggs and analyze the
         response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         # Get the extension of the URL (.html, .php, .. etc)
         ext = fuzzable_request.get_url().get_extension()
 
@@ -816,10 +816,10 @@ class php_eggs(InfrastructurePlugin):
                 self._extract_version_from_egg(query_results)
 
     def _GET_php_eggs(self, fuzzable_request, ext):
-        '''
+        """
         HTTP GET the URLs for PHP Eggs
         :return: A list with the HTTP response objects
-        '''
+        """
         def http_get(fuzzable_request, (egg_url, egg_desc)):
             egg_URL = fuzzable_request.get_url().uri2url().url_join(egg_url)
             try:
@@ -848,7 +848,7 @@ class php_eggs(InfrastructurePlugin):
         return query_results
 
     def _are_php_eggs(self, query_results):
-        '''
+        """
         Now I analyze if this is really a PHP eggs thing, or simply a response that
         changes a lot on each request. Before, I had something like this:
 
@@ -856,7 +856,7 @@ class php_eggs(InfrastructurePlugin):
 
         But I got some reports about false positives with this approach, so now I'm
         changing it to something a little bit more specific.
-        '''
+        """
         images = 0
         not_images = 0
         for query_result in query_results:
@@ -886,10 +886,10 @@ class php_eggs(InfrastructurePlugin):
         return False
 
     def _extract_version_from_egg(self, query_results):
-        '''
+        """
         Analyzes the eggs and tries to deduce a PHP version number
         ( which is then saved to the kb ).
-        '''
+        """
         if not query_results:
             return None
         else:
@@ -946,17 +946,17 @@ class php_eggs(InfrastructurePlugin):
                 om.out.information(msg)
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['infrastructure.server_header']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin tries to find the documented easter eggs that exist in PHP
         and identifies the remote PHP version using the easter egg content.
         Known PHP easter eggs are visible in versions 4.0 - 5.4.
@@ -967,4 +967,4 @@ class php_eggs(InfrastructurePlugin):
             - http://php.net/?=PHPE9568F34-D428-11d2-A769-00AA001ACF42
             - http://php.net/?=PHPE9568F35-D428-11d2-A769-00AA001ACF42
             - http://php.net/?=PHPE9568F36-D428-11d2-A769-00AA001ACF42
-        '''
+        """

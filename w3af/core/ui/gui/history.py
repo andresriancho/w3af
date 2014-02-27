@@ -1,4 +1,4 @@
-'''
+"""
 history.py
 
 Copyright 2007 Andres Riancho
@@ -17,19 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import cPickle
 import operator
 import os
 
 
 class HistorySuggestion(object):
-    '''Handles the history of any text, providing suggestions.
+    """Handles the history of any text, providing suggestions.
 
     :param filename: Name of the file where the info is stored
 
     It's also responsible of loading and saving the info in a file.
-    '''
+    """
     def __init__(self, filename):
         self.filename = filename
         self.history = {}
@@ -48,20 +48,20 @@ class HistorySuggestion(object):
             fileh.close()
 
     def get_texts(self):
-        '''Provides the texts, ordered by relevance.
+        """Provides the texts, ordered by relevance.
 
         :return: a generator with the texts
-        '''
+        """
         info = sorted(
             self.history.items(), key=operator.itemgetter(1), reverse=True)
         return [k for k, v in info]
 
     def insert(self, newtext):
-        '''Inserts new text to the history.'''
+        """Inserts new text to the history."""
         self.history[newtext] = self.history.get(newtext, 0) + 1
 
     def save(self):
-        '''Saves the history information.'''
+        """Saves the history information."""
         fileh = open(self.filename, "w")
         cPickle.dump(self.history, fileh)
         fileh.close()

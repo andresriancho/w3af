@@ -1,4 +1,4 @@
-'''
+"""
 mangle.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -40,13 +40,13 @@ class MangleHandler(urllib2.BaseHandler):
         self._plugin_list = plugin_list
 
     def _urllibReq2fr(self, request):
-        '''
+        """
         Convert a urllib2 request object to a FuzzableRequest.
         Used in http_request.
 
         :param request: A urllib2 request obj.
         :return: A FuzzableRequest.
-        '''
+        """
         headers = request.headers
         headers.update(request.unredirected_hdrs)
         fr = FuzzableRequest(request.url_object,
@@ -56,13 +56,13 @@ class MangleHandler(urllib2.BaseHandler):
         return fr
 
     def _fr2urllibReq(self, fuzzable_request, orig_req):
-        '''
+        """
         Convert a FuzzableRequest to a urllib2 request object.
         Used in http_request.
 
         :param fuzzable_request: A FuzzableRequest.
         :return: A urllib2 request obj.
-        '''
+        """
         host = fuzzable_request.get_url().get_domain()
 
         if fuzzable_request.get_method().upper() == 'GET':
@@ -108,13 +108,13 @@ class MangleHandler(urllib2.BaseHandler):
         return response
 
     def _HTTPResponse2httplib(self, originalResponse, mangled_response):
-        '''
+        """
         Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse
         subclass that I created in keepalive.
 
         :param HTTPResponse: HTTPResponse.HTTPResponse object
         :return: httplib.httpresponse subclass
-        '''
+        """
         ka_resp = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
                                  strict=0, method=None)
         ka_resp.set_body(mangled_response.get_body())

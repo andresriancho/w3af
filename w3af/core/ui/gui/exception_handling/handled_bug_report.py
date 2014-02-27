@@ -1,4 +1,4 @@
-'''
+"""
 handled_bug_report.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.controllers.exception_handling.helpers import gettempdir
@@ -27,14 +27,14 @@ from w3af.core.ui.gui.exception_handling.common_windows import (simple_base_wind
 
 
 class bug_report_window(simple_base_window, github_multi_bug_report):
-    '''
+    """
     The first window that the user sees when the scan finished and there were
     exceptions raised and captured by the new exception handler.
 
     Please note that in this case we're reporting ONE or MORE exceptions
     and then we simply forget about them. Completely different from what you can
     see in unhandled.py .
-    '''
+    """
 
     def __init__(self, w3af_core, title):
         simple_base_window.__init__(self)

@@ -1,4 +1,4 @@
-'''
+"""
 basic_auth.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import base64
 
 import w3af.core.controllers.output_manager as om
@@ -32,20 +32,20 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class basic_auth(BruteforcePlugin):
-    '''
+    """
     Bruteforce HTTP basic authentication.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         BruteforcePlugin.__init__(self)
 
     def audit(self, freq):
-        '''
+        """
         Tries to bruteforce a basic HTTP auth. This is not fast!
 
         :param freq: A FuzzableRequest
-        '''
+        """
         auth_url_list = [i.get_url().get_domain_path() for i in
                                  kb.kb.get('http_auth_detect', 'auth')]
 
@@ -67,13 +67,13 @@ class basic_auth(BruteforcePlugin):
                     'No more user/password combinations available.')
 
     def _brute_worker(self, url, combination):
-        '''
+        """
         Try a user/password combination with HTTP basic authentication against
         a specific URL.
 
         :param url: A string representation of an URL
         :param combination: A tuple that contains (user,pass)
-        '''
+        """
         # Remember that this worker is called from a thread which lives in a
         # threadpool. If the worker finds something, it has to let the rest know
         # and the way we do that is by setting self._found.
@@ -115,19 +115,19 @@ class basic_auth(BruteforcePlugin):
                                          severity=v.get_severity())
 
     def end(self):
-        '''
+        """
         Configure the main urllib with the newly found credentials.
-        '''
+        """
         for v in kb.kb.get('basic_auth', 'auth'):
             self._uri_opener.settings.set_basic_auth(v.get_url(),
                                                      v['user'],
                                                      v['pass'])
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin bruteforces basic authentication logins.
 
         Nine configurable parameters exist:
@@ -152,4 +152,4 @@ class basic_auth(BruteforcePlugin):
 
         The "stopOnFirst" parameter indicates if the bruteforce will stop when
         finding the first valid credentials or not.
-        '''
+        """

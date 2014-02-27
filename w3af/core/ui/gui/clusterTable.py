@@ -1,4 +1,4 @@
-'''
+"""
 clusterTable.py
 
 Copyright 2008 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 import threading
@@ -33,11 +33,11 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 class ClusterCellWindow(entries.RememberingWindow):
 
     def __init__(self, w3af, data=[]):
-        '''
+        """
         A window that stores the clusterCellData and the level changer.
 
         :param data: A list with the HTTPResponse objects to be clustered.
-        '''
+        """
         # First we save the data
         self._data = data
         self.w3af = w3af
@@ -153,9 +153,9 @@ class ClusterCellWindow(entries.RememberingWindow):
 class clusterCellData(gtk.TreeView):
 
     def __init__(self, data, level=50):
-        '''
+        """
         :param clusteredData: A list of objects that are clustered.
-        '''
+        """
         # Save the data
         self._data = data
 
@@ -209,14 +209,14 @@ class clusterCellData(gtk.TreeView):
             self.liststore.append(i)
 
     def _relative_levenshtein(self, a, b):
-        '''
+        """
         Computes the relative levenshtein distance between two strings. It is
         in the range (0-1] where 1 means total equality.
 
         :param a: HTTPResponse object
         :param b: HTTPResponse object
         :return: A float with the distance
-        '''
+        """
         # After some tests I realized that the amount of calls to this method
         # was HUGE. It seems that python-cluster compares each pair (a,b) more
         # than once!! So I implemented this ratio cache...
@@ -282,7 +282,7 @@ class clusterCellData(gtk.TreeView):
         self.connect("row-activated", self.handle_double_click)
 
     def _parse(self, clusteredData):
-        '''
+        """
         Takes a list like this one:
             [1 , 3, [4,5], [4, 5, 5], 9 ]
 
@@ -299,7 +299,7 @@ class clusterCellData(gtk.TreeView):
               ['', '', 5, 5, ''],
               ['', '', '', 5, '']
             ]
-        '''
+        """
         # First we find the largest list inside the original list
         larger_list = [len(i) for i in clusteredData if isinstance(
             i, type([]))]
@@ -384,9 +384,9 @@ class clusterCellData(gtk.TreeView):
         print 'I should show the data for', currentId, 'in a different window.'
 
     def _getInfoForId(self, id):
-        '''
+        """
         :return: A string with information about the request with id == id
-        '''
+        """
         try:
             obj = [i for i in self._data if i.get_id() == int(id)][0]
         except Exception, e:

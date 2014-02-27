@@ -1,4 +1,4 @@
-'''
+"""
 test_dir_file_bruter.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 
 from nose.plugins.attrib import attr
@@ -139,9 +139,9 @@ class TestDirFileBruter(PluginTest):
     
     @attr('ci_fails')
     def test_no_index(self):
-        '''
+        """
         :see: test_directories , EXPECTED_URLS
-        '''
+        """
         raise SkipTest('FIXME: The index/ in EXPECTED_URLS is a bug!')
 
     @attr('ci_fails')

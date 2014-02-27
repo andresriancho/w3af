@@ -1,4 +1,4 @@
-'''
+"""
 export_requests.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -32,11 +32,11 @@ from w3af.core.data.request.WebServiceRequest import WebServiceRequest
 
 
 class export_requests(OutputPlugin):
-    '''
+    """
     Export the fuzzable requests found during crawl to a file.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -49,9 +49,9 @@ class export_requests(OutputPlugin):
     information = error = console = debug = log_enabled_plugins = do_nothing
 
     def end(self):
-        '''
+        """
         Exports a list of fuzzable requests to the user configured file.
-        '''
+        """
         fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
         
         filename = os.path.expanduser(self.output_file)
@@ -73,7 +73,7 @@ class export_requests(OutputPlugin):
             print msg
 
     def set_options(self, option_list):
-        '''
+        """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using
@@ -82,13 +82,13 @@ class export_requests(OutputPlugin):
         This method MUST be implemented on every plugin.
 
         :return: No value is returned.
-        '''
+        """
         self.output_file = option_list['output_file'].get_value()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'The name of the output file where the HTTP requests will be saved'
@@ -98,14 +98,14 @@ class export_requests(OutputPlugin):
         return ol
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin exports all discovered HTTP requests (URL, Method, Params)
         to the given file (CSV) which can then be imported in another scan by
         using the crawl.import_results.
 
         One configurable parameter exists:
             - output_file
-        '''
+        """

@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class route(Payload):
-    '''
+    """
     This payload shows the IP Routing Table.
-    '''
+    """
     def api_read(self):
         result = {}
         result['route'] = []

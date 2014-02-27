@@ -1,4 +1,4 @@
-'''
+"""
 get_local_ip.py
 
 Copyright 2009 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 
 
 def get_local_ip(target=None):
-    '''
+    """
     Get the "public" IP address without sending any packets.
 
     :param target: Since the host might have different interfaces,
@@ -31,7 +31,7 @@ def get_local_ip(target=None):
     not just the "default gateway" IP address.
 
     :return: The IP address.
-    '''
+    """
     connect_target = '4.4.4.2' if target is None else target
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

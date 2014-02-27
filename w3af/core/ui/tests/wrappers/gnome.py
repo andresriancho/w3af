@@ -1,4 +1,4 @@
-'''
+"""
 gnome.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import tempfile
 import commands
@@ -28,7 +28,7 @@ from w3af.core.ui.tests.wrappers.constants import DISPLAY
 
 
 class Gnome(XVFBServer):
-    '''
+    """
     This class runs all the required commands to have a working Gnome
     environment within a Xvfb; which is required to be able to have a11y
     features, which are needed for LDTP to work.
@@ -39,7 +39,7 @@ class Gnome(XVFBServer):
         * http://mago.ubuntu.com/Documentation/RunningOnHudson
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
-    '''
+    """
     XINITRC = os.path.join(ROOT_PATH, 'core', 'ui', 'tests', 'wrappers',
                            'gnome.xinitrc')
 

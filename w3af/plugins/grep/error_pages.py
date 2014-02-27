@@ -1,4 +1,4 @@
-'''
+"""
 error_pages.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.data.esmre.multi_in import multi_in
@@ -28,11 +28,11 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 class error_pages(GrepPlugin):
-    '''
+    """
     Grep every page for error pages.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     ERROR_PAGES = (
         '<H1>Error page exception</H1>',
@@ -143,13 +143,13 @@ class error_pages(GrepPlugin):
         self._compiled_regex = []
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, find the error pages and report them.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -174,10 +174,10 @@ class error_pages(GrepPlugin):
             break
 
     def find_version_numbers(self, request, response):
-        '''
+        """
         Now i'll check if I can get a version number from the error page
         This is common in apache, tomcat, etc...
-        '''
+        """
         if response.get_code() > 400 and\
         response.get_code() < 600:
 
@@ -199,10 +199,10 @@ class error_pages(GrepPlugin):
                     self._already_reported_versions.append(match_string)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin scans every page for error pages, and if possible extracts
         the web server or programming framework information.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 helpers.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 
 # This module is a collection of useful code snippets for the GTK gui
 
@@ -34,23 +34,23 @@ from w3af.core.ui.gui.constants import W3AF_ICON
 
 
 class PropagateBuffer(object):
-    '''Buffer to don't propagate signals when it's not necessary.
+    """Buffer to don't propagate signals when it's not necessary.
 
     :param target: the target to alert when the change *is* propagated.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, target):
         self.target = target
         self.alerted = {}
         self.last_notified = None
 
     def change(self, widg, status):
-        '''A change enters the buffer.
+        """A change enters the buffer.
 
         :param widg: the widget that changed
         :param status: the new status of the widget
-        '''
+        """
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
             return
@@ -67,13 +67,13 @@ class PropagateBuffer(object):
 
 
 class PropagateBufferPayload(object):
-    '''Equal to PropagateBuffer, but sending a payload
+    """Equal to PropagateBuffer, but sending a payload
 
     :param target: the target to alert when the change *is* propagated.
     :param payload: anything to transmit
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, target, *payload):
         self.target = target
         self.alerted = {}
@@ -81,11 +81,11 @@ class PropagateBufferPayload(object):
         self.payload = payload
 
     def change(self, widg, status):
-        '''A change enters the buffer.
+        """A change enters the buffer.
 
         :param widg: the widget that changed
         :param status: the new status of the widget
-        '''
+        """
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
             return
@@ -102,7 +102,7 @@ class PropagateBufferPayload(object):
 
 
 def clean_description(desc):
-    '''Cleans a description.
+    """Cleans a description.
 
     Normally a plugin generates these descriptions with a lot of
     spaces at the begining of each line; this function tries to
@@ -114,7 +114,7 @@ def clean_description(desc):
     :return The cleaned description
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     return textwrap.dedent(desc)
 
 
@@ -124,14 +124,14 @@ _threadPool = []
 
 
 def end_threads():
-    '''This function must be called once when the GUI shuts down'''
+    """This function must be called once when the GUI shuts down"""
     for t in _threadPool:
         t.my_thread_ended = True
         t.join()
 
 
 class RegistThread(threading.Thread):
-    '''Class to provide registered threads.
+    """Class to provide registered threads.
 
     If the class that inherits this will get locked listening a queue, it
     should pass it here, at thread termination it will receive there a
@@ -144,7 +144,7 @@ class RegistThread(threading.Thread):
     bool attribute.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self):
         _threadPool.append(self)
         self.my_thread_ended = False
@@ -161,21 +161,21 @@ class RegistThread(threading.Thread):
 
 
 def FriendlyExceptionDlg(message):
-    '''Creates the dialog showing the message.
+    """Creates the dialog showing the message.
 
     :param message: text received in the friendly exception.
-    '''
+    """
     class w3af_message_dialog(gtk.MessageDialog):
         def dialog_response_cb(self, widget, response_id):
-            '''
+            """
             http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
-            '''
+            """
             self.destroy()
 
         def dialog_run(self):
-            '''
+            """
             http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
-            '''
+            """
             if not self.modal:
                 self.set_modal(True)
             self.connect('response', self.dialog_response_cb)
@@ -190,18 +190,18 @@ def FriendlyExceptionDlg(message):
 
 
 class _Wrapper(object):
-    '''Wraps a call to the Core.
+    """Wraps a call to the Core.
 
     If the core raises a friendly exception, it's not propagated but
     shown the message in a pop up.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, friendly):
         self.friendly = friendly
 
     def __call__(self, func, *args, **kwargs):
-        '''Apply the wrap.'''
+        """Apply the wrap."""
         try:
             return func(*args, **kwargs)
         except Exception, err:
@@ -217,7 +217,7 @@ coreWrap = _Wrapper(w3afException)
 
 
 class IteratedQueue(RegistThread):
-    '''Transform a Queue into a generator.
+    """Transform a Queue into a generator.
 
     The queue is supervised inside a thread, and all the elements are
     taken and stored in a internal list; these elements can be consulted
@@ -228,7 +228,7 @@ class IteratedQueue(RegistThread):
     :param queue: The queue to supervise.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     CLEANUP_NUM = 1000
 
     def __init__(self, queue):
@@ -240,7 +240,7 @@ class IteratedQueue(RegistThread):
         RegistThread.__init__(self)
 
     def run(self):
-        '''The initial function of the thread.'''
+        """The initial function of the thread."""
         while not self.my_thread_ended:
             try:
                 msg = self.inputqueue.get(timeout=1)
@@ -250,7 +250,7 @@ class IteratedQueue(RegistThread):
                 self.repository.append(msg)
 
     def get(self, start_idx=0):
-        '''Serves the elements taken from the queue.'''
+        """Serves the elements taken from the queue."""
         if start_idx > len(self.repository):
             start_idx = len(self.repository)
 
@@ -286,19 +286,19 @@ class IteratedQueue(RegistThread):
 
 
 class BroadcastWrapper(object):
-    '''Broadcast methods access to several widgets.
+    """Broadcast methods access to several widgets.
 
     Wraps objects to be able to have n widgets, and handle them
     as one.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, *values):
         self.initvalues = values
         self.widgets = []
 
     def __addWidget(self, widg):
-        '''Adds the widget to broadcast.'''
+        """Adds the widget to broadcast."""
         self.widgets.append(widg)
 
     def __getattr__(self, attr):
@@ -319,16 +319,16 @@ event_types = [i for i in vars(gtk.gdk).values() if type(i)
 
 
 def debugHandler(widget, event, *a):
-    '''Just connect it to the 'event' event.'''
+    """Just connect it to the 'event' event."""
     if event.type in event_types:
         print event.type.value_nick
 
 
 class Throbber(gtk.ToolButton):
-    '''Creates the throbber widget.
+    """Creates the throbber widget.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self):
         self.img_static = gtk.Image()
         self.img_static.set_from_file(os.path.join(GUI_DATA_PATH, 'throbber_static.gif'))
@@ -342,7 +342,7 @@ class Throbber(gtk.ToolButton):
         self.show()
 
     def running(self, spin):
-        '''Returns if running.'''
+        """Returns if running."""
         if spin:
             self.set_icon_widget(self.img_animat)
         else:
@@ -350,11 +350,11 @@ class Throbber(gtk.ToolButton):
 
 
 def loadImage(filename, path=GUI_DATA_PATH):
-    '''Loads a pixbuf from disk.
+    """Loads a pixbuf from disk.
 
     :param filename: the file name, full path
     @returns: The pixbuf from the image.
-    '''
+    """
     im = gtk.Image()
     filename = os.path.join(path, filename)
     im.set_from_file(filename)
@@ -363,7 +363,7 @@ def loadImage(filename, path=GUI_DATA_PATH):
 
 
 def loadIcon(stock_item_id):
-    '''Loads an icon to show it in the GUI. The following directories are
+    """Loads an icon to show it in the GUI. The following directories are
     searched in order to get the icon, if not found a missing-image.png
     is returned.
         * core/data/ui/gui/data/icons/<size>/<stock_item_id>
@@ -371,7 +371,7 @@ def loadIcon(stock_item_id):
 
     :param stock_item_id: Stock item id string
     :return: The icon's pixbuf
-    '''
+    """
     stock_item = getattr(gtk, stock_item_id)
 
     local_icon = os.path.join(GUI_DATA_PATH, 'icons', '16', '%s.png' % stock_item)
@@ -391,13 +391,13 @@ def loadIcon(stock_item_id):
 
 
 class SensitiveAnd(object):
-    ''''AND's some sensitive info for a widget.
+    """'AND's some sensitive info for a widget.
 
     If all says it should be enable it is. If only one says it shouldn't
     it's off.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, target, falseDefaults=None):
         if falseDefaults is None:
             falseDefaults = []
@@ -405,7 +405,7 @@ class SensitiveAnd(object):
         self.opinions = dict.fromkeys(falseDefaults, False)
 
     def set_sensitive(self, how, whosays=None):
-        '''Sets the sensitivity of the target.'''
+        """Sets the sensitivity of the target."""
         self.opinions[whosays] = how
         sensit = all(self.opinions.values())
         self.target.set_sensitive(sensit)
@@ -433,10 +433,10 @@ KB_COLORS = ["black", "orange", "red", "red"]
 
 
 def open_help(chapter=''):
-    '''Opens the help file in user's preferred browser.
+    """Opens the help file in user's preferred browser.
 
     :param chapter: the chapter of the help, optional.
-    '''
+    """
     if chapter:
         chapter = '#' + chapter
     helpfile = os.path.join(
@@ -480,9 +480,9 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
         return True
 
     def draw(self):
-        '''
+        """
         Draw the string representation to the DrawingArea
-        '''
+        """
         if self.window is None:
             return
 

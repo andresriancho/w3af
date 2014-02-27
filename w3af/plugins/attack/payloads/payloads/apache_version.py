@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_version(Payload):
-    '''
+    """
     This payload shows Apache Version
-    '''
+    """
     def api_read(self):
         result = {}
         result['version'] = []

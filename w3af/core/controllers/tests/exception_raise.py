@@ -1,4 +1,4 @@
-'''
+"""
 exception_raise.py
 
 Copyright 2012 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 
 
 class exception_raise(CrawlPlugin):
-    '''
+    """
     This is a test plugin that will simply raise an exception
     
     Only useful for testing, see test_w3afcore.py
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     # pylint: disable=E1102
     exception_to_raise = None
     

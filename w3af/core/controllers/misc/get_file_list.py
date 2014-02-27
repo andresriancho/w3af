@@ -1,4 +1,4 @@
-'''
+"""
 get_file_list.py
 
 Copyright 2006 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 
 def get_file_list(directory, extension='.py'):
-    '''
+    """
     :return: A list of the files that are present in @directory and match
              @extension. The files returned won't have an extension.
 
@@ -32,7 +32,7 @@ def get_file_list(directory, extension='.py'):
     >>> 'sqli' in fname_list
     True
 
-    '''
+    """
     filename_list = []
 
     for f in os.listdir(directory):

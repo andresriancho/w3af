@@ -6,21 +6,21 @@ from w3af.core.ui.console.tables import table
 
 
 class pixy(Payload):
-    '''
+    """
     Downloads the remote source code and performs SCA using pixy.
 
     Usage: pixy <local_temp_directory> <pixy_tool_location>
     Example: payload pixy /tmp/mirror/ ~/tools/pixy/
-    '''
+    """
 
     def api_read(self, local_temp_dir, pixy_location):
-        '''
+        """
         :return: A dict with {'<vuln-type>': ['filename:line-number']}
 
         <vuln-type> is one of:
             - XSS
             - SQLi
-        '''
+        """
         self.result = {}
 
         #
@@ -48,9 +48,9 @@ class pixy(Payload):
         #    Analyze it with Pixy :)
         #
         def extract_info(pixy_output):
-            '''
+            """
             Extract info from :param pixy_output and save it to self.result.
-            '''
+            """
             splitted_output = pixy_output.split('\n')
 
             for line_number, line in enumerate(splitted_output):

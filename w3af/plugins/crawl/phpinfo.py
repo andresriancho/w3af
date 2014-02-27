@@ -1,4 +1,4 @@
-'''
+"""
 phpinfo.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from itertools import repeat, izip
@@ -37,15 +37,15 @@ from w3af.core.data.kb.info import Info
 
 
 class phpinfo(CrawlPlugin):
-    '''
+    """
     Search PHP Info file and if it finds it will determine the version of PHP.
     :author: Viktor Gazdag ( woodspeed@gmail.com )
-    '''
+    """
 
-    '''
+    """
     CHANGELOG:
         Feb/17/2009- Added PHP Settings Audit Checks by Aung Khant (aungkhant[at]yehg.net)
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -55,12 +55,12 @@ class phpinfo(CrawlPlugin):
         self._has_audited = 0
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         For every directory, fetch a list of files and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         for domain_path in fuzzable_request.get_url().get_directories():
 
             if domain_path in self._analyzed_dirs:
@@ -74,10 +74,10 @@ class phpinfo(CrawlPlugin):
             self.worker_pool.map_multi_args(self._check_and_analyze, args)
 
     def _check_and_analyze(self, domain_path, php_info_filename):
-        '''
+        """
         Check if a php_info_filename exists in the domain_path.
         :return: None, everything is put() into the self.output_queue.
-        '''
+        """
         # Request the file
         php_info_url = domain_path.url_join(php_info_filename)
         try:
@@ -105,7 +105,7 @@ class phpinfo(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
 
-                '''
+                """
                 |Modified|
                 old: regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
                 new: regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
@@ -113,7 +113,7 @@ class phpinfo(CrawlPlugin):
                 by aungkhant - I've been seeing phpinfo pages which don't print php logo image.
                 One example, ning.com.
 
-                '''
+                """
                 regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1'\
                             ' class="p">PHP Version (.*?)</h1>'
                 php_version = re.search(regex_str, response.get_body(), re.I)
@@ -142,14 +142,14 @@ class phpinfo(CrawlPlugin):
                         self._has_audited = 1
 
     def audit_phpinfo(self, response):
-        '''
+        """
         Scan for insecure php settings
         :author: Aung Khant (aungkhant[at]yehg.net)
         :return none
 
         two divisions: vulnerable settings and useful informative settings
 
-        '''
+        """
 
         ##### [Vulnerable Settings] #####
 
@@ -591,9 +591,9 @@ class phpinfo(CrawlPlugin):
         ##### [/Useful Informative Settings] #####
 
     def _get_potential_phpinfos(self):
-        '''
+        """
         :return: Filename of the php info file.
-        '''
+        """
         res = ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php',
                'phpInfo.php', 'info.php', 'test.php?mode=phpinfo',
                'index.php?view=phpinfo', 'index.php?mode=phpinfo',
@@ -617,10 +617,10 @@ class phpinfo(CrawlPlugin):
         self._analyzed_dirs.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin searches for the PHP Info file in all the directories and
         subdirectories that are sent as input and if it finds it will try to
         determine the version of the PHP. The PHP Info file holds information
@@ -636,4 +636,4 @@ class phpinfo(CrawlPlugin):
 
         Once the phpinfo(); file is found the plugin also checks for probably
         insecure php settings and reports findings.
-        '''
+        """

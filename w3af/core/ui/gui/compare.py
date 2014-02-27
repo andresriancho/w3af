@@ -1,4 +1,4 @@
-'''
+"""
 compare.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import gtk
 import webbrowser
@@ -49,10 +49,10 @@ ui_menu = """
 
 
 class Compare(entries.RememberingWindow):
-    '''Compares two texts.
+    """Compares two texts.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, commHandler):
         entries.RememberingWindow.__init__(
             self, w3af, "compare", "w3af - Compare", "Comparing_HTTP_traffic",
@@ -182,20 +182,20 @@ class Compare(entries.RememberingWindow):
         self.show_all()
 
     def sensitive_all(self, how):
-        '''Sets the sensitivity of almost everything.
+        """Sets the sensitivity of almost everything.
 
         :param how: how to set it.
-        '''
+        """
         self.comp.set_sensitive(how)
         for widg in self.tbarwidgets:
             widg.set_sensitive(how)
         self.sendto_box.set_sensitive(how)
 
     def add_element(self, element):
-        '''Adds an element to the comparison.
+        """Adds an element to the comparison.
 
         :param element: the element to add.
-        '''
+        """
         self.elements.append(element)
         newlen = len(self.elements)
         self.showingPage = newlen - 1
@@ -220,7 +220,7 @@ class Compare(entries.RememberingWindow):
         self.pagesControl.set_page(newlen)
 
     def _delete(self, widg):
-        '''Deletes the page from the comparator.'''
+        """Deletes the page from the comparator."""
         del self.elements[self.showingPage]
         newlen = len(self.elements)
         self.pagesControl.activate(newlen)
@@ -239,7 +239,7 @@ class Compare(entries.RememberingWindow):
         self.comp.set_right_pane(title, realtext)
 
     def _getElementText(self, element=None):
-        '''Returns the text of the element.'''
+        """Returns the text of the element."""
         if element is None:
             element = self.elements[self.showingPage]
         (reqhead, reqbody, httpResp) = element
@@ -257,13 +257,13 @@ class Compare(entries.RememberingWindow):
         return title, realtext
 
     def _rightToLeft(self, widg):
-        '''Sets the right text in the left pane for comparison.'''
+        """Sets the right text in the left pane for comparison."""
         self.leftElement = self.elements[self.showingPage]
         title, realtext = self._getElementText()
         self.comp.set_left_pane(title, realtext)
 
     def _pageChange(self, page):
-        '''Change the selected page.'''
+        """Change the selected page."""
         self.showingPage = page
         title, realtext = self._getElementText()
         self.comp.set_right_pane(title, realtext)
@@ -291,7 +291,7 @@ class Compare(entries.RememberingWindow):
         webbrowser.open("file://" + helpfile)
 
     def _clearAll(self, action):
-        '''Clear all the panes.'''
+        """Clear all the panes."""
         self.elements = []
         self.comp.set_left_pane("", "")
         self.comp.set_right_pane("", "")
@@ -302,7 +302,7 @@ class Compare(entries.RememberingWindow):
         self.clusterbut.set_sensitive(False)
 
     def _send_requests(self, widg, edittype, paneside):
-        '''Send the request to the manual or fuzzy request window.'''
+        """Send the request to the manual or fuzzy request window."""
         func = dict(manual=ManualRequests,
                     fuzzy=FuzzyRequests)[edittype]
         if paneside == "left":
@@ -313,7 +313,7 @@ class Compare(entries.RememberingWindow):
         func(self.w3af, (reqhead, reqbody))
 
     def _sendCluster(self, widg):
-        '''Send the request to the cluster window.'''
+        """Send the request to the cluster window."""
         data = [r[2] for r in self.elements if r[2] is not None]
 
         if data:

@@ -1,4 +1,4 @@
-'''
+"""
 feeds.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -26,11 +26,11 @@ from w3af.core.data.kb.info import Info
 
 
 class feeds(GrepPlugin):
-    '''
+    """
     Grep every page and finds rss, atom, opml feeds.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -43,13 +43,13 @@ class feeds(GrepPlugin):
         self._tag_xpath = etree.XPath('//rss | //feed | //opml')
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, find feeds.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         dom = response.get_dom()
         uri = response.get_uri()
 
@@ -76,12 +76,12 @@ class feeds(GrepPlugin):
             self.kb_append_uniq(self, 'feeds', i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page and finds rss, atom, opml feeds on them.
         This may be usefull for determining the feed generator and with that,
         the framework being used. Also this will be helpful for testing feed
         injection.
-        '''
+        """

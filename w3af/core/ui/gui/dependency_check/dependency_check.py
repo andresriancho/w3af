@@ -1,4 +1,4 @@
-'''
+"""
 dependency_check.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check as mdep_check
@@ -30,7 +30,7 @@ from .platforms.current_platform import (SYSTEM_NAME,
 
 
 def dependency_check():
-    '''
+    """
     This dependency check function uses the information stored in the platforms
     module to call the function in core.controllers.dependency_check which
     actually checks for the dependencies.
@@ -39,7 +39,7 @@ def dependency_check():
     based on the data stored in core.controllers.dependency_check.platforms,
     we extend() the lists present in the base module before passing them to
     mdep_check() 
-    '''
+    """
     should_exit = mdep_check(pip_packages=PIP_PACKAGES,
                              system_packages=SYSTEM_PACKAGES,
                              system_name=SYSTEM_NAME,

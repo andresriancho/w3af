@@ -1,4 +1,4 @@
-'''
+"""
 x_forwarded_for.py
 
 Copyright 2013 Andres Riancho
@@ -18,34 +18,34 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import random
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 
 
 class x_forwarded_for(EvasionPlugin):
-    '''
+    """
     Add an X-Forwarded-For header with random IP to every request.
 
     @author: m3tamantra (m3tamantra@gmail.com )
-    '''
+    """
     def __init__(self):
         EvasionPlugin.__init__(self)
         
-        '''
+        """
         random.seed(..) is used to generate the same IP addresses in every scan
         otherwise the plugin could generate false negatives
         (scan #1 finds bug because of some specific IP it's sent in the header; 
         and then scan #2 doesn't send the same IP and the bug is not found).
-        '''
+        """
         self.random = random.Random()
         self.random.seed(42)
         
     def modify_request(self, request):
-        '''
+        """
         Add X-Forwarded-For header if the request doesn't have one
-        '''
+        """
         if not request.has_header('X-forwarded-for'):
             request.add_header('X-forwarded-for', self.get_random_ip())
         return request
@@ -60,7 +60,7 @@ class x_forwarded_for(EvasionPlugin):
         return 86
     
     def get_long_desc(self):
-        return '''
+        return """
         This plugin adds an X-Forwarded-For header to every request (except when
         it already has one). It generates a new random IP for every request.
         The plugin can be handy if the target has some kind of "one request per
@@ -82,4 +82,4 @@ class x_forwarded_for(EvasionPlugin):
                 GET / HTTP/1.1
                 ...
                 X-Forwarded-For: 34.21.66.xx
-        '''
+        """

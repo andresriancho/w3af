@@ -1,4 +1,4 @@
-'''
+"""
 MutantXMLRPC.py
 
 Copyright 2009 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 
 
 class MutantXMLRPC(PostDataMutant):
-    '''
+    """
     This class is a XMLRPC mutant.
 
     *** IMPORTANT ***
     Not in use in any section of the code!
     *** IMPORTANT ***
-    '''
+    """
     def __init__(self, freq):
         PostDataMutant.__init__(self, freq)
 
@@ -43,13 +43,13 @@ class MutantXMLRPC(PostDataMutant):
         return headers
 
     def found_at(self):
-        '''
+        """
         I had to implement this again here instead of just inheriting from
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
 
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         res = ''
         res += '"' + self.get_url() + '", using HTTP method '
         res += self.get_method() + '. The sent JSON-data was: "'

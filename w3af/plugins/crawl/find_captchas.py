@@ -1,4 +1,4 @@
-'''
+"""
 find_captchas.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import hashlib
 
 from collections import namedtuple
@@ -35,10 +35,10 @@ from w3af.core.data.kb.info import Info
 
 
 class find_captchas(CrawlPlugin):
-    '''
+    """
     Identify captcha images on web pages.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -46,12 +46,12 @@ class find_captchas(CrawlPlugin):
         self._captchas_found = DiskSet()
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         Find CAPTCHA images.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         result, captchas = self._identify_captchas(fuzzable_request)
         
         if result:
@@ -67,14 +67,14 @@ class find_captchas(CrawlPlugin):
                 om.out.information(i.get_desc())
 
     def _identify_captchas(self, fuzzable_request):
-        '''
+        """
         :return: A tuple with the following information:
                     * True indicating that the page has CAPTCHAs
                     * A list with tuples that contain:
                         * The CAPTCHA image source
                         * The http responses used to verify that the image was
                           indeed a CAPTCHA
-        '''
+        """
         found_captcha = False
         captchas = []
         
@@ -119,12 +119,12 @@ class find_captchas(CrawlPlugin):
         
 
     def _get_images(self, fuzzable_request):
-        '''
+        """
         Get all img tags and retrieve the src.
 
         :param fuzzable_request: The request to modify
         :return: A list with tuples containing (img_src, image_hash, http_response)
-        '''
+        """
         res = []
 
         try:
@@ -160,11 +160,11 @@ class find_captchas(CrawlPlugin):
         self._captchas_found.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds any CAPTCHA images that appear on a HTML document. The
         crawl is performed by requesting the document two times, and comparing
         the image hashes, if they differ, then they may be a CAPTCHA.
-        '''
+        """

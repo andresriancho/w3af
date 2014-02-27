@@ -1,4 +1,4 @@
-'''
+"""
 w3afAgentManager.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import time
 import socket
@@ -37,13 +37,13 @@ from w3af.core.controllers.intrusion_tools.execMethodHelpers import get_remote_t
 
 
 class w3afAgentManager(Process):
-    '''
+    """
     Start a w3afAgent, to do this, I must transfer the agent client to the
     remote end and start the w3afServer in this local machine.
 
     This is a Process, so the entry point is start() , which will
     internally call the run() method.
-    '''
+    """
     def __init__(self, exec_method, ip_address, socks_port=1080):
         Process.__init__(self)
         self.daemon = True
@@ -57,18 +57,18 @@ class w3afAgentManager(Process):
         self._agent_server = None
 
     def _exec(self, command):
-        '''
+        """
         A wrapper for executing commands
-        '''
+        """
         om.out.debug('Executing: ' + command)
         response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 
     def run(self):
-        '''
+        """
         Entry point for the whole process.
-        '''
+        """
 
         # First, I have to check if I have a good w3afAgentClient to send to the
         # other end...
@@ -172,10 +172,10 @@ class w3afAgentManager(Process):
             dH.restore_old_schedule()
 
     def _select_client(self):
-        '''
+        """
         This method selects the w3afAgent client to use based on the remote OS and some other factors
         like having a working python installation.
-        '''
+        """
         python = self._exec('which python')
         python = python.strip()
 
@@ -194,9 +194,9 @@ class w3afAgentManager(Process):
         return interpreter, file_content, extension
 
     def _is_locally_available(self, port):
-        '''
+        """
         :return: True if the current user can bind to the specified port.
-        '''
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         try:

@@ -6,19 +6,19 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class w3af_agent(Payload):
-    '''
+    """
     This payload starts a w3af agent that allows you to route TCP traffic through
     the compromised host.
 
     Usage: w3af_agent <your_ip_address>
-    '''
+    """
     def api_execute(self, ip_address):
-        '''
+        """
         Start a w3afAgent, to do this, I must transfer the agent client to the
         remote end and start the w3afServer in this local machine
         all this work is done by the w3afAgentManager, I just need to called
         start and thats it.
-        '''
+        """
         if not is_ip_address(ip_address):
             ValueError('Invalid IP address: "%s"' % ip_address)
 

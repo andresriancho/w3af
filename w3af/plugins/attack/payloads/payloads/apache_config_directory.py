@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_config_directory(Payload):
-    '''
+    """
     This payload finds Apache's config directories.
-    '''
+    """
     def fname_generator(self):
         def parse_apache2_init(apache_file_read):
             directory = re.search('(?<=APACHE_PID_FILE needs to be defined in )(.*?)envvars', apache_file_read)

@@ -1,4 +1,4 @@
-'''
+"""
 github_issues.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import string
 import hashlib
 import time
@@ -31,7 +31,7 @@ from w3af.core.controllers.exception_handling.helpers import get_versions
 
 
 TICKET_TEMPLATE = string.Template(
-'''# User description
+"""# User description
 $user_desc
 # Version Information
 ```
@@ -44,7 +44,7 @@ $t_back
 # Enabled Plugins
 ```
 $plugins
-```''')
+```""")
 
 TICKET_URL_FMT = 'https://github.com/andresriancho/w3af/issues/%s'
 
@@ -110,10 +110,10 @@ class GithubIssues(object):
 
     def _build_summary_and_desc(self, summary, desc, tback,
                                 fname, plugins, autogen, email):
-        '''
+        """
         Build the formatted summary and description that will be
         part of the reported bug.
-        '''
+        """
         #
         #    Define which summary to use
         #

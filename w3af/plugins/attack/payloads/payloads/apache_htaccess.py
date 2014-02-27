@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_htaccess(Payload):
-    '''
+    """
     This payload shows Apache distributed configuration files (.htaccess & .htpasswd)
-    '''
+    """
     def api_read(self):
         result = {}
         result['htaccess_files'] = {}

@@ -1,4 +1,4 @@
-'''
+"""
 extrusionServer.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import socket
 import time
 
@@ -35,15 +35,15 @@ import w3af.core.data.kb.config as cf
 
 
 class extrusionServer(object):
-    '''
+    """
     This class defines a simple server that listens on the current interface for connections
     made from the extrusionClient.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, tcp_ports, udp_ports, host=None, iface=None):
-        '''
+        """
         If you don't know what the IP address used by the remote host is
         (the one thats running the extrusionClient ) you can just say None
         and the extrusionServer will try to figure it out.
@@ -51,7 +51,7 @@ class extrusionServer(object):
         :param host: The host from where we expect the connections
         :param portList: The portList ( as passed to extrusionClient ) to listen for
         :param iface: The interface where scapy is going to listen for packets
-        '''
+        """
         self._host = host
         self._udp_ports = udp_ports
         self._tcp_ports = tcp_ports
@@ -69,10 +69,10 @@ class extrusionServer(object):
                     'Failed to bind extrusionServer to an interface.')
 
     def can_sniff(self):
-        '''
+        """
         Determine if the user running w3af can sniff packets on the configured
         interface.
-        '''
+        """
         try:
             p = sniff(filter='port 53', iface=self._iface, timeout=0.3)
         except Exception:
@@ -81,9 +81,9 @@ class extrusionServer(object):
             return True
 
     def sniff_and_analyze(self):
-        '''
+        """
         Performs the sniffing
-        '''
+        """
         # Create the filter
         all_ports = self._tcp_ports[:]
         all_ports.extend(self._udp_ports)
@@ -112,10 +112,10 @@ class extrusionServer(object):
         return self.reverse_ports_allowed
 
     def _analyze_packets_no_host(self, packets):
-        '''
+        """
         Analyze a list of packets for interesting traffic when the host is
         unknown.
-        '''
+        """
         # This is hard to do...
         possible_packets = []
         possible_hosts = {}
@@ -177,11 +177,11 @@ class extrusionServer(object):
         return good_ports
 
     def _analyze_packets_with_host(self, packets):
-        '''
+        """
         When the host is known it is easier to identify which packets arrived
         from it and which ports are the ones that can be used for reverse shell
         connections.
-        '''
+        """
         good_ports = []
 
         for p in packets:
@@ -200,10 +200,10 @@ class extrusionServer(object):
         return good_ports
 
     def _analyze_packets(self, packets):
-        '''
+        """
         Analyze the packets and return a list of ports that can be used by the
         remote host to connect back to the extrusionServer.
-        '''
+        """
         if not packets:
             om.out.debug('No packets captured by scapy.')
             return []

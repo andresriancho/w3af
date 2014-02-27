@@ -1837,8 +1837,8 @@ class UnicodeDammit:
         return self.markup
 
     def _toUnicode(self, data, encoding):
-        '''Given a string and its encoding, decodes the string into Unicode.
-        %encoding is a string recognized by encodings.aliases'''
+        """Given a string and its encoding, decodes the string into Unicode.
+        %encoding is a string recognized by encodings.aliases"""
 
         # strip Byte Order Mark (if present)
         if (len(data) >= 4) and (data[:2] == '\xfe\xff') \

@@ -1,4 +1,4 @@
-'''
+"""
 help.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os.path
 
 from string import Template
@@ -40,11 +40,11 @@ from w3af import ROOT_PATH
 
 
 class helpRepository(object):
-    '''
+    """
     This class wraps a help file and allows to extract context-related help objects
 
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     
     DEFAULT_PATH = os.path.join(ROOT_PATH, 'core', 'ui', 'console', 'help.xml')
     
@@ -56,13 +56,13 @@ class helpRepository(object):
             self.__map[str(t.attrib['name'])] = t
 
     def load_help(self, topic, obj=None, vars=None):
-        '''
+        """
         Loads an object from the repository.
         :param topic: the name of a context (for example, menu)
         :param obj: the help object where to load the help data
         (if None, a new one is created)
         :param vars: a dict of variables to replace in the help text
-        '''
+        """
 
         #a closure to simplify the substitution
         def subst(templ):
@@ -109,21 +109,21 @@ helpMainRepository = helpRepository()
 
 
 class HelpContainer(object):
-    '''
+    """
     Container for help items.
-    '''
+    """
     def __init__(self):
         self._table = {}
         self._subj2Gat = {}
         self._cat2Subj = {}
 
     def add_help_entry(self, subj, content, cat=''):
-        '''
+        """
         Adds the help entry.
         :param content: usually a tuple like (head, body)
         :param cat: a name of the category.
         If the item exists in an other category, it will be replaced.
-        '''
+        """
 
         if type(content) not in (tuple, list):
             content = (content, None)
@@ -155,14 +155,14 @@ class HelpContainer(object):
         return self._table.keys()
 
     def get_plain_help_table(self, separators=True, cat=None):
-        '''
+        """
         Returns a table of format 'subject -> head'
         to display with the table.py module
         :param separators: if True, the categories are separated
         by extra line.
         :param cat: category to include into the page.
         If None, all are included.
-        '''
+        """
         result = []
 
         if cat is not None:

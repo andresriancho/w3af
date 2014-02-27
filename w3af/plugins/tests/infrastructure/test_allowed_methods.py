@@ -1,4 +1,4 @@
-'''
+"""
 test_allowed_methods.py
 
 Copyright 2012 Andres Riancho
@@ -17,18 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')
 class TestAllowedMethods(PluginTest):
-    '''
+    """
     Note that this is a smoke test because the code in allowed_methods calls
     custom/special methods on the remote server using ExtendedUrllib and that's something
     we want to make sure works.
-    '''
+    """
     modsecurity_url = 'http://modsecurity/'
     moth_url = 'http://moth/'
 
@@ -41,9 +41,9 @@ class TestAllowedMethods(PluginTest):
 
     @attr('ci_fails')
     def test_moth(self):
-        '''
+        """
         test_moth in test_allowed_methods, test the "default" configuration for Apache+PHP.
-        '''
+        """
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
 
@@ -61,12 +61,12 @@ class TestAllowedMethods(PluginTest):
 
     @attr('ci_fails')
     def test_modsecurity(self):
-        '''
+        """
         test_modsecurity in test_allowed_methods, test a different configuration:
             RewriteEngine on
             RewriteCond %{THE_REQUEST} !^(POST|GET)\ /.*\ HTTP/1\.1$
             RewriteRule .* - [F]
-        '''
+        """
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
 

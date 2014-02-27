@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
+"""
 test_is_source_file.py
 
 Copyright 2012 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.controllers.misc.is_source_file import is_source_file

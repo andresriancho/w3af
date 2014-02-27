@@ -1,4 +1,4 @@
-'''
+"""
 opt_factory.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.options.bool_option import BoolOption
 from w3af.core.data.options.integer_option import IntegerOption
 from w3af.core.data.options.float_option import FloatOption
@@ -41,10 +41,10 @@ from w3af.core.data.options.option_types import (
 
 
 def opt_factory(name, default_value, desc, _type, help='', tabid=''):
-    '''
+    """
     A factory function which will generate one of the Option objects based
     on the _type passed as parameter.
-    '''
+    """
     option_klasses = {
         BOOL: BoolOption,
         INT: IntegerOption,

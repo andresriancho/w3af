@@ -1,4 +1,4 @@
-'''
+"""
 clamav.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import threading
 import clamd
 
@@ -37,12 +37,12 @@ from w3af.core.data.options.option_types import STRING
 
 
 class clamav(GrepPlugin):
-    '''
+    """
     Uses ClamAV to identify malware on your site.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     :sponsor: Andri Herumurti (http://scoresecure.com/)
-    '''
+    """
 
     METHODS = ('GET',)
     HTTP_CODES = (200,)
@@ -58,7 +58,7 @@ class clamav(GrepPlugin):
         self._clamd_socket = '/var/run/clamav/clamd.ctl'
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, send HTTP response bodies to ClamAV in an async
         way in order to avoid any delays in our process.
         
@@ -72,7 +72,7 @@ class clamav(GrepPlugin):
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not self._is_properly_configured():
             return
         
@@ -85,9 +85,9 @@ class clamav(GrepPlugin):
                                      callback=self._report_result)
 
     def _is_properly_configured(self):
-        '''
+        """
         :return: True if the plugin can connect to the ClamAV daemon.
-        '''
+        """
         with self._config_check_lock:
             if self._properly_configured is not None:
                 # Return the cached response
@@ -108,9 +108,9 @@ class clamav(GrepPlugin):
             return self._properly_configured
 
     def _connection_test(self):
-        '''
+        """
         :return: True if it was possible to connect to the configured socket
-        '''
+        """
         try:
             cd = self._get_connection()
             return cd.ping() == u'PONG'
@@ -118,29 +118,29 @@ class clamav(GrepPlugin):
             return False
     
     def _get_connection(self):
-        '''
+        """
         :return: A different connection for each time you call the method.
                  Thought about having a connection pool, but it doesn't make
                  much sense; plus it adds complexity due to the threads.
-        '''
+        """
         return clamd.ClamdUnixSocket(path=self._clamd_socket)
     
     def _get_clamd_version(self):
-        '''
+        """
         :return: A string which contains the ClamAV version.
-        '''
+        """
         cd = self._get_connection()
         return cd.version()
     
     def _scan_http_response(self, request, response):
-        '''
+        """
         Scans an HTTP response body for malware and stores any findings in
         the knowledge base.
         
         :param request: The HTTP request
         :param response: The HTTP response
         :return: None
-        '''
+        """
         body = str(response.get_body())
         
         try:
@@ -158,14 +158,14 @@ class clamav(GrepPlugin):
         return response, result
     
     def _report_result(self, (response, scan_result)):
-        '''
+        """
         This method stores the scan result in the KB, called as a callback for
         the _scan_http_response method.
         
         :param response: The HTTP response
         :param scan_result: The result object from _scan_http_response
         :return: None
-        '''
+        """
         if scan_result.found:
         
             desc = 'ClamAV identified malware at URL: "%s", the matched'\
@@ -178,12 +178,12 @@ class clamav(GrepPlugin):
             self.kb_append(self, 'malware', i)
 
     def _parse_scan_result(self, result):
-        '''
+        """
         {'stream': ('FOUND', 'Eicar-Test-Signature')}
         {u'stream': (u'OK', None)}
 
         :return: A namedtuple with the scan result
-        '''
+        """
         try:
             signature = result['stream'][1]
             found = result['stream'][0] == 'FOUND'
@@ -195,9 +195,9 @@ class clamav(GrepPlugin):
         self._clamd_socket = options_list['clamd_socket'].get_value()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'ClamAV daemon socket path'
@@ -211,10 +211,10 @@ class clamav(GrepPlugin):
         return ol
     
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         Uses ClamAV to identify malware in your site.
         
         In order to be able to successfully use this plugin, you'll have to
@@ -229,6 +229,6 @@ class clamav(GrepPlugin):
         configured by the user to point to the correct location.
        
         This plugin was sponsored by http://scoresecure.com/ .
-        '''
+        """
 
 ScanResult = namedtuple('ScanResult', ['found', 'signature'])

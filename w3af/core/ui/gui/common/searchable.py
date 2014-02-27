@@ -1,4 +1,4 @@
-'''
+"""
 searchable.py
 
 Copyright 2010 Andres Riancho
@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 from w3af.core.ui.gui.entries import SemiStockButton
 
 
 class Searchable(object):
-    '''Class that gives the machinery to search to a TextView.
+    """Class that gives the machinery to search to a TextView.
 
     Just inheritate it from the box that has the textview to extend.
 
@@ -32,7 +32,7 @@ class Searchable(object):
     :param small: True if the buttons will only have the icons
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, textview, small=False):
         self.textview = textview
         self.small = small
@@ -57,7 +57,7 @@ class Searchable(object):
         self._build_search(None)
 
     def _key(self, widg, event):
-        '''Handles keystrokes.'''
+        """Handles keystrokes."""
         # ctrl-something
         if event.state & gtk.gdk.CONTROL_MASK:
             if event.keyval == self.key_f:   # -f
@@ -79,7 +79,7 @@ class Searchable(object):
         return False
 
     def _populate_popup(self, textview, menu):
-        '''Populates the menu with the Find item.'''
+        """Populates the menu with the Find item."""
         menu.append(gtk.SeparatorMenuItem())
         opc = gtk.MenuItem(_("Find..."))
         menu.append(opc)
@@ -87,13 +87,13 @@ class Searchable(object):
         menu.show_all()
 
     def show_search(self, widget=None):
-        '''Shows the search tab.'''
+        """Shows the search tab."""
         self.srchtab.show_all()
         self.search_entry.grab_focus()
         self.searching = True
 
     def _build_search(self, widget):
-        '''Builds the search bar.'''
+        """Builds the search bar."""
         self.srchtab = gtk.HBox()
         # close button
         close = gtk.Image()
@@ -153,14 +153,14 @@ class Searchable(object):
         self.searching = False
 
     def _matchCase(self, widg):
-        '''
+        """
         Toggles self._matchCaseValue and searches again
-        '''
+        """
         self._matchCaseValue = not self._matchCaseValue
         self._find(None, 'find')
 
     def _find(self, widget, direction):
-        '''Actually find the text, and handle highlight and selection.'''
+        """Actually find the text, and handle highlight and selection."""
         # if not searching, don't do anything
         if not self.searching:
             return
@@ -230,13 +230,13 @@ class Searchable(object):
         return positions
 
     def _close(self, widget, event):
-        '''Hides the search bar, and cleans the background.'''
+        """Hides the search bar, and cleans the background."""
         self.srchtab.hide()
         self._clean()
         self.searching = False
 
     def _clean(self, tag='yellow-background'):
-        '''Cleans the entry colors.'''
+        """Cleans the entry colors."""
         # highlights
         (ini, fin) = self.textbuf.get_bounds()
         self.textbuf.remove_tag_by_name(tag, ini, fin)

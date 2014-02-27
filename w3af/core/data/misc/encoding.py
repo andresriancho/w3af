@@ -1,4 +1,4 @@
-'''
+"""
 encoding.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import codecs
 import urllib
 import chardet
@@ -30,9 +30,9 @@ HTML_ENCODE = 'html_encode_char'
 
 
 def _return_html_encoded(encodingexc):
-    '''
+    """
     :return: &#xff when input is \xff
-    '''
+    """
     st = encodingexc.start
     en = encodingexc.end
     hex_encoded = "".join(hex(ord(c))[2:] for c in encodingexc.object[st:en])
@@ -41,9 +41,9 @@ def _return_html_encoded(encodingexc):
 
 
 def _return_escaped_char(encodingexc):
-    '''
+    """
     :return: \\xff when input is \xff
-    '''
+    """
     st = encodingexc.start
     en = encodingexc.end
 
@@ -107,14 +107,14 @@ def smart_str(s, encoding='utf-8', errors='strict'):
 
 
 def is_known_encoding(encoding):
-    '''
+    """
     :return: True if the encoding name is known.
 
     >>> is_known_encoding( 'foo' )
     False
     >>> is_known_encoding( 'utf-8' )
     True
-    '''
+    """
     try:
         ''.decode(encoding)
     except LookupError:

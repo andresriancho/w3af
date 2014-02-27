@@ -1,4 +1,4 @@
-'''
+"""
 sqlmap.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import select
 import Queue
 import textwrap
@@ -36,10 +36,10 @@ from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
 
 class sqlmap(AttackPlugin):
-    '''
+    """
     Exploit web servers that have sql injection vulnerabilities using sqlmap.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AttackPlugin.__init__(self)
@@ -48,13 +48,13 @@ class sqlmap(AttackPlugin):
         self._sqlmap = None
 
     def get_attack_type(self):
-        '''
+        """
         :return: The type of exploit, SHELL, PROXY, etc.
-        '''
+        """
         return 'shell'
 
     def get_kb_location(self):
-        '''
+        """
         This method should return the vulnerability name (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds an
         vuln, and saves it as:
@@ -63,15 +63,15 @@ class sqlmap(AttackPlugin):
 
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
-        '''
+        """
         return ['sqli', 'blind_sqli']
 
     def _generate_shell(self, vuln_obj):
-        '''
+        """
         :param vuln_obj: The vuln to exploit.
         :return: The shell object based on the vulnerability that was passed as
                  a parameter.
-        '''
+        """
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
             # Create the shell object
@@ -82,11 +82,11 @@ class sqlmap(AttackPlugin):
             return None
 
     def _verify_vuln(self, vuln_obj):
-        '''
+        """
         This command verifies a vuln. This is really hard work! :P
 
         :return : True if vuln can be exploited.
-        '''
+        """
         uri = vuln_obj.get_uri()
         dc = vuln_obj.get_dc()
         
@@ -109,26 +109,26 @@ class sqlmap(AttackPlugin):
         return False
 
     def get_root_probability(self):
-        '''
+        """
         :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
-        '''
+        """
         return 0.8
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin exploits SQL injection vulnerabilities using sqlmap. For
         more information about sqlmap please visit:
         
             http://sqlmap.org/
-        '''
+        """
 
 class RunFunctor(Process):
     def __init__(self, functor, params):
@@ -218,16 +218,16 @@ class SQLMapShell(ReadShell):
         self.sqlmap.cleanup()
     
     def __repr__(self):
-        '''
+        """
         :return: A string representation of this shell.
-        '''
+        """
         return '<sqlmap shell object>'
     
     def identify_os(self):
-        '''
+        """
         Identify the remote operating system by reading different files from
         the OS.
-        '''
+        """
         self._rOS = read_os_detection(self.read)
         
         # TODO: Could we determine this by calling some payloads?
@@ -236,14 +236,14 @@ class SQLMapShell(ReadShell):
         self._rUser = 'sqlmap'
         
     def help(self, command):
-        '''
+        """
         Handle the help command.
-        '''
+        """
         if command in ('read', 'download'):
             return super(SQLMapShell, self).help(command)
         
         elif command == 'sqlmap':
-            _help = '''\
+            _help = """\
             sqlmap:
                 Run sqlmap and specify any extra parameters.
             
@@ -251,9 +251,9 @@ class SQLMapShell(ReadShell):
                 sqlmap -T users -D example_db --dump
                 sqlmap --tables
                 sqlmap --dbs
-            '''
+            """
         else:
-            _help = '''\
+            _help = """\
             Available commands:
                 help                            Display this information
                 
@@ -271,5 +271,5 @@ class SQLMapShell(ReadShell):
                                                 is an alias for "sqlmap --dbs".
                 
                 exit                            Exit this shell session
-            '''
+            """
         return textwrap.dedent(_help)

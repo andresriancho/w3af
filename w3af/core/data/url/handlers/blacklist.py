@@ -1,4 +1,4 @@
-'''
+"""
 blacklist.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 import urllib
 import cStringIO
@@ -49,12 +49,12 @@ class BlacklistHandler(urllib2.BaseHandler):
         self._non_targets.update([url.uri2url() for url in non_targets])
 
     def default_open(self, req):
-        '''
+        """
         If blacklisted return an empty response, else return None, which means
         that this handler was unable to handle the request and the next one
         needs to be called. With this we want to indicate that the keepalive
         handler will be called.
-        '''
+        """
         if self._is_blacklisted(req.url_object):
             nncr = new_no_content_resp(req.url_object)
             addinfo_inst = http_response_to_httplib(nncr)
@@ -65,10 +65,10 @@ class BlacklistHandler(urllib2.BaseHandler):
         return None
         
     def _is_blacklisted(self, uri):
-        '''
+        """
         If the user configured w3af to ignore a URL, we are going to be applying
         that configuration here. This is the lowest layer inside w3af.
-        '''
+        """
         if uri.uri2url() in self._non_targets:
             msg = 'The URL you are trying to reach (%s) was configured as a' \
                   'non-target. NOT performing the HTTP request and returning an' \

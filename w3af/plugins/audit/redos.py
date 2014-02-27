@@ -1,4 +1,4 @@
-'''
+"""
 redos.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.data.constants.severity as severity
@@ -33,21 +33,21 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class redos(AuditPlugin):
-    '''
+    """
     Find ReDoS vulnerabilities.
 
     :author: Sebastien Duquette ( sebastien.duquette@gmail.com )
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for ReDoS vulnerabilities using time delays.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         if self.ignore_this_request(freq):
             return
 
@@ -75,21 +75,21 @@ class redos(AuditPlugin):
                     break
 
     def get_delays(self):
-        '''
+        """
         IMPORTANT NOTE: I need different instances of the delay objects in
                         order to avoid any threading issues. 
-        '''
+        """
         return [ AproxDelay('%sX!',     'a', 10),
                  AproxDelay('a@a.%sX!', 'a', 10),
                  AproxDelay('%s9!',     '1', 10)]
                 
     def ignore_this_request(self, freq):
-        '''
+        """
         We know for a fact that PHP is NOT vulnerable to this attack
         TODO: Add other frameworks that are not vulnerable!
         
         :return: True if the request should be ignored.
-        '''
+        """
         if 'php' in freq.get_url().get_extension().lower():
             return True
         
@@ -111,18 +111,18 @@ class redos(AuditPlugin):
         return False
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
                  the current one.
-        '''
+        """
         return ['infrastructure.server_header']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds ReDoS (regular expression DoS) vulnerabilities as
         explained here:
             - http://en.wikipedia.org/wiki/ReDoS
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 http_daemon.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import SimpleHTTPServer
 import threading
 import SocketServer
@@ -69,10 +69,10 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         
 
 class HTTPDaemon(threading.Thread):
-    '''
+    """
     Trivial HTTP daemon that binds to an open port that can be retrieved by
     get_port()
-    '''
+    """
     
     def __init__(self):
         super(HTTPDaemon, self).__init__()

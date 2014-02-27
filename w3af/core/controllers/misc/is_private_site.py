@@ -1,4 +1,4 @@
-'''
+"""
 is_private_site.py
 
 Copyright 2008 Andres Riancho
@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import socket
 
 
 def is_private_site(domain_or_IP_address):
-    '''
+    """
     :param domain_or_IP_address: The domain or IP address that we want to check
     :return: Get the IP address of the domain, return True if its a private address.
-    '''
+    """
     if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
     re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
     re.match('(192\.168\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\

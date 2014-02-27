@@ -1,5 +1,5 @@
 # coding: utf-8
-'''
+"""
 html_comments.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import re
@@ -37,11 +37,11 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class html_comments(GrepPlugin):
-    '''
+    """
     Extract and analyze HTML comments.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
 
@@ -70,13 +70,13 @@ class html_comments(GrepPlugin):
         self._already_reported_interesting = ScalableBloomFilter()
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, parse those comments!
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -97,9 +97,9 @@ class html_comments(GrepPlugin):
                 self._html_in_comment(comment, request, response)
 
     def _interesting_word(self, comment, request, response):
-        '''
+        """
         Find interesting words in HTML comments
-        '''
+        """
         comment = comment.lower()
         for word in self._multi_in.query(comment):
             if (word, response.get_url()) not in self._already_reported_interesting:
@@ -120,9 +120,9 @@ class html_comments(GrepPlugin):
                                                         response.get_url()))
 
     def _html_in_comment(self, comment, request, response):
-        '''
+        """
         Find HTML code in HTML comments
-        '''
+        """
         html_in_comment = self.HTML_RE.search(comment)
         
         if html_in_comment and \
@@ -148,10 +148,10 @@ class html_comments(GrepPlugin):
                 (comment, response.get_url()))
 
     def _is_new(self, comment, response):
-        '''
+        """
         Make sure that we perform a thread safe check on the self._comments dict,
         in order to avoid duplicates.
-        '''
+        """
         with self._plugin_lock:
             
             #pylint: disable=E1103
@@ -170,10 +170,10 @@ class html_comments(GrepPlugin):
         return False
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
         :return: None
-        '''
+        """
         inform = []
         for comment in self._comments.iterkeys():
             urls_with_this_comment = self._comments[comment]
@@ -198,11 +198,11 @@ class html_comments(GrepPlugin):
         self._comments.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for HTML comments, special comments like
         the ones containing the words "password" or "user" are specially
         reported.
-        '''
+        """

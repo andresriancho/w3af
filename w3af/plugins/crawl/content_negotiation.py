@@ -1,4 +1,4 @@
-'''
+"""
 content_negotiation.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import re
 import Queue
@@ -38,10 +38,10 @@ from w3af.core.data.kb.info import Info
 
 
 class content_negotiation(CrawlPlugin):
-    '''
+    """
     Use content negotiation to find new resources.
     :author: Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -61,14 +61,14 @@ class content_negotiation(CrawlPlugin):
         self._tries_left = 3
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         1- Check if HTTP server is vulnerable
         2- Exploit using FuzzableRequest
         3- Perform bruteforce for each new directory
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                                     (among other things) the URL to test.
-        '''
+        """
         if self._content_negotiation_enabled is not None \
         and self._content_negotiation_enabled == False:
             return
@@ -97,13 +97,13 @@ class content_negotiation(CrawlPlugin):
                 self._bruteforce()
 
     def _find_new_resources(self, fuzzable_request):
-        '''
+        """
         Based on a request like http://host.tld/backup.php , this method will find
         files like backup.zip , backup.old, etc. Using the content negotiation
         technique.
 
         :return: A list of new fuzzable requests.
-        '''
+        """
         # Get the file name
         filename = fuzzable_request.get_url().get_file_name()
         if filename == '':
@@ -136,12 +136,12 @@ class content_negotiation(CrawlPlugin):
                     self.output_queue.put(fr)
 
     def _bruteforce(self):
-        '''
+        """
         Use some common words to bruteforce file names and find new resources.
         This process is done only once for every new directory.
 
         :return: A list of new fuzzable requests.
-        '''
+        """
         wl_url_generator = self._wordlist_url_generator()
         args_generator = izip(wl_url_generator, repeat(Headers()))
         # Send the requests using threads:
@@ -153,12 +153,12 @@ class content_negotiation(CrawlPlugin):
                 self.output_queue.put(fr)
 
     def _wordlist_url_generator(self):
-        '''
+        """
         Generator that returns alternate URLs to test by combining the following
         sources of information:
             - URLs in self._bruteforce
             - Words in the bruteforce wordlist file
-        '''
+        """
         while True:
             try:
                 bf_url = self._to_bruteforce.get_nowait()
@@ -176,7 +176,7 @@ class content_negotiation(CrawlPlugin):
                             yield directory_url.url_join(word)
 
     def _request_and_get_alternates(self, alternate_resource, headers):
-        '''
+        """
         Performs a request to an alternate resource, using the fake accept
         trick in order to retrieve the list of alternates, which is then
         returned.
@@ -184,7 +184,7 @@ class content_negotiation(CrawlPlugin):
         :return: A tuple with:
                     - alternate_resource parameter (unmodified)
                     - a list of strings containing the alternates.
-        '''
+        """
         headers['Accept'] = 'w3af/bar'
         response = self._uri_opener.GET(alternate_resource, headers=headers)
 
@@ -206,14 +206,14 @@ class content_negotiation(CrawlPlugin):
             return alternate_resource, []
 
     def _create_new_fuzzable_requests(self, base_url, alternates):
-        '''
+        """
         With a list of alternate files, I create new fuzzable requests
 
         :param base_url: http://host.tld/some/dir/
         :param alternates: ['backup.old', 'backup.asp']
 
         :return: A list of fuzzable requests.
-        '''
+        """
         result = []
         for alternate in alternates:
             # Get the new resource
@@ -225,13 +225,13 @@ class content_negotiation(CrawlPlugin):
         return result
 
     def _verify_content_neg_enabled(self, fuzzable_request):
-        '''
+        """
         Checks if the remote website is vulnerable or not. Saves the result in
         self._content_negotiation_enabled , because we want to perform this test
         only once.
 
         :return: True if vulnerable.
-        '''
+        """
         if self._content_negotiation_enabled is not None:
             # The test was already performed, we return the old response
             return self._content_negotiation_enabled
@@ -288,9 +288,9 @@ class content_negotiation(CrawlPlugin):
             return self._content_negotiation_enabled
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         d1 = 'Wordlist to use in the file name bruteforcing process.'
         o1 = opt_factory('wordlist', self._wordlist, d1, 'string')
 
@@ -299,22 +299,22 @@ class content_negotiation(CrawlPlugin):
         return ol
 
     def set_options(self, options_list):
-        '''
+        """
         This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
 
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
-        '''
+        """
         wordlist = options_list['wordlist'].get_value()
         if os.path.exists(wordlist):
             self._wordlist = wordlist
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin uses HTTP content negotiation to find new resources.
 
         The plugin has three distinctive phases:
@@ -334,4 +334,4 @@ class content_negotiation(CrawlPlugin):
 
         As far as I can tell, the first reference to this technique was written
         by Stefano Di Paola in his blog (http://www.wisec.it/sectou.php?id=4698ebdc59d15).
-        '''
+        """

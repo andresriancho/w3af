@@ -1,4 +1,4 @@
-'''
+"""
 server_header.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -27,10 +27,10 @@ from w3af.core.data.kb.info import Info
 
 
 class server_header(InfrastructurePlugin):
-    '''
+    """
     Identify the server type based on the server header.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -40,13 +40,13 @@ class server_header(InfrastructurePlugin):
         self._x_powered = True
 
     def discover(self, fuzzable_request):
-        '''
+        """
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
-        '''
+        """
         if self._server_header:
             self._server_header = False
             self._check_server_header(fuzzable_request)
@@ -55,9 +55,9 @@ class server_header(InfrastructurePlugin):
             self._check_x_power(fuzzable_request)
 
     def _check_server_header(self, fuzzable_request):
-        '''
+        """
         HTTP GET and analyze response for server header
-        '''
+        """
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
 
         for hname, hvalue in response.get_lower_case_headers().iteritems():
@@ -99,9 +99,9 @@ class server_header(InfrastructurePlugin):
             kb.kb.raw_write(self, 'server_string', '')
 
     def _check_x_power(self, fuzzable_request):
-        '''
+        """
         Analyze X-Powered-By header.
-        '''
+        """
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
 
         for header_name in response.get_headers().keys():
@@ -146,12 +146,12 @@ class server_header(InfrastructurePlugin):
                                         powered_by_in_kb)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin GETs the server header and saves the result to the knowledge base.
 
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
-        '''
+        """

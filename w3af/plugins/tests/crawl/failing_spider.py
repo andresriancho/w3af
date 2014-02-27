@@ -1,4 +1,4 @@
-'''
+"""
 failing_spider.py
 
 Copyright 2012 Andres Riancho
@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.plugins.crawl.web_spider import web_spider
 
 
 class failing_spider(web_spider):
-    '''
+    """
     This is a test plugin that will raise exceptions.
     Only useful for testing, see test_discover_exception_handling.py
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         web_spider.__init__(self)
@@ -36,10 +36,10 @@ class failing_spider(web_spider):
         self.blacklist = ('2.html',)
 
     def crawl(self, fuzzable_req):
-        '''
+        """
         Raises an exception if the fuzzable_req ends with something in the
         blacklist.
-        '''
+        """
         for ending in self.blacklist:
             if fuzzable_req.get_url().url_string.endswith(ending):
                 raise Exception('UnitTest')

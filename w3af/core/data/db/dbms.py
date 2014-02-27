@@ -1,4 +1,4 @@
-'''
+"""
 dbms.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import sys
@@ -103,9 +103,9 @@ class SQLiteDBMS(object):
 
     @verify_started
     def select(self, query, parameters=()):
-        '''
+        """
         I can't think about any non-blocking use of calling select()
-        '''
+        """
         future = self.sql_executor.select(query, parameters)
         return future.result()
 
@@ -130,7 +130,7 @@ class SQLiteDBMS(object):
         self.sql_executor.stop()
 
     def get_file_name(self):
-        '''Return DB filename.'''
+        """Return DB filename."""
         return self.filename
     
     def drop_table(self, name):
@@ -138,16 +138,16 @@ class SQLiteDBMS(object):
         return self.execute(query, commit=True)
     
     def clear_table(self, name):
-        '''
+        """
         Remove all rows from a table.
-        '''
+        """
         query = 'DELETE FROM %s WHERE 1=1' % name
         return self.execute(query, commit=True)
     
     def create_table(self, name, columns, pk_columns=()):
-        '''
+        """
         Create table in convenient way.
-        '''
+        """
         if not name:
             raise ValueError('create_table requires a table name')
         
@@ -179,12 +179,12 @@ class SQLiteDBMS(object):
         return bool(r)        
 
     def create_index(self, table, columns):
-        '''
+        """
         Create index for speed and performance
 
         :param table: The table from which you want to create an index from
         :param columns: A list of column names.
-        '''
+        """
         query = 'CREATE INDEX %s_index ON %s( %s )' % (table, table,
                                                        ','.join(columns))
 
@@ -192,10 +192,10 @@ class SQLiteDBMS(object):
 
 
 class SQLiteExecutor(Process):
-    '''
+    """
     A very simple thread that takes work via submit() and processes it in a
     different thread.
-    '''
+    """
     DEBUG = False
     
     def __init__(self, in_queue):
@@ -247,9 +247,9 @@ class SQLiteExecutor(Process):
     
     def setup(self, filename, autocommit=False, journal_mode="OFF",
               cache_size=2000):
-        '''
+        """
         Request the process to perform a setup.
-        '''
+        """
         future = Future()
         request = (SETUP,
                    (filename,),
@@ -293,7 +293,7 @@ class SQLiteExecutor(Process):
         self.cursor.execute('PRAGMA synchronous=OFF')
     
     def run(self):
-        '''
+        """
         This is the "main" method for this class, the one that
         consumes the commands which are sent to the Queue. The idea is to have
         the following architecture features:
@@ -305,7 +305,7 @@ class SQLiteExecutor(Process):
             issues because of sqlite's non thread-safeness
 
         The Queue.get() will make sure we don't have 100% CPU usage in the loop
-        '''
+        """
         OP_CODES = {SETUP: self._setup_handler,
                     QUERY: self._query_handler,
                     SELECT: self._select_handler,
@@ -364,10 +364,10 @@ def get_default_temp_db_instance():
     return temp_default_db
 
 def get_default_persistent_db_instance():
-    '''
+    """
     At some point I'll want to have persistent DB for storing the KB and other
     information across different w3af processes, or simply to save the findings
     in a KB and don't remove them. I'm adding this method as a reminder of
     where it should be done.
-    '''
+    """
     return get_default_temp_db_instance()

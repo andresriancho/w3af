@@ -1,4 +1,4 @@
-'''
+"""
 analyze_cookies.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Cookie
 import re
 
@@ -34,11 +34,11 @@ from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
 
 
 class analyze_cookies(GrepPlugin):
-    '''
+    """
     Grep every response for session cookies sent by the web application.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')
 
@@ -52,13 +52,13 @@ class analyze_cookies(GrepPlugin):
         self._already_reported_server = []
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for cookies.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         # do this check every time
         self._ssl_cookie_via_http(request, response)
 
@@ -86,9 +86,9 @@ class analyze_cookies(GrepPlugin):
                                                   cookie_header_value)
 
     def _collect_cookies(self, request, response, cookie_object, cookie_header_value):
-        '''
+        """
         Store (unique) cookies in the KB for later analysis.
-        '''
+        """
         for cookie_info in kb.kb.get(self, 'cookies'):
             stored_cookie_obj = cookie_info['cookie-object']
             # Cookie class has an __eq__ which compares Cookies' keys for
@@ -112,7 +112,7 @@ class analyze_cookies(GrepPlugin):
 
             i['cookie-object'] = cookie_object
 
-            '''
+            """
             The expiration date tells the browser when to delete the
             cookie. If no expiration date is provided, the cookie is
             deleted at the end of the user session, that is, when the
@@ -120,13 +120,13 @@ class analyze_cookies(GrepPlugin):
             date is a means for making cookies to survive across
             browser sessions. For this reason, cookies that have an
             expiration date are called persistent.
-            '''
+            """
             i['persistent'] = 'expires' in cookie_object
             i.add_to_highlight(i['cookie-string'])
             kb.kb.append(self, 'cookies', i)
 
     def _parse_cookie(self, request, response, cookie_header_value):
-        '''
+        """
         If the response sets more than one Cookie, this method will
         be called once for each "Set-Cookie" header.
 
@@ -138,7 +138,7 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
 
         :return: The cookie object or None if the parsing failed
-        '''
+        """
         cookie_object = Cookie.SimpleCookie()
         
         # FIXME: Workaround for bug in Python's Cookie.py
@@ -172,10 +172,10 @@ class analyze_cookies(GrepPlugin):
 
     def _analyze_cookie_security(self, request, response, cookie_obj,
                                  cookie_header_value):
-        '''
+        """
         In this method I call all the other methods that perform a specific
         analysis of the already catched cookie.
-        '''
+        """
         self._secure_over_http(
             request, response, cookie_obj, cookie_header_value)
         self._not_secure_over_https(
@@ -188,7 +188,7 @@ class analyze_cookies(GrepPlugin):
 
     def _http_only(self, request, response, cookie_obj,
                    cookie_header_value, fingerprinted):
-        '''
+        """
         Verify if the cookie has the httpOnly parameter set
 
         Reference:
@@ -201,7 +201,7 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :param fingerprinted: True if the cookie was fingerprinted
         :return: None
-        '''
+        """
         if not self.HTTPONLY_RE.search(cookie_header_value):
             
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
@@ -220,12 +220,12 @@ class analyze_cookies(GrepPlugin):
             kb.kb.append(self, 'security', v)
 
     def _ssl_cookie_via_http(self, request, response):
-        '''
+        """
         Analyze if a cookie value, sent in a HTTPS request, is now used for
         identifying the user in an insecure page. Example:
             Login is done over SSL
             The rest of the page is HTTP
-        '''
+        """
         if request.get_url().get_protocol().lower() == 'https':
             return
         
@@ -256,12 +256,12 @@ class analyze_cookies(GrepPlugin):
                         kb.kb.append(self, 'security', v)
 
     def _match_cookie_fingerprint(self, request, response, cookie_obj):
-        '''
+        """
         Now we analyze the cookie and try to guess the remote web server or
         programming framework based on the cookie that was sent.
 
         :return: True if the cookie was fingerprinted
-        '''
+        """
         cookie_obj_str = cookie_obj.output(header='')
 
         for cookie_str_db, system_name in self.COOKIE_FINGERPRINT:
@@ -287,7 +287,7 @@ class analyze_cookies(GrepPlugin):
         return False
 
     def _secure_over_http(self, request, response, cookie_obj, cookie_header_value):
-        '''
+        """
         Checks if a cookie marked as secure is sent over http.
 
         Reference:
@@ -298,7 +298,7 @@ class analyze_cookies(GrepPlugin):
         :param cookie_obj: The cookie object to analyze
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
-        '''
+        """
         # BUGBUG: http://bugs.python.org/issue1028088
         #
         # I workaround this issue by using the raw string from the HTTP
@@ -338,7 +338,7 @@ class analyze_cookies(GrepPlugin):
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
-        '''
+        """
         Checks if a cookie that does NOT have a secure flag is sent over https.
 
         :param request: The http request object
@@ -346,7 +346,7 @@ class analyze_cookies(GrepPlugin):
         :param cookie_obj: The cookie object to analyze
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
-        '''
+        """
         # BUGBUG: See other reference in this file for http://bugs.python.org/issue1028088
 
         if response.get_url().get_protocol().lower() == 'https' and \
@@ -368,9 +368,9 @@ class analyze_cookies(GrepPlugin):
             kb.kb.append(self, 'security', v)
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         cookies = kb.kb.get('analyze_cookies', 'cookies')
 
         tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
@@ -400,12 +400,12 @@ class analyze_cookies(GrepPlugin):
             info_inst.add_to_highlight(cstr)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every response for session cookies that the web
         application sends to the client, and analyzes them in order to identify
         potential vulnerabilities, the remote web application framework and
         other interesting information.
-        '''
+        """

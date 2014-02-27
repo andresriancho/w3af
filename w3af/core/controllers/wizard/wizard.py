@@ -1,4 +1,4 @@
-'''
+"""
 wizard.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.misc.factory import factory
 
@@ -26,10 +26,10 @@ from w3af.core.controllers.misc.factory import factory
 class wizard:
 
     def __init__(self, w3af_core):
-        '''
+        """
         This method should be overwritten by the actual wizards, so they can
         define what questions they are going to ask.
-        '''
+        """
         # Save the core
         self.w3af_core = w3af_core
 
@@ -44,11 +44,11 @@ class wizard:
         self._user_options = None
 
     def _get_instances(self, question_list, w3af_core):
-        '''
+        """
         :param question_list: A list of question ids
         :param w3af_core: The w3af core object to pass to the question id
         :return: A list of question objects
-        '''
+        """
         res = []
         mod = 'w3af.core.controllers.wizard.questions.question_%s'
         for question_id in question_list:
@@ -58,11 +58,11 @@ class wizard:
         return res
 
     def next(self):
-        '''
+        """
         The user interface calls this method until it returns None.
 
         :return: The next question that has to be asked to the user.
-        '''
+        """
         # Special case for first iteration
         if self._firstQuestion == True:
             self._firstQuestion = False
@@ -89,11 +89,11 @@ class wizard:
             return possibleQuestions[0]
 
     def previous(self):
-        '''
+        """
         We get here when the user clicks on the "Previous" button in the GTK user interface.
 
         :return: The previous question, with the answers the user selected.
-        '''
+        """
         # Special case, we can't go back because we don't have a previous question
         if self._firstQuestion:
             return None
@@ -105,21 +105,21 @@ class wizard:
         return self._currentQuestion
 
     def get_wizard_description(self):
-        '''
+        """
         This method should be overwritten by the actual wizards.
 
         :return: A string that describes what the wizard will let you configure.
-        '''
+        """
         return ''
 
     def get_name(self):
-        '''
+        """
         :return: The name of the wizard.
-        '''
+        """
         return ''
 
     def set_answer(self, options_list):
-        '''
+        """
         Saves the answer for the current question, and finds the next question
         to be performed to the user.
 
@@ -127,7 +127,7 @@ class wizard:
 
         :param options_list: This is a map with the answers for every question
                                that was made to the user.
-        '''
+        """
         # This line may rise a w3afException
         self._nextQuestionId = self._currentQuestion.get_next_question_id(
             options_list)

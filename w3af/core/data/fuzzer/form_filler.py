@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-'''
+"""
 formFiller.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import w3af.core.controllers.output_manager as om
 
@@ -87,20 +87,20 @@ parameter_name_knowledge = {
 
 
 def sortfunc(x_obj, y_obj):
-    '''
+    """
     A simple sort function to sort the values of a list using the second item of each item.
     :return: The answer to: which one is greater?
-    '''
+    """
     return cmp(y_obj[1], x_obj[1])
 
 
 def get_match_rate(variable_name, variable_name_db):
-    '''
+    """
     :param variable_name: The name of the variable for which we want a value
     :param variable_name_db: A name from the DB that ressembles the variable_name
 
     :return: A match rate between variable_name and variable_name_db.
-    '''
+    """
     match_rate = len(variable_name)
     if variable_name.startswith(variable_name_db):
         match_rate += len(variable_name) / 2
@@ -108,14 +108,14 @@ def get_match_rate(variable_name, variable_name_db):
 
 
 def smart_fill(variable_name):
-    '''
+    """
     This method returns a "smart" option for a variable name inside a form. For
     example, if the variable_name is "username" a smart_fill response would be
     "john1309", not "0800-111-2233". This helps A LOT with server side validation.
 
     :return: The "most likely to be validated as a good value" string, OR '5672'
     if no match is found.
-    '''
+    """
     variable_name = variable_name.lower()
 
     possible_results = []

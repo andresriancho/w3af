@@ -1,4 +1,4 @@
-'''
+"""
 errors.py
 
 Copyright 2011 Andres Riancho
@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 
 class ErrorHandler(urllib2.HTTPDefaultErrorHandler):
-    '''
+    """
     A simple handler that assigns IDs to errors.
-    '''
+    """
     def http_error_default(self, req, resp, code, msg, hdrs):
         
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)

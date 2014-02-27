@@ -1,4 +1,4 @@
-'''
+"""
 user_reports_bug.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.ui.gui.exception_handling.common_windows import (
@@ -26,10 +26,10 @@ from w3af.core.ui.gui.exception_handling.common_windows import (
 
 
 class user_reports_bug(simple_base_window, github_bug_report):
-    '''
+    """
     This window covers the STRANGE case in which a user goes to the Help menu and
     clicks on "Report Bug".
-    '''
+    """
 
     def __init__(self):
         simple_base_window.__init__(self)

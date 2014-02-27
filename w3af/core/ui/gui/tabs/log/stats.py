@@ -1,4 +1,4 @@
-'''
+"""
 stats.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from __future__ import division
 
 import gtk
@@ -28,7 +28,7 @@ Frame = namedtuple('Frame', 'title items')
 StatusItem = namedtuple('StatusItem', 'title default_value getter unit tooltip')
 
 class StatsViewer(gtk.VBox):
-    '''
+    """
     This is the information I want to show in the stats viewer:
     
     Crawl queue stats:
@@ -46,7 +46,7 @@ class StatsViewer(gtk.VBox):
         * Estimated time until finish: 3min
 
     HTTP speed: 150 req/min
-    '''
+    """
     VIEW_DATA = [Frame('Crawl status',
                        [StatusItem('Input speed', '0', 'crawl_input_speed', 'URLs/min', 'Queue input speed'),
                         StatusItem('Output speed', '0', 'crawl_output_speed', 'URLs/min', 'Queue output speed'),

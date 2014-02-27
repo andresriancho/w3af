@@ -1,9 +1,9 @@
-'''
+"""
 Simple socket server that will return the first 1024 bytes you send to it 
 in upper case.
 
 http://docs.python.org/2/library/socketserver.html
-'''
+"""
 import SocketServer
 import threading
 import time

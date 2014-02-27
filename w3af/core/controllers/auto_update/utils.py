@@ -1,4 +1,4 @@
-'''
+"""
 utils.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import git
 import time
 
@@ -29,9 +29,9 @@ def to_short_id(commit_id):
 
 
 def is_git_repo(path=W3AF_LOCAL_PATH):
-    '''
+    """
     Test whether current's w3af directory is a GIT repository.
-    '''
+    """
     try:
         git.Repo(path)
     except git.exc.InvalidGitRepositoryError:
@@ -41,15 +41,15 @@ def is_git_repo(path=W3AF_LOCAL_PATH):
 
     
 def get_latest_commit(path=W3AF_LOCAL_PATH):
-    '''
+    """
     :return: A string (hex sha) that identifies the commit
-    '''
+    """
     return git.Repo(path).head.commit.hexsha
 
 def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
-    '''
+    """
     :return: The date for the @commit_id
-    '''
+    """
     heads = [ref.commit for ref in git.Repo(path).refs]
     
     for commit in heads:
@@ -60,17 +60,17 @@ def get_commit_id_date(commit_id, path=W3AF_LOCAL_PATH):
     return None
 
 def get_latest_commit_date(path=W3AF_LOCAL_PATH):
-    '''
+    """
     :return: The date for the latest commit
-    '''
+    """
     cdate = git.Repo(path).head.commit.committed_date
     return time.strftime("%d %b %Y %H:%M", time.gmtime(cdate)) 
 
 
 def get_current_branch(path=W3AF_LOCAL_PATH):
-    '''
+    """
     :return: The active branch for the repo at "path".
-    '''
+    """
     repo = git.Repo(path)
     lcomm = get_latest_commit()
     names = [ref.name for ref in repo.refs if ref.commit.hexsha == lcomm]
@@ -79,9 +79,9 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
 
 
 def repo_has_conflicts(path=W3AF_LOCAL_PATH):
-    '''
+    """
     :return: True if there was any merge conflict with the last pull()
-    '''
+    """
     for stage, _ in git.Repo(path).index.iter_blobs():
         if stage != 0:
             return True

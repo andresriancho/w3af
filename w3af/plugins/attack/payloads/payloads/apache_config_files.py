@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_config_files(Payload):
-    '''
+    """
     This payload finds readable Apache configuration files
-    '''
+    """
     def fname_generator(self, apache_dir):
         files = []
 

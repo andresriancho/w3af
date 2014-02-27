@@ -1,4 +1,4 @@
-'''
+"""
 disclaimer.py
 
 Copyright 2012 Andres Riancho
@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 # Heavily based on sqlmap's
-DISCLAIMER = '''Usage of w3af for sending any traffic to a target
+DISCLAIMER = """Usage of w3af for sending any traffic to a target
  without prior mutual consent is illegal. It is the end user's responsibility to
  obey all applicable local, state and federal laws. Developers assume no liability
- and are not responsible for any misuse or damage caused by this program.'''
+ and are not responsible for any misuse or damage caused by this program."""
 
 DISCLAIMER = DISCLAIMER.replace('\n', '')

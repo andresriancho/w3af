@@ -1,4 +1,4 @@
-'''
+"""
 ports.py
 
 Copyright 2006 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
-'''
+"""
 This file was created to organize the port assignment inside w3af, no plugin or
 core class should have a hard-coded ports, all ports MUST be assigned here.
-'''
+"""
 
 MAILER = 25
 

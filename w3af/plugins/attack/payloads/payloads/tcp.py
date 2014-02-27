@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class tcp(Payload):
-    '''
+    """
     This payload shows TCP socket information
-    '''
+    """
     def api_read(self):
         result = {}
 

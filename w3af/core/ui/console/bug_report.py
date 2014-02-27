@@ -1,4 +1,4 @@
-'''
+"""
 bug_report.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import w3af.core.controllers.output_manager as om
 
@@ -29,12 +29,12 @@ from w3af.core.ui.console.util import suggest
 
 
 class bug_report_menu(menu):
-    '''
+    """
     This menu is used to display bugs gathered by the exception handler during
     a scan and help the user report those vulnerabilities to our Github project.
 
     :author: Andres Riancho (andres.riancho |at| gmail.com)
-    '''
+    """
     def __init__(self, name, console, w3af_core, parent=None, **other):
         menu.__init__(self, name, console, w3af_core, parent)
         self._load_help('bug-report')
@@ -69,9 +69,9 @@ class bug_report_menu(menu):
         self._console.draw_table(table)
 
     def _cmd_details(self, params):
-        '''
+        """
         Show details for a bug referenced by id.
-        '''
+        """
         all_edata = self._w3af.exception_handler.get_all_exceptions()
 
         if len(params) != 1:
@@ -94,9 +94,9 @@ class bug_report_menu(menu):
             om.out.console(str(edata))
 
     def _cmd_report(self, params):
-        '''
+        """
         Report one or more bugs to w3af's Github, menu command.
-        '''
+        """
         all_edata = self._w3af.exception_handler.get_all_exceptions()
 
         if not all_edata:
@@ -126,9 +126,9 @@ class bug_report_menu(menu):
             self._report_exception(edata, eid, num + 1, len(report_bug_eids))
 
     def _report_exception(self, edata, eid, num, total):
-        '''
+        """
         Report one or more bugs to w3af's Github, submit data to server.
-        '''
+        """
         gh = GithubIssues(OAUTH_TOKEN)
         if not gh.login():
             msg = 'Failed to contact github.com. Please try again later.'

@@ -1,4 +1,4 @@
-'''
+"""
 test_proxy.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 import unittest
 
@@ -100,10 +100,10 @@ class TestProxy(unittest.TestCase):
 
     @attr('ci_fails')
     def test_proxy_req_ok(self):
-        '''Test if self._proxy.stop() works as expected. Note that the check
+        """Test if self._proxy.stop() works as expected. Note that the check
         content is the same as the previous check, but it might be that this
         check fails because of some error in start() or stop() which is run
-        during setUp and tearDown.'''
+        during setUp and tearDown."""
         # Get response using the proxy
         proxy_resp = self.proxy_opener.open('http://moth').read()
         # Get it the other way
@@ -112,13 +112,13 @@ class TestProxy(unittest.TestCase):
         self.assertEqual(resp, proxy_resp)
     
     def test_stop_no_requests(self):
-        '''Test what happens if I stop the proxy without sending any requests
-        through it'''
+        """Test what happens if I stop the proxy without sending any requests
+        through it"""
         # Note that the test is completed by self._proxy.stop() in tearDown
         pass
 
     def test_stop_stop(self):
-        '''Test what happens if I stop the proxy twice.'''
+        """Test what happens if I stop the proxy twice."""
         # Note that the test is completed by self._proxy.stop() in tearDown
         self._proxy.stop()
     

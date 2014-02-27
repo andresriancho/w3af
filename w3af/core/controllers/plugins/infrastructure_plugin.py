@@ -1,4 +1,4 @@
-'''
+"""
 InfrastructurePlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,27 +18,27 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.request.factory import create_fuzzable_requests
 
 
 class InfrastructurePlugin(Plugin):
-    '''
+    """
     This is the base class for infrastructure plugins, all infrastructure plugins
     should inherit from it and implement the following methods:
         1. discover(...)
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         Plugin.__init__(self)
 
     def discover_wrapper(self, fuzzable_request):
-        '''
+        """
         Wrapper around the discover method in order to perform some generic tasks.
-        '''
+        """
         # I copy the fuzzable request, to avoid cross plugin contamination
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
@@ -46,13 +46,13 @@ class InfrastructurePlugin(Plugin):
         return self.discover(fuzzable_request_copy)
 
     def discover(self, fuzzable_request):
-        '''
+        """
         This method MUST be implemented on every plugin.
 
         :param fuzzable_request: The target to use for infrastructure plugins.
         :return: None. These plugins should store information in the KB. Results
                  from this method will be ignored by the core.
-        '''
+        """
         raise w3afException(
             'Plugin is not implementing required method discover')
 

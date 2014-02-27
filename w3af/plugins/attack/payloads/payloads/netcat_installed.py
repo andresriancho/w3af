@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class netcat_installed(Payload):
-    '''
+    """
     This payload verifies if Netcat is installed and supports "-e filename" (program to exec after connect)
-    '''
+    """
     def api_read(self):
         files = []
         files.append('/bin/netcat')

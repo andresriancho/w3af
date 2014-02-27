@@ -1,4 +1,4 @@
-'''
+"""
 HTTPResponse.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 import re
 import httplib
@@ -57,7 +57,7 @@ class HTTPResponse(object):
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=0.2, alias=None, charset=None):
-        '''
+        """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
         :param headers: HTTP headers, typically a dict or a httplib.HTTPMessage
@@ -70,7 +70,7 @@ class HTTPResponse(object):
                       the backend sqlite find http_responses faster by indexing
                       by this attr.
         :param charset: Response's encoding; obligatory when `read` is unicode
-        '''
+        """
         if not isinstance(geturl, URL):
             raise TypeError('Invalid type %s for HTTPResponse ctor param geturl.'
                             % type(geturl))
@@ -123,7 +123,7 @@ class HTTPResponse(object):
 
     @classmethod
     def from_httplib_resp(cls, httplibresp, original_url=None):
-        '''
+        """
         Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
         instance
     
@@ -131,7 +131,7 @@ class HTTPResponse(object):
         :param original_url: Optional 'url_object' instance.
     
         :return: A HTTPResponse instance
-        '''
+        """
         resp = httplibresp
         code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
         hdrs = Headers(hdrs.items())
@@ -156,14 +156,14 @@ class HTTPResponse(object):
 
     @classmethod    
     def from_dict(cls, unserialized_dict):
-        '''
+        """
         * msgpack is MUCH faster than cPickle,
         * msgpack can't serialize python objects,
         * I have to create a dict representation of HTTPResponse to serialize it,
         * and a from_dict to have the object back
         
         :param unserialized_dict: A dict just as returned by to_dict()
-        '''
+        """
         udict = unserialized_dict
         
         code, msg, hdrs = udict['code'], udict['msg'], udict['headers']
@@ -176,10 +176,10 @@ class HTTPResponse(object):
                    time=_time)
 
     def to_dict(self):
-        '''
+        """
         :return: A dict that represents the current object and is serializable
                  by the json or msgpack modules.
-        '''
+        """
         serializable_dict = {}
         sdict = serializable_dict
         
@@ -197,12 +197,12 @@ class HTTPResponse(object):
         return serializable_dict
 
     def __contains__(self, string_to_test):
-        '''
+        """
         Determine if the `string_to_test` is contained by the HTTP response
         body.
 
         :param string_to_test: String to look for in the body
-        '''
+        """
         return string_to_test in self.body
     
     def __eq__(self, other):
@@ -241,11 +241,11 @@ class HTTPResponse(object):
             return self._body
 
     def set_body(self, body):
-        '''
+        """
         Setter for body.
 
         @body: A string that represents the body of the HTTP response
-        '''
+        """
         if not isinstance(body, basestring):
             msg = 'Invalid type %s for set_body parameter body.'
             raise TypeError(msg % type(body))
@@ -256,9 +256,9 @@ class HTTPResponse(object):
     body = property(get_body, set_body)
 
     def get_clear_text_body(self):
-        '''
+        """
         :return: A clear text representation of the HTTP response body.
-        '''
+        """
         clear_text_body = self._clear_text_body
 
         if clear_text_body is None:
@@ -275,7 +275,7 @@ class HTTPResponse(object):
         return clear_text_body
 
     def set_dom(self, dom_inst):
-        '''
+        """
         This setter is part of a performance improvement I'm talking about in
         get_dom() and sgmlParser._parse().
 
@@ -294,11 +294,11 @@ class HTTPResponse(object):
             sgmlParser( http_response )
 
         :return: None
-        '''
+        """
         self._dom = dom_inst
 
     def get_dom(self):
-        '''
+        """
         I don't want to calculate the DOM for all responses, only for those
         which are needed. This method will first calculate the DOM, and then
         save it for upcoming calls.
@@ -307,7 +307,7 @@ class HTTPResponse(object):
                     for ideas on how to reduce CPU usage.
 
         :return: The DOM, or None if the HTML normalization failed.
-        '''
+        """
         if self._dom is None:
             try:
                 parser = etree.HTMLParser(recover=True)
@@ -349,12 +349,12 @@ class HTTPResponse(object):
         return self._headers
 
     def set_headers(self, headers):
-        '''
+        """
         Sets the headers and also analyzes them in order to get the response
         mime type (text/html , application/pdf, etc).
 
         :param headers: The headers dict.
-        '''
+        """
         # Fix lowercase in header names from HTTPMessage
         if isinstance(headers, httplib.HTTPMessage):
             self._headers = Headers()
@@ -406,20 +406,20 @@ class HTTPResponse(object):
     headers = property(get_headers, set_headers)
     
     def get_lower_case_headers(self):
-        '''
+        """
         If the original headers were:
             {'Abc-Def': 'F00N3s'}
         This will return:
             {'abc-def': 'F00N3s'}
 
         The only thing that changes is the header name.
-        '''
+        """
         lcase_headers = dict(
             (k.lower(), v) for k, v in self.headers.iteritems())
         return Headers(lcase_headers.items())
 
     def set_url(self, url):
-        '''
+        """
         >>> url = URL('http://www.google.com')
         >>> r = HTTPResponse(200, '' , Headers(), url, url)
         >>> r.set_url('http://www.google.com/')
@@ -429,7 +429,7 @@ class HTTPResponse(object):
         >>> r.set_url(url)
         >>> r.get_url() == url
         True
-        '''
+        """
         if not isinstance(url, URL):
             raise TypeError('The URL of a HTTPResponse object must be of '
                             'url.URL type.')
@@ -440,7 +440,7 @@ class HTTPResponse(object):
         return self._realurl
 
     def set_uri(self, uri):
-        '''
+        """
         >>> uri = URL('http://www.google.com/')
         >>> r = HTTPResponse(200, '' , Headers(), uri, uri)
         >>> r.set_uri('http://www.google.com/')
@@ -451,7 +451,7 @@ class HTTPResponse(object):
         >>> r.get_uri() == uri
         True
 
-        '''
+        """
         if not isinstance(uri, URL):
             raise TypeError('The URI of a HTTPResponse object must be of '
                             'url.URL type.')
@@ -466,16 +466,16 @@ class HTTPResponse(object):
         return self._uri != self._redirected_uri
 
     def set_from_cache(self, fcache):
-        '''
+        """
         :param fcache: True if this response was obtained from the
         local cache.
-        '''
+        """
         self._from_cache = fcache
 
     def get_from_cache(self):
-        '''
+        """
         :return: True if this response was obtained from the local cache.
-        '''
+        """
         return self._from_cache
 
     def set_wait_time(self, t):
@@ -494,14 +494,14 @@ class HTTPResponse(object):
         return self._info
 
     def get_status_line(self):
-        '''Return status-line of response.'''
+        """Return status-line of response."""
         return 'HTTP/1.1' + SP + str(self._code) + SP + self._msg + CRLF
 
     def get_msg(self):
         return self._msg
 
     def _charset_handling(self):
-        '''
+        """
         Decode the body based on the header (or metadata) encoding.
         The implemented algorithm follows the encoding detection logic
         used by FF:
@@ -520,7 +520,7 @@ class HTTPResponse(object):
         Finally return the unicode (decoded) body and the used charset.
 
         Note: If the body is already a unicode string return it as it is.
-        '''
+        """
         lcase_headers = self.get_lower_case_headers()
         charset = self._charset
         rawbody = self._raw_body
@@ -593,9 +593,9 @@ class HTTPResponse(object):
 
     @property
     def content_type(self):
-        '''
+        """
         The content type of the response
-        '''
+        """
         if self._content_type is None:
             self.headers = self._info
         return self._content_type or ''
@@ -608,45 +608,45 @@ class HTTPResponse(object):
         return self._doc_type
 
     def is_text_or_html(self):
-        '''
+        """
         :return: True if this response is text or html
-        '''
+        """
         return self.doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML
 
     def is_pdf(self):
-        '''
+        """
         :return: True if this response is a PDF file
-        '''
+        """
         return self.doc_type == HTTPResponse.DOC_TYPE_PDF
 
     def is_swf(self):
-        '''
+        """
         :return: True if this response is a SWF file
-        '''
+        """
         return self.doc_type == HTTPResponse.DOC_TYPE_SWF
 
     def is_image(self):
-        '''
+        """
         :return: True if this response is an image file
-        '''
+        """
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
 
     def dump_response_head(self):
-        '''
+        """
         :return: A string with:
             HTTP/1.1 /login.html 200
             Header1: Value1
             Header2: Value2
-        '''
+        """
         dump_head = "%s%s" % (self.get_status_line(), self.dump_headers())
         if type(dump_head) is unicode:
             dump_head = dump_head.encode(self.charset)
         return dump_head
 
     def dump(self):
-        '''
+        """
         Return a DETAILED str representation of this HTTP response object.
-        '''
+        """
         body = self.body
         # Images, pdf and binary responses in general are never decoded
         # to unicode
@@ -655,9 +655,9 @@ class HTTPResponse(object):
         return "%s%s%s" % (self.dump_response_head(), CRLF, body)
 
     def dump_headers(self):
-        '''
+        """
         :return: a str representation of the headers.
-        '''
+        """
         if self.headers:
             return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
         else:

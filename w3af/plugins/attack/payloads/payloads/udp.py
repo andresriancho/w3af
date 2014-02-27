@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class udp(Payload):
-    '''
+    """
     This payload shows udp socket information
-    '''
+    """
     def api_read(self):
         result = {}
 

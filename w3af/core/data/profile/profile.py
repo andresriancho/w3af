@@ -1,4 +1,4 @@
-'''
+"""
 profile.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import codecs
 import ConfigParser
 import os
@@ -32,19 +32,19 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class profile(object):
-    '''
+    """
     This class represents a profile.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, profname='', workdir=None):
-        '''
+        """
         Creating a profile instance like p = profile() is done in order to be
         able to create a new profile from scratch and then call
         save(profname).
 
         When reading a profile, you should use p = profile(profname).
-        '''
+        """
         # The default optionxform transforms the option to lower case;
         # w3af needs the value as it is
         optionxform = lambda opt: opt
@@ -70,7 +70,7 @@ class profile(object):
         self._profile_file_name = profname
 
     def _get_real_profile_path(self, profilename, workdir):
-        '''
+        """
         Return the complete path for `profilename`.
 
         @raise w3afException: If no existing profile file is found this
@@ -81,7 +81,7 @@ class profile(object):
         >>> p._get_real_profile_path('OWASP_TOP10', '.')
         './profiles/OWASP_TOP10.pw3af'
 
-        '''
+        """
         # Alias for os.path. Minor optimization
         ospath = os.path
         pathexists = os.path.exists
@@ -113,15 +113,15 @@ class profile(object):
         raise w3afException('The profile "%s" wasn\'t found.' % profilename)
 
     def get_profile_file(self):
-        '''
+        """
         :return: The path and name of the file that contains the profile definition.
-        '''
+        """
         return self._profile_file_name
 
     def remove(self):
-        '''
+        """
         Removes the profile file which was used to create this instance.
-        '''
+        """
         try:
             os.unlink(self._profile_file_name)
         except Exception, e:
@@ -132,10 +132,10 @@ class profile(object):
             return True
 
     def copy(self, copyProfileName):
-        '''
+        """
         Create a copy of the profile file into copyProfileName. The directory
         of the profile is kept unless specified.
-        '''
+        """
         new_profilePathAndName = copyProfileName
 
         # Check path
@@ -162,13 +162,13 @@ class profile(object):
             return True
 
     def set_enabled_plugins(self, plugin_type, plugin_nameList):
-        '''
+        """
         Set the enabled plugins of type plugin_type.
 
         :param plugin_type: 'audit', 'output', etc.
         :param plugin_nameList: ['xss', 'sqli'] ...
         :return: None
-        '''
+        """
         # First, get the enabled plugins of the current profile
         currentEnabledPlugins = self.get_enabled_plugins(plugin_type)
         for alreadyEnabledPlugin in currentEnabledPlugins:
@@ -186,9 +186,9 @@ class profile(object):
                 pass
 
     def get_enabled_plugins(self, plugin_type):
-        '''
+        """
         :return: A list of enabled plugins of type plugin_type
-        '''
+        """
         res = []
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
@@ -202,13 +202,13 @@ class profile(object):
         return res
 
     def set_plugin_options(self, plugin_type, plugin_name, options):
-        '''
+        """
         Set the plugin options.
         :param plugin_type: 'audit', 'output', etc.
         :param plugin_name: 'xss', 'sqli', etc.
         :param options: an OptionList
         :return: None
-        '''
+        """
         section = plugin_type + "." + plugin_name
         if section not in self._config.sections():
             self._config.add_section(section)
@@ -218,9 +218,9 @@ class profile(object):
                 section, option.get_name(), option.get_value_str())
 
     def get_plugin_options(self, plugin_type, plugin_name):
-        '''
+        """
         :return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
-        '''
+        """
         # Get the plugin defaults with their types
         plugin_instance = factory('w3af.plugins.%s.%s' % (plugin_type, plugin_name))
         options_list = plugin_instance.get_options()
@@ -246,29 +246,29 @@ class profile(object):
         return options_list
 
     def set_misc_settings(self, options):
-        '''
+        """
         Set the misc settings options.
         :param options: an OptionList
         :return: None
-        '''
+        """
         self._set_x_settings('misc-settings', options)
 
     def set_http_settings(self, options):
-        '''
+        """
         Set the http settings options.
         :param options: an OptionList
         :return: None
-        '''
+        """
         self._set_x_settings('http-settings', options)
 
     def _set_x_settings(self, section, options):
-        '''
+        """
         Set the section options.
 
         :param section: The section name
         :param options: an OptionList
         :return: None
-        '''
+        """
         if section not in self._config.sections():
             self._config.add_section(section)
 
@@ -277,27 +277,27 @@ class profile(object):
                 section, option.get_name(), option.get_value_str())
 
     def get_misc_settings(self):
-        '''
+        """
         Get the misc settings options.
         :return: The misc settings in an OptionList
-        '''
+        """
         from w3af.core.controllers.misc_settings import MiscSettings
         misc_settings = MiscSettings()
         return self._get_x_settings('misc-settings', misc_settings)
 
     def get_http_settings(self):
-        '''
+        """
         Get the http settings options.
         :return: The http settings in an OptionList
-        '''
+        """
         import w3af.core.data.url.opener_settings as opener_settings
         url_settings = opener_settings.OpenerSettings()
         return self._get_x_settings('http-settings', url_settings)
 
     def _get_x_settings(self, section, configurable_instance):
-        '''
+        """
         :return: An OptionList with the options for a configurable object.
-        '''
+        """
         options_list = configurable_instance.get_options()
 
         try:
@@ -318,20 +318,20 @@ class profile(object):
         return options_list
 
     def set_name(self, name):
-        '''
+        """
         Set the name of the profile.
         :param name: The description of the profile
         :return: None
-        '''
+        """
         section = 'profile'
         if section not in self._config.sections():
             self._config.add_section(section)
         self._config.set(section, 'name', name)
 
     def get_name(self):
-        '''
+        """
         :return: The profile name; as stated in the [profile] section
-        '''
+        """
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             # or [profile]
@@ -344,20 +344,20 @@ class profile(object):
         return None
 
     def set_target(self, target):
-        '''
+        """
         Set the target of the profile.
         :param target: The target URL of the profile
         :return: None
-        '''
+        """
         section = 'target'
         if section not in self._config.sections():
             self._config.add_section(section)
         self._config.set(section, 'target', target)
 
     def get_target(self):
-        '''
+        """
         :return: The profile target with the options (target_os, target_framework, etc.)
-        '''
+        """
         # Get the plugin defaults with their types
         target_instance = w3af_core_target()
         options = target_instance.get_options()
@@ -373,20 +373,20 @@ class profile(object):
         return options
 
     def set_desc(self, desc):
-        '''
+        """
         Set the description of the profile.
         :param desc: The description of the profile
         :return: None
-        '''
+        """
         section = 'profile'
         if section not in self._config.sections():
             self._config.add_section(section)
         self._config.set(section, 'description', desc)
 
     def get_desc(self):
-        '''
+        """
         :return: The profile description; as stated in the [profile] section
-        '''
+        """
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             # or [profile]
@@ -399,11 +399,11 @@ class profile(object):
         return None
 
     def save(self, file_name=''):
-        '''
+        """
         Saves the profile to file_name.
 
         :return: None
-        '''
+        """
         if not self._profile_file_name:
             if not file_name:
                 raise w3afException('Error while saving profile, you didn\'t '

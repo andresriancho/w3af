@@ -1,4 +1,4 @@
-'''
+"""
 bing.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 import re
 
@@ -27,12 +27,12 @@ from w3af.core.data.parsers.url import URL
 
 
 class bing(SearchEngine):
-    '''
+    """
     This class is a wrapper for doing bing searches. It allows the user to use
     GET requests to search bing.com.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
                                'onlinehelp.microsoft.com', 'go.microsoft.com',
                                'msn.com',])
@@ -42,12 +42,12 @@ class bing(SearchEngine):
         self._uri_opener = urlOpener
 
     def search(self, query, start, count=10):
-        '''
+        """
         Search the web with Bing.
 
         This method is based from the msn.py file from the massive enumeration
         toolset, coded by pdp and released under GPL v2.
-        '''
+        """
         url = 'http://www.bing.com/search?'
         query = urllib.urlencode({'q': query,
                                   'first': start + 1,
@@ -84,9 +84,9 @@ class bing(SearchEngine):
         return results
 
 class BingResult(object):
-    '''
+    """
     Dummy class that represents the search result.
-    '''
+    """
     def __init__(self, url):
         if not isinstance(url, URL):
             msg = 'The url __init__ parameter of a BingResult object must'\

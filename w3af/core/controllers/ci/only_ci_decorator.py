@@ -1,4 +1,4 @@
-'''
+"""
 only_ci_decorator.py
 
 Copyright 2013 Andres Riancho
@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from functools import wraps
 from w3af.core.controllers.ci.detect import is_running_on_ci
 
 
 def only_ci(decorated_func):
-    '''
+    """
     This decorator runs the function that's being decorated only if the code
     is being run in CI environment.
-    '''
+    """
     @wraps(decorated_func)
     def _inner_func(*args, **kwds):
         if is_running_on_ci():

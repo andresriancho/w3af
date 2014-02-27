@@ -3,14 +3,14 @@
 from logilab.astng import MANAGER
 from logilab.astng.builder import ASTNGBuilder
 
-CODE_FIX = '''
+CODE_FIX = """
 class IP(object): pass
 class TCP(object): pass
 class UDP(object): pass
 class traceroute(object):
     def __init__(domain, dport=80):
         pass
-'''
+"""
 
 def scapy_transform(module):
     if module.name == 'scapy.all':

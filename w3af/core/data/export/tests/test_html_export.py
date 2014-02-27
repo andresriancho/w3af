@@ -1,4 +1,4 @@
-'''
+"""
 test_html_export.py
 
 Copyright 2012 Andres Riancho
@@ -18,26 +18,26 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.export.html_export import html_export
 
-EXPECTED_SIMPLE = '''
+EXPECTED_SIMPLE = """
 <form action="http://www.w3af.org/" method="GET">
 <input type="submit">
 </form>
-'''
+"""
 
-EXPECTED_POST = '''
+EXPECTED_POST = """
 <form action="http://www.w3af.org/" method="POST">
 <label>a</label>
 <input type="text" name="a" value="1">
 <input type="submit">
 </form>
-'''
+"""
 
-EXPECTED_POST_REPEATED = '''
+EXPECTED_POST_REPEATED = """
 <form action="http://www.w3af.org/" method="POST">
 <label>a</label>
 <input type="text" name="a" value="1">
@@ -45,7 +45,7 @@ EXPECTED_POST_REPEATED = '''
 <input type="text" name="a" value="2">
 <input type="submit">
 </form>
-'''
+"""
 
 
 class TestHTMLExport(unittest.TestCase):

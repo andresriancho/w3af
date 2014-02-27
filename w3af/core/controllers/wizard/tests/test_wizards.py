@@ -1,4 +1,4 @@
-'''
+"""
 test_wizards.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 from nose.plugins.attrib import attr
@@ -56,10 +56,10 @@ class test_wizards(object):
 
     @attr('smoke')
     def _test_wizard_correct(self, wizard_inst):
-        '''
+        """
         @see test_questions.py for a complete test of questions.py and all the
              instances of that class that live in the questions directory.
-        '''
+        """
         wid = wizard_inst.get_name()
         assert wid != ''
         assert wid not in self.unique_wizard_ids
@@ -78,10 +78,10 @@ class test_wizards(object):
 
     @attr('smoke')
     def _test_wizard_fail(self, wizard_inst):
-        '''
+        """
         @see test_questions.py for a complete test of questions.py and all the
              instances of that class that live in the questions directory.
-        '''
+        """
         while True:
 
             question = wizard_inst.next()
@@ -105,10 +105,10 @@ class test_wizards(object):
                     assert False
 
     def _correctly_fill_options(self, option_list):
-        '''
+        """
         :return: A correctly completed option list, simulates a user that knows
                  what he's doing and doesn't make any mistakes.
-        '''
+        """
         values = {
             'target': URL('http://www.w3af.org'),
             'target_os': 'Unix',
@@ -125,10 +125,10 @@ class test_wizards(object):
         return option_list
 
     def _incorrectly_fill_options(self, option_list):
-        '''
+        """
         :return: Inorrectly completed option list, simulates a user that
                  doesn't know what he's doing and makes all the mistakes.
-        '''
+        """
         values = {
             'target': URL('foo://www.w3af.org'),
             'target_os': 'Minix',

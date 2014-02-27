@@ -1,4 +1,4 @@
-'''
+"""
 cross_domain_js.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -28,11 +28,11 @@ SCRIPT_SRC_XPATH = ".//script[@src]"
 
 
 class cross_domain_js(GrepPlugin):
-    '''
+    """
     Find script tags with src attributes that point to a different domain.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -41,13 +41,13 @@ class cross_domain_js(GrepPlugin):
         self._script_src_xpath = etree.XPath(SCRIPT_SRC_XPATH)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, verify if the HTML has a form with file uploads.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -86,13 +86,13 @@ class cross_domain_js(GrepPlugin):
                 self.kb_append_uniq(self, 'cross_domain_js', i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         Find script tags with src attributes that point to a different domain.
 
         It is important to notice that websites that depend on external javascript
         sources are delegating part of their security to those entities, so
         it is imperative to be aware of such code.
-        '''
+        """

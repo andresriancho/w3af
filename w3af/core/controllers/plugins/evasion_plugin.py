@@ -1,4 +1,4 @@
-'''
+"""
 EvasionPlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.plugin import Plugin
 
 
 class EvasionPlugin(Plugin):
-    '''
+    """
     This is the base class for evasion plugins, all evasion plugins should inherit from it
     and implement the following methods :
         1. modify_request(...)
@@ -31,20 +31,20 @@ class EvasionPlugin(Plugin):
         3. get_options()
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         Plugin.__init__(self)
 
     def modify_request(self, request):
-        '''
+        """
         This method mangles the request in order to evade simple IDSs.
 
         This method MUST be implemented on every plugin.
 
         :param request: urllib2.Request instance that is going to be modified by the evasion plugin
         :return: A fuzzed version of the Request.
-        '''
+        """
         msg = 'Plugin is not implementing required method modify_request'
         raise NotImplementedError(msg)
 
@@ -52,12 +52,12 @@ class EvasionPlugin(Plugin):
         pass
 
     def get_priority(self):
-        '''
+        """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
         :return: An integer specifying the priority. 100 is run first, 0 last.
-        '''
+        """
         msg = 'Plugin is not implementing required method get_priority'
         raise NotImplementedError(msg)
 

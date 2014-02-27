@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class root_login_allowed(Payload):
-    '''
+    """
     This payload checks if root user is allowed to login on console.
-    '''
+    """
     def api_read(self):
         result = {}
 

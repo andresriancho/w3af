@@ -1,4 +1,4 @@
-'''
+"""
 test_http_vs_https_dist.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import copy
 import unittest
 
@@ -37,9 +37,9 @@ from w3af.plugins.tests.helper import onlyroot
 
 
 class test_http_vs_https_dist(unittest.TestCase):
-    '''
+    """
     :author: Javier Andalia <jandalia =at= gmail.com>
-    '''
+    """
 
     test_url = URL('http://host.tld')
     tracedict = {'localhost': {1: ('192.168.1.1', False),
@@ -121,8 +121,8 @@ class test_http_vs_https_dist(unittest.TestCase):
         om.out.information.assert_called_once_with(result)
 
     def test_discover_runonce(self):
-        ''' Discovery routine must be executed only once. Upcoming calls should
-        fail'''
+        """ Discovery routine must be executed only once. Upcoming calls should
+        fail"""
         url = URL('https://host.tld/')
         fuzz_req = FuzzableRequest(url)
 
@@ -143,9 +143,9 @@ class test_http_vs_https_dist(unittest.TestCase):
             self.assertIn(ecall, om_mock.mock_calls)
 
     def _mock_traceroute(self, trace_resp_1, trace_resp_2):
-        '''
+        """
         Helper method: Mocks scapy 'traceroute' function
-        '''
+        """
         https_tracerout_obj_1 = Mock()
         https_tracerout_obj_1.get_trace = MagicMock(return_value=trace_resp_1)
         resp_tuple_1 = (https_tracerout_obj_1, None)

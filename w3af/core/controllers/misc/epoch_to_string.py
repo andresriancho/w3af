@@ -1,4 +1,4 @@
-'''
+"""
 epoch_to_string.py
 
 Copyright 2006 Andres Riancho
@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 import datetime
 
 
 def epoch_to_string(start_time):
-    '''
+    """
     :return: A string that represents in weeks/days/hours/minutes/seconds
     how much time the scan lasted.
 
@@ -40,7 +40,7 @@ def epoch_to_string(start_time):
     >>> epoch_to_string(now - 61)
     '1 minute 1 second.'
 
-    '''
+    """
     time_diff = time.time() - start_time
     time_delta = datetime.timedelta(seconds=time_diff)
 

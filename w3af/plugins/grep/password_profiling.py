@@ -1,4 +1,4 @@
-'''
+"""
 password_profiling.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.controllers.output_manager as om
@@ -31,11 +31,11 @@ from w3af.core.data.constants.common_words import common_words
 
 
 class password_profiling(GrepPlugin):
-    '''
+    """
     Create a list of possible passwords by reading HTTP response bodies.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     COMMON_WORDS = common_words
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
 
@@ -55,13 +55,13 @@ class password_profiling(GrepPlugin):
         self._plugins = []
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point. Get responses, analyze words, create dictionary.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None.
-        '''
+        """
         if not self.got_lang():
             return
 
@@ -86,12 +86,12 @@ class password_profiling(GrepPlugin):
                 kb.kb.raw_write(self, 'password_profiling', new_data)
     
     def got_lang(self):
-        '''
+        """
         Initial setup that's run until we have the language or lang plugin
         gave up
         
         :return: True if we were able to get the language from the lang plugin
-        '''
+        """
         if self._init:
             captured_lang = kb.kb.raw_read('lang', 'lang')
             if captured_lang is None or captured_lang == []:
@@ -106,11 +106,11 @@ class password_profiling(GrepPlugin):
         return True
     
     def _trim_data(self, data):
-        '''
+        """
         If the dict grows a lot, I want to trim it. Basically, if
         it grows to a length of more than 2000 keys, I'll trim it
         to 1000 keys.
-        '''
+        """
         if len(data) > 2000:
             def sortfunc(x_obj, y_obj):
                 return cmp(y_obj[1], x_obj[1])
@@ -131,9 +131,9 @@ class password_profiling(GrepPlugin):
         return new_data
                 
     def merge_maps(self, old_data, data, request, lang):
-        '''
+        """
         "merge" both maps and update the repetitions
-        '''
+        """
         if lang not in self.COMMON_WORDS.keys():
             lang = 'unknown'
             
@@ -153,13 +153,13 @@ class password_profiling(GrepPlugin):
         return old_data
     
     def _run_plugins(self, response):
-        '''
+        """
         Runs password profiling plugins to collect data from HTML, TXT,
         PDF, etc files.
         
         :param response: A HTTPResponse object
         :return: A map with word:repetitions
-        '''
+        """
         # Create plugin instances only once
         if not self._plugins:
             for plugin_name in self._plugins_names_dict:
@@ -180,9 +180,9 @@ class password_profiling(GrepPlugin):
         return res
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
 
@@ -213,17 +213,17 @@ class password_profiling(GrepPlugin):
                     om.out.information(msg)
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
                  the current one.
-        '''
+        """
         return ['grep.lang']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin creates a list of possible passwords by reading responses
         and counting the most common words.
-        '''
+        """

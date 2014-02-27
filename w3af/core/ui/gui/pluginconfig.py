@@ -1,4 +1,4 @@
-'''
+"""
 pluginconfig.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 import os
@@ -31,7 +31,7 @@ from w3af.core.controllers.misc.homeDir import get_home_dir
 
             
 class OptionsPanel(gtk.VBox):
-    '''Panel with options for configuration.
+    """Panel with options for configuration.
 
     :param plugin_tree: The plugin tree where the plugins are chosen.
     :param plugin: The selected plugin, for which the configuration is.
@@ -44,7 +44,7 @@ class OptionsPanel(gtk.VBox):
         - save and revert buttons, at the end
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, plugin_tree, plugin, title, longdesc):
         super(OptionsPanel, self).__init__()
         self.set_spacing(5)
@@ -84,22 +84,22 @@ class OptionsPanel(gtk.VBox):
         self.show()
 
     def config_changed(self, like_initial):
-        '''Propagates the change from the options.
+        """Propagates the change from the options.
 
         :param like_initial: If the config is like the initial one
-        '''
+        """
         self.plugin_tree.config_changed(like_initial)
 
 
 class ConfigPanel(gtk.VBox):
-    '''Configuration panel administrator.
+    """Configuration panel administrator.
 
     Handles the creation of each configuration panel for each plugin.
 
     :param profileDescription: The description of the selected profile, if any
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, profileDescription=None):
         super(ConfigPanel, self).__init__(False, 0)
 
@@ -123,12 +123,12 @@ class ConfigPanel(gtk.VBox):
         self.created_panels = {}
 
     def config(self, plugin_tree, plugin, longdesc):
-        '''Creates and shows the configuration panel.
+        """Creates and shows the configuration panel.
 
         :param plugin_tree: The plugin tree that lists all plugins of this type
         :param plugin: the plugin to configure
         :param longdesc: the long description of the plugin
-        '''
+        """
         # A title with the name of the plugin in bold and with a bigger font
         title = "<b><big>" + plugin.get_name() + "</big></b>\n\n"
 
@@ -149,14 +149,14 @@ class ConfigPanel(gtk.VBox):
         self.widg = newwidg
 
     def clear(self, title=None, longdesc='', label=""):
-        '''Shows an almost empty panel when there's no configuration.
+        """Shows an almost empty panel when there's no configuration.
 
         :param title: the title to show in the top (optional)
         :param title: the long description for the plugin to show in the top (optional)
         :param label: a message to the middle of the panel (optional).
 
         When it does not receive nothing, the panel is clean.
-        '''
+        """
         vbox = gtk.VBox()
         vbox.set_spacing(5)
 
@@ -186,14 +186,14 @@ class ConfigPanel(gtk.VBox):
 
 
 class PluginTree(gtk.TreeView):
-    '''A tree showing all the plugins grouped by type.
+    """A tree showing all the plugins grouped by type.
 
     :param mainwin: The mainwin where the scanok button leaves.
     :param w3af: The main core class.
     :param config_panel: The configuration panel, to handle each plugin config
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, style, config_panel):
         self.mainwin = w3af.mainwin
         self.w3af = w3af
@@ -288,7 +288,7 @@ class PluginTree(gtk.TreeView):
         self.show()
 
     def _doubleClick(self, widg, event):
-        '''If double click, expand/collapse the row.'''
+        """If double click, expand/collapse the row."""
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
             if self.row_expanded(path):
@@ -297,19 +297,19 @@ class PluginTree(gtk.TreeView):
                 self.expand_row(path, False)
 
     def _getEditablePlugin(self, pname, ptype):
-        '''Returns if the plugin has options.'''
+        """Returns if the plugin has options."""
         plugin = self.w3af.plugins.get_plugin_inst(ptype, pname)
         options = plugin.get_options()
         return bool(len(options))
 
     def config_changed(self, like_initial):
-        '''Shows in the tree when a plugin configuration changed.
+        """Shows in the tree when a plugin configuration changed.
 
         :param like_initial: if some of the configuration changed
 
         If changed, puts the plugin name in bold. If any of the plugin in a
         type is bold, the type name is also bold.
-        '''
+        """
         # modify the label of the leaf in the tree
         path = self.get_cursor()[0]
         row = self.treestore[path]
@@ -339,11 +339,11 @@ class PluginTree(gtk.TreeView):
         self.mainwin.scanok.change(self, isallok)
 
     def _get_plugin_inst(self, path):
-        '''Caches the plugin instance.
+        """Caches the plugin instance.
 
         :param path: where the user is in the plugin tree
         :return The plugin
-        '''
+        """
         try:
             return self.plugin_instances[path]
         except KeyError:
@@ -363,11 +363,11 @@ class PluginTree(gtk.TreeView):
         return plugin
 
     def popup_menu(self, tv, event):
-        '''Shows a menu when you right click on a plugin.
+        """Shows a menu when you right click on a plugin.
 
         :param tv: the treeview.
         :param event: The GTK event
-        '''
+        """
         if event.button == 3:
             # It's a right click !
             _time = event.time
@@ -396,25 +396,25 @@ class PluginTree(gtk.TreeView):
                 gm.popup(None, None, None, event.button, _time)
 
     def _handleReloadPluginEvent(self, widget, plugin_name, plugin_type, path):
-        '''
+        """
         I get here when the user right clicks on a plugin name, then he clicks on "Reload plugin"
         This method calls the plugin editor with the corresponding parameters.
-        '''
+        """
         self._finishedEditingPlugin(path, plugin_type, plugin_name)
 
     def _handleEditPluginEvent(self, widget, plugin_name, plugin_type, path):
-        '''
+        """
         I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
         This method calls the plugin editor with the corresponding parameters.
-        '''
+        """
         def f(t, n):
             self._finishedEditingPlugin(path, plugin_type, plugin_name)
         pluginEditor(plugin_type, plugin_name, f)
 
     def _finishedEditingPlugin(self, path, plugin_type, plugin_name):
-        '''
+        """
         This is a callback that is called when the plugin editor finishes.
-        '''
+        """
         # remove the edited plugin from cache
         del self.plugin_instances[path]
 
@@ -436,10 +436,10 @@ class PluginTree(gtk.TreeView):
                 self.configure_plugin()
 
     def configure_plugin(self, tv=None):
-        '''Starts the plugin configuration.
+        """Starts the plugin configuration.
 
         :param tv: the treeview.
-        '''
+        """
         (path, column) = self.get_cursor()
         if path is None:
             return
@@ -457,11 +457,11 @@ class PluginTree(gtk.TreeView):
             self.config_panel.config(self, plugin, longdesc)
 
     def _get_children(self, path):
-        '''Finds the children of a path.
+        """Finds the children of a path.
 
         :param path: the path to find the children.
         :return Yields the childrens.
-        '''
+        """
 
         father = self.treestore.get_iter(path)
         howmanychilds = self.treestore.iter_n_children(father)
@@ -471,7 +471,7 @@ class PluginTree(gtk.TreeView):
             yield treerow
 
     def activate_plugin(self, cell, path):
-        '''Handles the plugin activation/deactivation.
+        """Handles the plugin activation/deactivation.
 
         :param cell: the cell that generated the signal.
         :param path: the path that clicked the user.
@@ -481,7 +481,7 @@ class PluginTree(gtk.TreeView):
 
         If the father gets activated/deactivated, all the children follow the
         same fate.
-        '''
+        """
         # can not play with this particular plugin
         treerow = self.treestore[path]
         plugin_fam = treerow[0]
@@ -549,10 +549,10 @@ class PluginTree(gtk.TreeView):
         self.mainwin.profiles.profile_changed()
 
     def get_activated_plugins(self):
-        '''Return the activated plugins.
+        """Return the activated plugins.
 
         :return: all the plugins that are active.
-        '''
+        """
         result = []
         for row in self.treestore:
             plugins = []
@@ -566,8 +566,8 @@ class PluginTree(gtk.TreeView):
         return result
 
     def _askUser(self, msg):
-        '''Displays `msg` on a modal dialog and returns the user's reponse
-        '''
+        """Displays `msg` on a modal dialog and returns the user's reponse
+        """
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION,
                                 gtk.BUTTONS_YES_NO, msg)
         user_response = dlg.run()
@@ -576,13 +576,13 @@ class PluginTree(gtk.TreeView):
 
 
 class PluginConfigBody(gtk.VBox):
-    '''The main Plugin Configuration Body.
+    """The main Plugin Configuration Body.
 
     :param mainwin: the tab of the main notepad
     :param w3af: the main core class
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, mainwin, w3af):
         super(PluginConfigBody, self).__init__()
         self.w3af = w3af
@@ -629,7 +629,7 @@ class PluginConfigBody(gtk.VBox):
         self.show()
 
     def _buildpan(self, profileDescription=None):
-        '''Builds the panel.'''
+        """Builds the panel."""
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
         leftpan = entries.RememberingVPaned(
             self.w3af, "pane-plugconfigleft", 320)
@@ -669,7 +669,7 @@ class PluginConfigBody(gtk.VBox):
         return pan
 
     def _advancedTarget(self, widg):
-        '''Builds the advanced target widget.'''
+        """Builds the advanced target widget."""
         # overwrite the plugin info with the target url
         configurable_target = self.w3af.target
         url = self.target.get_text()
@@ -684,14 +684,14 @@ class PluginConfigBody(gtk.VBox):
         self.target.set_text_wrapper(options['target'].get_value_str())
 
     def get_activated_plugins(self):
-        '''Return the activated plugins.
+        """Return the activated plugins.
 
         :return: all the plugins that are active.
-        '''
+        """
         return self.std_plugin_tree.get_activated_plugins() + self.out_plugin_tree.get_activated_plugins()
 
     def edit_selected_plugin(self):
-        '''Edits the selected plugin.'''
+        """Edits the selected plugin."""
         treeToUse = None
         if self.out_plugin_tree.is_focus():
             treeToUse = self.out_plugin_tree
@@ -711,7 +711,7 @@ class PluginConfigBody(gtk.VBox):
             treeToUse._handleEditPluginEvent(None, pname, ptype, path)
 
     def reload(self, profileDescription):
-        '''Reloads all the configurations.'''
+        """Reloads all the configurations."""
         # target url
         configurable_obj = self.w3af.target
         options = configurable_obj.get_options()
@@ -731,7 +731,7 @@ class PluginConfigBody(gtk.VBox):
         self.pan = newpan
 
     def _key(self, widg, event):
-        '''Handles keystrokes.'''
+        """Handles keystrokes."""
         # ctrl-something
         if event.state & gtk.gdk.CONTROL_MASK:
             if event.keyval == self.key_l:   # -l

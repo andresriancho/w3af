@@ -1,4 +1,4 @@
-'''
+"""
 test_strange_parameters.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -85,10 +85,10 @@ class test_strange_parameters(unittest.TestCase):
                                         'strange_parameters')), 1)
 
     def test_multi(self):
-        body = '''<html>
+        body = """<html>
                   <a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a>
                   <a href="http://moth/abc.jsp?call=s(12,3)">x</a>
-                  </html>'''
+                  </html>"""
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_parameters',

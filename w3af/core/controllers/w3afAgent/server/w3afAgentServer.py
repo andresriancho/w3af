@@ -1,4 +1,4 @@
-'''
+"""
 w3afAgentServer.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import os
 import socket
@@ -32,12 +32,12 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class ConnectionManager(Process):
-    '''
+    """
     This is a service that listens on some port and waits for the w3afAgentClient
     to connect. It keeps the connections alive so they can be used by a TCPRelay
     object in order to relay the data between the w3afAgentServer and the
     w3afAgentClient.
-    '''
+    """
     def __init__(self, ip_address, port):
         Process.__init__(self)
         self.daemon = True
@@ -67,11 +67,11 @@ class ConnectionManager(Process):
         om.out.debug('Stoped connection manager.')
 
     def run(self):
-        '''
+        """
         Thread entry point.
 
         :return: None
-        '''
+        """
 
         #    Start listening
         try:
@@ -103,9 +103,9 @@ class ConnectionManager(Process):
                     om.out.console('w3afAgent service is up and running.')
 
     def is_working(self):
-        '''
+        """
         :return: Did the remote agent connected to me ?
-        '''
+        """
         return self._reportedConnection
 
     def get_connection(self):
@@ -249,9 +249,9 @@ class w3afAgentServer(Process):
         self._error = ''
 
     def run(self):
-        '''
+        """
         Entry point for the thread.
-        '''
+        """
         try:
             self._cm = ConnectionManager(self._ip_address, self._listen_port)
             self._cm.start()

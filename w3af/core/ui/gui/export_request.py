@@ -1,4 +1,4 @@
-'''
+"""
 export_request.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.ui.gui import entries
@@ -41,10 +41,10 @@ Content-Type: application/x-www-form-urlencoded
 
 
 class export_request(entries.RememberingWindow):
-    '''Infrastructure to export HTTP requests.
+    """Infrastructure to export HTTP requests.
 
     :author: Andres Riancho < andres.riancho | gmail.com >
-    '''
+    """
     def __init__(self, w3af, initial_request=None):
         super(export_request, self).__init__(
             w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
@@ -114,7 +114,7 @@ class export_request(entries.RememberingWindow):
         self.show_all()
 
     def _export(self, widg, combo):
-        '''Exports the upper text.'''
+        """Exports the upper text."""
         opc = combo.get_active()
         func = self._exporters[opc][1]
 
@@ -127,9 +127,9 @@ class export_request(entries.RememberingWindow):
             self.exported_text.set_text(exported_request)
 
     def _save_as(self, widg):
-        '''
+        """
         Save the exported data to a file using a file chooser.
-        '''
+        """
         chooser = gtk.FileChooserDialog(
             title='Save as...', action=gtk.FILE_CHOOSER_ACTION_SAVE,
             buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))

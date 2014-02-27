@@ -1,4 +1,4 @@
-'''
+"""
 url_parameter.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 from w3af.core.data.parsers.url import URL
@@ -26,7 +26,7 @@ from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class URLParameterHandler(urllib2.BaseHandler):
-    '''
+    """
     Appends a user configured URL parameter to the request URL.
     e.g.: http://www.myserver.com/index.html;jsessionid=dd18fa45014ce4fc?id=5
 
@@ -35,7 +35,7 @@ class URLParameterHandler(urllib2.BaseHandler):
     See Section 3.2.2 of RFC 1738
 
     :author: Kevin Denver ( muffysw@hotmail.com )
-    '''
+    """
 
     def __init__(self, url_param):
         self._url_parameter = url_param

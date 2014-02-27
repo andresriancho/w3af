@@ -1,4 +1,4 @@
-'''
+"""
 wordpress_fingerprint.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import hashlib
 import os
 import re
@@ -39,10 +39,10 @@ from w3af.core.data.kb.info import Info
 
 
 class wordpress_fingerprint(CrawlPlugin):
-    '''
+    """
     Finds the version of a WordPress installation.
     :author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
-    '''
+    """
     # Wordpress version unique data, file/data/version
     WP_VERSIONS_XML = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                    'wordpress_fingerprint',
@@ -57,11 +57,11 @@ class wordpress_fingerprint(CrawlPlugin):
                                         'wordpress_fingerprint', 'release.db')
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         Finds the version of a WordPress installation.
         :param fuzzable_request: A fuzzable_request instance that contains
         (among other things) the URL to test.
-        '''
+        """
         if not self._exec:
             # This will remove the plugin from the crawl plugins to be run.
             raise w3afRunOnce()
@@ -89,16 +89,16 @@ class wordpress_fingerprint(CrawlPlugin):
                 self.output_queue.put(fr)
 
     def _fingerprint_wordpress(self, domain_path, wp_unique_url, response):
-        '''
+        """
         Fingerprint wordpress using various techniques.
-        '''
+        """
         self._fingerprint_meta(domain_path, wp_unique_url, response)
         self._fingerprint_data(domain_path, wp_unique_url, response)
         self._fingerprint_readme(domain_path, wp_unique_url, response)
         self._fingerprint_installer(domain_path, wp_unique_url, response)
 
     def _fingerprint_installer(self, domain_path, wp_unique_url, response):
-        '''
+        """
         GET latest.zip and latest.tar.gz and compare with the hashes from the
         release.db that was previously generated from wordpress.org [0]
         and contains all release hashes.
@@ -106,7 +106,7 @@ class wordpress_fingerprint(CrawlPlugin):
         This gives the initial wordpress version, not the current one.
 
         [0] http://wordpress.org/download/release-archive/
-        '''
+        """
         zip_url = domain_path.url_join('latest.zip')
         tar_gz_url = domain_path.url_join('latest.tar.gz')
         install_urls = [zip_url, tar_gz_url]
@@ -146,9 +146,9 @@ class wordpress_fingerprint(CrawlPlugin):
                     om.out.information(i.get_desc())
 
     def _fingerprint_readme(self, domain_path, wp_unique_url, response):
-        '''
+        """
         GET the readme.html file and extract the version information from there.
-        '''
+        """
         wp_readme_url = domain_path.url_join('readme.html')
         response = self._uri_opener.GET(wp_readme_url, cache=True)
 
@@ -171,9 +171,9 @@ class wordpress_fingerprint(CrawlPlugin):
             om.out.information(i.get_desc())
 
     def _fingerprint_meta(self, domain_path, wp_unique_url, response):
-        '''
+        """
         Check if the wp version is in index header
-        '''
+        """
         # Main scan URL passed from w3af + wp index page
         wp_index_url = domain_path.url_join('index.php')
         response = self._uri_opener.GET(wp_index_url, cache=True)
@@ -198,9 +198,9 @@ class wordpress_fingerprint(CrawlPlugin):
             om.out.information(i.get_desc())
 
     def _fingerprint_data(self, domain_path, wp_unique_url, response):
-        '''
+        """
         Find wordpress version from data
-        '''
+        """
         for wp_fingerprint in self._get_wp_fingerprints():
             
             # The URL in the XML is relative AND it has two different variables
@@ -234,9 +234,9 @@ class wordpress_fingerprint(CrawlPlugin):
                 break
 
     def _get_wp_fingerprints(self):
-        '''
+        """
         :return: Parse the XML and return a list of fingerprints.
-        '''
+        """
         try:
             wordpress_fp_fd = codecs.open(self.WP_VERSIONS_XML, 'r', 'utf-8',
                                           errors='ignore')
@@ -261,21 +261,21 @@ class wordpress_fingerprint(CrawlPlugin):
         return wp_handler.fingerprints
     
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds the version of a WordPress installation by fingerprinting
         it.
 
         It first checks whether or not the version is in the index header and
         then it checks for the "real version" through the existance of files
         that are only present in specific versions.
-        '''
+        """
 
 
 class WPVersionsHandler(ContentHandler):
-    '''
+    """
     Parse https://github.com/wpscanteam/wpscan/blob/master/data/wp_versions.xml
     
     Example content:
@@ -289,7 +289,7 @@ class WPVersionsHandler(ContentHandler):
         <version>1.2-delta</version>
       </hash>
     </file>
-    '''
+    """
     def __init__(self):
         self.file_src = ''
         self.hash_md5 = ''

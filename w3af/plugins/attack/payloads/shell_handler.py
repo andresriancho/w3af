@@ -1,4 +1,4 @@
-'''
+"""
 shell_handler.py
 
 Copyright 2009 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os.path
 import base64
 
@@ -32,18 +32,18 @@ SHELL_IDENTIFIER = SHELL_IDENTIFIER_1 + SHELL_IDENTIFIER_2
 
 
 def get_webshells(extension, force_extension=False):
-    '''
+    """
     This method returns a webshell content to be used in exploits, based on
     the extension, or based on the x-powered-by header.
 
     Plugins calling this function, should depend on "infrastructure.server_header"
     if they want to use the complete power if this function.
-    '''
+    """
     return _get_file_list('webshell', extension, force_extension)
 
 
 def get_shell_code(extension, force_extension=False):
-    '''
+    """
     Like getShell, but instead of returning a list of the contents of a web shell,
     that you can upload to a server and execute, this method returns the CODE
     used to exploit an eval() vulnerability.
@@ -56,7 +56,7 @@ def get_shell_code(extension, force_extension=False):
             "system( $_GET['cmd'] )"
 
     :return: The CODE of the web shell, suitable to use in an eval() exploit.
-    '''
+    """
     return _get_file_list('code', extension, force_extension)
 
 
@@ -82,14 +82,14 @@ def extract_result(body):
 
 
 def _get_file_list(type_of_list, extension, force_extension=False):
-    '''
+    """
     :param type_of_list: Indicates what type of list to return, options:
         - code
         - webshell
 
     :return: A list with tuples of filename and extension for the webshells
              available in the webshells directory.
-    '''
+    """
     known_framework = []
     uncertain_framework = []
     

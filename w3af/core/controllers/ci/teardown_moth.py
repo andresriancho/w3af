@@ -13,11 +13,11 @@ TRACEBACK = 'Traceback (most recent call last)'
 
 
 def check_traceback_in_log():
-    '''
+    """
     I don't want any tracebacks in the django-moth log. Tracebacks, even
     in this vulnerable application, should be handled properly. They usually
     tell me that I forgot something.
-    '''
+    """
     for log_file in (HTTP_LOG, SSL_LOG):
         
         log_path = os.path.join(ARTIFACTS_DIR, log_file)

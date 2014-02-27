@@ -1,4 +1,4 @@
-'''
+"""
 test_scalable_bloom.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -29,10 +29,10 @@ from w3af.core.data.bloomfilter.wrappers import GenericBloomFilter
 
 class WrappedFileSeekBloomFilter(GenericBloomFilter):
     def __init__(self, capacity, error_rate):
-        '''
+        """
         :param capacity: How many items you want to store, eg. 10000
         :param error_rate: The acceptable false positive rate, eg. 0.001
-        '''
+        """
         GenericBloomFilter.__init__(self, capacity, error_rate)
 
         temp_file = self.get_temp_file()

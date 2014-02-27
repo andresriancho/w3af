@@ -1,4 +1,4 @@
-'''
+"""
 url_session.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -28,11 +28,11 @@ from w3af.core.data.kb.info import Info
 
 
 class url_session(GrepPlugin):
-    '''
+    """
     Finds URLs which have a parameter that holds the session ID. 
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     
     SESSID_PARAMS = ALL_COOKIES
     
@@ -41,20 +41,20 @@ class url_session(GrepPlugin):
         self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, find the blank bodies and report them.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         self.analyze_uri(request, response)
         self.analyze_document_links(request, response)
     
     def _has_sessid(self, uri):
-        '''
+        """
         :return: A set which contains the session ID parameters (if any)
-        '''
+        """
         sessid_in_uri = set()
         if uri.has_query_string():
             query_string = uri.get_querystring()
@@ -63,9 +63,9 @@ class url_session(GrepPlugin):
         return sessid_in_uri
         
     def analyze_document_links(self, request, response):
-        '''
+        """
         Find session IDs in the URI and store them in the KB.
-        '''
+        """
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(response)
         except:
@@ -95,9 +95,9 @@ class url_session(GrepPlugin):
     
     
     def analyze_uri(self, request, response):
-        '''
+        """
         Find session IDs in the URI and store them in the KB.
-        '''
+        """
         request_uri = request.get_uri()
         if self._has_sessid(request_uri) and \
         response.get_url() not in self._already_reported:
@@ -117,14 +117,14 @@ class url_session(GrepPlugin):
                 self.kb_append(self, 'url_session', i)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds URLs which contain a parameter that stores the
         session ID.
         
         This configuration leaves the session id exposed in browser
         and server logs, and is also leaked through the HTTP referrer
         header.
-        '''
+        """

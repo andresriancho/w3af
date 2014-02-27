@@ -1,4 +1,4 @@
-'''
+"""
 test_xmlrpc.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 import unittest
 import xml.sax
@@ -31,7 +31,7 @@ class TestXMLRPC(unittest.TestCase):
     def test_reader(self):
         handler = xmlrpc_read_handler()
 
-        s = '''
+        s = """
          <array>
            <data>
              <value><i4>1404</i4></value>
@@ -39,7 +39,7 @@ class TestXMLRPC(unittest.TestCase):
              <value><i4>1</i4></value>
              <value><string>Spam eggs</string></value>
            </data>
-         </array>'''
+         </array>"""
 
         xml.sax.parseString(s, handler)
 
@@ -55,23 +55,23 @@ class TestXMLRPC(unittest.TestCase):
 
         handler = xmlrpc_write_handler(fuzzable_parameters)
 
-        original = '''<array>
+        original = """<array>
            <data>
              <value a="ab"><i4>1404</i4></value>
              <value><string>Foo bar</string></value>
              <value><i4>1</i4></value>
              <value><string>Spam eggs</string></value>
            </data>
-         </array>'''
+         </array>"""
 
-        fuzzed = '''<array>
+        fuzzed = """<array>
            <data>
              <value a="ab"><i4>1404</i4></value>
              <value><string>&lt;script&gt;alert(1)&lt;/script&gt;</string></value>
              <value><i4>1</i4></value>
              <value><string>Spam eggs</string></value>
            </data>
-         </array>'''
+         </array>"""
 
         xml.sax.parseString(original, handler)
         self.assertEqual(handler.fuzzed_xml_string, fuzzed)

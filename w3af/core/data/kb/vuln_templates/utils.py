@@ -1,4 +1,4 @@
-'''
+"""
 utils.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import types
 
@@ -27,9 +27,9 @@ from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 
 
 def get_all_templates():
-    '''
+    """
     :return: A list with instances of all available templates
-    '''
+    """
     templates = []
     location = [ROOT_PATH, 'core', 'data', 'kb', 'vuln_templates']
     template_path = os.path.join(*location)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 test_HTTPResponse.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 import cPickle
 import msgpack
@@ -51,17 +51,17 @@ class TestHTTPResponse(unittest.TestCase):
         return HTTPResponse(200, body, headers, url, url)
 
     def test_unicode_body_no_charset(self):
-        '''
+        """
         A charset *must* be passed as arg when creating a new
         HTTPResponse; otherwise expect an error.
-        '''
+        """
         self.assertRaises(AssertionError, self.resp.get_body)
 
     def test_rawread_is_none(self):
-        '''
+        """
         Guarantee that the '_raw_body' attr is set to None after
         used (Memory optimization)
-        '''
+        """
         resp = self.resp
         resp.set_charset('utf-8')
         # Use the 'raw body'

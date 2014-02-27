@@ -1,4 +1,4 @@
-'''
+"""
 seed.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import traceback
 
 from multiprocessing.dummy import Queue, Process
@@ -34,16 +34,16 @@ from w3af.core.data.request.factory import create_fuzzable_requests
 
 
 class seed(Process):
-    '''
+    """
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the crawl plugins and identified vulnerabilities by performing various
     requests.
-    '''
+    """
 
     def __init__(self, w3af_core):
-        '''
+        """
         :param w3af_core: The w3af core that we'll use for status reporting
-        '''
+        """
         super(seed, self).__init__(name='SeedController')
         self.name = 'Seed'
 
@@ -65,14 +65,14 @@ class seed(Process):
         return
 
     def seed_output_queue(self, target_urls):
-        '''
+        """
         Create the first fuzzable request objects based on the targets and put
         them in the output Queue.
 
         This will start the whole discovery process, since plugins are going
         to consume from that Queue and then put their results in it again in
         order to continue discovering.
-        '''
+        """
         # We only want to scan pages that are in current scope
         in_scope = lambda fr: fr.get_url().get_domain() == url.get_domain()
 

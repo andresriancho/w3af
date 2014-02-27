@@ -1,4 +1,4 @@
-'''
+"""
 test_xml_file.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import StringIO
 
@@ -102,11 +102,11 @@ class XMLParser:
     _data_parts = []
     
     def start(self, tag, attrib):
-        '''
+        """
         <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability"
                        plugin="xss" severity="Medium" url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
                        var="text">
-        '''
+        """
         if tag == 'vulnerability':
             name = attrib['name']
             plugin = attrib['plugin']
@@ -143,12 +143,12 @@ class XMLParser:
 
 
 def validate_XML(content, schema_content):
-    '''
+    """
     Validate an XML against an XSD.
 
     :return: The validation error log as a string, an empty string is returned
              when there are no errors.
-    '''
+    """
     xml_schema_doc = etree.parse(schema_content)
     xml_schema = etree.XMLSchema(xml_schema_doc)
     xml = etree.parse(StringIO.StringIO(content))

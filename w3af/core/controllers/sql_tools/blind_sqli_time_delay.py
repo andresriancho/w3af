@@ -1,4 +1,4 @@
-'''
+"""
 blind_sqli_time_delay.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
@@ -28,24 +28,24 @@ from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 
 
 class blind_sqli_time_delay(object):
-    '''
+    """
     This class tests for blind SQL injection bugs using time delays, the logic
     is here and not as an audit plugin because this logic is also used in
     attack plugins.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, uri_opener):
         self._uri_opener = uri_opener
 
     def is_injectable(self, mutant):
-        '''
+        """
         Check if this mutant is delay injectable or not.
 
         @mutant: The mutant object that I have to inject to
         :return: A vulnerability object or None if nothing is found
-        '''
+        """
         for delay_obj in self._get_delays():
 
             ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
@@ -70,14 +70,14 @@ class blind_sqli_time_delay(object):
         return None
 
     def _get_delays(self):
-        '''
+        """
         :return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.
                  
                  IMPORTANT: Note that I need this function that generates
                  unique instances of the delay objects! Adding this to a list
                  that's defined at the class level will bring threading issues
-        '''
+        """
         res = []
 
         # MSSQL

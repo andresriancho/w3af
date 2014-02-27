@@ -1,4 +1,4 @@
-'''
+"""
 localproxy.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import Queue
 import re
@@ -35,13 +35,13 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
 class w3afLocalProxyHandler(w3afProxyHandler):
-    '''
+    """
     The handler that traps requests and adds them to the queue.
-    '''
+    """
     def do_ALL(self):
-        '''
+        """
         This method handles EVERY request that were send by the browser.
-        '''
+        """
         # First of all, we create a fuzzable request based on the attributes
         # that are set to this object
         fuzzable_request = self._create_fuzzable_request()
@@ -112,10 +112,10 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 
 
     def _fix_content_length(self, head, postdata):
-        '''
+        """
         The user may have changed the postdata of the request, and not the
         content-length header; so we are going to fix that problem.
-        '''
+        """
         fuzzable_request = HTTPRequestParser(head, postdata)
         
         if fuzzable_request.get_data() is None:
@@ -130,9 +130,9 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         return head, postdata
 
     def _send_fuzzable_request(self, fuzzable_request):
-        '''
+        """
         Sends a fuzzable request to the remote web server.
-        '''
+        """
         uri = fuzzable_request.get_uri()
         data = fuzzable_request.get_data()
         headers = fuzzable_request.get_headers()
@@ -151,7 +151,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         return res
 
     def _should_be_trapped(self, fuzzable_request):
-        '''
+        """
         Determine, based on the user configured parameters:
             - self._what_to_trap
             - self._methods_to_trap
@@ -160,7 +160,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
 
         If the request needs to be trapped or not.
         :param fuzzable_request: The request to analyze.
-        '''
+        """
         if not self.server.w3afLayer._trap:
             return False
 
@@ -178,14 +178,14 @@ class w3afLocalProxyHandler(w3afProxyHandler):
 
 
 class LocalProxy(Proxy):
-    '''
+    """
     This is the local proxy server that is used by the local proxy GTK user
     interface to perform all its magic ;)
-    '''
+    """
 
     def __init__(self, ip, port, urlOpener=ExtendedUrllib(),
                  proxy_cert=Proxy.SSL_CERT):
-        '''
+        """
         :param ip: IP address to bind
         :param port: Port to bind
         :param urlOpener: The urlOpener that will be used to open the requests
@@ -194,7 +194,7 @@ class LocalProxy(Proxy):
                              from the browser
         :param proxy_cert: Proxy certificate to use, this is needed for
                            proxying SSL connections.
-        '''
+        """
         Proxy.__init__(self, ip, port, urlOpener, w3afLocalProxyHandler,
                        proxy_cert)
 
@@ -214,17 +214,17 @@ class LocalProxy(Proxy):
         self._fix_content_length = True
 
     def get_trapped_request(self):
-        '''
+        """
         To be called by the gtk user interface every 400ms.
         :return: A fuzzable request object, or None if the queue is empty.
-        '''
+        """
         try:
             return self._request_queue.get(block=False)
         except Queue.Empty:
             return None
 
     def set_what_to_trap(self, regex):
-        '''Set regular expression that indicates what URLs NOT TO trap.'''
+        """Set regular expression that indicates what URLs NOT TO trap."""
         try:
             self._what_to_trap = re.compile(regex)
         except re.error:
@@ -232,14 +232,14 @@ class LocalProxy(Proxy):
             raise w3afException(error)
 
     def set_methods_to_trap(self, methods):
-        '''Set list that indicates what METHODS TO trap.
+        """Set list that indicates what METHODS TO trap.
 
            If list is empty then we will trap all methods
-        '''
+        """
         self._methods_to_trap = set(i.upper() for i in methods)
 
     def set_what_not_to_trap(self, regex):
-        '''Set regular expression that indicates what URLs TO trap.'''
+        """Set regular expression that indicates what URLs TO trap."""
         try:
             self._what_not_to_trap = re.compile(regex)
         except re.error:
@@ -247,24 +247,24 @@ class LocalProxy(Proxy):
             raise w3afException(error)
 
     def set_trap(self, trap):
-        '''
+        """
         :param trap: True if we want to trap requests.
-        '''
+        """
         self._trap = trap
 
     def get_trap(self):
         return self._trap
 
     def set_fix_content_length(self, fix):
-        '''Set Fix Content Length flag.'''
+        """Set Fix Content Length flag."""
         self._fix_content_length = fix
 
     def get_fix_content_length(self):
-        '''Get Fix Content Length flag.'''
+        """Get Fix Content Length flag."""
         return self._fix_content_length
 
     def drop_request(self, orig_fuzzable_req):
-        '''Let the handler know that the request was dropped.'''
+        """Let the handler know that the request was dropped."""
         self._edited_requests[id(orig_fuzzable_req)] = (None, None)
 
     def send_raw_request(self, orig_fuzzable_req, head, postdata):

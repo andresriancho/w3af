@@ -7,11 +7,11 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class list_processes(Payload):
-    '''
+    """
     This payload shows current proccesses on the system.
 
     Usage: list_processes <max_pid>
-    '''
+    """
     def parse_proc_name(self, status_file):
         name = re.search('(?<=Name:\t)(.*)', status_file)
         if name:

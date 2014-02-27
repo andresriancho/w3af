@@ -1,4 +1,4 @@
-'''
+"""
 xst.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -31,12 +31,12 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class xst(AuditPlugin):
-    '''
+    """
     Find Cross Site Tracing vulnerabilities.
 
     :author: Josh Summitt (ascetik@gmail.com)
     :author: Andres Riancho (andres@gmail.com) - Rewrite 27 Jul 2012
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -45,9 +45,9 @@ class xst(AuditPlugin):
         self._exec = True
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Verify xst vulns by sending a TRACE request and analyzing the response.
-        '''
+        """
 
         if not self._exec:
             # Do nothing
@@ -85,10 +85,10 @@ class xst(AuditPlugin):
                 self.kb_append(self, 'xst', v)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds the Cross Site Tracing (XST) vulnerability.
         
         The TRACE method echos back requests sent to it. This plugin sends a
@@ -96,4 +96,4 @@ class xst(AuditPlugin):
         is confirmed.
 
         No configurable parameters are available.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 dom_xss.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.constants.severity as severity
@@ -28,11 +28,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class dom_xss(GrepPlugin):
-    '''
+    """
     Grep every page for traces of DOM XSS.
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
 
     JS_FUNCTIONS = ('document.write',
                     'document.writeln',
@@ -60,12 +60,12 @@ class dom_xss(GrepPlugin):
             '< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for the DOM XSS vulns.
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
 
@@ -82,11 +82,11 @@ class dom_xss(GrepPlugin):
             self.kb_append_uniq(self, 'dom_xss', v, filter_by='URL')
 
     def _smart_grep(self, response):
-        '''
+        """
         Search for the DOM XSS vulns using smart grep (context regex).
         :param response: The HTTP response object
         :return: list of dom xss items
-        '''
+        """
         res = []
         match = self._script_re.search(response.get_body())
 
@@ -103,13 +103,13 @@ class dom_xss(GrepPlugin):
         return res
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for traces of DOM XSS.
 
         An interesting paper about DOM XSS
         can be found here:
             - http://www.webappsec.org/projects/articles/071105.shtml
-        '''
+        """

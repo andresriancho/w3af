@@ -1,4 +1,4 @@
-'''
+"""
 auth.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Queue
 
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
@@ -28,12 +28,12 @@ from w3af.core.controllers.core_helpers.consumers.constants import (POISON_PILL,
 
 
 class auth(BaseConsumer):
-    '''
+    """
     Thread that logins into the application every N seconds.
-    '''
+    """
 
     def __init__(self, auth_plugins, w3af_core, timeout):
-        '''
+        """
         :param in_queue: A queue that's used to communicate with the thread. Items
                          that might appear in this queue are:
                              * POISON_PILL
@@ -41,16 +41,16 @@ class auth(BaseConsumer):
         :param auth_plugins: Instances of auth plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param timeout: The time to wait between each login check
-        '''
+        """
         super(auth, self).__init__(auth_plugins, w3af_core,
                                    thread_name='Authenticator')
 
         self._timeout = timeout
 
     def run(self):
-        '''
+        """
         Consume the queue items
-        '''
+        """
         while True:
 
             try:
@@ -77,10 +77,10 @@ class auth(BaseConsumer):
     # this action.
     @task_decorator
     def _login(self):
-        '''
+        """
         This is the method that actually calls the plugins in order to login
         to the web application.
-        '''
+        """
         for plugin in self._consumer_plugins:
             try:
                 if not plugin.is_logged():

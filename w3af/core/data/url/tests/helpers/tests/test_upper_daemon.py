@@ -1,4 +1,4 @@
-'''
+"""
 test_upper_daemon.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import socket
 
@@ -26,11 +26,11 @@ from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 
 
 class TestUpperDaemon(unittest.TestCase):
-    '''
+    """
     This is a unittest for the UpperDaemon which lives in upper_daemon.py
     
     @author: Andres Riancho <andres . riancho | gmail . com>
-    '''
+    """
     def setUp(self):
         self.upper_daemon = UpperDaemon()
         self.upper_daemon.start()

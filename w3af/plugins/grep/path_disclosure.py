@@ -1,4 +1,4 @@
-'''
+"""
 path_disclosure.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -31,11 +31,11 @@ from w3af.core.data.db.disk_list import DiskList
 
 
 class path_disclosure(GrepPlugin):
-    '''
+    """
     Grep every page for traces of path disclosure vulnerabilities.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -50,9 +50,9 @@ class path_disclosure(GrepPlugin):
         self._compile_regex()
 
     def _compile_regex(self):
-        '''
+        """
         :return: None, the result is saved in self._path_disc_regex_list
-        '''
+        """
         #
         #    I tried to enhance the performance of this plugin by putting
         #    all the regular expressions in one (1|2|3|4...|N)
@@ -66,7 +66,7 @@ class path_disclosure(GrepPlugin):
             self._compiled_regexes[path_disclosure_string] = regex
 
     def _potential_disclosures(self, html_string):
-        '''
+        """
         Taking into account that regular expressions are slow, we first
         apply this function to check if the HTML string has potential
         path disclosures.
@@ -76,7 +76,7 @@ class path_disclosure(GrepPlugin):
         and around 1/3 when potential disclosures *are* found.
 
         :return: A list of the potential path disclosures
-        '''
+        """
         potential_disclosures = []
 
         for path_disclosure_string in self._common_directories:
@@ -86,13 +86,13 @@ class path_disclosure(GrepPlugin):
         return potential_disclosures
 
     def grep(self, request, response):
-        '''
+        """
         Identify the path disclosure vulnerabilities.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, the result is saved in the kb.
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -100,9 +100,9 @@ class path_disclosure(GrepPlugin):
             self._update_KB_path_list()
         
     def find_path_disclosure(self, request, response):
-        '''
+        """
         Actually find the path disclosure vulnerabilities
-        '''
+        """
         html_string = response.get_body()
 
         for potential_disclosure in self._potential_disclosures(html_string):
@@ -166,15 +166,15 @@ class path_disclosure(GrepPlugin):
         return False
 
     def _longest(self, a, b):
-        '''
+        """
         :param a: A string.
         :param a: Another string.
         :return: The longest string.
-        '''
+        """
         return cmp(len(a), len(b))
 
     def _attr_value(self, path_disclosure_string, response_body):
-        '''
+        """
         This method was created to remove some false positives.
 
         :return: True if path_disclosure_string is the value of an attribute inside a tag.
@@ -187,17 +187,17 @@ class path_disclosure(GrepPlugin):
             path_disclosure_string = '/home/image.png'
             response_body = '...<b>Error while processing /home/image.png</b>...'
             return: False
-        '''
+        """
         regex = '<.+?(["|\']%s["|\']).*?>' % re.escape(path_disclosure_string)
         regex_res = re.findall(regex, response_body)
         in_attr = path_disclosure_string in regex_res
         return in_attr
 
     def _update_KB_path_list(self):
-        '''
+        """
         If a path disclosure was found, I can create a list of full paths to
         all URLs ever visited. This method updates that list.
-        '''
+        """
         path_disc_vulns = kb.kb.get('path_disclosure', 'path_disclosure')
         url_list = kb.kb.get_all_known_urls()
         
@@ -251,10 +251,10 @@ class path_disclosure(GrepPlugin):
         self._already_added.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for path disclosure vulnerabilities like:
 
             - C:\\www\\files\...
@@ -262,4 +262,4 @@ class path_disclosure(GrepPlugin):
 
         The results are saved to the KB, and used by all the plugins that need
         to know the location of a file inside the remote web server.
-        '''
+        """

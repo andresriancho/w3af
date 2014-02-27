@@ -1,4 +1,4 @@
-'''
+"""
 messages.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 
 from w3af.core.ui.gui.output.message_consumer import MessageConsumer
@@ -27,16 +27,16 @@ from w3af.core.data.db.disk_list import DiskList
 
 
 class _LineScroller(gtk.TextView, MessageConsumer):
-    '''The text view of the Messages window.
+    """The text view of the Messages window.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, scroll_bar, active_filter, possible):
-        '''
+        """
         :param scroll_bar: Gtk Vertical Scrollbar object
         :param active_filter: the filter active at startup.
         :param possible: all filter keys
-        '''
+        """
         gtk.TextView.__init__(self)
         MessageConsumer.__init__(self)
         
@@ -66,10 +66,10 @@ class _LineScroller(gtk.TextView, MessageConsumer):
         }
 
     def filter(self, filtinfo):
-        '''Applies a different filter to the textview.
+        """Applies a different filter to the textview.
 
         :param filtinfo: the new filter
-        '''
+        """
         self.active_filter = filtinfo
         textbuff = self.textbuffer
         textbuff.set_text("")
@@ -81,11 +81,11 @@ class _LineScroller(gtk.TextView, MessageConsumer):
         self.scroll_to_end()
 
     def handle_message(self, msg):
-        '''Adds a message to the textview.
+        """Adds a message to the textview.
 
         :param msg: The message to add to the textview
         @returns: None
-        '''
+        """
         yield super(_LineScroller, self).handle_message(msg)
 
         textbuff = self.textbuffer
@@ -112,24 +112,24 @@ class _LineScroller(gtk.TextView, MessageConsumer):
             self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def scroll_changed(self, vscrollbar):
-        '''Handle scrollbar's "value-changed" signal.
+        """Handle scrollbar's "value-changed" signal.
 
         Figure out if the scroll should be frozen. If the adjustment's value
         is not in the last page's range => means it was moved up =>
         the scroll bar should be stopped.
-        '''
+        """
         adj = vscrollbar.get_adjustment()
         self.freeze_scrollbar = \
             False if adj.value >= (adj.upper - adj.page_size) else True
 
 
 class Messages(gtk.VBox, Searchable):
-    '''The Messages window.
+    """The Messages window.
 
     It contains the checkboxes to filter and the messages theirselves.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self):
         gtk.VBox.__init__(self)
 
@@ -171,7 +171,7 @@ class Messages(gtk.VBox, Searchable):
         self.queue_draw()
 
     def type_filter(self, button, ptype):
-        '''Applies the filter selected through the checkboxes.'''
+        """Applies the filter selected through the checkboxes."""
         self.filters[ptype] = button.get_active()
         active_types = [k for k, v in self.filters.items() if v]
 

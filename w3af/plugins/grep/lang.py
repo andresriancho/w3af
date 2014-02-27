@@ -1,4 +1,4 @@
-'''
+"""
 lang.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import guess_language
@@ -31,11 +31,11 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
 
 class lang(GrepPlugin):
-    '''
+    """
     Read N pages and determines the language the site is written in.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -44,13 +44,13 @@ class lang(GrepPlugin):
         self._tries_left = 25
         
     def grep(self, request, response):
-        '''
+        """
         Get the page indicated by the fuzzable_request and determine the language
         using the preposition list.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
-        '''
+        """
         with self._plugin_lock:
             if self._exec and response.is_text_or_html() and not is_404(response):
                 
@@ -85,11 +85,11 @@ class lang(GrepPlugin):
                     kb.kb.raw_write(self, 'lang', guessed_lang)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin reads N pages and determines the language the site is written
         in. This is done by saving a list of prepositions in different languages,
         and counting the number of matches on every page.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 delayedExecution.py
 
 Copyright 2006 Andres Riancho
@@ -18,21 +18,21 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 
 class delayedExecution(object):
-    '''
+    """
     This class is a base class for crontabHandler and atHandler.
-    '''
+    """
     def __init__(self, exec_method):
         self._exec_method = exec_method
 
     def _exec(self, command):
-        '''
+        """
         A wrapper for executing commands
-        '''
+        """
         om.out.debug('Executing: "%s".' % command)
         response = apply(self._exec_method, (command,))
         om.out.debug('"%s" returned "%s".' % (command, response) )
@@ -40,10 +40,10 @@ class delayedExecution(object):
         return response
 
     def _fix_time(self, hour, minute, am_pm=''):
-        '''
+        """
         Fix the time, this is done to fix if minute == 60, or ampm changes
         from am to pm, etc...
-        '''
+        """
         hour = int(hour)
         minute = int(minute)
 

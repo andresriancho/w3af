@@ -1,4 +1,4 @@
-''''
+"""'
 motw.py
 
 Copyright 2007 Sharad Ganapathy
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -46,13 +46,13 @@ class motw(GrepPlugin):
         self._motw_re = re.compile(regex)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for motw.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -91,9 +91,9 @@ class motw(GrepPlugin):
         return i
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         # Print the results to the user
         pretty_msg = {}
         pretty_msg['motw'] = 'The following URLs contain a MOTW:'
@@ -112,10 +112,10 @@ class motw(GrepPlugin):
                         om.out.information(msg % i.get_url())
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will specify whether the page is compliant against the MOTW
         standard. The standard is explained in:
             - http://msdn2.microsoft.com/en-us/library/ms537628.aspx
@@ -129,4 +129,4 @@ class motw(GrepPlugin):
 
         If "withoutMOTW" is enabled, the plugin will show all URLs that don't
         contain a MOTW.
-        '''
+        """

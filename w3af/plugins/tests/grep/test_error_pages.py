@@ -1,4 +1,4 @@
-'''
+"""
 test_error_pages.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -53,7 +53,7 @@ class TestErrorPages(PluginTest):
         self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertTrue(info.get_name().startswith('Descriptive error page'))
 
-        '''
+        """
         infos = self.kb.get('error_pages', 'server')
         info = infos[0]
 
@@ -61,4 +61,4 @@ class TestErrorPages(PluginTest):
         self.assertEquals(self.target_url, str(info.get_url()))
         self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertTrue(info.get_name().startswith('Error page with information disclosure'))
-        '''
+        """

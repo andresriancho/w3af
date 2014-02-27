@@ -1,4 +1,4 @@
-'''This module exposes function  timelimited and two
+"""This module exposes function  timelimited and two
    classes  TimeLimited and  TimeLimitExpired.
 
    Function  timelimited can be used to invoke any
@@ -28,7 +28,7 @@
 
    The core of the function  timelimited is copied from
    <http://code.activestate.com/recipes/473878/>.
-'''
+"""
 __all__ = ('timelimited', 'TimeLimited', 'TimeLimitExpired')
 __version__ = '4  2009-06-08'
 
@@ -48,13 +48,13 @@ except AttributeError:  # _stop in Python 3.0
 
 
 class TimeLimitExpired(Exception):
-    '''Exception raised when time limit expires.
-    '''
+    """Exception raised when time limit expires.
+    """
     pass
 
 
 def timelimited(timeout, function, *args, **kwds):
-    '''Invoke the given function with the positional and
+    """Invoke the given function with the positional and
        keyword arguments under a time constraint.
 
        The function result is returned if the function
@@ -70,7 +70,7 @@ def timelimited(timeout, function, *args, **kwds):
        a ValueError is raised for negative timeout values
        and any errors occurring inside the function are
        passed along as-is.
-    '''
+    """
     class _Timelimited(Process):
         _error_ = TimeLimitExpired  # assume timeout
         _result_ = None
@@ -117,7 +117,7 @@ def timelimited(timeout, function, *args, **kwds):
 
 
 class TimeLimited(object):
-    '''Create a time limited version of any callable.
+    """Create a time limited version of any callable.
 
        For example, to limit function f to t seconds,
        first create a time limited version of f.
@@ -133,18 +133,18 @@ class TimeLimited(object):
          except TimeLimitExpired:
              r = ...  # timed out
 
-    '''
+    """
     def __init__(self, function, timeout=None):
-        '''See function  timelimited for a description
+        """See function  timelimited for a description
            of the arguments.
-        '''
+        """
         self._function = function
         self._timeout = timeout
 
     def __call__(self, *args, **kwds):
-        '''See function  timelimited for a description
+        """See function  timelimited for a description
            of the behavior.
-        '''
+        """
         return timelimited(self._timeout, self._function, *args, **kwds)
 
     def __str__(self):

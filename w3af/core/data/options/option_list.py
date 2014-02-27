@@ -1,4 +1,4 @@
-'''
+"""
 option_list.py
 
 Copyright 2008 Andres Riancho
@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exceptions import w3afException
 
 
 class OptionList(object):
-    '''
+    """
     This class represents a list of options.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         self._internal_opt_list = []
 
@@ -39,9 +39,9 @@ class OptionList(object):
         return len(self._internal_opt_list)
 
     def __repr__(self):
-        '''
+        """
         A nice way of printing your object =)
-        '''
+        """
         return '<OptionList: ' + '|'.join([i.get_name() for i in self._internal_opt_list]) + '>'
 
     def __eq__(self, other):
@@ -57,7 +57,7 @@ class OptionList(object):
         return False
 
     def __getitem__(self, item_name):
-        '''
+        """
         This method is used when on any configurable object the developer does something like:
 
         def set_options( self, optionsList ):
@@ -71,7 +71,7 @@ class OptionList(object):
         >>> opt_list['name']
         <option name:name|type:boolean|value:True>
 
-        '''
+        """
         try:
             item_name = int(item_name)
         except:

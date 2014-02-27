@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class users(Payload):
-    '''
+    """
     This payload shows users name
-    '''
+    """
     def api_read(self):
         result = {}
 

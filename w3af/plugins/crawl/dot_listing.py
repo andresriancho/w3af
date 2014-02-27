@@ -1,4 +1,4 @@
-'''
+"""
 dot_listing.py
 
 Copyright 2012 Tomas Velazquez
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -33,10 +33,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class dot_listing(CrawlPlugin):
-    '''
+    """
     Search for .listing files and extracts new filenames from it.
     :author: Tomas Velazquez ( tomas.velazquezz@gmail.com )
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -49,22 +49,22 @@ class dot_listing(CrawlPlugin):
         self._listing_parser_re = re.compile(regex_str)
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         For every directory, fetch the .listing file and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         for domain_path in fuzzable_request.get_url().get_directories():
             if domain_path not in self._analyzed_dirs:
                 self._analyzed_dirs.add(domain_path)
                 self._check_and_analyze(domain_path)
 
     def _check_and_analyze(self, domain_path):
-        '''
+        """
         Check if a .listing filename exists in the domain_path.
         :return: None, everything is saved to the self.out_queue.
-        '''
+        """
         # Request the file
         url = domain_path.url_join('.listing')
         try:
@@ -128,7 +128,7 @@ class dot_listing(CrawlPlugin):
                                      severity=v.get_severity())
 
     def _extract_info_from_listing(self, listing_file_content):
-        '''
+        """
         Extract info from .listing file content, each line looks like:
 
         -rw-r--r--    1 andresr   w3af         8139 Apr 12 13:23 foo.zip
@@ -137,15 +137,15 @@ class dot_listing(CrawlPlugin):
         (file).
 
         :return: A list with the information extracted from the listing_file_content
-        '''
+        """
         for user, group, filename in self._listing_parser_re.findall(listing_file_content):
             yield user, group, filename.strip()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin searches for the .listing file in all the directories and
         subdirectories that are sent as input and if found it will try to
         discover new URLs from its content. The .listing file holds information
@@ -158,4 +158,4 @@ class dot_listing(CrawlPlugin):
             - http://host.tld/w3af/.listing
             - http://host.tld/.listing
 
-        '''
+        """

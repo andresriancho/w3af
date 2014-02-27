@@ -1,4 +1,4 @@
-'''
+"""
 w3afException.py
 
 Copyright 2006 Andres Riancho
@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 
 class w3afException(Exception):
-    '''
+    """
     A small class that defines a w3afException.
-    '''
+    """
 
     def __init__(self, value):
         Exception.__init__(self)
@@ -35,10 +35,10 @@ class w3afException(Exception):
 
 
 class w3afRunOnce(Exception):
-    '''
+    """
     A small class that defines an exception to be raised by plugins that
     dont want to be run anymore.
-    '''
+    """
     def __init__(self, value=''):
         Exception.__init__(self)
         self.value = str(value)
@@ -48,11 +48,11 @@ class w3afRunOnce(Exception):
 
 
 class w3afMustStopException(Exception):
-    '''
+    """
     If this exception is caught by the core, then it should stop the whole
     process. This exception is raised in a few places. NOT to be used
     extensively.
-    '''
+    """
     def __init__(self, msg, errs=()):
         self.msg = str(msg)
         self.errs = errs
@@ -113,9 +113,9 @@ class w3afMustStopByUnknownReasonExc(w3afMustStopException):
 
 
 class w3afProxyException(w3afException):
-    '''
+    """
     A small class that defines a w3af Proxy Exception.
-    '''
+    """
     pass
 
 

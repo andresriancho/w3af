@@ -1,4 +1,4 @@
-'''
+"""
 rootMenu.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import time
 import select
@@ -45,10 +45,10 @@ from w3af.core.controllers.misc_settings import MiscSettings
 
 
 class rootMenu(menu):
-    '''
+    """
     Main menu
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
 
     def __init__(self, name, console, core, parent=None):
         menu.__init__(self, name, console, core, parent)
@@ -69,10 +69,10 @@ class rootMenu(menu):
         })
 
     def _cmd_start(self, params):
-        '''
+        """
         Start the core in a different thread, monitor keystrokes in the main thread.
         :return: None
-        '''
+        """
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
         if 'console' not in output_plugins:
@@ -103,19 +103,19 @@ class rootMenu(menu):
             self._w3af.stop()
 
     def _cmd_cleanup(self, params):
-        '''
+        """
         The user runs this command, when he has finished a scan, and wants to
         cleanup everything to start a new scan to another target.
 
         :return: None
-        '''
+        """
         self._w3af.cleanup()
 
     def _real_start(self):
-        '''
+        """
         Actually run core.start()
         :return: None
-        '''
+        """
         try:
             self._w3af.plugins.init_plugins()
             self._w3af.verify_environment()
@@ -129,9 +129,9 @@ class rootMenu(menu):
             raise
 
     def show_progress_on_request(self):
-        '''
+        """
         When the user hits enter, show the progress
-        '''
+        """
         while self._w3af.status.is_running():
 
             # Define some variables...
@@ -169,15 +169,15 @@ class rootMenu(menu):
                 om.out.console('')
 
     def _cmd_version(self, params):
-        '''
+        """
         Show the w3af version and exit
-        '''
+        """
         om.out.console(get_w3af_version())
 
     def join(self):
-        '''
+        """
         Wait for the scan to properly finish.
-        '''
+        """
         if self._scan_thread:
             self._scan_thread.join()
             #   After the scan finishes, there is no scan thread

@@ -1,4 +1,4 @@
-'''
+"""
 strange_parameters.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.parsers.parser_cache as parser_cache
@@ -32,11 +32,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class strange_parameters(GrepPlugin):
-    '''
+    """
     Grep the HTML response and find URIs that have strange parameters.
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -45,13 +45,13 @@ class strange_parameters(GrepPlugin):
         self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
@@ -116,9 +116,9 @@ class strange_parameters(GrepPlugin):
                         self.kb_append(self, 'strange_parameters', v)
 
     def _is_SQL(self, request, parameter, value):
-        '''
+        """
         :return: True if the parameter value contains SQL sentences
-        '''
+        """
         regex = '(SELECT .*? FROM|INSERT INTO .*? VALUES|UPDATE .*? SET .*? WHERE)'
         for match in re.findall(regex, value, re.IGNORECASE):
             if not request.sent(match):
@@ -127,9 +127,9 @@ class strange_parameters(GrepPlugin):
         return False
 
     def _is_strange(self, request, parameter, value):
-        '''
+        """
         :return: True if the parameter value is strange
-        '''
+        """
         if 'wicket:' in parameter:
             #
             #   The wicket framework uses, by default, strange URLs like this:
@@ -161,12 +161,12 @@ class strange_parameters(GrepPlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps all responses and tries to identify URIs with strange
         parameters, some examples of strange parameters are:
             - http://a/?b=method(a,c)
             - http://a/?c=x|y|z|d
-        '''
+        """

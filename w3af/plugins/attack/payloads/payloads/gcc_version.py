@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class gcc_version(Payload):
-    '''
+    """
     This payload shows the current GCC Version
-    '''
+    """
     def api_read(self):
         result = {}
 

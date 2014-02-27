@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 baseparser.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import urllib
 
@@ -30,11 +30,11 @@ from w3af.core.data.misc.encoding import is_known_encoding
 
 
 class BaseParser(object):
-    '''
+    """
     This class is an abstract document parser.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
     #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
@@ -75,22 +75,22 @@ class BaseParser(object):
         self._re_urls = set()
 
     def get_emails(self, domain=None):
-        '''
+        """
         :param domain: Indicates what email addresses I want to retrieve.
                        All are returned if the domain is not set.
 
         :return: A list of email accounts that are inside the document.
-        '''
+        """
         if domain:
             return [i for i in self._emails if domain == i.split('@')[1]]
         else:
             return self._emails
 
     def _extract_emails(self, doc_str):
-        '''
+        """
         :return: A set() with all mail users that are present in the doc_str.
         @see: We don't support emails like myself <at> gmail !dot! com
-        '''
+        """
         # Revert url-encoded sub-strings
         doc_str = urllib.unquote_plus(doc_str)
 
@@ -110,13 +110,13 @@ class BaseParser(object):
         return self._emails
 
     def _regex_url_parse(self, doc_str):
-        '''
+        """
         Use regular expressions to find new URLs.
 
         :param HTTPResponse: The http response object that stores the
             response body and the URL.
         :return: None. The findings are stored in self._re_urls as url_objects
-        '''
+        """
         re_urls = self._re_urls
 
         for url in self.URL_RE.findall(doc_str):
@@ -146,11 +146,11 @@ class BaseParser(object):
         return True
 
     def _find_relative(self, doc_str):
-        '''
+        """
 
         Now detect some relative URL's (also using regexs)
 
-        '''
+        """
         res = set()
 
         # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
@@ -183,7 +183,7 @@ class BaseParser(object):
         return res
 
     def _decode_url(self, url_string):
-        '''
+        """
         Decode `url_string` using urllib's url-unquote
         algorithm. The returned value is always a unicode string.
 
@@ -200,7 +200,7 @@ class BaseParser(object):
         == 'ind\xc3\xa9x.html'
         True
 
-        '''
+        """
         enc = self._encoding
 
         if isinstance(url_string, unicode):
@@ -242,14 +242,14 @@ class BaseParser(object):
         return dec_url
 
     def get_forms(self):
-        '''
+        """
         :return: A list of forms.
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_forms() method.')
 
     def get_references(self):
-        '''
+        """
         Searches for references on a page. w3af searches references in every
         html tag, including:
             - a
@@ -261,34 +261,34 @@ class BaseParser(object):
         :return: Two sets, one with the parsed URLs, and one with the URLs that
                  came out of a regular expression. The second list if less
                  trustworthy.
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_references() method.')
 
     def get_comments(self):
-        '''
+        """
         :return: A list of comments.
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_comments() method.')
 
     def get_scripts(self):
-        '''
+        """
         :return: A list of scripts (like javascript).
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_scripts() method.')
 
     def get_meta_redir(self):
-        '''
+        """
         :return: Returns list of meta redirections.
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_redir() method.')
 
     def get_meta_tags(self):
-        '''
+        """
         :return: Returns list of all meta tags.
-        '''
+        """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_tags() method.')

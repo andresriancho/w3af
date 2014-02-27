@@ -1,4 +1,4 @@
-'''
+"""
 finger_pks.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -31,20 +31,20 @@ from w3af.core.data.kb.info import Info
 
 
 class finger_pks(InfrastructurePlugin):
-    '''
+    """
     Search MIT PKS to get a list of users for a domain.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         root_domain = fuzzable_request.get_url().get_root_domain()
 
         pks_se = pks(self._uri_opener)
@@ -70,9 +70,9 @@ class finger_pks(InfrastructurePlugin):
             om.out.information(i.get_desc())
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds mail addresses in PGP PKS servers.
-        '''
+        """

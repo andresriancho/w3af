@@ -1,4 +1,4 @@
-'''
+"""
 common_windows_report.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 import Queue
 import threading
@@ -36,9 +36,9 @@ from w3af.core.ui.gui.constants import W3AF_ICON
 class simple_base_window(gtk.Window):
 
     def __init__(self, type=gtk.WINDOW_TOPLEVEL):
-        '''
+        """
         One simple class to create other windows.
-        '''
+        """
         super(simple_base_window, self).__init__(type=type)
 
         self.connect("delete-event", self._handle_cancel)
@@ -52,10 +52,10 @@ class simple_base_window(gtk.Window):
 
 
 class bug_report_worker(threading.Thread):
-    '''
+    """
     The simplest threading object possible to report bugs to the network without
     blocking the UI.
-    '''
+    """
     FINISHED = -1
 
     def __init__(self, bug_report_function, bugs_to_report):
@@ -67,9 +67,9 @@ class bug_report_worker(threading.Thread):
         self.output = Queue.Queue()
 
     def run(self):
-        '''
+        """
         The thread's main method, where all the magic happens.
-        '''
+        """
         for bug in self.bugs_to_report:
             result = apply(self.bug_report_function, bug)
             self.output.put(result)
@@ -78,23 +78,23 @@ class bug_report_worker(threading.Thread):
 
 
 class report_bug_show_result(gtk.MessageDialog):
-    '''
+    """
     A class that shows the result of one or more bug reports to the user. The
     window shows a "Thanks" message and links to the bugs that were generated.
 
     Unlike previous versions, this window actually sends the bugs to the network
     since we want to show the ticket IDs "in real time" to the user instead of
     reporting them all and then showing a long list of items.
-    '''
+    """
 
     def __init__(self, bug_report_function, bugs_to_report):
-        '''
+        """
         :param bug_report_function: The function that's used to report bugs.
                                     apply(bug_report_function, bug_to_report)
 
         :param bugs_to_report: An iterable with the bugs to report. These are
                                going to be the parameters for the bug_report_function.
-        '''
+        """
         gtk.MessageDialog.__init__(self,
                                    None,
                                    gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -175,9 +175,9 @@ class report_bug_show_result(gtk.MessageDialog):
         return self.reported_ids
 
     def add_result_from_worker(self):
-        '''
+        """
         Adds the results from the worker to the text that's shown in the window
-        '''
+        """
         # The links to the reported tickets
         try:
             bug_report_result = self.worker.output.get(block=False)
@@ -227,7 +227,7 @@ class report_bug_show_result(gtk.MessageDialog):
 
 
 class dlg_ask_credentials(gtk.MessageDialog):
-    '''
+    """
     A dialog that allows any exception handler to ask the user for his credentials
     before sending any bug report information to the network. The supported types
     of credentials are:
@@ -236,21 +236,21 @@ class dlg_ask_credentials(gtk.MessageDialog):
         * Email
         * Sourceforge user (soon to be deprecated, nobody uses it).
 
-    '''
+    """
 
     METHOD_ANON = 1
     METHOD_EMAIL = 2
     METHOD_GH = 3
 
     def __init__(self, invalid_login=False):
-        '''
+        """
         :return: A tuple with the following information:
                     (user_exit, method, params)
 
                 Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_GH and,
                 params is the email or the sourceforge username and password,
                 in the anon case, the params are empty.
-        '''
+        """
         gtk.MessageDialog.__init__(self,
                                    None,
                                    gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -264,9 +264,9 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.set_title('Bug report method - Step 1/2')
 
     def run(self):
-        '''
+        """
         Setup the dialog and return the results to the invoker.
-        '''
+        """
 
         msg = _('\nChoose how to report the bug(s)')
 
@@ -390,9 +390,9 @@ class dlg_ask_credentials(gtk.MessageDialog):
         return (False, method, params)
 
     def _email_entry_changed(self, x, y):
-        '''
+        """
         Disable the OK button if the email is invalid
-        '''
+        """
         ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
 
         if self.email_entry.is_valid():
@@ -419,9 +419,9 @@ class dlg_ask_credentials(gtk.MessageDialog):
         ok_button.set_sensitive(True)
 
     def _radio_callback(self, event, enable, disable):
-        '''
+        """
         Handle the clicks on the different radio buttons.
-        '''
+        """
         for section in enable:
             section.set_sensitive(True)
 
@@ -432,11 +432,11 @@ class dlg_ask_credentials(gtk.MessageDialog):
 class dlg_ask_bug_info(gtk.MessageDialog):
 
     def __init__(self, invalid_login=False):
-        '''
+        """
         :return: A tuple with the following information:
                     (user_exit, bug_summary, bug_description)
 
-        '''
+        """
         gtk.MessageDialog.__init__(self,
                                    None,
                                    gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -449,7 +449,7 @@ class dlg_ask_bug_info(gtk.MessageDialog):
 
     def run(self):
 
-        default_text = '''What steps will reproduce the problem?
+        default_text = """What steps will reproduce the problem?
 1.
 2.
 3.
@@ -463,7 +463,7 @@ What operating system are you using?
 Please provide any additional information below:
 
 
-'''
+"""
 
         msg = 'Please provide the following information about the bug\n'
         self.set_markup(msg)
@@ -512,9 +512,9 @@ Please provide any additional information below:
 
 
 class github_bug_report(object):
-    '''
+    """
     Class that models user interaction with Github to report ONE bug.
-    '''
+    """
 
     def __init__(self, tback='', fname=None, plugins=''):
         self.gh = None
@@ -550,9 +550,9 @@ class github_bug_report(object):
         return user_exit, gh, summary, userdesc, email
 
     def _report_bug_to_github(self, gh, summary, userdesc, email):
-        '''
+        """
         Send bug to github.
-        '''
+        """
         try:
             ticket_url, ticket_id = gh.report_bug(
                 summary, userdesc, self.tback,
@@ -564,9 +564,9 @@ class github_bug_report(object):
             return ticket_url, ticket_id
 
     def _login_github(self, retry=3):
-        '''
+        """
         Perform user login.
-        '''
+        """
         invalid_login = False
         email = None
 
@@ -609,9 +609,9 @@ class github_bug_report(object):
 
 
 class github_multi_bug_report(github_bug_report):
-    '''
+    """
     Class that models user interaction with Github to report ONE OR MORE bugs.
-    '''
+    """
 
     def __init__(self, exception_list, scan_id):
         github_bug_report.__init__(self)
@@ -636,9 +636,9 @@ class github_multi_bug_report(github_bug_report):
         rbsr.run()
 
     def _report_bug_to_github(self, gh, tback, scan_id, email, plugins):
-        '''
+        """
         Send bug to github.
-        '''
+        """
         userdesc = 'No user description was provided for this bug report given'\
                    ' that it was related to handled exceptions in scan with id'\
                    ' %s' % scan_id

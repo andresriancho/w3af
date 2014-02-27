@@ -1,4 +1,4 @@
-'''
+"""
 test_ssn.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -65,17 +65,17 @@ class test_ssn(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 1)
 
     def test_ssn_with_complex_html(self):
-        '''
+        """
         Test for false positive "...discloses a US Social Security Number: "12-56-1011"..."
-        '''
-        body = '''<select name="servers">
+        """
+        body = """<select name="servers">
                     <option value="0" selected="selected">0</option>
                     <option value="1">1</option>
                     <option value="2-5">2-5</option>
                     <option value="6-10">6-10</option>
                     <option value="11-19">11-19</option>
                     <option value="20+">20+</option>
-                </select>'''
+                </select>"""
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, self.url, self.url, _id=1)
         self.plugin.grep(self.request, response)

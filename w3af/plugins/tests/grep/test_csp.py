@@ -1,4 +1,4 @@
-'''
+"""
 test_csp.py
  
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -53,10 +53,10 @@ class TestCSP(PluginTest):
     }
 
     def test_found_vuln(self):
-        '''
+        """
         Test to validate case in which error are found:
         One vuln is common to several pages and others are isoled.
-        '''
+        """
         #Prepare expectation
         expected_vulns_desc = []
         #---This vuln is shared by several pages
@@ -81,9 +81,9 @@ class TestCSP(PluginTest):
         self.assertEquals(counter, len(expected_vulns_desc))        
 
     def test_no_vuln(self):
-        '''
+        """
         Test to validate case in which no error is found.
-        '''
+        """
         #Configure and run test case
         cfg = self._run_configs['cfg_without_error']
         self._scan(cfg['target'], cfg['plugins'])

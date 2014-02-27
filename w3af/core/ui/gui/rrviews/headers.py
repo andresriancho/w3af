@@ -34,9 +34,9 @@ SP = ' '
 
 
 class HttpHeadersView(RememberingVPaned):
-    '''Headers + raw payload view.'''
+    """Headers + raw payload view."""
     def __init__(self, w3af, parentView, editable=False):
-        '''Make object.'''
+        """Make object."""
         RememberingVPaned.__init__(self, w3af, 'headers_view')
         self.id = 'HttpHeadersView'
         self.label = 'Headers'
@@ -144,39 +144,39 @@ class HttpHeadersView(RememberingVPaned):
         self._changed()
 
     def _headerNameEdited(self, cell, path, new_text, model):
-        '''Callback for header's name edited signal.'''
+        """Callback for header's name edited signal."""
         model[path][0] = new_text
         self._changed()
 
     def _headerValueEdited(self, cell, path, new_text, model):
-        '''Callback for header's value edited signal.'''
+        """Callback for header's value edited signal."""
         model[path][1] = new_text
         self._changed()
 
     def _updateHeadersTab(self, headers):
-        '''Update current headers view part from headers list.'''
+        """Update current headers view part from headers list."""
         self._headersStore.clear()
         for header in headers:
             self._headersStore.append([header, headers[header]])
 
     def _changed(self, widg=None):
-        '''Synchronize changes with other views (callback).'''
+        """Synchronize changes with other views (callback)."""
         if not self.initial:
             self.parentView.set_object(self.get_object())
             self.parentView.synchronize(self.id)
 
     def clear(self):
-        '''Clear view.'''
+        """Clear view."""
         self._headersStore.clear()
         self._raw.clear()
         self.startLine = ''
 
     def highlight(self, text, tag):
-        '''Highlight word in thetext.'''
+        """Highlight word in thetext."""
         self._raw.highlight(text, tag)
 
     def show_object(self, obj):
-        '''Show object in view.'''
+        """Show object in view."""
         if self.is_request:
             self.startLine = obj.get_request_line()
             self._updateHeadersTab(obj.get_headers())
@@ -190,7 +190,7 @@ class HttpHeadersView(RememberingVPaned):
             self._raw.set_text(obj.get_body())
 
     def get_object(self):
-        '''Return object (request or resoponse).'''
+        """Return object (request or resoponse)."""
         head = self.startLine
         for header in self._headersStore:
             head += header[0] + ':' + header[1] + CRLF

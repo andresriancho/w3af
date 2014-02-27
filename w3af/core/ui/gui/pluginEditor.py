@@ -315,8 +315,8 @@ class pluginEditor:
         return
 
     def _quit_cb(self, widget):
-        '''
+        """
         The quit callback.
-        '''
+        """
         gtk.main_quit()
         self._finishEditCallback(self._plugin_type, self._plugin_name)

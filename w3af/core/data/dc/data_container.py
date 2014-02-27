@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 data_container.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 
 from collections import Iterable
@@ -32,12 +32,12 @@ from w3af.core.controllers.misc.ordereddict import OrderedDict
 
 
 class DataContainer(OrderedDict, DiskItem):
-    '''
+    """
     This class represents a data container. It's basically the way
     query-string and post-data are stored when using url-encoding.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, init_val=(), encoding=UTF8):
 
         super(DataContainer, self).__init__()
@@ -63,15 +63,15 @@ class DataContainer(OrderedDict, DiskItem):
                 self[key] = val
 
     def copy(self):
-        '''
+        """
         This method returns a copy of the DataContainer Object.
 
         :return: A copy of myself.
-        '''
+        """
         return copy.deepcopy(self)
 
     def __str__(self):
-        '''
+        """
         Return string representation.
 
         >>> str(DataContainer([(u'a','1'), (u'b', ['2','3'])]))
@@ -88,11 +88,11 @@ class DataContainer(OrderedDict, DiskItem):
         True
 
         :return: string representation of the DataContainer Object.
-        '''
+        """
         return enc_dec.urlencode(self, encoding=self.encoding)
 
     def __unicode__(self):
-        '''
+        """
         Return unicode representation
 
         >>> unicode(DataContainer([(u'a', u'1'), (u'b', [u'2', u'3'])]))
@@ -101,7 +101,7 @@ class DataContainer(OrderedDict, DiskItem):
         u'aaa='
         >>> unicode(DataContainer([(u'aaa', u'')]))
         u'aaa='
-        '''
+        """
         return self._to_str_with_separators(u'=', u'&')
 
     def _to_str_with_separators(self, key_val_sep, pair_sep):

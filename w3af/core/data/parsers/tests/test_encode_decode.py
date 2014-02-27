@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 test_encode_decode.py
 
 Copyright 2012 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from urlparse import parse_qs
@@ -45,12 +45,12 @@ class TestHTMLDecode(unittest.TestCase):
         self.assertEqual(htmldecode(u'&aacute;'), u'á')
 
     def test_bug_trigger_case01(self):
-        '''
+        """
         u'í'.decode('utf-8')
         
         UnicodeEncodeError: 'ascii' codec can't encode character u'\xed' in
                             position 9745: ordinal not in range(128)
-        '''
+        """
         html = u'Aquí encontrará'
         self.assertEqual(htmldecode(html), html)
     
@@ -68,7 +68,7 @@ class TestHTMLDecode(unittest.TestCase):
         self.assertEqual(htmldecode(html), html)
 
     def test_html_invalid_utf8_entity_encoded(self):
-        '''Test for invalid entity encoded chars'''
+        """Test for invalid entity encoded chars"""
         samples = {
             'Valid ASCII': u"a",
             'Valid 2 Octet Sequence': u"&#xc3b1",

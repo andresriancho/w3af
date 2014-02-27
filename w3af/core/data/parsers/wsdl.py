@@ -1,4 +1,4 @@
-'''
+"""
 wsdl.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import SOAPpy
 import xml.parsers.expat as expat
 
@@ -29,24 +29,24 @@ from w3af.core.data.parsers.url import URL
 
 
 class WSDLParser(object):
-    '''
+    """
     This class parses WSDL documents.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         self._proxy = None
 
     def is_WSDL(self, data):
-        '''
+        """
         This is not a 100% accurate test, the real WSDL parsing is performed
         in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to
         enhance framework's performance.
 
         :param data: A string that might represent a WSDL
         :return: True if the data parameter is a WSDL document.
-        '''
+        """
         return False
         if '<definitions' in data[:150] or '<wsdl:definitions' in data[:150]:
             return True
@@ -54,10 +54,10 @@ class WSDLParser(object):
             return False
 
     def set_wsdl(self, xmlData):
-        '''
+        """
         :param xmlData: The WSDL to parse. At this point, we really don't know
                         if it really is a WSDL document.
-        '''
+        """
         if not self.is_WSDL(xmlData):
             raise w3afException('The body content is not a WSDL.')
         else:
@@ -72,20 +72,20 @@ class WSDLParser(object):
                 raise w3afException(msg)
 
     def get_ns(self, method):
-        '''
+        """
         @method: The method name
         :return: The namespace of the WSDL
-        '''
+        """
         if method in self._proxy.methods.keys():
             return str(self._proxy.methods[method].namespace)
         else:
             raise w3afException('Unknown method name.')
 
     def get_action(self, methodName):
-        '''
+        """
         @methodName: The method name
         :return: The soap action as a URL object
-        '''
+        """
         if methodName in self._proxy.methods.keys():
             action_str = str(self._proxy.methods[methodName].soapAction)
             action_url = URL(action_str)
@@ -94,10 +94,10 @@ class WSDLParser(object):
             raise w3afException('Unknown method name.')
 
     def get_location(self, methodName):
-        '''
+        """
         @methodName: The method name
         :return: The soap action.
-        '''
+        """
         if methodName in self._proxy.methods.keys():
             location_str = str(self._proxy.methods[methodName].location)
             location_url = URL(location_str)
@@ -106,10 +106,10 @@ class WSDLParser(object):
             raise w3afException('Unknown method name.')
 
     def get_methods(self):
-        '''
+        """
         @wsdlDocument: The XML document
         :return: The methods defined in the WSDL
-        '''
+        """
         res = []
         for methodName in self._proxy.methods.keys():
             remoteMethodObject = remoteMethod()
@@ -123,10 +123,10 @@ class WSDLParser(object):
         return res
 
     def get_methodParams(self, methodName):
-        '''
+        """
         @methodName: The method name
         :return: The soap action.
-        '''
+        """
         if not methodName in self._proxy.methods.keys():
             raise w3afException('Unknown method name.')
         else:
@@ -143,9 +143,9 @@ class WSDLParser(object):
 
 
 class parameter:
-    '''
+    """
     This class represents a parameter in a SOAP call.
-    '''
+    """
     def __init__(self):
         self._type = ''
         self._name = ''
@@ -171,9 +171,9 @@ class parameter:
 
 
 class remoteMethod:
-    '''
+    """
     This class represents a remote method call.
-    '''
+    """
     def __init__(self):
         self._name = ''
         self._action = ''

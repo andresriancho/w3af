@@ -1,4 +1,4 @@
-'''
+"""
 time_analysis.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import time
 import w3af.core.controllers.output_manager as om
@@ -36,12 +36,12 @@ TIME_DEVIATION_MULTIPLIER = 25
 
 
 class time_analysis:
-    '''
+    """
     This class analyzes the response time of a GET/POST .
     It is usefull for finding possible DoS's to Web Apps, buffer overflows, etc.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         self._numberOfRequests = 0
@@ -50,7 +50,7 @@ class time_analysis:
         self._average = 0
 
     def pre_request(self, uri, method, dc={}):
-        '''
+        """
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.
 
@@ -58,7 +58,7 @@ class time_analysis:
         :param method: GET/POST
         :param dc: This is the data container that ExtendedUrllib is going to send.
         :return: No value is returned.
-        '''
+        """
         if self._numberOfRequests < AVERAGE_CALCULATION:
             # The first 3 requests are used to calculate the average time that the
             # response takes to return to w3af
@@ -67,7 +67,7 @@ class time_analysis:
             self._registerRequest(uri, method, dc)
 
     def post_request(self, uri, method, dc={}):
-        '''
+        """
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.
 
@@ -75,7 +75,7 @@ class time_analysis:
         :param method: GET/POST
         :param dc: This is the data container that ExtendedUrllib is going to send.
         :return: No value is returned.
-        '''
+        """
         if self._numberOfRequests < AVERAGE_CALCULATION:
             # The first 3 requests are used to calculate the average time that the
             # response takes to return to w3af
@@ -96,14 +96,14 @@ class time_analysis:
                 pass
 
     def _calculateAvg(self, uri, method, dc):
-        '''
+        """
         This method calculates the AVG time.
 
         :param uri: This is the url to register.
         :param method: GET/POST
         :param dc: This is the data container that ExtendedUrllib is going to send.
         :return: No value is returned.
-        '''
+        """
         if (uri, method, str(dc)) not in self._outgoingRequests.keys():
             # This tuple hasnt been registered as an outgoing request.
             # It should be registered now.

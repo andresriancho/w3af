@@ -1,4 +1,4 @@
-'''
+"""
 test_save.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -26,9 +26,9 @@ from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 
 @attr('smoke')
 class TestSaveConsoleUI(ConsoleTestHelper):
-    '''
+    """
     Save test for the console UI.
-    '''
+    """
     def test_menu_simple_save(self):
         commands_to_run = ['plugins crawl config dir_file_bruter',
                            'set file_wordlist /etc/passwd',

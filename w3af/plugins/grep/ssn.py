@@ -1,4 +1,4 @@
-'''
+"""
 ssn.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import itertools
 
@@ -30,11 +30,11 @@ import w3af.core.data.constants.severity as severity
 
 
 class ssn(GrepPlugin):
-    '''
+    """
     This plugin detects the occurence of US Social Security numbers in web pages.
 
     :author: dliz <dliz !at! users.sourceforge.net>
-    '''
+    """
     # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
     regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012]))'\
             ' ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
@@ -44,13 +44,13 @@ class ssn(GrepPlugin):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, find the SSN numbers.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None.
-        '''
+        """
         if not response.is_text_or_html() or response.get_code() != 200 \
         or response.get_clear_text_body() is None:
             return
@@ -70,10 +70,10 @@ class ssn(GrepPlugin):
             self.kb_append_uniq(self, 'ssn', v, 'URL')
 
     def _find_SSN(self, body_without_tags):
-        '''
+        """
         :return: SSN as found in the text and SSN in its regular format if the
                  body had an SSN
-        '''
+        """
         validated_ssn = None
         ssn = None
         for match in self.ssn_regex.finditer(body_without_tags):
@@ -86,7 +86,7 @@ class ssn(GrepPlugin):
         return ssn, validated_ssn
 
     def _validate_SSN(self, potential_ssn):
-        '''
+        """
         This method is called to validate the digits of the 9-digit number
         found, to confirm that it is a valid SSN. All the publicly available SSN
         checks are performed. The number is an SSN if:
@@ -98,7 +98,7 @@ class ssn(GrepPlugin):
         5. the number is not equal to 078-05-1120
 
         Source of information: wikipedia and socialsecurity.gov
-        '''
+        """
         try:
             area_number = int(potential_ssn.group(2))
             group_number = int(potential_ssn.group(4))
@@ -151,10 +151,10 @@ class ssn(GrepPlugin):
         return None
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugins scans every response page to find the strings that are likely
         to be the US social security numbers.
-        '''
+        """

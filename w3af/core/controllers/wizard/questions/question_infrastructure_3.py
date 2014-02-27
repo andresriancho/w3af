@@ -1,4 +1,4 @@
-'''
+"""
 question_infrastructure_3.py
 
 Copyright 2008 Andres Riancho
@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.wizard.question import question
 
 
 class question_infrastructure_3(question):
-    '''
+    """
     This is the first question of the wizard, where you have to speficy the
     target.
-    '''
+    """
     def __init__(self, w3af_core):
         question.__init__(self, w3af_core)
 
@@ -40,9 +40,9 @@ class question_infrastructure_3(question):
         self._question_str += ' fingerprint the remote Web server.'
 
     def _get_option_objects(self):
-        '''
+        """
         :return: A list of options for this question.
-        '''
+        """
         self._d1 = 'Identify Operating System'
         o1 = opt_factory(self._d1, True, self._d1, 'boolean')
 

@@ -1,4 +1,4 @@
-'''
+"""
 svn_users.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.constants.severity as severity
@@ -28,11 +28,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class svn_users(GrepPlugin):
-    '''
+    """
     Grep every response for users of the versioning system.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -47,13 +47,13 @@ class svn_users(GrepPlugin):
         self._regex_list = [re.compile(regex), ]
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         if not response.is_text_or_html():
             return
 
@@ -77,13 +77,13 @@ class svn_users(GrepPlugin):
                 self.kb_append_uniq(self, 'users', v, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for users of the versioning system. Sometimes
         the HTML pages are versioned using CVS or SVN, if the header of the
         versioning system is saved as a comment in this page, the user that edited
         the page will be saved on that header and will be added to the knowledge
         base.
-        '''
+        """

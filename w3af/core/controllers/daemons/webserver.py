@@ -1,4 +1,4 @@
-'''
+"""
 webserver.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import BaseHTTPServer
 import mimetypes
 import os
@@ -37,9 +37,9 @@ SERVER_TIMEOUT = 3 * 60
 
 
 def is_running(ip, port):
-    '''
+    """
     Given `ip` and `port` determine if a there's a bound webserver instance
-    '''
+    """
     web_server = _get_inst(ip, port)
     if web_server is None:
         return False
@@ -47,17 +47,17 @@ def is_running(ip, port):
 
 
 def _get_inst(ip, port):
-    '''
+    """
     Return a previously created instance bound to `ip` and `port`. Otherwise
     return None.
-    '''
+    """
     return _servers.get((ip, port), None)
 
 
 class w3afHTTPServer(BaseHTTPServer.HTTPServer):
-    '''
+    """
     Most of the behavior added here is included in
-    '''
+    """
 
     def __init__(self, server_address, webroot, RequestHandlerClass):
         BaseHTTPServer.HTTPServer.__init__(self, server_address,
@@ -158,23 +158,23 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return
 
     def log_message(self, fmt, *args):
-        '''
+        """
         I dont want messages to be written to stderr, please write them
         to the om.
-        '''
+        """
         message = "webserver.py: %s - %s" % (self.address_string(), fmt % args)
         om.out.debug(message)
 
 
 def start_webserver(ip, port, webroot, handler=w3afWebHandler):
-    '''Create a http server deamon. The returned instance is unique for <ip>
+    """Create a http server deamon. The returned instance is unique for <ip>
     and <port>.
 
     :param ip: IP address where to bind
     :param port: Port number
     :param webroot: webserver's root directory
     :return: A local webserver instance bound to the requested address (<ip>, <port>)
-    '''
+    """
     server_thread = _get_inst(ip, port)
 
     if server_thread is None or server_thread.is_down():
@@ -189,12 +189,12 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     return server_thread
 
 def start_webserver_any_free_port(ip, webroot, handler=w3afWebHandler):
-    '''Create a http server deamon in any free port available.
+    """Create a http server deamon in any free port available.
 
     :param ip: IP address where to bind
     :param webroot: webserver's root directory
     :return: A local webserver instance and the port where it's listening
-    '''
+    """
     web_server = w3afHTTPServer((ip, 0), webroot, handler)
 
     # Start server!

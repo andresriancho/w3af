@@ -1,4 +1,4 @@
-'''
+"""
 HTTPQsRequest.py
 
 Copyright 2006 Andres Riancho
@@ -18,24 +18,24 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 
 
 class HTTPQSRequest(FuzzableRequest):
-    '''
+    """
     This class represents a fuzzable request that sends all variables
     in the querystring. This is tipically used for GET requests.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
         super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
 
     def set_uri(self, uri):
-        '''
+        """
         >>> r = HTTPQSRequest('http://www.w3af.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
@@ -46,7 +46,7 @@ class HTTPQSRequest(FuzzableRequest):
         >>> r.set_uri(uri)
         >>> r.get_uri() == uri
         True
-        '''
+        """
         super(HTTPQSRequest, self).set_uri(uri)
         self._dc = self._uri.querystring
 

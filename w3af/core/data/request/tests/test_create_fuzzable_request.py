@@ -1,4 +1,4 @@
-'''
+"""
 test_create_fuzzable_request.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from nose.plugins.attrib import attr
@@ -94,10 +94,10 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertIsInstance(fr, JSONPostDataRequest)
 
     def test_xmlrpc_post(self):
-        post_data = '''<methodCall>
+        post_data = """<methodCall>
             <methodName>system.listMethods</methodName>
             <params></params>
-        </methodCall>'''
+        </methodCall>"""
 
         headers = Headers([('content-length', str(len(post_data)))])
 

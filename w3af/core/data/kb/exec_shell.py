@@ -1,4 +1,4 @@
-'''
+"""
 exec_shell.py
 
 Copyright 2010 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import textwrap
 
 import w3af.plugins.attack.payloads.payload_handler as payload_handler
@@ -32,12 +32,12 @@ from w3af.plugins.attack.payloads.decorators.download_decorator import download_
 
 
 class ExecShell(Shell):
-    '''
+    """
     This class represents a shell where users can execute commands in the remote
     operating system and get the output back.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, vuln, uri_opener, worker_pool):
         super(ExecShell, self).__init__(vuln, uri_opener, worker_pool)
@@ -49,11 +49,11 @@ class ExecShell(Shell):
         raise NotImplementedError
 
     def help(self, command):
-        '''
+        """
         Handle the help command.
-        '''
+        """
         if command == 'read':
-            _help = '''\
+            _help = """\
             read:
                 The read command echoes the content of a file to the console. The
                 command takes only one parameter: the full path of the file to 
@@ -61,18 +61,18 @@ class ExecShell(Shell):
             
             Examples:
                 read /etc/passwd
-            '''
+            """
         elif command == 'download':
-            _help = '''\
+            _help = """\
             download:
                 The download command reads a file in the remote system and saves
                 it to the local filesystem.
             
             Examples:
                 download /etc/passwd /tmp/passwd
-            '''
+            """
         else:        
-            _help = '''\
+            _help = """\
             Available commands:
                 help                            Display this information
                 lsp                             List payloads
@@ -84,19 +84,19 @@ class ExecShell(Shell):
                 exec <cmd>                      
                 e <cmd>                         Run <cmd> on the remote operating system
                 exit                            Exit this shell session
-            '''
+            """
         return textwrap.dedent(_help)
 
     @download_debug
     def download(self, remote_filename, local_filename):
-        '''
+        """
         This is a wrapper around "read" that will write the results
         to a local file.
 
         :param remote_filename: The remote file to download.
         :param local_filename: The local file where to write the contents of the remote file.
         :return: The message to show to the user.
-        '''
+        """
         remote_content = self.read(remote_filename)
 
         if not remote_content:
@@ -112,7 +112,7 @@ class ExecShell(Shell):
                 return 'Success.'
 
     def upload(self, local_filename, remote_filename):
-        '''
+        """
         This is a wrapper around "write" that will upload a local file
         to the remote filesystem.
 
@@ -120,7 +120,7 @@ class ExecShell(Shell):
         :param remote_filename: The remote file to create and write contents to.
 
         :return: The message to show to the user.
-        '''
+        """
         try:
             fh = file(local_filename, 'r')
         except:
@@ -132,7 +132,7 @@ class ExecShell(Shell):
             return 'Success.'
 
     def write(self, remote_filename, file_content):
-        '''
+        """
         Write a the contents of the parameter "file_content" to the "remote_filename"
         file in the remote filesystem.
 
@@ -140,7 +140,7 @@ class ExecShell(Shell):
         :param file_content: The string to write in the remote file
 
         :return: The message to show to the user.
-        '''
+        """
         if not self._transfer_handler:
             # Get the fastest transfer method
             ptf = payload_transfer_factory(self.execute)
@@ -160,7 +160,7 @@ class ExecShell(Shell):
             return 'File upload was successful.'
 
     def specific_user_input(self, command, parameters):
-        '''
+        """
         This is the method that is called when a user wants to execute something
         in the shell and is called from shell.generic_user_input() which
         provides generic commands like "help".
@@ -168,7 +168,7 @@ class ExecShell(Shell):
         :param command: The string representing the command that the user
                         types in the shell.
         :param parameters: A list with the parameters for @command
-        '''
+        """
         #
         #    Read remote files
         #
@@ -210,28 +210,28 @@ class ExecShell(Shell):
             return 'Command "%s" not found. Please type "help".' % command
 
     def get_unlink_command(self):
-        '''
+        """
         :return: The command to be used to remove files in the remote operating system.
         Examples:
             - rm -rf %s
             - del %s
         The %s will be replaced by the file to be read.
-        '''
+        """
         if self._rOS == 'windows':
             return 'del %s'
         else:
             return 'rm -rf %s'
 
     def unlink(self, filename):
-        '''
+        """
         :param filename: The filename to unlink from the remote filesystem.
-        '''
+        """
         unlink_command_format = self.get_unlink_command()
         unlink_command = unlink_command_format % (filename,)
         return self.execute(unlink_command)
 
     def get_read_command(self, filename):
-        '''
+        """
         :param filename: Need the filename to determine if we need to put quotes
                          around it (because of spaces in the filename) or not.
 
@@ -240,7 +240,7 @@ class ExecShell(Shell):
             - cat %s
             - type %s
         The %s will be replaced by the file to be read.
-        '''
+        """
         if self._rOS == 'windows':
             command = 'type %s'
         else:
@@ -253,16 +253,16 @@ class ExecShell(Shell):
 
     @read_debug
     def read(self, filename):
-        '''
+        """
         Read a file in the remote server by running "cat" or "type" depending
         on the identified OS.
-        '''
+        """
         read_command_format = self.get_read_command(filename)
         read_command = read_command_format % (filename,)
         return self.execute(read_command)
 
     def end_interaction(self):
-        '''
+        """
         When the user executes "exit" in the console, this method is called.
         Basically, here we handle WHAT TO DO in that case. In most cases (and this is
         why we implemented it this way here) the response is "yes, do it end me" that
@@ -270,43 +270,43 @@ class ExecShell(Shell):
 
         In some other cases, the shell prints something to the console and then exists,
         or maybe some other, more complex, thing.
-        '''
+        """
         return True
 
     def _print_runnable_payloads(self):
-        '''
+        """
         Print the payloads that can be run using this exploit.
 
         :return: A list with all runnable payloads.
-        '''
+        """
         payloads = payload_handler.runnable_payloads(self)
         payloads.sort()
         return '\n'.join(payloads)
 
     def end(self):
-        '''
+        """
         This method is called when the shell is not going to be used anymore.
         It should be used to remove the auxiliary files (local and remote)
         generated by the shell.
 
         :return: None
-        '''
+        """
         pass
 
     def get_name(self):
-        '''
+        """
         This method is called when the shell is used, in order to create a
         prompt for the user.
 
         :return: The name of the shell ( os_commanding_shell, dav, etc )
-        '''
+        """
         raise NotImplementedError
 
     def identify_os(self):
-        '''
+        """
         Identify the remote operating system and get some remote variables to
         show to the user.
-        '''
+        """
         self._rOS = os_detection_exec(self.execute)
 
         if self._rOS == 'linux':

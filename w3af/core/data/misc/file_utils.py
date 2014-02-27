@@ -1,4 +1,4 @@
-'''
+"""
 file_utils.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import string
 import datetime
 import os
@@ -29,25 +29,25 @@ ALLOWED = string.digits + string.letters + '/.-_'
 
 
 def replace_file_special_chars(filename_path):
-    '''This is a *very* incomplete function which I added to fix a bug:
+    """This is a *very* incomplete function which I added to fix a bug:
     http://sourceforge.net/apps/trac/w3af/ticket/173308
 
     And after realizing that it was very hard to perform a replace
     that worked for all platforms and when the thing to sanitize was a
-    path+filename and not only a filename.'''
+    path+filename and not only a filename."""
     return filename_path.replace(':', '_')
 
 def days_since_file_update(filename, days):
-    '''
+    """
     :return: True if the filename was updated earlier than @days before today
-    '''
+    """
     time_delta_days = get_days_since_file_update(filename)
     return time_delta_days > days
 
 def get_days_since_file_update(filename):
-    '''
+    """
     :return: The days since the last update 
-    '''
+    """
     repo = Repo(".")
 
     # Note that before I used repo.head.commit.iter_parents , but that had
@@ -69,10 +69,10 @@ def get_days_since_file_update(filename):
     raise ValueError('"%s" is not in tracked by this repository.' % filename)
     
 def days_since_newest_file_update(path):
-    '''
+    """
     :param path: The path to analyze
     :return: The days since the the latest update to the newest file in a path
-    '''
+    """
     days = 365
     
     for item in os.listdir(path):

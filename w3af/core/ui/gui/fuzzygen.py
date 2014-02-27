@@ -1,4 +1,4 @@
-'''
+"""
 fuzzygen.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 try:
     from w3af.core.controllers.exceptions import w3afException
@@ -46,10 +46,10 @@ class FuzzyError(w3afException):
 
 
 class FuzzyGenerator(object):
-    '''Handles two texts with the fuzzy syntax.
+    """Handles two texts with the fuzzy syntax.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, txt1, txt2):
         # separate the sane and replaceable info
         self.torp1, self.sane1 = self._dissect(txt1)
@@ -79,7 +79,7 @@ class FuzzyGenerator(object):
         return genr1, genr2
 
     def _genIterator(self, text):
-        '''Generates the iterator from the text.'''
+        """Generates the iterator from the text."""
         namespace = {"string": __import__("string")}
         try:
             it = eval(text, namespace)
@@ -96,10 +96,10 @@ class FuzzyGenerator(object):
         return it
 
     def _dissect(self, txt):
-        '''Separates the fixed and dynamic part from the text.
+        """Separates the fixed and dynamic part from the text.
 
         :param txt: the string of the HTTP request to process.
-        '''
+        """
         #
         #    fix for bug #164086
         #
@@ -135,7 +135,7 @@ class FuzzyGenerator(object):
         return toreplace, saneparts
 
     def generate(self):
-        '''Generates the different possibilities.'''
+        """Generates the different possibilities."""
         genr1, genr2 = self._genGenerators()
         for x in self._possib(genr1):
             full1 = self._build(self.sane1, x)
@@ -144,7 +144,7 @@ class FuzzyGenerator(object):
                 yield (full1, full2)
 
     def _build(self, sane, vals):
-        '''Constructs the whole text again.'''
+        """Constructs the whole text again."""
         if vals is None:
             return sane[0]
         full = []
@@ -155,7 +155,7 @@ class FuzzyGenerator(object):
         return "".join(full)
 
     def _possib(self, generat, constr=None):
-        '''Builds the different possibilities.'''
+        """Builds the different possibilities."""
         if constr is None:
             constr = []
         pos = len(constr)

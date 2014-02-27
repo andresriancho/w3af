@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class mysql_config_directory(Payload):
-    '''
+    """
     This payload finds MySQL configuration directory.
-    '''
+    """
     def api_read(self):
         result = {}
         result['directory'] = []

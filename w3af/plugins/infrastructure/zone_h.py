@@ -1,4 +1,4 @@
-'''
+"""
 zone_h.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -34,22 +34,22 @@ from w3af.core.data.kb.info import Info
 
 
 class zone_h(InfrastructurePlugin):
-    '''
+    """
     Find out if the site was defaced in the past.
 
     :author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
-    '''
+    """
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Search zone_h and parse the output.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         target_domain = fuzzable_request.get_url().get_root_domain()
 
         # Example URL:
@@ -70,12 +70,12 @@ class zone_h(InfrastructurePlugin):
             self._parse_zone_h_result(response)
 
     def _parse_zone_h_result(self, response):
-        '''
+        """
         Parse the result from the zone_h site and create the corresponding info
         objects.
 
         :return: None
-        '''
+        """
         #
         #   I'm going to do only one big "if":
         #
@@ -118,10 +118,10 @@ class zone_h(InfrastructurePlugin):
                 om.out.information(i.get_desc())
 
     def get_long_desc(self):
-        return '''
+        return """
         This plugin searches the zone-h.org defacement database and parses the
         result. The information stored in that database is useful to know about
         previous defacements to the target website. In some cases, the defacement
         site provides information about the exploited vulnerability, which may
         be still exploitable.
-        '''
+        """

@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class filesystem(Payload):
-    '''
+    """
     This payload shows filesystem info.
-    '''
+    """
     def api_read(self):
         result = {}
         files = []

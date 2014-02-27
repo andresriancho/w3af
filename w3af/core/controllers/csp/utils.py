@@ -1,4 +1,4 @@
-'''
+"""
 utils.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-'''
+"""
 from mimetypes import MimeTypes
 from collections import namedtuple
 import w3af.core.data.constants.severity as severity
@@ -82,7 +82,7 @@ CSPVulnerability = namedtuple('CSPVulnerability', ['desc', 'severity'])
 
 def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
                                       allow_unsafe_eval=False):
-    '''
+    """
     Method to analyze if a site is protected against XSS vulns type using
     CSP policies.
     
@@ -91,7 +91,7 @@ def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
     :param allow_unsafe_eval: Allow use of the java "eval()" function in
                               javascript code block.  
     :return: True only if the site is protected, False otherwise.  
-    '''
+    """
     protected = True
     
     if not provides_csp_features(response):
@@ -113,7 +113,7 @@ def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
     return protected
 
 def find_vulns(response):
-    '''
+    """
     Method to find vulnerabilities into CSP policies from an HTTP response,
     analyze directives for permissive/invalid configuration and misspelled
     directive names.
@@ -124,7 +124,7 @@ def find_vulns(response):
              A vulnerability is represented as NamedTuple exposing properties
              "desc" and "severity", both as String data type.
              Access example: vulns[CSP_DIRECTIVE_DEFAULT][0].desc
-    '''
+    """
     vulns = {}
     
     ##Extract and merge all policies
@@ -344,14 +344,14 @@ def find_vulns(response):
 
 
 def unsafe_inline_enabled(response):
-    '''
+    """
     Method to detect if CSP Policies are specified for Script/Style, 
     to allow unsafe inline content to be loaded.
     
     :param response: A HTTPResponse object.
     :return: True if CSP Policies are specified for Script/Style to allow 
              unsafe inline content to be loaded, False otherwise. 
-    '''
+    """
     ##Extract and merge all policies
     non_report_only_policies = retrieve_csp_policies(response)
     report_only_policies = retrieve_csp_policies(response, True)
@@ -374,14 +374,14 @@ def unsafe_inline_enabled(response):
 
 
 def unsafe_eval_enabled(response):
-    '''
+    """
     Method to detect if CSP Policies are specified for Script, 
     to allow use of the javascript "eval()" function.
     
     :param response: A HTTPResponse object.
     :return: True if CSP Policies are specified for Script to allow 
              use of the javascript "eval()" function, False otherwise. 
-    '''
+    """
     ##Extract and merge all policies
     non_report_only_policies = retrieve_csp_policies(response)
     report_only_policies = retrieve_csp_policies(response, True)
@@ -403,23 +403,23 @@ def unsafe_eval_enabled(response):
     
 
 def provides_csp_features(response):
-    '''
+    """
     Method to detect if url provides CSP features.
     
     :param response: A HTTPResponse object.
     :return: True if the URL provides CSP features, False otherwise. 
-    '''
+    """
     return ((len(retrieve_csp_policies(response)) 
              + len(retrieve_csp_policies(response, True))) > 0)
 
 def retrieve_csp_report_uri(response):
-    '''
+    """
     Method to retrieve all report uri from CSP Policies specified into a HTTP 
     response through CSP headers.
        
     :param response: A HTTPResponse object.      
     :return: A set of URIs
-    ''' 
+    """ 
     uri_set = set()
     ##Extract and all merge policies
     non_report_only_policies = retrieve_csp_policies(response)
@@ -438,7 +438,7 @@ def retrieve_csp_report_uri(response):
 
 def retrieve_csp_policies(response, select_only_reportonly_policies=False,
                           select_also_misspelled_directives=False):
-    '''
+    """
     Method to retrieve all CSP Policies specified into a HTTP response 
     through CSP headers.
        
@@ -454,7 +454,7 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
                                             named "CSP_MISSPELLED_DIRECTIVES".       
     :return: A dictionary in which KEY is a CSP directive and VALUE is the 
              list of associated policies.
-    '''   
+    """   
     headers = response.get_headers()
     policies = {}
     
@@ -553,7 +553,7 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
     return policies
 
 def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict):
-    '''
+    """
     Method to merge 2 Policies dictionaries to a single.
                
     :param non_report_only_policies_dict: A dictionary with all non 
@@ -564,7 +564,7 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
                                       (return of method "retrieve_csp_policies").      
     :return: A merged dictionary in which KEY is a CSP directive 
              and VALUE is the list of associated policies.
-    '''
+    """
     #Short circuit precheck...
     if(non_report_only_policies_dict is None 
        or len(non_report_only_policies_dict) == 0):
@@ -588,14 +588,14 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
     return merged_policies
 
 def _contains_special_directive(directive_definition):
-    '''
+    """
     Internal method to detect in a directive specification if
     a "special" directive is used.
     
     :param directive_definition: Content of the directive (name + values).
     
     :return: TRUE only if a special directive is detected. 
-    '''
+    """
     
     #Manage empty cases
     if directive_definition == None:

@@ -1,4 +1,4 @@
-'''
+"""
 splash.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import os
 
@@ -26,10 +26,10 @@ from w3af import ROOT_PATH
 
 
 class Splash(gtk.Window):
-    '''Builds the Splash window.
+    """Builds the Splash window.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self):
         super(Splash, self).__init__()
 
@@ -62,7 +62,7 @@ class Splash(gtk.Window):
             gtk.main_iteration()
 
     def push(self, text):
-        '''New text to be shown in the Splash.'''
+        """New text to be shown in the Splash."""
         self.label.set_text(text)
         while gtk.events_pending():
             gtk.main_iteration()

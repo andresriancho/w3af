@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-'''
+"""
 ajax_export.py
 
 Copyright 2009 Andres Riancho
@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
@@ -31,10 +31,10 @@ def ajax_escape_string(str_in):
 
 
 def ajax_export(request_string):
-    '''
+    """
     :param request_string: The string of the request to export
     :return: A javascript that will perform the same HTTP request.
-    '''
+    """
     # get the header and the body
     splitted_request = request_string.split('\n\n')
     header = splitted_request[0]
@@ -44,7 +44,7 @@ def ajax_export(request_string):
 
     # Now I do the real magic...
     # This is the header, to include the AJAX stuff:
-    res = '''/* Init AJAX stuff */
+    res = """/* Init AJAX stuff */
 
 var xmlhttp = false;
 /*@cc_on @*/
@@ -80,7 +80,7 @@ if (!xmlhttp && window.createRequest) {
 
 /* Create the request, please remember the same-origin policy, which might
 affect how and if this request is sent by the browser */
-'''
+"""
 
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.get_method() + '", "'
@@ -88,7 +88,7 @@ affect how and if this request is sent by the browser */
         http_request.get_uri().url_string) + '", true);\n'
 
     # For debugging
-    res += '''
+    res += """
 /* Debugging code, this should be removed for real life XSS exploits */
 xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState == 4 ) {
@@ -100,7 +100,7 @@ xmlhttp.onreadystatechange = function() {
 /* Add headers to the request and send it, please note taht custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
-'''
+"""
 
     # Now I add the headers:
     headers = http_request.get_headers()

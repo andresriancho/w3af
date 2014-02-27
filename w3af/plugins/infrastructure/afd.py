@@ -1,4 +1,4 @@
-'''
+"""
 afd.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 
 import w3af.core.controllers.output_manager as om
@@ -34,10 +34,10 @@ from w3af.core.data.kb.info import Info
 
 
 class afd(InfrastructurePlugin):
-    '''
+    """
     Find out if the remote web server has an active filter (IPS or WAF).
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -50,14 +50,14 @@ class afd(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Nothing strange, just do some GET requests to the first URL with an
         invented parameter and the custom payloads that are supposed to be
         filtered, and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         try:
             filtered, not_filtered = self._send_requests(fuzzable_request)
         except w3afException, w3:
@@ -66,11 +66,11 @@ class afd(InfrastructurePlugin):
             self._analyze_results(filtered, not_filtered)
 
     def _send_requests(self, fuzzable_request):
-        '''
+        """
         Actually send the requests that might be blocked.
         :param fuzzable_request: The FuzzableRequest to modify in order to
                                      see if it's blocked
-        '''
+        """
         rnd_param = rand_alnum(7)
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
@@ -106,12 +106,12 @@ class afd(InfrastructurePlugin):
 
     def _send_and_analyze(self, offending_string, offending_URL,
                           original_resp_body, rnd_param):
-        '''
+        """
         Actually send the HTTP request.
 
         :return: None, everything is saved to the self._filtered and
                  self._not_filtered lists.
-        '''
+        """
         try:
             resp_body = self._uri_opener.GET(offending_URL,
                                              cache=False).get_body()
@@ -129,9 +129,9 @@ class afd(InfrastructurePlugin):
                 self._not_filtered.append(offending_URL)
 
     def _analyze_results(self, filtered, not_filtered):
-        '''
+        """
         Analyze the test results and save the conclusion to the kb.
-        '''
+        """
         if len(filtered) >= len(self._get_offending_strings()) / 5.0:
             desc = 'The remote network has an active filter. IMPORTANT: The'\
                    ' result of all the other plugins will be unaccurate, web'\
@@ -155,9 +155,9 @@ class afd(InfrastructurePlugin):
                     om.out.information('- ' + i)
 
     def _get_offending_strings(self):
-        '''
+        """
         :return: A list of strings that will be filtered by most IPS devices.
-        '''
+        """
         res = []
         res.append('../../../../etc/passwd')
         res.append('./../../../etc/motd\0html')
@@ -176,10 +176,10 @@ class afd(InfrastructurePlugin):
         return res
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin sends custom requests to the remote web server in order to
         verify if the remote network is protected by an IPS or WAF.
 
@@ -192,4 +192,4 @@ class afd(InfrastructurePlugin):
         parameters, afterwards it requests the same URL but with a faked parameter
         and customized values; if the response bodies differ, then its safe to
         say that the remote end has an active filter.
-        '''
+        """

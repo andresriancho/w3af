@@ -1,4 +1,4 @@
-'''
+"""
 find_backdoors.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -114,11 +114,11 @@ KNOWN_OFFENSIVE_WORDS = set(
 
 
 class find_backdoors(CrawlPlugin):
-    '''
+    """
     Find web backdoors and web shells.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -127,12 +127,12 @@ class find_backdoors(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         For every directory, fetch a list of shell files and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
         if domain_path not in self._analyzed_dirs:
@@ -145,11 +145,11 @@ class find_backdoors(CrawlPlugin):
                                     )
 
     def _check_if_exists(self, web_shell_url):
-        '''
+        """
         Check if the file exists.
 
         :param web_shell_url: The URL to check
-        '''
+        """
         try:
             response = self._uri_opener.GET(web_shell_url, cache=True)
         except w3afException:
@@ -171,13 +171,13 @@ class find_backdoors(CrawlPlugin):
                     self.output_queue.put(fr)
 
     def _is_possible_backdoor(self, response):
-        '''
+        """
         Heuristic to infer if the content of <response> has the pattern of a
         backdoor response.
 
         :param response: HTTPResponse object
         :return: A bool value
-        '''
+        """
         if not is_404(response):
             body_text = response.get_body()
             dom = response.get_dom()
@@ -203,10 +203,10 @@ class find_backdoors(CrawlPlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin searches for web shells in the directories that are sent as input.
         For example, if the input is:
             - http://host.tld/w3af/f00b4r.php
@@ -216,4 +216,4 @@ class find_backdoors(CrawlPlugin):
             - http://host.tld/w3af/cmd.php
             - http://host.tld/w3af/webshell.php
             ...
-        '''
+        """

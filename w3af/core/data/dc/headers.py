@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 headers.py
 
 Copyright 2012 Andres Riancho
@@ -18,29 +18,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.misc.encoding import smart_unicode
 
 
 class Headers(DataContainer):
-    '''
+    """
     This class represents the set of HTTP request headers.
 
     :author: Javier Andalia (jandalia AT gmail DOT com)
-    '''
+    """
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
         super(Headers, self).__init__(cleaned_vals, encoding)
 
     @classmethod
     def from_string(cls, headers_str):
-        '''
+        """
         :param headers_str: A string with the HTTP headers, example:
             Server: Apache
             Content-Length: 123
-        '''
+        """
         res = []
         splitted_str = headers_str.split('\r\n')
         for one_header_line in splitted_str:
@@ -77,10 +77,10 @@ class Headers(DataContainer):
         return cleaned_vals
     
     def iget(self, header_name, default=None):
-        '''
+        """
         :param header_name: The name of the header we want the value for
         :return: The value for a header given a name (be case insensitive)
-        '''
+        """
         for stored_header_name in self:
             if header_name.lower() == stored_header_name.lower():
                 return self[stored_header_name], stored_header_name
@@ -111,7 +111,7 @@ class Headers(DataContainer):
         super(Headers, self).__setitem__(k, v)
 
     def __str__(self):
-        '''
+        """
         After getting some strange encoding errors I started to research about
         HTTP header encoding a little bit. The RFC mentions that special chars
         should be encoded using in RFC 2047, which in python is achieved with:
@@ -138,14 +138,14 @@ class Headers(DataContainer):
         then correctly read by Apache/PHP, we're going to mimic wget/curl.
         
         :return: string representation of the Headers() object.
-        '''
+        """
         header_str_unicode = self._to_str_with_separators(u': ', u'\r\n')
         header_str_unicode += u'\r\n'
         
         return header_str_unicode.encode('utf-8')
 
     def __unicode__(self):
-        '''
+        """
         :see: __str__ documentation.
-        '''
+        """
         return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'

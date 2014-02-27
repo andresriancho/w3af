@@ -1,4 +1,4 @@
-'''
+"""
 helper_script.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import tempfile
 
@@ -27,12 +27,12 @@ SCRIPT_NAME = 'w3af_dependency_install.sh'
 
 def generate_helper_script(pkg_manager_cmd, os_packages,
                               pip_cmd, failed_deps):
-    '''
+    """
     Generates a helper script to be run by the user to install all the
     dependencies.
     
     :return: The path to the script name.
-    '''
+    """
     temp_dir = tempfile.gettempdir()
     
     script_path = os.path.join(temp_dir, SCRIPT_NAME)

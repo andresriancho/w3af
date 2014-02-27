@@ -1,4 +1,4 @@
-'''
+"""
 get_w3af_version.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 from w3af import ROOT_PATH
@@ -34,9 +34,9 @@ def get_minimalistic_version():
 
 
 def get_w3af_version():
-    '''
+    """
     :return: A string with the w3af version.
-    '''
+    """
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
     cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''
     

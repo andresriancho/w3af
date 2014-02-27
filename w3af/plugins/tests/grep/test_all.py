@@ -1,4 +1,4 @@
-'''
+"""
 test_all.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import os
 import cProfile
@@ -57,9 +57,9 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_image_with_image_content_type(self, *args):
-        '''
+        """
         Verify that our plugins don't break when we send them an image.
-        '''
+        """
         file_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep',
                                  'data', 'w3af.png')        
         body = file(file_path).read()
@@ -79,10 +79,10 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))        
     def test_image_with_text_html_content_type(self, *args):
-        '''
+        """
         Verify that our plugins don't break when we send them an image with
         a text/html content type.
-        '''
+        """
         file_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep',
                                  'data', 'w3af.png')        
         body = file(file_path).read()
@@ -96,7 +96,7 @@ class test_all(unittest.TestCase):
             pinst.grep(request, response)
 
     def test_options_for_grep_plugins(self):
-        '''
+        """
         We're not going to assert anything here. What just want to see if
         the plugins implement the following methods:
             - get_options()
@@ -105,7 +105,7 @@ class test_all(unittest.TestCase):
             - get_long_desc()
 
         And don't crash in any way when we call them.
-        '''
+        """
         for plugin in self._plugins:
             o = plugin.get_options()
             plugin.set_options(o)
@@ -123,16 +123,16 @@ class test_all(unittest.TestCase):
     @patch('w3af.plugins.grep.lang.is_404', side_effect=repeat(False))
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_all_grep_plugins(self, *args):
-        '''
+        """
         Run a set of 5 html files through all grep plugins.
 
         As with the previous test, the only thing we want to see is if the grep
         plugin crashes or not. We're not asserting any results.
-        '''
+        """
         def profile_me():
-            '''
+            """
             To be profiled
-            '''
+            """
             for _ in xrange(1):
                 for counter in xrange(1, 5):
 

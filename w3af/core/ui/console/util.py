@@ -1,4 +1,4 @@
-'''
+"""
 util.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 
 def mapDict(fun, dct):
@@ -27,18 +27,18 @@ def mapDict(fun, dct):
 
 
 def commonPrefix(completions):
-    '''
+    """
     Utility function which is used by console to extract the string to be
     suggested as autocompletion.
     :param completions: [(part, completion)] where part is a prefix of completion
     (see core.ui.console.menu)
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
 
     def cp(str1, str2):
-        '''
+        """
         :return: the longest common prefix for 2 strings.
-        '''
+        """
         ls2 = len(str2)
         j = 1
         for i in range(len(str1)):
@@ -68,11 +68,11 @@ def commonPrefix(completions):
 
 
 def splitPath(path, sep='/'):
-    '''
+    """
         Chops the first part of a /-separated path and returns a tuple
         of the first part and the tail.
         If no separator in the path, the tail is None
-    '''
+    """
     sepIdx = path.find(sep)
     if sepIdx < 0:
         return (path, None)
@@ -81,9 +81,9 @@ def splitPath(path, sep='/'):
 
 
 def removePrefix(s, prefix='!'):
-    '''
+    """
     If the string starts from the prefix, the prefix is removed.
-    '''
+    """
     if s.startswith(prefix):
         return s[len(prefix):]
     else:
@@ -91,7 +91,7 @@ def removePrefix(s, prefix='!'):
 
 
 def suggest(tree, part, skipList=[]):
-    '''
+    """
     The basic autocompletion logic.
     :param tree: dict of list to take possible completions from.
     @part: the prefix for the completions.
@@ -100,7 +100,7 @@ def suggest(tree, part, skipList=[]):
     :return: list of (p, c) where p is the prefix of the completion c and suffix of part.
         (currently, only lengths of p's are used).
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     try:
         list = tree.keys()
         dir = True
@@ -157,9 +157,9 @@ def formatParagraph(text, width):
 
 
 def formatParagraphLine(text, width):
-    '''
+    """
     :return: array of rows
-    '''
+    """
     words = text.split()
     tail = words
     result = []

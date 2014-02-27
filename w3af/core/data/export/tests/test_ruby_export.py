@@ -1,4 +1,4 @@
-'''
+"""
 test_ruby_export.py
 
 Copyright 2012 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.export.ruby_export import ruby_export
 
-EXPECTED_SIMPLE = '''require 'net/https'
+EXPECTED_SIMPLE = """require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = nil
@@ -37,9 +37,9 @@ res = Net::HTTP.start(url.host, url.port) do |http|
 end
 
 puts res.body
-'''
+"""
 
-EXPECTED_POST = '''require 'net/https'
+EXPECTED_POST = """require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = "a=1"
@@ -52,9 +52,9 @@ res = Net::HTTP.start(url.host, url.port) do |http|
 end
 
 puts res.body
-'''
+"""
 
-EXPECTED_POST_REPEATED = '''require 'net/https'
+EXPECTED_POST_REPEATED = """require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = "a=1&a=2"
@@ -68,7 +68,7 @@ res = Net::HTTP.start(url.host, url.port) do |http|
 end
 
 puts res.body
-'''
+"""
 
 
 class TestRubyExport(unittest.TestCase):

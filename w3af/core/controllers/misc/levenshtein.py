@@ -1,4 +1,4 @@
-'''
+"""
 levenshtein.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import difflib
 import pprint
@@ -27,7 +27,7 @@ from upper_bounds import UPPER_BOUNDS
 
 
 def relative_distance_boolean(a_str, b_str, threshold=0.6):
-    '''
+    """
     Indicates if the strings to compare are similar enough. This (optimized)
     function is equivalent to the expression:
         relative_distance(x, y) > threshold
@@ -37,7 +37,7 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     :param threshold: Float value indicating the expected "similarity". Must be
                       0 <= threshold <= 1.0
     :return: A boolean value
-    '''
+    """
 
     if threshold == 0:
         return True
@@ -80,39 +80,39 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
 
 
 def relative_distance_ge(a_str, b_str, threshold=0.6):
-    '''
+    """
     Indicates if the 'similarity' index between strings
     is *greater equal* than 'threshold'. See 'relative_distance_boolean'.
-    '''
+    """
     return relative_distance_boolean(a_str, b_str, threshold)
 
 
 def relative_distance_lt(a_str, b_str, threshold=0.6):
-    '''
+    """
     Indicates if the 'similarity' index between strings
     is *less than* 'threshold'
-    '''
+    """
     return not relative_distance_boolean(a_str, b_str, threshold)
 
 
 def relative_distance(a_str, b_str):
-    '''
+    """
     Measures the "similarity" of the strings. A return value value over 0.6
     means the strings are close matches.
 
     :param a_str: A string object
     :param b_str: A string object
     :return: A float with the distance
-    '''
+    """
     return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
 
 
 def _generate_upper_bounds():
-    '''
+    """
     This function can be used to produce new upper bounds,
     but shouldn't be used in productive code. Simply run this
     command once and then hardcode the list.
-    '''
+    """
 
     left_max = 40
     right_max = 30
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     #_generate_upper_bounds()
 
     # This tests should be reallocated in a test module.
-    '''import time
+    """import time
     import urllib2
 
     performance_tests = []
@@ -252,4 +252,4 @@ if __name__ == "__main__":
     print 'Boolean:', boolean_time_sum / numOfOverallTests
     print 'Original:', original_time_sum / numOfOverallTests
 
-'''
+"""

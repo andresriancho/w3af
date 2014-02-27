@@ -1,4 +1,4 @@
-'''
+"""
 knowledge_base.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import threading
 import cPickle
 import types
@@ -36,12 +36,12 @@ from weakref import WeakValueDictionary
 
 
 class BasicKnowledgeBase(object): 
-    '''
+    """
     This is a base class from which all implementations of KnowledgeBase will
     inherit. It has the basic utility methods that will be used.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         self._kb_lock = threading.RLock()
@@ -50,7 +50,7 @@ class BasicKnowledgeBase(object):
                         'VAR': self.filter_var}
         
     def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
-        '''
+        """
         Append to a location in the KB if and only if there it no other
         vulnerability in the same location for the same URL and parameter.
 
@@ -65,7 +65,7 @@ class BasicKnowledgeBase(object):
         :return: True if the vuln was added. False if there was already a
                  vulnerability in the KB location with the same URL and
                  parameter.
-        '''
+        """
         if not isinstance(info_inst, Info):
             raise ValueError('append_uniq requires an info object as parameter.')
         
@@ -83,10 +83,10 @@ class BasicKnowledgeBase(object):
             return False
 
     def filter_url(self, location_a, location_b, info_inst):
-        '''
+        """
         :return: True if there is no other info in (location_a, location_b)
                  with the same URL as the info_inst.
-        '''
+        """
         for saved_vuln in self.get(location_a, location_b):
             if saved_vuln.get_url() == info_inst.get_url():
                 return False
@@ -94,11 +94,11 @@ class BasicKnowledgeBase(object):
         return True
 
     def filter_var(self, location_a, location_b, info_inst):
-        '''
+        """
         :return: True if there is no other info in (location_a, location_b)
                  with the same URL,Variable,DataContainer.keys() as the
                  info_inst.
-        '''
+        """
         for saved_vuln in self.get(location_a, location_b):
             
             if saved_vuln.get_var() == info_inst.get_var() and\
@@ -117,23 +117,23 @@ class BasicKnowledgeBase(object):
         return True
 
     def get_all_vulns(self):
-        '''
+        """
         :return: A list of all vulns reported by all plugins.
-        '''
+        """
         return self.get_all_entries_of_class(Vuln)
 
     def get_all_infos(self):
-        '''
+        """
         :return: A list of all vulns reported by all plugins.
-        '''
+        """
         return self.get_all_entries_of_class(Info)
 
     def get_all_shells(self, w3af_core=None):
-        '''
+        """
         :param w3af_core: The w3af_core used in the current scan
         @see: Shell.__reduce__ to understand why we need the w3af_core 
         :return: A list of all vulns reported by all plugins.
-        '''
+        """
         all_shells = []
 
         for shell in self.get_all_entries_of_class(Shell):
@@ -152,13 +152,13 @@ class BasicKnowledgeBase(object):
             return data.get_name()
 
     def append(self, location_a, location_b, value):
-        '''
+        """
         This method appends the location_b value to a dict.
-        '''
+        """
         raise NotImplementedError
 
     def get(self, plugin_name, location_b=None):
-        '''
+        """
         :param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
                                 but could also be the plugin instance.
@@ -171,52 +171,52 @@ class BasicKnowledgeBase(object):
                                  by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
-        '''
+        """
         raise NotImplementedError
 
     def get_all_entries_of_class(self, klass):
-        '''
+        """
         :return: A list of all objects of class == klass that are saved in the kb.
-        '''
+        """
         raise NotImplementedError
 
     def clear(self, location_a, location_b):
-        '''
+        """
         Clear any values stored in (location_a, location_b)
-        '''
+        """
         raise NotImplementedError
     
     def raw_write(self, location_a, location_b, value):
-        '''
+        """
         This method saves the value to (location_a,location_b)
-        '''
+        """
         raise NotImplementedError
 
     def raw_read(self, location_a, location_b):
-        '''
+        """
         This method reads the value from (location_a,location_b)
-        '''
+        """
         raise NotImplementedError
     
     def dump(self):
         raise NotImplementedError
 
     def cleanup(self):
-        '''
+        """
         Cleanup all internal data.
-        '''
+        """
         raise NotImplementedError
 
 
 class DBKnowledgeBase(BasicKnowledgeBase):
-    '''
+    """
     This class saves the data that is sent to it by plugins. It is the only way
     in which plugins can exchange information.
 
     Data is stored in a DB.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         super(DBKnowledgeBase, self).__init__()
@@ -251,10 +251,10 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.db.execute(query % self.table_name, params)
 
     def raw_write(self, location_a, location_b, value):
-        '''
+        """
         This method saves value to (location_a,location_b) but previously
         clears any pre-existing values.
-        '''
+        """
         if isinstance(value, Info):
             raise TypeError('Use append or append_uniq to store vulnerabilities')
         
@@ -264,9 +264,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.append(location_a, location_b, value, ignore_type=True)
 
     def raw_read(self, location_a, location_b):
-        '''
+        """
         This method reads the value from (location_a,location_b)
-        '''
+        """
         location_a = self._get_real_name(location_a)
         result = self.get(location_a, location_b, check_types=False)
         
@@ -289,9 +289,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                 return str(hash(obj))
 
     def append(self, location_a, location_b, value, ignore_type=False):
-        '''
+        """
         This method appends the location_b value to a dict.
-        '''
+        """
         if not ignore_type and not isinstance(value, (Info, Shell)):
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
@@ -308,7 +308,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self._notify(location_a, location_b, value)
 
     def get(self, location_a, location_b, check_types=True):
-        '''
+        """
         :param location_a: The plugin that saved the data to the
                            kb.info Typically the name of the plugin,
                            but could also be the plugin instance.
@@ -321,7 +321,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                            by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
-        '''
+        """
         location_a = self._get_real_name(location_a)
         
         if location_b is None:
@@ -358,7 +358,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return result
 
     def add_observer(self, location_a, location_b, observer):
-        '''
+        """
         Add the observer function to the observer list. The function will be
         called when there is a change in (location_a, location_b).
         
@@ -370,7 +370,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             * value that's added to the kb location
         
         :return: None
-        '''
+        """
         if not isinstance(location_a, (basestring, types.NoneType)) or \
         not isinstance(location_a, (basestring, types.NoneType)):
             raise TypeError('Observer locations need to be strings or None.')
@@ -379,14 +379,14 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.observers[(location_a, location_b, observer_id)] = observer
     
     def add_types_observer(self, type_filter, observer):
-        '''
+        """
         Add the observer function to the list of functions to be called when a
         new object that is of type "type_filter" is added to the KB.
         
         The type_filter must be one of Info, Vuln or Shell.
         
         :return: None
-        '''
+        """
         if type_filter not in (Info, Vuln, Shell):
             msg = 'The type_filter needs to be one of Info, Vuln or Shell'
             raise TypeError(msg)
@@ -399,12 +399,12 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return self._observer_id
     
     def _notify(self, location_a, location_b, value):
-        '''
+        """
         Call the observer if the location_a/location_b matches with the
         configured observers.
         
         :return: None
-        '''
+        """
         # Note that I copy the items list in order to iterate though it without
         # any issues like the size changing
         for (obs_loc_a, obs_loc_b, _), observer in self.observers.items()[:]:
@@ -426,9 +426,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                 observer(location_a, location_b, value)
 
     def get_all_entries_of_class(self, klass):
-        '''
+        """
         :return: A list of all objects of class == klass that are saved in the kb.
-        '''
+        """
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
         
@@ -460,9 +460,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return result_dict
 
     def cleanup(self):
-        '''
+        """
         Cleanup internal data.
-        '''
+        """
         self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
         
         # Remove the old, create new.
@@ -481,29 +481,29 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.observers.clear()
     
     def get_all_known_urls(self):
-        '''
+        """
         :return: A DiskSet with all the known URLs as URL objects.
-        '''
+        """
         return self.urls
 
     def add_url_observer(self, observer):
         self.url_observers.append(observer)
 
     def _notify_url_observers(self, new_url):
-        '''
+        """
         Call the observer with new_url.
         
         :return: None
-        '''
+        """
         # Note that I copy the items list in order to iterate though it without
         # any issues like the size changing
         for observer in self.url_observers[:]:            
             observer(new_url)
     
     def add_url(self, url):
-        '''
+        """
         :return: True if the URL was previously unknown 
-        '''
+        """
         if not isinstance(url, URL):
             msg = 'add_url requires a URL as parameter got %s instead.'
             raise TypeError(msg % type(url))
@@ -512,15 +512,15 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return self.urls.add(url)
     
     def get_all_known_fuzzable_requests(self):
-        '''
+        """
         :return: A DiskSet with all the known URLs as URL objects.
-        '''
+        """
         return self.fuzzable_requests
     
     def add_fuzzable_request(self, fuzzable_request):
-        '''
+        """
         :return: True if the FuzzableRequest was previously unknown 
-        '''
+        """
         if not isinstance(fuzzable_request, FuzzableRequest):
             msg = 'add_fuzzable_request requires a FuzzableRequest as parameter.'\
                   'got %s instead.'

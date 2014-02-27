@@ -1,4 +1,4 @@
-'''
+"""
 diff.py
 
 Copyright 2008 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import difflib
 
 
 def diff(a, b):
-    '''
+    """
     :param a: A string
     :param b: A string (similar to a)
     :return: Two strings (a_mod, b_mod) which are basically:
@@ -43,7 +43,7 @@ def diff(a, b):
 
     >>> diff('123abc yes', 'no 123abc no')
     ('yes', 'no no')
-    '''
+    """
     matching_blocks = difflib.SequenceMatcher(None, a, b).get_matching_blocks()
     removed_a = 0
     removed_b = 0

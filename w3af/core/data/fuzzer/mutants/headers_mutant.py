@@ -1,4 +1,4 @@
-'''
+"""
 HeadersMutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,15 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.dc.headers import Headers
 
 
 class HeadersMutant(Mutant):
-    '''
+    """
     This class is a headers mutant.
-    '''
+    """
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 
@@ -49,9 +49,9 @@ class HeadersMutant(Mutant):
         self._headers = fixed_headers
 
     def found_at(self):
-        '''
+        """
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         fmt = '"%s", using HTTP method %s. The modified header was: "%s"'\
               ' and it\'s value was: "%s".'
 
@@ -59,9 +59,9 @@ class HeadersMutant(Mutant):
                       self.get_mod_value())
 
     def set_mod_value(self, val):
-        '''
+        """
         Set the value of the variable that this mutant modifies.
-        '''
+        """
         try:
             self._freq._headers[self.get_var()] = val
         except:
@@ -78,10 +78,10 @@ class HeadersMutant(Mutant):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''
+        """
         if not fuzzer_config['fuzzable_headers']:
             return []
 

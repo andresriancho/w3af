@@ -1,4 +1,4 @@
-'''
+"""
 html_file.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import cgi
 import time
@@ -49,11 +49,11 @@ HTML_HEADER = Template('<!DOCTYPE html>\n<html>\n<head>\n<title>$title</title>\n
 
 
 class html_file(OutputPlugin):
-    '''
+    """
     Generate HTML report with identified vulnerabilities and log messages.
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
     def __init__(self):
         OutputPlugin.__init__(self)
 
@@ -71,9 +71,9 @@ class html_file(OutputPlugin):
         self._output_file_name = '~/report.html'
 
     def _init(self):
-        '''
+        """
         Write messages to HTML file.
-        '''
+        """
         self._output_file_name = os.path.expanduser(self._output_file_name)
         
         if not self._initialized:
@@ -104,11 +104,11 @@ class html_file(OutputPlugin):
                 self._write_to_file(html)
 
     def _write_to_file(self, *msg_list):
-        '''
+        """
         Write all parameters to the output file.
 
         :param msg_list: The messages (strings) to write to the file.
-        '''
+        """
         if self._file is None:
             return
         
@@ -124,11 +124,11 @@ class html_file(OutputPlugin):
                              ignore_plugins=set([self.get_name()]))
 
     def debug(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for debug messages.
-        '''
+        """
         self._init()
 
         if self._verbose:
@@ -142,26 +142,26 @@ class html_file(OutputPlugin):
     information = vulnerability = do_nothing
 
     def error(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for error messages.
-        '''
+        """
         self._init()
         to_print = self._clean_string(message)
         self._add_to_debug_table(cgi.escape(to_print), 'error')
 
     def console(self, message, new_line=True):
-        '''
+        """
         This method is used by the w3af console to print messages to the
         outside.
-        '''
+        """
         self._init()
         to_print = self._clean_string(message)
         self._add_to_debug_table(cgi.escape(to_print), 'console')
 
     def log_enabled_plugins(self, plugins_dict, options_dict):
-        '''
+        """
         This method is called from the output manager object. This method
         should take an action for the enabled plugins and their configuration.
         Usually, write the info to a file or print it somewhere.
@@ -169,7 +169,7 @@ class html_file(OutputPlugin):
         :param pluginsDict: A dict with all the plugin types and the
                                 enabled plugins for that type of plugin.
         :param optionsDict: A dict with the options for every plugin.
-        '''
+        """
         to_print = '<pre>'
 
         for plugin_type in plugins_dict:
@@ -189,12 +189,12 @@ class html_file(OutputPlugin):
                                  to_print + '\n', 'debug')
 
     def _add_to_debug_table(self, message, msg_type):
-        '''
+        """
         Add a message to the debug table.
 
         :param message: The message to add to the table. It's in HTML.
         :param msg_type: The type of message
-        '''
+        """
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
 
@@ -204,7 +204,7 @@ class html_file(OutputPlugin):
         self._aditional_info.append(msg % (the_time, msg_type, message))
 
     def set_options(self, option_list):
-        '''
+        """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using get_options()
@@ -212,14 +212,14 @@ class html_file(OutputPlugin):
         This method MUST be implemented on every plugin.
 
         :return: No value is returned.
-        '''
+        """
         self._output_file_name = option_list['output_file'].get_value()
         self._verbose = option_list['verbose'].get_value()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'File name where this plugin will write to'
@@ -233,9 +233,9 @@ class html_file(OutputPlugin):
         return ol
 
     def end(self):
-        '''
+        """
         This method is called when the scan has finished.
-        '''
+        """
         self._init()
 
         self._write_to_file(
@@ -339,10 +339,10 @@ class html_file(OutputPlugin):
         self._aditional_info.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin writes the framework messages to an HTML report file.
 
         Two configurable parameters exist:
@@ -351,4 +351,4 @@ class html_file(OutputPlugin):
 
         If you want to write every HTTP request/response to a text file, you
         should use the text_file plugin.
-        '''
+        """

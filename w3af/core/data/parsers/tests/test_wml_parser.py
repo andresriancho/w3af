@@ -1,4 +1,4 @@
-'''
+"""
 test_wml_parser.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.parsers.wml_parser import WMLParser
@@ -65,7 +65,7 @@ class TestWMLParser(unittest.TestCase):
         self.assertEqual(u'http://www.w3af.com/index.aspx', re[0].url_string)
 
     def test_parser_re_link(self):
-        '''Get a link by applying regular expressions'''
+        """Get a link by applying regular expressions"""
         response = HTTPResponse(200, 'header /index.aspx footer',
                                 Headers(), self.url, self.url)
         w = WMLParser( response )

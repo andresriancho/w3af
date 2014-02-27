@@ -1,4 +1,4 @@
-'''
+"""
 disk_dict.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import cPickle
 
 from w3af.core.data.fuzzer.utils import rand_alpha
@@ -26,7 +26,7 @@ from w3af.core.data.db.dbms import get_default_temp_db_instance
 
 
 class DiskDict(object):
-    '''
+    """
     It's a dict that stores items in a sqlite3 database and has the following
     features:
         - Dict-like API
@@ -34,7 +34,7 @@ class DiskDict(object):
         - Deletes the table when the instance object is deleted
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         self.db = get_default_temp_db_instance()
 
@@ -72,9 +72,9 @@ class DiskDict(object):
             yield cPickle.loads(r[0])
 
     def __contains__(self, key):
-        '''
+        """
         :return: True if the value is in keys
-        '''
+        """
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the
         # first match.

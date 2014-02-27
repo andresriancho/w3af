@@ -1,4 +1,4 @@
-'''
+"""
 ConsoleUI.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 import sys
 import shlex
@@ -47,12 +47,12 @@ except KeyboardInterrupt:
 
 
 class ConsoleUI(object):
-    '''
+    """
     This class represents the console.
     It handles the keys pressed and delegate the completion and execution tasks
     to the current menu.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
 
     def __init__(self, commands=[], parent=None, do_upd=None):
         self._commands = commands
@@ -88,9 +88,9 @@ class ConsoleUI(object):
             self.__initRoot(do_upd)
 
     def __initRoot(self, do_upd):
-        '''
+        """
         Root menu init routine.
-        '''
+        """
         cons_upd = ConsoleUIUpdater(force=do_upd)
         cons_upd.update()
         # Core initialization
@@ -102,11 +102,11 @@ class ConsoleUI(object):
         self._w3af = parent._w3af
 
     def accept_disclaimer(self):
-        '''
+        """
         :return: True/False depending on the user's answer to our disclaimer.
                  Please note that in w3af_console we'll stop if the user does
                  not accept the disclaimer.
-        '''
+        """
         startup_cfg = StartUpConfig()
 
         if startup_cfg.accepted_disclaimer:
@@ -130,9 +130,9 @@ class ConsoleUI(object):
         return False
 
     def sh(self, name='w3af', callback=None):
-        '''
+        """
         Main cycle
-        '''
+        """
         try:
             if callback:
                 if hasattr(self, '_context'):
@@ -347,9 +347,9 @@ class ConsoleUI(object):
         self._position = 0
 
     def _onTab(self):
-        '''
+        """
             Autocompletion logic is called here
-        '''
+        """
 
         # TODO: autocomplete for raw menu
         if self.in_raw_line_mode():
@@ -427,7 +427,7 @@ class ConsoleUI(object):
         return ''.join(self._line)
 
     def _parseLine(self, line=None):
-        '''
+        """
         >>> console = ConsoleUI(do_upd=False)
         >>> console._parseLine('abc')
         ['abc']
@@ -441,7 +441,7 @@ class ConsoleUI(object):
         >>> console._parseLine('abc "def jkl')
         No closing quotation
 
-        '''
+        """
         if line is None:
             line = self._getLineStr()
 
@@ -488,9 +488,9 @@ class ConsoleUI(object):
                 term.moveBack(-steps)
 
     def _showTail(self, retainPosition=True):
-        '''
+        """
             reprint everything that should be after the cursor
-        '''
+        """
 #        term.savePosition()
         strLine = self._getLineStr()
         toWrite = strLine[self._position:]

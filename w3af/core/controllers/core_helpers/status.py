@@ -1,4 +1,4 @@
-'''
+"""
 status.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 
 import w3af.core.controllers.output_manager as om
@@ -27,11 +27,11 @@ from w3af.core.controllers.misc.number_generator import consecutive_number_gener
 
 
 class w3af_core_status(object):
-    '''
+    """
     This class maintains the status of the w3afCore. During scan the different
     phases of the process will change the status (set) and the UI will be calling
     the different methods to (get) the information required.
-    '''
+    """
     def __init__(self, w3af_core):
         # Store the core to be able to access the queues to get status
         self._w3af_core = w3af_core
@@ -65,9 +65,9 @@ class w3af_core_status(object):
         self._is_running = False
 
     def get_status(self):
-        '''
+        """
         :return: A string representing the current w3af core status.
-        '''
+        """
         if self._paused:
             return 'Paused.'
         
@@ -99,13 +99,13 @@ class w3af_core_status(object):
             return status_str
 
     def set_running_plugin(self, plugin_type, plugin_name, log=True):
-        '''
+        """
         This method saves the phase and plugin name in order to be shown
         to the user.
 
         :param plugin_name: The plugin_type which the w3afCore is running
         :param plugin_name: The plugin_name which the w3afCore is running
-        '''
+        """
         if log:
             om.out.debug('Starting plugin: %s.%s' % (plugin_type, plugin_name))
             
@@ -113,32 +113,32 @@ class w3af_core_status(object):
         self._latest_ptype, self._latest_pname = plugin_type, plugin_name
 
     def get_running_plugin(self, plugin_type):
-        '''
+        """
         :return: The plugin that the core is running when the method is called.
-        '''
+        """
         return self._running_plugin.get(plugin_type, None)
 
     def latest_running_plugin(self):
-        '''
+        """
         :return: Tuple with plugin_type and plugin_name for the latest running
                  plugin reported using set_running_plugin.
-        '''
+        """
         return self._latest_ptype, self._latest_pname
 
     def is_running(self):
-        '''
+        """
         :return: If the user has called start, and then wants to know if the
         core is still working, it should call is_running() to know that.
-        '''
+        """
         return self._is_running
     
     def is_paused(self):
         return self._paused
     
     def get_run_time(self):
-        '''
+        """
         :return: The time (in minutes) between now and the call to start().
-        '''
+        """
         if self._start_time_epoch is None:
             raise RuntimeError('Can NOT call get_run_time before start().')
         
@@ -148,17 +148,17 @@ class w3af_core_status(object):
         return run_time
 
     def get_scan_time(self):
-        '''
+        """
         :return: The scan time in a format similar to:
                         3h 25m 32s
-        '''
+        """
         return epoch_to_string(self._start_time_epoch)
 
     def get_rpm(self):
-        '''
+        """
         :return: The number of HTTP requests per minute performed since the
                  start of the scan.
-        '''
+        """
         if self._start_time_epoch is None:
             raise RuntimeError('Can NOT call get_run_time before start().')
         
@@ -174,17 +174,17 @@ class w3af_core_status(object):
         self.scans_completed += 1
 
     def get_current_fuzzable_request(self, plugin_type):
-        '''
+        """
         :return: The current fuzzable request that the w3afCore is working on.
-        '''
+        """
         return self._current_fuzzable_request.get(plugin_type, None)
 
     # pylint: disable=E0202
     def set_current_fuzzable_request(self, plugin_type, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: The FuzzableRequest that the w3afCore is
         working on right now.
-        '''
+        """
         self._current_fuzzable_request[plugin_type] = fuzzable_request
 
     def get_crawl_input_speed(self):

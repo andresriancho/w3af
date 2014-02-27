@@ -1,4 +1,4 @@
-'''
+"""
 main_body.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from __future__ import division
 
 from w3af.core.ui.gui.entries import RememberingVPaned, RememberingHPaned
@@ -27,12 +27,12 @@ from w3af.core.ui.gui.tabs.log.stats import StatsViewer
 
 
 class LogBody(RememberingVPaned):
-    '''Body of the log tab.
+    """Body of the log tab.
 
     :param w3af: the Core instance.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af):
         super(LogBody, self).__init__(w3af, "pane-logbody")
         self.w3af = w3af

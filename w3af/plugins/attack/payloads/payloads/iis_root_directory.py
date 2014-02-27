@@ -5,9 +5,9 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class iis_root_directory(Payload):
-    '''
+    """
     This payload finds IIS Root Directories where websites are hosted.
-    '''
+    """
     def api_read(self):
         self.result = {}
         files = []

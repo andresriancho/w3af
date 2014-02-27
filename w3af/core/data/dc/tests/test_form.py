@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 Copyright 2012 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import urllib
 
@@ -134,11 +134,11 @@ class test_form(unittest.TestCase):
         self.assertEquals(len(variants_set), expected)
 
     def test_tmb_variants_large(self):
-        '''
+        """
         Note that this test has several changes from test_tmb_variants:
             * It uses form_select_misc_large, which exceeds the form's TOP_VARIANTS = 15
             * Doesn't use filter_tmb since variants are based on a "random pick"
-        '''
+        """
         bigform_data = form_with_radio + form_select_cars + \
             form_select_misc_large
         clean_data = get_gruped_data(bigform_data)
@@ -257,20 +257,20 @@ class test_form(unittest.TestCase):
             self.assertEquals(variants, get_all_variants())
 
     def test_empty_select_all(self):
-        '''
+        """
         This tests for handling of "select" tags that have no options inside.
 
         The get_variants method should return a variant with the select tag name
         that is always an empty string.
 
         In this case I'm going to call get_variants with mode="all"
-        '''
+        """
         new_form = create_form_helper(form_with_radio + form_select_cars +
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="all")]
 
     def test_empty_select_tb(self):
-        '''
+        """
         This tests for handling of "select" tags that have no options inside.
 
         The get_variants method should return a variant with the select tag name
@@ -279,13 +279,13 @@ class test_form(unittest.TestCase):
         In this case I'm going to call get_variants with mode="tb"
 
         This is the case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
-        '''
+        """
         new_form = create_form_helper(form_with_radio + form_select_cars +
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="tb")]
 
     def test_form_with_plus_value(self):
-        '''
+        """
         This test verifies that a fix for the bug identified while scanning
         demo.testfire.net is still working as expected. The issue was that the
         site had a form that looked like:
@@ -303,7 +303,7 @@ class test_form(unittest.TestCase):
         Please note that this is just a partial test, since there is much more
         going on in w3af than just creating a form and encoding it. A functional
         test for this issue can be found at test_special_chars.py
-        '''
+        """
         form_with_plus = [
             {'tagname': 'input', 'name': 'foo', 'type':
                 'hidden', 'value': 'bar+spam'},
@@ -339,10 +339,10 @@ class test_form(unittest.TestCase):
 
 
 def get_gruped_data(form_data):
-    '''
+    """
     Group form data by elem `name`. Return dict with the following structure:
     {'cars': ['volvo', 'audi', 'lada'], 'sex': ['M', 'F'], ...}
-    '''
+    """
     res = {}
     for elem_data in form_data:
         values = res.setdefault(elem_data['name'], [])
@@ -354,13 +354,13 @@ def get_gruped_data(form_data):
 
 
 def create_form_helper(form_data):
-    '''
+    """
     Creates a dc.Form object from a dict container
 
     :param form_data: A list containing dicts representing a form's
         internal structure
     :return: A dc.Form object from `form_data`
-    '''
+    """
     new_form = form.Form()
 
     for elem_data in form_data:

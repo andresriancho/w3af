@@ -1,5 +1,5 @@
 # coding: utf8
-'''
+"""
 test_webspider.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import urllib2
 import re
 
@@ -77,9 +77,9 @@ class TestWebSpider(PluginTest):
 
     @attr('ci_fails')
     def test_spider_found_urls_with_port(self):
-        '''
+        """
         Test for issue https://github.com/andresriancho/w3af/issues/134
-        '''
+        """
         self.generic_follow_links_scan(self.follow_links_80_url)
 
     @attr('smoke')
@@ -187,11 +187,11 @@ class TestWebSpider(PluginTest):
 
 
 def clear_wivet():
-    '''
+    """
     Utility function that will clear all the previous stats from my wivet
     instance, very helpful for performing analysis of the stats after the
     scan ends.
-    '''
+    """
     clear_url = 'http://wivet/offscanpages/remove-all-stats.php?sure=yes'
 
     response = urllib2.urlopen(clear_url)
@@ -201,9 +201,9 @@ def clear_wivet():
 
 
 def extract_all_stats():
-    '''
+    """
     :return: A list with all the stats generated during this scan
-    '''
+    """
     stats_url = 'http://wivet/offscanpages/statistics/'
     response = urllib2.urlopen(stats_url)
 

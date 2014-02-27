@@ -1,4 +1,4 @@
-'''
+"""
 ajax.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 from lxml import etree
 
@@ -27,11 +27,11 @@ from w3af.core.data.kb.info import Info
 
 
 class ajax(GrepPlugin):
-    '''
+    """
     Grep every page for traces of Ajax code.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -45,13 +45,13 @@ class ajax(GrepPlugin):
         self._script_xpath = etree.XPath('.//script')
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -79,9 +79,9 @@ class ajax(GrepPlugin):
                     self.kb_append_uniq(self, 'ajax', i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for traces of Ajax code.
-        '''
+        """

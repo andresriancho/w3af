@@ -5,9 +5,9 @@ from w3af.core.ui.console.tables import table
 
 
 class svn_config_files(Payload):
-    '''
+    """
     This payload shows SVN Server configuration files
-    '''
+    """
     def fname_generator(self, users_info, apache_config_directory,
                         apache_config_files):
         yield '/etc/httpd/conf.d/subversion.conf'

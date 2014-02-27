@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class dns_config_files(Payload):
-    '''
+    """
     This payload shows DNS Server configuration files
-    '''
+    """
     def api_read(self):
         result = {}
         files = []

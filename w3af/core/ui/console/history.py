@@ -1,4 +1,4 @@
-'''
+"""
 history.py
 
 Copyright 2008 Andres Riancho
@@ -18,24 +18,24 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import copy
 
 
 class historyTable(object):
-    '''
+    """
     A wrapper around a dictionary which stores menu-related history objects.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     def __init__(self):
         self._table = {}
 
     def get_history(self, key):
-        '''
+        """
         Returns a history object for the key (which is a menu name).
         If no object exist yet, a new one is created and registered.
         :param key
-        '''
+        """
         if key in self._table:
             result = self._table[key]
         else:
@@ -46,11 +46,11 @@ class historyTable(object):
 
 
 class history(object):
-    '''
+    """
     Remembers the commands which were executed and allows navigate in that list.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
 
-    '''
+    """
 
     def __init__(self):
         self._stack = []

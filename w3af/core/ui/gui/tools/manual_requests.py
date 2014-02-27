@@ -1,4 +1,4 @@
-'''
+"""
 manual_requests.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 import gobject
 import threading
@@ -41,10 +41,10 @@ Content-Type: application/x-www-form-urlencoded
 
 
 class ManualRequests(entries.RememberingWindow):
-    '''Infrastructure to generate manual HTTP requests.
+    """Infrastructure to generate manual HTTP requests.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, initial_request=None):
         super(ManualRequests, self).__init__(w3af, "manualreq",
                                              "w3af - Manual Requests",
@@ -85,10 +85,10 @@ class ManualRequests(entries.RememberingWindow):
         self.show()
 
     def _send(self, widg):
-        '''Actually sends the manual requests.
+        """Actually sends the manual requests.
 
         :param widget: who sent the signal.
-        '''
+        """
         (tsup, tlow) = self.reqresp.request.get_both_texts()
 
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),

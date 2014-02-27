@@ -1,4 +1,4 @@
-'''
+"""
 make_leet.py
 
 Copyright 2009 Leonardo Jose Fishman
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 LEET_LETTERS = dict(zip("aAeEiIoO", "44331100"))
 LEET_LETTERS_OPTIONALS = dict(zip("sStT", "5577"))
 

@@ -1,4 +1,4 @@
-'''
+"""
 serialization_perf.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 def do_msgpack(obj):
     msg = msgpack.packb([1,2,3])
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                                                              total_time)
         print
     
-    '''
+    """
     msgpack is *very fast*:
     
         msgpack took 0.0302159786224 seconds to complete simple_dict
@@ -112,4 +112,4 @@ if __name__ == '__main__':
     To sum up, for sending 10k requests (which I was pickling for logging them)
     I was wasting (around) 16 seconds in the process of pickling them, this is
     very_long_keys_vals. Now with msgpack I spend only 0.02 secs.
-    '''
+    """

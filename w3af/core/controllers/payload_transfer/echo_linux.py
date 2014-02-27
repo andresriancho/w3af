@@ -1,4 +1,4 @@
-'''
+"""
 EchoLinux.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 
 import w3af.core.controllers.output_manager as om
@@ -27,10 +27,10 @@ from w3af.core.controllers.payload_transfer.base_payload_transfer import BasePay
 
 
 class EchoLinux(BasePayloadTransfer):
-    '''
+    """
     This is a class that defines how to send a file to a remote server using
     the "echo" command.
-    '''
+    """
 
     def __init__(self, exec_method, os):
         self._exec_method = exec_method
@@ -40,11 +40,11 @@ class EchoLinux(BasePayloadTransfer):
         self._step = 30
 
     def can_transfer(self):
-        '''
+        """
         This method is used to test if the transfer method works as expected.
         The implementation of this should transfer 10 bytes and check if they
         arrived as expected to the other end.
-        '''
+        """
         # Check if echo exists and works as expected
         res = self._exec_method("/bin/echo -n 'w3af'")
         if 'w3af' != res:
@@ -55,9 +55,9 @@ class EchoLinux(BasePayloadTransfer):
             return True
 
     def estimate_transfer_time(self, size):
-        '''
+        """
         :return: An estimated transfer time for a file with the specified size.
-        '''
+        """
         before = time.time()
         res = self._exec_method("echo w3af")
         after = time.time()
@@ -72,9 +72,9 @@ class EchoLinux(BasePayloadTransfer):
         return int(timeTaken)
 
     def transfer(self, data_str, destination):
-        '''
+        """
         This method is used to transfer the data_str from w3af to the compromised server.
-        '''
+        """
         self._filename = destination
 
         # Zeroing destination file
@@ -96,8 +96,8 @@ class EchoLinux(BasePayloadTransfer):
         return self.verify_upload(data_str, self._filename)
 
     def get_speed(self):
-        '''
+        """
         :return: The transfer speed of the transfer object. It should return
                  a number between 100 (fast) and 1 (slow)
-        '''
+        """
         return 1

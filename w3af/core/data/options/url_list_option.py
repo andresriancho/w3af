@@ -1,4 +1,4 @@
-'''
+"""
 url_list_option.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.data.options.list_option import ListOption 
 from w3af.core.data.parsers.url import URL

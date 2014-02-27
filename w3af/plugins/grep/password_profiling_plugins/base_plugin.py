@@ -1,4 +1,4 @@
-'''
+"""
 BasePwdProfilingPlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,28 +18,28 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.exceptions import w3afException
 
 
 class BasePwdProfilingPlugin:
-    '''
+    """
     This is the base plugin for all password profiling plugins.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         pass
 
     def get_words(self, response):
-        '''
+        """
         Get words from the body.
         THIS PLUGIN MUST BE IMPLEMENTED BY ALL PLUGINS.
 
         :param response: In most common cases, an html. Could be almost anything.
         :return: Two map of strings:repetitions. One for titles and one for words.
-        '''
+        """
         raise w3afException('The method get_words must be implemented by all password profiling plugins.')

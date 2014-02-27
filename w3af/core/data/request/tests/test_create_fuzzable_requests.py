@@ -1,4 +1,4 @@
-'''
+"""
 test_create_fuzzable_requests.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from nose.plugins.attrib import attr
@@ -88,7 +88,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
 
     
     def test_body_parse_a(self):
-        '''
+        """
         TODO: I need to decide if I'm going to implement this in create_fuzzable_requests
               or if I'm going to delegate this responsability to the web_spider plugin
               only.
@@ -98,7 +98,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
               find . -name '*.py' | xargs grep create_fuzzable_requests
 
               And they all need to be analyzed before making a decision.
-        '''
+        """
         raise SkipTest('FIXME: See TODO.')
 
         body = '<a href="http://www.google.com/?id=1">click here</a>'
@@ -112,10 +112,10 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(fr.get_url().url_string, 'http://www.google.com/?id=1')
 
     def test_body_parse_form(self):
-        body = '''<form action="/foo.bar" method="POST">
+        body = """<form action="/foo.bar" method="POST">
                     A: <input name="a" />
                     B: <input name="b" value="123" />
-                  </form>'''
+                  </form>"""
         headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body, headers, self.url, self.url)
 

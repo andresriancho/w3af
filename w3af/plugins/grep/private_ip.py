@@ -1,4 +1,4 @@
-'''
+"""
 private_ip.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import socket
 
@@ -31,11 +31,11 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class private_ip(GrepPlugin):
-    '''
+    """
     Find private IP addresses on the response body and headers.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -53,13 +53,13 @@ class private_ip(GrepPlugin):
         self._ignore_if_match = None
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point. Search for private IPs in the header and the body.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, results are saved to the kb.
-        '''
+        """
         if self._ignore_if_match is None:
             self._generate_ignores(response)
 
@@ -75,9 +75,9 @@ class private_ip(GrepPlugin):
         
         
     def _analyze_headers(self, request, response):
-        '''
+        """
         Search for IP addresses in HTTP headers
-        '''
+        """
         # Get the headers string
         headers_string = response.dump_headers()
 
@@ -101,9 +101,9 @@ class private_ip(GrepPlugin):
                     self.kb_append(self, 'header', v)
 
     def _analyze_html(self, request, response):
-        '''
+        """
         Search for IP addresses in the HTML
-        '''
+        """
         if not response.is_text_or_html():
             return
 
@@ -137,9 +137,9 @@ class private_ip(GrepPlugin):
                     self.kb_append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
-        '''
+        """
         Generate the list of strings we want to ignore as private IP addresses
-        '''
+        """
         if self._ignore_if_match is None:
             self._ignore_if_match = set()
 
@@ -157,9 +157,9 @@ class private_ip(GrepPlugin):
                 self._ignore_if_match.add(ip_address)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page body and headers for private IP addresses.
-        '''
+        """

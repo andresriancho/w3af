@@ -1,4 +1,4 @@
-'''
+"""
 dependency_check.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import warnings
 import logging
@@ -45,12 +45,12 @@ from .platforms.current_platform import (SYSTEM_NAME,
 def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
                        system_name=SYSTEM_NAME, pkg_manager_cmd=PKG_MANAGER_CMD,
                        pip_cmd=PIP_CMD, exit_on_failure=True):
-    '''
+    """
     This function verifies that the dependencies that are needed by the
     framework core are met.
     
     :return: True if the process should exit
-    '''
+    """
     verify_python_version()
     
     disable_warnings()

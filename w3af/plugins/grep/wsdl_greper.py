@@ -1,4 +1,4 @@
-'''
+"""
 wsdl_greper.py
 
 Copyright 2006 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.esmre.multi_in import multi_in
 from w3af.core.data.kb.info import Info
 
 
 class wsdl_greper(GrepPlugin):
-    '''
+    """
     Grep every page for web service definition files.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     WSDL_STRINGS = ('xs:int', 'target_namespace', 'soap:body',
                     '/s:sequence', 'wsdl:', 'soapAction=',
                     # This isn't WSDL... but well...
@@ -42,13 +42,13 @@ class wsdl_greper(GrepPlugin):
         self._disco_strings = ['disco:discovery ']
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         if response.get_code() == 200:
             self.analyze_wsdl(request, response)
             self.analyze_disco(request, response)
@@ -83,13 +83,13 @@ class wsdl_greper(GrepPlugin):
                 break
                 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for WSDL definitions.
 
         Not all wsdls are found appending "?WSDL" to the url like crawl.wsdl_finder
         plugin does, this grep plugin will find some wsdl's that arent found by the
         crawl plugin.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 rfi.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import socket
@@ -46,10 +46,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class rfi(AuditPlugin):
-    '''
+    """
     Find remote file inclusion vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to use.' \
                        ' Please set valid values for local address (eg. 10.5.2.5)' \
@@ -78,11 +78,11 @@ class rfi(AuditPlugin):
         self._use_w3af_site = True
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for remote file inclusion vulnerabilities.
 
         :param freq: A FuzzableRequest object
-        '''
+        """
         # The plugin is going to use two different techniques:
         # 1- create a request that will include a file from the w3af site
         if self._use_w3af_site:
@@ -103,7 +103,7 @@ class rfi(AuditPlugin):
         self._report_vulns()
 
     def _report_vulns(self):
-        '''
+        """
         There was a problem with threads and self.kb_append_uniq which in some
         cases was hiding a high risk vulnerability. The issue was like this:
             
@@ -119,7 +119,7 @@ class rfi(AuditPlugin):
         
         So now we store stuff in self._vulns analyze them after all vulns are
         found and store the ones with highest risk.
-        '''
+        """
         sorted_vulns = {}
         
         for v in self._vulns:
@@ -151,9 +151,9 @@ class rfi(AuditPlugin):
             self.kb_append_uniq(self, 'rfi', highest_severity_vuln)
 
     def _correctly_configured(self):
-        '''
+        """
         :return: True if the plugin is correctly configured to run.
-        '''
+        """
         listen_address = self._listen_address
         listen_port = self._listen_port
 
@@ -177,12 +177,12 @@ class rfi(AuditPlugin):
                 return True
 
     def _local_test_inclusion(self, freq, orig_response):
-        '''
+        """
         Check for RFI using a local web server
 
         :param freq: A FuzzableRequest object
         :return: None, everything is saved to the kb
-        '''
+        """
         #
         # The listen address is an empty string when I have no default route
         #
@@ -231,12 +231,12 @@ class rfi(AuditPlugin):
                              ' "%s"' % e)
 
     def _w3af_site_test_inclusion(self, freq, orig_response):
-        '''
+        """
         Check for RFI using the official w3af site.
 
         :param freq: A FuzzableRequest object
         :return: None, everything is saved to the kb
-        '''
+        """
         rfi_url = URL(self.RFI_TEST_URL)
         rfi_result = 'w3af by Andres Riancho'
         rfi_result_part_1 = 'w3af'
@@ -249,13 +249,13 @@ class rfi(AuditPlugin):
         self._test_inclusion(freq, rfi_data, orig_response)
 
     def _test_inclusion(self, freq, rfi_data, orig_response):
-        '''
+        """
         Checks a FuzzableRequest for remote file inclusion bugs.
 
         :param freq: The fuzzable request that we want to inject into
         :param rfi_data: A RFIData object with all the information about the RFI
         :return: None, vulnerabilities are stored in the KB in _analyze_result
-        '''
+        """
         rfi_url_list = self._mutate_rfi_urls(rfi_data.rfi_url)
         mutants = create_mutants(freq, rfi_url_list, orig_resp=orig_response)
 
@@ -266,7 +266,7 @@ class rfi(AuditPlugin):
                                       analyze_result_par)
 
     def _mutate_rfi_urls(self, orig_url):
-        '''
+        """
         :param orig_url: url_object with the URL to mutate
         :return: A list of strings with URLs that will be sent to the remote
                  site to test if the inclusion is successful or not. Techniques
@@ -274,7 +274,7 @@ class rfi(AuditPlugin):
                      * Remove protocol
                      * Case sensitive protocol
                      * Same as input
-        '''
+        """
         result = []
 
         # same as input
@@ -294,9 +294,9 @@ class rfi(AuditPlugin):
         return result
 
     def _analyze_result(self, rfi_data, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         if rfi_data.rfi_result in response:
             desc = 'A remote file inclusion vulnerability that allows remote' \
                   ' code execution was found at: %s' % mutant.found_at()
@@ -341,7 +341,7 @@ class rfi(AuditPlugin):
                     break
 
     def _create_file(self):
-        '''
+        """
         Create random name file php with random php content. To be used in the
         remote file inclusion test.
 
@@ -358,7 +358,7 @@ class rfi(AuditPlugin):
         asp_code = 'response.write("%s");\n response.write("%s");' % (
             rand1, rand2)
         asp_code = '<% \n '+asp_code+'\n %>'
-        '''
+        """
         with self._plugin_lock:
             # First, generate the php file to be included.
             rfi_result_part_1 = rand1 = rand_alnum(9)
@@ -381,9 +381,9 @@ class rfi(AuditPlugin):
             return php_jsp_code, rfi_data
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'IP address that the webserver will use to receive requests'
@@ -407,13 +407,13 @@ class rfi(AuditPlugin):
         return ol
 
     def set_options(self, options_list):
-        '''
+        """
         This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
 
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
-        '''
+        """
         self._listen_address = options_list['listen_address'].get_value()
         self._listen_port = options_list['listen_port'].get_value()
         self._use_w3af_site = options_list['use_w3af_site'].get_value()
@@ -422,10 +422,10 @@ class rfi(AuditPlugin):
             raise w3afException(self.CONFIG_ERROR_MSG)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds remote file inclusion vulnerabilities.
 
         Three configurable parameters exist:
@@ -443,7 +443,7 @@ class rfi(AuditPlugin):
         and "listen_port". This method requires the target web application to be
         able to contact the newly created server and will not work unless
         you also configure your NAT router and firewalls (if any exist).
-        '''
+        """
 
 
 class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -466,14 +466,14 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return
 
     def log_message(self, fmt, *args):
-        '''
+        """
         I dont want messages to be written to stderr, please ignore them.
 
         If I don't override this method I end up with messages like:
         eulogia.local - - [19/Oct/2012 10:12:33] "GET /GGC8s1dk HTTP/1.0" 200 -
 
         being printed to the console.
-        '''
+        """
         pass
 
 

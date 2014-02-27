@@ -1,4 +1,4 @@
-'''
+"""
 prompt.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import gtk
 import gobject
@@ -28,7 +28,7 @@ from w3af.core.ui.gui.output.message_consumer import MessageConsumer
 
 
 class PromptView(gtk.TextView, MessageConsumer):
-    '''Creates a prompt for user interaction.
+    """Creates a prompt for user interaction.
 
     The user input is passed to the registered function, the result
     of this is shown under the prompt.
@@ -36,7 +36,7 @@ class PromptView(gtk.TextView, MessageConsumer):
     :param procfunc: the function to process the user input
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, prompt_text, procfunc):
         gtk.TextView.__init__(self)
         MessageConsumer.__init__(self)
@@ -78,12 +78,12 @@ class PromptView(gtk.TextView, MessageConsumer):
         gobject.idle_add(self.grab_focus)
 
     def handle_message(self, msg):
-        '''
+        """
         This method is called from gobject.timeout_add and will add messages
         from self.message to the textbuffer.
 
         :return: True to keep running
-        '''
+        """
         super(PromptView, self).handle_message(msg)
         
         if msg.get_type() == 'console':
@@ -96,12 +96,12 @@ class PromptView(gtk.TextView, MessageConsumer):
             yield True
 
     def insert_into_textbuffer(self, text):
-        '''
+        """
         Insert a text into the text buffer, taking care of \r, \n, self.user_started.
 
         :param text: The text to insert into the textbuffer
         :return: None
-        '''
+        """
         iterl = self.textbuffer.get_end_iter()
         # Handling carriage returns (special case for some apps)
         if text.startswith('\r'):
@@ -136,25 +136,25 @@ class PromptView(gtk.TextView, MessageConsumer):
             "user-input", iterl, True)
 
     def get_text(self):
-        '''Returns the textbuffer content.'''
+        """Returns the textbuffer content."""
         iterini = self.textbuffer.get_start_iter()
         iterend = self.textbuffer.get_end_iter()
         text = self.textbuffer.get_text(iterini, iterend)
         return text
 
     def _button_press(self, widg, event):
-        '''The mouse button is down.'''
+        """The mouse button is down."""
         if self.cursorPosition is None:
             self.cursorPosition = self.textbuffer.get_property(
                 "cursor-position")
         return False
 
     def _button_release(self, widg, event):
-        '''The mouse button is released.'''
+        """The mouse button is released."""
         return False
 
     def _key_up(self):
-        '''The key UP was pressed.'''
+        """The key UP was pressed."""
         # Do we have previous lines?
         if not self.all_lines:
             return True
@@ -167,7 +167,7 @@ class PromptView(gtk.TextView, MessageConsumer):
         return True
 
     def _key_down(self):
-        '''The key DOWN was pressed.'''
+        """The key DOWN was pressed."""
 
         # Do we have previous lines?
         if not self.all_lines:
@@ -181,7 +181,7 @@ class PromptView(gtk.TextView, MessageConsumer):
         return True
 
     def _showHistory(self, text):
-        '''Handles the history of commands.'''
+        """Handles the history of commands."""
         # delete all the line content
         iterini = self.textbuffer.get_iter_at_offset(self.cursorLimit)
         iterend = self.textbuffer.get_end_iter()
@@ -193,14 +193,14 @@ class PromptView(gtk.TextView, MessageConsumer):
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def _key_backspace(self):
-        '''The key BACKSPACE was pressed.'''
+        """The key BACKSPACE was pressed."""
         cursor_pos = self.textbuffer.get_property("cursor-position")
         if cursor_pos <= self.cursorLimit:
             return True
         return False
 
     def _key_enter(self):
-        '''The user pressed Return.'''
+        """The user pressed Return."""
         textbuffer = self.textbuffer
         cursor_pos = textbuffer.get_property("cursor-position")
         iter_end = textbuffer.get_end_iter()
@@ -228,7 +228,7 @@ class PromptView(gtk.TextView, MessageConsumer):
         return True
 
     def _proc(self, text):
-        '''Process the user input.'''
+        """Process the user input."""
         result = self.procfunc(text)
         if result is not None and isinstance(result, basestring):
             iterl = self.textbuffer.get_end_iter()
@@ -238,9 +238,9 @@ class PromptView(gtk.TextView, MessageConsumer):
         self._prompt()
 
     def _prompt(self):
-        '''
+        """
         Show the prompt-
-        '''
+        """
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.insert(iterl, self.prompt_text + "> ")
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
@@ -252,7 +252,7 @@ class PromptView(gtk.TextView, MessageConsumer):
                                                         iterl, True)
 
     def _key(self, widg, event):
-        '''Separates the special keys from the other.'''
+        """Separates the special keys from the other."""
         # analyze which key was pressed
         if event.keyval in self.keys:
             func = self.keys[event.keyval]
@@ -272,13 +272,13 @@ class PromptView(gtk.TextView, MessageConsumer):
 
 
 class PromptDialog(gtk.Dialog):
-    '''Puts the Prompt widget inside a Dialog.
+    """Puts the Prompt widget inside a Dialog.
 
     :param title: the title of the window.
     :param procfunc: the function to process the user input
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, title, prompt_text, procfunc):
         super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file(os.path.join(GUI_DATA_PATH, 'shell.png'))
@@ -305,7 +305,7 @@ class PromptDialog(gtk.Dialog):
         self.show_all()
 
     def _save(self, widg):
-        '''Saves the content to a file.'''
+        """Saves the content to a file."""
         text = self.prompt.get_text()
         dlg = gtk.FileChooserDialog(
             title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,

@@ -1,4 +1,4 @@
-'''
+"""
 __init__.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 GUI_DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),

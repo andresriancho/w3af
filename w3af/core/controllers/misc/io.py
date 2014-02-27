@@ -1,4 +1,4 @@
-'''
+"""
 io.py
 
 Copyright 2011 Andres Riancho
@@ -17,14 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from StringIO import StringIO
 
 
 class NamedStringIO(StringIO, str):
-    '''
+    """
     A file-like string.
-    '''
+    """
     def __new__(cls, *args, **kwargs):
         return super(NamedStringIO, cls).__new__(cls, args[0])
 

@@ -1,4 +1,4 @@
-'''
+"""
 gzip_handler.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 import gzip
 
@@ -35,9 +35,9 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         return request
 
     def http_response(self, request, response):
-        '''
+        """
         Decompress the HTTP response and send it to the next handler.
-        '''
+        """
         # First I need to check if the response came from the cache
         # stuff that's stored in the cache is there uncompressed,
         # so I can simply return the same response!

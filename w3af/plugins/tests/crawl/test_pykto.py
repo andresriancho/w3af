@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 test_pykto.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 import re
 import os
@@ -184,11 +184,11 @@ class TestNiktoTestParser(PluginTest):
         self.assertLess(len(nikto_parser.ignored), 30, len(nikto_parser.ignored))
     
     def test_parse_db_line_basic(self):
-        '''
+        """
         This test reads a line from the DB and parses it, it's objective is to
         make sure that DB upgrades with update_scan_db.py do not break the code
         at pykto.py.
-        '''
+        """
         config = Config(['/cgi-bin/'],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
@@ -324,14 +324,14 @@ class TestNiktoTestParser(PluginTest):
             self.assertTrue(False)
 
     def test_parse_db_line_basic_w3af_scan_database(self):
-        '''
+        """
         This test reads a line from the w3af scan database and parses it, it's
         objective is to make sure that we can read both formats (or better yet,
         that both files: the one from nikto and the one we have are in the same
         format).
         
         https://github.com/andresriancho/w3af/issues/317
-        '''
+        """
         config = Config([],[],[],[],[])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')

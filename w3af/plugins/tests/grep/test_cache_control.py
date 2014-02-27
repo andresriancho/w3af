@@ -1,4 +1,4 @@
-'''
+"""
 test_cache_control.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -43,10 +43,10 @@ class TestCacheControl(unittest.TestCase):
         kb.kb.cleanup()
 
     def test_cache_control_http(self):
-        '''
+        """
         No cache control, but the content is not sensitive (sent over http) so
         no bug is stored in KB.
-        '''
+        """
         body = 'abc'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
@@ -60,10 +60,10 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 0)
 
     def test_cache_control_images(self):
-        '''
+        """
         No cache control, but the content is not sensitive (is an image)
         so no bug is stored in KB.
-        '''
+        """
         body = 'abc'
         url = URL('https://www.w3af.com/image.png')
         headers = Headers([('content-type', 'image/jpeg')])
@@ -77,10 +77,10 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 0)
 
     def test_cache_control_empty_body(self):
-        '''
+        """
         No cache control, but the content is not sensitive (since it is an
         empty string) so no bug is stored in KB.
-        '''
+        """
         body = ''
         url = URL('https://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
@@ -94,9 +94,9 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 0)
         
     def test_cache_control_correct_headers(self):
-        '''
+        """
         Sensitive content with cache control headers so NO BUG is stored in KB.
-        '''
+        """
         body = 'abc'
         url = URL('https://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
@@ -112,9 +112,9 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 0)
 
     def test_cache_control_correct_meta(self):
-        '''
+        """
         Sensitive content with cache control meta tags so no bug is stored in KB.
-        '''
+        """
         body = 'abc'
         meta_1 = '<meta http-equiv="Pragma" content="no-cache">'
         meta_2 = '<meta http-equiv="Cache-Control" content="no-store">'
@@ -133,10 +133,10 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 0)
 
     def test_cache_control_incorrect_headers(self):
-        '''
+        """
         Sensitive content with INCORRECT cache control headers bug should be
         stored in KB.
-        '''
+        """
         body = 'abc'
         url = URL('https://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
@@ -152,9 +152,9 @@ class TestCacheControl(unittest.TestCase):
         self.assertEquals(len(infos), 1)
         
     def test_cache_control_no_headers(self):
-        '''
+        """
         Sensitive content without cache control headers so bug is stored in KB.
-        '''
+        """
         body = 'abc'
         url = URL('https://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])

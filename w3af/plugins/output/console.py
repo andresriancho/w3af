@@ -1,4 +1,4 @@
-'''
+"""
 console.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import string
 import sys
 
@@ -31,9 +31,9 @@ from w3af.core.data.options.option_list import OptionList
 
 
 def catch_ioerror(meth):
-    '''
+    """
     Function to decorate methods in order to catch IOError exceptions.
-    '''
+    """
     def wrapper(self, *args, **kwargs):
         try:
             return meth(self, *args, **kwargs)
@@ -46,11 +46,11 @@ def catch_ioerror(meth):
 
 
 class console(OutputPlugin):
-    '''
+    """
     Print messages to the console.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -72,38 +72,38 @@ class console(OutputPlugin):
 
     @catch_ioerror
     def debug(self, message, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for debug messages.
-        '''
+        """
         if self.verbose:
             self._print_to_stdout(message, new_line)
 
     @catch_ioerror
     def _generic(self, message, new_line=True, severity=None):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for all messages except from debug ones.
-        '''
+        """
         self._print_to_stdout(message, new_line)
 
     error = console = vulnerability = information = _generic
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin writes the framework messages to the console.
 
         One configurable parameter exists:
             - verbose
-        '''
+        """
 
     def set_options(self, option_list):
-        '''
+        """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using get_options()
@@ -111,13 +111,13 @@ class console(OutputPlugin):
         This method MUST be implemented on every plugin.
 
         :return: No value is returned.
-        '''
+        """
         self.verbose = option_list['verbose'].get_value()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
         d = 'Enables verbose output for the console'
         o = opt_factory('verbose', self.verbose, d, 'boolean')

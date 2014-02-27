@@ -229,11 +229,11 @@ class w3afAgentClient(threading.Thread):
 
 
 class ConnectionManager(threading.Thread):
-    '''
+    """
     This is a service that creates some connections to the remote w3afAgentServer and waits
     for SOCKS requests to arrive on those connections. When a request arrives, I parse the request
     and create a handler instance manage the SOCKS connection.
-    '''
+    """
     def __init__(self, w3afAgentServer_address, w3afAgentServer_port, connectionPoolLen=20):
         threading.Thread.__init__(self)
         self._connections = []

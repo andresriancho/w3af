@@ -1,4 +1,4 @@
-'''
+"""
 menu.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import pprint
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -31,12 +31,12 @@ from w3af.core.ui.console.help import helpMainRepository, HelpContainer
 
 
 class menu(object):
-    '''
+    """
     Menu objects handle the commands and completion requests.
     Menus form an hierarchy and are able to delegate requests to their children.
     
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     def __init__(self, name, console, w3af, parent=None, **other):
         self._name = name
         self._history = history()
@@ -61,11 +61,11 @@ class menu(object):
 #                self._help.add_help_entry(cmd, 'UNDOCUMENTED', 'menu')
 
     def suggest(self, tokens, part, onlyLocalCommands=False):
-        '''
+        """
         Suggest the possible completions
         :param tokens: list of string
         :param part: base for completion
-        '''
+        """
         if len(tokens) == 0:
             return self.suggest_commands(part, onlyLocalCommands)
         return self.suggest_params(tokens[0], tokens[1:], part)
@@ -137,9 +137,9 @@ class menu(object):
             return child.suggest(params, part, True)
 
     def get_commands(self, onlyLocal=False):
-        '''
+        """
         By default, commands are defined by methods _cmd_<command>.
-        '''
+        """
         cmds = self._handlers.keys()
 
         if onlyLocal:
@@ -157,14 +157,14 @@ class menu(object):
             return None
 
     def set_child_call(self, true_false):
-        '''
+        """
         This will set _child_call to True for handling the "set" command:
             w3af>>> target set target http://w3af.org/
         
         While this won't ever set it to true:
             w3af>>> target
             w3af/config:target>>> set target http://w3af.org/
-        '''
+        """
         self._child_call = true_false
 
     def execute(self, tokens):
@@ -236,8 +236,8 @@ class menu(object):
             return []
 
     def join(self):
-        '''
+        """
         This is a abstract method to emulate the join
         method on a thread, by default DO NOTHING
-        '''
+        """
         pass

@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class mysql_config(Payload):
-    '''
+    """
     This payload shows MySQL configuration files.
-    '''
+    """
     def api_read(self):
         result = {}
         files = []

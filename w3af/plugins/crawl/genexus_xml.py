@@ -1,4 +1,4 @@
-'''
+"""
 genexus_xml.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import xml.dom.minidom
 
 import w3af.core.controllers.output_manager as om
@@ -33,24 +33,24 @@ from w3af.core.data.kb.info import Info
 
 
 class genexus_xml(CrawlPlugin):
-    '''
+    """
     Analyze the execute.xml and DeveloperMenu.xml files and find new URLs
     
     :author: Daniel Maldonado (daniel_5502@yahoo.com.ar)
     :url: http://caceriadespammers.com.ar
-    '''
+    """
 
     def __init__(self):
         CrawlPlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
-        '''
+        """
         Get the execute.xml file and parse it.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
-        '''
+        """
         base_url = fuzzable_request.get_url().base_url()
         
         for file_name in ('execute.xml', 'DeveloperMenu.xml'):
@@ -104,13 +104,13 @@ class genexus_xml(CrawlPlugin):
                                          parsed_url_list)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin searches for GeneXus' execute.xml and DeveloperMenu.xml
         file and parses it.
 
         By parsing this files, you can get more information about the
         target web application.
-        '''
+        """

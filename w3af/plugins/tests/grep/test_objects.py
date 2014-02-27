@@ -1,4 +1,4 @@
-'''
+"""
 test_feeds.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -40,13 +40,13 @@ class test_objects(unittest.TestCase):
         self.plugin.end()
 
     def test_object(self):
-        body = '''header
+        body = """header
         <OBJECT
           classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"
           width="200" height="200">
           <PARAM name="code" value="Applet1.class">
         </OBJECT>
-        footer'''
+        footer"""
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)
@@ -58,13 +58,13 @@ class test_objects(unittest.TestCase):
         self.assertTrue('"object"' in i.get_desc())
 
     def test_applet(self):
-        body = '''header
+        body = """header
         <APPLET code="XYZApp.class" codebase="html/" align="baseline"
             width="200" height="200">
             <PARAM name="model" value="models/HyaluronicAcid.xyz">
             No Java 2 SDK, Standard Edition v 1.4.2 support for APPLET!!
         </APPLET>
-        footer'''
+        footer"""
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)

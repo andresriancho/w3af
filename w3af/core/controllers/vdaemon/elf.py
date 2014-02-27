@@ -1,4 +1,4 @@
-'''
+"""
 elf.py
 
 Copyright 2006 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import sys
 
 
 class elf:
-    '''
+    """
     This class represents a tiny ELF file. I created this ELF file with the GREAT paper that
     can be read at http://www.muppetlabs.com/~breadbox/software/tiny/teensy.html .
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, arch='32bit'):
         self._arch = arch
         self._shellcode = '\x90'
@@ -41,9 +41,9 @@ class elf:
         return self._shellcode
 
     def dump(self):
-        '''
+        """
         :return: A string with the complete ELF file.
-        '''
+        """
         _header = ''
         _header = '\x7f\x45\x4c\x46\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         _header += '\x02\x00\x03\x00\x01\x00\x00\x00\x54\x80\x04\x08\x34\x00\x00\x00'

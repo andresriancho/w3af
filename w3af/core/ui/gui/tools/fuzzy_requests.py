@@ -1,4 +1,4 @@
-'''
+"""
 fuzzy_requests.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 import gobject
 import functools
@@ -43,10 +43,10 @@ Content-Type: application/x-www-form-urlencoded
 
 
 class PreviewWindow(entries.RememberingWindow):
-    '''A window with the analysis preview.
+    """A window with the analysis preview.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, parent, fg):
         super(PreviewWindow, self).__init__(
             w3af, "fuzzypreview", "Preview", "Fuzzy_Requests")
@@ -118,10 +118,10 @@ For example, you can do:
 
 
 class FuzzyRequests(entries.RememberingWindow):
-    '''Infrastructure to generate fuzzy HTTP requests.
+    """Infrastructure to generate fuzzy HTTP requests.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, initial_request=None):
         super(FuzzyRequests, self).__init__(
             w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
@@ -262,7 +262,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.show()
 
     def _populate_popup(self, textview, menu):
-        '''Populates the menu with the fuzzing items.'''
+        """Populates the menu with the fuzzing items."""
         menu.append(gtk.SeparatorMenuItem())
         main_generator_menu = gtk.MenuItem(_("Generators"))
         main_generator_menu.set_submenu(create_generator_menu(self))
@@ -270,7 +270,7 @@ class FuzzyRequests(entries.RememberingWindow):
         menu.show_all()
 
     def _clearResponses(self, widg):
-        '''Clears all the responses from the fuzzy window.'''
+        """Clears all the responses from the fuzzy window."""
         self.responses = []
         self.resultReqResp.request.clear_panes()
         self.resultReqResp.response.clear_panes()
@@ -280,7 +280,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.pagesControl.deactivate()
 
     def _clusterData(self, widg):
-        '''Analyze if we can cluster the responses and do it.'''
+        """Analyze if we can cluster the responses and do it."""
         data = []
         for resp in self.responses:
             if resp[0]:
@@ -299,7 +299,7 @@ class FuzzyRequests(entries.RememberingWindow):
             dlg.destroy()
 
     def _analyze(self, widg):
-        '''Handles the Analyze part.'''
+        """Handles the Analyze part."""
         (request, postbody) = self.originalReq.get_both_texts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
@@ -314,7 +314,7 @@ class FuzzyRequests(entries.RememberingWindow):
             PreviewWindow(self.w3af, self, fg)
 
     def _send_stop(self, widg=None):
-        '''Stop the requests being sent.'''
+        """Stop the requests being sent."""
         self._sendStopped = True
         self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
@@ -324,7 +324,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.throbber.running(False)
 
     def _send_pause(self, widg):
-        '''Pause the requests being sent.'''
+        """Pause the requests being sent."""
         self._sendPaused = True
         self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
@@ -333,7 +333,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.throbber.running(False)
 
     def _send_play(self, widg):
-        '''Continue sending the requests.'''
+        """Continue sending the requests."""
         self._sendPaused = False
         self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
@@ -342,7 +342,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.throbber.running(True)
 
     def _send_start(self, widg):
-        '''Start sending the requests.'''
+        """Start sending the requests."""
         (request, postbody) = self.originalReq.get_both_texts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
@@ -381,11 +381,11 @@ class FuzzyRequests(entries.RememberingWindow):
             100, self._real_send, fixContentLength, requestGenerator)
 
     def _real_send(self, fixContentLength, requestGenerator):
-        '''This is the one that actually sends the requests, if corresponds.
+        """This is the one that actually sends the requests, if corresponds.
 
         :param fixContentLength: if the lenght should be fixed by the core.
         :param requestGenerator: where to ask for the requests
-        '''
+        """
         if self._sendStopped:
             return False
         if self._sendPaused:
@@ -439,7 +439,7 @@ class FuzzyRequests(entries.RememberingWindow):
         return True
 
     def _pageChange(self, page):
-        '''
+        """
         Change the page, and show the information that was stored in self.responses
 
         If OK, the responses are saved like this:
@@ -449,7 +449,7 @@ class FuzzyRequests(entries.RememberingWindow):
             self.responses.append((False, realreq, realbody, errorMsg))
 
         :return: None.
-        '''
+        """
         info = self.responses[page]
         if info[0]:
             reqid = info[1]

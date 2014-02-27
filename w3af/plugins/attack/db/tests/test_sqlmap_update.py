@@ -1,4 +1,4 @@
-'''
+"""
 test_sqlmap_update.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 
 from nose.plugins.attrib import attr
@@ -26,7 +26,7 @@ from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 
 
 class TestSQLMapUpdate(unittest.TestCase):
-    '''Verify that we have an updated version of sqlmap within w3af'''
+    """Verify that we have an updated version of sqlmap within w3af"""
     
     def test_updated(self):
         days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)

@@ -1,4 +1,4 @@
-'''
+"""
 find_jboss.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from itertools import repeat, izip
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -34,11 +34,11 @@ from w3af.core.data.kb.info import Info
 
 
 class find_jboss(InfrastructurePlugin):
-    '''
+    """
     Find default Jboss installations.
 
     :author: Nahuel Sanchez (nsanchez@bonsai-sec.com)
-    '''
+    """
     JBOSS_VULNS = (
         {'url': '/admin-console/',
          'name': 'JBoss Admin Console enabled',
@@ -73,10 +73,10 @@ class find_jboss(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Checks if JBoss Interesting Directories exist in the target server.
         Also verifies some vulnerabilities.
-        '''
+        """
         fuzzable_requests_to_return = []
         base_url = fuzzable_request.get_url().base_url()
 
@@ -118,10 +118,10 @@ class find_jboss(InfrastructurePlugin):
         return (True, None)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin identifies JBoss installation directories and possible
         security vulnerabilities.
-        '''
+        """

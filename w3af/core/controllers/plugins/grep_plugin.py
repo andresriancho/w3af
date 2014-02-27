@@ -1,4 +1,4 @@
-'''
+"""
 GrepPlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.plugins.plugin import Plugin
 
 
 class GrepPlugin(Plugin):
-    '''
+    """
     This is the base class for grep plugins, all grep plugins should
     inherit from it and implement the following method:
         1. grep(request, response)
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     TARGET_DOMAINS = None
 
@@ -39,7 +39,7 @@ class GrepPlugin(Plugin):
         super(GrepPlugin, self).__init__()
 
     def grep_wrapper(self, fuzzable_request, response):
-        '''
+        """
         This method tries to find patterns on responses.
 
         This method CAN be implemented on a plugin, but its better to
@@ -50,7 +50,7 @@ class GrepPlugin(Plugin):
             generated the current response being analyzed.
         :return: If something is found it must be reported to the Output
             Manager and the KB.
-        '''
+        """
         # Also take a look at should_grep in grep.py to understand other
         # filters which are applied before analyzing a response.
         
@@ -64,12 +64,12 @@ class GrepPlugin(Plugin):
             self.grep(fuzzable_request, response)
 
     def grep(self, fuzzable_request, response):
-        '''
+        """
         Analyze the response.
 
         :param fuzzable_request: The request that was sent
         :param response: The HTTP response obj
-        '''
+        """
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
 

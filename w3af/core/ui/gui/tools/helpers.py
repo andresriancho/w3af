@@ -1,4 +1,4 @@
-'''
+"""
 helpers.py
 
 Copyright 2007 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import threading
 
 
 class ThreadedURLImpact(threading.Thread):
-    '''Impacts an URL in a different thread.'''
+    """Impacts an URL in a different thread."""
     def __init__(self, w3af, tsup, tlow, event, fixContentLength):
         threading.Thread.__init__(self)
         self.daemon = True
@@ -36,7 +36,7 @@ class ThreadedURLImpact(threading.Thread):
         self.fixContentLength = fixContentLength
 
     def run(self):
-        '''Starts the thread.'''
+        """Starts the thread."""
         try:
             self.httpResp = self.w3af.uri_opener.send_raw_request(self.tsup,
                                                                   self.tlow,

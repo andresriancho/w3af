@@ -1,4 +1,4 @@
-'''
+"""
 xssed_dot_com.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import urllib2
 
@@ -34,12 +34,12 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class xssed_dot_com(InfrastructurePlugin):
-    '''
+    """
     Search in xssed.com to find xssed pages.
 
     :author: Nicolas Crocfer (shatter@shatter-blog.net)
     :author: Raul Siles: set "." in front of the root domain to limit search
-    '''
+    """
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -51,12 +51,12 @@ class xssed_dot_com(InfrastructurePlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         Search in xssed.com and parse the output.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         target_domain = fuzzable_request.get_url().get_root_domain()
 
         try:
@@ -80,11 +80,11 @@ class xssed_dot_com(InfrastructurePlugin):
                 om.out.debug(msg)
 
     def _decode_xssed_url(self, url):
-        '''
+        """
         Replace the URL in the good format.
 
         :return: None
-        '''
+        """
         url = url.replace('<br>', '')
         url = url.replace('</th>', '')
         url = url.replace('URL: ', '')
@@ -96,12 +96,12 @@ class xssed_dot_com(InfrastructurePlugin):
         return urllib2.unquote(url)
 
     def _parse_xssed_result(self, response):
-        '''
+        """
         Parse the result from the xssed site and create the corresponding info
         objects.
 
         :return: Fuzzable requests pointing to the XSS (if any)
-        '''
+        """
         html_body = response.get_body()
 
         if "<b>XSS:</b>" in html_body:
@@ -150,8 +150,8 @@ class xssed_dot_com(InfrastructurePlugin):
                          ' XSS vulnerabilities.')
 
     def get_long_desc(self):
-        return '''
+        return """
         This plugin searches the xssed.com database and parses the result. The
         information stored in that database is useful to know about previous
         XSS vulnerabilities in the target website.
-        '''
+        """

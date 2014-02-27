@@ -1,4 +1,4 @@
-'''
+"""
 ldapi.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.data.constants.severity as severity
@@ -31,10 +31,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class ldapi(AuditPlugin):
-    '''
+    """
     Find LDAP injection bugs.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     LDAP_ERRORS = (
         # Not sure which lang or LDAP engine
@@ -87,11 +87,11 @@ class ldapi(AuditPlugin):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for LDAP injection vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         mutants = create_mutants(freq, self.LDAPI_STRINGS,
                                  orig_resp=orig_response)
 
@@ -100,9 +100,9 @@ class ldapi(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         #
         #   I will only report the vulnerability once.
         #
@@ -124,12 +124,12 @@ class ldapi(AuditPlugin):
                     break
 
     def _find_ldap_error(self, response):
-        '''
+        """
         This method searches for LDAP errors in html's.
 
         :param response: The HTTP response object
         :return: A list of errors found on the page
-        '''
+        """
         res = []
         for match_string in self._multi_in.query(response.body):
             msg = 'Found LDAP error string. The error returned by the web'
@@ -141,17 +141,17 @@ class ldapi(AuditPlugin):
         return res
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['grep.error_500']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will find LDAP injections by sending a specially crafted
         string to every parameter and analyzing the response for LDAP errors.
-        '''
+        """

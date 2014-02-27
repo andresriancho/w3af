@@ -1,4 +1,4 @@
-'''
+"""
 test_code_disclosure.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from itertools import repeat
@@ -98,14 +98,14 @@ class test_code_disclosure(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_xml(self, *args):
-        body = '''
+        body = """
                 <?xml version="1.0"?>
                 <note>
                     <to>Tove</to>
                     <from>Jani</from>
                     <heading>Reminder</heading>
                     <body>Don't forget me this weekend!</body>
-                </note>'''
+                </note>"""
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)

@@ -1,4 +1,4 @@
-'''
+"""
 mx_injection.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.data.constants.severity as severity
@@ -30,10 +30,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class mx_injection(AuditPlugin):
-    '''
+    """
     Find MX injection vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     MX_ERRORS = (
         'Unexpected extra arguments to Select',
@@ -47,20 +47,20 @@ class mx_injection(AuditPlugin):
     _multi_in = multi_in(MX_ERRORS)
 
     def __init__(self):
-        '''
+        """
         Plugin added just for completeness... I dont really expect to find one
         of this bugs in my life... but well.... if someone , somewhere in the
         planet ever finds a bug of using this plugin... THEN my job has been
         done :P
-        '''
+        """
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for mx injection vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = create_mutants(freq, mx_injection_strings,
                                  orig_resp=orig_response)
@@ -70,9 +70,9 @@ class mx_injection(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         # I will only report the vulnerability once.
         if self._has_no_bug(mutant):
 
@@ -91,11 +91,11 @@ class mx_injection(AuditPlugin):
                     break
 
     def _get_MX_injection_strings(self):
-        '''
+        """
         Gets a list of strings to test against the web app.
 
         :return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
-        '''
+        """
         mx_injection_strings = []
         mx_injection_strings.append('"')
         mx_injection_strings.append('iDontExist')
@@ -103,13 +103,13 @@ class mx_injection(AuditPlugin):
         return mx_injection_strings
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will find MX injections. This kind of web application errors
         are mostly seen in webmail software. The tests are simple, for every
         injectable parameter a string with special meaning in the mail server is
         sent, and if in the response I find a mail server error, a vulnerability
         was found.
-        '''
+        """

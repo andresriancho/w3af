@@ -1,4 +1,4 @@
-'''
+"""
 file_option.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 from w3af.core.controllers.exceptions import w3afException
@@ -31,13 +31,13 @@ class OutputFileOption(BaseOption):
     _type = OUTPUT_FILE
 
     def set_value(self, value):
-        '''
+        """
         :param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
-        '''
+        """
         self._value = self.validate(value)
 
     def validate(self, value):

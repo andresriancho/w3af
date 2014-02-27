@@ -1,4 +1,4 @@
-'''
+"""
 payload_generators.py
 
 Copyright 2007 Andres Riancho
@@ -17,16 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 
 import gtk
 import gobject
 
 
 def create_generator_menu(text_view_obj):
-    '''
+    """
     :return: A menu item that contains the generator classes for the fuzzy request editor window.
-    '''
+    """
     # The main menu
     menu = gtk.Menu()
 
@@ -40,31 +40,31 @@ def create_generator_menu(text_view_obj):
 
 
 def print_generator_text(widget, text_view_obj, generator_instance):
-    '''
+    """
     Print the generator name to the textview, in the position where the cursor is at.
-    '''
+    """
     pass
 
 
 class generic_generator(object):
     def __init__(self):
-        '''
+        """
         Provides generic methods and attributes for generators.
 
         w3af generator objects are used to create a python generator for letters, numbers, and
         other interesting things. The generator class is called from the fuzzy request editor.
-        '''
+        """
         self._generator_name = None
 
 
 class number_generator(generic_generator):
 
     def __init__(self):
-        '''
+        """
         Provides generic methods and attributes for generators.
 
         w3af generator objects are used to create a python generator for letters, numbers, and
         other interesting things. The generator class is called from the fuzzy request editor.
-        '''
+        """
         generic_generator.__init__(self)
         self._generator_name = 'number_generator'

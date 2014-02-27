@@ -1,4 +1,4 @@
-'''
+"""
 urlparts_mutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
@@ -27,9 +27,9 @@ from w3af.core.data.dc.data_container import DataContainer
 
 
 class URLPartsMutant(Mutant):
-    '''
+    """
     This class is a urlparts mutant.
-    '''
+    """
     def __init__(self, freq):
         Mutant.__init__(self, freq)
         self._double_encoding = False
@@ -42,16 +42,16 @@ class URLPartsMutant(Mutant):
         self._double_encoding = trueFalse
 
     def set_safe_encode_chars(self, safeChars):
-        '''
+        """
         :param safeChars: A string with characters we don't want to URL
                          encode in the filename. Example: '/&!'
-        '''
+        """
         self._safe_encode_chars = safeChars
 
     def get_url(self):
-        '''
+        """
         :return: The URL, as modified by "set_mod_value()"
-        '''
+        """
         domain_path = self._freq.get_url().get_domain_path()
 
         # Please note that this double encoding is needed if we want to work
@@ -86,9 +86,9 @@ class URLPartsMutant(Mutant):
         raise ValueError(msg)
 
     def found_at(self):
-        '''
+        """
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' path, with value: "%s".'
 
@@ -97,10 +97,10 @@ class URLPartsMutant(Mutant):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''
+        """
         if not fuzzer_config['fuzz_url_parts']:
             return []
 

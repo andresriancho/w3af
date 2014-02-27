@@ -1,4 +1,4 @@
-'''
+"""
 test_profiles.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -27,9 +27,9 @@ from w3af.core.data.profile.profile import profile
 
 @attr('smoke')
 class TestProfilesConsoleUI(ConsoleTestHelper):
-    '''
+    """
     Load profiles from the console UI.
-    '''
+    """
     def setUp(self):
         super(TestProfilesConsoleUI, self).setUp()
         self._remove_if_exists('unittest')

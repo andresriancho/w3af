@@ -1,4 +1,4 @@
-'''
+"""
 grep.py
 
 Copyright 2012 Andres Riancho
@@ -18,32 +18,32 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class grep(BaseConsumer):
-    '''
+    """
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.
-    '''
+    """
 
     def __init__(self, grep_plugins, w3af_core):
-        '''
+        """
         :param in_queue: The input queue that will feed the grep plugins
         :param grep_plugins: Instances of grep plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
-        '''
+        """
         super(grep, self).__init__(grep_plugins, w3af_core, create_pool=False,
                                    thread_name='Grep')
         self._already_analyzed = ScalableBloomFilter()
 
     def run(self):
-        '''
+        """
         Consume the queue items
-        '''
+        """
         while True:
 
             work_unit = self.in_queue.get()
@@ -77,11 +77,11 @@ class grep(BaseConsumer):
                 self.in_queue.task_done()
 
     def should_grep(self, request, response):
-        '''
+        """
         :return: True if I should grep this request/response pair. This method
                  replaces some of the logic that before was in grep_plugin.py,
                  but because of the requirement of a central location to store
                  a bloom filter was moved here.
-        '''
+        """
         was_analyzed = self._already_analyzed.add(response.get_uri())
         return not was_analyzed

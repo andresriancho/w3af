@@ -1,4 +1,4 @@
-'''
+"""
 info.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
@@ -26,13 +26,13 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class Info(dict):
-    '''
+    """
     This class represents an information that is saved to the kb.
     
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, name, desc, response_ids, plugin_name):
-        '''
+        """
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         
@@ -43,7 +43,7 @@ class Info(dict):
         :param response_ids: A list of response ids associated with this vuln
         
         :param plugin_name: The name of the plugin which identified the vuln
-        '''
+        """
         # Default values
         self._url = None
         self._uri = None
@@ -60,10 +60,10 @@ class Info(dict):
     
     @classmethod
     def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
-        '''
+        """
         :return: An info instance with the proper data set based on the values
                  taken from the mutant.
-        '''
+        """
         if not isinstance(mutant, Mutant):
             raise TypeError('Mutant expected in from_mutant.')
         
@@ -79,10 +79,10 @@ class Info(dict):
 
     @classmethod
     def from_fr(cls, name, desc, response_ids, plugin_name, freq):
-        '''
+        """
         :return: An info instance with the proper data set based on the values
                  taken from the fuzzable request.
-        '''
+        """
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
         
@@ -96,9 +96,9 @@ class Info(dict):
             
     @classmethod
     def from_info(cls, other_info):
-        '''
+        """
         :return: A clone of other_info. 
-        '''
+        """
         if not isinstance(other_info, Info):
             raise TypeError('Info expected in from_info.')
         
@@ -123,18 +123,18 @@ class Info(dict):
         return inst
 
     def get_severity(self):
-        '''
+        """
         :return: severity.INFORMATION , all information objects have the same
                  level of severity.
-        '''
+        """
         return INFORMATION
 
     def set_name(self, name):
-        '''
+        """
         if not is_valid_name(name):
             msg = 'Invalid vulnerability name "%s" specified.'
             raise ValueError(msg % name)
-        '''
+        """
         self._name = name
 
     def get_name(self):
@@ -214,24 +214,24 @@ class Info(dict):
         return self._plugin_name
 
     def _convert_to_range_wrapper(self, list_of_integers):
-        '''
+        """
         Just a wrapper for _convert_to_range; please see documentation below!
 
         :return: The result of self._convert_to_range( list_of_integers ) but
                  without the trailing comma.
-        '''
+        """
         res = self._convert_to_range(list_of_integers)
         if res.endswith(','):
             res = res[:-1]
         return res
 
     def _convert_to_range(self, seq):
-        '''
+        """
         Convert a list of integers to a nicer "range like" string. Assumed
         that `seq` elems are ordered.
 
         @see test_info.py
-        '''
+        """
         first = last = seq[0]
         dist = 0
         res = []
@@ -268,7 +268,7 @@ class Info(dict):
         return '<info object for issue: "' + self._desc + '">'
     
     def get_uniq_id(self):
-        '''
+        """
         :return: A uniq identifier for this info object. Since info objects are
                  persisted to SQLite and then re-generated for showing them to
                  the user, we can't use id() to know if two info objects are
@@ -280,7 +280,7 @@ class Info(dict):
                  This method was added as part of the KB to SQLite migration
                  and might disappear in the future. If possible use __eq__
                  to verify if two instances are the same.
-        '''
+        """
         concat_all = ''
         
         for functor in (self.get_uri, self.get_method, self.get_var,
@@ -304,7 +304,7 @@ class Info(dict):
                self.get_plugin_name() == other.get_plugin_name()
 
     def set_id(self, _id):
-        '''
+        """
         The id is a unique number that identifies every request and response
         performed by the framework.
 
@@ -333,7 +333,7 @@ class Info(dict):
 
         Will save:
             [3, 4]
-        '''
+        """
         if isinstance(_id, list):
             # A list with more than one ID:
             # Ensuring that all of them are actually integers
@@ -348,10 +348,10 @@ class Info(dict):
             raise TypeError('IDs need to be lists of int or int not %s' % type(_id))
 
     def get_id(self):
-        '''
+        """
         :return: The list of ids related to this information object. Please read
                  the documentation of set_id().
-        '''
+        """
         return self._id
 
     def set_var(self, variable):
@@ -367,16 +367,16 @@ class Info(dict):
         return self._dc
 
     def set_mutant(self, mutant):
-        '''
+        """
         Sets the mutant that created this vuln.
-        '''
+        """
         self._mutant = mutant
 
     def get_mutant(self):
         return self._mutant
 
     def get_to_highlight(self):
-        '''
+        """
         The string match is the string that was used to identify the
         vulnerability. For example, in a SQL injection the string match would
         look like:
@@ -385,7 +385,7 @@ class Info(dict):
 
         This information is used to highlight the string in the GTK user
         interface, when showing the request / response.
-        '''
+        """
         return self._string_matches
 
     def add_to_highlight(self, *str_match):

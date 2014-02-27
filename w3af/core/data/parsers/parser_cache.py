@@ -1,4 +1,4 @@
-'''
+"""
 parser_cache.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import threading
@@ -30,11 +30,11 @@ DEBUG = False
 
 
 class ParserCache(object):
-    '''
+    """
     This class is a document parser cache.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     LRU_LENGTH = 40
 
     def __init__(self):

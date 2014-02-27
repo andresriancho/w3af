@@ -1,4 +1,4 @@
-'''
+"""
 helper.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import re
 import unittest
@@ -45,10 +45,10 @@ os.chdir(W3AF_LOCAL_PATH)
 
 @attr('moth')
 class PluginTest(unittest.TestCase):
-    '''
+    """
     Remember that nosetests can't find test generators in unittest.TestCase,
     see http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class ,
-    '''
+    """
     MOCK_RESPONSES = []
     runconfig = {}
     kb = kb.kb
@@ -114,14 +114,14 @@ class PluginTest(unittest.TestCase):
 
     def _scan(self, target, plugins, debug=False, assert_exceptions=True,
               verify_targets=True):
-        '''
+        """
         Setup env and start scan. Typically called from children's
         test methods.
 
         :param target: The target to scan.
         :param plugins: PluginConfig objects to activate and setup before
             the test runs.
-        '''
+        """
         if not isinstance(target, (basestring, tuple)):
             raise TypeError('Expected basestring or tuple in scan target.')
         
@@ -257,15 +257,15 @@ class ExecExploitTest(ReadExploitTest):
         
 @attr('root')
 def onlyroot(meth):
-    '''
+    """
     Function to decorate tests that should be called as root.
 
     Raises a nose SkipTest exception if the user doesn't have root permissions.
-    '''
+    """
     @wraps(meth)
     def test_inner_onlyroot(self, *args, **kwds):
-        '''Note that this method needs to start with test_ in order for nose
-        to run it!'''
+        """Note that this method needs to start with test_ in order for nose
+        to run it!"""
         if os.geteuid() == 0 or os.getuid() == 0:
             return meth(self, *args, **kwds)
         else:

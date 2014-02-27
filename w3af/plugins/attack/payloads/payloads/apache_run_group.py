@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_run_group(Payload):
-    '''
+    """
     Get apache process group.
-    '''
+    """
     def api_read(self):
         result = {}
         result['apache_run_group'] = []

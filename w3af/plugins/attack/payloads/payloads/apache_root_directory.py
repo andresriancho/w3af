@@ -7,9 +7,9 @@ from w3af.core.ui.console.tables import table
 
 
 class apache_root_directory(Payload):
-    '''
+    """
     This payload finds Apache Root Directories where websites are hosted.
-    '''
+    """
     def api_read(self):
         result = {}
         directory = []

@@ -1,4 +1,4 @@
-'''
+"""
 response_splitting.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.controllers.output_manager as om
@@ -34,10 +34,10 @@ HEADER_VALUE = 'ae5cw3af'
 
 
 class response_splitting(AuditPlugin):
-    '''
+    """
     Find response splitting vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     HEADER_INJECTION_TESTS = ("w3af\r\n" + HEADER_NAME + ": " + HEADER_VALUE,
                               "w3af\r" + HEADER_NAME + ": " + HEADER_VALUE,
@@ -54,11 +54,11 @@ class response_splitting(AuditPlugin):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for response splitting vulnerabilities.
 
         :param freq: A fuzzable_request
-        '''
+        """
         mutants = create_mutants(freq, self.HEADER_INJECTION_TESTS)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -66,9 +66,9 @@ class response_splitting(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         #
         #   I will only report the vulnerability once.
         #
@@ -101,13 +101,13 @@ class response_splitting(AuditPlugin):
                     return
 
     def _header_was_injected(self, mutant, response):
-        '''
+        """
         This method verifies if a header was successfully injected
 
         :param mutant: The mutant that was sent to generate the response
         :param response: The HTTP response where I want to find the injected header.
         :return: True / False
-        '''
+        """
         # Get the lower case headers
         headers = response.get_lower_case_headers()
 
@@ -133,13 +133,13 @@ class response_splitting(AuditPlugin):
         return False
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin will find response splitting vulnerabilities.
 
         The detection is done by sending "w3af\\r\\nVulnerable: Yes" to every
         injection point, and reading the response headers searching for a header
         with name "Vulnerable" and value "Yes".
-        '''
+        """

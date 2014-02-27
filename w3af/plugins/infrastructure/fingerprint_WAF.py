@@ -1,4 +1,4 @@
-'''
+"""
 fingerprint_WAF.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from itertools import izip, repeat
@@ -35,28 +35,28 @@ from w3af.core.data.kb.info import Info
 
 
 class fingerprint_WAF(InfrastructurePlugin):
-    '''
+    """
     Identify if a Web Application Firewall is present and if possible identify
     the vendor and version.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
-    '''
+    """
     CHANGELOG:
     Feb/17/2009- Added Signatures by Aung Khant (aungkhant[at]yehg.net):
     - Old version F5 Traffic Shield, NetContinuum, TEROS, BinarySec
-    '''
+    """
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
-        '''
+        """
         methods = [self._fingerprint_URLScan,
                    self._fingerprint_ModSecurity,
                    self._fingerprint_SecureIIS,
@@ -77,9 +77,9 @@ class fingerprint_WAF(InfrastructurePlugin):
         return func(fuzzable_request)
 
     def _fingerprint_SecureIIS(self, fuzzable_request):
-        '''
+        """
         Try to verify if SecureIIS is installed or not.
-        '''
+        """
         # And now a final check for SecureIIS
         headers = fuzzable_request.get_headers()
         headers['Transfer-Encoding'] = rand_alpha(1024 + 1)
@@ -94,16 +94,16 @@ class fingerprint_WAF(InfrastructurePlugin):
                 self._report_finding('SecureIIS', lock_response2)
 
     def _fingerprint_ModSecurity(self, fuzzable_request):
-        '''
+        """
         Try to verify if mod_security is installed or not AND try to get the
         installed version.
-        '''
+        """
         pass
 
     def _fingerprint_Airlock(self, fuzzable_request):
-        '''
+        """
         Try to verify if Airlock is present.
-        '''
+        """
         om.out.debug('detect Airlock')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -116,9 +116,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks, like path /error_path or encrypted URL in response
 
     def _fingerprint_Barracuda(self, fuzzable_request):
-        '''
+        """
         Try to verify if Barracuda is present.
-        '''
+        """
         om.out.debug('detect Barracuda')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -132,9 +132,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # don't know ...
 
     def _fingerprint_DenyAll(self, fuzzable_request):
-        '''
+        """
         Try to verify if Deny All rWeb is present.
-        '''
+        """
         om.out.debug('detect Deny All')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -148,9 +148,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like detection=detected cookie
 
     def _fingerprint_F5ASM(self, fuzzable_request):
-        '''
+        """
         Try to verify if F5 ASM (also TrafficShield) is present.
-        '''
+        """
         om.out.debug('detect F5 ASM or TrafficShield')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -163,11 +163,11 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_F5TrafficShield(self, fuzzable_request):
-        '''
+        """
         Try to verify if the older version F5 TrafficShield is present.
         Ref: Hacking Exposed - Web Application
 
-        '''
+        """
         om.out.debug('detect the older version F5 TrafficShield')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -181,11 +181,11 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_TEROS(self, fuzzable_request):
-        '''
+        """
         Try to verify if TEROS is present.
         Ref: Hacking Exposed - Web Application
 
-        '''
+        """
         om.out.debug('detect TEROS')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -198,11 +198,11 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_NetContinuum(self, fuzzable_request):
-        '''
+        """
         Try to verify if NetContinuum is present.
         Ref: Hacking Exposed - Web Application
 
-        '''
+        """
         om.out.debug('detect NetContinuum')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -216,9 +216,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_BinarySec(self, fuzzable_request):
-        '''
+        """
         Try to verify if BinarySec is present.
-        '''
+        """
         om.out.debug('detect BinarySec')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -231,9 +231,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_HyperGuard(self, fuzzable_request):
-        '''
+        """
         Try to verify if HyperGuard is present.
-        '''
+        """
         om.out.debug('detect HyperGuard')
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
         for header_name in response.get_headers().keys():
@@ -246,9 +246,9 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     def _fingerprint_URLScan(self, fuzzable_request):
-        '''
+        """
         Try to verify if URLScan is installed or not.
-        '''
+        """
         # detect using GET
         # Get the original response
         orig_response = self._uri_opener.GET(
@@ -285,14 +285,14 @@ class fingerprint_WAF(InfrastructurePlugin):
                 self._report_finding('URLScan', lock_response)
 
     def _report_finding(self, name, response, protected_by=None):
-        '''
+        """
         Creates a information object based on the name and the response parameter
         and saves the data in the kb.
 
         :param name: The name of the WAF
         :param response: The HTTP response object that was used to identify the WAF
         :param protected_by: A more detailed description/version of the WAF
-        '''
+        """
         desc = 'The remote network seems to have a "%s" WAF deployed to' \
               ' protect access to the web server.'
         desc = desc % name
@@ -309,20 +309,20 @@ class fingerprint_WAF(InfrastructurePlugin):
         om.out.information(i.get_desc())
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before the
         current one.
-        '''
+        """
         return ['infrastructure.afd']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         Try to fingerprint the Web Application Firewall that is running on the
         remote end.
 
         Please note that the detection of the WAF is performed by the
         infrastructure.afd plugin (afd stands for Active Filter Detection).
-        '''
+        """

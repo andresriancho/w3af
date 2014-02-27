@@ -1,5 +1,5 @@
 # coding: utf8
-'''
+"""
 sgml.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 import traceback
 
@@ -32,13 +32,13 @@ from w3af.core.data.parsers.url import URL
 
 
 class SGMLParser(BaseParser):
-    '''
+    """
     The target SAX-like SGML parser. Methods 'start', 'end', 'data', 'comment'
     and 'close' will be called during the parsing process.
 
     :author: Javier Andalia (jandalia =at= gmail.com)
              Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
 
     TAGS_WITH_URLS = (
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
@@ -78,9 +78,9 @@ class SGMLParser(BaseParser):
         self._parse(http_resp)
 
     def start(self, tag, attrs):
-        '''
+        """
         Called by the parser on element open.
-        '''
+        """
         try:
             # Call start_tag handler method
             meth = getattr(self, '_handle_' + tag + '_tag_start',
@@ -95,16 +95,16 @@ class SGMLParser(BaseParser):
             om.out.error('Error traceback: %s' % traceback.format_exc())
 
     def end(self, tag):
-        '''
+        """
         Called by the parser on element close.
-        '''
+        """
         # Call handler method if exists
         getattr(self, '_handle_' + tag + '_tag_end', lambda arg: None)(tag)
 
     def data(self, data):
-        '''
+        """
         Called by the parser when a text node is found.
-        '''
+        """
         pass
 
     def comment(self, text):
@@ -117,9 +117,9 @@ class SGMLParser(BaseParser):
         pass
 
     def _pre_parse(self, http_resp):
-        '''
+        """
         Perform some initialization tasks
-        '''
+        """
         body = http_resp.body
 
         # These two need to be performed here because the response body is
@@ -132,7 +132,7 @@ class SGMLParser(BaseParser):
         self._extract_emails(body)
 
     def _parse(self, http_resp):
-        '''
+        """
         Parse the HTTP response body.
 
         TODO: Potential performance improvement:
@@ -149,7 +149,7 @@ class SGMLParser(BaseParser):
 
             * Note that a part of this issue was solved with the call to set_dom,
               read the docs in that method to understand what.
-        '''
+        """
         # Start parsing!
         parser = etree.HTMLParser(target=self, recover=True)
         resp_body = http_resp.body
@@ -185,9 +185,9 @@ class SGMLParser(BaseParser):
             and not value in self.APACHE_INDEXING
 
     def _find_references(self, tag, attrs):
-        '''
+        """
         Find references inside the document.
-        '''
+        """
 
         filter_ref = self._filter_ref
 
@@ -214,9 +214,9 @@ class SGMLParser(BaseParser):
     ## Properties ##
     @property
     def forms(self):
-        '''
+        """
         :return: Return list of forms.
-        '''
+        """
         return self._forms
 
     def get_forms(self):
@@ -224,14 +224,14 @@ class SGMLParser(BaseParser):
 
     @property
     def references(self):
-        '''
+        """
         Searches for references on a page. w3af searches references in every
         html tag, including "a", "forms", "images", "frames", etc.
 
         Return a tuple containing two sets, one with the parsed URLs, and the
         other with the URLs that came out from a regular expression. The
         second list is less trustworthy.
-        '''
+        """
         return (list(self._parsed_urls), list(self._re_urls - self._parsed_urls))
 
     def get_references(self):
@@ -239,9 +239,9 @@ class SGMLParser(BaseParser):
 
     @property
     def comments(self):
-        '''
+        """
         Return list of comment strings.
-        '''
+        """
         return set(self._comments_in_doc)
 
     def get_comments(self):
@@ -249,9 +249,9 @@ class SGMLParser(BaseParser):
 
     @property
     def scripts(self):
-        '''
+        """
         Return list of scripts (mainly javascript, but can be anything)
-        '''
+        """
         return set(self._scripts_in_doc)
 
     def get_scripts(self):
@@ -259,9 +259,9 @@ class SGMLParser(BaseParser):
 
     @property
     def meta_redirs(self):
-        '''
+        """
         Return list of meta redirections.
-        '''
+        """
         return self._meta_redirs
 
     def get_meta_redir(self):
@@ -269,19 +269,19 @@ class SGMLParser(BaseParser):
 
     @property
     def meta_tags(self):
-        '''
+        """
         Return list of all meta tags.
-        '''
+        """
         return self._meta_tags
 
     def get_meta_tags(self):
         return self.meta_tags
 
     def get_references_of_tag(self, tagType):
-        '''
+        """
         :return: A list of the URLs that the parser found in a tag of
             tagType = "tagType" (i.e img, a)
-        '''
+        """
         return [x[1] for x in self._tag_and_url if x[0] == tagType]
 
     ## Methods for tags handling ##

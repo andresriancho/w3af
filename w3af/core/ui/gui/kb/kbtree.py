@@ -1,4 +1,4 @@
-'''
+"""
 kbtree.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 import Queue
@@ -37,7 +37,7 @@ TYPES_OBJ = {
 
 
 class KBTree(gtk.TreeView):
-    '''Show the Knowledge Base in a tree.
+    """Show the Knowledge Base in a tree.
 
     :param filter: the initial filter
     :param title: the title to show
@@ -49,7 +49,7 @@ class KBTree(gtk.TreeView):
     you control if to show them (strict=False) or not.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, ifilter, title, strict):
         self.strict = strict
         self.w3af = w3af
@@ -128,7 +128,7 @@ class KBTree(gtk.TreeView):
         self.show()
 
     def _treestore_sort(self, model, iter1, iter2):
-        '''
+        """
         This is a custom sort function to sort the treestore.
 
         Sort method:
@@ -136,12 +136,12 @@ class KBTree(gtk.TreeView):
             - Then all infos
             - Then the rest
             - Each alphabetically
-        '''
+        """
         # TODO: Code this
         return 0
 
     def _double_click(self, widg, event):
-        '''If double click, expand/collapse the row.'''
+        """If double click, expand/collapse the row."""
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
             # This "if path" fixed bug #2205544
@@ -153,15 +153,15 @@ class KBTree(gtk.TreeView):
                     self.expand_row(path, False)
 
     def set_filter(self, active):
-        '''Sets a new filter and update the tree.
+        """Sets a new filter and update the tree.
 
         :param active: which types should be shown.
-        '''
+        """
         self.filter = active
         self.need_complete_tree_update = True
     
     def _receive_kb_items(self, location_a, location_b, info_inst):
-        '''
+        """
         Gets called by the KB when one of the plugins writes something to it.
         
         We've subscribed using kb.kb.add_observer(None, None, ...) so we'll
@@ -169,7 +169,7 @@ class KBTree(gtk.TreeView):
         
         :return: None, the information we'll show to the user is stored in an
                  internal variable.
-        '''
+        """
         if not isinstance(info_inst, Info):
             return
         
@@ -197,10 +197,10 @@ class KBTree(gtk.TreeView):
         self.pending_insert.put(data)
         
     def _update_tree(self):
-        '''Updates the GUI with the KB.
+        """Updates the GUI with the KB.
 
         :return: True to keep being called by gobject.
-        '''
+        """
         while True:
         
             if self.need_complete_tree_update:
@@ -233,7 +233,7 @@ class KBTree(gtk.TreeView):
                 yield True
     
     def _handle_first_level(self, data):
-        '''
+        """
         If data.location_a is not already in the treestore, add it.
         
         If data.location_a is in the treestore, make sure we paint it the right
@@ -243,7 +243,7 @@ class KBTree(gtk.TreeView):
         level is increased only when a new data.location_b is added.
         
         :param data: The data for the new item to add.
-        '''
+        """
         contains_location_a = [r for r in self.treestore if \
                                r[1] == data.location_a]
         
@@ -278,7 +278,7 @@ class KBTree(gtk.TreeView):
             self.treestore[store_iter][5] = color
     
     def _handle_second_level(self, data):
-        '''
+        """
         If location_b is not already in the treestore under location_a, add it.
         
         If location_b is in the treestore, make sure we paint it the right
@@ -286,7 +286,7 @@ class KBTree(gtk.TreeView):
         
         Update the child count, keep in mind that the child count for this
         level is increased by each call to this method.
-        '''
+        """
         location_a = [r for r in self.treestore if \
                       r[1] == data.location_a]
         assert len(location_a), 1
@@ -327,14 +327,14 @@ class KBTree(gtk.TreeView):
             self.treestore[store_iter][5] = color
                 
     def _add_info(self, data):
-        '''
+        """
         Add the information object to the KB's third level at (location_a,
         location_b).
         
         Paint the vulnerability name using color_level.
         
         :return: None.
-        '''
+        """
         #
         # Setup all the information to store
         #
@@ -365,11 +365,11 @@ class KBTree(gtk.TreeView):
         self.treestore.append(location_b.iter, tree_store_info)
         
     def _popup(self, tv, event):
-        '''Shows a menu when you right click on an object inside the kb.
+        """Shows a menu when you right click on an object inside the kb.
 
         :param tv: the treeview.
         :param event: The GTK event
-        '''
+        """
         if event.button != 3:
             return
 
@@ -401,9 +401,9 @@ class KBTree(gtk.TreeView):
         #    ----
 
     def _show_tooltips(self, widget, x, y, keyboard_tip, tooltip):
-        '''
+        """
         Shows tooltip for 'exploit vulns' buttons
-        '''
+        """
         # TODO: Why 27? Do something better here!!!
         th = title_height = 27
         
@@ -435,18 +435,18 @@ class KBTree(gtk.TreeView):
             return False
 
     def _exploit_vuln(self, widg, event):
-        '''Exploits row's vulnerability'''
+        """Exploits row's vulnerability"""
         try:
             # This method returns None if there is no path at the position.
             path, tv_column, x_cell, _ = self.get_path_at_pos(int(event.x),
                                                               int(event.y))
         except TypeError:
-            '''
+            """
             >>> a,b,c = None
             Traceback (most recent call last):
               File "<stdin>", line 1, in <module>
             TypeError: 'NoneType' object is not iterable
-            '''
+            """
             return False
         else:
             # Make the X coord relative to the cell
@@ -474,21 +474,21 @@ class KBTree(gtk.TreeView):
             return False
 
     def get_instance(self, path):
-        '''Extracts the instance from the tree.
+        """Extracts the instance from the tree.
 
         :param path: where the user is in the tree
         :return: The instance
-        '''
+        """
         info_uniq_id = self.treestore[path][2]
         info_inst = kb.kb.get_by_uniq_id(info_uniq_id)
         return info_inst
 
     def _is_exploitable(self, vuln_id):
-        '''Indicantes if 'vuln' is exploitable
+        """Indicantes if 'vuln' is exploitable
 
         :param vuln: The vuln to test.
         :return: A bool value
-        '''
+        """
         if self.exploit_vulns.get(str(vuln_id)):
             return True
         else:
@@ -496,11 +496,11 @@ class KBTree(gtk.TreeView):
             return str(vuln_id) in self.exploit_vulns
 
     def _map_exploits_to_vuln(self, vuln_id):
-        '''If 'vuln' is an exploitable vulnerability then map it to its
+        """If 'vuln' is an exploitable vulnerability then map it to its
         exploits
 
         :param vuln: Potential vulnerability
-        '''
+        """
         exploits = self._get_exploits(vuln_id) or []
         # Ensure the each vuln is processed only once.
         if not exploits:

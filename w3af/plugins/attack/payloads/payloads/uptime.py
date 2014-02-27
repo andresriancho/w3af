@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class uptime(Payload):
-    '''
+    """
     This payload shows server Uptime.
-    '''
+    """
     def api_read(self):
         result = {}
 

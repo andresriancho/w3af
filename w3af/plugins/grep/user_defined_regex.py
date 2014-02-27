@@ -1,4 +1,4 @@
-'''
+"""
 user_defined_regex.py
 
 This file is part of w3af, http://w3af.org/ .
@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import os
@@ -34,11 +34,11 @@ from w3af.core.data.kb.info import Info
 
 
 class user_defined_regex(GrepPlugin):
-    '''
+    """
     Report a vulnerability if the response matches a user defined regex.
 
     :author: floyd fuh ( floyd_fuh@yahoo.de )
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -55,12 +55,12 @@ class user_defined_regex(GrepPlugin):
         self._all_in_one = None
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point, search for the user defined regex.
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         if self._all_in_one is None:
             return
 
@@ -109,10 +109,10 @@ class user_defined_regex(GrepPlugin):
                     self._regexlist_compiled[index] = (regex, info_inst)
 
     def set_options(self, options_list):
-        '''
+        """
         Handle user configuration parameters.
         :return: None
-        '''
+        """
         # The not yet compiled all_in_one_regex
         tmp_not_compiled_all = []
         #
@@ -164,9 +164,9 @@ class user_defined_regex(GrepPlugin):
                                           re.IGNORECASE | re.DOTALL)
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'Single regex to use in the grep process.'
@@ -186,10 +186,10 @@ class user_defined_regex(GrepPlugin):
         return ol
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every response for a user defined regex.
 
         You can specify a single regex or an entire file of regexes (each line
@@ -200,4 +200,4 @@ class user_defined_regex(GrepPlugin):
             "plugins/grep/user_defined_regex/".
 
         For every match an information message is shown.
-        '''
+        """

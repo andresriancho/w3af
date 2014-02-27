@@ -1,4 +1,4 @@
-'''
+"""
 html.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.dc.form as form
 
@@ -26,12 +26,12 @@ from w3af.core.data.parsers.sgml import SGMLParser
 
 
 class HTMLParser(SGMLParser):
-    '''
+    """
     This class parses HTML's.
 
     @authors: Andres Riancho (andres.riancho@gmail.com)
               Javier Andalia (jandalia =AT= GMAIL.COM)
-    '''
+    """
 
     def __init__(self, http_resp):
 
@@ -49,18 +49,18 @@ class HTMLParser(SGMLParser):
         SGMLParser.__init__(self, http_resp)
 
     def data(self, data):
-        '''
+        """
         Overriding parent's. Called by the main parser when a text node
         is found
-        '''
+        """
         if self._inside_textarea:
             self._textarea_data = data.strip()
 
     def _pre_parse(self, http_resp):
-        '''
+        """
         :param http_resp: The HTTP response document that contains the
         HTML document inside its body.
-        '''
+        """
         SGMLParser._pre_parse(self, http_resp)
         assert self._base_url, 'The base URL must be set.'
 
@@ -74,12 +74,12 @@ class HTMLParser(SGMLParser):
 
     ## <form> handler methods
     def _handle_form_tag_start(self, tag, attrs):
-        '''
+        """
         Handle the form tags.
 
         This method also looks if there are "pending inputs" in the
         self._saved_inputs list and parses them.
-        '''
+        """
         SGMLParser._handle_form_tag_start(self, tag, attrs)
 
         # Get the 'method'

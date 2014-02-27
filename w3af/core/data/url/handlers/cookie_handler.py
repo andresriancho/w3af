@@ -1,4 +1,4 @@
-'''
+"""
 cookie_handler.py
 
 Copyright 2006 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 
 
 class CookieHandler(urllib2.HTTPCookieProcessor):
 
     def http_request(self, request):
-        '''
+        """
         I had to subclass the urllib2.HTTPCookieProcessor in order to add the
         "if request.cookies" to provide the plugins with a feature to send HTTP
         requests without any cookies.
-        '''
+        """
         if request.cookies:
             return urllib2.HTTPCookieProcessor.http_request(self, request)
         

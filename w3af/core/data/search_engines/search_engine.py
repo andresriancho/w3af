@@ -1,4 +1,4 @@
-'''
+"""
 SearchEngine.py
 
 Copyright 2006 Andres Riancho
@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers import output_manager as om
 from w3af.core.data.dc.headers import Headers
 
 
 class SearchEngine(object):
-    '''
+    """
     This class represents a search engine .
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
-    '''
+    """
 
     def __init__(self):
         #
@@ -41,9 +41,9 @@ class SearchEngine(object):
         self._headers = Headers(hdrs)
 
     def get_n_results(self, query, limit=0):
-        '''
+        """
         Return a list of URLs ; that represent the result to all the search.
-        '''
+        """
         start = 0
         result = set()
         
@@ -83,10 +83,10 @@ class SearchEngine(object):
         return result
 
     def get_n_result_pages(self, query, limit=0):
-        '''
+        """
         Return a list of httpresponses that represent the pages returned by
         the search engine when w3af performs a search.
-        '''
+        """
         start = 0
         result = []
         while True:
@@ -108,9 +108,9 @@ class SearchEngine(object):
         return result
 
     def number_of_results(self, query):
-        '''
+        """
         Return the number of results for a given search.
-        '''
+        """
         number_of_results = 0
         while True:
             res = self.search(query, number_of_results, 10)
@@ -121,7 +121,7 @@ class SearchEngine(object):
         return number_of_results
 
     def search(self, query, start, count=10):
-        '''
+        """
         This method is meant to be overriden by the subclasses of SearchEngine.py
 
         This method searches the web and returns a list of URLs.
@@ -129,12 +129,12 @@ class SearchEngine(object):
         :param query: The query that we want to perform in the search engine
         :param start: The first result item
         :param count: How many results to get from start
-        '''
+        """
         raise NotImplementedError(
             'SearchEngine subclasses should implement the search method.')
 
     def page_search(self, query, start, count=10):
-        '''
+        """
         This method is meant to be overriden by the subclasses of SearchEngine.py
 
         This method searches the web and returns a list of http response objects.
@@ -142,6 +142,6 @@ class SearchEngine(object):
         :param query: The query that we want to perform in the search engine
         :param start: The first result item
         :param count: How many results to get from start
-        '''
+        """
         raise NotImplementedError(
             'SearchEngine subclasses should implement the page_search method.')

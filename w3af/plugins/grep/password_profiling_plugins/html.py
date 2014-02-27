@@ -1,4 +1,4 @@
-'''
+"""
 html.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 import re
 
@@ -28,22 +28,22 @@ words_split_re = re.compile("[^\w]")
 
 
 class html(BasePwdProfilingPlugin):
-    '''
+    """
     This plugin creates a map of possible passwords by reading html responses.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         BasePwdProfilingPlugin.__init__(self)
 
     def get_words(self, response):
-        '''
+        """
         Get words from the body, this is a modified "strings" that filters out HTML tags.
 
         :param body: In most common cases, an html. Could be almost anything.
         :return: A map of strings:repetitions.
-        '''
+        """
 
         data = {}
 

@@ -1,4 +1,4 @@
-'''
+"""
 posixterm.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import sys
 import os
 
@@ -39,13 +39,13 @@ CTRL_CODES.remove(13)
 
 
 def sync_with_om(func):
-    '''
+    """
     Given that the output manager has been migrated into a producer/consumer model,
     the messages that are sent to it are added to a Queue and printed "at a random time".
     The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
     using the om (see functions below), which ends up with unordered messages printed
     to the console.
-    '''
+    """
     def om_wrapper(*args, **kwds):
         om.out.process_all_messages()
         return func(*args, **kwds)

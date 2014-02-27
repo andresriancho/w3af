@@ -1,4 +1,4 @@
-'''
+"""
 test_redirect.py
 
 Copyright 2013 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import urllib2
 
@@ -41,7 +41,7 @@ class TestRedirectHandler(unittest.TestCase):
         
     @attr('moth')
     def test_redirect_handler(self):
-        '''Test the redirect handler using urllib2'''
+        """Test the redirect handler using urllib2"""
         redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
         opener = urllib2.build_opener(HTTP30XHandler)
         
@@ -52,8 +52,8 @@ class TestRedirectHandler(unittest.TestCase):
 
     @attr('moth')
     def test_handler_order(self):
-        '''Get an instance of the extended urllib and verify that the redirect
-        handler still works, even when mixed with all the other handlers.'''
+        """Get an instance of the extended urllib and verify that the redirect
+        handler still works, even when mixed with all the other handlers."""
         # Configure the handler
         redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
         

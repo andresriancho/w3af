@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class mail_config_files(Payload):
-    '''
+    """
     This payload shows mail configuration files
-    '''
+    """
     def api_read(self):
         result = {}
         files = []

@@ -1,4 +1,4 @@
-'''
+"""
 FastHTTPBasicAuthHandler.py
 
 Copyright 2006 Andres Riancho
@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib2
 import base64
 
 
 class FastHTTPBasicAuthHandler(urllib2.AbstractBasicAuthHandler,
                                urllib2.BaseHandler):
-    '''
+    """
     The AbstractBasicAuthHandler only sends the basic HTTP credentials after
     receiving a 401 which makes scans much slower (1 returns 401, 1 with the
     credentials returns 200).
     
     Created this handler to always send the configured credentials. 
-    '''
+    """
     handler_order = 200  # response processing before HTTPEquivProcessor
 
     def http_request(self, request):

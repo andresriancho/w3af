@@ -1,4 +1,4 @@
-'''
+"""
 CrawlPlugin.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import w3afException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
@@ -26,20 +26,20 @@ from w3af.core.data.request.factory import create_fuzzable_requests
 
 
 class CrawlPlugin(Plugin):
-    '''
+    """
     This is the base class for crawl plugins, all crawl plugins should
     inherit from it and implement the following methods:
         1. crawl(...)
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         Plugin.__init__(self)
 
     def crawl_wrapper(self, fuzzable_request):
-        '''
+        """
         Wrapper around the crawl method in order to perform some generic tasks.
-        '''
+        """
         # I copy the fuzzable request, to avoid cross plugin contamination
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
@@ -47,7 +47,7 @@ class CrawlPlugin(Plugin):
         return self.crawl(fuzzable_request_copy)
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         This method MUST be implemented on every plugin.
 
         :param fuzzable_request: Represents an HTTP request, with its URL and
@@ -55,7 +55,7 @@ class CrawlPlugin(Plugin):
 
         :return: A list with of new fuzzable request objects found by this
                  plugin. Can be empty.
-        '''
+        """
         raise w3afException(
             'Plugin is not implementing required method crawl')
 
@@ -68,12 +68,12 @@ class CrawlPlugin(Plugin):
         return 'crawl'
     
     def http_get_and_parse(self, url):
-        '''
+        """
         Perform an HTTP GET to url, extract URLs from the HTTP response and put
         them into the plugin's output queue.
         
         :return: The http response that was parsed
-        '''
+        """
         try:
             http_response = self._uri_opener.GET(url, cache=True)
         except w3afException:

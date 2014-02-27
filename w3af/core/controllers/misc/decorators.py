@@ -1,4 +1,4 @@
-'''
+"""
 decorators.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import math
 import time
 
@@ -25,12 +25,12 @@ from functools import wraps
 
 
 def runonce(exc_class=Exception):
-    '''
+    """
     Function to decorate methods that should be called only once.
 
     :param exc_class: The Exception class to be raised when the method has
         already been called.
-    '''
+    """
     def runonce_meth(meth):
         
         @wraps(meth)
@@ -45,7 +45,7 @@ def runonce(exc_class=Exception):
 
 
 def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
-    '''
+    """
     Retries a function or method if an exception was raised.
 
     :param tries: Number of attempts. Must be >= 1.
@@ -57,7 +57,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
     :param err_msg: Error message to use when an instance of `exc_class`
         is raised. If no value is passed the string representation of the
         current exception is used.
-    '''
+    """
 
     if backoff <= 1:
         raise ValueError("'backoff' must be greater than 1")

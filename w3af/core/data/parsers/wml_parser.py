@@ -1,4 +1,4 @@
-'''
+"""
 WMLParser.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.data.dc.form as form
 import w3af.core.controllers.output_manager as om
 
@@ -27,21 +27,21 @@ from w3af.core.data.parsers.url import URL
 
 
 class WMLParser(SGMLParser):
-    '''
+    """
     This class is a WML parser. WML is used in cellphone "web" pages.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, HTTPResponse):
         self._select_tag_name = ""
         SGMLParser.__init__(self, HTTPResponse)
 
     def _pre_parse(self, HTTPResponse):
-        '''
+        """
         :param HTTPResponse: The HTTP response document that contains the WML
         document inside its body.
-        '''
+        """
         
         SGMLParser._pre_parse(self, HTTPResponse)
         assert self._base_url is not None, 'The base URL must be set.'

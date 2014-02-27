@@ -15,7 +15,7 @@
 Enables the use of multipart/form-data for posting forms
 """
 
-'''
+"""
 Inspirations:
   Upload files in python:
     http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
@@ -35,7 +35,7 @@ Example:
 Further Example:
   The main function of this file is a sample which downloads a page and
   then uploads it to the W3C validator.
-'''
+"""
 import sys
 import urllib
 import urllib2
@@ -81,14 +81,14 @@ class MultipartPostHandler(urllib2.BaseHandler):
     https_request = http_request
 
     def _send_as_multipart(self, request, data):
-        '''
+        """
         Based on the request it decides if we should send the request as multipart
         or not.
 
         :return: (Boolean that indicates if multipart should be used,
                   List with string variables,
                   List with file variables)
-        '''
+        """
         multipart = False
         v_vars = []
         v_files = []

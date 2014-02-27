@@ -1,4 +1,4 @@
-'''
+"""
 test_bug_report.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import re
 import shutil
@@ -36,18 +36,18 @@ from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 @attr('moth')
 @attr('internet')
 class TestConsoleBugReport(ConsoleTestHelper):
-    '''
+    """
     Run a scan from the console UI (which fails with a bug) and report it to
     a github issue.
-    '''
+    """
     
     def setUp(self):
-        '''
+        """
         This is a rather complex setUp since I need to move the failing_spider.py
         plugin to the plugin directory in order to be able to run it afterwards.
 
         In the tearDown method, I'll remove the file.
-        '''
+        """
         self.src = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                                 'failing_spider.py')
         self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',

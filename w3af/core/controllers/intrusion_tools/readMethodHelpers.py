@@ -1,4 +1,4 @@
-'''
+"""
 readMethodHelpers.py
 
 Copyright 2010 Andres Riancho
@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import OSDetectionException
 
 
 def read_os_detection(remote_read):
-    '''
+    """
     Uses the remote_read method to read remote files and determine what the
     remote OS is.
 
     :return: String with 'windows' or 'linux' or raises a w3afException
              if unknown.
-    '''
+    """
     try:
         linux1 = remote_read('/etc/passwd')
         linux2 = remote_read('/etc/mtab')

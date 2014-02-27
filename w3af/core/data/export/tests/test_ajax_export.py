@@ -1,4 +1,4 @@
-'''
+"""
 test_ajax_export.py
 
 Copyright 2012 Andres Riancho
@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.export.ajax_export import ajax_export
 
-EXPECTED_SIMPLE = '''/* Init AJAX stuff */
+EXPECTED_SIMPLE = """/* Init AJAX stuff */
 
 var xmlhttp = false;
 /*@cc_on @*/
@@ -75,9 +75,9 @@ make the request fail */
 xmlhttp.setRequestHeaders("Host", "www.w3af.org");
 xmlhttp.setRequestHeaders("Foo", "bar");
 xmlhttp.send(null);
-'''
+"""
 
-EXPECTED_POST = '''/* Init AJAX stuff */
+EXPECTED_POST = """/* Init AJAX stuff */
 
 var xmlhttp = false;
 /*@cc_on @*/
@@ -129,7 +129,7 @@ make the request fail */
 xmlhttp.setRequestHeaders("Host", "www.w3af.org");
 var post_data = (<r><![CDATA[a=1]]></r>).toString();
 xmlhttp.send(post_data);
-'''
+"""
 
 
 class TestAjaxExport(unittest.TestCase):

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 test_sgmlparsers.py
 
 Copyright 2011 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from functools import partial
@@ -34,7 +34,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 
-HTML_DOC = u'''
+HTML_DOC = u"""
 <html>
     <head>
         %(head)s
@@ -43,31 +43,31 @@ HTML_DOC = u'''
         %(body)s
     </body>
 </html>
-'''
+"""
 
 # Form templates
-FORM_METHOD_GET = u'''
+FORM_METHOD_GET = u"""
 <form method="GET" action="/index.php">
     %(form_content)s
 </form>
-'''
-FORM_METHOD_POST = u'''
+"""
+FORM_METHOD_POST = u"""
 <form method="POST" action="/index.php">
     %(form_content)s
 </form>
-'''
-FORM_WITHOUT_METHOD = u'''
+"""
+FORM_WITHOUT_METHOD = u"""
 <form action="/index.php">
     %(form_content)s
 </form>
-'''
-FORM_WITHOUT_ACTION = u'''
+"""
+FORM_WITHOUT_ACTION = u"""
 <form method="POST">
     %(form_content)s
 </form>
-'''
+"""
 
-FORM_MULTILINE_TAGS = u'''
+FORM_MULTILINE_TAGS = u"""
 <form  class="form-horizontal" method="post" ><input type='hidden' name='csrfmiddlewaretoken' value='UN2BDAoRUTtlWlFtNCTFtjLZsLRYQQ1E' /> <div id="div_id_input" class="control-group"><label for="id_input" class="control-label requiredField">
                 What is your favorite food?<span class="asteriskField">*</span></label><div class="controls"><input class="form-control input-sm textinput textInput" id="id_input" maxlength="40" name="input" type="text" value="Burgers" /> </div></div><div  
       style="padding: 10px;"><i class="icon-leaf"></i> Hint: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></div><div class="form-actions"><input type="submit"
@@ -79,21 +79,21 @@ FORM_MULTILINE_TAGS = u'''
     
     
     /> </div></form>
-'''
+"""
 
 # Textarea templates
-TEXTAREA_WITH_NAME_AND_DATA = u'''
+TEXTAREA_WITH_NAME_AND_DATA = u"""
 <textarea name="sample_name">
     sample_value
-</textarea>'''
-TEXTAREA_WITH_ID_AND_DATA = u'''
+</textarea>"""
+TEXTAREA_WITH_ID_AND_DATA = u"""
 <textarea id="sample_id">
     sample_value
-</textarea>'''
-TEXTAREA_WITH_NAME_ID_AND_DATA = u'''
+</textarea>"""
+TEXTAREA_WITH_NAME_ID_AND_DATA = u"""
 <textarea name="sample_name" id="sample_id">
     sample_value
-</textarea>'''
+</textarea>"""
 TEXTAREA_WITH_NAME_EMPTY = u'<textarea name=""></textarea>'
 
 # Input templates
@@ -106,20 +106,20 @@ INPUT_CHECKBOX_WITH_NAME = u'<input name="foo6" type="checkbox" checked="true">'
 INPUT_HIDDEN = u'<input name="foo7" type="hidden" value="bar">'
 
 # Select templates
-SELECT_WITH_NAME = u'''
+SELECT_WITH_NAME = u"""
 <select name="vehicle">
     <option value=""></option>
     <option value="car"/>
     <option value="plane"></option>
     <option value="bike"></option>
     </option>
-</select>'''
-SELECT_WITH_ID = u'''
+</select>"""
+SELECT_WITH_ID = u"""
 <select id="vehicle">
     <option value="car"/>
     <option value="plane"></option>
     <option value="bike"></option>
-</select>'''
+</select>"""
 
 # Anchor templates
 A_LINK_RELATIVE = u'<a href="/index.php">XXX</a>'
@@ -127,17 +127,17 @@ A_LINK_ABSOLUTE = u'<a href="www.w3af.com/home.php">XXX</a>'
 A_LINK_FRAGMENT = u'<a href="#mark">XXX</a>'
 
 # Other templates
-BASE_TAG = u'''
+BASE_TAG = u"""
 <base href="http://www.w3afbase.com">
 <base target="_blank">
-'''
-META_REFRESH = u'''<meta http-equiv="refresh" content="600">'''
-META_REFRESH_WITH_URL = u'''
-<meta http-equiv="refresh" content="2;url=http://crawler.w3af.com/">'''
-BODY_FRAGMENT_WITH_EMAILS = u'''===>jandalia@bing.com%^&1!
+"""
+META_REFRESH = u"""<meta http-equiv="refresh" content="600">"""
+META_REFRESH_WITH_URL = u"""
+<meta http-equiv="refresh" content="2;url=http://crawler.w3af.com/">"""
+BODY_FRAGMENT_WITH_EMAILS = u"""===>jandalia@bing.com%^&1!
 <script>ariancho%40gmail.com<script> name_with_ñ@w3af.it
 תגובות_לאתר
-'''
+"""
 
 URL_INST = URL('http://w3af.com')
 
@@ -196,13 +196,13 @@ class TestSGMLParser(unittest.TestCase):
         u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
         u2 = u'http://w3af.com/tésoro.php?id=GÓLD'
         u3 = u'http://w3af.com/gold.py?típo=silvër'
-        body = '''
+        body = """
         <html>
           <body>estas s%C3%B3n las urls absolutas q te comente para llegar al tesoro<br>
                 http://w3af.com/t%C3%A9soro.php?id=G%C3%93LD http://w3af.com/tr%C3%A9asure.php?id=%C3%93R%C3%93%C2%AA
             y las relativas son<br>
                 /gold.py?t%C3%ADpo=silv%C3%ABr
-        '''
+        """
         resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         urls = tuple(u.url_string for u in p._re_urls)
@@ -223,10 +223,10 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals([URL('http://crawler.w3af.com/')], p.references[0])
 
     def test_case_sensitivity(self):
-        '''
+        """
         Ensure handler methods are *always* called with lowered-cased
         tag and attribute names
-        '''
+        """
         def islower(s):
             il = False
             if isinstance(s, basestring):
@@ -273,13 +273,13 @@ class TestSGMLParser(unittest.TestCase):
     def test_parsed_references(self):
         # The *parsed* urls *must* come both from valid tags and tag attributes
         # Also invalid urls like must be ignored (like javascript instructions)
-        body = '''
+        body = """
         <html>
             <a href="/x.py?a=1" Invalid_Attr="/invalid_url.php">
             <form action="javascript:history.back(1)">
                 <tagX href="/py.py"/>
             </form>
-        </html>'''
+        </html>"""
         r = _build_http_response(URL_INST, body)
         p = _SGMLParser(r)
         p._parse(r)
@@ -289,10 +289,10 @@ class TestSGMLParser(unittest.TestCase):
             'http://w3af.com/x.py?a=1', parsed_refs[0].url_string)
 
     def test_reference_with_colon(self):
-        body = '''
+        body = """
         <html>
             <a href="d:url.html?id=13&subid=3">foo</a>
-        </html>'''
+        </html>"""
         r = _build_http_response(URL_INST, body)
         p = _SGMLParser(r)
         p._parse(r)
@@ -346,9 +346,9 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals(0, len(p.forms))
 
     def test_form_without_meth(self):
-        '''
+        """
         When the form has no 'method' => 'GET' will be used
-        '''
+        """
         body = HTML_DOC % \
             {'head': '',
                      'body': FORM_WITHOUT_METHOD % {'form_content': ''}
@@ -359,9 +359,9 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals('GET', p.forms[0].get_method())
 
     def test_form_without_action(self):
-        '''
+        """
         If the form has no 'content' => HTTPResponse's url will be used
-        '''
+        """
         body = HTML_DOC % \
             {'head': '',
                      'body': FORM_WITHOUT_ACTION % {'form_content': ''}
@@ -372,23 +372,23 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals(URL_INST, p.forms[0].get_action())
 
     def test_form_with_invalid_url_in_action(self):
-        '''
+        """
         If an invalid URL is detected in the form's action then use base_url
-        '''
-        body = '''
+        """
+        body = """
         <html>
             <form action="javascript:history.back(1)">
             </form>
-        </html>'''
+        </html>"""
         r = _build_http_response(URL_INST, body)
         p = _HTMLParser(r)
         p._parse(r)
         self.assertEquals(URL_INST, p.forms[0].get_action())
 
     def test_form_multiline_tags(self):
-        '''
+        """
         Found this form on the wild and was unable to parse it.
-        '''
+        """
         resp = _build_http_response(URL_INST, FORM_MULTILINE_TAGS)
         p = _HTMLParser(resp)
         p._parse(resp)

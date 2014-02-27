@@ -1,4 +1,4 @@
-'''
+"""
 xpresser_unittest.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import unittest
 import time
 import subprocess
@@ -68,13 +68,13 @@ def debug_notify(meth):
             notification.show()
             raise inf
         else:
-            '''
+            """
             title = 'Success'
             message = '%s(%s)' % (name, args)
             notification = Notify.Notification.new(title, message,
                                                    'dialog-information')
             notification.show()
-            '''
+            """
             return result
     
     return debug
@@ -86,7 +86,7 @@ class XpresserUnittest(unittest.TestCase):
     EXTRA_IMAGES = None
     IMAGES = None
     
-    '''    
+    """    
     @classmethod
     def setUpClass(cls):
         cls.gnome = Gnome()
@@ -97,7 +97,7 @@ class XpresserUnittest(unittest.TestCase):
     def tearDownClass(cls):
         cls.gnome.stop()
         restore_original_display()
-    '''
+    """
          
     def setUp(self):
         self.xp = Xpresser()

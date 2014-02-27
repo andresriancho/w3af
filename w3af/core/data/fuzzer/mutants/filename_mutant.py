@@ -1,4 +1,4 @@
-'''
+"""
 FileNameMutant.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import urllib
 import re
 
@@ -28,9 +28,9 @@ from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 
 
 class FileNameMutant(URLPartsMutant):
-    '''
+    """
     This class is a filename mutant.
-    '''
+    """
     def __init__(self, freq):
         URLPartsMutant.__init__(self, freq)
 
@@ -38,9 +38,9 @@ class FileNameMutant(URLPartsMutant):
         return 'url filename'
 
     def get_url(self):
-        '''
+        """
         :return: The URL, as modified by "set_mod_value()"
-                '''
+                """
         domain_path = self._freq.get_url().get_domain_path()
 
         # Please note that this double encoding is needed if we want to work
@@ -76,9 +76,9 @@ class FileNameMutant(URLPartsMutant):
         raise ValueError(msg)
 
     def found_at(self):
-        '''
+        """
         :return: A string representing WHAT was fuzzed.
-        '''
+        """
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' filename, with value: "%s".'
         return fmt % (self.get_url(), self.get_method(), self.get_mod_value())
@@ -86,7 +86,7 @@ class FileNameMutant(URLPartsMutant):
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
-        '''
+        """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         
@@ -95,7 +95,7 @@ class FileNameMutant(URLPartsMutant):
                                     he wants to fuzz. Chunks:
                                         foo.bar.html
                                         0   1   2
-        '''
+        """
         if not fuzzer_config['fuzz_url_filenames']:
             return []
 

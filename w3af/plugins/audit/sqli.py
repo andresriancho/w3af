@@ -1,4 +1,4 @@
-'''
+"""
 sqli.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.dbms as dbms
 import w3af.core.data.constants.severity as severity
@@ -30,10 +30,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class sqli(AuditPlugin):
-    '''
+    """
     Find SQL injection bugs.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     SQL_ERRORS = (
         # ASP / MSSQL
@@ -137,11 +137,11 @@ class sqli(AuditPlugin):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for SQL injection vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -149,9 +149,9 @@ class sqli(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         sql_error_list = self._findsql_error(response)
         orig_resp_body = mutant.get_original_response_body()
 
@@ -173,12 +173,12 @@ class sqli(AuditPlugin):
                     break
 
     def _findsql_error(self, response):
-        '''
+        """
         This method searches for SQL errors in html's.
 
         :param response: The HTTP response object
         :return: A list of errors found on the page
-        '''
+        """
         res = []
 
         for match, _, regex_comp, dbms_type in self._multi_re.query(response.body):
@@ -191,11 +191,11 @@ class sqli(AuditPlugin):
         return res
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds SQL injections. To find this vulnerabilities the plugin
         sends the string d'z"0 to every injection point, and searches for SQL errors
         in the response body.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 test_fingerprint_os.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 
 from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -37,9 +37,9 @@ class TestFingerprintOS(PluginTest):
 
     @attr('ci_fails')
     def test_moth(self):
-        '''
+        """
         Test the "default" configuration for Apache+PHP.
-        '''
+        """
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
 
@@ -49,12 +49,12 @@ class TestFingerprintOS(PluginTest):
 
     @attr('ci_fails')
     def test_modsecurity(self):
-        '''
+        """
         Test a different configuration:
             * Mod security enabled
             * HTTP methods restricted
             * No server header
-        '''
+        """
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
 

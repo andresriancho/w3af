@@ -1,4 +1,4 @@
-'''
+"""
 factory.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import cgi
 import json
 
@@ -49,7 +49,7 @@ URL_HEADERS = ('location', 'uri', 'content-location')
 
 
 def create_fuzzable_requests(resp, request=None, add_self=True):
-    '''
+    """
     Generates the fuzzable requests based on an HTTP response instance.
 
     :param resp: An HTTPResponse instance.
@@ -58,7 +58,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                          (:param request) to the result on not.
 
     :return: A list of fuzzable requests.
-    '''
+    """
     res = []
 
     # Headers for all fuzzable requests created here:
@@ -118,7 +118,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     if not form_list:
         # Check if its a wsdl file
         #TODO: Rewrite web service support
-        '''
+        """
         wsdlp = WSDLParser()
         try:
             wsdlp.set_wsdl(resp.get_body())
@@ -135,7 +135,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     req_headers
                 )
                 res.append(wspdr)
-        '''
+        """
     else:
         # Create one HTTPPostDataRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')
@@ -165,9 +165,9 @@ XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
 
 
 def create_fuzzable_request_from_request(request, add_headers=None):
-    '''
+    """
     :return: A fuzzable request with the same info as request
-    '''
+    """
     if not isinstance(request, HTTPRequest):
         raise TypeError('Requires HTTPRequest to create FuzzableRequest.')
     
@@ -184,7 +184,7 @@ def create_fuzzable_request_from_request(request, add_headers=None):
 
 def create_fuzzable_request_from_parts(url, method='GET', post_data='',
                                        add_headers=None):
-    '''
+    """
     Creates a fuzzable request based on the input parameters.
 
     :param req_url: A URL object
@@ -193,7 +193,7 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
     :param add_headers: A Headers object that holds the headers. If `req_url` is a
                         request then this dict will be merged with the request's
                         headers.
-    '''
+    """
     if add_headers is not None and not isinstance(add_headers, Headers):
         raise ValueError('create_fuzzable_request requires Headers object.')
     
@@ -276,7 +276,7 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
 
 
 def _create_cookie(http_response):
-    '''
+    """
     Create a cookie object based on a HTTP response.
 
     >>> from w3af.core.data.parsers.url import URL
@@ -288,7 +288,7 @@ def _create_cookie(http_response):
     >>> cookie
     Cookie({u'abc': [u'def']})
 
-    '''
+    """
     cookies = []
 
     # Get data from RESPONSE

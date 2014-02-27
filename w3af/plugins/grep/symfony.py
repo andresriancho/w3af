@@ -1,4 +1,4 @@
-'''
+"""
 symfony.py
 
 Copyright 2011 Andres Riancho and Carlos Pantelides
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from w3af.core.data.kb.info import Info
@@ -28,13 +28,13 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 class symfony(GrepPlugin):
-    '''
+    """
     Grep every page for traces of the Symfony framework.
 
     :author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon
     work by Andres Riancho (andres.riancho@gmail.com) and help from
     Pablo Mouzo (pablomouzo@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -43,13 +43,13 @@ class symfony(GrepPlugin):
         self._override = False
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         if not response.is_text_or_html():
             return
         
@@ -94,9 +94,9 @@ class symfony(GrepPlugin):
         self._override = options_list['override'].get_value()
 
     def get_options(self):
-        '''
+        """
         :return: A list of option objects for this plugin.
-        '''
+        """
         ol = OptionList()
 
         d = 'Skip symfony detection and search for the csrf (mis)protection.'
@@ -106,10 +106,10 @@ class symfony(GrepPlugin):
         return ol
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for traces of the Symfony framework and the
         lack of CSRF protection.
-        '''
+        """

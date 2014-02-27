@@ -1,4 +1,4 @@
-'''
+"""
 test_questions.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 from nose.plugins.attrib import attr
@@ -35,13 +35,13 @@ class test_questions(object):
 
     @attr('smoke')
     def test_all_questions(self):
-        '''
+        """
         This is a very basic test where we perform the following:
             * Create an instance
             * Exercise all getters
             * Exercise all setters
             * Make sure "back" works
-        '''
+        """
         mod = 'w3af.core.controllers.wizard.questions.%s'
         w3af_core = w3afCore()
 
@@ -58,9 +58,9 @@ class test_questions(object):
 
     @attr('smoke')
     def _test_qid(self, question_inst):
-        '''
+        """
         Ahhh, nose's magic of test generators :D
-        '''
+        """
         orig = question_inst.get_question_title()
         question_inst.set_question_title('New')
         new = question_inst.get_question_title()

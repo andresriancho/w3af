@@ -9,10 +9,10 @@ from w3af.plugins.attack.payloads.base_payload import Payload
 
 
 class rootkit_hunter(Payload):
-    '''
+    """
     This payload checks for current rootkits, trojans, backdoors and local
     xploits installed on system.
-    '''
+    """
     def _read_with_progress(self, filename):
         #   "progress bar"
         self.k -= 1

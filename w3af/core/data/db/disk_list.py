@@ -1,4 +1,4 @@
-'''
+"""
 DiskList.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import __builtin__ #magic
 import hashlib
 import cPickle
@@ -29,7 +29,7 @@ from w3af.core.data.fuzzer.utils import rand_alpha
 
 
 class DiskList(object):
-    '''
+    """
     A DiskList is a sqlite3 wrapper which has the following features:
         - Implements a list-like API
         - Stores all list items in a sqlite3 table
@@ -51,7 +51,7 @@ class DiskList(object):
     hundreds of MB's.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self):
         self.db = get_default_temp_db_instance()
 
@@ -74,22 +74,22 @@ class DiskList(object):
         self.db.drop_table(self.table_name)
 
     def _get_eq_attrs_values(self, obj):
-        '''
+        """
         :param obj: The object from which I need a hash.
 
         :return: A hash representing the eq_attrs specified in the DiskItem.
-        '''
+        """
         concatenated_eq_attrs = self.__internal_get_eq_attrs_values(obj)
         return hashlib.md5(concatenated_eq_attrs).hexdigest()
 
     def __internal_get_eq_attrs_values(self, obj):
-        '''
+        """
         :param obj: The object from which I need a unique string.
 
         :return: A string with all the values from the get_eq_attrs() method
                  concatenated. This should represent the object in an unique
                  way.
-        '''
+        """
         if type(obj).__name__ in dir(__builtin__):
             return cPickle.dumps(obj)
 
@@ -108,9 +108,9 @@ class DiskList(object):
             raise Exception(msg % type(obj))
 
     def __contains__(self, value):
-        '''
+        """
         :return: True if the value is in our list.
-        '''
+        """
         t = (self._get_eq_attrs_values(value),)
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the
@@ -120,11 +120,11 @@ class DiskList(object):
         return bool(r[0])
 
     def append(self, value):
-        '''
+        """
         Append a value to the DiskList.
 
         :param value: The value to append.
-        '''
+        """
         pickled_obj = cPickle.dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
@@ -136,12 +136,12 @@ class DiskList(object):
         self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
 
     def extend(self, value_list):
-        '''
+        """
         Extend the disk list with a group of items that is provided in
         @value_list
 
         :return: None
-        '''
+        """
         for value in value_list:
             self.append(value)
 

@@ -1,4 +1,4 @@
-'''
+"""
 auto_update.py
 
 Copyright 2011 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 
 from w3af.core.controllers.misc.homeDir import (verify_dir_has_perm,
@@ -27,9 +27,9 @@ from w3af.core.controllers.auto_update.utils import is_git_repo
 
 
 class UIUpdater(object):
-    '''
+    """
     Base class that provides an API for UI update workers.
-    '''
+    """
 
     def __init__(self, force=False, ask=None, logger=None):
         self._force_upd = force
@@ -68,14 +68,14 @@ class UIUpdater(object):
 
             # TODO: Please read https://github.com/andresriancho/w3af/issues/6
             # for more information on what's missing here 
-            '''
+            """
             if repo_has_conflicts():
                 self._log("Oops!... w3af can't be started. It seems that the "
                           "last auto update process was unsuccessful.\n\n"
                           "Please update manually by executing a regular 'git pull' "
                           "in the w3af installation directory.\n")
                 sys.exit(1)
-            '''
+            """
 
     def _call_update(self):
         return self._vmngr.update(self._force_upd)

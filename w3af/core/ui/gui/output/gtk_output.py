@@ -1,4 +1,4 @@
-'''
+"""
 gtk_output.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import time
 import weakref
 
@@ -39,7 +39,7 @@ observers = set()
 
 
 class GtkOutput(OutputPlugin):
-    '''
+    """
     This is an observer which exposes an OutputPlugin API in order to be added
     to the output manager as one more plugin.
     
@@ -50,17 +50,17 @@ class GtkOutput(OutputPlugin):
     receives, and will get all data that is sent to the output manager. 
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         pass
         
     def debug(self, msg_string, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for debug messages.
-        '''
+        """
         #
         #   I don't really want to add debug messages to the queue, as they are
         #   only used in the time graph that's displayed under the log. In order
@@ -70,44 +70,44 @@ class GtkOutput(OutputPlugin):
         self._send_to_observers(m)
 
     def information(self, msg_string, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for informational messages.
-        '''
+        """
         m = Message(INFORMATION, self._clean_string(msg_string), new_line)
         self._send_to_observers(m)
 
     def error(self, msg_string, new_line=True):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
-        '''
+        """
         m = Message(ERROR, self._clean_string(msg_string), new_line)
         self._send_to_observers(m)
 
     def vulnerability(self, msg_string, new_line=True, severity=severity.MEDIUM):
-        '''
+        """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
-        '''
+        """
         m = Message(VULNERABILITY, self._clean_string(msg_string), new_line)
         m.set_severity(severity)
         self._send_to_observers(m)
 
     def console(self, msg_string, new_line=True):
-        '''
+        """
         This method is used by the w3af console to print messages to the outside.
-        '''
+        """
         m = Message(CONSOLE, self._clean_string(msg_string), new_line)
         self._send_to_observers(m)
 
     def _send_to_observers(self, m):
-        '''
+        """
         Adds a message object to the queue.
-        '''
+        """
         to_remove = set()
         
         for observer in observers.copy():
@@ -135,9 +135,9 @@ class GtkOutput(OutputPlugin):
 
 #pylint: disable=E1103
 def subscribe_to_messages(observer_function):
-    '''
+    """
     Subscribe observer_function to the GtkOutput messages
-    '''
+    """
     all_output_plugins = om.out.get_output_plugin_inst()
     for plugin_inst in all_output_plugins:
         if isinstance(plugin_inst, GtkOutput):
@@ -149,9 +149,9 @@ def subscribe_to_messages(observer_function):
         gtk_output.subscribe(observer_function)
 
 def unsubscribe_to_messages(observer_function):
-    '''
+    """
     Unsubscribe observer_function to the GtkOutput messages
-    '''
+    """
     all_output_plugins = om.out.get_output_plugin_inst()
     for plugin_inst in all_output_plugins:
         if isinstance(plugin_inst, GtkOutput):
@@ -161,11 +161,11 @@ def unsubscribe_to_messages(observer_function):
 
 class Message(object):
     def __init__(self, msg_type, msg, new_line=True):
-        '''
+        """
         :param msg_type: console, information, vulnerability, etc
         :param msg: The message itself
         :param new_line: Should I print a newline ? True/False
-        '''
+        """
         self._type = msg_type
         self._msg = msg
         self._new_line = new_line

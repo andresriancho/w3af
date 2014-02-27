@@ -27,9 +27,9 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class HttpRawView(HttpEditor):
-    '''Raw view with HTTP Editor.'''
+    """Raw view with HTTP Editor."""
     def __init__(self, w3af, parentView, editable=False):
-        '''Make object.'''
+        """Make object."""
         HttpEditor.__init__(self, w3af)
         self.id = 'HttpRawView'
         self.label = 'Raw'
@@ -41,11 +41,11 @@ class HttpRawView(HttpEditor):
             buf.connect("changed", self._changed)
 
     def show_object(self, obj):
-        '''Show object in textview.'''
+        """Show object in textview."""
         self.set_text(obj.dump())
 
     def get_object(self):
-        '''Return object (request or response).'''
+        """Return object (request or response)."""
         head, body = self.get_text(splitted=True)
         if self.is_request:
             return HTTPRequestParser(head, body)
@@ -53,7 +53,7 @@ class HttpRawView(HttpEditor):
             raise Exception('HttpResponseParser is not implemented!')
 
     def _changed(self, widg=None):
-        '''Synchronize changes with other views (callback).'''
+        """Synchronize changes with other views (callback)."""
         if not self.initial:
             try:
                 obj = self.get_object()

@@ -1,4 +1,4 @@
-'''
+"""
 clientlessReverseHTTP.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os
 
 import w3af.core.controllers.daemons.webserver as webserver
@@ -31,14 +31,14 @@ from w3af.core.data.fuzzer.utils import rand_alpha
 
 
 class ClientlessReverseHTTP(BasePayloadTransfer):
-    '''
+    """
     This is a class that defines how to send a file to a remote server using
     a locally hosted webserver, the remote end uses "wget" or some other command
     like that to fetch the file. Supported commands:
         - wget
         - curl
         - lynx
-    '''
+    """
 
     def __init__(self, exec_method, os, inboundPort):
         self._exec_method = exec_method
@@ -48,11 +48,11 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         self._command = None
 
     def can_transfer(self):
-        '''
+        """
         This method is used to test if the transfer method works as expected.
         The implementation of this should transfer 10 bytes and check if they
         arrived as expected to the other end.
-        '''
+        """
         #    Here i test what remote command we can use to fetch the payload
         for fetcher in ['wget', 'curl', 'lynx']:
             res = self._exec_method('which ' + fetcher)
@@ -70,15 +70,15 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         return False
 
     def estimate_transfer_time(self, size):
-        '''
+        """
         :return: An estimated transfer time for a file with the specified size.
-        '''
+        """
         return int(size / 2000)
 
     def transfer(self, data_str, destination):
-        '''
+        """
         This method is used to transfer the data_str from w3af to the compromised server.
-        '''
+        """
         if not self._command:
             self.can_transfer()
 
@@ -110,8 +110,8 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         return self.verify_upload(data_str, destination)
 
     def get_speed(self):
-        '''
+        """
         :return: The transfer speed of the transfer object. It should return
                  a number between 100 (fast) and 1 (slow)
-        '''
+        """
         return 100

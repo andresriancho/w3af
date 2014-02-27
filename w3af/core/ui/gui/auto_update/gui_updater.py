@@ -1,4 +1,4 @@
-'''
+"""
 gui_updater.py
 
 Copyright 2007 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import gtk
 
 from w3af.core.ui.gui.constants import W3AF_ICON
@@ -80,7 +80,7 @@ class GUIUpdater(UIUpdater):
         )
     
     def _downloading(self, ignored_param):
-        '''
+        """
         :return:
             * Updating .
             * Updating ..
@@ -88,7 +88,7 @@ class GUIUpdater(UIUpdater):
             * Updating ....
             
         And then start again,
-        '''
+        """
         d = self._dot_counter
         self._dot_counter = d + 1 if d < 3 else 1
         
@@ -99,10 +99,10 @@ class GUIUpdater(UIUpdater):
         super(GUIUpdater, self).update()
     
     def _generate_report(self, changelog, local_commit_id, remote_commit_id):
-        '''
+        """
         :return: A string with a report of the latest update from local commit
                  to remote commit which changes stuff in changelog.
-        '''
+        """
         lshort = to_short_id(local_commit_id)
         rshort = to_short_id(remote_commit_id)
         ldate = get_commit_id_date(local_commit_id)

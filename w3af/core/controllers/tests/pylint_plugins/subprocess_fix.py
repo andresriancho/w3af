@@ -3,7 +3,7 @@
 from logilab.astng import MANAGER
 from logilab.astng.builder import ASTNGBuilder
 
-CODE_FIX = '''
+CODE_FIX = """
 class Popen(object):
     stdout = StringIO.StringIO()
     stderr = StringIO.StringIO()
@@ -15,7 +15,7 @@ class Popen(object):
     def wait(*args, **kwds): pass
     def send_signal(*args, **kwds): pass
     def terminate(*args, **kwds): pass
-'''
+"""
 
 def subprocess_transform(module):
     if module.name == 'subprocess':

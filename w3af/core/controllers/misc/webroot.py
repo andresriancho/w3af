@@ -1,4 +1,4 @@
-'''
+"""
 webroot.py
 
 Copyright 2008 Andres Riancho
@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.parsers.url import URL
 import w3af.core.data.kb.knowledge_base as kb
 
 
 def get_webroot_dirs(domain=None):
-    '''
+    """
     :return: A list of strings with possible webroots. This function also 
              analyzed the contents of the knowledgeBase and tries to use
              that information in order to guess.
-    '''
+    """
     result = []
 
     # This one has more probability of success that all the other ones together

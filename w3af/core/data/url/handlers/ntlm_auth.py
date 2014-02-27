@@ -17,12 +17,12 @@ from ntlm import ntlm
 
 
 class AbstractNtlmAuthHandler(urllib2.BaseHandler):
-    '''
+    """
     urllib2 handler which adds NTLM v1 support.
     
     NTLM v2 is NOT supported since the "ntlm" library does NOT support it.
     Nathaniel Cole confirmed this in the w3af-users mailing list.
-    '''
+    """
     
     auth_header = None
 

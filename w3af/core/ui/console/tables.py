@@ -1,4 +1,4 @@
-'''
+"""
 tables.py
 
 Copyright 2008 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.io.console import terminal_width
@@ -26,16 +26,16 @@ from w3af.core.ui.console.util import formatParagraph
 
 
 class table(object):
-    '''
+    """
     An utility class which stores the table-structured data and implements
     a clever method of drawing the tables. Ok, clever enough for our purposes.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
-    '''
+    """
     def __init__(self, rows):
-        '''
+        """
         :param rows: array of arrays
         Every row is array of string (string per column)
-        '''
+        """
         self._rows = rows
         self._colsNum = len(self._rows[0])
         self._colsRange = range(self._colsNum)
@@ -75,13 +75,13 @@ class table(object):
         self._widthes = [int(rl * space) for rl in relativeLengths]
 
     def _justify(self):
-        '''
+        """
         This function reallocates widthes between columns.
         :param shift is array which contain lack or plenty of space in the column.
         Lack of space happens when a longest word in a column does not fit into originally allocated space.
         This function acts as Robin Hood: it takes excess of space from the "richest" column and gives it
         to the poorest ones.
-        '''
+        """
         minLengths = [max([max(map(len, row[i].split() + [''])) for row in self._rows if len(row) > 0])
                       for i in range(self._colsNum)]
         shifts = [w - mw for mw, w in zip(minLengths, self._widthes)]

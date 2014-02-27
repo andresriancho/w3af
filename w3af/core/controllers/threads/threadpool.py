@@ -1,4 +1,4 @@
-'''
+"""
 threadpool.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import Queue
 
 from functools import partial
@@ -31,10 +31,10 @@ __all__ = ['Pool']
 
 
 class one_to_many(object):
-    '''
+    """
     This is a simple wrapper that translates one argument to many in a function
     call. Useful for passing to the threadpool map function.
-    '''
+    """
     def __init__(self, func):
         self.func = func
 
@@ -43,10 +43,10 @@ class one_to_many(object):
 
 
 class return_args(object):
-    '''
+    """
     Utility function that returns the args in the result, useful when calling
     functions like imap_unordered().
-    '''
+    """
     def __init__(self, func, *args, **kwds):
         self.func = partial(func, *args, **kwds)
 
@@ -72,9 +72,9 @@ class Pool(ThreadPool):
         self._quick_get = self._outqueue.get
         
     def map_multi_args(self, func, iterable, chunksize=None):
-        '''
+        """
         Block until all results are done (please note the .get())
-        '''
+        """
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()
 

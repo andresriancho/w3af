@@ -1,4 +1,4 @@
-'''
+"""
 exception_handler.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import hashlib
 import random
 import threading
@@ -37,12 +37,12 @@ from w3af.core.controllers.exceptions import (w3afMustStopException,
 
 
 class ExceptionHandler(object):
-    '''
+    """
     This class handles exceptions generated while running plugins, usually
     the handling is just to store the traceback for later processing.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
     NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc,
@@ -64,7 +64,7 @@ class ExceptionHandler(object):
                     exception_data.enabled_plugins)
 
     def handle(self, current_status, exception, exec_info, enabled_plugins):
-        '''
+        """
         This method stores the current status and the exception for later
         processing. If there are already too many stored exceptions for this
         plugin then no action is taken.
@@ -80,7 +80,7 @@ class ExceptionHandler(object):
                                 scan finished.
 
         :return: None
-        '''
+        """
         except_type, except_class, tb = exec_info
 
         #
@@ -131,14 +131,14 @@ class ExceptionHandler(object):
         return self._exception_data
 
     def generate_summary_str(self):
-        '''
+        """
         :return: A string with a summary of the exceptions found during the
                  current scan. This is mostly used for printing in the console
                  but can be used anywhere.
 
         @see: generate_summary method for a way of getting a summary in a
               different format.
-        '''
+        """
         fmt_with_exceptions = 'During the current scan (with id: %s) w3af caught'\
                               ' %s exceptions in it\'s plugins. The scan was able'\
                               ' to continue by ignoring those failures but the'\
@@ -171,9 +171,9 @@ class ExceptionHandler(object):
             return without_exceptions
 
     def generate_summary(self):
-        '''
+        """
         :return: A dict with information about exceptions.
-        '''
+        """
         res = {}
         res['total_exceptions'] = len(self._exception_data)
         res['exceptions'] = {}
@@ -195,14 +195,14 @@ class ExceptionHandler(object):
         return res
 
     def get_scan_id(self):
-        '''
+        """
         :return: A scan identifier to bind all bug reports together so that we
                  can understand them much better when looking at the individual
                  Github bug reports.
 
                  Note that this will NOT leak any personal information to our
                  systems.
-        '''
+        """
         if not self._scan_id:
             hash_data = ''
             hash_data += str(

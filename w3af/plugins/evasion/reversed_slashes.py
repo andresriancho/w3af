@@ -1,4 +1,4 @@
-'''
+"""
 reversed_slashes.py
 
 Copyright 2006 Andres Riancho
@@ -18,28 +18,28 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class reversed_slashes(EvasionPlugin):
-    '''
+    """
     Change the slashes from / to \\
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         EvasionPlugin.__init__(self)
 
     def modify_request(self, request):
-        '''
+        """
         Mangles the request
 
         :param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
         :return: The modified request
-        '''
+        """
         # We mangle the URL
         path = request.url_object.get_path()
         path = path.replace('/', '\\').replace('\\', '/', 1)
@@ -53,22 +53,22 @@ class reversed_slashes(EvasionPlugin):
         return new_req
 
     def get_priority(self):
-        '''
+        """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
 
         :return: An integer specifying the priority. 100 is run first, 0 last.
-        '''
+        """
         return 90
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return r'''
+        """
+        return r"""
         This evasion plugin changes the slashes from / to \ .
 
         Example:
             Input:      '/bar/foo.asp'
             Output :    '\bar\foo.asp'
-        '''
+        """

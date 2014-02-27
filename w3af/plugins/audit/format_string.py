@@ -1,4 +1,4 @@
-'''
+"""
 format_string.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from __future__ import with_statement
 
 import w3af.core.data.constants.severity as severity
@@ -30,10 +30,10 @@ from w3af.core.data.kb.vuln import Vuln
 
 
 class format_string(AuditPlugin):
-    '''
+    """
     Find format string vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     ERROR_STRINGS = (
         # TODO: Add more error strings here
         '<title>500 Internal Server Error</title>\n',
@@ -43,11 +43,11 @@ class format_string(AuditPlugin):
         AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for format string vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         string_list = self._get_string_list()
         mutants = create_mutants(freq, string_list, orig_resp=orig_response)
 
@@ -56,9 +56,9 @@ class format_string(AuditPlugin):
                                       self._analyze_result)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze results of the _send_mutant method.
-        '''
+        """
         #
         #   I will only report the vulnerability once.
         #
@@ -83,9 +83,9 @@ class format_string(AuditPlugin):
                     break
 
     def _get_string_list(self):
-        '''
+        """
         :return: This method returns a list of format strings.
-        '''
+        """
         strings = []
         lengths = [1, 10, 25, 100]
         for i in lengths:
@@ -93,21 +93,21 @@ class format_string(AuditPlugin):
         return strings
 
     def get_plugin_deps(self):
-        '''
+        """
         :return: A list with the names of the plugins that should be run before
                  the current one.
-        '''
+        """
         return ['grep.error_500']
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds format string bugs.
 
         Users have to know that detecting a format string vulnerability will be
         only possible if the server is configured to return errors, and the
         application is developed in cgi-c or some other language that allows
         the programmer to do this kind of mistakes.
-        '''
+        """

@@ -1,4 +1,4 @@
-'''
+"""
 payload_test_helper.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -42,9 +42,9 @@ class PayloadTestHelper(PluginTest):
     #        experiment with setUpClass or setUpModule to fix this awful
     #        test performance issue.
     def _scan_wrapper(self):
-        '''
+        """
         :return: Run the scan and return the vulnerability itself and the vuln_id.
-        '''
+        """
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

@@ -2,9 +2,9 @@ import hashlib
 
 
 def gen_hash(request):
-    '''
+    """
     Generate an unique ID for a request
-    '''
+    """
     req = request
     headers_1 = ''.join('%s%s' % (h, v) for h, v in req.headers.iteritems())
     headers_2 = ''.join('%s%s' % (h, v) for h, v in req.unredirected_hdrs.iteritems())

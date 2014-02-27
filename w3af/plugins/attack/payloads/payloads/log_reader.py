@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class log_reader(Payload):
-    '''
+    """
     This payload finds different readable logs on the filesystem.
-    '''
+    """
     def fname_generator(self):
         logs = []
 

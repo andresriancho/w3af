@@ -1,4 +1,4 @@
-'''
+"""
 entries.py
 
 Copyright 2007 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gtk
 import gobject
 
@@ -31,7 +31,7 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class ValidatedEntry(gtk.Entry):
-    '''Class to perform some validations in gtk.Entry.
+    """Class to perform some validations in gtk.Entry.
 
     :param value: The initial value of the widget
 
@@ -49,7 +49,7 @@ class ValidatedEntry(gtk.Entry):
         - default_value: how to fill the entry when user leaves it empty
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, orig_value):
         super(ValidatedEntry, self).__init__()
         self.connect("changed", self._changed)
@@ -68,41 +68,41 @@ class ValidatedEntry(gtk.Entry):
         self.show()
 
     def _key(self, widg, event):
-        '''Signal handler for 'key-release-event' event.
+        """Signal handler for 'key-release-event' event.
 
         :param widg: widget who signaled
         :param event: event happened
 
         Used to supervise if user presses Esc, to restore original
         widget value.
-        '''
+        """
         if event.keyval == self.esc_key:
             self.set_text(self.orig_value)
 
     def reset(self):
-        '''Resets to the default value.'''
+        """Resets to the default value."""
         self._setDefault(None, None)
         self._changed(None)
 
     def _setDefault(self, widg, event):
-        '''Signal handler for 'focus-out-event' event.
+        """Signal handler for 'focus-out-event' event.
 
         :param widg: widget who signaled
         :param event: event happened
 
         Used to put the default value if the user left the
         widget leaving it empty.
-        '''
+        """
         if self.get_text() == "":
             self.set_text(self.default_value)
 
     def _changed(self, widg):
-        '''Signal handler for 'changed' event.
+        """Signal handler for 'changed' event.
 
         :param widg: widget who signaled
 
         Used to supervise if the widget value is ok or not.
-        '''
+        """
         text = self.get_text()
         # background color indicates validity
         if self.validate(text):
@@ -111,7 +111,7 @@ class ValidatedEntry(gtk.Entry):
             self.modify_base(gtk.STATE_NORMAL, self.bg_badentry)
 
     def validate(self, text):
-        '''Validates the widget value.
+        """Validates the widget value.
 
         :param text: the text of the widget
         @raises NotImplementedError: if the method is not redefined
@@ -119,19 +119,19 @@ class ValidatedEntry(gtk.Entry):
         It will called everytime the widget value changes.
 
         The redefined method must return True if the text is valid.
-        '''
+        """
         raise NotImplementedError
 
     def is_valid(self):
-        '''Checks if the widget value is valid.
+        """Checks if the widget value is valid.
 
         :return: True if the widget is in a valid state.
-        '''
+        """
         return self.validate(self.get_text())
 
 
 class ModifiedMixIn(object):
-    '''Mix In class for modified/initial status.
+    """Mix In class for modified/initial status.
 
     This class adds the functionality of alerting to something each
     time the widget is modified, telling it if the widget has the initial
@@ -149,7 +149,7 @@ class ModifiedMixIn(object):
     this initial setup).
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
 
     def __init__(self, alert, signal, getvalue, setvalue):
         self.getfunct = getattr(self, getvalue)
@@ -159,41 +159,41 @@ class ModifiedMixIn(object):
         self.connect(signal, self._checkInitial)
 
     def _checkInitial(self, widg):
-        '''Signal handler for the configured signal.
+        """Signal handler for the configured signal.
 
         Checks if the actual value is the initial one.
 
         :param widg: widget who signaled
 
         In any case generates the alert to propagate the state.
-        '''
+        """
         self.alert(self, self.getfunct() == self.initvalue)
 
     def revert_value(self):
-        '''Returns the widget to its last saved state.'''
+        """Returns the widget to its last saved state."""
         self.setfunct(self.initvalue)
 
     def get_value(self):
-        '''Queries the value of the widget.
+        """Queries the value of the widget.
 
         :return: The value of the widget.
-        '''
+        """
         val = self.getfunct()
         return str(val)
 
     def save(self):
-        '''Store current value as the initial one. '''
+        """Store current value as the initial one. """
         self.initvalue = self.getfunct()
         self.alert(self, True)
 
 
 class TextInput(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option for all inputs where the
+    """Class that implements the config option for all inputs where the
     user can enter text freely (that will later be validated by the option
     object itself).
 
     :author: Andres Riancho
-    '''
+    """
     def __init__(self, alert, opt):
         self.opt_instance = opt
         ValidatedEntry.__init__(self, opt.get_value_str())
@@ -201,11 +201,11 @@ class TextInput(ValidatedEntry, ModifiedMixIn):
         self.default_value = ""
 
     def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
+        """Redefinition of ValidatedEntry's method.
 
         :param text: the text to validate
         :return: True if the regex compiles.
-        '''
+        """
         try:
             self.opt_instance.validate(text)
         except w3afException:
@@ -215,10 +215,10 @@ class TextInput(ValidatedEntry, ModifiedMixIn):
 
 
 class BooleanInput(gtk.CheckButton, ModifiedMixIn):
-    '''Class that implements the config option Boolean.
+    """Class that implements the config option Boolean.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, alert, opt):
         gtk.CheckButton.__init__(self)
         if opt.get_value_str() == "True":
@@ -229,10 +229,10 @@ class BooleanInput(gtk.CheckButton, ModifiedMixIn):
 
 
 class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
-    '''Class that implements the config option ComboBox.
+    """Class that implements the config option ComboBox.
 
     :author: Andres Riancho
-    '''
+    """
     def __init__(self, alert, opt):
         self._opt = opt
 
@@ -269,11 +269,11 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         self.set_active(index)
 
     def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
+        """Redefinition of ValidatedEntry's method.
 
         :param text: the text to validate
         :return True if the text is ok.
-        '''
+        """
         if text in self._opt.get_combo_options():
             return True
         else:
@@ -281,10 +281,10 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
 
 
 class EmailEntry(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option email.
+    """Class that implements the config option email.
 
     :author: Andres Riancho <andres.riancho =at= gmail.com>
-    '''
+    """
     def __init__(self, alert):
         ValidatedEntry.__init__(self, '')
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
@@ -292,11 +292,11 @@ class EmailEntry(ValidatedEntry, ModifiedMixIn):
         self.EMAIL_RE = BaseParser.EMAIL_RE
 
     def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
+        """Redefinition of ValidatedEntry's method.
 
         :param text: the text to validate
         :return: True if the text is ok.
-        '''
+        """
         if len(text) < 5:
             return True
         else:
@@ -307,14 +307,14 @@ class EmailEntry(ValidatedEntry, ModifiedMixIn):
 
 
 class SemiStockButton(gtk.Button):
-    '''Takes the image from the stock, but the label which is passed.
+    """Takes the image from the stock, but the label which is passed.
 
     :param text: the text that will be used for the label
     :param image: the stock widget from where extract the image
     :param tooltip: the tooltip for the button
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, text, image, tooltip=None):
         super(SemiStockButton, self).__init__(stock=image)
         # Icons in menus and buttons are not shown by default in GNOME 2.28
@@ -328,12 +328,12 @@ class SemiStockButton(gtk.Button):
             self.set_tooltip_text(tooltip)
 
     def change_internals(self, newtext, newimage, tooltip=None):
-        '''Changes the image and label of the widget.
+        """Changes the image and label of the widget.
 
         :param newtext: the text that will be used for the label
         :param newimage: the stock widget from where extract the image
         :param tooltip: the tooltip for the button
-        '''
+        """
         self.label.set_text(newtext)
         self.image.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
         if tooltip is not None:
@@ -341,36 +341,36 @@ class SemiStockButton(gtk.Button):
 
 
 class ToolbuttonWrapper(object):
-    '''Wraps a tool button from a toolbar, and offer helpers.
+    """Wraps a tool button from a toolbar, and offer helpers.
 
     :param toolbar: the toolbar to extract the toolbutton
     :param position: the position where it is
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, toolbar, position):
         self.toolbut = toolbar.get_nth_item(position)
         if self.toolbut is None:
             raise ValueError("The toolbar does not have a button in position %d" % position)
 
     def change_internals(self, newlabel, newimage, newtooltip):
-        '''Changes the image and label of the widget.
+        """Changes the image and label of the widget.
 
         :param newlabel: the text that will be used for the label
         :param newimage: the stock widget from where extract the image
         :param newtooltip: the text for the tooltip
-        '''
+        """
         self.toolbut.set_tooltip_text(newtooltip)
         self.toolbut.set_label(newlabel)
         self.toolbut.set_property("stock-id", newimage)
 
     def set_sensitive(self, sensit):
-        '''Sets the sensitivity of the toolbar button.'''
+        """Sets the sensitivity of the toolbar button."""
         self.toolbut.set_sensitive(sensit)
 
 
 class AdvisedEntry(gtk.Entry):
-    '''Entry that cleans its helping text the first time it's used.
+    """Entry that cleans its helping text the first time it's used.
 
     :param alertb: the function to call to activate when it was used
     :param message: the message to show in the entry at first and in
@@ -379,7 +379,7 @@ class AdvisedEntry(gtk.Entry):
     The alertb calling is ready to work with the PropagationBuffer helper.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, message, alertb=None, historyfile=None, alertmodif=None):
         super(AdvisedEntry, self).__init__()
         self.connect("focus-in-event", self._focus)
@@ -420,7 +420,7 @@ class AdvisedEntry(gtk.Entry):
         self.alertmodif(changed=self.get_text() != self._current_message)
 
     def _focus(self, *vals):
-        '''Cleans it own text.'''
+        """Cleans it own text."""
         if self.firstfocus:
             if self.alertb is not None:
                 self.alertb(self, True)
@@ -428,24 +428,24 @@ class AdvisedEntry(gtk.Entry):
             self.set_text("")
 
     def _match_completion(self, completion, entrystr, iterl):
-        '''Called when there's a match in the completion.'''
+        """Called when there's a match in the completion."""
         texto = self.liststore[iterl][0]
         return entrystr in texto
 
     def set_text_wrapper(self, message):
-        '''Sets the widget text.'''
+        """Sets the widget text."""
         self.firstfocus = False
         self._current_message = message
         self.set_text(message)
 
     def reset(self):
-        '''Resets the message in the widget.'''
+        """Resets the message in the widget."""
         self.firstfocus = True
         self._current_message = self.origMessage
         self.set_text(self.origMessage)
 
     def insert_url(self, *w):
-        '''Saves the URL in the history infrastructure.'''
+        """Saves the URL in the history infrastructure."""
         if self.hist is not None:
             txt = self.get_text()
             if txt not in self.histtexts:
@@ -455,12 +455,12 @@ class AdvisedEntry(gtk.Entry):
 
 
 class EntryDialog(gtk.Dialog):
-    '''A dialog with a textentry.
+    """A dialog with a textentry.
 
     :param title: The title of the window
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, title, stockok, options):
         super(EntryDialog, self).__init__(title, None, gtk.DIALOG_MODAL,
              (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, stockok, gtk.RESPONSE_OK))
@@ -492,10 +492,10 @@ class EntryDialog(gtk.Dialog):
         self.show_all()
 
     def _setInputText(self, widget, close=False):
-        '''Checks the entry to see if it has text.
+        """Checks the entry to see if it has text.
 
         :param close: If True, the Dialog will be closed.
-        '''
+        """
         if not self._allWithText():
             return
         self.inputtexts = [x.get_text() for x in self.entries]
@@ -503,27 +503,27 @@ class EntryDialog(gtk.Dialog):
             self.response(gtk.RESPONSE_OK)
 
     def _allWithText(self):
-        '''Checks if the entries has text.
+        """Checks if the entries has text.
 
         :return: True if all have text.
-        '''
+        """
         for e in self.entries:
             if not e.get_text():
                 return False
         return True
 
     def _checkEntry(self, *w):
-        '''Checks the entry to see if it has text.'''
+        """Checks the entry to see if it has text."""
         self.butt_saveas.set_sensitive(self._allWithText())
 
 
 class TextDialog(gtk.Dialog):
-    '''A dialog with a textview, fillable from outside
+    """A dialog with a textview, fillable from outside
 
     :param title: The title of the window
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, title, tabnames=(), icon=None):
         super(TextDialog, self).__init__(title, None, gtk.DIALOG_MODAL,
              (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
@@ -561,15 +561,15 @@ class TextDialog(gtk.Dialog):
         raise Exception('Please use dialog_run().')
 
     def _handle_click(self, widg):
-        '''
+        """
         Handle the Ok button click.
-        '''
+        """
         self.wait = False
 
     def _newTextView(self):
-        '''
+        """
         Return a scrollable window containing a new textview.
-        '''
+        """
         # the textview inside scrollbars
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -582,10 +582,10 @@ class TextDialog(gtk.Dialog):
         return (sw, textview)
 
     def add_message(self, text, page_num=0):
-        '''Adds a message to the textview.
+        """Adds a message to the textview.
 
         :param text: the message to add.
-        '''
+        """
         textview = self.textviews[page_num]
         textbuffer = textview.get_buffer()
         iterl = textbuffer.get_end_iter()
@@ -594,26 +594,26 @@ class TextDialog(gtk.Dialog):
         textview.scroll_to_mark(textbuffer.get_insert(), 0)
 
     def done(self):
-        '''Actives the OK button, waits for user, and close self.'''
+        """Actives the OK button, waits for user, and close self."""
         self.butt_ok.set_sensitive(True)
 
     def dialog_response_cb(self, widget, response_id):
-        '''
+        """
         http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
-        '''
+        """
         self.destroy()
 
     def dialog_run(self):
-        '''
+        """
         http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
-        '''
+        """
         if not self.modal:
             self.set_modal(True)
         self.connect('response', self.dialog_response_cb)
         self.show()
 
 class RememberingWindow(gtk.Window):
-    '''Just a window that remembers position and size.
+    """Just a window that remembers position and size.
 
     Also has a vertical box for the content.
 
@@ -628,7 +628,7 @@ class RememberingWindow(gtk.Window):
                         the system will guess the size or not.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, idstring, title, helpid='', onDestroy=None, guessResize=True):
         super(RememberingWindow, self).__init__(gtk.WINDOW_TOPLEVEL)
         self.set_icon_from_file(W3AF_ICON)
@@ -664,11 +664,11 @@ class RememberingWindow(gtk.Window):
         helpers.open_help(self.helpid)
 
     def quit(self, widget, event):
-        '''Windows quit, saves the position and size.
+        """Windows quit, saves the position and size.
 
         :param widget: who sent the signal.
         :param event: the event that happened
-        '''
+        """
         if self.onDestroy is not None:
             if not self.onDestroy():
                 return True
@@ -683,12 +683,12 @@ class RememberingWindow(gtk.Window):
 
 
 class PagesEntry(ValidatedEntry):
-    '''The entry for the PagesControl.
+    """The entry for the PagesControl.
 
     :param maxval: the maxvalue it can hold
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
 
     def __init__(self, maxval):
         self.maxval = maxval
@@ -696,16 +696,16 @@ class PagesEntry(ValidatedEntry):
         ValidatedEntry.__init__(self, "1")
 
     def set_max(self, maxval):
-        '''Sets the max value for the entry.'''
+        """Sets the max value for the entry."""
         self.maxval = maxval
         self.reset()
 
     def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
+        """Redefinition of ValidatedEntry's method.
 
         :param text: the text to validate
         :return Always True, there's no validation to perform
-        '''
+        """
         try:
             num = int(text)
         except ValueError:
@@ -715,7 +715,7 @@ class PagesEntry(ValidatedEntry):
 
 
 class PagesControl(gtk.HBox):
-    '''The control to pass the pages.
+    """The control to pass the pages.
 
     :param w3af: the w3af core
     :param callback: the function to call back when a page is changed.
@@ -725,7 +725,7 @@ class PagesControl(gtk.HBox):
     max is passed in the activate() method.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, w3af, callback, maxpages=None):
         self.w3af = w3af
         gtk.HBox.__init__(self)
@@ -801,7 +801,7 @@ class PagesControl(gtk.HBox):
 
 
 class EasyTable(gtk.Table):
-    '''Simplification of gtk.Table.
+    """Simplification of gtk.Table.
 
     :param arg: all it receives goes to gtk.Table
     :param kw: all it receives goes to gtk.Table
@@ -809,19 +809,19 @@ class EasyTable(gtk.Table):
     This class is to have a simple way to add rows to the table.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, *arg, **kw):
         super(EasyTable, self).__init__(*arg, **kw)
         self.auto_rowcounter = 0
         self.set_row_spacings(1)
 
     def auto_add_row(self, *widgets):
-        '''Simple way to add rows to a table.
+        """Simple way to add rows to a table.
 
         :param widgets: all the widgets to the row
 
         This method creates a new row, adds the widgets and show() them.
-        '''
+        """
         r = self.auto_rowcounter
         for i, widg in enumerate(widgets):
             if widg is not None:
@@ -846,7 +846,7 @@ wrapperWidgets = {
 # three classes to provide remembering panes
 
 class _RememberingPane(object):
-    '''Remembering pane class.
+    """Remembering pane class.
 
     Don't use it directly, you should use the ones provided below this.
 
@@ -855,7 +855,7 @@ class _RememberingPane(object):
     :param dimension: 0 for hztal, 1 for vertical
     :param defaultInitPos: the default position for the first time
                            (overrides "half of the screen").
-    '''
+    """
     def __init__(self, w3af, widgname, dimension, defaultInitPos=None):
         self.connect("notify", self.move_handle)
         self.winconfig = w3af.mainwin.generalconfig
@@ -880,16 +880,16 @@ class _RememberingPane(object):
                 self.signal = self.connect("expose-event", self.exposed)
 
     def move_handle(self, widg, what):
-        '''Adjust the record every time the handle is moved.'''
+        """Adjust the record every time the handle is moved."""
         if what.name == "position-set":
             pos = self.get_position()
             self.winconfig[self.widgname] = pos
 
     def exposed(self, area, event):
-        '''Adjust the handle to the remembered position.
+        """Adjust the handle to the remembered position.
 
         This is done only once.
-        '''
+        """
         altoancho = self.window.get_size()[self.dimension]
         newpos = altoancho // 2
         self.set_position(newpos)
@@ -899,39 +899,39 @@ class _RememberingPane(object):
 
 
 class RememberingHPaned(gtk.HPaned, _RememberingPane):
-    '''Remembering horizontal pane.
+    """Remembering horizontal pane.
 
     :param w3af: the core
     :param widgname: the name of the widget (the remembering key)
     :param defPos: the default position for the first time (overrides
                    "half of the screen").
-    '''
+    """
     def __init__(self, w3af, widgname, defPos=None):
         gtk.HPaned.__init__(self)
         _RememberingPane.__init__(self, w3af, widgname, 0, defPos)
 
 
 class RememberingVPaned(gtk.VPaned, _RememberingPane):
-    '''Remembering vertical pane.
+    """Remembering vertical pane.
 
     :param w3af: the core
     :param widgname: the name of the widget (the remembering key)
     :param defPos: the default position for the first time (overrides
                    "half of the screen").
-    '''
+    """
     def __init__(self, w3af, widgname, defPos=None):
         gtk.VPaned.__init__(self)
         _RememberingPane.__init__(self, w3af, widgname, 1, defPos)
 
 
 class StatusBar(gtk.Statusbar):
-    '''All status bar functionality.
+    """All status bar functionality.
 
     :param initmsg: An optional initial message.
     :param others : Others widgets to add at the right of the texts.
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
+    """
     def __init__(self, initmsg=None, others=[]):
         super(StatusBar, self).__init__()
         self._context = self.get_context_id("unique_sb")
@@ -948,7 +948,7 @@ class StatusBar(gtk.Statusbar):
         self.show_all()
 
     def __call__(self, msg, timeout=5):
-        '''Inserts a message in the statusbar.'''
+        """Inserts a message in the statusbar."""
         self.push(self._context, msg)
         
         # Wait 7 seconds and then call clear
@@ -959,7 +959,7 @@ class StatusBar(gtk.Statusbar):
         gobject.timeout_add(7000, self.clear)
 
     def clear(self):
-        '''Clears the statusbar content.'''
+        """Clears the statusbar content."""
         self._active_counter -= 1
         
         if not self._active_counter:

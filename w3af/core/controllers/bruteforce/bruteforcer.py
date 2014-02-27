@@ -1,4 +1,4 @@
-'''
+"""
 bruteforcer.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os.path
 
 from itertools import chain
@@ -31,12 +31,12 @@ from w3af.core.controllers.misc.itertools_toolset import unique_everseen
 
 
 class password_bruteforcer(object):
-    '''
+    """
     This class is a helper for bruteforcing any login that provides passwords
     with an iterator API.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, url):
         self.passwd_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                         'passwords.txt')
@@ -47,10 +47,10 @@ class password_bruteforcer(object):
         self._url = url
 
     def generator(self):
-        '''
+        """
         TODO: I need a way to calculate the __len__ of this generator in order
               to avoid the "iterable = list(iterable)" in pool.py
-        '''
+        """
         pwd_chain = chain(self._read_pwd_file(),
                           self._special_passwords(),)
 
@@ -75,12 +75,12 @@ class password_bruteforcer(object):
 
 
 class user_password_bruteforcer(object):
-    '''
+    """
     This class is a helper for bruteforcing any login that provides user and
     password combinations with an iterator API.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self, url):
         # Config params for user generation
@@ -111,12 +111,12 @@ class user_password_bruteforcer(object):
         return pbf.generator()
 
     def generator(self):
-        '''
+        """
         :return: A tuple with user and password strings.
 
         TODO: I need a way to calculate the __len__ of this generator in order
               to avoid the "iterable = list(iterable)" in pool.py
-        '''
+        """
         for user, pwd in self._combo():
             yield user, pwd
 
@@ -139,9 +139,9 @@ class user_password_bruteforcer(object):
             yield user
 
     def _special_users(self):
-        '''
+        """
         Generate special passwords from URL, password profiling, etc.
-        '''
+        """
         yield self._url.get_domain()
 
         if self.use_emails:
@@ -163,9 +163,9 @@ class user_password_bruteforcer(object):
                 yield user
 
     def _combo(self):
-        '''
+        """
         Get the user, password combo from a file.
-        '''
+        """
         if not self.combo_file:
             return
 

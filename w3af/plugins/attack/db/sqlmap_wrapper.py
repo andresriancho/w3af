@@ -1,4 +1,4 @@
-'''
+"""
 sqlmap_wrapper.py
 
 Copyright 2012 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import os
 import re
 import shlex
@@ -50,13 +50,13 @@ class SQLMapWrapper(object):
         self.verified_vulnerable = False
     
     def _start_proxy(self, uri_opener):
-        '''
+        """
         Saves the proxy configuration to self.local_proxy_url in order for the
         wrapper to use it in the calls to sqlmap.py and have the traffic go
         through our proxy (which has the user configuration, logging, etc).
         
         :return: None, an exception is raised if something fails.
-        '''
+        """
         host = '127.0.0.1'
         
         self.proxy = Proxy(host, 0, uri_opener)
@@ -69,9 +69,9 @@ class SQLMapWrapper(object):
         self.proxy.stop()
     
     def is_vulnerable(self):
-        '''
+        """
         :return: True if the URL is vulnerable to SQL injection.
-        '''
+        """
         if self.verified_vulnerable:
             return self.verified_vulnerable
         
@@ -95,12 +95,12 @@ class SQLMapWrapper(object):
         raise NotImplementedError(fmt % (full_command, stdout))
     
     def _run(self, custom_params):
-        '''
+        """
         Internal function used by run_sqlmap and run_sqlmap_with_pipes to
         call subprocess.
         
         :return: A Popen object.
-        '''
+        """
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = ['python', 'sqlmap.py'] + final_params + target_params
@@ -119,7 +119,7 @@ class SQLMapWrapper(object):
         return process
     
     def run_sqlmap(self, custom_params):
-        '''
+        """
         Run sqlmap and wait for it to finish before getting its output.
         
         :param custom_params: A list with the extra parameters that we want to
@@ -128,13 +128,13 @@ class SQLMapWrapper(object):
         :return: Runs sqlmap and returns a tuple containing:
                     (last command run,
                      stdout, sterr)
-        '''
+        """
         process = self._run(custom_params)
         self.last_stdout, self.last_stderr = process.communicate()
         return self.last_command, self.last_stdout, self.last_stderr
         
     def run_sqlmap_with_pipes(self, custom_params):
-        '''
+        """
         Run sqlmap and immediately return handlers to stdout, stderr and stdin
         so the code using this can interact directly with the process.
         
@@ -146,7 +146,7 @@ class SQLMapWrapper(object):
                      Popen object so that everyone can read .stdout)
                  
                  This is very useful for using with w3af's output manager.
-        '''
+        """
         process = self._run(custom_params)
         return self.last_command, process
     
@@ -176,14 +176,14 @@ class SQLMapWrapper(object):
         return params
     
     def _wrap_param(self, custom_params):
-        '''
+        """
         Utility function to allow me to easily wrap params.
         
         :return: Runs sqlmap with --dbs and returns a tuple with:
                     (last command run,
                      Popen object so that everyone can read .stdout,
                      .stderr, .stdin attributes)
-        '''
+        """
         process = self._run(custom_params)
         return self.last_command, process
         
@@ -200,10 +200,10 @@ class SQLMapWrapper(object):
         return self._wrap_param(['--dump',])
 
     def read(self, filename):
-        '''
+        """
         :param filename: The file to be read
         :return: The contents of the file that was passed as parameter
-        '''
+        """
         cmd, process = self._wrap_param(['--file-read=%s' % filename,])
         local_file_re = re.compile("the local file (.*?) and")
         # pylint: disable=E1101

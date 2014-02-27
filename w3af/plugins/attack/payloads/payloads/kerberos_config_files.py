@@ -4,9 +4,9 @@ from w3af.core.ui.console.tables import table
 
 
 class kerberos_config_files(Payload):
-    '''
+    """
     This payload shows Kerberos configuration files
-    '''
+    """
     def api_read(self):
         result = {}
         files = []

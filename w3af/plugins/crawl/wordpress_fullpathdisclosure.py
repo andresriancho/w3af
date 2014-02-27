@@ -1,4 +1,4 @@
-'''
+"""
 wordpress_username_enumeration.py
 
 Copyright 2011 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -31,10 +31,10 @@ from w3af.core.data.kb.info import Info
 
 
 class wordpress_fullpathdisclosure(CrawlPlugin):
-    '''
+    """
     Try to find the path where the WordPress is installed
     :author: Andres Tarantini ( atarantini@gmail.com )
-    '''
+    """
 
     CHECK_PATHS = ['wp-content/plugins/akismet/akismet.php',
                    'wp-content/plugins/hello.php']
@@ -46,10 +46,10 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         self._exec = True
 
     def crawl(self, fuzzable_request):
-        '''
+        """
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
-        '''
+        """
         if not self._exec:
             raise w3afRunOnce()
         else:
@@ -68,14 +68,14 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
                                         self.CHECK_PATHS + extracted_paths)
 
     def _extract_paths(self, domain_path):
-        '''
+        """
         :param domain_path: The URL object pointing to the current wordpress
                             installation
         :return: A list with the paths that might trigger full path disclosures
 
         TODO: Will fail if WordPress is running on a Windows server due to
               paths manipulation.
-        '''
+        """
         theme_paths = []
         wp_root_response = self._uri_opener.GET(domain_path, cache=True)
 
@@ -94,11 +94,11 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         return theme_paths
 
     def _force_disclosures(self, domain_path, potentially_vulnerable_paths):
-        '''
+        """
         :param domain_path: The path to wordpress' root directory
         :param potentially_vulnerable_paths: A list with the paths I'll URL-join
                                              with @domain_path, GET and parse.
-        '''
+        """
         for pvuln_path in potentially_vulnerable_paths:
 
             pvuln_url = domain_path.url_join(pvuln_path)
@@ -120,10 +120,10 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
                 break
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin try to find the path in the server where WordPress is
         installed.
-        '''
+        """

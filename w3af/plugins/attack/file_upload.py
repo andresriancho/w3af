@@ -1,4 +1,4 @@
-'''
+"""
 file_upload.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os.path
 import tempfile
 
@@ -34,22 +34,22 @@ from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
 class file_upload(AttackPlugin):
-    '''
+    """
     Exploit applications that allow unrestricted file uploads inside the webroot.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AttackPlugin.__init__(self)
 
     def get_attack_type(self):
-        '''
+        """
         :return: The type of exploit, SHELL, PROXY, etc.
-        '''
+        """
         return 'shell'
 
     def get_kb_location(self):
-        '''
+        """
         This method should return the vulnerability name (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds an
         vuln, and saves it as:
@@ -58,14 +58,14 @@ class file_upload(AttackPlugin):
 
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
-        '''
+        """
         return ['file_upload',]
 
     def _generate_shell(self, vuln_obj):
-        '''
+        """
         :param vuln_obj: The vuln to exploit.
         :return: True is a shell object based on the param vuln was created ok.
-        '''
+        """
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
 
@@ -77,12 +77,12 @@ class file_upload(AttackPlugin):
             return None
 
     def _verify_vuln(self, vuln_obj):
-        '''
+        """
         This command verifies a vuln. This is really hard work! :P
 
         :param vuln_obj: The vuln to exploit.
         :return : True if vuln can be exploited.
-        '''
+        """
         # The vuln was saved to the kb as a vuln object
         url = vuln_obj.get_url()
         method = vuln_obj.get_method()
@@ -123,11 +123,11 @@ class file_upload(AttackPlugin):
         return False
 
     def _create_file(self, extension):
-        '''
+        """
         Create a file with a webshell as content.
 
         :return: Name of the file that was created.
-        '''
+        """
         # Get content
         file_content, real_extension = shell_handler.get_webshells(extension,
                                                                    force_extension=True)[0]
@@ -149,28 +149,28 @@ class file_upload(AttackPlugin):
         return path, file_name
 
     def get_root_probability(self):
-        '''
+        """
         :return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
                  function to order the plugins and first try to exploit the
                  more critical ones. This method should return 0 for an exploit
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
-        '''
+        """
         return 0.8
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin exploits insecure file uploads and returns a shell. It's
         rather simple, using an html form the plugin uploads the corresponding
         webshell (php, asp, etc.) verifies that the shell is working, and if
         everything is working as expected the user can start typing commands.
 
         No configurable parameters exist.
-        '''
+        """
 
 
 class FileUploadShell(ExecShell):
@@ -185,7 +185,7 @@ class FileUploadShell(ExecShell):
 
     @exec_debug
     def execute(self, command):
-        '''
+        """
         This method is called when a user writes a command in the shell and
         hits enter.
 
@@ -194,7 +194,7 @@ class FileUploadShell(ExecShell):
 
         :param command: The command to handle ( ie. "read", "exec", etc ).
         :return: The result of the command.
-        '''
+        """
         to_send = self.get_exploit_URL()
         to_send.querystring = u'cmd=' + command
         response = self._uri_opener.GET(to_send)

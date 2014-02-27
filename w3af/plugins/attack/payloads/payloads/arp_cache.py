@@ -3,9 +3,9 @@ from w3af.core.ui.console.tables import table
 
 
 class arp_cache(Payload):
-    '''
+    """
     This payload shows the ARP CACHE
-    '''
+    """
     def api_read(self):
         result = {}
 

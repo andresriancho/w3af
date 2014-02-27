@@ -1,4 +1,4 @@
-'''
+"""
 message_consumer.py
 
 Copyright 2013 Andres Riancho
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-'''
+"""
 import gobject
 import Queue
 
@@ -26,10 +26,10 @@ from w3af.core.ui.gui.output.gtk_output import Message
 
 
 class MessageConsumer(object):
-    '''Defines a base message consumer
+    """Defines a base message consumer
 
     :author: Andres Riancho <andres.riancho@gmail.com>
-    '''
+    """
     def __init__(self):
         super(MessageConsumer, self).__init__()
 
@@ -42,13 +42,13 @@ class MessageConsumer(object):
         self.messages.put(message)
 
     def _process_queue(self):
-        '''Sends a message to the handle_message method.
+        """Sends a message to the handle_message method.
 
         The message is read from the iterated queue.
 
         @returns: True to gobject to keep calling it, and False when all
                   it's done.
-        '''
+        """
         while True:
             yield True
             
@@ -69,9 +69,9 @@ class MessageConsumer(object):
                     yield True
 
     def handle_message(self, msg):
-        '''
+        """
         :param msg: A gtk_output.Message object.
-        '''
+        """
         if not isinstance(msg, Message):
             raise TypeError('Expected Message and got %s instead.' % type(msg))
         

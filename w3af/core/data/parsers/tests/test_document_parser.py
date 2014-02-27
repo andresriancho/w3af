@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
+"""
 test_sgmlparsers.py
 
 Copyright 2011 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 import os
 
@@ -76,9 +76,9 @@ class TestDocumentParserFactory(unittest.TestCase):
         self.assertRaises(w3afException, document_parser_factory, response)
         
     def test_issue_106_invalid_url(self):
-        '''
+        """
         Issue to verify https://github.com/andresriancho/w3af/issues/106
-        '''
+        """
         sharepoint_pl = file(self.HTML_FILE).read()
         parser = document_parser_factory(_build_http_response(sharepoint_pl,
                                                               u'text/html'))

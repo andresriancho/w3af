@@ -1,4 +1,4 @@
-'''
+"""
 objects.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -26,11 +26,11 @@ from w3af.core.data.kb.info import Info
 
 
 class objects(GrepPlugin):
-    '''
+    """
     Grep every page for objects and applets.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -40,13 +40,13 @@ class objects(GrepPlugin):
         self._tag_names = ('object', 'applet')
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point. Parse the object tags.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None
-        '''
+        """
         url = response.get_url()
         dom = response.get_dom()
 
@@ -69,9 +69,9 @@ class objects(GrepPlugin):
                 self.kb_append_uniq(self, tag_name, i, 'URL')
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps every page for applets and other types of objects.
-        '''
+        """

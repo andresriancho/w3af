@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-'''
+"""
 ruby_export.py
 
 Copyright 2009 Patrick Hof
@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
@@ -30,10 +30,10 @@ def ruby_escape_string(str_in):
 
 
 def ruby_export(request_string):
-    '''
+    """
     :param request_string: The string of the request to export
     :return: A net/http based ruby script that will perform the same HTTP request.
-    '''
+    """
     # get the header and the body
     splitted_request = request_string.split('\n\n')
     header = splitted_request[0]

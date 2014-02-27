@@ -1,4 +1,4 @@
-'''
+"""
 strange_headers.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -28,11 +28,11 @@ from w3af.core.data.kb.info import Info
 
 
 class strange_headers(GrepPlugin):
-    '''
+    """
     Grep headers for uncommon headers sent in HTTP responses.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     # Remember that this headers are only the ones SENT BY THE SERVER TO THE
     # CLIENT. Headers must be uppercase in order to compare them
@@ -77,13 +77,13 @@ class strange_headers(GrepPlugin):
         GrepPlugin.__init__(self)
 
     def grep(self, request, response):
-        '''
+        """
         Plugin entry point.
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
-        '''
+        """
         # Check if the header names are common or not
         for header_name in response.get_headers().keys():
             if header_name.upper() not in self.COMMON_HEADERS:
@@ -122,12 +122,12 @@ class strange_headers(GrepPlugin):
         self._content_location_not_300(request, response)
 
     def _content_location_not_300(self, request, response):
-        '''
+        """
         Check if the response has a content-location header and the response code
         is not in the 300 range.
 
         :return: None, all results are saved in the kb.
-        '''
+        """
         if 'content-location' in response.get_lower_case_headers() \
         and response.get_code() > 300\
         and response.get_code() < 310:
@@ -145,9 +145,9 @@ class strange_headers(GrepPlugin):
             kb.kb.append(self, 'anomaly', i)
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore.
-        '''
+        """
         headers = kb.kb.get('strange_headers', 'strange_headers')
         # This is how I saved the data:
         #    i['header_name'] = header_name
@@ -175,10 +175,10 @@ class strange_headers(GrepPlugin):
                 om.out.information('- ' + i)
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin greps all headers for non-common headers. This could be useful
         to identify special modules and features added to the server.
-        '''
+        """

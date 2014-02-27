@@ -1,4 +1,4 @@
-'''
+"""
 ssi.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 import w3af.core.data.constants.severity as severity
@@ -34,10 +34,10 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class ssi(AuditPlugin):
-    '''
+    """
     Find server side inclusion vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -50,11 +50,11 @@ class ssi(AuditPlugin):
         self._extract_results_re = re.compile(re_str) 
 
     def audit(self, freq, orig_response):
-        '''
+        """
         Tests an URL for server side inclusion vulnerabilities.
 
         :param freq: A FuzzableRequest
-        '''
+        """
         # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
         mutants = create_mutants(freq, ssi_strings, orig_resp=orig_response)
@@ -73,11 +73,11 @@ class ssi(AuditPlugin):
                                       self._analyze_result)
 
     def _get_ssi_strings(self):
-        '''
+        """
         This method returns a list of server sides to try to include.
 
         :return: A string, see above.
-        '''
+        """
         yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % (rand_alpha(5),
                                                              rand_alpha(5))
 
@@ -86,17 +86,17 @@ class ssi(AuditPlugin):
         #yield <!--#perl sub="sub {print qq/If you see this, mod_perl is working!/;}" -->
 
     def _extract_result_from_payload(self, payload):
-        '''
+        """
         Extract the expected result from the payload we're sending.
-        '''
+        """
         match = self._extract_results_re.search(payload)
         return match.group(1) + match.group(2)
 
     def _analyze_result(self, mutant, response):
-        '''
+        """
         Analyze the result of the previously sent request.
         :return: None, save the vuln to the kb.
-        '''
+        """
         if self._has_no_bug(mutant):
             e_res = self._extract_result_from_payload(mutant.get_mod_value())
             if e_res in response and not e_res in mutant.get_original_response_body():
@@ -112,7 +112,7 @@ class ssi(AuditPlugin):
                 self.kb_append_uniq(self, 'ssi', v)
 
     def end(self):
-        '''
+        """
         This method is called when the plugin wont be used anymore and is used
         to find persistent SSI vulnerabilities.
 
@@ -131,7 +131,7 @@ class ssi(AuditPlugin):
         there exists the potential for a major headache!
 
         For a working example please see moth VM.
-        '''
+        """
         multi_in_inst = multi_in(self._expected_res_mutant.keys())
 
         def filtered_freq_generator(freq_list):
@@ -171,9 +171,9 @@ class ssi(AuditPlugin):
         self._freq_list.cleanup()
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin finds server side include (SSI) vulnerabilities.
-        '''
+        """

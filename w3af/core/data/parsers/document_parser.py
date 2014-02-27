@@ -1,4 +1,4 @@
-'''
+"""
 DocumentParser.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import re
 
 from w3af.core.data.parsers.html import HTMLParser
@@ -30,11 +30,11 @@ from w3af.core.controllers.exceptions import w3afException
 
 
 class DocumentParser(object):
-    '''
+    """
     This class is a document parser.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-    '''
+    """
     def __init__(self, http_resp):
 
         # Create the proper parser instance, please note that
@@ -62,13 +62,13 @@ class DocumentParser(object):
         self._parser = parser
 
     def _is_pdf(self, http_resp):
-        '''
+        """
         :param http_resp: A http response object that contains a document of
                           type HTML / PDF / WML / etc.
 
         :return: True if the document parameter is a string that contains a PDF
                  document.
-        '''
+        """
         if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
             document = http_resp.body
 
@@ -92,9 +92,9 @@ class DocumentParser(object):
         return False
 
     def _is_swf(self, http_resp):
-        '''
+        """
         :return: True if the http_resp contains a SWF file.
-        '''
+        """
         if http_resp.content_type == 'application/x-shockwave-flash':
 
             body = http_resp.get_body()
@@ -111,13 +111,13 @@ class DocumentParser(object):
     WML_RE = re.compile('<!DOCTYPE wml PUBLIC', re.IGNORECASE)
 
     def _is_wml(self, http_resp):
-        '''
+        """
         :param http_resp: A http response object that contains a document of
                           type HTML / PDF / WML / etc.
 
         :return: True if the document parameter is a string that contains a
                  WML document.
-        '''
+        """
         if http_resp.content_type == 'text/vnd.wap.wml':
 
             document = http_resp.get_body()
@@ -128,13 +128,13 @@ class DocumentParser(object):
         return False
 
     def get_forms(self):
-        '''
+        """
         :return: A list of forms.
-        '''
+        """
         return self._parser.get_forms()
 
     def get_references(self):
-        '''
+        """
         :return: A tuple that contains two lists:
             * URL objects extracted through parsing,
             * URL objects extracted through RE matching
@@ -142,45 +142,45 @@ class DocumentParser(object):
         Returned in two separate lists because the first ones
         are much more accurate and they might deserve a different
         treatment.
-        '''
+        """
         return self._parser.get_references()
 
     def get_references_of_tag(self, tag):
-        '''
+        """
         :param tag: A tag object.
         :return: A list of references related to the tag that is passed as parameter.
-        '''
+        """
         return self._parser.get_references_of_tag(tag)
 
     def get_emails(self, domain=None):
-        '''
+        """
         :param domain: Indicates what email addresses I want to retrieve:   "*@domain".
         :return: A list of email accounts that are inside the document.
-        '''
+        """
         return self._parser.get_emails(domain)
 
     def get_comments(self):
-        '''
+        """
         :return: A list of comments.
-        '''
+        """
         return self._parser.get_comments()
 
     def get_scripts(self):
-        '''
+        """
         :return: A list of scripts (like javascript).
-        '''
+        """
         return self._parser.get_scripts()
 
     def get_meta_redir(self):
-        '''
+        """
         :return: A list of the meta redirection tags.
-        '''
+        """
         return self._parser.get_meta_redir()
 
     def get_meta_tags(self):
-        '''
+        """
         :return: A list of all meta tags.
-        '''
+        """
         return self._parser.get_meta_tags()
 
 

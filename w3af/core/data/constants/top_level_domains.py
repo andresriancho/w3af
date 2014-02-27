@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 top_level_domains.py
 
 Copyright 2006 Andres Riancho
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 # TODO: this list should be updated from time to time, automatically.
 # last upd: 14 Jul 2011
 # taken from http:#en.wikipedia.org/wiki/List_of_Internet_top-level_domains

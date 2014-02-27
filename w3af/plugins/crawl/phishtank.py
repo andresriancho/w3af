@@ -1,4 +1,4 @@
-'''
+"""
 phishtank.py
 
 Copyright 2006 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import os.path
 import socket
 
@@ -39,13 +39,13 @@ from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 
 class phishtank(CrawlPlugin):
-    '''
+    """
     Search the phishtank.com database to determine if your server is (or was)
     being used in phishing scams.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Special thanks to http://www.phishtank.com/ !
-    '''
+    """
     PHISHTANK_DB = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'phishtank',
                                 'index.xml')
 
@@ -54,9 +54,9 @@ class phishtank(CrawlPlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
-        '''
+        """
         Plugin entry point, perform all the work.
-        '''
+        """
         to_check = self._get_to_check(fuzzable_request.get_url())
 
         # I found some URLs, create fuzzable requests
@@ -80,10 +80,10 @@ class phishtank(CrawlPlugin):
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def _get_to_check(self, target_url):
-        '''
+        """
         :param target_url: The url object we can use to extract some information.
         :return: From the domain, get a list of FQDN, rootDomain and IP address.
-        '''
+        """
         def addrinfo(url):
             return [x[4][0] for x in socket.getaddrinfo(url.get_domain(), 0)]
 
@@ -109,12 +109,12 @@ class phishtank(CrawlPlugin):
         return res
 
     def _is_in_phishtank(self, to_check):
-        '''
+        """
         Reads the phishtank db and tries to match the entries on that db with
         the to_check
 
         :return: A list with the sites to match against the phishtank db
-        '''
+        """
         try:
             # According to different sources, xml.sax knows how to handle
             # encoding, so it will simply decode using the header:
@@ -143,26 +143,26 @@ class phishtank(CrawlPlugin):
         return pt_handler.matches
 
     def get_long_desc(self):
-        '''
+        """
         :return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''
+        """
+        return """
         This plugin searches the domain being tested in the phishtank database.
         If your site is in this database the chances are that you were hacked
         and your server is now being used in phishing attacks.
-        '''
+        """
 
 class PhishTankMatch(object):
-    '''
+    """
     Represents a phishtank match between the site I'm scanning and
     something in the index.xml file.
-    '''
+    """
     def __init__(self, url, more_info_URL):
         self.url = url
         self.more_info_URL = more_info_URL
 
 class PhishTankHandler(ContentHandler):
-    '''
+    """
     <entry>
         <url><![CDATA[http://cbisis...paypal.support/]]></url>
         <phish_id>118884</phish_id>
@@ -180,7 +180,7 @@ class PhishTankHandler(ContentHandler):
             <online>yes</online>
         </status>
     </entry>
-    '''
+    """
     def __init__(self, to_check):
         self._to_check = to_check
         

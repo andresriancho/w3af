@@ -1,4 +1,4 @@
-'''
+"""
 __init__.py
 
 Copyright 2007 Andres Riancho
@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 
 
 def get_long_description():
-    '''
+    """
     :return: The description for the plugin type.
-    '''
-    return '''Grep plugins analyze every request and response in order to
+    """
+    return """Grep plugins analyze every request and response in order to
      find errors, cookies, emails, comments and much more information about
     the target web application.
-    '''
+    """

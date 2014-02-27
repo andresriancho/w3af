@@ -1,4 +1,4 @@
-'''
+"""
 test_baseparser.py
 
 Copyright 2012 Andres Riancho
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-'''
+"""
 import unittest
 
 from w3af.core.data.parsers.url import URL
@@ -127,11 +127,11 @@ class TestBaseParser(unittest.TestCase):
         self.assertEqual(expected_urls, self.bp_inst._re_urls)
 
     def test_regex_url_parse_relative_url_file_only(self):
-        '''
+        """
         Please note that the expected output in this case is an empty set,
         adding support to parse "files" is possible, but too greedy and
         leads to lots of "parser false positives".
-        '''
+        """
         input_str = u'header subscribe.jsp footer'
         expected_urls = set()
 
