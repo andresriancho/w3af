@@ -18,14 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestLFI(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/local_file_inclusion/index.html'
+    target_url = get_moth_http('/audit/local_file_read/')
 
     _run_configs = {
         'cfg': {
@@ -42,7 +41,6 @@ class TestLFI(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_lfi(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -50,10 +48,8 @@ class TestLFI(PluginTest):
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
-            ('lfi_1.php', 'file'),
-            # FIXME: ('lfi_2.php', 'file'), null-bytes don't work in latest PHP anymore
-            # need to find a new technique that (hopefully) also works in old PHP versions
-            ('trivial_lfi.php', 'file'),
+            ('local_file_read.py', 'file'),
+            ('local_file_read_full_path.py', 'file'),
         ]
 
         # Assert the general results
