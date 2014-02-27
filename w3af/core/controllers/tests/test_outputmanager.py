@@ -130,6 +130,9 @@ class TestOutputManager(unittest.TestCase):
             def information(self, msg, new_line=True):
                 raise Exception('Test')
 
+            def debug(self, *args, **kwargs):
+                pass
+
             def error(self, msg, new_line=True):
                 pass
 
