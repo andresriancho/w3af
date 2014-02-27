@@ -53,11 +53,13 @@ class return_args(object):
     def __call__(self, *args, **kwds):
         return args, self.func(*args, **kwds)
 
+
 class DaemonProcess(Process):
     
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
+
 
 class Pool(ThreadPool):
 
@@ -80,4 +82,10 @@ class Pool(ThreadPool):
 
     def in_qsize(self):
         return self._taskqueue.qsize()
-    
+
+    def is_running(self):
+        return self._state == RUN
+
+    def terminate_join(self):
+        self.terminate()
+        self.join()

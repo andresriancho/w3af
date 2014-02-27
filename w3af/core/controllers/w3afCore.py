@@ -73,7 +73,7 @@ class w3afCore(object):
         # on output manager instantiation but there are issues with starting
         # threads at module import time.
         om.out.debug('Created new w3afCore instance: %s' % id(self))
-        
+
         # Create some directories, do this every time before starting a new
         # scan and before doing any other core init because these are widely
         # used
@@ -96,8 +96,6 @@ class w3afCore(object):
         self.target = w3af_core_target()
         self.strategy = w3af_core_strategy(self)
         
-        self._create_worker_pool()
-
         # FIXME: In the future, when the output_manager is not an awful singleton
         # anymore, this line should be removed and the output_manager object
         # should take a w3afCore object as a parameter in its __init__
@@ -226,9 +224,21 @@ class w3afCore(object):
         
             self.scan_end_hook()
 
-    def _create_worker_pool(self):
-        self.worker_pool = Pool(self.WORKER_THREADS,
-                                worker_names='WorkerThread')
+    @property
+    def worker_pool(self):
+        """
+        :return: Simple property that will always return a Pool in running state
+        """
+        if not hasattr(self, '_worker_pool'):
+            # Should get here only on the first call to "worker_pool".
+            self._worker_pool = Pool(self.WORKER_THREADS,
+                                     worker_names='WorkerThread')
+
+        if not self._worker_pool.is_running():
+            self._worker_pool = Pool(self.WORKER_THREADS,
+                                     worker_names='WorkerThread')
+
+        return self._worker_pool
         
     def cleanup(self):
         """
@@ -376,20 +386,15 @@ class w3afCore(object):
 
         finally:
             # The scan has ended, terminate all workers
-            #
-            # The pool might be needed during the exploiting phase create a new
-            # pool in exploit_phase_prerequisites()
-            self.worker_pool.terminate()
-            self.worker_pool.join()
-            del self.worker_pool
-            
+            self.worker_pool.terminate_join()
+
+            self.exploit_phase_prerequisites()
+
             self.status.stop()
 
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
             
-            self.exploit_phase_prerequisites()
-
             # No targets to be scanned.
             self.target.clear()
 
@@ -399,7 +404,7 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         """
-        self._create_worker_pool()
+        pass
 
     def _home_directory(self):
         """
