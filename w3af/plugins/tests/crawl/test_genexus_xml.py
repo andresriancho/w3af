@@ -25,7 +25,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 @attr('fails')
 class TestGenexusXML(PluginTest):
 
-    target_url = 'http://moth/'
+    target_url = 'http://httpretty-mock/'
 
     _run_configs = {
         'cfg': {
@@ -79,18 +79,22 @@ class TestGenexusXML(PluginTest):
         dev_infos = self.kb.get('genexus_xml', 'DeveloperMenu.xml')
         self.assertEqual(len(dev_infos), 1)
         dev_info = dev_infos[0]
-        self.assertEqual(dev_info.get_url().url_string, 'http://moth/DeveloperMenu.xml')
+        self.assertEqual(dev_info.get_url().url_string,
+                         'http://httpretty-mock/DeveloperMenu.xml')
         
         exec_infos = self.kb.get('genexus_xml', 'execute.xml')
         self.assertEqual(len(exec_infos), 1)
         exec_info = exec_infos[0]
-        self.assertEqual(exec_info.get_url().url_string, 'http://moth/execute.xml')
+        self.assertEqual(exec_info.get_url().url_string,
+                         'http://httpretty-mock/execute.xml')
 
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = {'http://moth/hidden.aspx', 'http://moth/foobar.aspx',
-                         'http://moth/execute.xml',
-                         'http://moth/DeveloperMenu.xml', 'http://moth/'}
+        EXPECTED_URLS = {'http://httpretty-mock/hidden.aspx',
+                         'http://httpretty-mock/foobar.aspx',
+                         'http://httpretty-mock/execute.xml',
+                         'http://httpretty-mock/DeveloperMenu.xml',
+                         'http://httpretty-mock/'}
         urls = set([u.url_string for u in urls])
 
         self.assertEqual(EXPECTED_URLS, urls)
