@@ -119,13 +119,14 @@ import urllib
 import sys
 import time
 import ssl
+import copy
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.controllers.exceptions import (w3afException,
-                                         w3afMustStopByKnownReasonExc)
+                                              w3afMustStopByKnownReasonExc)
 
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
@@ -596,12 +597,22 @@ class KeepAliveHandler(object):
                                                       self._get_tail_filter())
             # Check if all our last 'resp_statuses' were timeouts and raise
             # a w3afMustStopException if this is the case.
-            if len(resp_statuses) == self._curr_check_failures and \
-                    all(st == RESP_TIMEOUT for st in resp_statuses):
-                msg = ('w3af found too many consecutive timeouts. The remote '
-                       'webserver seems to be unresponsive; please verify manually.')
-                reason = 'Timeout while trying to reach target.'
-                raise w3afMustStopByKnownReasonExc(msg, reason=reason)
+            if len(resp_statuses) == self._curr_check_failures:
+
+                # https://mail.python.org/pipermail/python-dev/2007-January/070515.html
+                # https://github.com/andresriancho/w3af/search?q=deque&ref=cmdform&type=Issues
+                # https://github.com/andresriancho/w3af/issues/1311
+                #
+                # I copy the deque to avoid issues when iterating over it in the
+                # all() / for statement below
+                resp_statuses_cp = copy.copy(resp_statuses)
+
+                if all(st == RESP_TIMEOUT for st in resp_statuses_cp):
+                    msg = ('w3af found too many consecutive timeouts. The'
+                           ' remote webserver seems to be unresponsive; please'
+                           ' verify manually.')
+                    reason = 'Timeout while trying to reach target.'
+                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
