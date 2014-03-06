@@ -51,6 +51,7 @@ else:
     class ImageFound(ImageNotFound):
         pass
 
+
 def debug_notify(meth):
     
     name = meth.__name__
@@ -78,6 +79,7 @@ def debug_notify(meth):
             return result
     
     return debug
+
 
 @attr('ci_fails')
 class XpresserUnittest(unittest.TestCase):
