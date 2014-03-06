@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import string
 import sys
 
+from functools import wraps
 from errno import ENOSPC
 
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
@@ -34,6 +35,7 @@ def catch_ioerror(meth):
     """
     Function to decorate methods in order to catch IOError exceptions.
     """
+    @wraps(meth)
     def wrapper(self, *args, **kwargs):
         try:
             return meth(self, *args, **kwargs)

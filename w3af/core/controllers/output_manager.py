@@ -323,7 +323,7 @@ class output_manager(Process):
     @start_thread_on_demand
     def __getattr__(self, name):
         """
-        This magic method replaces all the previous debug/information/error... ones.
+        This magic method replaces all the previous debug/information/error ones
         It will basically return a func pointer to self.add_to_queue('debug', ...)
         where ... is completed later by the caller.
 
