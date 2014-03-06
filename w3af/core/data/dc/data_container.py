@@ -39,8 +39,8 @@ class DataContainer(OrderedDict, DiskItem):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self, init_val=(), encoding=UTF8):
-
         super(DataContainer, self).__init__()
+
         self.encoding = encoding
 
         if isinstance(init_val, DataContainer):

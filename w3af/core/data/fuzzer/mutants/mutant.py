@@ -259,15 +259,16 @@ class Mutant(DiskItem):
                     # Ok, now we have a data container with the mutant string,
                     # but it's possible that all the other fields of the data
                     # container are empty (think about a form). We need to fill
-                    # those in, with something *useful* to get around the easiest
-                    # developer checks like: "parameter A was filled" or
+                    # those in, with something *useful* to get around the
+                    # easiest developer checks like: "parameter A was filled" or
                     # "parameter A is a number".
 
-                    # But I only perform this task in HTML forms, everything else
-                    # is left as it is:
+                    # But I only perform this task in HTML forms, everything
+                    # else is left as it is:
                     if isinstance(dc_copy, Form):
                         dc_copy = mutant_smart_fill(freq, dc_copy, pname,
-                                                    element_index, fuzzer_config)
+                                                    element_index,
+                                                    fuzzer_config)
 
                     if append:
                         mutant_str = original_value + mutant_str
@@ -286,7 +287,7 @@ class Mutant(DiskItem):
 
         return result
 
-AVOID_FILLING_FORM_TYPES = ['checkbox', 'radio', 'select', 'file']
+AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select', 'file'}
 
 
 def mutant_smart_fill(freq, dc_copy, ignore_pname, ignore_index, fuzzer_config):
@@ -319,8 +320,7 @@ def mutant_smart_fill(freq, dc_copy, ignore_pname, ignore_index, fuzzer_config):
                 #
                 #   Fill it smartly
                 #
-                dc_copy[var_name_dc][
-                    element_index_dc] = smart_fill(var_name_dc)
+                dc_copy[var_name_dc][element_index_dc] = smart_fill(var_name_dc)
 
     # Please see the comment above (search for __HERE__) for an explanation
     # of what we are doing here:
