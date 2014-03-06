@@ -48,8 +48,8 @@ class TestOSCommanding(PluginTest):
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
         self.assertEquals(3, len(vulns), vulns)
-        self.assertTrue(all(
-            ["OS commanding vulnerability" == v.get_name() for v in vulns]))
+        self.assertTrue(all(["OS commanding vulnerability" == v.get_name()
+                             for v in vulns]))
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
@@ -58,8 +58,8 @@ class TestOSCommanding(PluginTest):
             ('blind_osc.py', 'cmd')
         ]
 
-        found_vulns = [(v.get_url(
-        ).get_file_name(), v.get_mutant().get_var()) for v in vulns]
+        found_vulns = [(v.get_url().get_file_name(), v.get_mutant().get_var())
+                       for v in vulns]
 
         self.assertEquals(set(EXPECTED),
                           set(found_vulns))
