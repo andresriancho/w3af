@@ -74,7 +74,7 @@ class code_disclosure(GrepPlugin):
                 
                 desc = 'The URL: "%s" has a %s code disclosure'\
                        ' vulnerability in the customized 404 script.'
-                desc = desc % (v.get_url(), lang)
+                desc = desc % (response.get_url(), lang)
                 
                 v = Vuln('Code disclosure vulnerability in 404 page', desc,
                          severity.LOW, response.id, self.get_name())
