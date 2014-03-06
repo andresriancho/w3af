@@ -77,37 +77,32 @@ class find_jboss(InfrastructurePlugin):
         Checks if JBoss Interesting Directories exist in the target server.
         Also verifies some vulnerabilities.
         """
-        fuzzable_requests_to_return = []
         base_url = fuzzable_request.get_url().base_url()
 
         args_iter = izip(repeat(base_url), self.JBOSS_VULNS)
         otm_send_request = one_to_many(self.send_request)
-        response_pool = self.worker_pool.imap_unordered(
-            otm_send_request, args_iter)
+        response_pool = self.worker_pool.imap_unordered(otm_send_request,
+                                                        args_iter)
 
         for vuln_db_instance, response in response_pool:
 
-            if not is_404(response):
+            if is_404(response):
+                continue
 
-                vuln_url = base_url.url_join(vuln_db_instance['url'])
-                name = vuln_db_instance['name']
-                desc = vuln_db_instance['desc']
+            vuln_url = base_url.url_join(vuln_db_instance['url'])
+            name = vuln_db_instance['name']
+            desc = vuln_db_instance['desc']
 
-                if vuln_db_instance['type'] == 'info':
-                    o = Info(name, desc, response.id, self.get_name())
+            if vuln_db_instance['type'] == 'info':
+                o = Info(name, desc, response.id, self.get_name())
+            else:
+                o = Vuln(name, desc, severity.LOW, response.id, self.get_name())
 
-                else:                    
-                    o = Vuln(name, desc, severity.LOW, response.id,
-                             self.get_name())
-                    
-                o.set_url(vuln_url)
+            o.set_url(vuln_url)
+            kb.kb.append(self, 'find_jboss', o)
 
-                kb.kb.append(self, 'find_jboss', o)
-
-                fuzzable_requests_to_return.extend(
-                    self._create_fuzzable_requests(response))
-
-        return fuzzable_requests_to_return
+            for fr in self._create_fuzzable_requests(response):
+                self.output_queue.put(fr)
 
     def send_request(self, base_url, vuln_db_instance):
         vuln_url = base_url.url_join(vuln_db_instance['url'])
