@@ -182,6 +182,7 @@ def create_fuzzable_request_from_request(request, add_headers=None):
                                               post_data=post_data,
                                               add_headers=headers)
 
+
 def create_fuzzable_request_from_parts(url, method='GET', post_data='',
                                        add_headers=None):
     """

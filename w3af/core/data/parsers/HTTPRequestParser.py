@@ -99,7 +99,8 @@ def HTTPRequestParser(head, postdata):
     method_uri_version = splitted_head[0]
     first_line = method_uri_version.split(' ')
     if len(first_line) == 3:
-        # Ok, we have something like "GET /foo HTTP/1.0". This is the best case for us!
+        # Ok, we have something like "GET /foo HTTP/1.0". This is the best case
+        # for us!
         method, uri, version = first_line
     elif len(first_line) < 3:
         msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'

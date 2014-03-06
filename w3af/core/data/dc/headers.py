@@ -57,8 +57,7 @@ class Headers(DataContainer):
         
         return cls(res)
  
-    
-    def clean_values(self, init_val):        
+    def clean_values(self, init_val):
         if isinstance(init_val, DataContainer)\
         or isinstance(init_val, dict):
             return init_val

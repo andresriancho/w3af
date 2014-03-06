@@ -89,7 +89,7 @@ class OpenerSettings(Configurable):
         #   website :)
         self.header_list = [('User-Agent', user_agent)]
 
-        # By default, dont mangle any request/responses
+        # By default, don't mangle any request/responses
         self._mangle_plugins = []
 
         # User configured variables

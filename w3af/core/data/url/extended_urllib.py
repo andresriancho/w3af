@@ -175,10 +175,10 @@ class ExtendedUrllib(object):
 
     def send_raw_request(self, head, postdata, fix_content_len=True):
         """
-        In some cases the ExtendedUrllib user wants to send a request that was typed
-        in a textbox or is stored in a file. When something like that happens,
-        this library allows the user to send the request by specifying two
-        parameters for the send_raw_request method:
+        In some cases the ExtendedUrllib user wants to send a request that was
+        typed in a textbox or is stored in a file. When something like that
+        happens, this library allows the user to send the request by specifying
+        two parameters for the send_raw_request method:
 
         :param head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
         :param postdata: The postdata, if any. If set to '' or None, no postdata is sent.
