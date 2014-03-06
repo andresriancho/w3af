@@ -55,4 +55,3 @@ class TestGitUtils(unittest.TestCase):
         parsed_branch = [l.strip()[2:] for l in branches if l.startswith('*')][0]
         
         self.assertEqual(current_branch, parsed_branch)
-        

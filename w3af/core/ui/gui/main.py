@@ -95,7 +95,7 @@ class AboutDialog(gtk.Dialog):
         self.vbox.pack_start(img)
         version = get_w3af_version()
         self.label = gtk.Label(version)
-        self.label.set_justify(gtk.JUSTIFY_CENTER)
+        #self.label.set_justify(gtk.JUSTIFY_CENTER)
         self.vbox.pack_start(self.label)
 
         # the home button
