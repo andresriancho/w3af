@@ -176,3 +176,4 @@ class BaseTemplate(Configurable):
                  file uploads using the HTTP PUT method'
         """
         raise NotImplementedError
+

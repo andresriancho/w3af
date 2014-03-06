@@ -265,6 +265,7 @@ class OnlyOptions(gtk.VBox):
 
 SetOptionsWrapper = helpers._Wrapper((w3afException, ValueError))
 
+
 class ConfigDialog(gtk.Dialog):
     """Puts a Config panel inside a Dialog.
 
