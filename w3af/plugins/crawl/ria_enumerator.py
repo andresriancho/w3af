@@ -66,8 +66,7 @@ class ria_enumerator(CrawlPlugin):
                                             self._wordlist)
 
         # Send the requests using threads:
-        self.worker_pool.map(self._send_and_check, url_generator,
-                                chunksize=10)
+        self.worker_pool.map(self._send_and_check, url_generator, chunksize=10)
 
     def _url_generator(self, base_url, extensions, wordlist):
         """
@@ -212,20 +211,19 @@ class ria_enumerator(CrawlPlugin):
         currently searches for:
 
         Google gears manifests
-        	These files are used to determine which files are locally cached by
-        	google gears. They do not get cleared when the browser cache is cleared
-        	and may contain sensitive information.
+            These files are used to determine which files are locally cached by
+            google gears. They do not get cleared when the browser cache is
+            cleared and may contain sensitive information.
 
         Flex crossdomain.xml
-        	This file stores domains which are allowed to make cross domain requests
-        	to the server.
+            This file stores domains which are allowed to make cross domain
+            requests to the server.
 
         Silverlight clientaccesspolicy.xml
-        	This file determines which clients can access the server in place
-        	of the crossdomain.xml.
+            This file determines which clients can access the server in place
+            of the crossdomain.xml.
 
         Two configurable parameters exists:
             - wordlist: The wordlist to be used in the gears bruteforce process.
             - manifestExtensions: File extensions to use during manifest bruteforcing.
-
         """
