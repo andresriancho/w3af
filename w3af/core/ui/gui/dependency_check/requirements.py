@@ -24,4 +24,4 @@ from w3af.core.controllers.dependency_check.requirements import PIP_PACKAGES
 
 # I imported the information from the core, now I need to append the GUI
 # requirements to those lists!
-PIP_PACKAGES.extend([PIPDependency('xdot', 'xdot', '0.4'),])
+PIP_PACKAGES.extend([PIPDependency('xdot', 'xdot', '0.6'),])
