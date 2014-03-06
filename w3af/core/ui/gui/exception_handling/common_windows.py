@@ -111,19 +111,20 @@ class report_bug_show_result(gtk.MessageDialog):
         self.set_icon_from_file(W3AF_ICON)
 
         # Disable OK button until the worker finishes the bug reporting process
-        ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
-        ok_button.set_sensitive(False)
+        self.ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
+        self.ok_button.set_sensitive(False)
 
     def run(self):
         #
         #    Main text
         #
-        text = 'Thank you for reporting your bugs, it helps us improve our'
-        text += ' scanning engine. If you want to get involved with the project'
-        text += ' please send an email to our <a href="mailto:%s">mailing list</a>.'
-        text = text % ('w3af-develop@lists.sourceforge.net')
-        # All these lines are here to add a label instead of the easy "set_markup"
-        # in order to avoid a bug where the label text appears selected
+        text = ('Thank you for reporting your bugs, it helps us improve our'
+                ' scanning engine. If you want to get involved with the project'
+                ' please send an email to our <a href="mailto:%s">mailing list'
+                ' </a>.')
+        text %= 'w3af-develop@lists.sourceforge.net'
+        # All these lines are here to add a label instead of the easy "set_
+        # markup" in order to avoid a bug where the label text appears selected
         msg_area = self.get_message_area()
         [msg_area.remove(c) for c in msg_area.get_children()]
         label = gtk.Label()
@@ -190,8 +191,7 @@ class report_bug_show_result(gtk.MessageDialog):
             self.throbber.running(False)
             self.throbber.hide()
             self.done_icon.show()
-            ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
-            ok_button.set_sensitive(True)
+            self.ok_button.set_sensitive(True)
             # don't call me anymore !
             return False
         else:
