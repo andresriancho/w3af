@@ -24,26 +24,27 @@ from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 
 class ExactDelayController(DelayMixIn):
     """
-    Given that more than one vulnerability can be detected using time delays, just
-    to name a couple blind SQL injections and OS commandings, I decided to create
-    a generic class that will help me detect those vulnerabilities in an accurate
-    and generic manner.
+    Given that more than one vulnerability can be detected using time delays,
+    just to name a couple blind SQL injections and OS commandings, I decided to
+    create a generic class that will help me detect those vulnerabilities in an
+    accurate and generic manner.
 
     This class works for EXACT time delays, this means that we control "exactly"
-    how many seconds the remote server will "sleep" before returning the response.
-    A good example to understand this is MySQL's sleep(x) vs. benchmark(...).
+    how many seconds the remote server will "sleep" before returning the
+    response. A good example to understand this is MySQL's sleep(x) vs.
+    benchmark(...).
     """
 
     DELTA = 0.5
 
     #
-    #    Note that these delays are applied ONLY if all the previous delays worked
-    #    so adding more here will only increase accuracy and not performance since
-    #    you'll only get slower scans when there is a vulnerability, which is not
-    #    the most common case
+    # Note that these delays are applied ONLY if all the previous delays worked
+    # so adding more here will only increase accuracy and not performance since
+    # you'll only get slower scans when there is a vulnerability, which is not
+    # the most common case
     #
-    #    Also note that these delays can't be greater than the framework socket
-    #    timeout or that will break the algorithm
+    # Also note that these delays can't be greater than the framework socket
+    # timeout or that will break the algorithm
     DELAY_SECONDS = [3, 1, 6, 1, 3]
 
     def __init__(self, mutant, delay_obj, uri_opener):
@@ -114,9 +115,9 @@ class ExactDelayController(DelayMixIn):
         delta = original_wait_time / 1.5
         current_response_wait_time = response.get_wait_time()
 
-        if current_response_wait_time > (original_wait_time + seconds - delta)\
-        and current_response_wait_time < seconds * 2:
-                return True, response
+        if current_response_wait_time > (original_wait_time + seconds - delta):
+            if current_response_wait_time < seconds * 2:
+                    return True, response
 
         return False, response
 

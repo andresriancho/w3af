@@ -61,22 +61,24 @@ class os_commanding(AuditPlugin):
         # vulnerabilities:
         #       - Time delays
         #       - Writing a known file to the HTML output
-        # The basic idea is to be able to detect ANY vulnerability, so we use ALL
-        # of the known techniques
+        # The basic idea is to be able to detect ANY vulnerability, so we use
+        # ALL of the known techniques
         #
-        # Please note that I'm running the echo ones first in order to get them into
-        # the KB before the ones with time delays so that the os_commanding exploit
-        # can (with a higher degree of confidence) exploit the vulnerability
+        # Please note that I'm running the echo ones first in order to get them
+        # into the KB before the ones with time delays so that the os_commanding
+        # exploit can (with a higher degree of confidence) exploit the
+        # vulnerability
         #
-        # This also speeds-up the detection process a little bit in the cases where
-        # there IS a vulnerability present and can be found with both methods.
+        # This also speeds-up the detection process a little bit in the cases
+        # where there IS a vulnerability present and can be found with both
+        # methods.
         self._with_echo(freq, orig_response)
         self._with_time_delay(freq)
 
     def _with_echo(self, freq, orig_response):
         """
-        Tests an URL for OS Commanding vulnerabilities using cat/type to write the
-        content of a known file (i.e. /etc/passwd) to the HTML.
+        Tests an URL for OS Commanding vulnerabilities using cat/type to write
+        the content of a known file (i.e. /etc/passwd) to the HTML.
 
         :param freq: A FuzzableRequest
         """
@@ -92,31 +94,33 @@ class os_commanding(AuditPlugin):
 
     def _analyze_echo(self, mutant, response):
         """
-        Analyze results of the _send_mutant method that was sent in the _with_echo method.
+        Analyze results of the _send_mutant method that was sent in the
+        _with_echo method.
         """
         #
         #   I will only report the vulnerability once.
         #
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            for file_pattern_match in self._multi_in.query(response.get_body()):
+        for file_pattern_match in self._multi_in.query(response.get_body()):
 
-                if file_pattern_match not in mutant.get_original_response_body():
-                    # Search for the correct command and separator
-                    sentOs, sentSeparator = self._get_os_separator(mutant)
+            if file_pattern_match not in mutant.get_original_response_body():
+                # Search for the correct command and separator
+                sentOs, sentSeparator = self._get_os_separator(mutant)
 
-                    desc = 'OS Commanding was found at: %s' % mutant.found_at()
-                    # Create the vuln obj
-                    v = Vuln.from_mutant('OS commanding vulnerability', desc,
-                                         severity.HIGH, response.id,
-                                         self.get_name(), mutant)
+                desc = 'OS Commanding was found at: %s' % mutant.found_at()
+                # Create the vuln obj
+                v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                                     severity.HIGH, response.id,
+                                     self.get_name(), mutant)
 
-                    v['os'] = sentOs
-                    v['separator'] = sentSeparator
-                    v.add_to_highlight(file_pattern_match)
-                    
-                    self.kb_append_uniq(self, 'os_commanding', v)
-                    break
+                v['os'] = sentOs
+                v['separator'] = sentSeparator
+                v.add_to_highlight(file_pattern_match)
+
+                self.kb_append_uniq(self, 'os_commanding', v)
+                break
 
     def _get_os_separator(self, mutant):
         """
@@ -132,6 +136,7 @@ class os_commanding(AuditPlugin):
             if comm.get_command() in mutant.get_mod_value():
                 os = comm.get_OS()
                 separator = comm.get_separator()
+
         return os, separator
 
     def _with_time_delay(self, freq):
@@ -167,8 +172,8 @@ class os_commanding(AuditPlugin):
 
     def _get_echo_commands(self):
         """
-        :return: This method returns a list of commands to try to execute in order
-        to print the content of a known file.
+        :return: This method returns a list of commands to try to execute in
+                 order to print the content of a known file.
         """
         commands = []
         for special_char in self._special_chars:
@@ -194,8 +199,8 @@ class os_commanding(AuditPlugin):
 
     def _get_wait_commands(self):
         """
-        :return: This method returns a list of commands to try to execute in order
-        to introduce a time delay.
+        :return: This method returns a list of commands to try to execute in
+                 order to introduce a time delay.
         """
         commands = []
         for special_char in self._special_chars:
@@ -218,7 +223,8 @@ class os_commanding(AuditPlugin):
         commands.append(ping_delay('`ping -n %s localhost`', 'windows', '`'))
         commands.append(ping_delay('`ping -c %s localhost`', 'unix', '`'))
 
-        # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
+        # FoxPro uses the "run" macro to exec os commands. I found one of this
+        # vulns !!
         commands.append(
             ping_delay('run ping -n %s localhost', 'windows', 'run '))
 
@@ -243,12 +249,13 @@ class os_commanding(AuditPlugin):
         if the vulnerability is present, will delay the response for 5 seconds
         (ping -c 5 localhost).
 
-        When using the second technique, the plugin sends specially crafted requests
-        that, if the vulnerability is present, will print the content of a known file
-        (i.e. /etc/passwd) to the HTML output
+        When using the second technique, the plugin sends specially crafted
+        requests that, if the vulnerability is present, will print the content
+        of a known file (i.e. /etc/passwd) to the HTML output
 
-        This plugin has a rather long list of command separators, like ";" and "`" to
-        try to match all programming languages, platforms and installations.
+        This plugin has a rather long list of command separators, like ";" and
+        "`" to try to match all programming languages, platforms and
+        installations.
         """
 
 
