@@ -39,7 +39,19 @@ def is_git_repo(path=W3AF_LOCAL_PATH):
     else:
         return True
 
-    
+
+def is_dirty_repo(path=W3AF_LOCAL_PATH):
+    """
+    :return: True if the repository is dirty (contains local changes)
+    """
+    try:
+        repo = git.Repo(path)
+    except git.exc.InvalidGitRepositoryError:
+        return False
+    else:
+        return repo.is_dirty()
+
+
 def get_latest_commit(path=W3AF_LOCAL_PATH):
     """
     :return: A string (hex sha) that identifies the commit
