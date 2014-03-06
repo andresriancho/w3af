@@ -23,6 +23,7 @@ import string
 import hashlib
 import time
 import ssl
+import socket
 
 from github import Github
 from github import GithubException
@@ -85,6 +86,8 @@ class GithubIssues(object):
                 # SSLError: The read operation timed out
                 return False
             except GithubException:
+                return False
+            except socket.gaierror:
                 return False
         
         return True
