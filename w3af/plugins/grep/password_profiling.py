@@ -39,16 +39,16 @@ class password_profiling(GrepPlugin):
     COMMON_WORDS = common_words
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
 
-    BANNED_WORDS = set(['forbidden', 'browsing', 'index'])
+    BANNED_WORDS = {'forbidden', 'browsing', 'index'}
 
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._init = True
+        self._need_init = True
         self.captured_lang = None
         
-        #TODO: develop more plugins, there is a, pure-python metadata reader named
-        #      hachoir-metadata it will be useful for writing A LOT of plugins
+        # TODO: develop more plugins, there is a, pure-python metadata reader
+        # named hachoir-metadata it will be useful for writing A LOT of plugins
         
         # Plugins to run
         self._plugins_names_dict = ['html', 'pdf']
@@ -66,9 +66,8 @@ class password_profiling(GrepPlugin):
             return
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.get_code() not in [500, 401, 403, 404] \
-        and not is_404(response) \
-        and request.get_method() in ['POST', 'GET']:
+        if response.get_code() not in {500, 401, 403, 404} \
+        and not is_404(response) and request.get_method() in {'POST', 'GET'}:
 
             # Run the plugins
             data = self._run_plugins(response)
@@ -76,15 +75,15 @@ class password_profiling(GrepPlugin):
             with self._plugin_lock:
                 old_data = kb.kb.raw_read('password_profiling',
                                           'password_profiling')
-                
+
                 new_data = self.merge_maps(old_data, data, request,
                                            self.captured_lang)
-                
+
                 new_data = self._trim_data(new_data)
-                
+
                 # save the updated map
                 kb.kb.raw_write(self, 'password_profiling', new_data)
-    
+
     def got_lang(self):
         """
         Initial setup that's run until we have the language or lang plugin
@@ -92,15 +91,15 @@ class password_profiling(GrepPlugin):
         
         :return: True if we were able to get the language from the lang plugin
         """
-        if self._init:
+        if self._need_init:
             captured_lang = kb.kb.raw_read('lang', 'lang')
             if captured_lang is None or captured_lang == []:
                 # The lang plugin is still trying to identify the language
                 return False
             else:
                 self.captured_lang = captured_lang
-                self._init = False
                 kb.kb.raw_write(self, 'password_profiling', {})
+                self._need_init = False
                 return True
         
         return True
