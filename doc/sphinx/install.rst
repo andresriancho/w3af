@@ -21,6 +21,7 @@ Installation
 
 
 Let me explain what's going on there:
+
  * First we use ``git`` to download w3af's source code
  * Then we try to run the ``w3af_console`` command, which will most likely fail because of missing dependencies. This command will generate a helper script at ``/tmp/w3af_dependency_install.sh`` that when run will install all the required dependencies.
  * Dependencies are installed by running ``/tmp/w3af_dependency_install.sh``
@@ -78,6 +79,7 @@ You will recognize this when this message appears: "please install the following
 Most likely you're using an unsupported Linux distribution. *This doesn't mean that w3af doesn't work with your distribution!* It just means that we haven't defined the steps required for making it run into our code.
 
 What you need to do is:
+
  * Find a match between the Ubuntu package name given in the list and the one for your distribution
  * Install it
  * Run ``./w3af_console`` again. Repeat until fixed
@@ -88,6 +90,7 @@ How do I ask for support on installation issues?
 ________________________________________________
 
 You can `create a ticket <https://github.com/andresriancho/w3af/issues/new>`_ containing the following information:
+
  * Your linux distribution (usually the contents of `/etc/lsb-release` will be enough)
  * The contents of the `/tmp/w3af_dependency_install.sh` file
  * The output of `pip freeze`
