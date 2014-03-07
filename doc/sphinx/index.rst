@@ -5,16 +5,28 @@ This document is the user's guide for the Web Application Attack and Audit Frame
 
 w3af is a complete environment for auditing and exploiting Web applications. This environment provides a solid platform for web vulnerability assessments and penetration tests.
 
+More information
+----------------
 
-Contents:
+More information about the framework, including: HOWTOs, advanced usage, blog and news, can be found in the `w3af project homepage <http://w3af.org/>`_
+
+The ``w3af`` project has `two mailing lists <http://sourceforge.net/p/w3af/mailman/>`_, one for developers and the other one for users. If you have any question or comment about the framework, don't hesitate and send an email!
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
 
    install
    update
+   
    phases
    scripts
-   debugging
-
+   complex-web-apps
+   
+   exploitation
    advanced-exploitation
+
+   report-a-bug
+   contributors

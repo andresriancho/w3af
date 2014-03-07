@@ -65,7 +65,7 @@ Messages sent to the output manager are sent to all enabled plugins, so if you h
 .. note::
 
    Ideas:
-    * Write your own output plugin to send vulnerabilities to an internal issue tracker using REST API.
+    * Send vulnerabilities to an internal issue tracker using its REST API
     * Parse ``w3af``'s XML output and use it as input for other tools
 
 
