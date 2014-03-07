@@ -19,10 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from functools import wraps
+
 import w3af.core.controllers.output_manager as om
 
 
 def exec_debug(fn):
+
+    @wraps(fn)
     def new(self, command):
         #   Run the original function
         result = fn(self, command)
@@ -31,12 +35,12 @@ def exec_debug(fn):
 
         #   Format the message
         if len(no_newline_result) > 25:
-            exec_result = '"' + no_newline_result[:25] + '...' + '"'
+            exec_result = '"%s..."' % no_newline_result[:25]
         else:
-            exec_result = '"' + no_newline_result[:25] + '"'
+            exec_result = '"%s"' % no_newline_result[:25]
 
-        msg = 'exec( "' + command + '" , ' + exec_result + \
-            ') == ' + str(len(exec_result)) + ' bytes.'
+        msg = 'exec("%s", %s) == %s bytes' % (command, exec_result,
+                                              len(exec_result))
 
         #   Print the message to the debug output
         om.out.debug(msg)
