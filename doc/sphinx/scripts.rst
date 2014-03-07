@@ -16,8 +16,12 @@ While developing w3af, we realized the need of fast and easy way to execute the 
 
    Scripts are great for running periodic scans against your site using cron!
 
+.. note::
+
+   Example script files can be found inside the ``scripts/`` directory.
+
 VIM syntax file
 ---------------
 
-A VIM syntax file for ``w3af`` script editing is provided and maintained by the project development team. Is available on VIM website using URL
-`http://www.vim.org/scripts/script.php?script_id=4567 <http://www.vim.org/scripts/script.php?script_id=4567>`_
+A `VIM syntax file <http://www.vim.org/scripts/script.php?script_id=4567>`_ for ``w3af`` script editing is provided and maintained by the project development team.
+
