@@ -83,7 +83,8 @@ class frontpage_version(InfrastructurePlugin):
 
     def _analyze_response(self, response):
         """
-        It seems that we have found a _vti_inf file, parse it and analyze the content!
+        It seems that we have found a _vti_inf file, parse it and analyze the
+        content!
 
         :param response: The http response object for the _vti_inf file.
         :return: None. All the info is saved to the kb.
@@ -120,8 +121,8 @@ class frontpage_version(InfrastructurePlugin):
             self._analyze_author(response, author_mo)
 
         else:
-            # This is strange... we found a _vti_inf file, but there is no frontpage
-            # information in it... IPS? WAF? honeypot?
+            # This is strange... we found a _vti_inf file, but there is no
+            # frontpage information in it... IPS? WAF? honeypot?
             msg = '[IMPROVEMENT] Invalid frontPage configuration information'\
                   ' found at %s (id: %s).'
             msg = msg % (response.get_url(), response.id)
