@@ -27,9 +27,9 @@ This is a sample ``spider_man`` plugin run:
     w3af/target>>> set target http://localhost/
     w3af/target>>> back
     w3af>>> start
-	spider_man proxy is running on 127.0.0.1:44444 .
-	Please configure your browser to use these proxy settings and navigate the target site.
-	To exit spider_man plugin please navigate to http://127.7.7.7/spider_man?terminate .
+    spider_man proxy is running on 127.0.0.1:44444 .
+    Please configure your browser to use these proxy settings and navigate the target site.
+    To exit spider_man plugin please navigate to http://127.7.7.7/spider_man?terminate .
 
 
 Now the user configures the browser to use the ``127.0.0.1:44444`` address as his browser proxy and navigates the target site, when he finished navigating the site sections he wants to audit he navigates to ``http://127.7.7.7/spider_man?terminate`` stop the proxy and finish the plugin. The ``audit.sqli`` plugin will run over the identified URLs.
