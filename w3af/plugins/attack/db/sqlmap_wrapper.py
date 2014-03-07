@@ -36,7 +36,8 @@ class SQLMapWrapper(object):
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
 
     SQLMAP_ERRORS = ('connection timed out to the target',
-                     'infinite redirect loop detected')
+                     'infinite redirect loop detected',
+                     'it is not recommended to continue in this kind of cases')
     
     def __init__(self, target, uri_opener, coloring=False):
         if not isinstance(target, Target):
