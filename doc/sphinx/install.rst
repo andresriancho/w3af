@@ -16,7 +16,7 @@ Installation
     git clone git@github.com:andresriancho/w3af.git
     cd w3af/
     ./w3af_console
-	. /tmp/w3af_dependency_install.sh
+    . /tmp/w3af_dependency_install.sh
 
 
 Let me explain what's going on there:
