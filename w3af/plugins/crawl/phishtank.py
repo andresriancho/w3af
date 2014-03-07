@@ -152,6 +152,7 @@ class phishtank(CrawlPlugin):
         and your server is now being used in phishing attacks.
         """
 
+
 class PhishTankMatch(object):
     """
     Represents a phishtank match between the site I'm scanning and
@@ -160,6 +161,7 @@ class PhishTankMatch(object):
     def __init__(self, url, more_info_URL):
         self.url = url
         self.more_info_URL = more_info_URL
+
 
 class PhishTankHandler(ContentHandler):
     """
@@ -233,6 +235,7 @@ class PhishTankHandler(ContentHandler):
                         ptm = PhishTankMatch(phish_url,
                                              phish_detail_url)
                         self.matches.append(ptm)
+
 
 class PhishTankErrorHandler(ErrorHandler):
     """
