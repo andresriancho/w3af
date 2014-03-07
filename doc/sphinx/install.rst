@@ -91,7 +91,7 @@ ________________________________________________
 
 You can `create a ticket <https://github.com/andresriancho/w3af/issues/new>`_ containing the following information:
 
- * Your linux distribution (usually the contents of `/etc/lsb-release` will be enough)
- * The contents of the `/tmp/w3af_dependency_install.sh` file
- * The output of `pip freeze`
- * The output of `python --version`
+ * Your linux distribution (usually the contents of ``/etc/lsb-release`` will be enough)
+ * The contents of the ``/tmp/w3af_dependency_install.sh`` file
+ * The output of ``pip freeze``
+ * The output of ``python --version``

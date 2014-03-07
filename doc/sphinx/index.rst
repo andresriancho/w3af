@@ -12,3 +12,5 @@ Contents:
    :maxdepth: 2
 
    install
+   update
+   
