@@ -27,7 +27,7 @@ PHPLY_GIT_TGZ = 'https://github.com/andresriancho/phply/archive/0.9.tar.gz#egg=p
 PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                 PIPDependency('github', 'PyGithub', '1.21.0'),
                 PIPDependency('git.util', 'GitPython', '0.3.2.RC1'),
-                PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.12'),
+                PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.11'),
                 PIPDependency('esmre', 'esmre', '0.3.1'),
                 PIPDependency('phply', 'phply', 'dev', git_src=PHPLY_GIT,
                               tgz_src=PHPLY_GIT_TGZ),
