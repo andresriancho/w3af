@@ -1,22 +1,13 @@
-.. w3af - Web application attack and audit framework documentation master file, created by
-   sphinx-quickstart on Fri Mar  7 15:24:37 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to w3af's documentation
+===============================
 
-Welcome to w3af - Web application attack and audit framework's documentation!
-=============================================================================
+This document is the user's guide for the Web Application Attack and Audit Framework (w3af), its goal is to provide a basic overview of what the framework is, how it works and what you can do with it.
+
+w3af is a complete environment for auditing and exploiting Web applications. This environment provides a solid platform for web vulnerability assessments and penetration tests.
+
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
