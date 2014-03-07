@@ -38,7 +38,8 @@ class SQLMapWrapper(object):
     SQLMAP_ERRORS = ('connection timed out to the target',
                      'infinite redirect loop detected',
                      'it is not recommended to continue in this kind of cases',
-                     'unable to connect to the target url or proxy')
+                     'unable to connect to the target url or proxy',
+                     '[INFO] skipping '')
     
     def __init__(self, target, uri_opener, coloring=False):
         if not isinstance(target, Target):
