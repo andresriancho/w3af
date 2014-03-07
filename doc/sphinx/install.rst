@@ -5,6 +5,7 @@ Prerequisites
 -------------
 
 Make sure you have the following software ready before starting the installation:
+
  * Git client: ``sudo apt-get install git``
  * Python 2.7, which is installed by default in most systems
 
