@@ -13,4 +13,6 @@ Contents:
 
    install
    update
+   phases
+   scripts
    
