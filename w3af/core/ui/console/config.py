@@ -31,6 +31,7 @@ class ConfigMenu(menu):
     """
     Generic menu for configuring the configurable items.
     It is used to configure plugins and set url and misc settings.
+
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
 
@@ -47,7 +48,7 @@ class ConfigMenu(menu):
             self._memory[k] = [v]
             self._plain_options[k] = v
             self._optDict[k] = o
-        self._groupOptionsByTabId()
+        self._group_options_by_tabid()
         self._load_help('config')
 
     def _cmd_view(self, params):
@@ -55,7 +56,7 @@ class ConfigMenu(menu):
         # we're going to show them in the console.
         # https://github.com/andresriancho/w3af/issues/291
         self._options = self._configurable.get_options()
-        self._groupOptionsByTabId()
+        self._group_options_by_tabid()
         
         table = [['Setting', 'Value', 'Description']]
         for tabid in self._tabbedOptions.keys():
@@ -67,7 +68,7 @@ class ConfigMenu(menu):
             table.pop()
         self._console.draw_table(table, True)
 
-    def _groupOptionsByTabId(self):
+    def _group_options_by_tabid(self):
         self._tabbedOptions = {}
         for opt in self._options:
             tabid = opt.get_tabid()
@@ -159,8 +160,7 @@ class ConfigMenu(menu):
             opt = self._options[paramName]
             paramType = opt.get_type()
             if paramType == 'boolean':
-                values = [opt.get_default_value(
-                ) == 'True' and 'False' or 'True']
+                values = [opt.get_default_value() == 'True' and 'False' or 'True']
             else:
                 values = self._memory[paramName]
 
