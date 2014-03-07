@@ -15,4 +15,6 @@ Contents:
    update
    phases
    scripts
-   
+   debugging
+
+   advanced-exploitation
