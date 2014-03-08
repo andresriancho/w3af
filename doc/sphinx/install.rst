@@ -45,6 +45,33 @@ One of the ugly details users can find is that ``w3af`` needs to detect the Oper
 
 The list of distributions ``w3af`` knows how to generate the installation script for `is extensive <https://github.com/andresriancho/w3af/tree/feature/module/w3af/core/controllers/dependency_check/platforms>`_ . If we don't support your distribution, we'll default to Ubuntu.
 
+Installing using virtualenv
+---------------------------
+
+.. note::
+
+   Installing in a ``virtualenv`` is great to isolate ``w3af`` python packages from the system packages, but is not required to have a working ``w3af`` installation.
+
+Virtualenv is a great tool that will allow you to install ``w3af`` in a virtual and isolated environment that won't affect your operating system python packages.
+
+.. code-block:: console
+
+    $ cd w3af
+    $ virtualenv venv
+    $ . venv/bin/activate
+    (venv)$ ./w3af_console
+    (venv)$ pip install <missing dependencies>
+
+Note that the last command doesn't require ``root`` privileges. All the packages installed with this command will be saved inside the ``venv`` directory and won't affect your system packages.
+
+Each time you want to run ``w3af`` in a new console you'll have to activate the virtualenv:
+
+.. code-block:: console
+
+    $ cd w3af
+    $ . venv/bin/activate
+    (venv)$ ./w3af_console
+
 Troubleshooting
 ---------------
 
