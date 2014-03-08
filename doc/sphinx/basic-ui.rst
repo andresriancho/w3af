@@ -74,21 +74,21 @@ Here is a usage example of this commands in the ``http-settings`` menu:
     | exit  | Exit w3af.                                              |
     |-----------------------------------------------------------------|
     w3af/config:http-settings>>> view
-    |---------------------------------------------------------------------------------------------------|
-    | Setting                | Value    | Description                                                   |
-    |---------------------------------------------------------------------------------------------------|
-    | url_parameter          |          | Append the given URL parameter to every accessed URL.         |
-    |                        |          | Example: http://www.foobar.com/index.jsp;<parameter>?id=2     |
-    | timeout                | 15       | The timeout for connections to the HTTP server                |
-    | headers_file           |          | Set the headers filename. This file has additional headers    |
-    |                        |          | which are added to each request.                              |
-    |---------------------------------------------------------------------------------------------------|
+    |-----------------------------------------------------------------------------------------------|
+    | Setting                | Value    | Description                                               |
+    |-----------------------------------------------------------------------------------------------|
+    | url_parameter          |          | Append the given URL parameter to every accessed URL.     |
+    |                        |          | Example: http://www.foobar.com/index.jsp;<parameter>?id=2 |
+    | timeout                | 15       | The timeout for connections to the HTTP server            |
+    | headers_file           |          | Set the headers filename. This file has additional headers|
+    |                        |          | which are added to each request.                          |
+    |-----------------------------------------------------------------------------------------------|
     ...
-    |---------------------------------------------------------------------------------------------------|
-    | basic_auth_user        |          | Set the basic authentication username for HTTP requests       |
-    | basic_auth_passwd      |          | Set the basic authentication password for HTTP requests       |
-    | basic_auth_domain      |          | Set the basic authentication domain for HTTP requests         |
-    |---------------------------------------------------------------------------------------------------|
+    |-----------------------------------------------------------------------------------------------|
+    | basic_auth_user        |          | Set the basic authentication username for HTTP requests   |
+    | basic_auth_passwd      |          | Set the basic authentication password for HTTP requests   |
+    | basic_auth_domain      |          | Set the basic authentication domain for HTTP requests     |
+    |-----------------------------------------------------------------------------------------------|
     w3af/config:http-settings>>> set timeout 5
     w3af/config:http-settings>>> save
     w3af/config:http-settings>>> back
@@ -168,382 +168,89 @@ All plugins except the ``attack`` plugins can be configured within this menu. Le
 
 To enable the ``xss`` and ``sqli`` plugins, and then verify that the command was understood by the framework, we issue this set of commands:
 
-
-**w3af/plugins>>>**
-audit xss, sqli
-
-**w3af/plugins>>>**
-audit
-
-|------------------------------------------------------------|
-
-| Plugin name
-| Status
-| Conf | Description
-|
-
-|------------------------------------------------------------|
-
-...
-
-| sqli
-| Enabled |
-| Find SQL injection
-|
-
-|
-|
-|
-| bugs.
-|
-
-...
-
-| xss
-| Enabled | Yes
-| Find cross site
-|
-
-|
-|
-|
-| scripting
-|
-
-|
-|
-|
-| vulnerabilities.
-|
-
-| xst
-|
-|
-| Verify Cross Site
-|
-
-|
-|
-|
-| Tracing
-|
-
-|
-|
-|
-| vulnerabilities.
-|
-
-|------------------------------------------------------------|
-
-**w3af/plugins>>>**
-
-
-Or if the user is interested in knowing exactly what a plugin does, he can also run the “
-desc”
-command like this:
-
-
-**w3af>>>**
-plugins
-
-**w3af/plugins>>>**
-audit desc fileUpload
-
-
-This plugin will try to expoit insecure file upload forms.
-
-
-One configurable parameter exists:
-
-- extensions
-
-
-The extensions parameter is a comma separated list of extensions that this plugin will try to upload. Many web applications
-verify the extension of the file being uploaded, if special extensions are required, they can be added here.
-
-
-Some web applications check the contents of the files being uploaded to see if they are really what their extension
-is telling. To bypass this check, this plugin uses file templates located at "plugins/audit/fileUpload/", this templates
-
-are valid files for each extension that have a section ( the comment field in a gif file for example ) that can be replaced
-
-by scripting code ( PHP, ASP, etc ).
-
-
-After uploading the file, this plugin will try to find it on common directories like "upload" and "files" on every know directory. If the file is found, a vulnerability exists.
-
-
-**w3af/plugins>>>**
-
-
-Now we know what this plugin does, but let's check their internals:
-
-
-**w3af/plugins>>>**
-audit config xss
-
-**w3af/plugins/audit/config:xss>>> **
-view
-
-|------------------------------------------------------------|
-
-| Setting
-| Value | Description
-|
-
-|------------------------------------------------------------|
-
-| numberOfChecks
-| 3
-| Set the amount of checks to
-|
-
-|
-|
-| perform for each fuzzable
-|
-
-|
-|
-| parameter. Valid numbers: 1 to
-|
-
-|
-|
-| 13
-|
-
-| checkStored
-| True
-| Search persistent XSS
-|
-
-|------------------------------------------------------------|
-
-
-**w3af/plugin/xss>>>**
-** **
-set checkStored False
-
-**w3af/plugin/xss>>>**
-back
-
-**w3af/plugins>>>**
-audit config sqli
-
-**w3af/plugins/audit/config:sqli>>> **
-view
-
-|------------------------------------------------------------|
-
-| Setting
-| Value
-| Description
-|
-
-|------------------------------------------------------------|
-
-|------------------------------------------------------------|
-
-**w3af/plugins/audit/config:sqli>>> **
-
-**w3af/plugins/audit/config:sqli>>> **
-back
-
-**w3af/plugins>>>**
-
-
-The configuration menus for the plugins also have the set command for changing the parameters values, and the view command for listing existing values. On the previous example we disabled persistent cross site scripting checks in the xss plugin, and listed the options of the sqli plugin (it actually has no configurable parameters).
+.. code-block:: none
+
+    w3af/plugins>>> audit xss, sqli
+    w3af/plugins>>> audit
+    |----------------------------------------------------------------------------|
+    | Plugin name        | Status  | Conf | Description                          |
+    |----------------------------------------------------------------------------|
+    | sqli               | Enabled |      | Find SQL injection bugs.             |
+    | ssi                |         |      | Find server side inclusion           |
+    |                    |         |      | vulnerabilities.                     |
+    | ssl_certificate    |         | Yes  | Check the SSL certificate validity   |
+    |                    |         |      | (if https is being used).            |
+    | un_ssl             |         |      | Find out if secure content can also  |
+    |                    |         |      | be fetched using http.               |
+    | xpath              |         |      | Find XPATH injection                 |
+    |                    |         |      | vulnerabilities.                     |
+    | xss                | Enabled | Yes  | Identify cross site scripting        |
+    |                    |         |      | vulnerabilities.                     |
+    | xst                |         |      | Find Cross Site Tracing              |
+    |                    |         |      | vulnerabilities.                     |
+    |----------------------------------------------------------------------------|
+    w3af/plugins>>>
+
+
+Or if the user is interested in knowing exactly what a plugin does, he can also run the ``desc`` command like this:
+
+.. code-block:: none
+
+    w3af/plugins>>> audit desc xss
+
+    This plugin finds Cross Site Scripting (XSS) vulnerabilities.
+
+    One configurable parameters exists:
+        - persistent_xss
+
+    To find XSS bugs the plugin will send a set of javascript strings to
+    every parameter, and search for that input in the response.
+
+    The "persistent_xss" parameter makes the plugin store all data
+    sent to the web application and at the end, request all URLs again
+    searching for those specially crafted strings.
+
+    w3af/plugins>>> 
+
+Now we know what this plugin does, but let's check its internals:
+
+.. code-block:: none
+
+    w3af/plugins>>> audit config xss
+    w3af/plugins/audit/config:xss>>> view
+    |-----------------------------------------------------------------------------|
+    | Setting        | Value | Description                                        |
+    |-----------------------------------------------------------------------------|
+    | persistent_xss | True  | Identify persistent cross site scripting           |
+    |                |       | vulnerabilities                                    |
+    |-----------------------------------------------------------------------------|
+    w3af/plugins/audit/config:xss>>> set persistent_xss False
+    w3af/plugins/audit/config:xss>>> back
+    The configuration has been saved.
+    w3af/plugins>>> 
+
+The configuration menus for the plugins also have the ``set`` command for changing the parameters values, and the ``view`` command for listing existing values. On the previous example we disabled persistent cross site scripting checks in the xss plugin.
 
 
 Starting a scan
 ---------------
 
-
 After configuring all desired plugins the user has to set the target URL and finally start the scan. The target selection is done this way:
 
+.. code-block:: none
 
-**w3af>>>**
-target
+    w3af>>> target
+    w3af/config:target>>> set target http://localhost/
+    w3af/config:target>>> back
+    w3af>>>
 
-**w3af/config:target>>> **
-set target http://localhost/
+Finally, run ``start`` in order to run all the configured plugins.
 
-**w3af/config:target>>>**
-back
+.. code-block:: none
+    w3af>>> start
 
-**w3af>>>**
+At any time during the scan, you can hit ``<enter>`` in order to get a live status of the w3af core. Status lines look like this:
 
+.. code-block:: none
 
-Finally, you execute “start” in order to run all the configured plugins.
-
-
-**w3af>>>**
-start
-
-
-At any time during the scan, you may hit “enter” in order to get a live status of the w3af core. Status lines look like this:
-
-Status: Running discovery.webSpider on http://localhost/w3af/ | Method: GET.
-
-
-
-A complete session
-~~~~~~~~~~~~~~~~~~
-
-
-An example of an entir
-e
-w3af session
-appears below.
-Attention should be paid to the inline comments as they provide additional details
-.
-
-
-**$**
-./w3af
-
-**w3af>>>**
-plugins
-
-**w3af/plugins>>>**
-output console,textFile
-
-**w3af/plugins>>>**
-output config textFile
-
-**w3af/plugins/output/config:textFile>>>**
-set fileName output-w3af.txt
-
-**w3af/plugins/output/config:textFile>>>**
-set verbose True
-
-**w3af/plugins/output/config:textFile>>>**
-back
-
-**w3af/plugins>>>**
-output config console
-
-**w3af/plugins/output/config:console>>>**
-set verbose False
-
-**w3af/plugins/output/config:console>>>**
-back
-
-
-All this previous commands have enabled two output plugins, console and textFile and configured them as needed.
-
-
-**w3af/plugins>>>**
-discovery allowedMethods,webSpider
-
-**w3af/plugins>>>**
-back
-
-
-In this case, we will be running only discovery plugins. The enabled plugins are allowedMethods and webSpider .
-
-
-**w3af>>>**
-target
-
-**w3af/target>>>**
-set target http://localhost/w3af/
-
-**w3af/target>>>**
-back
-
-**w3af>>>**
-start
-
-New URL found by discovery: http://localhost/w3af/responseSplitting/responseSplitting.php
-
-New URL found by discovery: http://localhost/w3af/blindSqli/blindSqli-str.php
-
-New URL found by discovery: http://localhost/w3af/webSpider/2.html
-
-...
-
-...
-
-The URL: http://localhost/beef/hook/ has DAV methods enabled:
-
-- OPTIONS
-
-- GET
-
-- HEAD
-
-- POST
-
-- TRACE
-
-- PROPFIND
-
-- PROPPATCH
-
-- COPY
-
-- MOVE
-
-- LOCK
-
-- UNLOCK
-
-- DELETE ( is possibly enabled too, not tested for safety )
-
-New URL found by discovery: http://localhost/w3af/globalRedirect/wargame/
-
-New URL found by discovery: http://localhost/w3af/globalRedirect/w3af-site.tgz
-
-
-After the discovery phase is finished a summary is presented to the user:
-
-
-The list of found URLs is:
-
-- http://localhost/w3af/globalRedirect/w3af.testsite.tgz
-
-- http://localhost/beef/hook/beefmagic.js.php
-
-- http://localhost/w3af/globalRedirect/2.php
-
-*   http://localhost/w3af/webSpider/11.html
-
-    ...
-
-
-
-
-A section of the summary is the points of injection that will be used in the audit phase:
-
-
-Found 78 URLs and 102 different points of injection.
-
-The list of Fuzzable requests is:
-
-- http://localhost/w3af/ | Method: GET
-
-- http://localhost/w3af/responseSplitting/responseSplitting.php | Method: GET | Parameters: (header)
-
-*   http://localhost/w3af/sqli/dataReceptor.php | Method: POST | Parameters: (user,firstname)
-
-
-
-Finally the user exits the application, returning to the shell.
-
-**w3af>>>**
-exit
-
-w3af, better than the regular script kiddie.
-
-**$**
-
-
-
-
-
-
-
-
+    Status: Running discovery.web_spider on http://localhost/w3af/ | Method: GET.
