@@ -33,23 +33,21 @@ w3af is a complete environment for auditing and exploiting Web applications. Thi
 .. |twitter| image:: images/twitter-logo.png                                   
    :scale: 15 %                                                      
    :target: http://twitter.com/w3af                                  
-   :alt: Twitter feed                                                
-
-|Github| `Github repository <https://github.com/andresriancho/w3af/>`_
-|w3af| `w3af homepage <https://w3af.org/>`_
-|irc| `IRC channel <irc://irc.freenode.net:8001/w3af>`_
-|usersml| `Users mailing list <https://lists.sourceforge.net/lists/listinfo/w3af-users>`_
-|developml| `Developers mailing list <https://lists.sourceforge.net/lists/listinfo/w3af-develop>`_
-|twitter| `Twitter feed <http://twitter.com/w3af>`_
-
-+---------------------------------------------------------------+
-| |Github|                                                      |
-+---------------------------------------------------------------+
-| `Github repository <https://github.com/andresriancho/w3af/>`_ |
-+---------------------------------------------------------------+
-
-
-
+   :alt: Twitter feed       
+                                            
++-----------------------------------------------------------------------------------------+---------------------+
+| `Github repository <https://github.com/andresriancho/w3af/>`_                           |  |Github|           |
++-----------------------------------------------------------------------------------------+---------------------+
+| `w3af homepage <https://w3af.org/>`_                                                    |  |w3af|             |
++-----------------------------------------------------------------------------------------+---------------------+
+| `IRC channel <irc://irc.freenode.net:8001/w3af>`_                                       |  |irc|              |
++-----------------------------------------------------------------------------------------+---------------------+
+| `Users mailing list <https://lists.sourceforge.net/lists/listinfo/w3af-users>`_         |  |usersml|          |
++-----------------------------------------------------------------------------------------+---------------------+
+| `Developers mailing list <https://lists.sourceforge.net/lists/listinfo/w3af-develop>`_  |  |developml|        |
++-----------------------------------------------------------------------------------------+---------------------+
+| `Twitter feed <http://twitter.com/w3af>`_                                               |  |twitter|          |
++-----------------------------------------------------------------------------------------+---------------------+
 
 Contents
 --------
