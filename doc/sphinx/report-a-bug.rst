@@ -36,3 +36,10 @@ If ``w3af`` is failing to identify a vulnerability which you manually verified p
  * Using basic debugging, make sure that ``w3af`` finds the URL and parameter associated with the vulnerability. If you don't see that in the log, make sure the ``crawl.web_spider`` plugin is enabled.
 
 False negatives should be `reported just like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , including all the same information.
+
+False positives
+---------------
+
+Nobody likes false positives, you go from the adrenaline of "The site is vulnerable to SQL injection!" to "Nope, false positive" in less than a minute. Not good for your heart.
+
+Please report the false positivese `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , in our repository. Include as much information as possible, remember that we'll have to verify the false positive, write a unittest and then fix it.
