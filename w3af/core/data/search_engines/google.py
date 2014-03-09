@@ -136,7 +136,7 @@ class GoogleAPISearch(object):
             try:
                 self._pages = self._do_google_search()
             except w3afException, w3:
-                om.out.error('%s' % w3)
+                om.out.debug('%s' % w3)
                 self._status = FINISHED_BAD
             else:
                 self._status = FINISHED_OK
@@ -168,13 +168,13 @@ class GoogleAPISearch(object):
     def _do_google_search(self):
         """
         Perform the google search based on implementation. This method has
-        to be overriden by subclasses.
+        to be overridden by subclasses.
         """
         pass
 
     def _extract_links(self, pages):
         """
-        Return list of URLs found in pages. Must be overriden by subclasses.
+        Return list of URLs found in pages. Must be overridden by subclasses.
         """
         pass
 
@@ -222,16 +222,16 @@ class GAjaxSearch(GoogleAPISearch):
             try:
                 resp = self._do_GET(google_url_instance)
             except Exception, e:
-                raise w3afException(
-                    'Failed to GET google.com AJAX API: "%s"' % e)
+                msg = 'Failed to GET google.com AJAX API: "%s"'
+                raise w3afException(msg % e)
 
             try:
                 # Parse the response. Convert the json string into a py dict.
                 parsed_resp = json.loads(resp.get_body())
             except ValueError:
                 # ValueError: No JSON object could be decoded
-                msg = 'Invalid JSON returned by Google, got "%s"' % resp.get_body()
-                raise w3afException(msg)
+                msg = 'Invalid JSON returned by Google, got "%s"'
+                raise w3afException(msg % resp.get_body())
 
             # Expected response code is 200; otherwise raise Exception
             if parsed_resp.get('responseStatus') != 200:
