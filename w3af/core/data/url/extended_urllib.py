@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import ssl
 import httplib
 import socket
 import threading
@@ -654,6 +655,9 @@ class ExtendedUrllib(object):
                 elif reason_err[0] in known_errors:
                     reason_msg = str(reason_err)
 
+        elif isinstance(error, ssl.SSLError):
+            reason_msg = 'SSL Error: %s' % error.message
+
         elif isinstance(error, httplib.HTTPException):
             #
             #    Here we catch:
@@ -671,8 +675,7 @@ class ExtendedUrllib(object):
         
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
-            raise ScanMustStopByKnownReasonExc(msg % error,
-                                               reason=reason_err)
+            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_err)
 
         else:
             errors = [] if parsed_traceback else last_errors
