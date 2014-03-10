@@ -1,5 +1,5 @@
-Introduction
-============
+GUI Introduction
+================
 
 This documentation section is a user guide for the Graphical User Interface for Web Application Attack and Audit Framework (w3af), its goal is to provide a basic overview of how to use the application, how it works, and what you can do with it.
 
