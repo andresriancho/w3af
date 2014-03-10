@@ -272,12 +272,12 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of ExtendedUrllib.GET() must be of '
-                            'url.URL type.')
+            raise TypeError('The uri parameter of ExtendedUrllib.GET() must be'
+                            ' of url.URL type.')
 
         if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of ExtendedUrllib.GET() must be of '
-                            'Headers type.')
+            raise TypeError('The header parameter of ExtendedUrllib.GET() must'
+                            ' be of Headers type.')
 
         # Validate what I'm sending, init the library (if needed)
         self._init()
@@ -303,12 +303,12 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of ExtendedUrllib.POST() must be of '
-                            'url.URL type.')
+            raise TypeError('The uri parameter of ExtendedUrllib.POST() must'
+                            ' be of url.URL type.')
 
         if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of ExtendedUrllib.POST() must be of '
-                            'Headers type.')
+            raise TypeError('The header parameter of ExtendedUrllib.POST() must'
+                            ' be of Headers type.')
 
         #    Validate what I'm sending, init the library (if needed)
         self._init()
@@ -732,6 +732,7 @@ class ExtendedUrllib(object):
                                                     )
 
             self._grep_queue_put((fr, response))
+
 
 @contextmanager
 def raise_size_limit(respect_size_limit):
