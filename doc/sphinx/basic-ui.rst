@@ -247,6 +247,7 @@ After configuring all desired plugins the user has to set the target URL and fin
 Finally, run ``start`` in order to run all the configured plugins.
 
 .. code-block:: none
+
     w3af>>> start
 
 At any time during the scan, you can hit ``<enter>`` in order to get a live status of the w3af core. Status lines look like this:
