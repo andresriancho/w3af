@@ -66,15 +66,18 @@ class PluginTest(unittest.TestCase):
             proto = url.get_protocol()
             port = url.get_port()
 
-            if (port == 80 and proto == 'http') or\
-            (port == 443 and proto == 'https'):
-                re_str = "%s://%s/(.*)" % (proto, domain)
-            else:
-                re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
+            self._register_httpretty_uri(proto, domain, port)
 
-            httpretty.register_uri(httpretty.GET,
-                                   re.compile(re_str),
-                                   body=self.request_callback)
+    def _register_httpretty_uri(self, proto, domain, port):
+        if (port == 80 and proto == 'http') or\
+        (port == 443 and proto == 'https'):
+            re_str = "%s://%s/(.*)" % (proto, domain)
+        else:
+            re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile(re_str),
+                               body=self.request_callback)
 
     def tearDown(self):
         self.w3afcore.quit()
@@ -301,10 +304,10 @@ def create_target_option_list(*target):
     
     return opts
 
+
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200): 
         self.url = url
         self.body = body
         self.content_type = content_type
         self.status = status
-        
