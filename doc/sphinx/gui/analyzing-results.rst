@@ -49,7 +49,7 @@ Requests and responses
 In this window you will be able to search for any request (and the associated  response) that the system had generated during the scanning.
 
  .. image:: images/search-help.png
-   :scale: 35 %
+   :scale: 85 %
    :alt: GUI screenshot
    :align: right
 
