@@ -30,7 +30,7 @@ from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
 
 from w3af.core.data.db.history import HistoryItem
-from w3af.core.controllers.exceptions import (w3afException, w3afMustStopException)
+from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException)
 
 
 FUZZY_REQUEST_EXAMPLE = """\
@@ -403,11 +403,11 @@ class FuzzyRequests(entries.RememberingWindow):
                 realreq, realbody, fixContentLength)
             errorMsg = None
             self.result_ok += 1
-        except w3afException, e:
+        except BaseFrameworkException, e:
             errorMsg = str(e)
             httpResp = None
             self.result_err += 1
-        except w3afMustStopException, e:
+        except ScanMustStopException, e:
             errorMsg = str(e)
             httpResp = None
             self.result_err += 1

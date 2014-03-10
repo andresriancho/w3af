@@ -25,7 +25,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
@@ -54,7 +54,7 @@ class strange_parameters(GrepPlugin):
         """
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             return
 
         # Note:

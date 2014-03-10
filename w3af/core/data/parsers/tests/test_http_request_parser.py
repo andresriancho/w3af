@@ -28,7 +28,7 @@ from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.dc.headers import Headers
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class TestHTTPRequestParser(unittest.TestCase):
@@ -47,10 +47,10 @@ class TestHTTPRequestParser(unittest.TestCase):
 
     def test_invalid_url(self):
         self.assertRaises(
-            w3afException, HTTPRequestParser, 'GET / HTTP/1.0', '')
+            BaseFrameworkException, HTTPRequestParser, 'GET / HTTP/1.0', '')
 
     def test_invalid_protocol(self):
-        self.assertRaises(w3afException, HTTPRequestParser, 'ABCDEF', '')
+        self.assertRaises(BaseFrameworkException, HTTPRequestParser, 'ABCDEF', '')
 
     def test_simple_GET(self):
         http_request = 'GET http://www.w3af.org/ HTTP/1.1\n' \
@@ -92,12 +92,12 @@ class TestHTTPRequestParser(unittest.TestCase):
     def test_check_version_syntax(self):
         self.assertTrue(check_version_syntax('HTTP/1.0'))
 
-        self.assertRaises(w3afException, check_version_syntax, 'HTTPS/1.0')
-        self.assertRaises(w3afException, check_version_syntax, 'HTTP/1.00000000000000')
-        self.assertRaises(w3afException, check_version_syntax, 'ABCDEF')
+        self.assertRaises(BaseFrameworkException, check_version_syntax, 'HTTPS/1.0')
+        self.assertRaises(BaseFrameworkException, check_version_syntax, 'HTTP/1.00000000000000')
+        self.assertRaises(BaseFrameworkException, check_version_syntax, 'ABCDEF')
     
     def test_check_uri_syntax(self):
         self.assertEqual(check_uri_syntax('http://abc/def.html'),
                          'http://abc/def.html')
 
-        self.assertRaises(w3afException, check_uri_syntax, 'ABCDEF')
+        self.assertRaises(BaseFrameworkException, check_uri_syntax, 'ABCDEF')

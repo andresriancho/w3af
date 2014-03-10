@@ -25,7 +25,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.vdaemon.vdaemon import vdaemon
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.crontabHandler import crontabHandler
 
 
@@ -55,7 +55,7 @@ class lnxVd(vdaemon):
         if not cH.can_delay():
             msg = '[lnxVd] Failed to create cron entry.'
             om.out.debug(msg)
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             wait_time = cH.add_to_schedule(remote_filename)
 

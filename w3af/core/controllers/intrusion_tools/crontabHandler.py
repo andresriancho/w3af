@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.delayedExecution import delayedExecution
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 
@@ -106,7 +106,7 @@ class crontabHandler(delayedExecution):
             # date +"%d-%m-%H:%M:%S-%u"
             day_number, month, hour, week_day = remoteDate.split('-')
         except:
-            raise w3afException('The date command of the remote server returned an unknown format.')
+            raise BaseFrameworkException('The date command of the remote server returned an unknown format.')
         else:
             hour, minute, sec = hour.split(':')
             wait_time = None

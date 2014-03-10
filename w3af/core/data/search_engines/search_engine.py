@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers import output_manager as om
 from w3af.core.data.dc.headers import Headers
 
@@ -50,14 +50,14 @@ class SearchEngine(object):
         while True:
             try:
                 search_results = self.search(query, start, 10)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.debug(str(w3))
                 raise
             except Exception, e:
                 msg = 'An unhandled exception was found in ' \
                       'search_engines.SearchEngine.search(): "%s"' % str(e)
                 om.out.error(msg)
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
             else:
                 len_before = len(result)
                 result.update(list(search_results))
@@ -92,7 +92,7 @@ class SearchEngine(object):
         while True:
             try:
                 res_page = self.page_search(query, start, 10)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.debug(str(w3))
                 raise
             except Exception, e:

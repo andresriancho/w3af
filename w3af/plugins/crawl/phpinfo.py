@@ -29,7 +29,7 @@ import w3af.core.data.kb.config as cf
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.kb.vuln import Vuln
@@ -82,7 +82,7 @@ class phpinfo(CrawlPlugin):
         php_info_url = domain_path.url_join(php_info_filename)
         try:
             response = self._uri_opener.GET(php_info_url, cache=True)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'Failed to GET phpinfo file: "%s". Exception: "%s".'
             om.out.debug(msg % (php_info_url, w3))
         else:

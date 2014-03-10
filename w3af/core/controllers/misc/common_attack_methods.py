@@ -23,7 +23,7 @@ import re
 import difflib
 
 import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class CommonAttackMethods(object):
@@ -240,12 +240,12 @@ class CommonAttackMethods(object):
         if self._header_length is None or self._footer_length is None:
             msg = ('You need to call _define_exact_cut() or _guess_cut() before'
                    'calling _cut().')
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         if self._header_length + self._footer_length > len(body):
             # FIXME: I should handle this in some way.
             msg = ('Cut algorithm error: len(header+footer)>len(body).')
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         if body == '':
             om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')

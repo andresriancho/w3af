@@ -33,7 +33,7 @@ import w3af.core.controllers.output_manager as om
 from w3af import ROOT_PATH
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -86,18 +86,18 @@ class html_file(OutputPlugin):
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
                 msg = msg % (
                     os.path.abspath(self._output_file_name), io.strerror)
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
             except Exception, e:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
                 msg = msg % (os.path.abspath(self._output_file_name), e)
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
             try:
                 style_file = open(self._style_output_file, "r")
             except Exception, e:
                 msg = 'Can\'t open CSS style file "%s" for reading: "%s"'
                 msg = msg % (os.path.abspath(self._style_output_file), e)
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
             else:
                 html = HTML_HEADER.substitute(title=cgi.escape(TITLE),
                                               css=style_file.read())

@@ -26,7 +26,7 @@ from w3af.core.data.parsers.pdf import PDFParser, pdf_to_text
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.parsers.wml_parser import WMLParser
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class DocumentParser(object):
@@ -46,7 +46,7 @@ class DocumentParser(object):
         # we would have never got to WML), etc.
         if http_resp.is_image():
             msg = 'There is no parser for images.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         elif self._is_wml(http_resp):
             parser = WMLParser(http_resp)
         elif http_resp.is_text_or_html():
@@ -57,7 +57,7 @@ class DocumentParser(object):
             parser = SWFParser(http_resp)
         else:
             msg = 'There is no parser for "%s".' % http_resp.get_url()
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         self._parser = parser
 

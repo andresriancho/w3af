@@ -27,7 +27,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 
 
@@ -139,7 +139,7 @@ class global_redirect(AuditPlugin):
         """
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             return False
         else:

@@ -23,7 +23,7 @@ import os.path
 import base64
 
 import w3af.core.data.kb.knowledge_base as kb
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af import ROOT_PATH
 
 SHELL_IDENTIFIER_1 = '15825b40c6dace2a'[::-1]
@@ -64,7 +64,7 @@ def extract_result(body):
     if SHELL_IDENTIFIER_1 not in body or SHELL_IDENTIFIER_2 not in body:
         msg = 'Unable to execute remote command, result extraction' \
               ' failed. Response body was "%s".' % body
-        raise w3afException(msg)
+        raise BaseFrameworkException(msg)
 
     idx_1 = body.index(SHELL_IDENTIFIER_1)
     len_1 = len(SHELL_IDENTIFIER_1)
@@ -76,7 +76,7 @@ def extract_result(body):
     except TypeError:
         msg = 'Unexpected base64 decode error found while trying to retrieve'\
               ' the command output.'
-        raise w3afException(msg)
+        raise BaseFrameworkException(msg)
      
     return result
 
@@ -141,7 +141,7 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         try:
             cmd_file = open(filename)
         except:
-            raise w3afException('Failed to open filename: ' + filename)
+            raise BaseFrameworkException('Failed to open filename: ' + filename)
         else:
             file_content = cmd_file.read()
             cmd_file.close()

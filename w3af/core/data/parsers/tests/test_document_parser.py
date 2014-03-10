@@ -32,7 +32,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 def _build_http_response(body_content, content_type):
@@ -68,12 +68,12 @@ class TestDocumentParserFactory(unittest.TestCase):
 
     def test_no_parser(self):
         response = _build_http_response('%!23', u'application/bar')
-        self.assertRaises(w3afException, document_parser_factory, response)
+        self.assertRaises(BaseFrameworkException, document_parser_factory, response)
 
     def test_no_parser_binary(self):
         all_chars = ''.join([chr(i) for i in xrange(0,255)])
         response = _build_http_response(all_chars, u'application/bar')
-        self.assertRaises(w3afException, document_parser_factory, response)
+        self.assertRaises(BaseFrameworkException, document_parser_factory, response)
         
     def test_issue_106_invalid_url(self):
         """

@@ -26,7 +26,7 @@ import w3af.core.data.constants.ports as ports
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afProxyException
+from w3af.core.controllers.exceptions import RunOnce, ProxyException
 from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.options.opt_factory import opt_factory
@@ -55,14 +55,14 @@ class spider_man(CrawlPlugin):
         self._listen_address = '127.0.0.1'
         self._listen_port = ports.SPIDERMAN
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, freq):
         
         # Create the proxy server
         try:
             self._proxy = Proxy(self._listen_address, self._listen_port,
                                 self._uri_opener, self.create_p_h())
-        except w3afProxyException, proxy_exc:
+        except ProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)
         
         else:

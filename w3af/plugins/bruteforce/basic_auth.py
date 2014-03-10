@@ -26,7 +26,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.vuln import Vuln
 
@@ -90,7 +90,7 @@ class basic_auth(BruteforcePlugin):
             try:
                 response = self._uri_opener.GET(url, cache=False, grep=False,
                                                 headers=headers)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 msg = 'Exception while brute-forcing basic authentication,'\
                       ' error message: "%s".'
                 om.out.debug(msg % w3)

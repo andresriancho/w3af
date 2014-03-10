@@ -25,7 +25,7 @@ import gobject
 import xdot
 
 from w3af.core.controllers.misc.levenshtein import relative_distance
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.ui.gui.reqResViewer import reqResWindow
@@ -183,7 +183,7 @@ class distance_function_selector(entries.RememberingWindow):
             window = clusterGraphWidget(
                 self.w3af, self.data, distance_function=selected_function,
                 custom_code=custom_code)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = str(w3)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
@@ -310,7 +310,7 @@ class clusterGraphWidget(w3afDotWindow):
                 self.hide()
                 msg = 'Please review your customized code. An error was raised'\
                       ' while compiling: "%s".' % e
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
             try:
                 dotcode = self._generateDotCode(
@@ -320,7 +320,7 @@ class clusterGraphWidget(w3afDotWindow):
                 self.hide()
                 msg = 'Please review your customized code. An error was raised on run time: "'
                 msg += str(e) + '"'
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
         else:
             raise Exception('Please review your buggy code ;)')

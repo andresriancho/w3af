@@ -28,7 +28,7 @@ import time
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 
@@ -101,15 +101,15 @@ class vdaemon(object):
             executable_file_name = self._generate_exe(payload,
                                                       msfpayload_parameters)
         except Exception, e:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'Failed to create the payload file, error: "%s".' % str(e))
 
         try:
             remote_file_location = self._send_exe_to_server(
                 executable_file_name)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             error_msg = 'Failed to send the payload file, error: "%s".'
-            raise w3afException(error_msg % e)
+            raise BaseFrameworkException(error_msg % e)
         else:
             om.out.console('Successfully transfered the MSF payload to the'
                            ' remote server.')
@@ -125,7 +125,7 @@ class vdaemon(object):
                 try:
                     self._exec_payload(remote_file_location)
                 except Exception, e:
-                    raise w3afException('Failed to execute the executable file on the server, error: %s' % e)
+                    raise BaseFrameworkException('Failed to execute the executable file on the server, error: %s' % e)
                 else:
                     om.out.console('Successfully executed the MSF payload on the remote server.')
 
@@ -183,11 +183,11 @@ class vdaemon(object):
             file_content = file(output_filename).read()
             for tag in ['Invalid', 'Error']:
                 if tag in file_content:
-                    raise w3afException(file_content.strip())
+                    raise BaseFrameworkException(file_content.strip())
 
             return output_filename
         else:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'Something failed while creating the payload file.')
 
     def _send_exe_to_server(self, exe_file):
@@ -210,7 +210,7 @@ class vdaemon(object):
         transferHandler = ptf.get_transfer_handler()
 
         if not transferHandler.can_transfer():
-            raise w3afException('Can\'t transfer the file to remote host,'
+            raise BaseFrameworkException('Can\'t transfer the file to remote host,'
                                 ' can_transfer() returned False.')
         else:
             om.out.debug('The transferHandler can upload files to the remote'
@@ -230,7 +230,7 @@ class vdaemon(object):
                     'Finished payload upload to "%s"' % self._remote_filename)
                 return self._remote_filename
             else:
-                raise w3afException(
+                raise BaseFrameworkException(
                     'The payload upload failed, remote md5sum is different.')
 
     def _exec_payload(self, remote_file_location):
@@ -242,7 +242,7 @@ class vdaemon(object):
 
         This method should be implemented in winVd and lnxVd.
         """
-        raise w3afException('Please implement the _exec_payload method.')
+        raise BaseFrameworkException('Please implement the _exec_payload method.')
 
     def _exec(self, command):
         """

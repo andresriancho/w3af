@@ -30,7 +30,7 @@ from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopException
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                               ConnectionManager,
                                               HTTPResponse,
@@ -95,7 +95,7 @@ class TestKeepalive(unittest.TestCase):
     def test_timeout(self):
         """
         Ensure that kah raises 'URLTimeoutError' when timeouts occur and raises
-        'w3afMustStopException' when the timeout limit is reached.
+        'ScanMustStopException' when the timeout limit is reached.
         """
         kah = self.kahdler
         host = self.host
@@ -117,7 +117,7 @@ class TestKeepalive(unittest.TestCase):
         # Replace with mocked out ConnMgr.
         kah._cm = conn_mgr
         self.assertRaises(URLTimeoutError, kah.do_open, req)
-        self.assertRaises(w3afMustStopException, kah.do_open, req)
+        self.assertRaises(ScanMustStopException, kah.do_open, req)
 
         kah._start_transaction.assert_called_once_with(conn, req)
         conn_mgr.get_available_connection.assert_called_once_with(
@@ -209,7 +209,7 @@ class test_connection_mgr(unittest.TestCase):
         conn = self.cm.get_available_connection(self.host, cf)
         t0 = time.time()
         self.assertRaises(
-            w3afException, self.cm.get_available_connection, self.host, cf)
+            BaseFrameworkException, self.cm.get_available_connection, self.host, cf)
         self.assertTrue(
             time.time() - t0 >= 2.9, "Method returned before expected time")
 

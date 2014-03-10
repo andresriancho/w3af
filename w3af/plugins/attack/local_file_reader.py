@@ -24,7 +24,7 @@ import base64
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.misc.levenshtein import relative_distance_ge
 
@@ -114,7 +114,7 @@ class local_file_reader(AttackPlugin):
         try:
             response_a = function_reference(vuln_obj.get_url(), data_a)
             response_b = function_reference(vuln_obj.get_url(), data_b)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.error(str(e))
             return False
         else:
@@ -142,7 +142,7 @@ class local_file_reader(AttackPlugin):
                                                 cache=False)
                 response_b = function_reference(vuln_obj.get_url(), str(vuln_dc),
                                                 cache=False)
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 om.out.error(str(e))
                 return False
             
@@ -291,7 +291,7 @@ class FileReaderShell(ReadShell):
         try:
             response = function_reference(
                 self.get_url(), str(data_container))
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
         else:

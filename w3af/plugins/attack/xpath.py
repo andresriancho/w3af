@@ -29,7 +29,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.threads.threadpool import return_args
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.shell import Shell
 
 ERROR_MSG = 'Empty Path Expression'
@@ -141,7 +141,7 @@ class xpath(AttackPlugin):
         try:
             false_resp = function_ptr(vuln.get_url(), str(exploit_dc_false))
             true_resp = function_ptr(vuln.get_url(), str(exploit_dc_true))
-        except w3afException, e:
+        except BaseFrameworkException, e:
             return 'Error "%s".' % e
         else:
             if is_error_resp(false_resp.get_body()) and\
@@ -177,7 +177,7 @@ class xpath(AttackPlugin):
             try:
                 true_resp = function_ptr(vuln.get_url(), str(exploit_dc_true))
                 false_resp = function_ptr(vuln.get_url(), str(exploit_dc_false))
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 om.out.debug('Error "%s"' % (e))
             else:
                 if is_error_resp(false_resp.get_body()) and\
@@ -185,7 +185,7 @@ class xpath(AttackPlugin):
                     return str_delim
         else:
             msg = 'Failed to identify XPATH injection string delimiter.'
-            raise w3afException(msg)                
+            raise BaseFrameworkException(msg)                
 
     def _configure_is_error_function(self, vuln, count):
         """
@@ -211,7 +211,7 @@ class xpath(AttackPlugin):
                 diff_ratio += difflib.SequenceMatcher(None, base_res.get_body(),
                                                      req_x.get_body()).ratio()
 
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.debug('Error "%s"' % (e))
         else:
             use_difflib = (diff_ratio / count) < THRESHOLD
@@ -294,13 +294,13 @@ class XPathReader(Shell):
         """
         try:
             data_len = self._get_data_len()
-        except w3afException, e:
+        except BaseFrameworkException, e:
             return 'Error found during data length extraction: "%s"' % e
         else:
             if data_len is not None:
                 try:
                     data = self.get_data(data_len)
-                except w3afException, e:
+                except BaseFrameworkException, e:
                     return 'Error found during data extraction: "%s"' % e
                 else:
                     return data

@@ -25,8 +25,8 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.options.opt_factory import opt_factory
@@ -62,7 +62,7 @@ class web_diff(CrawlPlugin):
         self._local_dir = ''
         self._remote_url_path = URL('http://host.tld/')
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         GET's local files one by one until done.
@@ -76,7 +76,7 @@ class web_diff(CrawlPlugin):
         else:
             msg = 'web_diff plugin: You need to configure a local directory'\
                   ' and a remote URL to use in the diff process.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
     def _generate_report(self):
         """
@@ -236,7 +236,7 @@ class web_diff(CrawlPlugin):
             self._local_dir = local_dir
         else:
             msg = 'Error in user configuration: "%s" is not a directory.'
-            raise w3afException(msg % local_dir)
+            raise BaseFrameworkException(msg % local_dir)
 
         self._content = options_list['content'].get_value()
         self._ban_url = options_list['banned_ext'].get_value()

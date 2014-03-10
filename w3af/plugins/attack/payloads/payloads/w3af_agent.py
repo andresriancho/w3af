@@ -1,4 +1,4 @@
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.w3afAgent.w3afAgentManager import w3afAgentManager
 
@@ -24,7 +24,7 @@ class w3af_agent(Payload):
 
         try:
             agentManager = w3afAgentManager(self.shell.execute, ip_address)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             return 'Error' + str(w3)
         else:
             agentManager.run()

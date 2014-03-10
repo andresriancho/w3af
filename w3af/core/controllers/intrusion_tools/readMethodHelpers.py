@@ -29,7 +29,7 @@ def read_os_detection(remote_read):
     Uses the remote_read method to read remote files and determine what the
     remote OS is.
 
-    :return: String with 'windows' or 'linux' or raises a w3afException
+    :return: String with 'windows' or 'linux' or raises a BaseFrameworkException
              if unknown.
     """
     try:

@@ -31,7 +31,7 @@ from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INT
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.data.kb.info import Info
 
 
@@ -52,7 +52,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         self._http_port = 80
         self._https_port = 443
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Discovery task. Uses scapy.traceroute function in order to determine

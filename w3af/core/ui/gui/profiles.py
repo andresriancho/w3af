@@ -23,7 +23,7 @@ import gtk
 import cgi
 
 from w3af.core.ui.gui import helpers, entries
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.profile.profile import profile as profile
 
 
@@ -94,7 +94,7 @@ class ProfileList(gtk.TreeView):
         if self._parameter_profile:
             try:
                 profile_obj = profile(self._parameter_profile)
-            except w3afException:
+            except BaseFrameworkException:
                 raise ValueError(_("The profile %r does not exists!")
                                  % self._parameter_profile)
             else:
@@ -375,7 +375,7 @@ class ProfileList(gtk.TreeView):
 
         try:
             self.w3af.profiles.use_profile(profile_obj.get_profile_file())
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING, gtk.BUTTONS_OK,
                                     str(w3))
@@ -410,7 +410,7 @@ class ProfileList(gtk.TreeView):
         # use the empty profile
         try:
             self.w3af.profiles.use_profile(None)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3))
             dlg.run()
             dlg.destroy()
@@ -424,7 +424,7 @@ class ProfileList(gtk.TreeView):
             profile_obj = helpers.coreWrap(
                 self.w3af.profiles.save_current_to_new_profile,
                 filename, description)
-        except w3afException:
+        except BaseFrameworkException:
             #FIXME: This message should be more descriptive
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
@@ -469,7 +469,7 @@ class ProfileList(gtk.TreeView):
             filename = cgi.escape(filename)
             try:
                 profile_obj = helpers.coreWrap(self.w3af.profiles.save_current_to_new_profile, filename, description)
-            except w3afException:
+            except BaseFrameworkException:
                 self.w3af.mainwin.sb(
                     _("There was a problem saving the profile!"))
                 return

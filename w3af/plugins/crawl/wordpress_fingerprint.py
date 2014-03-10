@@ -33,7 +33,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
 
@@ -64,7 +64,7 @@ class wordpress_fingerprint(CrawlPlugin):
         """
         if not self._exec:
             # This will remove the plugin from the crawl plugins to be run.
-            raise w3afRunOnce()
+            raise RunOnce()
 
         #
         # Check if the server is running wp
@@ -243,7 +243,7 @@ class wordpress_fingerprint(CrawlPlugin):
         except Exception, e:
             msg = 'Failed to open wordpress fingerprint database file:'\
                   ' "%s", exception: "%s".'
-            raise w3afException(msg % (self.WP_VERSIONS_XML, e))
+            raise BaseFrameworkException(msg % (self.WP_VERSIONS_XML, e))
         
         parser = make_parser()
         wp_handler = WPVersionsHandler()
@@ -254,7 +254,7 @@ class wordpress_fingerprint(CrawlPlugin):
             parser.parse(wordpress_fp_fd)
         except Exception, e:
             msg = 'XML parsing error in wordpress version DB, exception: "%s".'
-            raise w3afException(msg % e)
+            raise BaseFrameworkException(msg % e)
         
         om.out.debug('Finished xml parsing. ')
         

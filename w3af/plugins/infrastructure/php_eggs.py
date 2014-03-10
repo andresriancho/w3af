@@ -29,7 +29,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.exceptions import w3afException, w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.threads.threadpool import one_to_many
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
@@ -785,7 +785,7 @@ class php_eggs(InfrastructurePlugin):
         # Already analyzed extensions
         self._already_analyzed_ext = ScalableBloomFilter()
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Nothing strange, just do some GET requests to the eggs and analyze the
@@ -824,7 +824,7 @@ class php_eggs(InfrastructurePlugin):
             egg_URL = fuzzable_request.get_url().uri2url().url_join(egg_url)
             try:
                 response = self._uri_opener.GET(egg_URL, cache=True)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 raise w3
             else:
                 return response, egg_URL, egg_desc

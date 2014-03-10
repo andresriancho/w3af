@@ -30,7 +30,7 @@ import w3af.core.data.constants.response_codes as http_constants
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -142,7 +142,7 @@ class web_spider(CrawlPlugin):
             original_url = resp.get_redir_uri()
             try:
                 doc_parser = parser_cache.dpc.get_document_parser_for(resp)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.debug('Failed to find a suitable document parser. '
                              'Exception "%s"' % w3)
             else:
@@ -287,7 +287,7 @@ class web_spider(CrawlPlugin):
         try:
             resp = self._uri_opener.GET(reference, cache=True,
                                         headers=headers)
-        except w3afMustStopOnUrlError:
+        except ScanMustStopOnUrlError:
             pass
         else:
             fuzz_req_list = []

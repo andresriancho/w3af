@@ -24,7 +24,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.cors.utils import (build_cors_request,
                                          provides_cors_features,
                                          retrieve_cors_header,
@@ -384,7 +384,7 @@ class cors_origin(AuditPlugin):
         if self.origin_header_value is None or\
                 len(self.origin_header_value.strip()) == 0:
             msg = 'Please enter a valid value for the "Origin" HTTP header.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
     def get_long_desc(self):
         """

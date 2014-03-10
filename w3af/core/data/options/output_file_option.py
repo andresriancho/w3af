@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import OUTPUT_FILE
 
@@ -47,12 +47,12 @@ class OutputFileOption(BaseOption):
         if not os.path.isdir(directory):
             msg = 'Invalid file option value "%s", the directory does not'\
                   ' exist.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         if not os.access(directory, os.W_OK):
             msg = 'Invalid file option value "%s", the user doesn\'t have' \
                   ' enough permissions to write to the specified directory.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         # Please note the following:
         #     >>> os.path.abspath(os.path.dirname(''))
@@ -61,6 +61,6 @@ class OutputFileOption(BaseOption):
         # This is why we need this check:
         if value == '':
             msg = 'Invalid file option, you have to specify a non-empty value.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         return value

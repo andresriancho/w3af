@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
@@ -75,7 +75,7 @@ class wsdl_finder(CrawlPlugin):
         """
         try:
             self._uri_opener.GET(url_to_request, cache=True)
-        except w3afException:
+        except BaseFrameworkException:
             om.out.debug('Failed to request the WSDL file: ' + url_to_request)
         else:
             # The response is analyzed by the wsdlGreper plugin

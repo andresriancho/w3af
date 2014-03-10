@@ -25,7 +25,7 @@ import urllib2
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.configurable import Configurable
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.options.opt_factory import opt_factory
@@ -102,7 +102,7 @@ class w3af_core_target(Configurable):
         support it.
 
         :param target_url: The target URL object to check if its valid or not.
-        :return: None. A w3afException is raised on error.
+        :return: None. A BaseFrameworkException is raised on error.
         """
         protocol = target_url.get_protocol()
         
@@ -115,7 +115,7 @@ class w3af_core_target(Configurable):
             msg = ('Invalid format for target URL "%s", you have to specify '
                    'the protocol (http/https/file) and a domain or IP address.'
                    ' Examples: http://host.tld/ ; https://127.0.0.1/ .')
-            raise w3afException(msg % target_url)
+            raise BaseFrameworkException(msg % target_url)
         
         return True
 
@@ -143,7 +143,7 @@ class w3af_core_target(Configurable):
                     f = urllib2.urlopen(target_url.url_string)
                 except:
                     msg = 'Cannot open target file: "%s"'
-                    raise w3afException(msg % str(target_url))
+                    raise BaseFrameworkException(msg % str(target_url))
                 else:
                     for line in f:
                         target_in_file = line.strip()
@@ -161,7 +161,7 @@ class w3af_core_target(Configurable):
         if len(domain_list) > 1:
             msg = 'You specified more than one target domain: %s.'\
                   ' And w3af can only scan one target domain at a time.'
-            raise w3afException(msg % ', '.join(domain_list))
+            raise BaseFrameworkException(msg % ', '.join(domain_list))
 
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', target_urls)
@@ -183,13 +183,13 @@ class w3af_core_target(Configurable):
         if os.lower() in self._operating_systems:
             cf.cf.save('target_os', os.lower())
         else:
-            raise w3afException('Unknown target operating system: ' + os)
+            raise BaseFrameworkException('Unknown target operating system: ' + os)
 
         pf = options_list['target_framework'].get_value_str()
         if pf.lower() in self._programming_frameworks:
             cf.cf.save('target_framework', pf.lower())
         else:
-            raise w3afException('Unknown target programming framework: ' + pf)
+            raise BaseFrameworkException('Unknown target programming framework: ' + pf)
 
     def get_name(self):
         return 'target_settings'

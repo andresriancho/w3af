@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
@@ -29,12 +29,12 @@ def os_detection_exec(exec_method):
     """
     Uses the exec_method to run remote commands and determine what's the
     remote OS is and returns a string with 'windows' or 'linux' or raises
-    a w3afException if unknown.
+    a BaseFrameworkException if unknown.
     """
     try:
         linux1 = exec_method('echo -n w3af')
         linux2 = exec_method('head -n 1 /etc/passwd')
-    except w3afException:
+    except BaseFrameworkException:
         pass
     else:
         if 'w3af' in linux1 and linux2.count(':') > 3:
@@ -45,7 +45,7 @@ def os_detection_exec(exec_method):
         # Try if it's a windows system
         win1 = exec_method('type %SYSTEMROOT%\\win.ini')
         win2 = exec_method('echo /?')
-    except w3afException:
+    except BaseFrameworkException:
         pass
     else:
         if '[fonts]' in win1 and 'ECHO' in win2:
@@ -53,7 +53,7 @@ def os_detection_exec(exec_method):
                 'Identified remote OS as Windows, returning "windows".')
             return 'windows'
 
-    raise w3afException('Failed to get/identify the remote OS.')
+    raise BaseFrameworkException('Failed to get/identify the remote OS.')
 
 
 def get_remote_temp_file(exec_method):
@@ -91,4 +91,4 @@ def get_remote_temp_file(exec_method):
 
     else:
         msg = 'Failed to create filename for a temporary file in the remote host.'
-        raise w3afException(msg)
+        raise BaseFrameworkException(msg)

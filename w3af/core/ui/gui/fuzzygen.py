@@ -21,17 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 try:
-    from w3af.core.controllers.exceptions import w3afException
+    from w3af.core.controllers.exceptions import BaseFrameworkException
 except ImportError:
     # this is to easy the test when executing this file directly
-    w3afException = Exception
+    BaseFrameworkException = Exception
 
 from w3af.core.data.parsers.url import URL
 
 REPP = re.compile("\$.*?\$")
 
 
-class FuzzyError(w3afException):
+class FuzzyError(BaseFrameworkException):
     pass
 
 # Syntax rules:

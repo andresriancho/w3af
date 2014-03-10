@@ -29,10 +29,10 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_private_site import is_private_site
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 
 
 class finger_google(InfrastructurePlugin):
@@ -50,7 +50,7 @@ class finger_google(InfrastructurePlugin):
         self._result_limit = 300
         self._fast_search = False
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -76,10 +76,10 @@ class finger_google(InfrastructurePlugin):
                 search_string,
                 self._result_limit
             )
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
-            raise w3afRunOnce()
+            raise RunOnce()
         else:
             # Happy happy joy, no error here!
             for result in result_page_objects:
@@ -95,10 +95,10 @@ class finger_google(InfrastructurePlugin):
                 search_string,
                 self._result_limit
             )
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
-            raise w3afRunOnce()
+            raise RunOnce()
         else:
             #   Send the requests using threads:
             self.worker_pool.map(self._find_accounts, result_page_objects)
@@ -116,7 +116,7 @@ class finger_google(InfrastructurePlugin):
             grep_res = True if (gpuri.get_domain() == self._domain) else False
             response = self._uri_opener.GET(gpuri, cache=True,
                                             grep=grep_res)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'ExtendedUrllib exception raised while fetching page in finger_google,'
             msg += ' error description: ' + str(w3)
             om.out.debug(msg)
@@ -130,7 +130,7 @@ class finger_google(InfrastructurePlugin):
         """
         try:
             document_parser = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             pass
         else:

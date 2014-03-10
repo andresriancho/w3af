@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.request.JSONRequest import JSONPostDataRequest
@@ -106,7 +106,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     # Try to find forms in the document
     try:
         dp = parser_cache.dpc.get_document_parser_for(resp)
-    except w3afException:
+    except BaseFrameworkException:
         # Failed to find a suitable parser for the document
         form_list = []
     else:
@@ -122,7 +122,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         wsdlp = WSDLParser()
         try:
             wsdlp.set_wsdl(resp.get_body())
-        except w3afException:
+        except BaseFrameworkException:
             pass
         else:
             for rem_meth in wsdlp.get_methods():

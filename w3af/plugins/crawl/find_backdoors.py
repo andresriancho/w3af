@@ -27,7 +27,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
@@ -152,7 +152,7 @@ class find_backdoors(CrawlPlugin):
         """
         try:
             response = self._uri_opener.GET(web_shell_url, cache=True)
-        except w3afException:
+        except BaseFrameworkException:
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
             if self._is_possible_backdoor(response):

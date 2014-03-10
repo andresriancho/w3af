@@ -26,10 +26,10 @@ from multiprocessing.dummy import Queue, Process
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.controllers.exceptions import (w3afMustStopException,
-                                         w3afMustStopOnUrlError)
+from w3af.core.controllers.exceptions import (ScanMustStopException,
+                                         ScanMustStopOnUrlError)
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.factory import create_fuzzable_requests
 
 
@@ -83,7 +83,7 @@ class seed(Process):
                 #    in a list and use them as our bootstrap URLs
                 #
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
-            except (w3afMustStopOnUrlError, w3afException, w3afMustStopException), w3:
+            except (ScanMustStopOnUrlError, BaseFrameworkException, ScanMustStopException), w3:
                 om.out.error('The target URL: %s is unreachable.' % url)
                 om.out.error('Error description: %s' % w3)
             except Exception, e:

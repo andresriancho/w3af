@@ -26,7 +26,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
@@ -42,7 +42,7 @@ class zone_h(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Search zone_h and parse the output.
@@ -62,7 +62,7 @@ class zone_h(InfrastructurePlugin):
 
         try:
             response = self._uri_opener.GET(zone_h_url)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'An exception was raised while running zone-h plugin.'
             msg += ' Exception: "%s"' % e
             om.out.debug(msg)

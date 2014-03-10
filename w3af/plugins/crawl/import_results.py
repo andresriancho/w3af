@@ -28,7 +28,7 @@ from lxml import etree
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.options.opt_factory import opt_factory
@@ -51,7 +51,7 @@ class import_results(CrawlPlugin):
         self._input_csv = ''
         self._input_burp = ''
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Read the input file, and create the fuzzable_request_list based on that
@@ -72,7 +72,7 @@ class import_results(CrawlPlugin):
         if self._input_csv != '':
             try:
                 file_handler = file(self._input_csv)
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 msg = 'An error was found while trying to read "%s": "%s".'
                 om.out.error(msg % (self._input_csv, e))
             else:
@@ -90,7 +90,7 @@ class import_results(CrawlPlugin):
                 try:
                     fuzzable_request_list = self._objs_from_burp_log(
                         self._input_burp)
-                except w3afException, e:
+                except BaseFrameworkException, e:
                     msg = 'An error was found while trying to read the Burp log' \
                           ' file (%s): "%s".'
                     om.out.error(msg % (self._input_burp, e))

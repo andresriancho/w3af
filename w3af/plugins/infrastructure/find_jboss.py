@@ -26,7 +26,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.threads.threadpool import one_to_many
 from w3af.core.data.kb.vuln import Vuln
@@ -71,7 +71,7 @@ class find_jboss(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Checks if JBoss Interesting Directories exist in the target server.

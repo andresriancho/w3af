@@ -26,7 +26,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class generic(AuthPlugin):
@@ -142,7 +142,7 @@ class generic(AuthPlugin):
 
         for o in options_list:
             if not o.get_value():
-                raise w3afException(
+                raise BaseFrameworkException(
                     "All parameters are required and can't be empty."
                 )
 

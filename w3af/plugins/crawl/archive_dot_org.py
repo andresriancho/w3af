@@ -27,7 +27,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.misc.is_private_site import is_private_site
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -72,7 +72,7 @@ class archive_dot_org(CrawlPlugin):
             msg = 'There is no point in searching archive.org for "%s"'\
                   ' because it is a private site that will never be indexed.'
             om.out.information(msg % domain)
-            raise w3afRunOnce(msg)
+            raise RunOnce(msg)
 
         # Initial check to verify if domain in archive
         start_url = self.ARCHIVE_START_URL % fuzzable_request.get_url()
@@ -83,7 +83,7 @@ class archive_dot_org(CrawlPlugin):
             msg = 'There is no point in searching archive.org for "%s"'
             msg += ' because they are not indexing this site.'
             om.out.information(msg % domain)
-            raise w3afRunOnce(msg)
+            raise RunOnce(msg)
 
         references = self._spider_archive(
             [start_url, ], self._max_depth, domain)

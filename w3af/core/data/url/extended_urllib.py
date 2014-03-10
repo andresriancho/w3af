@@ -37,11 +37,11 @@ import w3af.core.data.kb.config as cf
 import opener_settings
 
 from w3af.core.controllers.profiling.memory_usage import dump_memory_usage
-from w3af.core.controllers.exceptions import (w3afMustStopException, w3afException,
-                                         w3afMustStopByUnknownReasonExc,
-                                         w3afMustStopByKnownReasonExc,
-                                         w3afMustStopByUserRequest,
-                                         w3afMustStopOnUrlError)
+from w3af.core.controllers.exceptions import (ScanMustStopException, BaseFrameworkException,
+                                         ScanMustStopByUnknownReasonExc,
+                                         ScanMustStopByKnownReasonExc,
+                                         ScanMustStopByUserRequest,
+                                         ScanMustStopOnUrlError)
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.factory import create_fuzzable_request_from_parts
@@ -118,11 +118,11 @@ class ExtendedUrllib(object):
             # There might be errors that make us stop the process
             if self._error_stopped:
                 msg = 'Multiple exceptions found while sending HTTP requests.'
-                raise w3afMustStopException(msg)
+                raise ScanMustStopException(msg)
 
             if self._user_stopped:
                 msg = 'The user stopped the scan.'
-                raise w3afMustStopByUserRequest(msg)
+                raise ScanMustStopByUserRequest(msg)
 
         while self._user_paused:
             time.sleep(0.5)
@@ -350,7 +350,7 @@ class ExtendedUrllib(object):
                           ' wasn\'t an integer, this is strange... The value'\
                           ' is: "%s".'
                     om.out.error(msg % res.get_headers()[i])
-                    raise w3afException(msg)
+                    raise BaseFrameworkException(msg)
 
         if resource_length is not None:
             return resource_length
@@ -360,7 +360,7 @@ class ExtendedUrllib(object):
                   ' id: %s' % res.id
             om.out.debug(msg)
             # I prefer to fetch the file, before this om.out.debug was a
-            # "raise w3afException", but this didnt make much sense
+            # "raise BaseFrameworkException", but this didnt make much sense
             return 0
 
     def __getattr__(self, method_name):
@@ -422,7 +422,7 @@ class ExtendedUrllib(object):
             return True
         elif req.get_full_url().startswith('javascript:') or \
                 req.get_full_url().startswith('mailto:'):
-            raise w3afException('Unsupported URL: ' + req.get_full_url())
+            raise BaseFrameworkException('Unsupported URL: ' + req.get_full_url())
         else:
             return False
 
@@ -565,12 +565,12 @@ class ExtendedUrllib(object):
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do
             del self._error_count[req_id]
-            raise w3afMustStopOnUrlError(urlerr, req)
+            raise ScanMustStopOnUrlError(urlerr, req)
 
     def _increment_global_error_count(self, error, parsed_traceback=[]):
         """
         Increment the error count, and if we got a lot of failures raise a
-        "w3afMustStopException" subtype.
+        "ScanMustStopException" subtype.
 
         :param error: Exception object.
 
@@ -664,18 +664,18 @@ class ExtendedUrllib(object):
         
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
-            raise w3afMustStopByKnownReasonExc(msg % error,
+            raise ScanMustStopByKnownReasonExc(msg % error,
                                                reason=reason_err)
 
         else:
             errors = [] if parsed_traceback else last_errors
-            raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
+            raise ScanMustStopByUnknownReasonExc(msg % error, errs=errors)
 
     def ignore_errors(self, yes_no):
         """
         Let the library know if errors should be ignored or not. Basically,
         ignore all calls to "_increment_global_error_count" and don't raise the
-        w3afMustStopException.
+        ScanMustStopException.
 
         :param yes_no: True to ignore errors.
         """
@@ -707,7 +707,7 @@ class ExtendedUrllib(object):
         for eplugin in self._evasion_plugins:
             try:
                 request = eplugin.modify_request(request)
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 msg = 'Evasion plugin "%s" failed to modify the request.'\
                       ' Exception: "%s".'
                 om.out.error(msg % (eplugin.get_name(), e))

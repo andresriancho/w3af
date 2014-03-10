@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import STRING
 
@@ -43,4 +43,4 @@ class StringOption(BaseOption):
             return str(value)
         except Exception:
             msg = 'Invalid string option value "%s".' % value
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)

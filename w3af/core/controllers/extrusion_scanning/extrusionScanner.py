@@ -31,7 +31,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.extrusion_scanning.server.extrusionServer import extrusionServer
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import (
     os_detection_exec,
     get_remote_temp_file)
@@ -132,7 +132,7 @@ class extrusionScanner(object):
             msg = 'The user running w3af can\'t sniff on the specified'
             msg += ' interface. Hints: Are you root? Does this interface'
             msg += ' exist?'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             # I can sniff, it makes sense to send the extrusion client
             interpreter, remoteFilename = self._sendExtrusionClient()
@@ -150,7 +150,7 @@ class extrusionScanner(object):
             if not res:
                 msg = 'No inbound ports have been found. Maybe the extrusion'
                 msg += ' scan failed ?'
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
             else:
                 host = res[0][0]
                 msg = 'The remote host: "%s" can connect to w3af with these ports:'
@@ -170,7 +170,7 @@ class extrusionScanner(object):
                         localPorts.append((port, protocol))
 
                 if not localPorts:
-                    raise w3afException('All the inbound ports are in use.')
+                    raise BaseFrameworkException('All the inbound ports are in use.')
                 else:
                     msg = 'The following ports are not bound to a local process'
                     msg += ' and can be used by w3af:'
@@ -252,7 +252,7 @@ class extrusionScanner(object):
         else:
             msg = 'Failed to find a suitable extrusion scanner client for'
             msg += ' the remote system.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         return interpreter, fileContent, extension
 
@@ -273,6 +273,6 @@ class extrusionScanner(object):
         res = self._exec(cmd)
 
         if 'OK.' not in res:
-            raise w3afException('The extrusion client failed to execute.')
+            raise BaseFrameworkException('The extrusion client failed to execute.')
         else:
             om.out.debug('The extrusion client run as expected.')

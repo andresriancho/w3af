@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class BasePwdProfilingPlugin:
@@ -42,4 +42,4 @@ class BasePwdProfilingPlugin:
         :param response: In most common cases, an html. Could be almost anything.
         :return: Two map of strings:repetitions. One for titles and one for words.
         """
-        raise w3afException('The method get_words must be implemented by all password profiling plugins.')
+        raise BaseFrameworkException('The method get_words must be implemented by all password profiling plugins.')

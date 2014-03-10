@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import gtk
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.ui.gui.constants import W3AF_ICON
@@ -242,7 +242,7 @@ class OnlyOptions(gtk.VBox):
                                   plugin.ptype, plugin.pname, self.options)
             else:
                 SetOptionsWrapper(plugin.set_options, self.options)
-        except (w3afException, ValueError):
+        except (BaseFrameworkException, ValueError):
             return
         
         for opt in self.options:
@@ -263,7 +263,7 @@ class OnlyOptions(gtk.VBox):
         msg = "The plugin configuration was reverted to its last saved state"
         self.w3af.mainwin.sb(msg)
 
-SetOptionsWrapper = helpers._Wrapper((w3afException, ValueError))
+SetOptionsWrapper = helpers._Wrapper((BaseFrameworkException, ValueError))
 
 
 class ConfigDialog(gtk.Dialog):

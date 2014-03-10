@@ -28,7 +28,7 @@ from w3af.core.ui.gui.user_help.open_help import open_help
 
 from w3af.core.data.options.preferences import Preferences
 from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class ValidatedEntry(gtk.Entry):
@@ -209,7 +209,7 @@ class TextInput(ValidatedEntry, ModifiedMixIn):
         """
         try:
             self.opt_instance.validate(text)
-        except w3afException:
+        except BaseFrameworkException:
             return False
         else:
             return True

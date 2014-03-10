@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.plugins.infrastructure.oHmap.hmap as originalHmap
 
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.data.options.opt_factory import opt_factory
@@ -43,7 +43,7 @@ class hmap(InfrastructurePlugin):
         # User configured parameters
         self._gen_fp = False
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         It calls the "main" from hmap and writes the results to the kb.
@@ -74,8 +74,8 @@ class hmap(InfrastructurePlugin):
         try:
             results = originalHmap.testServer(ssl, server, port, 1,
                                               self._gen_fp)
-        except w3afException, w3:
-            msg = 'A w3afException occurred while running hmap: "%s"' % w3
+        except BaseFrameworkException, w3:
+            msg = 'A BaseFrameworkException occurred while running hmap: "%s"' % w3
             om.out.error(msg)
         except Exception, e:
             msg = 'An unhandled exception occurred while running hmap: "%s"' % e

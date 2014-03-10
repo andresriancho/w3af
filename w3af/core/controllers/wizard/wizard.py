@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.factory import factory
 
 
@@ -81,7 +81,7 @@ class wizard:
         possibleQuestions = [q for q in self._question_lst if q.get_question_id(
         ) == self._nextQuestionId]
         if len(possibleQuestions) != 1:
-            raise w3afException('We have more than one next question. Please verify your wizard definition.\
+            raise BaseFrameworkException('We have more than one next question. Please verify your wizard definition.\
                           Possible questions are: ' + str(possibleQuestions))
         else:
             # return the next question
@@ -128,7 +128,7 @@ class wizard:
         :param options_list: This is a map with the answers for every question
                                that was made to the user.
         """
-        # This line may rise a w3afException
+        # This line may rise a BaseFrameworkException
         self._nextQuestionId = self._currentQuestion.get_next_question_id(
             options_list)
 

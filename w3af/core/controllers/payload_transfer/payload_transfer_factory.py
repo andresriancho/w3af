@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.payload_transfer.echo_windows import EchoWindows
 from w3af.core.controllers.payload_transfer.echo_linux import EchoLinux
 from w3af.core.controllers.payload_transfer.reverse_ftp import ReverseFTP
@@ -72,7 +72,7 @@ class payload_transfer_factory(object):
         try:
             if not inbound_port:
                 inbound_port = self._es.get_inbound_port()
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'The extrusion scan failed, no reverse connect transfer methods'
             msg += ' can be used. Trying inband echo transfer method. Error: "%s"'
             om.out.error(msg % w3)
@@ -101,4 +101,4 @@ class payload_transfer_factory(object):
             else:
                 om.out.debug('%s *FAILED* to transfer a file to the compromised host.' % method)
 
-        raise w3afException('Failed to transfer a file to the remote host! ALL the transfer methods failed.')
+        raise BaseFrameworkException('Failed to transfer a file to the remote host! ALL the transfer methods failed.')

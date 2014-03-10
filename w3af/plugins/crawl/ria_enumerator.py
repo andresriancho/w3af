@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 from w3af import ROOT_PATH
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.options.opt_factory import opt_factory
@@ -53,7 +53,7 @@ class ria_enumerator(CrawlPlugin):
         # This is a list of common file extensions for google gears manifest:
         self._extensions = ['', '.php', '.json', '.txt', '.gears']
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Get the file and parse it.

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
 from w3af.core.data.kb.exploit_result import ExploitResult
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import *
 
 # python stuff
@@ -48,7 +48,7 @@ class proxy(ExploitResult, CommonAttackMethods):
 
         :return: None
         """
-        raise w3afException('You should implement the end method of classes that inherit from "proxy"')
+        raise BaseFrameworkException('You should implement the end method of classes that inherit from "proxy"')
 
     def get_name(self):
         """
@@ -56,7 +56,7 @@ class proxy(ExploitResult, CommonAttackMethods):
 
         :return: The name of the proxy (rfi_proxy, dav_proxy, etc.)
         """
-        raise w3afException('You should implement the get_name method of classes that inherit from "proxy"')
+        raise BaseFrameworkException('You should implement the get_name method of classes that inherit from "proxy"')
 
     def __repr__(self):
         return '<proxy server at: ' + self._proxyDaemon.get_bind_ip() + ':' + str(self._proxyDaemon.get_bind_port()) + '>'

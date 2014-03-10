@@ -30,7 +30,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.plugins.infrastructure.halberd_helpers.strategy import CustomScanStrategy
 from w3af.core.data.kb.info import Info
@@ -48,7 +48,7 @@ class halberd(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         It calls the "main" from halberd and writes the results to the kb.

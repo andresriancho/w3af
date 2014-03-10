@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.kb.info import Info
 
@@ -39,7 +39,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains

@@ -24,7 +24,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class EchoWindows(BasePayloadTransfer):
@@ -88,7 +88,7 @@ class EchoWindows(BasePayloadTransfer):
             if not self.can_transfer():
                 msg = 'Failed to transfer file to the compromised server, '
                 msg += 'EchoWindows.can_transfer returned False.'
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
         # if exists, delete _filename
         res = self._exec_method('del ' + self._filename)
@@ -126,7 +126,7 @@ class EchoWindows(BasePayloadTransfer):
                      ' to icesurfer and sqlninja for this technique!')
         res = self._exec_method('debug < ' + self._filename)
         if 'file creation error' in res.lower():
-            raise w3afException('Error in remote debug.exe command.')
+            raise BaseFrameworkException('Error in remote debug.exe command.')
         extension = self._get_extension(destination)
         om.out.debug('Changing the extension of the binary file to match the original one ()')
         res = self._exec_method('move ' + self._filename + '._ ' +

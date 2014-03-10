@@ -32,7 +32,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.plugins.tests.helper import onlyroot
 
 
@@ -130,7 +130,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst._has_permission = MagicMock(side_effect=[True, True])
 
         plugininst.discover(fuzz_req)
-        self.assertRaises(w3afRunOnce, plugininst.discover, fuzz_req)
+        self.assertRaises(RunOnce, plugininst.discover, fuzz_req)
 
     def test_not_root_user(self):
         plugininst = hvshsdist.http_vs_https_dist()

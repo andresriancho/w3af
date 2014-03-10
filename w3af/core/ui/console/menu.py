@@ -24,7 +24,7 @@ import pprint
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.ui.console.util import splitPath, suggest
 from w3af.core.ui.console.history import history
 from w3af.core.ui.console.help import helpMainRepository, HelpContainer
@@ -186,7 +186,7 @@ class menu(object):
             finally:
                 child.set_child_call(False)
 
-        raise w3afException("Unknown command '%s'" % command)
+        raise BaseFrameworkException("Unknown command '%s'" % command)
 
     def _cmd_back(self, tokens):
         return self._console.back
@@ -202,7 +202,7 @@ class menu(object):
             subj = params[0]
             short, full = self._help.get_help(subj)
             if short is None:
-                raise w3afException("No help for '%s'" % subj)
+                raise BaseFrameworkException("No help for '%s'" % subj)
 
             om.out.console(short)
             if full:
@@ -214,7 +214,7 @@ class menu(object):
 
     def _cmd_print(self, params):
         if not len(params):
-            raise w3afException('Variable is expected')
+            raise BaseFrameworkException('Variable is expected')
 
         small_locals = {'kb': kb, 'w3af_core': self._w3af}
         small_globals = {}

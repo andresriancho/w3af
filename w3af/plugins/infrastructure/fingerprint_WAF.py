@@ -27,8 +27,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.info import Info
@@ -51,7 +51,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -86,7 +86,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         try:
             lock_response2 = self._uri_opener.GET(fuzzable_request.get_url(),
                                                   headers=headers, cache=True)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             om.out.debug(
                 'Failed to identify secure IIS, exception: ' + str(w3))
         else:

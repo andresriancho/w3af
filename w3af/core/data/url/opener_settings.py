@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.url.handlers.ntlm_auth as HTTPNtlmAuthHandler
 
 from w3af.core.controllers.configurable import Configurable
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -141,7 +141,7 @@ class OpenerSettings(Configurable):
             try:
                 f = open(headers_file, 'r')
             except:
-                raise w3afException(
+                raise BaseFrameworkException(
                     'Unable to open headers file: ' + headers_file)
 
             header_list = []
@@ -184,7 +184,7 @@ class OpenerSettings(Configurable):
             cj.load(cookiejar_file)
         except Exception, e:
             msg = 'Error while loading cookiejar file. Description: "%s".'
-            raise w3afException(msg % e)
+            raise BaseFrameworkException(msg % e)
         else:
             self._cookie_handler = CookieHandler(cj)
             cfg.save('cookie_jar_file', cookiejar_file)
@@ -216,7 +216,7 @@ class OpenerSettings(Configurable):
         om.out.debug('Called set_timeout(%s)' % timeout)
         if timeout > 60 or timeout < 1:
             err = 'The timeout parameter should be between 1 and 60 seconds.'
-            raise w3afException(err)
+            raise BaseFrameworkException(err)
         else:
             cfg.save('timeout', timeout)
 
@@ -261,7 +261,7 @@ class OpenerSettings(Configurable):
         if port > 65535 or port < 1:
             #    The user entered something invalid
             self._proxy_handler = None
-            raise w3afException('Invalid port number: ' + str(port))
+            raise BaseFrameworkException('Invalid port number: ' + str(port))
 
         #
         #    Great, we have all valid information.
@@ -287,13 +287,13 @@ class OpenerSettings(Configurable):
 
         if not url:
             if url is None:
-                raise w3afException(
+                raise BaseFrameworkException(
                     'The entered basic_auth_domain URL is invalid!')
             elif username or password:
                 msg = ('To properly configure the basic authentication '
                        'settings, you should also set the auth domain. If you '
                        'are unsure, you can set it to the target domain name.')
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
         else:
             if not hasattr(self, '_password_mgr'):
                 # Create a new password manager

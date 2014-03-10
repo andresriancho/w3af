@@ -23,8 +23,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_private_site import is_private_site
 
@@ -49,7 +49,7 @@ class finger_bing(InfrastructurePlugin):
         # User configured
         self._result_limit = 300
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -79,10 +79,10 @@ class finger_bing(InfrastructurePlugin):
             grep = True if self._domain == url.get_domain() else False
             response = self._uri_opener.GET(page.URL, cache=True,
                                             grep=grep)
-        except w3afMustStopOnUrlError:
+        except ScanMustStopOnUrlError:
             # Just ignore it
             pass
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'ExtendedUrllib exception raised while fetching page in finger_bing,'
             msg += ' error description: ' + str(w3)
             om.out.debug(msg)
@@ -91,7 +91,7 @@ class finger_bing(InfrastructurePlugin):
             # I have the response object!
             try:
                 document_parser = parser_cache.dpc.get_document_parser_for(response)
-            except w3afException:
+            except BaseFrameworkException:
                 # Failed to find a suitable parser for the document
                 pass
             else:

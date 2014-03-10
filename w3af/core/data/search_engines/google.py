@@ -24,7 +24,7 @@ import urllib
 import json
 
 from w3af.core.controllers import output_manager as om
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.search_engines.search_engine import SearchEngine
@@ -135,7 +135,7 @@ class GoogleAPISearch(object):
         if self._status == IS_NEW:
             try:
                 self._pages = self._do_google_search()
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.debug('%s' % w3)
                 self._status = FINISHED_BAD
             else:
@@ -223,7 +223,7 @@ class GAjaxSearch(GoogleAPISearch):
                 resp = self._do_GET(google_url_instance)
             except Exception, e:
                 msg = 'Failed to GET google.com AJAX API: "%s"'
-                raise w3afException(msg % e)
+                raise BaseFrameworkException(msg % e)
 
             try:
                 # Parse the response. Convert the json string into a py dict.
@@ -231,13 +231,13 @@ class GAjaxSearch(GoogleAPISearch):
             except ValueError:
                 # ValueError: No JSON object could be decoded
                 msg = 'Invalid JSON returned by Google, got "%s"'
-                raise w3afException(msg % resp.get_body())
+                raise BaseFrameworkException(msg % resp.get_body())
 
             # Expected response code is 200; otherwise raise Exception
             if parsed_resp.get('responseStatus') != 200:
                 msg = 'Invalid JSON format returned by Google, response status'\
                       ' needs to be 200, got "%s" instead.'
-                raise w3afException(msg % parsed_resp.get('responseDetails'))
+                raise BaseFrameworkException(msg % parsed_resp.get('responseDetails'))
 
             # Update result pages
             res_pages.append(resp)
@@ -301,7 +301,7 @@ class GStandardSearch(GoogleAPISearch):
             # string in response
             if GOOGLE_SORRY_PAGE in response:
                 msg = 'Google is telling us to stop doing automated tests.'
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
             if not self._has_more_items(response.get_body()):
                 there_is_more = False
@@ -389,7 +389,7 @@ class GMobileSearch(GStandardSearch):
 
             if GOOGLE_SORRY_PAGE in response:
                 msg = 'Google is telling us to stop doing automated tests.'
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
             if not self._has_more_items(response.get_body()):
                 there_is_more = False

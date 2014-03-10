@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import traceback
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 def factory(module_name, *args):
@@ -43,10 +43,10 @@ def factory(module_name, *args):
         __import__(module_name)
     except ImportError, ie:
         msg = 'There was an error while importing %s: "%s".'
-        raise w3afException(msg % (module_name, ie))
+        raise BaseFrameworkException(msg % (module_name, ie))
     except Exception, e:
         msg = 'There was an error while importing %s: "%s".'
-        raise w3afException(msg % (module_name, e))
+        raise BaseFrameworkException(msg % (module_name, e))
     else:
 
         class_name = module_name.split('.')[-1]
@@ -56,13 +56,13 @@ def factory(module_name, *args):
             a_class = getattr(module_inst, class_name)
         except Exception, e:
             msg = 'The requested plugin ("%s") doesn\'t have a correct format: "%s".'
-            raise w3afException(msg % (module_name, e))
+            raise BaseFrameworkException(msg % (module_name, e))
         else:
             try:
                 inst = a_class(*args)
             except Exception, e:
                 msg = 'Failed to get an instance of "%s". Original exception: '
                 msg += '"%s". Traceback for this error: %s'
-                raise w3afException(
+                raise BaseFrameworkException(
                     msg % (class_name, e, traceback.format_exc()))
             return inst

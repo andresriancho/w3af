@@ -29,7 +29,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
-from w3af.core.controllers.exceptions import w3afMustStopOnUrlError
+from w3af.core.controllers.exceptions import ScanMustStopOnUrlError
 
 
 class Plugin(Configurable):
@@ -170,7 +170,7 @@ class Plugin(Configurable):
         Subclasses should redefine this method for a more refined
         behavior and must respect the return value format.
 
-        :param url_error: w3afMustStopOnUrlError exception instance
+        :param url_error: ScanMustStopOnUrlError exception instance
         :return: (stopbubbling, result). The 1st is a boolean value
             that indicates the caller if the original error should
             stop bubbling or not. The 2nd is the result to be
@@ -206,7 +206,7 @@ class UrlOpenerProxy(object):
         def meth(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
-            except w3afMustStopOnUrlError, w3aferr:
+            except ScanMustStopOnUrlError, w3aferr:
                 stopbubbling, result = \
                     self._plugin_inst.handle_url_error(w3aferr)
                 if not stopbubbling:

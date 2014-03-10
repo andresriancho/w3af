@@ -26,8 +26,8 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afRunOnce
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import RunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -49,7 +49,7 @@ class frontpage_version(InfrastructurePlugin):
         # Internal variables
         self._analyzed_dirs = ScalableBloomFilter()
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         For every directory, fetch a list of files and analyze the response.
@@ -69,7 +69,7 @@ class frontpage_version(InfrastructurePlugin):
                 try:
                     response = self._uri_opener.GET(frontpage_info_url,
                                                     cache=True)
-                except w3afException, w3:
+                except BaseFrameworkException, w3:
                     msg = 'Failed to GET Frontpage Server _vti_inf.html file: "'
                     msg += frontpage_info_url + \
                         '". Exception: "' + str(w3) + '".'

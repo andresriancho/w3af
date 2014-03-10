@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.factory import factory
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.options.bool_option import BoolOption
@@ -93,13 +93,13 @@ class test_wizards(object):
                 try:
                     filled_opt = self._incorrectly_fill_options(opt)
                     wizard_inst.set_answer(filled_opt)
-                except w3afException:
+                except BaseFrameworkException:
                     # Now we correctly fill these values
                     filled_opt = self._correctly_fill_options(opt)
                     wizard_inst.set_answer(filled_opt)
                 except Exception:
                     # The idea is that even when the user puts invalid
-                    # values in the answer, we handle it with a w3afException
+                    # values in the answer, we handle it with a BaseFrameworkException
                     # and show something to him. If we get here then something
                     # went wrong
                     assert False

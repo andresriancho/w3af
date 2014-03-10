@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.config import ConfigMenu
 from w3af.core.ui.console.util import suggest
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class pluginsMenu(menu):
@@ -168,7 +168,7 @@ class pluginsTypeMenu(menu):
                 disabling = False
 
             if plugin != 'all' and plugin not in self._plugins:
-                raise w3afException("Unknown plugin: '%s'" % plugin)
+                raise BaseFrameworkException("Unknown plugin: '%s'" % plugin)
 
             if disabling:
                 if plugin == 'all':
@@ -205,11 +205,11 @@ class pluginsTypeMenu(menu):
     def _cmd_desc(self, params):
 
         if len(params) == 0:
-            raise w3afException("Plugin name is required")
+            raise BaseFrameworkException("Plugin name is required")
 
         plugin_name = params[0]
         if plugin_name not in self._plugins:
-            raise w3afException("Unknown plugin: '%s'" % plugin_name)
+            raise BaseFrameworkException("Unknown plugin: '%s'" % plugin_name)
 
         plugin = self._w3af.plugins.get_plugin_inst(self._name, plugin_name)
         long_desc = plugin.get_long_desc()
@@ -264,12 +264,12 @@ class pluginsTypeMenu(menu):
     def _cmd_config(self, params):
 
         if len(params) == 0:
-            raise w3afException("Plugin name is required")
+            raise BaseFrameworkException("Plugin name is required")
 
         name = params[0]
 
         if name not in self._plugins:
-            raise w3afException("Unknown plugin: '%s'" % name)
+            raise BaseFrameworkException("Unknown plugin: '%s'" % name)
 
         if name in self._configs:
             config = self._configs[name]

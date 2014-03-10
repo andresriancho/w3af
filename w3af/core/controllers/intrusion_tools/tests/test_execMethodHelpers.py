@@ -23,7 +23,7 @@ import commands
 
 from mock import MagicMock
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import (
     os_detection_exec,
     get_remote_temp_file)
@@ -48,7 +48,7 @@ class TestExecHelpers(unittest.TestCase):
             return 'foobarspameggs'
 
         exec_method = MagicMock(side_effect=side_effect)
-        self.assertRaises(w3afException, os_detection_exec, exec_method)
+        self.assertRaises(BaseFrameworkException, os_detection_exec, exec_method)
 
     def test_get_remote_temp_file_linux(self):
         exec_method = commands.getoutput
@@ -67,4 +67,4 @@ class TestExecHelpers(unittest.TestCase):
         def side_effect(cmd):
             return 'foobarspameggs'
         exec_method = MagicMock(side_effect=side_effect)
-        self.assertRaises(w3afException, get_remote_temp_file, exec_method)
+        self.assertRaises(BaseFrameworkException, get_remote_temp_file, exec_method)

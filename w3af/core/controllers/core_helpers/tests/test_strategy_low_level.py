@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.core_helpers.strategy import w3af_core_strategy
-from w3af.core.controllers.exceptions import w3afMustStopException
+from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.data.kb.knowledge_base import kb
 
 
@@ -142,7 +142,7 @@ class TestStrategy(unittest.TestCase):
         
         try:
             strategy.start()
-        except w3afMustStopException, wmse:
+        except ScanMustStopException, wmse:
             message = str(wmse)
             self.assertIn('Please verify your target configuration', message)
         else:

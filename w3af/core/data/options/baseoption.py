@@ -113,7 +113,7 @@ class BaseOption(object):
         Each option type should implement this.
 
         :return: The validated value (which in the GUI can be ignored) or a
-                 w3afException when the value is invalid.
+                 BaseFrameworkException when the value is invalid.
         """
         raise NotImplementedError
 

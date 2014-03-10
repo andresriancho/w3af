@@ -32,7 +32,7 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.data.kb.exec_shell import ExecShell
@@ -294,7 +294,7 @@ class rfi(AttackPlugin):
                 file_handler.write(file_content)
                 file_handler.close()
             except:
-                raise w3afException('Could not create file in webroot.')
+                raise BaseFrameworkException('Could not create file in webroot.')
             else:
                 url_to_include = 'http://%s:%s/%s' % (self._listen_address,
                                                       self._listen_port,
@@ -398,7 +398,7 @@ class PortScanShell(Shell):
         try:
             http_response = function_reference(
                 self.get_url(), str(port_open_dc))
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             return 'Exception from the remote web application: "%s"' % w3
         except Exception, e:
             return 'Unhandled exception, "%s"' % e
@@ -455,7 +455,7 @@ class RFIShell(ExecShell, PortScanShell):
         function_reference = getattr(self._uri_opener, self.get_method())
         try:
             http_res = function_reference(self.get_url(), str(e_dc))
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             return 'Exception from the remote web application:' + str(w3)
         except Exception, e:
             return 'Unhandled exception from the remote web application:' + str(e)

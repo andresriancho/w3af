@@ -40,8 +40,8 @@ try:
     from w3af.core.data.db.startup_cfg import StartUpConfig
 
     from w3af.core.controllers.w3afCore import w3afCore
-    from w3af.core.controllers.exceptions import (w3afException,
-                                             w3afMustStopException)
+    from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                             ScanMustStopException)
 except KeyboardInterrupt:
     sys.exit(0)
 
@@ -288,11 +288,11 @@ class ConsoleUI(object):
                 # If None, the menu is not changed.
                 params = self.in_raw_line_mode() and line or self._parseLine(line)
                 menu = self._context.execute(params)
-            except w3afMustStopException:
+            except ScanMustStopException:
                 menu = None
                 self.exit()
 
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 menu = None
                 om.out.console(e.value)
 

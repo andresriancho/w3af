@@ -24,7 +24,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.response_codes as response_codes
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -85,7 +85,7 @@ class allowed_methods(InfrastructurePlugin):
         if not self._exec:
             # This will remove the plugin from the infrastructure
             # plugins to be run.
-            raise w3afRunOnce()
+            raise RunOnce()
 
         # Run the plugin.
         if self._exec_one_time:

@@ -26,7 +26,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -146,7 +146,7 @@ class url_fuzzer(CrawlPlugin):
         try:
             response = self._uri_opener.GET(uri, cache=True,
                                             headers=self._headers)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'An exception was raised while requesting "%s", the error'
             msg += 'message is: "%s"'
             om.out.error(msg % (uri, e))

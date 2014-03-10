@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import INPUT_FILE
 
@@ -59,26 +59,26 @@ class InputFileOption(BaseOption):
         if not os.path.isdir(directory):
             msg = 'Invalid input file option value "%s", the directory does'\
                   ' not exist.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         if not os.access(directory, os.R_OK):
             msg = 'Invalid input file option value "%s", the user doesn\'t have' \
                   ' enough permissions to read from the specified directory.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         if not os.path.exists(value):
             msg = 'Invalid input file option value "%s", the specified file' \
                   ' does not exist.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         if not os.access(value, os.R_OK):
             msg = 'Invalid input file option value "%s", the user doesn\'t have' \
                   ' enough permissions to read the specified file.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         if not os.path.isfile(value):
             msg = 'Invalid input file option value "%s", the path doesn\'t' \
                   ' point to a file.'
-            raise w3afException(msg % value)
+            raise BaseFrameworkException(msg % value)
 
         return value

@@ -30,7 +30,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.misc.levenshtein import relative_distance_lt
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
 
 from w3af.core.data.fuzzer.utils import rand_alnum
@@ -116,7 +116,7 @@ class find_vhosts(InfrastructurePlugin):
 
         try:
             dp = parser_cache.dpc.get_document_parser_for(original_response)
-        except w3afException:
+        except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             return []
 

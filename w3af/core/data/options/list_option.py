@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import LIST
 
@@ -59,7 +59,7 @@ class ListOption(BaseOption):
             assert matched_str == temp_value
         except Exception:
             msg = 'Invalid list format in user configuration: "%s".' % value
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             res = []
             list_items = self.LST_PARSE_RE.findall(temp_value)

@@ -27,7 +27,7 @@ import urlparse
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from w3af.core.data.misc.encoding import is_known_encoding
@@ -129,7 +129,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
                     odict[name] = [value]
         except Exception:
             if not ignore_exc:
-                raise w3afException('Error while parsing "%r"' % (qstr,))
+                raise BaseFrameworkException('Error while parsing "%r"' % (qstr,))
         else:
             def decode(item):
                 return (
@@ -741,7 +741,7 @@ class URL(DiskItem):
                                                keep_blank_values=True, strict_parsing=True)
             except Exception:
                 if not ignore_exc:
-                    raise w3afException('Strange things found when parsing '
+                    raise BaseFrameworkException('Strange things found when parsing '
                                         'params string: ' + self.params)
             else:
                 for k, v in parsedData.iteritems():

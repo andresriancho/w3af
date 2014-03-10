@@ -24,7 +24,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info import Info
@@ -69,7 +69,7 @@ class get_emails(GrepPlugin):
         """
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             msg = 'If I can\'t parse the document, I won\'t be able to find'\
                   '  any emails. Ignoring the response for "%s".'
             om.out.debug(msg % response.get_url())

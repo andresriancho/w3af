@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -168,7 +168,7 @@ class detailed(AuthPlugin):
         for o in options_list:
             if not o.get_value():
                 msg = "All parameters are required and can't be empty."
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
     def get_long_desc(self):
         """

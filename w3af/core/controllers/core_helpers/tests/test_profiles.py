@@ -25,7 +25,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class TestCoreProfiles(unittest.TestCase):
@@ -79,12 +79,12 @@ class TestCoreProfiles(unittest.TestCase):
         w3af_core.profiles.remove_profile('unittest-remove')
 
         self.assertRaises(
-            w3afException, w3af_core.profiles.use_profile, 'unittest-remove')
+            BaseFrameworkException, w3af_core.profiles.use_profile, 'unittest-remove')
 
     def test_remove_profile_not_exists(self):
         w3af_core = w3afCore()
         self.assertRaises(
-            w3afException, w3af_core.profiles.remove_profile, 'not-exists')
+            BaseFrameworkException, w3af_core.profiles.remove_profile, 'not-exists')
 
     @attr('smoke')
     def test_use_all_profiles(self):

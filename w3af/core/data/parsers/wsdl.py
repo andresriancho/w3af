@@ -24,7 +24,7 @@ import xml.parsers.expat as expat
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.url import URL
 
 
@@ -59,17 +59,17 @@ class WSDLParser(object):
                         if it really is a WSDL document.
         """
         if not self.is_WSDL(xmlData):
-            raise w3afException('The body content is not a WSDL.')
+            raise BaseFrameworkException('The body content is not a WSDL.')
         else:
             try:
                 self._proxy = SOAPpy.WSDL.Proxy(xmlData)
             except expat.ExpatError:
-                raise w3afException('The body content is not a WSDL.')
+                raise BaseFrameworkException('The body content is not a WSDL.')
             except Exception, e:
                 msg = 'The body content is not a WSDL.'
                 msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
                 om.out.debug(msg)
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
 
     def get_ns(self, method):
         """
@@ -79,7 +79,7 @@ class WSDLParser(object):
         if method in self._proxy.methods.keys():
             return str(self._proxy.methods[method].namespace)
         else:
-            raise w3afException('Unknown method name.')
+            raise BaseFrameworkException('Unknown method name.')
 
     def get_action(self, methodName):
         """
@@ -91,7 +91,7 @@ class WSDLParser(object):
             action_url = URL(action_str)
             return action_url
         else:
-            raise w3afException('Unknown method name.')
+            raise BaseFrameworkException('Unknown method name.')
 
     def get_location(self, methodName):
         """
@@ -103,7 +103,7 @@ class WSDLParser(object):
             location_url = URL(location_str)
             return location_url
         else:
-            raise w3afException('Unknown method name.')
+            raise BaseFrameworkException('Unknown method name.')
 
     def get_methods(self):
         """
@@ -128,7 +128,7 @@ class WSDLParser(object):
         :return: The soap action.
         """
         if not methodName in self._proxy.methods.keys():
-            raise w3afException('Unknown method name.')
+            raise BaseFrameworkException('Unknown method name.')
         else:
             res = []
             inps = self._proxy.methods[methodName].inparams

@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.levenshtein import relative_distance_lt
 from w3af.core.data.parsers.url import URL
@@ -48,7 +48,7 @@ class afd(InfrastructurePlugin):
         self._not_filtered = []
         self._filtered = []
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Nothing strange, just do some GET requests to the first URL with an
@@ -60,7 +60,7 @@ class afd(InfrastructurePlugin):
         """
         try:
             filtered, not_filtered = self._send_requests(fuzzable_request)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             om.out.error(str(w3))
         else:
             self._analyze_results(filtered, not_filtered)
@@ -80,7 +80,7 @@ class afd(InfrastructurePlugin):
 
         try:
             http_resp = self._uri_opener.GET(original_url, cache=True)
-        except w3afException:
+        except BaseFrameworkException:
             msg = 'Active filter detection plugin failed to receive a'\
                   ' response for the first request. Can not perform analysis.'
             om.out.error(msg)
@@ -115,7 +115,7 @@ class afd(InfrastructurePlugin):
         try:
             resp_body = self._uri_opener.GET(offending_URL,
                                              cache=False).get_body()
-        except w3afException:
+        except BaseFrameworkException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
         else:

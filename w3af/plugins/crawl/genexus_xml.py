@@ -25,8 +25,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
@@ -43,7 +43,7 @@ class genexus_xml(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Get the execute.xml file and parse it.
@@ -82,7 +82,7 @@ class genexus_xml(CrawlPlugin):
                 try:
                     dom = xml.dom.minidom.parseString(http_response.get_body())
                 except:
-                    raise w3afException('Error while parsing "%s"' % file_name)
+                    raise BaseFrameworkException('Error while parsing "%s"' % file_name)
                 else:
                     raw_url_list = dom.getElementsByTagName("ObjLink")
                     parsed_url_list = []

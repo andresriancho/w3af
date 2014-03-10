@@ -29,7 +29,7 @@ from w3af.core.data.request.factory import create_fuzzable_request_from_parts
 from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.plugins.mangle_plugin import ManglePlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class sed(ManglePlugin):
@@ -124,7 +124,7 @@ class sed(ManglePlugin):
                                        self._expressions)
 
         if len(self._expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
-            raise w3afException('The user specified expression is invalid.')
+            raise BaseFrameworkException('The user specified expression is invalid.')
 
         for exp in self._expressions:
             req_res, body_header, regex_str, target_str = exp
@@ -133,19 +133,19 @@ class sed(ManglePlugin):
                 msg = 'The first letter of the sed expression should be "q"'\
                       ' for indicating request or "s" for response, got "%s"'\
                       ' instead.'
-                raise w3afException(msg % req_res)
+                raise BaseFrameworkException(msg % req_res)
 
             if body_header not in ('b', 'h'):
                 msg = 'The second letter of the expression should be "b"'\
                       ' for body or "h" for header, got "%s" instead.'
-                raise w3afException(msg % body_header)
+                raise BaseFrameworkException(msg % body_header)
 
             try:
                 regex = re.compile(regex_str)
             except re.error, re_err:
                 msg = 'Regular expression compilation error at "%s", the'\
                       ' original exception was "%s".'
-                raise w3afException(msg % (regex_str, re_err))
+                raise BaseFrameworkException(msg % (regex_str, re_err))
 
             self._manglers[req_res][body_header].add((regex, target_str))
 

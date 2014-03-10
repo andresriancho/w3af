@@ -24,7 +24,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class profilesMenu(menu):
@@ -53,7 +53,7 @@ class profilesMenu(menu):
         else:
             profile = params[0]
             if profile not in self._profiles:
-                raise w3afException('Unknown profile name: "%s"' % profile)
+                raise BaseFrameworkException('Unknown profile name: "%s"' % profile)
 
             try:
                 workdir = params[1]
@@ -62,7 +62,7 @@ class profilesMenu(menu):
 
             try:
                 self._w3af.profiles.use_profile(profile, workdir=workdir)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.console(str(w3))
 
             om.out.console('The plugins configured by the scan profile have '

@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
@@ -96,7 +96,7 @@ class eval(AttackPlugin):
             try:
                 http_res = function_reference(vuln_obj.get_url(),
                                               str(data_container))
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 msg = 'An error ocurred while trying to exploit the eval()'\
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
@@ -154,7 +154,7 @@ class EvalShell(ExecShell):
         exploit_dc[self.get_var()] = self._shell_code
         try:
             response = function_reference(self.get_url(), str(exploit_dc))
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'An error occurred while trying to exploit the eval()'\
                   ' vulnerability (sending command %s). Original exception: "%s".'
             om.out.debug(msg % (command, w3))

@@ -29,7 +29,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
@@ -229,7 +229,7 @@ class LocalProxy(Proxy):
             self._what_to_trap = re.compile(regex)
         except re.error:
             error = 'The regular expression you configured is invalid.'
-            raise w3afException(error)
+            raise BaseFrameworkException(error)
 
     def set_methods_to_trap(self, methods):
         """Set list that indicates what METHODS TO trap.
@@ -244,7 +244,7 @@ class LocalProxy(Proxy):
             self._what_not_to_trap = re.compile(regex)
         except re.error:
             error = 'The regular expression you configured is invalid.'
-            raise w3afException(error)
+            raise BaseFrameworkException(error)
 
     def set_trap(self, trap):
         """
@@ -285,6 +285,6 @@ class LocalProxy(Proxy):
                     return res
 
         # I looped and got nothing!
-        raise w3afException(
+        raise BaseFrameworkException(
             'Timed out waiting for response from remote server.')
 

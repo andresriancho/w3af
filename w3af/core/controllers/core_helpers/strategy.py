@@ -38,8 +38,8 @@ from w3af.core.controllers.core_helpers.consumers.crawl_infrastructure import cr
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 
-from w3af.core.controllers.exceptions import (w3afMustStopException,
-                                         w3afMustStopByUserRequest)
+from w3af.core.controllers.exceptions import (ScanMustStopException,
+                                         ScanMustStopByUserRequest)
 
 
 class w3af_core_strategy(object):
@@ -280,7 +280,7 @@ class w3af_core_strategy(object):
         consumers. Usually this means calling the ExceptionHandler which
         will decide what to do with it.
 
-        Please note that ExtendedUrllib can raise a w3afMustStopByUserRequest
+        Please note that ExtendedUrllib can raise a ScanMustStopByUserRequest
         which should get through this piece of code and be re-raised in order to
         reach the try/except clause in w3afCore's start.
         """
@@ -316,11 +316,11 @@ class w3af_core_strategy(object):
             for url in cf.cf.get('targets'):
                 try:
                     self._w3af_core.uri_opener.GET(url, cache=False)
-                except w3afMustStopByUserRequest:
+                except ScanMustStopByUserRequest:
                     # Not a real error, the user stopped the scan
                     raise
                 except Exception:
-                    raise w3afMustStopException(msg)
+                    raise ScanMustStopException(msg)
                 else:
                     sent_requests += 1
 
@@ -337,12 +337,12 @@ class w3af_core_strategy(object):
             try:
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
                 is_404(response)
-            except w3afMustStopByUserRequest:
+            except ScanMustStopByUserRequest:
                 raise
             except Exception, e:
                 msg = 'Failed to initialize the 404 detection, original' \
                       ' exception was: "%s".'
-                raise w3afMustStopException(msg % e)
+                raise ScanMustStopException(msg % e)
 
     def _setup_crawl_infrastructure(self):
         """

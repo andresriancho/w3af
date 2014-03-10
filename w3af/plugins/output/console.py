@@ -26,7 +26,7 @@ from functools import wraps
 from errno import ENOSPC
 
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
-from w3af.core.controllers.exceptions import w3afMustStopByKnownReasonExc
+from w3af.core.controllers.exceptions import ScanMustStopByKnownReasonExc
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 
@@ -42,7 +42,7 @@ def catch_ioerror(meth):
         except IOError as (errno, strerror):
             if errno == ENOSPC:
                 msg = 'No space left on device'
-                raise w3afMustStopByKnownReasonExc(msg)
+                raise ScanMustStopByKnownReasonExc(msg)
 
     return wrapper
 

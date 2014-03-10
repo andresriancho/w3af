@@ -33,7 +33,7 @@ from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
@@ -52,7 +52,7 @@ class phishtank(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Plugin entry point, perform all the work.
@@ -123,7 +123,7 @@ class phishtank(CrawlPlugin):
             phishtank_db_fd = file(self.PHISHTANK_DB, 'r')
         except Exception, e:
             msg = 'Failed to open phishtank database file: "%s", exception: "%s".'
-            raise w3afException(msg % (self.PHISHTANK_DB, e))
+            raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 
         parser = make_parser()
         pt_handler = PhishTankHandler(to_check)
@@ -136,7 +136,7 @@ class phishtank(CrawlPlugin):
             parser.parse(phishtank_db_fd)
         except Exception, e:
             msg = 'XML parsing error in phishtank DB, exception: "%s".'
-            raise w3afException(msg % e)
+            raise BaseFrameworkException(msg % e)
 
         om.out.debug('Finished XML parsing. ')
 

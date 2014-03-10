@@ -26,7 +26,7 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_file_list import get_file_list
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.homeDir import HOME_DIR
 from w3af.core.data.profile.profile import profile as profile
 
@@ -44,7 +44,7 @@ class w3af_core_profiles(object):
         :param profileDesc: The description of the new profile
 
         :return: The new profile instance if the profile was successfully saved.
-                 Else, raise a w3afException.
+                 Else, raise a BaseFrameworkException.
         """
         # Create the new profile.
         profile_inst = profile()
@@ -61,7 +61,7 @@ class w3af_core_profiles(object):
         profile_name.
 
         :return: The new profile instance if the profile was successfully saved.
-            otherwise raise a w3afException.
+            otherwise raise a BaseFrameworkException.
         """
         # Open the already existing profile
         new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
@@ -106,7 +106,7 @@ class w3af_core_profiles(object):
         Gets all the information from the profile and stores it in the
         w3af core plugins / target attributes for later use.
 
-        @raise w3afException: if the profile to load has some type of problem.
+        @raise BaseFrameworkException: if the profile to load has some type of problem.
         """
         # Clear all enabled plugins if profile_name is None
         if profile_name is None:
@@ -184,7 +184,7 @@ class w3af_core_profiles(object):
                     self._w3af_core.plugins.set_plugin_options(plugin_type,
                                                                plugin_name,
                                                                plugin_options)
-                except w3afException, w3e:
+                except BaseFrameworkException, w3e:
                     msg = 'Setting the options for plugin "%s.%s" raised an' \
                           ' exception due to unknown or invalid configuration' \
                           ' parameters.'
@@ -193,7 +193,7 @@ class w3af_core_profiles(object):
 
         if error_messages:
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages))
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
     def get_profile_list(self, directory=HOME_DIR):
         """
@@ -222,7 +222,7 @@ class w3af_core_profiles(object):
                 profile_home, profile_name + '.pw3af')
             try:
                 profile_instance = profile(profile_filename)
-            except w3afException:
+            except BaseFrameworkException:
                 invalid_profiles.append(profile_filename)
             else:
                 instance_list.append(profile_instance)
@@ -230,7 +230,7 @@ class w3af_core_profiles(object):
 
     def remove_profile(self, profile_name):
         """
-        :return: True if the profile was successfully removed. Else, raise a w3afException.
+        :return: True if the profile was successfully removed. Else, raise a BaseFrameworkException.
         """
         profile_inst = profile(profile_name)
         profile_inst.remove()

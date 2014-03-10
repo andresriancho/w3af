@@ -27,7 +27,7 @@ import pango
 from w3af.core.ui.gui import reqResViewer, entries
 from w3af.core.ui.gui.entries import EasyTable
 from w3af.core.ui.gui.entries import wrapperWidgets, TextInput
-from w3af.core.controllers.exceptions import w3afException, DBException
+from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.options.preferences import Preferences
 from w3af.core.data.options.opt_factory import opt_factory
@@ -306,7 +306,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._searchText.set_text("")
         try:
             self.find_request_response()
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             self._empty_results()
         return
 
@@ -386,7 +386,7 @@ class httpLogTab(entries.RememberingHPaned):
             # Please see the 5000 below
             searchResultObjects = self._historyItem.find(searchData,
                                                          result_limit=5001, orderData=[("id", "")])
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             self._empty_results()
             return
         if len(searchResultObjects) == 0:

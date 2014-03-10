@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class pe(object):
@@ -40,7 +40,7 @@ class pe(object):
 
     def set_shell_code(self, sc):
         if len(sc) > self._maxPayloadLen:
-            raise w3afException('Payload to long!')
+            raise BaseFrameworkException('Payload to long!')
         self._shellcode = sc
 
     def get_shell_code(self):
@@ -53,7 +53,7 @@ class pe(object):
         try:
             template = file(self._templateFileName, 'r').read()
         except Exception, e:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'Failed to open PE template file. Exception: ' + str(e))
         else:
             paddingLen = self._maxPayloadLen - len(self._shellcode)

@@ -33,8 +33,8 @@ import w3af.core.data.constants.severity as severity
 from w3af import ROOT_PATH
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
 from w3af.core.data.fuzzer.utils import rand_alnum
@@ -85,7 +85,7 @@ class pykto(CrawlPlugin):
         """
         if not self._exec and not self._mutate_tests:
             # dont run anymore
-            raise w3afRunOnce()
+            raise RunOnce()
 
         else:
             # Run the basic scan (only once)
@@ -150,7 +150,7 @@ class pykto(CrawlPlugin):
 
         try:
             http_response = function_ptr(nikto_test.uri)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'An exception was raised while requesting "%s", the error'\
                   ' message is: "%s".'
             om.out.error(msg % (nikto_test.uri, e))

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import REGEX
 
@@ -46,6 +46,6 @@ class RegexOption(BaseOption):
         except Exception, e:
             msg = 'The regular expression "%s" is invalid, the compilation'\
                   ' error was: "%s".'
-            raise w3afException(msg % (value, e))
+            raise BaseFrameworkException(msg % (value, e))
         else:
             return value

@@ -26,7 +26,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afException, w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.levenshtein import relative_distance_lt
 from w3af.core.data.dc.headers import Headers
@@ -44,7 +44,7 @@ class dns_wildcard(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Get www.site.com and site.com and compare responses.
@@ -88,7 +88,7 @@ class dns_wildcard(InfrastructurePlugin):
 
         try:
             modified_response = self._uri_opener.GET(ip_url, cache=True)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = 'An error occurred while fetching IP address URL in ' \
                   ' dns_wildcard plugin: "%s"' % w3
             om.out.debug(msg)
@@ -117,7 +117,7 @@ class dns_wildcard(InfrastructurePlugin):
                 original_response.get_url(),
                 cache=True,
                 headers=headers)
-        except w3afException:
+        except BaseFrameworkException:
             return
         else:
             if relative_distance_lt(modified_response.get_body(),

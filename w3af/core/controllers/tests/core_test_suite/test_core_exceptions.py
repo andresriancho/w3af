@@ -30,9 +30,9 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.factory import factory
-from w3af.core.controllers.exceptions import (w3afMustStopException,
-                                              w3afMustStopByUnknownReasonExc,
-                                              w3afMustStopByUserRequest)
+from w3af.core.controllers.exceptions import (ScanMustStopException,
+                                              ScanMustStopByUnknownReasonExc,
+                                              ScanMustStopByUserRequest)
 from w3af.plugins.tests.helper import create_target_option_list
 
 
@@ -74,9 +74,9 @@ class TestCoreExceptions(unittest.TestCase):
                         
     def test_stop_on_must_stop_exception(self):
         """
-        Verify that the w3afMustStopException stops the scan.
+        Verify that the ScanMustStopException stops the scan.
         """
-        self.exception_plugin.exception_to_raise = w3afMustStopException
+        self.exception_plugin.exception_to_raise = ScanMustStopException
         
         with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
@@ -87,16 +87,16 @@ class TestCoreExceptions(unittest.TestCase):
 
     def test_stop_unknown_exception(self):
         """
-        Verify that the w3afMustStopByUnknownReasonExc stops the scan.
+        Verify that the ScanMustStopByUnknownReasonExc stops the scan.
         """
-        self.exception_plugin.exception_to_raise = w3afMustStopByUnknownReasonExc
-        self.assertRaises(w3afMustStopByUnknownReasonExc, self.w3afcore.start)
+        self.exception_plugin.exception_to_raise = ScanMustStopByUnknownReasonExc
+        self.assertRaises(ScanMustStopByUnknownReasonExc, self.w3afcore.start)
                 
     def test_stop_by_user_request(self):
         """
-        Verify that the w3afMustStopByUserRequest stops the scan.
+        Verify that the ScanMustStopByUserRequest stops the scan.
         """
-        self.exception_plugin.exception_to_raise = w3afMustStopByUserRequest
+        self.exception_plugin.exception_to_raise = ScanMustStopByUserRequest
         
         with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()

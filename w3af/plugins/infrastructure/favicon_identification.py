@@ -34,7 +34,7 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.data.kb.info import Info
 
 
@@ -54,7 +54,7 @@ class favicon_identification(InfrastructurePlugin):
         self._db_file = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
                                      'favicon', 'favicon-md5')
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Identify server software using favicon.

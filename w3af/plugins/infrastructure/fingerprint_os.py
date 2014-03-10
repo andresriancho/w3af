@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.levenshtein import relative_distance_ge
 from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.url import URL
@@ -48,7 +48,7 @@ class fingerprint_os(InfrastructurePlugin):
                                     (among other things) the URL to test.
         """
         if not self._exec:
-            raise w3afRunOnce()
+            raise RunOnce()
 
         self._exec = not self._find_OS(fuzzable_request)
 

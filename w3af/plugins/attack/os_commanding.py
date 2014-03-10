@@ -26,7 +26,7 @@ from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.fuzzer.utils import rand_alpha
 
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
 
 from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
@@ -123,7 +123,7 @@ class FullPathExploitStrategy(ExploitStrategy):
     def extract_result(self, http_response):
         try:
             return shell_handler.extract_result(http_response.get_body())
-        except w3afException:
+        except BaseFrameworkException:
             return None
 
 
@@ -254,7 +254,7 @@ class OSCommandingShell(ExecShell):
         try:
             http_response = self.strategy.send(strategy_cmd,
                                                self.get_url_opener())
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'Error "%s" while sending command to remote host. Please '\
                   'try again.'
             return msg % e

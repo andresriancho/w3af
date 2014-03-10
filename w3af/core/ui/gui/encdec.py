@@ -29,7 +29,7 @@ import hashlib
 import random
 
 import w3af.core.data.parsers.encode_decode as encode_decode
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.ui.gui import entries
 
 
@@ -288,7 +288,7 @@ def b64decode(t):
         msg = 'The base64 encoded string doesn\'t have '
         msg += 'a correct padding.\nYou can try to fix this error by adding characters '
         msg += 'to the end of the string.'
-        raise w3afException(msg)
+        raise BaseFrameworkException(msg)
     return result
 
 

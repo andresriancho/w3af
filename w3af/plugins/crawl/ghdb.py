@@ -33,7 +33,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_private_site import is_private_site
-from w3af.core.controllers.exceptions import w3afException, w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -57,7 +57,7 @@ class ghdb(CrawlPlugin):
         # User configured variables
         self._result_limit = 300
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -87,7 +87,7 @@ class ghdb(CrawlPlugin):
             search_term = 'site:%s %s' % (domain, gh.search)
             try:
                 self._classic_worker(gh, search_term)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 # Google is saying: "no more automated tests".
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break
@@ -128,13 +128,13 @@ class ghdb(CrawlPlugin):
             ghdb_fd = file(self._ghdb_file)
         except Exception, e:
             msg = 'Failed to open ghdb file: "%s", error: "%s".'
-            raise w3afException(msg % (self._ghdb_file, e))
+            raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
         try:
             dom = xml.dom.minidom.parseString(ghdb_fd.read())
         except Exception, e:
             msg = 'Failed to parse XML file: "%s", error: "%s".'
-            raise w3afException(msg % (self._ghdb_file, e))
+            raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
         res = []
 

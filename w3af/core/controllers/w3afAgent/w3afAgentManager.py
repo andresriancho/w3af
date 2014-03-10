@@ -28,7 +28,7 @@ from multiprocessing.dummy import Process
 import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.w3afAgent.server.w3afAgentServer import w3afAgentServer
 from w3af.core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
 from w3af.core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
@@ -74,7 +74,7 @@ class w3afAgentManager(Process):
         # other end...
         try:
             interpreter, client_code, extension = self._select_client()
-        except w3afException:
+        except BaseFrameworkException:
             om.out.error('Failed to find a suitable w3afAgentClient for the remote server.')
         else:
 
@@ -106,7 +106,7 @@ class w3afAgentManager(Process):
                 transferHandler = ptf.get_transfer_handler(inbound_port)
 
                 if not transferHandler.can_transfer():
-                    raise w3afException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
+                    raise BaseFrameworkException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
                 else:
                     #    Let the user know how much time it will take to transfer the file
                     estimatedTime = transferHandler.estimate_transfer_time(
@@ -123,7 +123,7 @@ class w3afAgentManager(Process):
                     upload_success = transferHandler.transfer(
                         client_code, filename)
                     if not upload_success:
-                        raise w3afException('The w3afAgent client failed to upload. Remote file hash does NOT match.')
+                        raise BaseFrameworkException('The w3afAgent client failed to upload. Remote file hash does NOT match.')
 
                     om.out.console('Finished w3afAgent client upload!')
 
@@ -157,7 +157,7 @@ class w3afAgentManager(Process):
         if not dH.can_delay():
             msg = '[w3afAgentManager] Failed to create cron entry.'
             om.out.debug(msg)
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             wait_time = dH.add_to_schedule(command)
 

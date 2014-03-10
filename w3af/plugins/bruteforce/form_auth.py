@@ -28,7 +28,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
 from w3af.core.controllers.misc.levenshtein import relative_distance_ge
 from w3af.core.data.dc import form
 from w3af.core.data.fuzzer.utils import rand_alnum
@@ -156,7 +156,7 @@ class form_auth(BruteforcePlugin):
             body = body.replace(passwd, '')
 
             if not self._matches_failed_login(body, login_failed_result_list):
-                raise w3afException('Failed to generate a response that '
+                raise BaseFrameworkException('Failed to generate a response that '
                                     'matches the failed login page.')
 
         return login_failed_result_list
@@ -278,7 +278,7 @@ class form_auth(BruteforcePlugin):
             try:
                 resp = self._uri_opener.send_mutant(freq, cookies=False,
                                                     grep=False)
-            except w3afMustStopOnUrlError:
+            except ScanMustStopOnUrlError:
                 return
             else:
                 body = resp.get_body()

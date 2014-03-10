@@ -22,7 +22,7 @@ import os
 import unittest
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.url import URL as URL_KLASS
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import (
@@ -103,7 +103,7 @@ class TestOptionFactory(unittest.TestCase):
                 err = '%s for an option of type %s should raise an exception.'
                 try:
                     opt_factory('name', fake_value, 'desc', _type)
-                except w3afException:
+                except BaseFrameworkException:
                     self.assertTrue(True)
                 else:
                     self.assertTrue(False, err % (fake_value, _type))

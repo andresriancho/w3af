@@ -24,7 +24,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 
@@ -107,7 +107,7 @@ class frontpage(AuditPlugin):
 
         try:
             res = self._uri_opener.POST(target_url, data=content)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.debug(
                 'Exception while uploading file using author.dll: ' + str(e))
         else:
@@ -131,7 +131,7 @@ class frontpage(AuditPlugin):
 
         try:
             res = self._uri_opener.GET(target_url)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'Exception while verifying if the file that was uploaded'\
                   'using author.dll was there: %s' % e
             om.out.debug(msg)

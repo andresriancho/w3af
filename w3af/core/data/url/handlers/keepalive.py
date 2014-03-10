@@ -19,7 +19,7 @@
 
 # This file was modified (considerably) to be integrated with w3af. Some modifications are:
 #   - Added the size limit for responses
-#   - Raising w3afExceptions in some places
+#   - Raising BaseFrameworkExceptions in some places
 #   - Modified the HTTPResponse object in order to be able to perform multiple reads, and
 #     added a hack for the HEAD method.
 
@@ -125,8 +125,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
-from w3af.core.controllers.exceptions import (w3afException,
-                                              w3afMustStopByKnownReasonExc)
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopByKnownReasonExc)
 
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
@@ -489,7 +489,7 @@ class ConnectionManager(object):
             if DEBUG:
                 om.out.debug(msg)
 
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
     def resize_pool(self, new_size):
         """
@@ -596,7 +596,7 @@ class KeepAliveHandler(object):
             resp_statuses = self._hostresp.setdefault(host,
                                                       self._get_tail_filter())
             # Check if all our last 'resp_statuses' were timeouts and raise
-            # a w3afMustStopException if this is the case.
+            # a ScanMustStopException if this is the case.
             if len(resp_statuses) == self._curr_check_failures:
 
                 # https://mail.python.org/pipermail/python-dev/2007-January/070515.html
@@ -612,7 +612,7 @@ class KeepAliveHandler(object):
                            ' remote webserver seems to be unresponsive; please'
                            ' verify manually.')
                     reason = 'Timeout while trying to reach target.'
-                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
+                    raise ScanMustStopByKnownReasonExc(msg, reason=reason)
 
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
@@ -792,7 +792,7 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         except:
             msg = 'The proxy you are specifying (%s) is invalid! The expected'\
                   ' format is <ip_address>:<port> is expected.'
-            raise w3afException(msg % proxy)
+            raise BaseFrameworkException(msg % proxy)
 
         if not host or not port:
             self._proxy = None

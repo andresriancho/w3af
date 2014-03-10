@@ -27,7 +27,7 @@ from urllib import unquote
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.data_container import DataContainer
@@ -306,7 +306,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             fmt = '[FuzzableRequest error] set_cookie received: "%s": "%s".'
             error_str = fmt % (type(c), repr(c))
             om.out.error(error_str)
-            raise w3afException(error_str)
+            raise BaseFrameworkException(error_str)
 
     def get_url(self):
         return self._url

@@ -37,10 +37,10 @@ from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
-from w3af.core.controllers.exceptions import (w3afMustStopByUserRequest,
-                                         w3afMustStopOnUrlError,
-                                         w3afMustStopException,
-                                         w3afMustStopByUnknownReasonExc)
+from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
+                                         ScanMustStopOnUrlError,
+                                         ScanMustStopException,
+                                         ScanMustStopByUnknownReasonExc)
 
 
 @attr('moth')
@@ -97,12 +97,12 @@ class TestXUrllib(unittest.TestCase):
 
     def test_unknown_url(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
-        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_url_port_closed(self):
         # TODO: Change 2312 by an always closed/non-http port
         url = URL('http://127.0.0.1:2312/')
-        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_url_port_not_http(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
@@ -112,7 +112,7 @@ class TestXUrllib(unittest.TestCase):
         port = upper_daemon.get_port()
 
         url = URL('http://127.0.0.1:%s/' % port)
-        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_url_port_not_http_many(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
@@ -125,11 +125,11 @@ class TestXUrllib(unittest.TestCase):
         for _ in xrange(MAX_ERROR_COUNT):
             try:
                 self.uri_opener.GET(url)
-            except w3afMustStopByUnknownReasonExc:
+            except ScanMustStopByUnknownReasonExc:
                 self.assertTrue(False, 'Not expecting this exception type.')
-            except w3afMustStopOnUrlError:
+            except ScanMustStopOnUrlError:
                 self.assertTrue(True)
-            except w3afMustStopException:
+            except ScanMustStopException:
                 self.assertTrue(True)
                 break
         else:
@@ -146,7 +146,7 @@ class TestXUrllib(unittest.TestCase):
         
         self.uri_opener.settings.set_timeout(1)
         
-        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopOnUrlError, self.uri_opener.GET, url)
         
         self.uri_opener.settings.set_default_values()
 
@@ -164,11 +164,11 @@ class TestXUrllib(unittest.TestCase):
         for _ in xrange(MAX_ERROR_COUNT):
             try:
                 self.uri_opener.GET(url)
-            except w3afMustStopByUnknownReasonExc:
+            except ScanMustStopByUnknownReasonExc:
                 self.assertTrue(False, 'Not expecting this exception type.')
-            except w3afMustStopOnUrlError:
+            except ScanMustStopOnUrlError:
                 self.assertTrue(True)
-            except w3afMustStopException:
+            except ScanMustStopException:
                 self.assertTrue(True)
                 break
         else:
@@ -179,13 +179,13 @@ class TestXUrllib(unittest.TestCase):
     def test_stop(self):
         self.uri_opener.stop()
         url = URL(get_moth_http())
-        self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopByUserRequest, self.uri_opener.GET, url)
 
     def test_pause_stop(self):
         self.uri_opener.pause(True)
         self.uri_opener.stop()
         url = URL(get_moth_http())
-        self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
+        self.assertRaises(ScanMustStopByUserRequest, self.uri_opener.GET, url)
 
     def test_pause(self):
         output = Queue.Queue()

@@ -33,7 +33,7 @@ from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class html_comments(GrepPlugin):
@@ -82,7 +82,7 @@ class html_comments(GrepPlugin):
         
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             return
         
         for comment in dp.get_comments():

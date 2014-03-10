@@ -34,7 +34,7 @@ import w3af.core.data.constants.ports as ports
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.is_private_site import is_private_site
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import STRING, PORT, BOOL
@@ -419,7 +419,7 @@ class rfi(AuditPlugin):
         self._use_w3af_site = options_list['use_w3af_site'].get_value()
 
         if not self._correctly_configured() and not self._use_w3af_site:
-            raise w3afException(self.CONFIG_ERROR_MSG)
+            raise BaseFrameworkException(self.CONFIG_ERROR_MSG)
 
     def get_long_desc(self):
         """

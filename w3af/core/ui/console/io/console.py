@@ -30,7 +30,7 @@ import os
 #from ecma48 import *
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 CTRL_CODES = range(1, 27)
@@ -150,7 +150,7 @@ except Exception, e:
     except Exception, a:
         print str(e + '\n' + a)
         # We arent on windows nor unix
-        raise w3afException(
+        raise BaseFrameworkException(
             'w3af support for OS X isn\'t available yet! Please contribute.')
 
 #extKeys = [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]

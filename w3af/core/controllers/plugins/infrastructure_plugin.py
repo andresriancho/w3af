@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.plugins.plugin import Plugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.factory import create_fuzzable_requests
 
 
@@ -53,7 +53,7 @@ class InfrastructurePlugin(Plugin):
         :return: None. These plugins should store information in the KB. Results
                  from this method will be ignored by the core.
         """
-        raise w3afException(
+        raise BaseFrameworkException(
             'Plugin is not implementing required method discover')
 
     def _create_fuzzable_requests(self, HTTPResponse, request=None, add_self=True):

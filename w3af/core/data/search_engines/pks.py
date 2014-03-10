@@ -23,7 +23,7 @@ import re
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.search_engines.search_engine import SearchEngine
 from w3af.core.data.parsers.url import URL
 
@@ -48,7 +48,7 @@ class pks(SearchEngine):
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'\
                   ' name (as returned by URL.get_root_domain).'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         res = self.met_search(hostname)
         msg = 'PKS search for hostname: "%s" returned %s results.'

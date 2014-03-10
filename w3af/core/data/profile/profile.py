@@ -28,7 +28,7 @@ from w3af.core.controllers.core_helpers.target import w3af_core_target
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class profile(object):
@@ -61,10 +61,10 @@ class profile(object):
                     self._config.readfp(fp)
                 except ConfigParser.Error, cpe:
                     msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
-                    raise w3afException(msg % (profname, str(cpe)))
+                    raise BaseFrameworkException(msg % (profname, str(cpe)))
                 except Exception, e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
-                    raise w3afException(msg % (profname, str(e)))
+                    raise BaseFrameworkException(msg % (profname, str(e)))
 
         # Save the profname variable
         self._profile_file_name = profname
@@ -73,7 +73,7 @@ class profile(object):
         """
         Return the complete path for `profilename`.
 
-        @raise w3afException: If no existing profile file is found this
+        @raise BaseFrameworkException: If no existing profile file is found this
                               exception is raised with the proper desc
                               message.
 
@@ -110,7 +110,7 @@ class profile(object):
             if pathexists(tmp_path):
                 return tmp_path
 
-        raise w3afException('The profile "%s" wasn\'t found.' % profilename)
+        raise BaseFrameworkException('The profile "%s" wasn\'t found.' % profilename)
 
     def get_profile_file(self):
         """
@@ -127,7 +127,7 @@ class profile(object):
         except Exception, e:
             msg = 'An exception occurred while removing the profile. Exception:'
             msg += ' "%s".' % e
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             return True
 
@@ -152,7 +152,7 @@ class profile(object):
         except Exception, e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
-            raise w3afException(msg % e)
+            raise BaseFrameworkException(msg % e)
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
             pNew = profile(new_profilePathAndName)
@@ -239,7 +239,7 @@ class profile(object):
                         except KeyError:
                             # We should never get here...
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
-                            raise w3afException(msg % (option, plugin_name))
+                            raise BaseFrameworkException(msg % (option, plugin_name))
                         else:
                             options_list[option].set_value(value)
 
@@ -307,7 +307,7 @@ class profile(object):
                 except KeyError, k:
                     # We should never get here...
                     msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
-                    raise w3afException(msg)
+                    raise BaseFrameworkException(msg)
                 else:
                     options_list[option].set_value(value)
         except:
@@ -406,7 +406,7 @@ class profile(object):
         """
         if not self._profile_file_name:
             if not file_name:
-                raise w3afException('Error while saving profile, you didn\'t '
+                raise BaseFrameworkException('Error while saving profile, you didn\'t '
                                     'specified the file name.')
             else:  # The user's specified a file_name!
                 if not file_name.endswith('.pw3af'):
@@ -420,7 +420,7 @@ class profile(object):
         try:
             file_handler = open(self._profile_file_name, 'w')
         except:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'Failed to open profile file: ' + self._profile_file_name)
         else:
             self._config.write(file_handler)

@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.list_option import ListOption 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.options.option_types import URL_LIST
@@ -41,6 +41,6 @@ class URLListOption(ListOption):
                 res.append(URL(input_url))
             except Exception, e:
                 msg = 'Invalid URL configured by user, error: %s.' % e
-                raise w3afException(msg)
+                raise BaseFrameworkException(msg)
         
         return res

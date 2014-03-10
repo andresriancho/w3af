@@ -26,7 +26,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.data.kb.exec_shell import ExecShell
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.misc.io import NamedStringIO
@@ -208,7 +208,7 @@ class FileUploadShell(ExecShell):
 
         try:
             self.unlink(file_to_del)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'File upload shell cleanup failed with exception: "%s".'
             om.out.error(msg % e)
         else:

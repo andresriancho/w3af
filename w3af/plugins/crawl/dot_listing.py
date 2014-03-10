@@ -26,7 +26,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
@@ -69,7 +69,7 @@ class dot_listing(CrawlPlugin):
         url = domain_path.url_join('.listing')
         try:
             response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             msg = ('Failed to GET .listing file: "%s". Exception: "%s".')
             om.out.debug(msg % (url, w3))
             return

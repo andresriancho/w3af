@@ -26,8 +26,8 @@ import gobject
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import (w3afException, w3afMustStopException,
-                                         w3afMustStopOnUrlError)
+from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException,
+                                         ScanMustStopOnUrlError)
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.constants import severity
@@ -246,12 +246,12 @@ class reqResViewer(gtk.VBox):
                         historyItem.info = result.get_desc()
                         historyItem.save()
         else:
-            if impact.exception.__class__ == w3afException:
+            if impact.exception.__class__ == BaseFrameworkException:
                 msg = str(impact.exception)
-            elif impact.exception.__class__ == w3afMustStopException:
+            elif impact.exception.__class__ == ScanMustStopException:
                 msg = "Stopped sending requests because " + \
                     str(impact.exception)
-            elif impact.exception.__class__ == w3afMustStopOnUrlError:
+            elif impact.exception.__class__ == ScanMustStopOnUrlError:
                 msg = "Not sending requests because " + str(impact.exception)
             else:
                 raise impact.exception
@@ -482,7 +482,7 @@ class ThreadedURLImpact(threading.Thread):
                     try:
                         tmp_result = plugin.audit_return_vulns(self.request)
                         plugin.end()
-                    except w3afException, e:
+                    except BaseFrameworkException, e:
                         om.out.error(str(e))
                     else:
                         #
@@ -501,7 +501,7 @@ class ThreadedURLImpact(threading.Thread):
                 try:
                     self.result = plugin.audit_return_vulns(self.request)
                     plugin.end()
-                except w3afException, e:
+                except BaseFrameworkException, e:
                     om.out.error(str(e))
                 else:
                     #

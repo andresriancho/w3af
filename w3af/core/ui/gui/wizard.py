@@ -26,7 +26,7 @@ import cgi
 from w3af import ROOT_PATH
 from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import entries, confpanel, helpers
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class Quest(object):
@@ -85,7 +85,7 @@ class QuestOptions(gtk.VBox):
 
         try:
             helpers.coreWrap(self.wizard.set_answer, options)
-        except w3afException:
+        except BaseFrameworkException:
             return
         return True
 
@@ -184,7 +184,7 @@ class Wizard(entries.RememberingWindow):
         try:
             helpers.coreWrap(self.w3af.profiles.save_current_to_new_profile,
                              filename, description)
-        except w3afException:
+        except BaseFrameworkException:
             self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
             return
         self.w3af.mainwin.profiles.load_profiles(filename)

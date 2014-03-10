@@ -25,7 +25,7 @@ import w3af.plugins.attack.payloads.shell_handler as shell_handler
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.parsers.url import URL
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 
 
@@ -175,7 +175,7 @@ class DAVShell(ExecShell):
 
         try:
             self._uri_opener.DELETE(url_to_del)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.error('DAVShell cleanup failed with exception: "%s".' % e)
         else:
             om.out.debug('DAVShell cleanup complete, %s deleted.' % url_to_del)

@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
 
@@ -49,7 +49,7 @@ class wordpress_enumerate_users(CrawlPlugin):
                                     (among other things) the URL to test.
         """
         if not self._exec:
-            raise w3afRunOnce()
+            raise RunOnce()
         else:
             # Check if there is a wordpress installation in this directory
             domain_path = fuzzable_request.get_url().get_domain_path()

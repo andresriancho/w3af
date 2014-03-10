@@ -24,8 +24,8 @@ from urllib2 import URLError
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import (w3afException, w3afRunOnce,
-                                              w3afMustStopException)
+from w3af.core.controllers.exceptions import (BaseFrameworkException, RunOnce,
+                                              ScanMustStopException)
 from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.controllers.misc.decorators import runonce
 
@@ -46,7 +46,7 @@ class bing_spider(CrawlPlugin):
         # User variables
         self._result_limit = 300
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -58,7 +58,7 @@ class bing_spider(CrawlPlugin):
         if is_private_site(domain):
             msg = 'There is no point in searching Bing for "site:%s".'\
                   ' Bing doesn\'t index private pages.'
-            raise w3afException(msg % domain)
+            raise BaseFrameworkException(msg % domain)
 
         try:
             results = bing_se.get_n_results('site:' + domain, self._result_limit)

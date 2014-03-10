@@ -29,7 +29,7 @@ from w3af.core.data.export.html_export import html_export
 from w3af.core.data.export.python_export import python_export
 from w3af.core.data.export.ruby_export import ruby_export
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 export_request_example = """\
 GET http://localhost/script.php HTTP/1.0
@@ -120,7 +120,7 @@ class export_request(entries.RememberingWindow):
 
         try:
             exported_request = func(self.http_request.get_text())
-        except w3afException, w3:
+        except BaseFrameworkException, w3:
             error_msg = str(w3)
             self.exported_text.set_text(error_msg)
         else:

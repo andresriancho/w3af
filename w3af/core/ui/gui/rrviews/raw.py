@@ -23,7 +23,7 @@ import gtk
 
 from w3af.core.ui.gui.httpeditor import HttpEditor
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class HttpRawView(HttpEditor):
@@ -57,7 +57,7 @@ class HttpRawView(HttpEditor):
         if not self.initial:
             try:
                 obj = self.get_object()
-            except (w3afException, ValueError):
+            except (BaseFrameworkException, ValueError):
                 # We get here when there is a parse error in the HTTP request
                 self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))
                 self.parentView.disable_attached_widgets()

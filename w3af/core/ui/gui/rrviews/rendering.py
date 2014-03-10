@@ -45,7 +45,7 @@ try:
 except Exception, e:
     pass
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.constants.encodings import UTF8
 
 
@@ -57,7 +57,7 @@ def getRenderingView(w3af, parentView):
         return MozRenderingView(w3af, parentView)
     if RENDERING_ENGINES['gtkhtml2']:
         return GtkHtmlRenderingView(w3af, parentView)
-    raise w3afException('If you want to render HTML responses, you need to install at least one of rendering engines: \
+    raise BaseFrameworkException('If you want to render HTML responses, you need to install at least one of rendering engines: \
                 python-webkit, python-gtkmozembed, python-gtkhtml2')
 
 
@@ -72,10 +72,10 @@ class RenderingView(gtk.VBox):
 
     def show_object(self, obj):
         """Show object in view."""
-        raise w3afException('Child MUST implment a clear() method.')
+        raise BaseFrameworkException('Child MUST implment a clear() method.')
 
     def clear(self):
-        raise w3afException('Child MUST implment a clear() method.')
+        raise BaseFrameworkException('Child MUST implment a clear() method.')
 
     def get_object(self):
         """Return object (request or resoponse)."""

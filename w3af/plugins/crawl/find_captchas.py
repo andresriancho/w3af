@@ -29,7 +29,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.parsers.document_parser as DocumentParser
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.kb.info import Info
 
@@ -138,7 +138,7 @@ class find_captchas(CrawlPlugin):
             #dp = parser_cache.dpc.get_document_parser_for( response )
             try:
                 document_parser = DocumentParser.DocumentParser(response)
-            except w3afException:
+            except BaseFrameworkException:
                 return []
             
             image_path_list = document_parser.get_references_of_tag('img')

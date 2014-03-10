@@ -23,7 +23,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.info import Info
 
 
@@ -66,7 +66,7 @@ class meta_tags(GrepPlugin):
 
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             return
 
         meta_tag_list = dp.get_meta_tags()

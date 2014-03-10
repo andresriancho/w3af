@@ -27,7 +27,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class cache_control(GrepPlugin):
@@ -83,7 +83,7 @@ class cache_control(GrepPlugin):
                 
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(response)
-        except w3afException:
+        except BaseFrameworkException:
             pass
         else:
             for meta_tag in doc_parser.get_meta_tags():

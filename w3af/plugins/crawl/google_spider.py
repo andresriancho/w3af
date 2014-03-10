@@ -28,8 +28,8 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.search_engines.google import google as google
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import (w3afException, w3afRunOnce,
-                                              w3afMustStopException)
+from w3af.core.controllers.exceptions import (BaseFrameworkException, RunOnce,
+                                              ScanMustStopException)
 from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.controllers.misc.decorators import runonce
 
@@ -46,7 +46,7 @@ class google_spider(CrawlPlugin):
         # User variables
         self._result_limit = 300
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
@@ -58,7 +58,7 @@ class google_spider(CrawlPlugin):
         if is_private_site(domain):
             msg = 'There is no point in searching google for "site:%s".'\
                   ' Google doesn\'t index private pages.'
-            raise w3afException(msg % domain)
+            raise BaseFrameworkException(msg % domain)
 
         try:
             g_results = google_se.get_n_results(

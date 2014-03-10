@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.plugins.plugin import Plugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.request.factory import create_fuzzable_requests
 
@@ -56,7 +56,7 @@ class CrawlPlugin(Plugin):
         :return: A list with of new fuzzable request objects found by this
                  plugin. Can be empty.
         """
-        raise w3afException(
+        raise BaseFrameworkException(
             'Plugin is not implementing required method crawl')
 
     def _create_fuzzable_requests(self, HTTPResponse, request=None, add_self=True):
@@ -76,7 +76,7 @@ class CrawlPlugin(Plugin):
         """
         try:
             http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException:
+        except BaseFrameworkException:
             pass
         else:
             if not is_404(http_response):

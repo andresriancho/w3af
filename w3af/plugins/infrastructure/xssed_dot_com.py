@@ -27,7 +27,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce, w3afException
+from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
@@ -49,7 +49,7 @@ class xssed_dot_com(InfrastructurePlugin):
         self._xssed_url = URL("http://www.xssed.com")
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Search in xssed.com and parse the output.
@@ -63,7 +63,7 @@ class xssed_dot_com(InfrastructurePlugin):
             check_url = self._xssed_url.url_join(
                 "/search?key=." + target_domain)
             response = self._uri_opener.GET(check_url)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'An exception was raised while running xssed_dot_com'\
                   ' plugin. Exception: "%s".' % e
             om.out.debug(msg)
@@ -73,7 +73,7 @@ class xssed_dot_com(InfrastructurePlugin):
             #
             try:
                 self._parse_xssed_result(response)
-            except w3afException, e:
+            except BaseFrameworkException, e:
                 self._exec = True
                 msg = 'An exception was raised while running xssed_dot_com'\
                       ' plugin. Exception: "%s".' % e

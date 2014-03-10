@@ -29,7 +29,7 @@ from w3af.core.data.url.handlers.cache_backend.utils import gen_hash
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
-from w3af.core.controllers.exceptions import w3afMustStopException
+from w3af.core.controllers.exceptions import ScanMustStopException
 
 
 class SQLCachedResponse(CachedResponse):
@@ -85,7 +85,7 @@ class SQLCachedResponse(CachedResponse):
             if 'disk' in str(e).lower():
                 msg += ' Please check if your disk is full.'
                 
-            raise w3afMustStopException(msg)
+            raise ScanMustStopException(msg)
 
         except Exception, ex:
             msg = ('Exception while inserting request/response to the'

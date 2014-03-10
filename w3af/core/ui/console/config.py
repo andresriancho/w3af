@@ -24,7 +24,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
 from w3af.core.controllers.plugins.plugin import Plugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class ConfigMenu(menu):
@@ -87,18 +87,18 @@ class ConfigMenu(menu):
             self._cmd_help(['set'])
             
         if params[0] not in self._options:
-            raise w3afException('Unknown option: "%s".' % params[0])
+            raise BaseFrameworkException('Unknown option: "%s".' % params[0])
         
         name = params[0]
         value = ' '.join(params[1:])
         
-        # This set_value might raise a w3afException, for example this
+        # This set_value might raise a BaseFrameworkException, for example this
         # might happen when the configuration parameter is an integer and
         # the user sets it to 'abc'
         try:
             self._options[name].set_value(value)
             self._plain_options[name] = value
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.error(str(e))
         else:
             if value not in self._memory[name]:
@@ -132,18 +132,18 @@ class ConfigMenu(menu):
             else:
                 self._configurable.set_options(self._options)
                 
-        except w3afException, e:
+        except BaseFrameworkException, e:
             msg = 'Identified an error with the user-defined settings:\n\n'\
                   '    - %s \n\n'\
                   'No information has been saved.'
-            raise w3afException(msg % e)
+            raise BaseFrameworkException(msg % e)
         else:
             om.out.console('The configuration has been saved.')
     
     def _cmd_back(self, tokens):
         try:
             self._cmd_save(tokens)
-        except w3afException, e:
+        except BaseFrameworkException, e:
             om.out.error(str(e))
 
         return self._console.back

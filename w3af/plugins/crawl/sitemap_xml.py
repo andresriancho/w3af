@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import w3afException, w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
 
@@ -40,7 +40,7 @@ class sitemap_xml(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Get the sitemap.xml file and parse it.
@@ -65,7 +65,7 @@ class sitemap_xml(CrawlPlugin):
             try:
                 dom = xml.dom.minidom.parseString(response.get_body())
             except:
-                raise w3afException('Error while parsing sitemap.xml')
+                raise BaseFrameworkException('Error while parsing sitemap.xml')
             else:
                 raw_url_list = dom.getElementsByTagName("loc")
                 parsed_url_list = []

@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class OptionList(object):
@@ -81,7 +81,7 @@ class OptionList(object):
                     return o
             else:
                 msg = 'The OptionList doesn\'t contain an option with the name: "%s"'
-                raise w3afException(msg % item_name)
+                raise BaseFrameworkException(msg % item_name)
         else:
             # An integer
             return self._internal_opt_list[item_name]

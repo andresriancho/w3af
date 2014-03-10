@@ -25,7 +25,7 @@ import re
 import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE, REGEX
@@ -127,7 +127,7 @@ class user_defined_regex(GrepPlugin):
                 f = file(self._regex_file_path)
             except Exception, e:
                 msg = 'Unable to open file "%s", error: "%s".'
-                raise w3afException(msg % (self._regex_file_path, e))
+                raise BaseFrameworkException(msg % (self._regex_file_path, e))
             else:
                 for regex in f:
                     current_regex = regex.strip()
@@ -135,7 +135,7 @@ class user_defined_regex(GrepPlugin):
                         re_inst = re.compile(current_regex, re.I | re.DOTALL)
                     except:
                         msg = 'Invalid regex in input file: "%s"'
-                        raise w3afException(msg % current_regex)
+                        raise BaseFrameworkException(msg % current_regex)
                     else:
                         self._regexlist_compiled.append((re_inst, None))
                         tmp_not_compiled_all.append(current_regex)

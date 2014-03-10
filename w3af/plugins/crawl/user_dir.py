@@ -33,8 +33,8 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import w3afException
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.levenshtein import relative_distance_lt
 
@@ -57,7 +57,7 @@ class user_dir(CrawlPlugin):
         # For testing
         self._do_fast_search = False
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Searches for user directories.
@@ -76,7 +76,7 @@ class user_dir(CrawlPlugin):
                                             headers=self._headers)
         except:
             msg = 'user_dir failed to create a non existent signature.'
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
 
         response_body = response.get_body()
         self._non_existent = response_body.replace(non_existent_user, '')

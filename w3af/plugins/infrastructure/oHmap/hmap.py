@@ -32,7 +32,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class request:
@@ -76,7 +76,7 @@ class request:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((HOST, PORT))
             except:
-                raise w3afException(
+                raise BaseFrameworkException(
                     'Connection failed to ' + str(HOST) + ':' + str(PORT))
             else:
 
@@ -84,7 +84,7 @@ class request:
                     try:
                         s2 = socket.ssl(s)
                     except:
-                        raise w3afException('SSL Connection failed to ' +
+                        raise BaseFrameworkException('SSL Connection failed to ' +
                                             str(HOST) + ':' + str(PORT))
                     else:
                         s.recv = s2.read
@@ -937,7 +937,7 @@ def testServer(ssl, server, port, matchCount, generateFP):
             ### FIXME: This eval is awful, I should change it to pickle.
             ks = eval(ksf.read())
         except Exception, e:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'The signature file "' + f + '" has an invalid syntax.')
         else:
             known_servers.append(ks)
@@ -949,7 +949,7 @@ def testServer(ssl, server, port, matchCount, generateFP):
             try:
                 fd = open('hmap-fingerprint-' + server + '-' + str(i), 'w')
             except Exception, e:
-                raise w3afException(
+                raise BaseFrameworkException(
                     'Cannot open fingerprint file. Error:' + str(e))
             else:
                 import pprint

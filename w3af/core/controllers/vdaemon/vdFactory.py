@@ -24,7 +24,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.vdaemon.lnxVd import lnxVd
 from w3af.core.controllers.vdaemon.winVd import winVd
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 def get_virtual_daemon(exec_method):
@@ -35,7 +35,7 @@ def get_virtual_daemon(exec_method):
     """
     try:
         os = os_detection_exec(exec_method)
-    except w3afException, w3:
+    except BaseFrameworkException, w3:
         raise w3
     else:
         if os == 'windows':
@@ -47,5 +47,5 @@ def get_virtual_daemon(exec_method):
                 'Identified remote OS as Linux, returning lnxVd object.')
             return lnxVd(exec_method)
         else:
-            raise w3afException(
+            raise BaseFrameworkException(
                 'Failed to get a virtual daemon for the remote OS: ' + os)

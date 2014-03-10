@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.request.HTTPPostDataRequest as HTTPPostDataRequest
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
 from w3af.core.data.parsers.url import URL
@@ -168,7 +168,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         om.out.information(self.get_name() + ' exploit plugin is starting.')
         if not self.can_exploit():
             fmt = 'No %s vulnerabilities have been found.'
-            raise w3afException(fmt % ' or '.join(self.get_kb_location()))
+            raise BaseFrameworkException(fmt % ' or '.join(self.get_kb_location()))
 
         generated_shells = []
 

@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -59,7 +59,7 @@ class TestArchiveDotOrg(PluginTest):
         url = URL('http://moth/')
         fr = FuzzableRequest(url, method='GET')
         ado = archive_dot_org()
-        self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)
+        self.assertRaises(RunOnce, ado.crawl_wrapper, fr)
 
     def test_raise_on_domain_not_in_archive(self):
         url = URL('http://www.w3af-scanner.org/')
@@ -69,4 +69,4 @@ class TestArchiveDotOrg(PluginTest):
         uri_opener = ExtendedUrllib()
         ado.set_url_opener(uri_opener)
 
-        self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)
+        self.assertRaises(RunOnce, ado.crawl_wrapper, fr)

@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopException
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.esmre.multi_in import multi_in
@@ -107,7 +107,7 @@ class buffer_overflow(AuditPlugin):
         """
         try:
             response = self._uri_opener.send_mutant(mutant)
-        except (w3afException, w3afMustStopException):
+        except (BaseFrameworkException, ScanMustStopException):
             desc = 'A potential (most probably a false positive than a bug)' \
                    ' buffer-overflow was found when requesting: "%s", using' \
                    ' HTTP method %s. The data sent was: "%s".'

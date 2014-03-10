@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.get_file_list import get_file_list
 from w3af.core.controllers.misc.factory import factory
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af import ROOT_PATH
 
 
@@ -207,7 +207,7 @@ class w3af_core_plugins(object):
             __import__('w3af.plugins.' + plugin_type)
             aModule = sys.modules['w3af.plugins.' + plugin_type]
         except Exception:
-            raise w3afException('Unknown plugin type: "' + plugin_type + '".')
+            raise BaseFrameworkException('Unknown plugin type: "' + plugin_type + '".')
         else:
             return aModule.get_long_description()
 
@@ -302,7 +302,7 @@ class w3af_core_plugins(object):
                             msg = ('Plugin dependencies must be indicated using '
                                    'plugin_type.plugin_name notation. This is an error in '
                                    '%s.get_plugin_deps().' % plugin_name)
-                            raise w3afException(msg)
+                            raise BaseFrameworkException(msg)
 
                         if dep_plugin_name not in self._plugins_names_dict[dep_plugin_type]:
                             om.out.information('Enabling %s\'s dependency %s' %

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 import time
 
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from scapy.all import sniff
 from scapy.all import get_if_addr
@@ -99,7 +99,7 @@ class extrusionServer(object):
             msg = 'Failed to sniff on interface: ' + self._iface
             msg += '. Hints: Are you root? Does this interface exist?'
             om.out.error(msg)
-            raise w3afException(msg)
+            raise BaseFrameworkException(msg)
         else:
             self.reverse_ports_allowed = self._analyze_packets(packets)
             return self.reverse_ports_allowed

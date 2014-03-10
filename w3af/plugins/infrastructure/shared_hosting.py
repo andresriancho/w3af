@@ -26,7 +26,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afRunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.data.options.opt_factory import opt_factory
@@ -47,7 +47,7 @@ class shared_hosting(InfrastructurePlugin):
         # User variables
         self._result_limit = 300
 
-    @runonce(exc_class=w3afRunOnce)
+    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains

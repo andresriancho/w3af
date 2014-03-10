@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.levenshtein import relative_distance_lt
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
@@ -70,7 +70,7 @@ class domain_dot(InfrastructurePlugin):
                 headers = Headers([('Host', domain_dot)])
                 response = self._uri_opener.GET(orig_url, cache=False,
                                                 headers=headers)
-            except w3afException, w3:
+            except BaseFrameworkException, w3:
                 om.out.error(str(w3))
             else:
                 self._analyze_response(original_response, response)

@@ -25,7 +25,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.levenshtein import relative_distance_boolean
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -71,7 +71,7 @@ class un_ssl(AuditPlugin):
             try:
                 insecure_response = send_mutant(insecure_fr, grep=False)
                 secure_response = send_mutant(secure_fr, grep=False)
-            except w3afException:
+            except BaseFrameworkException:
                 # No vulnerability to report since one of these threw an error
                 # (because there is nothing listening on that port). It makes
                 # no sense to keep running since we already got an error

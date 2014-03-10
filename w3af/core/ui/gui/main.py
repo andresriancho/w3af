@@ -37,7 +37,7 @@ import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc_settings import MiscSettings
-from w3af.core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopByUserRequest
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins, get_versions
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
@@ -562,7 +562,7 @@ class MainApp(object):
             try:
                 helpers.coreWrap(target_option.set_value, url)
                 helpers.coreWrap(self.w3af.target.set_options, options)
-            except w3afException:
+            except BaseFrameworkException:
                 return False
             
         return True
@@ -580,7 +580,7 @@ class MainApp(object):
             try:
                 helpers.coreWrap(self.w3af.plugins.init_plugins)
                 helpers.coreWrap(self.w3af.verify_environment)
-            except w3afException:
+            except BaseFrameworkException:
                 return
             
             self.w3af.start()
@@ -597,7 +597,7 @@ class MainApp(object):
                 # FIXME: Confirm: we should never get here because threads
                 # send the KeyboardInterrupt to the main thread.
                 pass
-            except w3afMustStopByUserRequest:
+            except ScanMustStopByUserRequest:
                 pass
             except Exception:
                 #

@@ -28,7 +28,7 @@ import gtk
 import os
 
 from w3af.core.ui.gui import GUI_DATA_PATH
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.ui.gui.constants import W3AF_ICON
 
 
@@ -208,7 +208,7 @@ class _Wrapper(object):
                 FriendlyExceptionDlg(str(err))
             raise
 
-coreWrap = _Wrapper(w3afException)
+coreWrap = _Wrapper(BaseFrameworkException)
 
 #--
 # Trying to not use threads anymore, but still need to

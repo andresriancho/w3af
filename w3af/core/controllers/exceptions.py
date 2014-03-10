@@ -1,5 +1,5 @@
 """
-w3afException.py
+BaseFrameworkException.py
 
 Copyright 2006 Andres Riancho
 
@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 
-class w3afException(Exception):
+class BaseFrameworkException(Exception):
     """
-    A small class that defines a w3afException.
+    A small class that defines a BaseFrameworkException.
     """
 
     def __init__(self, value):
@@ -34,7 +34,7 @@ class w3afException(Exception):
         return self.value
 
 
-class w3afRunOnce(Exception):
+class RunOnce(Exception):
     """
     A small class that defines an exception to be raised by plugins that
     dont want to be run anymore.
@@ -47,7 +47,7 @@ class w3afRunOnce(Exception):
         return self.value
 
 
-class w3afMustStopException(Exception):
+class ScanMustStopException(Exception):
     """
     If this exception is caught by the core, then it should stop the whole
     process. This exception is raised in a few places. NOT to be used
@@ -70,15 +70,15 @@ class w3afMustStopException(Exception):
     __repr__ = __str__
 
 
-class w3afMustStopByUserRequest(w3afMustStopException):
+class ScanMustStopByUserRequest(ScanMustStopException):
     pass
 
 
-class w3afMustStopOnUrlError(w3afMustStopException):
+class ScanMustStopOnUrlError(ScanMustStopException):
 
     def __init__(self, urlerr, req):
         # Call parent's __init__
-        w3afMustStopException.__init__(self, urlerr)
+        ScanMustStopException.__init__(self, urlerr)
         self.req = req
 
     def __str__(self):
@@ -88,20 +88,20 @@ class w3afMustStopOnUrlError(w3afMustStopException):
     __repr__ = __str__
 
 
-class w3afMustStopByKnownReasonExc(w3afMustStopException):
+class ScanMustStopByKnownReasonExc(ScanMustStopException):
 
     def __init__(self, msg, errs=(), reason=None):
-        w3afMustStopException.__init__(self, msg, errs)
+        ScanMustStopException.__init__(self, msg, errs)
         self.reason = reason
 
     def __str__(self):
-        _str = w3afMustStopException.__str__(self)
+        _str = ScanMustStopException.__str__(self)
         if self.reason:
             _str += ' - Reason: %s' % self.reason
         return _str
 
 
-class w3afMustStopByUnknownReasonExc(w3afMustStopException):
+class ScanMustStopByUnknownReasonExc(ScanMustStopException):
 
     def __str__(self):
         _str = self.msg
@@ -112,18 +112,20 @@ class w3afMustStopByUnknownReasonExc(w3afMustStopException):
         return _str
 
 
-class w3afProxyException(w3afException):
+class ProxyException(BaseFrameworkException):
     """
     A small class that defines a w3af Proxy Exception.
     """
     pass
 
 
-class DBException(w3afException):
+class DBException(BaseFrameworkException):
     pass
 
-class FileException(w3afException):
+
+class FileException(BaseFrameworkException):
     pass
 
-class OSDetectionException(w3afException):
+
+class OSDetectionException(BaseFrameworkException):
     pass
