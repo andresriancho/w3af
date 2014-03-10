@@ -64,6 +64,7 @@ class HistoryItem(object):
     _INDEX_COLUMNS = ('alias',)
 
     _EXTENSION = '.trace'
+    _MSGPACK_CANARY = 'cute-and-yellow'
 
     id = None
     _request = None
@@ -186,30 +187,54 @@ class HistoryItem(object):
     
     def _load_from_file(self, id):
         fname = self._get_fname_for_id(id)
-        #
-        #    Due to some concurrency issues, we need to perform this check
-        #    before we try to read the .trace file.
-        #
-        if not os.path.exists(fname):
-
-            for _ in xrange(1 / 0.05):
-                time.sleep(0.05)
-                if os.path.exists(fname):
-                    break
-            else:
-                msg = 'Timeout expecting trace file to be written "%s"' % fname
-                raise IOError(msg)
+        WAIT_TIME = 0.05
 
         #
-        #    Ok... the file exists, but it might still be being written
+        #    Due to some concurrency issues, we need to perform these checks
         #
-        req_res = open(fname, 'rb')
-        request_dict, response_dict = msgpack.load(req_res, use_list=True)
-        req_res.close()
-        
-        request = HTTPRequest.from_dict(request_dict)
-        response = HTTPResponse.from_dict(response_dict)
-        return request, response
+        for _ in xrange(int(1 / WAIT_TIME)):
+            if not os.path.exists(fname):
+                time.sleep(WAIT_TIME)
+                continue
+
+            # Ok... the file exists, but it might still be being written
+            req_res = open(fname, 'rb')
+
+            try:
+                data = msgpack.load(req_res, use_list=True)
+            except ValueError:
+                # ValueError: Extra data. returned when msgpack finds invalid
+                # data in the file
+                req_res.close()
+                time.sleep(WAIT_TIME)
+                continue
+
+            try:
+                request_dict, response_dict, canary = data
+            except TypeError:
+                # https://github.com/andresriancho/w3af/issues/1101
+                # 'NoneType' object is not iterable
+                req_res.close()
+                time.sleep(WAIT_TIME)
+                continue
+
+            if not canary == self._MSGPACK_CANARY:
+                # read failed, most likely because the file write is not
+                # complete but for some reason it was a valid msgpack file
+                req_res.close()
+                time.sleep(WAIT_TIME)
+                continue
+
+            # Success!
+            req_res.close()
+
+            request = HTTPRequest.from_dict(request_dict)
+            response = HTTPResponse.from_dict(response_dict)
+            return request, response
+
+        else:
+            msg = 'Timeout expecting trace file to be ready "%s"' % fname
+            raise IOError(msg)
 
     @verify_has_db
     def delete(self, _id=None):
@@ -316,7 +341,9 @@ class HistoryItem(object):
         fname = self._get_fname_for_id(self.id)
         
         req_res = open(fname, 'wb')
-        data = self.request.to_dict(), self.response.to_dict()
+        data = (self.request.to_dict(),
+                self.response.to_dict(),
+                self._MSGPACK_CANARY)
         msgpack.dump(data, req_res)
         req_res.close()
         

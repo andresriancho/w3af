@@ -442,8 +442,8 @@ class httpLogTab(entries.RememberingHPaned):
 
     def _show_message(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
         """Show message to user as GTK dialog."""
-        dlg = gtk.MessageDialog(
-            None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook,
+                                gtk.BUTTONS_OK, msg)
         dlg.set_title(title)
         dlg.run()
         dlg.destroy()
@@ -462,20 +462,36 @@ class httpLogTab(entries.RememberingHPaned):
         they want to show what request/response pair
         is related to the vulnerability.
         """
-        historyItem = self._historyItem.read(search_id)
-        if historyItem:
-            self._reqResViewer.request.show_object(historyItem.request)
-            self._reqResViewer.response.show_object(historyItem.response)
-            if historyItem.info:
-                buff = self._reqResViewer.info.get_buffer()
-                buff.set_text(historyItem.info)
-                self._reqResViewer.info.show()
-            else:
-                self._reqResViewer.info.hide()
-            self._reqResViewer.set_sensitive(True)
+        history_item = self._historyItem.read(search_id)
+
+        # Error handling for database problems
+        if not history_item:
+            msg = _('The id %s is not inside the database.')
+            self._show_message(_('Error'), msg % search_id)
+            return
+
+        # Error handling for .trace file problems
+        # https://github.com/andresriancho/w3af/issues/1101
+        try:
+            # These lines will trigger the code that reads the .trace file
+            # from disk and if they aren't there an exception will rise
+            history_item.request
+            history_item.response
+        except IOError, ioe:
+            self._show_message(_('Error'), str(ioe))
+            return
+
+        # Now we know that these two lines will work and we won't trigger
+        # https://github.com/andresriancho/w3af/issues/1101
+        self._reqResViewer.request.show_object(history_item.request)
+        self._reqResViewer.response.show_object(history_item.response)
+        if history_item.info:
+            buff = self._reqResViewer.info.get_buffer()
+            buff.set_text(history_item.info)
+            self._reqResViewer.info.show()
         else:
-            self._show_message(_('Error'), _('The id ') + str(search_id) +
-                              _('is not inside the database.'))
+            self._reqResViewer.info.hide()
+        self._reqResViewer.set_sensitive(True)
 
 
 class FilterOptions(gtk.HBox, Preferences):
