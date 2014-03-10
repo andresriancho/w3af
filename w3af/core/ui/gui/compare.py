@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import gtk
-import webbrowser
 
 from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import entries
+from w3af.core.ui.gui.helpers import open_help
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from w3af.core.ui.gui.tools.manual_requests import ManualRequests
 from w3af.core.ui.gui.comparator import comparator
@@ -286,9 +286,7 @@ class Compare(entries.RememberingWindow):
         self.comp.set_right_pane(*self._getElementText())
 
     def _help(self, action):
-        html_file = "doc/EN/gui-html/index.html#Comparing_HTTP_traffic"
-        helpfile = os.path.join(os.getcwd(), html_file)
-        webbrowser.open("file://" + helpfile)
+        open_help('Comparing_HTTP_traffic')
 
     def _clearAll(self, action):
         """Clear all the panes."""
