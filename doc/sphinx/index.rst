@@ -68,3 +68,10 @@ Contents
 
    report-a-bug
    contributors
+
+GUI documentation
+-----------------
+.. toctree::
+   :maxdepth: 3
+
+   gui/index
