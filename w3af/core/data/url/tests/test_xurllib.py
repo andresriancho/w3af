@@ -28,6 +28,7 @@ import types
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
+from mock import Mock
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
@@ -175,7 +176,28 @@ class TestXUrllib(unittest.TestCase):
             self.assertTrue(False)
         
         self.uri_opener.settings.set_default_values()
-        
+
+    def test_ignore_errors(self):
+        upper_daemon = UpperDaemon(TimeoutTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        self.uri_opener.settings.set_timeout(1)
+        self.uri_opener._retry = Mock()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+
+        try:
+            self.uri_opener.GET(url, ignore_errors=True)
+        except ScanMustStopOnUrlError:
+            self.assertEqual(self.uri_opener._retry.call_count, 0)
+        else:
+            self.assertTrue(False, 'Exception not raised')
+
+        self.uri_opener.settings.set_default_values()
+
     def test_stop(self):
         self.uri_opener.stop()
         url = URL(get_moth_http())
@@ -259,10 +281,12 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+
 class EmptyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         self.request.sendall('')
+
 
 class TimeoutTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):

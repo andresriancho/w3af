@@ -207,7 +207,7 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, ignore_errors=True):
+                    cookies=True, ignore_errors=False):
         """
         Sends a mutant to the remote web server.
 
@@ -255,7 +255,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            ignore_errors=True):
+            ignore_errors=False):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -295,7 +295,7 @@ class ExtendedUrllib(object):
             return self._send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True,
-             cache=False, cookies=True, ignore_errors=True):
+             cache=False, cookies=True, ignore_errors=False):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -380,7 +380,7 @@ class ExtendedUrllib(object):
                 self._method = method
 
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True, ignore_errors=True):
+                         grep=True, cookies=True, ignore_errors=False):
                 """
                 :return: An HTTPResponse object that's the result of
                     sending the request with a method different from
