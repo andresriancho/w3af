@@ -179,7 +179,7 @@ class Plugin(Configurable):
         """
         om.out.error('There was an error while requesting "%s". Reason: %s' %
                      (url_error.req.get_full_url(), url_error.msg))
-        return (False, None)
+        return False, None
 
     def _send_mutants_in_threads(self, func, iterable, callback, **kwds):
         """
