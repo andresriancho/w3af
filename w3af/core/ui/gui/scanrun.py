@@ -36,9 +36,9 @@ from w3af.core.ui.gui.tools.manual_requests import ManualRequests
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.kb.info import Info
+from w3af.core.controllers.exceptions import DBException
 
 import w3af.core.data.kb.knowledge_base as kb
-import w3af.core.controllers.output_manager as om
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
@@ -102,10 +102,9 @@ class FullKBTree(KBTree):
             self.kbbrowser.title0.hide()
 
             search_id = instance.get_id()[0]
-            history_item = self._historyItem.read(search_id)
-
-            # Error handling for database problems
-            if not history_item:
+            try:
+                history_item = self._historyItem.read(search_id)
+            except DBException:
                 msg = _('The HTTP data with id %s is not inside the database.')
                 self._show_message(_('Error'), msg % search_id)
                 self.clear_request_response_viewer()
@@ -150,7 +149,7 @@ class FullKBTree(KBTree):
         self.kbbrowser.rrV.response.clear_panes()
         self.kbbrowser.rrV.set_sensitive(False)
 
-    def _show_message(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
+    def _show_message(self, title, msg, gtkLook=gtk.MESSAGE_WARNING):
         """Show message to user as GTK dialog."""
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook,
                                 gtk.BUTTONS_OK, msg)

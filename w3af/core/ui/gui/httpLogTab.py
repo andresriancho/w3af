@@ -27,7 +27,7 @@ import pango
 from w3af.core.ui.gui import reqResViewer, entries
 from w3af.core.ui.gui.entries import EasyTable
 from w3af.core.ui.gui.entries import wrapperWidgets, TextInput
-from w3af.core.controllers.exceptions import w3afException
+from w3af.core.controllers.exceptions import w3afException, DBException
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.options.preferences import Preferences
 from w3af.core.data.options.opt_factory import opt_factory
@@ -465,10 +465,9 @@ class httpLogTab(entries.RememberingHPaned):
         they want to show what request/response pair
         is related to the vulnerability.
         """
-        history_item = self._historyItem.read(search_id)
-
-        # Error handling for database problems
-        if not history_item:
+        try:
+            history_item = self._historyItem.read(search_id)
+        except DBException:
             msg = _('The id %s is not inside the database.')
             self._show_message(_('Error'), msg % search_id)
             return
