@@ -98,10 +98,11 @@ You have the following encoding and decoding functions:
  * UTF-8 Barebyte Encoding: Just a normal UTF-8 encoding
  * UTF-8 Encoding: Just that. Note that the hexadecimal values are shown with a %
 
- Comparing HTTP traffic
- ----------------------
 
- With this tool you will be able to compare different requests and responses.
+Comparing HTTP traffic
+----------------------
+
+With this tool you will be able to compare different requests and responses.
 
 The Comparator window is separated mainly in two panes: both request and responses that you're comparing. In this tool all the information is concatenated in the same text, to ease the comparison, but you have four buttons [1] to control which part of the information appear in the text: request headers, request body, response headers, and response body.
 
