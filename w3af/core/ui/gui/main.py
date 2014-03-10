@@ -55,6 +55,7 @@ from w3af.core.ui.gui import scanrun, helpers, profiles, compare
 from w3af.core.ui.gui import export_request
 from w3af.core.ui.gui import entries, encdec, pluginconfig, confpanel
 from w3af.core.ui.gui import wizard, guardian
+from w3af.core.ui.gui.user_help.open_help import open_help
 from w3af.core.ui.gui.tabs.log.main_body import LogBody
 from w3af.core.ui.gui.tabs.exploit.main_body import ExploitBody
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
@@ -849,7 +850,7 @@ class MainApp(object):
 
     def menu_help(self, action):
         """Shows the help message."""
-        helpers.open_help()
+        open_help()
 
     def menu_about(self, action):
         """Shows the about message."""
@@ -902,7 +903,7 @@ class MainApp(object):
         if chapter == "--RESULTS--":
             chapter = self.w3af.helpChapters["scanrun"]
 
-        helpers.open_help(chapter)
+        open_help(chapter)
 
 
 def main(profile, do_upd):

@@ -27,9 +27,9 @@ from w3af.core.ui.gui import reqResViewer, helpers, entries
 from w3af.core.ui.gui.tools.helpers import ThreadedURLImpact
 
 from w3af.core.controllers.exceptions import (w3afException, w3afMustStopException,
-                                         w3afMustStopOnUrlError,
-                                         w3afMustStopByKnownReasonExc,
-                                         w3afProxyException)
+                                              w3afMustStopOnUrlError,
+                                              w3afMustStopByKnownReasonExc,
+                                              w3afProxyException)
 
 MANUAL_REQUEST_EXAMPLE = """\
 GET http://localhost/script.php HTTP/1.0

@@ -79,7 +79,7 @@ class distance_function_selector(entries.RememberingWindow):
     def __init__(self, w3af, response_list):
         super(distance_function_selector, self).__init__(
             w3af, "distance_function_selector", "w3af - Select distance function",
-            "select_distance_function")
+            "cluster")
         self.resize(300, 200)
 
         # Save for later usage

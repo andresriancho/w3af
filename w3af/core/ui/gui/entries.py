@@ -24,6 +24,7 @@ import gobject
 from w3af.core.ui.gui import history
 from w3af.core.ui.gui import helpers
 from w3af.core.ui.gui.constants import W3AF_ICON
+from w3af.core.ui.gui.user_help.open_help import open_help
 
 from w3af.core.data.options.preferences import Preferences
 from w3af.core.data.parsers.baseparser import BaseParser
@@ -612,6 +613,7 @@ class TextDialog(gtk.Dialog):
         self.connect('response', self.dialog_response_cb)
         self.show()
 
+
 class RememberingWindow(gtk.Window):
     """Just a window that remembers position and size.
 
@@ -661,7 +663,7 @@ class RememberingWindow(gtk.Window):
         self.open_help()
 
     def open_help(self, *args):
-        helpers.open_help(self.helpid)
+        open_help(self.helpid)
 
     def quit(self, widget, event):
         """Windows quit, saves the position and size.

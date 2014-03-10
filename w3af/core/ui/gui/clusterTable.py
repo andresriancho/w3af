@@ -49,7 +49,7 @@ class ClusterCellWindow(entries.RememberingWindow):
         # Create a new window
         super(ClusterCellWindow, self).__init__(
             w3af, "clusterWindow", "w3af - HTTP Response Clustering",
-            "ClusterResponseTool")
+            "cluster")
         self.set_size_request(400, 400)
 
         # Quit event.

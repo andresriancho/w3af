@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import threading
 import Queue
-import webbrowser
 import textwrap
 import gtk
 import os
@@ -430,18 +429,6 @@ KB_COLOR_LEVEL = {
 }
 
 KB_COLORS = ["black", "orange", "red", "red"]
-
-
-def open_help(chapter=''):
-    """Opens the help file in user's preferred browser.
-
-    :param chapter: the chapter of the help, optional.
-    """
-    if chapter:
-        chapter = '#' + chapter
-    helpfile = os.path.join(
-        os.getcwd(), "doc/EN/gui-html/index.html" + chapter)
-    webbrowser.open("file://" + helpfile)
 
 
 class DrawingAreaStringRepresentation(gtk.DrawingArea):

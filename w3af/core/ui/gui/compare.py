@@ -23,7 +23,7 @@ import gtk
 
 from w3af.core.ui.gui import GUI_DATA_PATH
 from w3af.core.ui.gui import entries
-from w3af.core.ui.gui.helpers import open_help
+from w3af.core.ui.gui.user_help.open_help import open_help
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from w3af.core.ui.gui.tools.manual_requests import ManualRequests
 from w3af.core.ui.gui.comparator import comparator
