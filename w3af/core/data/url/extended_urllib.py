@@ -78,7 +78,6 @@ class ExtendedUrllib(object):
         self._user_paused = False
         self._user_stopped = False
         self._error_stopped = False
-        self._ignore_errors_conf = False
 
     def pause(self, pause_yes_no):
         """
@@ -208,7 +207,7 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True):
+                    cookies=True, ignore_errors=True):
         """
         Sends a mutant to the remote web server.
 
@@ -239,6 +238,7 @@ class ExtendedUrllib(object):
             'grep': grep,
             'cache': cache,
             'cookies': cookies,
+            'ignore_errors': ignore_errors,
         }
         method = mutant.get_method()
 
@@ -254,7 +254,8 @@ class ExtendedUrllib(object):
         return res
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
-            grep=True, cookies=True, respect_size_limit=True):
+            grep=True, cookies=True, respect_size_limit=True,
+            ignore_errors=True):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -286,14 +287,15 @@ class ExtendedUrllib(object):
             uri = uri.copy()
             uri.querystring = data
 
-        req = HTTPRequest(uri, cookies=cookies, cache=cache)
+        req = HTTPRequest(uri, cookies=cookies, cache=cache,
+                          ignore_errors=ignore_errors)
         req = self._add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
             return self._send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True,
-             cache=False, cookies=True):
+             cache=False, cookies=True, ignore_errors=True):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -320,7 +322,8 @@ class ExtendedUrllib(object):
         #    since we *never* want to return cached responses for POST
         #    requests.
         #
-        req = HTTPRequest(uri, data=data, cookies=cookies, cache=False)
+        req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
+                          ignore_errors=ignore_errors)
         req = self._add_headers(req, headers)
         return self._send(req, grep=grep)
 
@@ -377,7 +380,7 @@ class ExtendedUrllib(object):
                 self._method = method
 
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True):
+                         grep=True, cookies=True, ignore_errors=True):
                 """
                 :return: An HTTPResponse object that's the result of
                     sending the request with a method different from
@@ -394,7 +397,8 @@ class ExtendedUrllib(object):
                 self._xurllib._init()
 
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
-                                  method=self._method)
+                                  method=self._method,
+                                  ignore_errors=ignore_errors)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
 
@@ -470,7 +474,9 @@ class ExtendedUrllib(object):
         want to have some type of backoff feature here that will wait increasing
         amounts of seconds before retrying when a timeout occurs.
         """
-        self._increment_global_error_count(exception)
+        if not req.ignore_errors:
+            self._increment_global_error_count(exception)
+
         return self._generic_send_error_handler(req, exception, grep, original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
@@ -479,17 +485,21 @@ class ExtendedUrllib(object):
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
         """
-        self._increment_global_error_count(exception)
+        if not req.ignore_errors:
+            self._increment_global_error_count(exception)
+
         return self._generic_send_error_handler(req, exception, grep, original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
-        msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' %
-              (req.get_method(), original_url, exception))
+        if req.ignore_errors:
+            msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
+            om.out.debug(msg % (req.get_method(), original_url, exception))
+            raise ScanMustStopOnUrlError(exception, req)
 
-        # Log the errors
-        om.out.debug(msg)
-        om.out.debug('Traceback for this error: %s' %
-                     traceback.format_exc())
+        # Log the error
+        msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
+        om.out.debug(msg % (req.get_method(), original_url, exception))
+        om.out.debug('Traceback for this error: %s' % traceback.format_exc())
         
         # Then retry!
         req._Request__original = original_url
@@ -580,9 +590,6 @@ class ExtendedUrllib(object):
             Where ('filename', 'line-number', 'function-name')
 
         """
-        if self._ignore_errors_conf:
-            return
-
         last_errors = self._last_errors
 
         if self._last_request_failed:
@@ -670,16 +677,6 @@ class ExtendedUrllib(object):
         else:
             errors = [] if parsed_traceback else last_errors
             raise ScanMustStopByUnknownReasonExc(msg % error, errs=errors)
-
-    def ignore_errors(self, yes_no):
-        """
-        Let the library know if errors should be ignored or not. Basically,
-        ignore all calls to "_increment_global_error_count" and don't raise the
-        ScanMustStopException.
-
-        :param yes_no: True to ignore errors.
-        """
-        self._ignore_errors_conf = yes_no
 
     def _zero_global_error_count(self):
         if self._last_request_failed or self._last_errors:
