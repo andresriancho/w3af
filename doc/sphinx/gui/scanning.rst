@@ -102,9 +102,8 @@ Sometimes the log information is too much, even if you can separate it in the di
 When the search bar opens, you'll see a text entry where you can write what you want to find, a Next and Previous buttons, and a Match case checkbox:
 
  .. image:: images/log-messages.png
-   :scale: 35 %
+   :scale: 55 %
    :alt: GUI screenshot
-   :align: left
 
 The system will find what you write in the text entry in real time, taking the letter case in consideration if the Match case checkbox is selected. If the inserted text doesn't match with anything in the whole text, the entry background will turn red.
 
