@@ -78,62 +78,85 @@ class FullKBTree(KBTree):
         longdesc = instance.get_desc()
         self.kbbrowser.explanation.set_text(longdesc)
 
-        success = False
+        if not instance.get_id():
+            self.clear_request_response_viewer()
+            return
 
-        if instance.get_id():
-            #
-            # We have two different cases:
-            #
-            # 1) The object is related to ONLY ONE request / response
-            # 2) The object is related to MORE THAN ONE request / response
-            #
-            # For 1), we show the classic view, and for 2) we show the classic
-            # view with a "page control"
-            #
-            # Work:
-            #
-            if len(instance.get_id()) == 1:
-                # There is ONLY ONE id related to the object
-                # This is 1)
-                self.kbbrowser.pagesControl.deactivate()
-                self.kbbrowser._pageChange(0)
-                self.kbbrowser.pagesControl.hide()
-                self.kbbrowser.title0.hide()
+        #
+        # We have two different cases:
+        #
+        # 1) The object is related to ONLY ONE request / response
+        # 2) The object is related to MORE THAN ONE request / response
+        #
+        # For 1), we show the classic view, and for 2) we show the classic
+        # view with a "page control"
+        #
+        # Work:
+        #
+        if len(instance.get_id()) == 1:
+            # There is ONLY ONE id related to the object
+            # This is 1)
+            self.kbbrowser.pagesControl.deactivate()
+            self.kbbrowser._pageChange(0)
+            self.kbbrowser.pagesControl.hide()
+            self.kbbrowser.title0.hide()
 
-                historyItem = self._historyItem.read(instance.get_id()[0])
-                if historyItem:
-                    self.kbbrowser.rrV.request.show_object(historyItem.request)
-                    self.kbbrowser.rrV.response.show_object(
-                        historyItem.response)
+            search_id = instance.get_id()[0]
+            history_item = self._historyItem.read(search_id)
 
-                    # Don't forget to highlight if neccesary
-                    severity = instance.get_severity()
-                    for s in instance.get_to_highlight():
-                        self.kbbrowser.rrV.response.highlight(s, severity)
+            # Error handling for database problems
+            if not history_item:
+                msg = _('The HTTP data with id %s is not inside the database.')
+                self._show_message(_('Error'), msg % search_id)
+                self.clear_request_response_viewer()
+                return
 
-                    success = True
-                else:
-                    msg = _('Failed to find request/response with id'
-                            '%s in the database.' % instance.get_id())
-                    om.out.error(msg)
-            else:
-                # There are MORE THAN ONE ids related to the object
-                # This is 2)
-                self.kbbrowser.pagesControl.show()
-                self.kbbrowser.title0.show()
+            # Error handling for .trace file problems
+            # https://github.com/andresriancho/w3af/issues/1174
+            try:
+                # These lines will trigger the code that reads the .trace file
+                # from disk and if they aren't there an exception will rise
+                history_item.request
+                history_item.response
+            except IOError, ioe:
+                self._show_message(_('Error'), str(ioe))
+                return
 
-                self.kbbrowser.req_res_ids = instance.get_id()
-                self.kbbrowser.pagesControl.activate(
-                    len(instance.get_id()))
-                self.kbbrowser._pageChange(0)
-                success = True
+            # Now we know that these two lines will work and we won't trigger
+            # https://github.com/andresriancho/w3af/issues/1174
+            self.kbbrowser.rrV.request.show_object(history_item.request)
+            self.kbbrowser.rrV.response.show_object(history_item.response)
 
-        if success:
-            self.kbbrowser.rrV.set_sensitive(True)
+            # Don't forget to highlight if necessary
+            severity = instance.get_severity()
+            for s in instance.get_to_highlight():
+                self.kbbrowser.rrV.response.highlight(s, severity)
+
         else:
-            self.kbbrowser.rrV.request.clear_panes()
-            self.kbbrowser.rrV.response.clear_panes()
-            self.kbbrowser.rrV.set_sensitive(False)
+            # There are MORE THAN ONE ids related to the object
+            # This is 2)
+            self.kbbrowser.pagesControl.show()
+            self.kbbrowser.title0.show()
+
+            self.kbbrowser.req_res_ids = instance.get_id()
+            num_ids = len(instance.get_id())
+            self.kbbrowser.pagesControl.activate(num_ids)
+            self.kbbrowser._pageChange(0)
+
+        self.kbbrowser.rrV.set_sensitive(True)
+
+    def clear_request_response_viewer(self):
+        self.kbbrowser.rrV.request.clear_panes()
+        self.kbbrowser.rrV.response.clear_panes()
+        self.kbbrowser.rrV.set_sensitive(False)
+
+    def _show_message(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
+        """Show message to user as GTK dialog."""
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook,
+                                gtk.BUTTONS_OK, msg)
+        dlg.set_title(title)
+        dlg.run()
+        dlg.destroy()
 
 
 class KBBrowser(entries.RememberingHPaned):

@@ -35,7 +35,9 @@ from w3af.core.data.options.option_list import OptionList
 
 
 class httpLogTab(entries.RememberingHPaned):
-    """A tab that shows all HTTP requests and responses made by the framework.
+    """
+    A tab that shows all HTTP requests and responses made by the framework.
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self, w3af, padding=10, time_refresh=False):
@@ -62,7 +64,8 @@ class httpLogTab(entries.RememberingHPaned):
     def _initReqResViewer(self, mainvbox):
         """Create the req/res viewer."""
         self._reqResViewer = reqResViewer.reqResViewer(self.w3af,
-                                                       editableRequest=False, editableResponse=False)
+                                                       editableRequest=False,
+                                                       editableResponse=False)
         self._reqResViewer.set_sensitive(False)
         # Create the req/res selector (when a search with more
         # than one result is done, this window appears)
