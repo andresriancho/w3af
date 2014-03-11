@@ -23,6 +23,7 @@ import subprocess
 
 from nose.plugins.attrib import attr
 
+from w3af.core.data.db.startup_cfg import StartUpConfig
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 from w3af.core.data.profile.profile import profile
@@ -112,6 +113,11 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         not so important. The important thing is that the user was seeing the
         old setting instead of the new.
         """
+        # We want to get the prompt, not a disclaimer message
+        startup_cfg = StartUpConfig()
+        startup_cfg.accepted_disclaimer = True
+        startup_cfg.save()
+
         # Load an existing profile, modify msf_location and save it as unittest
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
