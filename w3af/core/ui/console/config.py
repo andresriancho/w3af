@@ -138,6 +138,9 @@ class ConfigMenu(menu):
     
     def _cmd_save(self, tokens):
         try:
+            for unsaved_opt_name, unsaved_val in self._unsaved_options.iteritems():
+                self._options[unsaved_opt_name].set_value(unsaved_val)
+
             # Save the options using the corresponding setter
             self._configurable.set_options(self._options)
 
