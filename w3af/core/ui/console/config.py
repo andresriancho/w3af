@@ -23,6 +23,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
+from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
@@ -37,47 +38,62 @@ class ConfigMenu(menu):
 
     def __init__(self, name, console, w3af, parent, configurable):
         menu.__init__(self, 'config:' + name, console, w3af, parent)
+
         self._configurable = configurable
         self._options = self._configurable.get_options()
-        self._optDict = {}
+        self._unsaved_options = {}
+        self._opt_dict = {}
         self._memory = {}
 
         for o in self._options:
             k = o.get_name()
             v = o.get_default_value()
             self._memory[k] = [v]
-            self._optDict[k] = o
+            self._opt_dict[k] = o
 
         self._group_options_by_tabid()
         self._load_help('config')
 
     def _cmd_view(self, params):
+        """
+        View the configurable options for the self._configurable instance in a
+        table.
+        """
         # Some configurable objects require us to reload the options each time
         # we're going to show them in the console.
         # https://github.com/andresriancho/w3af/issues/291
         self._options = self._configurable.get_options()
         self._group_options_by_tabid()
         
-        table = [['Setting', 'Value', 'Description']]
-        for tabid in self._tabbedOptions.keys():
-            tabOpts = self._tabbedOptions[tabid]
-            table += [[o, tabOpts[o].get_value_str(), tabOpts[o].get_desc()]
-                      for o in tabOpts]
+        table = [['Setting', 'Value', 'Modified', 'Description']]
+        for tabid in self._tabbed_options.keys():
+            tab_opts = self._tabbed_options[tabid]
+
+            for opt_name in tab_opts:
+                opt = self._options[opt_name]
+
+                if opt_name in self._unsaved_options:
+                    unsaved_name = opt_name
+                    row = [unsaved_name, self._unsaved_options[opt_name], 'Yes', opt.get_desc()]
+                else:
+                    row = [opt_name, opt.get_value_str(), '', opt.get_desc()]
+                table.append(row)
+
             table.append([])
         if len(table) > 1:
             table.pop()
         self._console.draw_table(table, True)
 
     def _group_options_by_tabid(self):
-        self._tabbedOptions = {}
+        self._tabbed_options = {}
         for opt in self._options:
             tabid = opt.get_tabid()
 
-            if tabid not in self._tabbedOptions:
+            if tabid not in self._tabbed_options:
                 target = {}
-                self._tabbedOptions[tabid] = target
+                self._tabbed_options[tabid] = target
             else:
-                target = self._tabbedOptions[tabid]
+                target = self._tabbed_options[tabid]
 
             target[opt.get_name()] = opt
 
@@ -97,6 +113,7 @@ class ConfigMenu(menu):
         # the user sets it to 'abc'
         try:
             self._options[name].set_value(value)
+            self._unsaved_options[name] = value
         except BaseFrameworkException, e:
             om.out.error(str(e))
         else:
@@ -137,6 +154,7 @@ class ConfigMenu(menu):
             raise BaseFrameworkException(msg % e)
         else:
             om.out.console('The configuration has been saved.')
+            self._unsaved_options = {}
     
     def _cmd_back(self, tokens):
         try:
@@ -169,8 +187,8 @@ class ConfigMenu(menu):
     def _cmd_help(self, params):
         if len(params) == 1:
             optName = params[0]
-            if optName in self._optDict:
-                opt = self._optDict[optName]
+            if optName in self._opt_dict:
+                opt = self._opt_dict[optName]
                 om.out.console(opt.get_desc())
                 if opt.get_help():
                     om.out.console('')
@@ -184,5 +202,5 @@ class ConfigMenu(menu):
 
     def _para_help(self, params, part):
         result = menu._para_help(self, params, part)
-        result.extend(suggest(self._optDict, part))
+        result.extend(suggest(self._opt_dict, part))
         return result

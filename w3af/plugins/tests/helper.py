@@ -101,7 +101,7 @@ class PluginTest(unittest.TestCase):
             
         headers['Content-Type'] = content_type
         headers['status'] = status
-        
+
         return status, headers, body
 
     @retry(tries=3, delay=0.5, backoff=2)
