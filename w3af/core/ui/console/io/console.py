@@ -1,5 +1,5 @@
 """
-posixterm.py
+console.py
 
 Copyright 2008 Andres Riancho
 
@@ -19,9 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import sys
-import os
-
 # If this two modules are imported here instead of below
 # we loose windows support.
 #import tty
@@ -92,7 +89,7 @@ def getch(buf=None):
             return getch()
         else:
             return getch(buf)
-    elif ord(ch) in CTRL_CODES:
+    elif len(ch) and ord(ch) in CTRL_CODES:
         result = '^' + chr(ord(ch) + 64)
     else:
         result = ch

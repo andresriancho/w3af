@@ -54,8 +54,8 @@ class TestWrappedW3afConsole(unittest.TestCase):
 
         expected_output = 'msf_location'
 
-        stdout, stderr = p.communicate('\r\n'.join(commands_to_run))
+        stdout, stderr = p.communicate('\r'.join(commands_to_run) + '\r')
 
         msg = 'Failed to find "%s" in "%s" using "%s" as python executable.'
         msg = msg % (expected_output, stdout, python_executable)
-        self.assertTrue(stdout.startswith(expected_output), msg)
+        self.assertIn(expected_output, stdout, msg)
