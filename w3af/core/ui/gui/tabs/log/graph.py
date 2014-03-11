@@ -111,7 +111,6 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         """
         Redraws all the graph.
         """
-        """Redraws all the graph."""
         if self.gc is None:
             # sorry, not exposed yet...
             yield True
@@ -127,10 +126,19 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         pan = self.all_messages[-1][0] - self.all_messages[0][0]
         tspan = pan / self.timeGrouping
         usableWidth = w - MDER - self.realLeftMargin
+
         if tspan > usableWidth:
-            self.timeGrouping *= int(tspan / usableWidth) + 1
+            #
+            # Note that this line was changed from the previous (buggy line):
+            #       self.timeGrouping *= int(tspan / usableWidth) + 1
+            #
+            # Which triggers https://github.com/andresriancho/w3af/issues/488
+            # The new line makes it impossible for self.timeGrouping to be zero
+            #
+            self.timeGrouping = self.timeGrouping * int(tspan / usableWidth) + 1
             tspan = pan / self.timeGrouping
-        elif tspan < usableWidth // 2 and self.timeGrouping>2:
+
+        elif tspan < usableWidth // 2 and self.timeGrouping > 2:
             self.timeGrouping //= 2
             tspan = pan / self.timeGrouping
 
