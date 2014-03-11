@@ -41,13 +41,13 @@ class ConfigMenu(menu):
         self._options = self._configurable.get_options()
         self._optDict = {}
         self._memory = {}
-        self._plain_options = {}
+
         for o in self._options:
             k = o.get_name()
             v = o.get_default_value()
             self._memory[k] = [v]
-            self._plain_options[k] = v
             self._optDict[k] = o
+
         self._group_options_by_tabid()
         self._load_help('config')
 
@@ -97,7 +97,6 @@ class ConfigMenu(menu):
         # the user sets it to 'abc'
         try:
             self._options[name].set_value(value)
-            self._plain_options[name] = value
         except BaseFrameworkException, e:
             om.out.error(str(e))
         else:
@@ -123,15 +122,14 @@ class ConfigMenu(menu):
     def _cmd_save(self, tokens):
         try:
             # Save the options using the corresponding setter
+            self._configurable.set_options(self._options)
+
             if isinstance(self._configurable, Plugin):
-                self._configurable.set_options(self._options)
                 self._w3af.plugins.set_plugin_options(
                     self._configurable.get_type(),
                     self._configurable.get_name(),
                     self._options)
-            else:
-                self._configurable.set_options(self._options)
-                
+
         except BaseFrameworkException, e:
             msg = 'Identified an error with the user-defined settings:\n\n'\
                   '    - %s \n\n'\

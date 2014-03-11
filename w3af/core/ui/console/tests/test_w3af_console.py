@@ -61,4 +61,3 @@ class TestW3afConsole(unittest.TestCase):
         msg = 'Failed to find "%s" in "%s" using "%s" as python executable.'
         msg = msg % (expected_prompt, stdout, python_executable)
         self.assertTrue(stdout.startswith(expected_prompt), msg)
-        

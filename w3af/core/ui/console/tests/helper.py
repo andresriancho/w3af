@@ -85,6 +85,9 @@ class ConsoleTestHelper(unittest.TestCase):
         sys.stdout = self.old_stdout
         sys.exit = self.old_exit
 
+    def clear_stdout_messages(self):
+        self._mock_stdout.clear()
+
     def startswith_expected_in_output(self, expected):
         for line in expected:
             for sys_line in self._mock_stdout.messages:

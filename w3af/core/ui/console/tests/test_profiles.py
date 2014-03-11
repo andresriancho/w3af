@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import sys
+import subprocess
+
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -97,6 +100,67 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         self.assertTrue(assert_result, msg)
         
         self._assert_exists('unittest')
+
+    def test_set_save_use(self):
+        """
+        This is a unittest for the bug reported by a user where his settings
+        are not saved to the profile.
+
+        https://github.com/andresriancho/w3af/issues/291
+
+        Actually, the settings are saved but not properly displayed, but that's
+        not so important. The important thing is that the user was seeing the
+        old setting instead of the new.
+        """
+        # Load an existing profile, modify msf_location and save it as unittest
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'back',
+                           'misc-settings',
+                           'set msf_location /tmp/',
+                           'back',
+                           'profiles',
+                           'save_as unittest',
+                           'exit']
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        expected = ('Profile saved.',)
+
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
+
+        # The easy way to do this was to simply pass 'python' to Popen
+        # but now that we want to run the tests in virtualenv, we need to
+        # find the "correct" / "virtual" python executable using which and
+        # then pass that one to Popen
+        python_executable = sys.executable
+
+        p = subprocess.Popen([python_executable, 'w3af_console', '-n'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdin=subprocess.PIPE,
+                             shell=False,
+                             universal_newlines=True)
+
+        # Now we run a new ConsoleUI that will load the saved settings. We
+        # should see /tmp/ as the value for msf_location
+        commands_to_run = ['profiles',
+                           'use unittest',
+                           'back',
+                           'misc-settings',
+                           'view',
+                           'back',
+                           'exit']
+
+        expected_output = '/tmp'
+
+        stdout, stderr = p.communicate('\r'.join(commands_to_run) + '\r')
+
+        msg = 'Failed to find "%s" in "%s" using "%s" as python executable.'
+        msg = msg % (expected_output, stdout, python_executable)
+        self.assertIn(expected_output, stdout, msg)
 
     def test_save_as_profile_no_param(self):
         commands_to_run = ['profiles',
