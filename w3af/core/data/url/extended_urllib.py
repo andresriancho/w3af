@@ -324,7 +324,7 @@ class ExtendedUrllib(object):
         #    requests.
         #
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          ignore_errors=ignore_errors)
+                          ignore_errors=ignore_errors, method='POST')
         req = self._add_headers(req, headers)
         return self._send(req, grep=grep)
 
