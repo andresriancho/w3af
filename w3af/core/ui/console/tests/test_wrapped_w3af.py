@@ -36,6 +36,7 @@ class TestWrappedW3afConsole(unittest.TestCase):
         # Just in case... we don't want to break other tests
         startup_cfg = StartUpConfig()
         startup_cfg.last_upd = datetime.date.today()
+        startup_cfg.set_accepted_disclaimer(True)
         startup_cfg.save()
 
         # The easy way to do this was to simply pass 'python' to Popen
