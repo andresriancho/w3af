@@ -84,11 +84,10 @@ class user_dir(CrawlPlugin):
         # Check the users to see if they exist
         url_user_list = self._create_dirs(base_url)
         #   Send the requests using threads:
-        self.worker_pool.map_multi_args(self._do_request,
-                                           url_user_list)
+        self.worker_pool.map_multi_args(self._do_request, url_user_list)
 
         # Only do this if I already know that users can be identified.
-        if kb.kb.get('user_dir', 'users') != []:
+        if kb.kb.get('user_dir', 'users'):
             if self._identify_OS:
                 self._advanced_identification(base_url, 'os')
 
@@ -102,8 +101,8 @@ class user_dir(CrawlPlugin):
         """
         Perform the request and compare.
 
-        :return: The HTTP response id if the mutated_url is a web user directory,
-                 None otherwise.
+        :return: The HTTP response id if the mutated_url is a web user
+                 directory, None otherwise.
         """
         response = self._uri_opener.GET(mutated_url, cache=True,
                                         headers=self._headers)
@@ -137,29 +136,33 @@ class user_dir(CrawlPlugin):
         :return: A list of users from the user dir database.
         """
         assert ident in ('applications', 'os'), 'Invalid identification'
-        users = []
-        
+
         csv_db = os.path.join(self.DB_PATH, '%s.csv' % ident)
-        
-        file_handler = file(csv_db)
-        for csv_row in csv.reader(file_handler):
+        file_handler = file(csv_db, 'rb')
+        reader = csv.reader(file_handler)
+
+        while True:
             try:
-                (desc, user) = csv_row
+                csv_row = reader.next()
+                desc, user = csv_row
+            except StopIteration:
+                break
+            except csv.Error:
+                # line contains NULL byte, and other similar things.
+                # https://github.com/andresriancho/w3af/issues/1490
+                msg = 'user_dir: Ignoring data with CSV error at line "%s"'
+                om.out.debug(msg % reader.line_num)
             except ValueError:
                 om.out.debug('Invalid user_dir input: "%r"' % csv_row)
             else:
-                users.append((desc, user))
-        
-        return users
+                yield desc, user
 
     def _advanced_identification(self, url, ident):
         """
         :return: None, This method will save the results to the kb and print and
-        informational message to the user.
+                 informational message to the user.
         """
-        to_test = self._get_users_from_csv(ident)
-
-        for data_related_to_user, user in to_test:
+        for data_related_to_user, user in self._get_users_from_csv(ident):
             url_user_list = self._create_dirs(url, user_list=[user, ])
             for user_dir, user in url_user_list:
                 
@@ -191,34 +194,35 @@ class user_dir(CrawlPlugin):
         Print all the findings to the output manager.
         :return : None
         """
-        userList = [u['user'] for u in kb.kb.get('user_dir', 'users')]
-        if userList:
-            om.out.information('The following users were found on the remote operating system:')
-            for u in userList:
-                om.out.information('- ' + u)
+        apps = 'applications'
 
+        user_list = [u['user'] for u in kb.kb.get('user_dir', 'users')]
         OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
+        app_list = [u[apps] for u in kb.kb.get('user_dir', apps)]
+
+        def print_bullet_list(item_list):
+            item_list = list(set(item_list))
+            for i in item_list:
+                om.out.information('- ' + i)
+
+        if user_list:
+            om.out.information('The following users were found on the remote'\
+                               ' operating system:')
+            print_bullet_list(user_list)
+
         if OS_list:
-            om.out.information(
-                'The remote operating system was identifyed as:')
-            OS_list = list(set(OS_list))
-            for u in OS_list:
-                om.out.information('- ' + u)
+            om.out.information('The remote operating system was identified as:')
+            print_bullet_list(OS_list)
         elif self._identify_OS:
             msg = 'Failed to identify the remote OS based on the users'\
                   ' available in the user_dir plugin database.'
             om.out.information(msg)
-        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
 
-        app_list = [u['application'] for u in kb.kb.get('user_dir',
-                                                        'applications')]
         if app_list:
-            om.out.information(
-                'The remote server has the following applications installed:')
-            app_list = list(set(app_list))
-            for u in app_list:
-                om.out.information('- ' + u)
-        elif self._identify_OS:
+            om.out.information('The remote server has the following'
+                               ' applications installed:')
+            print_bullet_list(app_list)
+        elif self._identify_applications:
             msg = 'Failed to identify any installed applications based on the'\
                   ' users available in the user_dir plugin database.'
             om.out.information(msg)
@@ -238,6 +242,7 @@ class user_dir(CrawlPlugin):
         for user in user_list:
             res.append((url.url_join('/' + user + '/'), user))
             res.append((url.url_join('/~' + user + '/'), user))
+
         return res
 
     def _get_users(self):
@@ -278,8 +283,8 @@ class user_dir(CrawlPlugin):
 
     def set_options(self, options_list):
         """
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
 
         :param options_list: An OptionList with the options for the plugin.
         :return: No value is returned.
@@ -289,8 +294,8 @@ class user_dir(CrawlPlugin):
 
     def get_plugin_deps(self):
         """
-        :return: A list with the names of the plugins that should be run before the
-        current one.
+        :return: A list with the names of the plugins that should be run before
+                 the current one.
         """
         if self._do_fast_search:
             # This was left here for fast testing of the plugin.
@@ -306,9 +311,9 @@ class user_dir(CrawlPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin will try to find user home directories based on the knowledge
-        gained by other plugins, and an internal knowledge base. For example, if
-        the target URL is:
+        This plugin will try to find user home directories based on the
+        knowledge gained by other plugins, and an internal knowledge base. For
+        example, if the target URL is:
             - http://test/
 
         And other plugins found this valid email accounts:
@@ -322,7 +327,7 @@ class user_dir(CrawlPlugin):
             - http://test/f00b4r/
 
         If the response is not a 404 error, then we have found a new URL. And
-        confirmed the existance of a user in the remote system. This plugin
-        will also identify the remote operating system and installed applications
-        based on the user names that are available.
+        confirmed the existence of a user in the remote system. This plugin
+        will also identify the remote operating system and installed
+        applications based on the user names that are available.
         """

@@ -73,9 +73,9 @@ class w3af_core_plugins(object):
         # This is inited before all, to have a full logging support.
         om.out.set_output_plugins(self._plugins_names_dict['output'])
 
-        # Create an instance of each requested plugin and add it to the plugin list
-        # Plugins are added taking care of plugin dependencies and configuration
-
+        # Create an instance of each requested plugin and add it to the plugin
+        # list. Plugins are added taking care of plugin dependencies and
+        # configuration
         #
         # Create all the plugin instances
         #
@@ -255,6 +255,86 @@ class w3af_core_plugins(object):
             
         return plugin_inst
 
+    def get_quick_instance(self, plugin_type, plugin_name):
+        plugin_module = '.'.join(['w3af', 'plugins', plugin_type, plugin_name])
+        return factory(plugin_module)
+
+    def expand_all(self):
+        for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
+            if 'all' in enabled_plugins:
+                file_list = [f for f in os.listdir(
+                    os.path.join(ROOT_PATH, 'plugins', plugin_type))]
+                all_plugins = [os.path.splitext(f)[0] for f in file_list
+                               if os.path.splitext(f)[1] == '.py']
+                all_plugins.remove('__init__')
+
+                enabled_plugins.extend(all_plugins)
+                enabled_plugins = list(set(enabled_plugins))
+                enabled_plugins.remove('all')
+                self._plugins_names_dict[plugin_type] = enabled_plugins
+
+    def remove_exclusions(self):
+        for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
+            for plugin_name in enabled_plugins[:]:
+                if plugin_name.startswith('!'):
+                    enabled_plugins.remove(plugin_name)
+                    enabled_plugins.remove(plugin_name.replace('!', ''))
+
+    def resolve_dependencies(self):
+        for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
+            for plugin_name in enabled_plugins:
+
+                plugin_inst = self.get_quick_instance(plugin_type, plugin_name)
+
+                for dep in plugin_inst.get_plugin_deps():
+
+                    try:
+                        dep_plugin_type, dep_plugin_name = dep.split('.')
+                    except:
+                        msg = ('Plugin dependencies must be indicated using'
+                               ' plugin_type.plugin_name notation. This is'
+                               ' an error in %s.get_plugin_deps().' % plugin_name)
+                        raise BaseFrameworkException(msg)
+
+                    if dep_plugin_name not in self._plugins_names_dict[dep_plugin_type]:
+                        om.out.information('Enabling %s\'s dependency %s' %
+                                           (plugin_name, dep_plugin_name))
+
+                        self._plugins_names_dict[
+                            dep_plugin_type].append(dep_plugin_name)
+
+                        self.resolve_dependencies()
+
+    def order_plugins(self):
+        """Makes sure that dependencies are run before the plugin that
+        required it"""
+        for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
+            for plugin_name in enabled_plugins:
+                plugin_inst = self.get_quick_instance(plugin_type, plugin_name)
+
+                for dep in plugin_inst.get_plugin_deps():
+                    dep_plugin_type, dep_plugin_name = dep.split('.')
+
+                    if dep_plugin_type == plugin_type:
+                        plugin_index = self._plugins_names_dict[
+                            plugin_type].index(plugin_name)
+                        dependency_index = self._plugins_names_dict[
+                            plugin_type].index(dep_plugin_name)
+
+                        if dependency_index > plugin_index:
+                            self._plugins_names_dict[plugin_type][
+                                plugin_index] = dep_plugin_name
+                            self._plugins_names_dict[plugin_type][
+                                dependency_index] = plugin_name
+
+    def create_instances(self):
+        for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
+            for plugin_name in enabled_plugins:
+                plugin_instance = self.get_plugin_inst(plugin_type,
+                                                       plugin_name)
+                if plugin_instance not in self.plugins[plugin_type]:
+                    self.plugins[plugin_type].append(plugin_instance)
+
     def plugin_factory(self):
         """
         This method creates the user requested plugins.
@@ -263,94 +343,15 @@ class w3af_core_plugins(object):
         :param plugin_type: A string representing the plugin family (audit, crawl, etc.)
         :return: A list with plugins to be executed, this list is ordered using the exec priority.
         """
-        def get_quick_instance(plugin_type, plugin_name):
-            plugin_module = '.'.join(['w3af', 'plugins', plugin_type, plugin_name])
-            return factory(plugin_module)
+        self.expand_all()
+        self.remove_exclusions()
+        self.resolve_dependencies()
 
-        def expand_all():
-            for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
-                if 'all' in enabled_plugins:
-                    file_list = [f for f in os.listdir(
-                        os.path.join(ROOT_PATH, 'plugins', plugin_type))]
-                    all_plugins = [os.path.splitext(f)[0] for f in file_list
-                                   if os.path.splitext(f)[1] == '.py']
-                    all_plugins.remove('__init__')
-
-                    enabled_plugins.extend(all_plugins)
-                    enabled_plugins = list(set(enabled_plugins))
-                    enabled_plugins.remove('all')
-                    self._plugins_names_dict[plugin_type] = enabled_plugins
-
-        def remove_exclusions():
-            for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
-                for plugin_name in enabled_plugins[:]:
-                    if plugin_name.startswith('!'):
-                        enabled_plugins.remove(plugin_name)
-                        enabled_plugins.remove(plugin_name.replace('!', ''))
-
-        def resolve_dependencies():
-            for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
-                for plugin_name in enabled_plugins:
-
-                    plugin_inst = get_quick_instance(plugin_type, plugin_name)
-
-                    for dep in plugin_inst.get_plugin_deps():
-
-                        try:
-                            dep_plugin_type, dep_plugin_name = dep.split('.')
-                        except:
-                            msg = ('Plugin dependencies must be indicated using '
-                                   'plugin_type.plugin_name notation. This is an error in '
-                                   '%s.get_plugin_deps().' % plugin_name)
-                            raise BaseFrameworkException(msg)
-
-                        if dep_plugin_name not in self._plugins_names_dict[dep_plugin_type]:
-                            om.out.information('Enabling %s\'s dependency %s' %
-                                               (plugin_name, dep_plugin_name))
-
-                            self._plugins_names_dict[
-                                dep_plugin_type].append(dep_plugin_name)
-
-                            resolve_dependencies()
-
-        def order_plugins():
-            """Makes sure that dependencies are run before the plugin that
-            required it"""
-            for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
-                for plugin_name in enabled_plugins:
-                    plugin_inst = get_quick_instance(plugin_type, plugin_name)
-
-                    for dep in plugin_inst.get_plugin_deps():
-                        dep_plugin_type, dep_plugin_name = dep.split('.')
-
-                        if dep_plugin_type == plugin_type:
-                            plugin_index = self._plugins_names_dict[
-                                plugin_type].index(plugin_name)
-                            dependency_index = self._plugins_names_dict[
-                                plugin_type].index(dep_plugin_name)
-
-                            if dependency_index > plugin_index:
-                                self._plugins_names_dict[plugin_type][
-                                    plugin_index] = dep_plugin_name
-                                self._plugins_names_dict[plugin_type][
-                                    dependency_index] = plugin_name
-
-        def create_instances():
-            for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
-                for plugin_name in enabled_plugins:
-                    plugin_instance = self.get_plugin_inst(plugin_type,
-                                                           plugin_name)
-                    if plugin_instance not in self.plugins[plugin_type]:
-                        self.plugins[plugin_type].append(plugin_instance)
-
-        expand_all()
-        remove_exclusions()
-        resolve_dependencies()
         # Now the self._plugins_names_dict has all the plugin names that
         # we should enable, for all types, but in the incorrect order:
         # without taking care of dependencies
-        order_plugins()
-        create_instances()
+        self.order_plugins()
+        self.create_instances()
 
     def _set_plugin_generic(self, plugin_type, plugin_list):
         """
