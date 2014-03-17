@@ -41,6 +41,40 @@ Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
 
+FUZZYHELP = """\
+<b>This is the syntax you can follow to generate
+multiple crafted requests.</b>
+
+Every text inside two dollar signs (<i>$</i>) is a text
+generator (if you want to actually write a dollar sign,
+use \$). The system will generate and send as many requests
+as the generator produces.
+
+If in a text you put more than one generator, the results
+are combined. For example, if you put a generator of 5
+digits and a generator of 10 letters, a total of 50 pages
+will be generated. You can actually check how many
+pages will be generated using the <i>Analyze</i> button
+(to actually see those requests, still without sending them,
+select the <i>preview</i> option).
+
+Each generator between the dollar signs will be evaluated
+by Python, using <tt>eval()</tt>, with an almost clean
+namespace (there's already imported the module <tt>string</tt>).
+Keep in mind that copying some random text into the request window
+is almost as dangerous as pasting some random text into a console
+window: you could be executing OS commands in your box.
+
+For example, you can do:
+<tt>
+  Numbers from 0 to 4: $range(5)$
+  First ten letters: $string.lowercase[:10]$
+  The words "spam" and "eggs": $['spam', 'eggs']$
+  The content of a file:
+      $[l.strip() for l in file('input.txt').readlines()]$
+</tt>
+"""
+
 
 class PreviewWindow(entries.RememberingWindow):
     """A window with the analysis preview.
@@ -80,41 +114,6 @@ class PreviewWindow(entries.RememberingWindow):
             self.pages.append(it)
         (txtup, txtdn) = self.pages[page]
         self.panes.show_raw(txtup, txtdn)
-
-
-FUZZYHELP = """\
-<b>This is the syntax you can follow to generate
-multiple crafted requests.</b>
-
-Every text inside two dollar signs (<i>$</i>) is a text
-generator (if you want to actually write a dollar sign,
-use \$). The system will generate and send as many requests
-as the generator produces.
-
-If in a text you put more than one generator, the results
-are combined. For example, if you put a generator of 5
-digits and a generator of 10 letters, a total of 50 pages
-will be generated. You can actually check how many
-pages will be generated using the <i>Analyze</i> button
-(to actually see those requests, still without sending them,
-select the <i>preview</i> option).
-
-Each generator between the dollar signs will be evaluated
-by Python, using <tt>eval()</tt>, with an almost clean
-namespace (there's already imported the module <tt>string</tt>).
-Keep in mind that copying some random text into the request window
-is almost as dangerous as pasting some random text into a console
-window: you could be executing OS commands in your box.
-
-For example, you can do:
-<tt>
-  Numbers from 0 to 4: $range(5)$
-  First ten letters: $string.lowercase[:10]$
-  The words "spam" and "eggs": $['spam', 'eggs']$
-  The content of a file:
-      $[l.strip() for l in file('input.txt').readlines()]$
-</tt>
-"""
 
 
 class FuzzyRequests(entries.RememberingWindow):
@@ -344,6 +343,7 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_start(self, widg):
         """Start sending the requests."""
         (request, postbody) = self.originalReq.get_both_texts()
+        
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
