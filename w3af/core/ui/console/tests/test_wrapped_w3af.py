@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import subprocess
 import sys
+import datetime
+
+from w3af.core.data.db.startup_cfg import StartUpConfig
 
 
 class TestWrappedW3afConsole(unittest.TestCase):
@@ -30,6 +33,11 @@ class TestWrappedW3afConsole(unittest.TestCase):
         Strange behaviour when wrapping w3af_console
         https://github.com/andresriancho/w3af/issues/1299
         """
+        # Just in case... we don't want to break other tests
+        startup_cfg = StartUpConfig()
+        startup_cfg.last_upd = datetime.date.today()
+        startup_cfg.save()
+
         # The easy way to do this was to simply pass 'python' to Popen
         # but now that we want to run the tests in virtualenv, we need to
         # find the "correct" / "virtual" python executable using which and
