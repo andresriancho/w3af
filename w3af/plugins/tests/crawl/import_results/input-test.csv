@@ -1,5 +1,5 @@
-GET,http://moth/,
-GET,HtTp://moth/w3af/,
-GET,http://moth/w3af/?id=1,
-POST,http://moth/w3af/audit/xss/data_receptor.php,firstname=abc
+GET,http://127.0.0.1:8000/,
+GET,HtTp://127.0.0.1:8000/audit/,
+GET,http://127.0.0.1:8000/audit/?id=1,
+POST,http://127.0.0.1:8000/audit/xss/simple_xss_form.py,text=abc
 
