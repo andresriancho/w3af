@@ -43,7 +43,6 @@ try:
         WrappedBloomFilter = FileSeekFilter
     else:
         WrappedBloomFilter = CMmapFilter
-
 except:
     WrappedBloomFilter = FileSeekFilter
 
