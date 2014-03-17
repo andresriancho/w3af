@@ -1,3 +1,10 @@
+#
+#   This file is used to configure the continuous integration for w3af
+#   see http://w3af.org/how-w3af-uses-continuous-integration-to-improve
+#
+#   As a user you don't need to understand this file.
+#
+
 dependencies:
   cache_directories:
     - "xpresser"
