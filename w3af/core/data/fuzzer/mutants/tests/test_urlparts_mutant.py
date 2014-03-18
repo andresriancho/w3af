@@ -103,13 +103,13 @@ class TestURLPartsMutant(unittest.TestCase):
         case, and given that both the encoded and double encoded versions were
         the same, the number of generated mutants was 4.
         """
-        payloads = ['ls - la', 'ping 127.0.0.1 -c 5']
+        payloads = ['ls - la', 'ping 127.0.0.1 -c 5',
+                    'http://127.0.0.1:8015/test/']
         freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = URLPartsMutant.create_mutants(freq, payloads, [],
-                                                          False, self.fuzzer_config)
-
-        self.assertEqual(len(generated_mutants), 8, generated_mutants)
+                                                          False,
+                                                          self.fuzzer_config)
 
         expected_urls = ['http://www.w3af.com/ls+-+la/bar',
                          'http://www.w3af.com/ls%2B-%2Bla/bar',
@@ -118,8 +118,12 @@ class TestURLPartsMutant(unittest.TestCase):
                          'http://www.w3af.com/foo/ls+-+la',
                          'http://www.w3af.com/foo/ls%2B-%2Bla',
                          'http://www.w3af.com/foo/ping+127.0.0.1+-c+5',
-                         'http://www.w3af.com/foo/ping%2B127.0.0.1%2B-c%2B5']
+                         'http://www.w3af.com/foo/ping%2B127.0.0.1%2B-c%2B5',
+                         'http://www.w3af.com/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F/bar',
+                         'http://www.w3af.com/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F/bar',
+                         'http://www.w3af.com/foo/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F',
+                         'http://www.w3af.com/foo/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F']
 
-        generated_urls = [m.get_url().url_string for m in generated_mutants]
+        generated_urls = set([m.get_url().url_string for m in generated_mutants])
 
-        self.assertEqual(expected_urls, generated_urls)
+        self.assertEqual(set(expected_urls), generated_urls)
