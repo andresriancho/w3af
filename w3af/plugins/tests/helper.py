@@ -23,6 +23,7 @@ import re
 import unittest
 import urllib2
 import httpretty
+import tempfile
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
@@ -165,10 +166,7 @@ class PluginTest(unittest.TestCase):
                                                          unit_test_options)
 
         # Enable text output plugin for debugging
-        if debug:
-            enabled_output = self.w3afcore.plugins.get_enabled_plugins('output')
-            enabled_output += ['text_file']
-            self.w3afcore.plugins.set_plugins(enabled_output, 'output')
+        if debug: self._configure_debug()
 
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
@@ -177,14 +175,40 @@ class PluginTest(unittest.TestCase):
 
         #
         # I want to make sure that we don't have *any hidden* exceptions in our
-        # tests. This was in tearDown before, but moved here because I was getting
-        # failed assertions in my test code that were because of exceptions in the
-        # scan and they were hidden.
+        # tests. This was in tearDown before, but moved here because I was
+        # getting failed assertions in my test code that were because of
+        # exceptions in the scan and they were hidden.
         #
         if assert_exceptions:
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
             msg = [e.get_summary() for e in caught_exceptions]
             self.assertEqual(len(caught_exceptions), 0, msg)
+
+    def _configure_debug(self):
+        """
+        Configure debugging for the scans to be run.
+        """
+        ptype = 'output'
+        pname = 'text_file'
+
+        enabled_output = self.w3afcore.plugins.get_enabled_plugins(ptype)
+        enabled_output += [pname]
+        self.w3afcore.plugins.set_plugins(enabled_output, ptype)
+
+        # Now we configure the output file to point to CircleCI's artifact
+        # directory (when run on circle) and /tmp/ when run on our
+        # workstation
+        output_dir = os.environ.get('CIRCLE_ARTIFACTS', tempfile.gettempdir())
+        text_output = os.path.join(output_dir, 'output.txt')
+        http_output = os.path.join(output_dir, 'output-http.txt')
+
+        text_file_inst = self.w3afcore.plugins.get_plugin_inst(ptype, pname)
+
+        default_opts = text_file_inst.get_options()
+        default_opts['output_file'].set_value(text_output)
+        default_opts['http_output_file'].set_value(http_output)
+
+        self.w3afcore.plugins.set_plugin_options(ptype, pname, default_opts)
 
 
 class PluginConfig(object):
