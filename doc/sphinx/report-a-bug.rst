@@ -6,13 +6,54 @@ The framework is under continuous development and we might introduce bugs and re
 Good bug reporting practices
 ----------------------------
 
-If you're using the latest version of the framework and find a bug, please `report it <https://github.com/andresriancho/w3af/issues/new>`_ including the following information:
+If you're using **the latest version of the framework** and find a bug, please `report it <https://github.com/andresriancho/w3af/issues/new>`_ including the following information:
 
  * Detailed steps to reproduce it
  * Python traceback
  * Operating system
  * Output of the ``./w3af_console --version`` command
  * Log file with verbose set to ``True`` (see below)
+
+Making sure you're on the latest version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``w3af`` is usually installed in two different ways by our users:
+
+ * ``apt-get install w3af`` (or similar)
+ * ``git clone git@github.com:andresriancho/w3af.git``
+
+Installing using the Operating System package manager is the easiest way, but will usually install an old version of the software that won't be able to :doc:`update.rst`. For reporting bugs we recommend you install the latest ``w3af`` from our repository.
+
+Cloning from the git repository into a directory in your home is the recommended way and will allow auto-updates which guarantee you're always using the latest and greatest.
+
+Getting the specific ``w3af`` version is easy using the ``--version`` command line argument:
+
+.. code-block:: none
+
+	user@box:~/w3af$ ./w3af_console --version
+	w3af - Web Application Attack and Audit Framework
+	Version: 1.5
+	Revision: 4d66c2040d - 17 Mar 2014 21:17
+	Branch: master
+	Local changes: Yes
+	Author: Andres Riancho and the w3af team.
+	user@box:~/w3af$ 
+
+The output of the command is simple to understand, but lets go through it just in case:
+
+ * ``Version: 1.5``: The w3af version number
+ * ``Revision: 4d66c2040d - 17 Mar 2014 21:17``: If this line is present you've installed ``w3af`` by cloning from our repository. ``4d66c2040d`` is the SHA1 ID of the latest ``git`` commit your system knows about.
+ * ``Branch: master``: The ``git`` branch your installation is running from. In most cases this should be one of ``master`` or ``develop``.
+ * ``Local changes: Yes``: Indicates if you've manually modified ``w3af``'s source code
+
+Just to make sure you're on the latest version run ``git pull`` inside the ``w3af`` directory making sure that ``Already up-to-date.`` appears:
+
+.. code-block:: none
+
+	user@box:~/w3af$ git pull
+	Already up-to-date.
+
+Now you're ready to report a bug!
 
 Basic debugging
 ---------------
