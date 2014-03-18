@@ -88,7 +88,12 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
     repo = git.Repo(path)
     lcomm = get_latest_commit()
     names = [ref.name for ref in repo.refs if ref.commit.hexsha == lcomm]
-    name = [name for name in names if 'origin/' not in name][0]
+    
+    try:
+        name = [name for name in names if 'origin/' not in name][0]
+    except IndexError:
+        return 'detached HEAD'
+
     return name
 
 
