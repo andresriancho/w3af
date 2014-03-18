@@ -78,7 +78,35 @@ class TestURLParser(unittest.TestCase):
     def test_url_in_qs(self):
         u = URL('http://w3af.org/?foo=http://w3af.com')
         self.assertEqual(u.netloc, 'w3af.org')
-    
+
+    def test_url_in_filename(self):
+        """
+        Test https://github.com/andresriancho/w3af/issues/475
+
+        Before the fix parsing a URL like:
+            http://site.com/foo-http://external-test.com/.zip
+
+        Returned a buggy result:
+            foo-http:/external-test.com/.zip
+
+        This is because of the "extra" http which lives in the URL and is not
+        encoded. The "error" here is that the special characters in a filename
+        part of a URL should be URL-encoded and in this case they are not.
+
+        The Internet is an awful place, and we'll find this, so we better handle
+        them properly.
+
+        The issue comes from a call to urlparse.urljoin:
+            >>> import urlparse
+            >>> urlparse.urljoin('http://foo.com/', 'spam-bar://eggs.com')
+            'spam-bar://eggs.com'
+
+        Which lives inside the normalize_url method in URL:
+            fixed_url = urlparse.urljoin(base_url, self.get_path_qs())
+        """
+        u = URL('http://w3af.org/foo-http://external-test.com/.zip')
+        self.assertEqual(u.netloc, 'w3af.org')
+
     def test_invalid_encoding(self):
         self.assertRaises(ValueError, URL, 'http://w3af.org/', encoding='x-euc-jp')
 
@@ -95,32 +123,27 @@ class TestURLParser(unittest.TestCase):
         return URL(url_str).url_decode().querystring['id'][0]
 
     def test_decode_simple(self):
-        qs_value = self.decode_get_qs(
-            u'https://w3af.com:443/xyz/file.asp?id=1')
+        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1')
         EXPECTED = '1'
         self.assertEqual(qs_value, EXPECTED)
 
     def test_decode_perc_20(self):
-        qs_value = self.decode_get_qs(
-            u'https://w3af.com:443/xyz/file.asp?id=1%202')
+        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1%202')
         EXPECTED = u'1 2'
         self.assertEqual(qs_value, EXPECTED)
 
     def test_decode_space(self):
-        qs_value = self.decode_get_qs(
-            u'https://w3af.com:443/xyz/file.asp?id=1 2')
+        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1 2')
         EXPECTED = u'1 2'
         self.assertEqual(qs_value, EXPECTED)
 
     def test_decode_plus(self):
-        qs_value = self.decode_get_qs(
-            u'https://w3af.com:443/xyz/file.asp?id=1+2')
+        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1+2')
         EXPECTED = u'1+2'
         self.assertEqual(qs_value, EXPECTED)
 
     def test_decode_url_encode_plus(self):
-        qs_value = self.decode_get_qs(
-            u'https://w3af.com:443/xyz/file.asp?id=1%2B2')
+        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1%2B2')
         EXPECTED = u'1+2'
         self.assertEqual(qs_value, EXPECTED)
 
@@ -195,7 +218,8 @@ class TestURLParser(unittest.TestCase):
     #
     def test_get_directories_path_levels_1(self):
         result = [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
-        expected = [u'http://w3af.com/xyz/def/123/', u'http://w3af.com/xyz/def/',
+        expected = [u'http://w3af.com/xyz/def/123/',
+                    u'http://w3af.com/xyz/def/',
                     u'http://w3af.com/xyz/', u'http://w3af.com/']
         self.assertEqual(result, expected)
     
@@ -283,24 +307,24 @@ class TestURLParser(unittest.TestCase):
 
     def test_parse_qs_case01(self):
         self.assertEqual(parse_qs('id=3'),
-                         QueryString( [(u'id', [u'3']),] ))
+                         QueryString([(u'id', [u'3']),] ))
     
     def test_parse_qs_case02(self):
         self.assertEqual(parse_qs('id=3+1'),
-                         QueryString( [(u'id', [u'3+1']),] ))
+                         QueryString([(u'id', [u'3+1']),] ))
     
     def test_parse_qs_case03(self):
         self.assertEqual(parse_qs('id=3&id=4'),
-                         QueryString( [(u'id', [u'3', u'4']),] ))
+                         QueryString([(u'id', [u'3', u'4']),] ))
     
     def test_parse_qs_case04(self):
         self.assertEqual(parse_qs('id=3&ff=4&id=5'),
-                         QueryString( [(u'id', [u'3', u'5']),
+                         QueryString([(u'id', [u'3', u'5']),
                                        (u'ff', [u'4'])] ))
     
     def test_parse_qs_case05(self):
         self.assertEqual(parse_qs('pname'),
-                         QueryString( [(u'pname', [u'']),] ))
+                         QueryString([(u'pname', [u'']),] ))
     
     def test_parse_qs_case06(self):
         self.assertEqual(parse_qs(u'%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp'),
@@ -387,29 +411,35 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.url_string,
                          u'http://user:passwd@host.tld/')
 
-    def normalize_url_case08(self):
+    def normalize_url_case08_collapse_root(self):
         u = URL('http://w3af.com/../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
 
-    def normalize_url_case09(self):
+    def normalize_url_case09_collapse_path(self):
         u = URL('http://w3af.com/abc/../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
 
-    def normalize_url_case10(self):
+    def normalize_url_case10_collapse_double_slash(self):
         u = URL('http://w3af.com/a//b/f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/a/b/f00.b4r')
 
-    def normalize_url_case11(self):
+    def normalize_url_case11_double_dotdot_root(self):
         u = URL('http://w3af.com/../../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
+
+    def normalize_url_dotdot_in_qs(self):
+        u = URL('http://w3af.com/f00.b4r?id=/../spam.py')
+        u.normalize_url()
+        self.assertEqual(u.url_string,
+                         u'http://w3af.com/f00.b4r?id=/../spam.py')
 
     def normalize_url_case12(self):
         # IPv6 support

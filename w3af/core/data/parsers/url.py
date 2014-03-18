@@ -194,7 +194,7 @@ class URL(DiskItem):
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
             raise ValueError, 'Invalid URL "%s"' % (data,)
-        
+
         self.normalize_url()
 
     @classmethod
@@ -402,9 +402,6 @@ class URL(DiskItem):
                 # The net location has a specific port definition
                 net_location = host + ':' + port
 
-        # A normalized baseURL:
-        base_url = protocol + '://' + net_location + '/'
-
         # Now normalize the path:
         path = self.path
         trailer_slash = path.endswith('/')
@@ -420,8 +417,15 @@ class URL(DiskItem):
                     tokens.pop()
         self.path = '/'.join(tokens) + ('/' if trailer_slash else '')
 
-        # Put everything together
-        fixed_url = urlparse.urljoin(base_url, self.get_path_qs())
+        #
+        # Put everything together, do NOT use urlparse.urljoin here or you'll
+        # introduce a bug! For more information read:
+        #       test_url.py -> test_url_in_filename
+        #       https://github.com/andresriancho/w3af/issues/475
+        #
+        fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
+                                         self.params, str(self.querystring),
+                                         self.fragment))
 
         # "re-init" the object
         (self.scheme, self.netloc, self.path,
