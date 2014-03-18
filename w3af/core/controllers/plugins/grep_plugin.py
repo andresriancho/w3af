@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.data.kb.config as cf
-
 from w3af.core.controllers.plugins.plugin import Plugin
 
 
@@ -32,9 +30,6 @@ class GrepPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    TARGET_DOMAINS = None
-
     def __init__(self):
         super(GrepPlugin, self).__init__()
 
@@ -43,25 +38,17 @@ class GrepPlugin(Plugin):
         This method tries to find patterns on responses.
 
         This method CAN be implemented on a plugin, but its better to
-        do your searches in _testResponse().
+        do your searches in grep().
 
-        :param response: This is the HTTPResponse object to test.
         :param fuzzable_request: This is the fuzzable request object that
-            generated the current response being analyzed.
-        :return: If something is found it must be reported to the Output
-            Manager and the KB.
+                                 generated the current response being analyzed.
+        :param response: This is the HTTPResponse object to test.
+        :return: If something is found it must be reported to the output
+                 manager and the KB.
         """
-        # Also take a look at should_grep in grep.py to understand other
+        # Take a look at should_grep in grep.py to understand other
         # filters which are applied before analyzing a response.
-        
-        # This cache is here to avoid a query to the cf each time a request
-        # goes to a grep plugin. Given that in the future the cf will be a
-        # sqlite database, this is an important improvement.
-        if self.TARGET_DOMAINS is None:
-            self.TARGET_DOMAINS = cf.cf.get('target_domains')
-        
-        if response.get_url().get_domain() in self.TARGET_DOMAINS:
-            self.grep(fuzzable_request, response)
+        self.grep(fuzzable_request, response)
 
     def grep(self, fuzzable_request, response):
         """
@@ -73,7 +60,7 @@ class GrepPlugin(Plugin):
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
 
-    def set_url_opener(self, foo):
+    def set_url_opener(self, *args, **kwargs):
         pass
 
     def get_type(self):

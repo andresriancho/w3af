@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.data.kb.config as cf
+
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -29,6 +31,8 @@ class grep(BaseConsumer):
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.
     """
+
+    TARGET_DOMAINS = None
 
     def __init__(self, grep_plugins, w3af_core):
         """
@@ -83,5 +87,14 @@ class grep(BaseConsumer):
                  but because of the requirement of a central location to store
                  a bloom filter was moved here.
         """
+        # This cache is here to avoid a query to the cf each time a request
+        # goes to a grep plugin. Given that in the future the cf will be a
+        # sqlite database, this is an important improvement.
+        if self.TARGET_DOMAINS is None:
+            self.TARGET_DOMAINS = cf.cf.get('target_domains')
+
+        if not response.get_url().get_domain() in self.TARGET_DOMAINS:
+            return False
+
         was_analyzed = self._already_analyzed.add(response.get_uri())
         return not was_analyzed
