@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+from w3af.core.controllers.output_manager import out
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 
@@ -86,8 +87,12 @@ class ExactDelayController(DelayMixIn):
         for delay in self.DELAY_SECONDS:
             success, response = self.delay_for(delay, original_wait_time)
             if success:
+                msg = 'Successfully controlled HTTP response delay for %s (%ss)'
+                out.debug(msg % (self.mutant, delay))
                 responses.append(response)
             else:
+                msg = 'Failed to control HTTP response delay for %s (%ss)'
+                out.debug(msg % (self.mutant, delay))
                 return False, []
 
         return True, responses
