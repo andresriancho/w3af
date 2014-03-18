@@ -108,7 +108,8 @@ class ExactDelayController(DelayMixIn):
         mutant = self.mutant.copy()
         mutant.set_mod_value(delay_str)
 
-        #    Send
+        #    Send, it is important to notice that we don't use the cache
+        #    to avoid any interference
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         #    Test
