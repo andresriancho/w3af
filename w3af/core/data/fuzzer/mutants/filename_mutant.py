@@ -40,7 +40,7 @@ class FileNameMutant(URLPartsMutant):
     def get_url(self):
         """
         :return: The URL, as modified by "set_mod_value()"
-                """
+        """
         domain_path = self._freq.get_url().get_domain_path()
 
         # Please note that this double encoding is needed if we want to work
@@ -51,7 +51,7 @@ class FileNameMutant(URLPartsMutant):
             encoded = urllib.quote_plus(encoded, safe=self._safe_encode_chars)
 
         domain_path.set_file_name(self._mutant_dc['start'] + encoded +
-                                self._mutant_dc['end'])
+                                  self._mutant_dc['end'])
         return domain_path
 
     get_uri = get_url
@@ -135,7 +135,8 @@ class FileNameMutant(URLPartsMutant):
                     m.set_double_encoding(False)
                     res.append(m)
 
-                    # The same but with a different type of encoding! (mod_rewrite)
+                    # The same but with a different type of encoding!
+                    # (mod_rewrite)
                     m2 = m.copy()
                     m2.set_safe_encode_chars('/')
 
