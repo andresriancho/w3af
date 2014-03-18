@@ -206,27 +206,27 @@ class os_commanding(AuditPlugin):
         for special_char in self._special_chars:
             # Windows
             cmd_fmt = special_char + 'ping -n %s localhost'
-            delay_cmd = ping_delay(cmd_fmt, 'windows', special_char)
+            delay_cmd = PingDelay(cmd_fmt, 'windows', special_char)
             commands.append(delay_cmd)
 
             # Unix
             cmd_fmt = special_char + 'ping -c %s localhost'
-            delay_cmd = ping_delay(cmd_fmt, 'unix', special_char)
+            delay_cmd = PingDelay(cmd_fmt, 'unix', special_char)
             commands.append(delay_cmd)
 
             # This is needed for solaris 10
             cmd_fmt = special_char + '/usr/sbin/ping -s localhost %s'
-            delay_cmd = ping_delay(cmd_fmt, 'unix', special_char)
+            delay_cmd = PingDelay(cmd_fmt, 'unix', special_char)
             commands.append(delay_cmd)
 
         # Using execution quotes
-        commands.append(ping_delay('`ping -n %s localhost`', 'windows', '`'))
-        commands.append(ping_delay('`ping -c %s localhost`', 'unix', '`'))
+        commands.append(PingDelay('`ping -n %s localhost`', 'windows', '`'))
+        commands.append(PingDelay('`ping -c %s localhost`', 'unix', '`'))
 
         # FoxPro uses the "run" macro to exec os commands. I found one of this
         # vulns !!
         commands.append(
-            ping_delay('run ping -n %s localhost', 'windows', 'run '))
+            PingDelay('run ping -n %s localhost', 'windows', 'run '))
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
@@ -286,8 +286,12 @@ class Command(object):
         """
         return self._sep
 
+    def __repr__(self):
+        fmt = '<Command (OS: %s, Separator: "%s", Command: "%s")>'
+        return fmt % (self._os, self._sep, self._comm)
 
-class ping_delay(Command, ExactDelay):
+
+class PingDelay(Command, ExactDelay):
     def __init__(self, delay_fmt, os, sep):
         Command.__init__(self, delay_fmt, os, sep)
         ExactDelay.__init__(self, delay_fmt)
