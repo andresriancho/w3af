@@ -112,7 +112,7 @@ class ExactDelayController(DelayMixIn):
                 self.delay_obj, response.get_wait_time())
         out.debug(msg % args)
 
-    def delay_for(self, seconds, original_wait_time):
+    def delay_for(self, delay, original_wait_time):
         """
         Sends a request to the remote end that "should" delay the response in
         :param seconds.
@@ -124,7 +124,7 @@ class ExactDelayController(DelayMixIn):
                  things right we first send some requests to measure the
                  original wait time.
         """
-        delay_str = self.delay_obj.get_string_for_delay(seconds)
+        delay_str = self.delay_obj.get_string_for_delay(delay)
         mutant = self.mutant.copy()
         mutant.set_mod_value(delay_str)
 
@@ -136,9 +136,11 @@ class ExactDelayController(DelayMixIn):
         delta = original_wait_time / 1.5
         current_response_wait_time = response.get_wait_time()
 
-        if current_response_wait_time > (original_wait_time + seconds - delta):
-            if current_response_wait_time < seconds * 2:
-                    return True, response
+        upper_bound = (delay * 2) + original_wait_time + delta
+        lower_bound = original_wait_time + delay - delta
+
+        if upper_bound > current_response_wait_time > lower_bound:
+            return True, response
 
         return False, response
 
