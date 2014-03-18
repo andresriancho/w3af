@@ -139,6 +139,9 @@ class ExactDelayController(DelayMixIn):
         upper_bound = (delay * 2) + original_wait_time + delta
         lower_bound = original_wait_time + delay - delta
 
+        args = (id(self), upper_bound, current_response_wait_time, lower_bound)
+        out.debug('(Test id: %s) %s > %s > %s' % args)
+
         if upper_bound > current_response_wait_time > lower_bound:
             return True, response
 
