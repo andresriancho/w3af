@@ -87,27 +87,29 @@ class ExactDelayController(DelayMixIn):
         for delay in self.DELAY_SECONDS:
             success, response = self.delay_for(delay, original_wait_time)
             if success:
-                self._log_success(delay)
+                self._log_success(delay, response)
                 responses.append(response)
             else:
-                self._log_failure(delay)
+                self._log_failure(delay, response)
                 return False, []
 
         return True, responses
 
-    def _log_success(self, delay):
+    def _log_success(self, delay, response):
         msg = '(Test id: %s) Successfully controlled HTTP response delay for'\
-              ' URL %s - parameter "%s" for %s seconds using %r.'
-        self._log_generic(msg, delay)
+              ' URL %s - parameter "%s" for %s seconds using %r, response'\
+              ' wait time was: %s seconds.'
+        self._log_generic(msg, delay, response)
 
-    def _log_failure(self, delay):
+    def _log_failure(self, delay, response):
         msg = '(Test id: %s) Failed to control HTTP response delay for'\
-              ' URL %s - parameter "%s" for %s seconds using %r.'
-        self._log_generic(msg, delay)
+              ' URL %s - parameter "%s" for %s seconds using %r, response'\
+              ' wait time was: %s seconds.'
+        self._log_generic(msg, delay, response)
 
-    def _log_generic(self, msg, delay):
+    def _log_generic(self, msg, delay, response):
         args = (id(self), self.mutant.get_url(), self.mutant.get_var(), delay,
-                self.delay_obj)
+                self.delay_obj, response.get_wait_time())
         out.debug(msg % args)
 
     def delay_for(self, seconds, original_wait_time):
