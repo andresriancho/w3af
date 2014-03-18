@@ -83,4 +83,4 @@ False positives
 
 Nobody likes false positives, you go from the adrenaline of "The site is vulnerable to SQL injection!" to "Nope, false positive" in less than a minute. Not good for your heart.
 
-Please report the false positivese `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , in our repository. Include as much information as possible, remember that we'll have to verify the false positive, write a unittest and then fix it.
+Please report the false positives `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , in our repository. Include as much information as possible, remember that we'll have to verify the false positive, write a unittest and then fix it.
