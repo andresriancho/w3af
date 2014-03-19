@@ -94,7 +94,7 @@ def run_nosetests(nose_cmd, first, last):
 
                 # Debugging my workaround
                 output_file.write("stdout.strip().endswith('OK') == %s\n" % stdout.strip().endswith('OK'))
-                output_file.write("'Ran ' in stdout == %s\n" % 'Ran ' in stdout)
+                output_file.write("'Ran ' in stdout == %s\n" % ('Ran ' in stdout))
 
 
                 # Log everywhere I can:
