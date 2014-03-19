@@ -81,10 +81,10 @@ class ExactDelayController(DelayMixIn):
         """
         responses = []
         
-        #    Setup
-        original_wait_time = self.get_original_time()
-
         for delay in self.DELAY_SECONDS:
+            # Update the wait time before each test
+            original_wait_time = self.get_original_time()
+
             success, response = self.delay_for(delay, original_wait_time)
             if success:
                 self._log_success(delay, response)
