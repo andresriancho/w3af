@@ -206,7 +206,6 @@ class w3afCore(object):
             raise
         finally:
 
-            self.status.scan_finished()
             time_spent = self.status.get_scan_time()
             
             self._safe_message_print('Scan finished in %s' % time_spent)
@@ -214,6 +213,10 @@ class w3afCore(object):
 
             self.strategy.stop()
             self.scan_end_hook()
+
+            # Make sure this line is the last one. This avoids race conditions
+            # https://github.com/andresriancho/w3af/issues/1487
+            self.status.scan_finished()
 
     def _safe_message_print(self, msg):
         """
