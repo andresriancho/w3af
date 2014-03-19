@@ -282,8 +282,8 @@ class HistoryItem(object):
                     self._db.commit()
                     self.load(_id=_id, full=full, retry=False)
                 else:
-                    # This is the second time load() is called and we end up here,
-                    # raise an exception and finish our pain.
+                    # This is the second time load() is called and we end up
+                    # here, raise an exception and finish our pain.
                     msg = ('An internal error occurred while searching for '
                            'id "%s", even after commit/retry' % _id)
                     raise DBException(msg)
