@@ -209,20 +209,27 @@ class w3afCore(object):
             self.status.scan_finished()
             time_spent = self.status.get_scan_time()
             
-            msg = 'Scan finished in %s' % time_spent
-            
-            try:
-                om.out.information(msg)
-            except:
-                # In some cases we get here after a disk full exception
-                # where the output manager can't even write a log message
-                # to disk and/or the console. Seen this happen many times
-                # in LiveCDs like Backtrack that don't have "real disk space"
-                print msg
+            self._safe_message_print('Scan finished in %s' % time_spent)
+            self._safe_message_print('Stopping the core...')
 
             self.strategy.stop()
-        
             self.scan_end_hook()
+
+    def _safe_message_print(self, msg):
+        """
+        In some cases we get here after a disk full exception where the output
+        manager can't even write a log message to disk and/or the console. Seen
+        this happen many times in LiveCDs like Backtrack that don't have "real
+        disk space"
+        """
+        try:
+            om.out.information(msg)
+        except:
+            # In some cases we get here after a disk full exception
+            # where the output manager can't even write a log message
+            # to disk and/or the console. Seen this happen many times
+            # in LiveCDs like Backtrack that don't have "real disk space"
+            print(msg)
 
     @property
     def worker_pool(self):
@@ -368,8 +375,8 @@ class w3afCore(object):
         """
         try:
             # Close the output manager, this needs to be done BEFORE the end()
-            # in uri_opener because some plugins (namely xml_output) use the data
-            # from the history in their end() method. 
+            # in uri_opener because some plugins (namely xml_output) use the
+            # data from the history in their end() method.
             om.out.end_output_plugins()
             
             # Note that running "self.uri_opener.end()" here is a bad idea

@@ -134,7 +134,7 @@ class output_manager(Process):
         # If the console plugin was enabled, I re-enable it since I don't want
         # to loose the capability of seeing my log messages in the console
         #
-        # Remember that the gtk_output plugin dissapeared and was moved to
+        # Remember that the gtk_output plugin disappeared and was moved to
         # core.ui.output
         currently_enabled_plugins = self.get_output_plugins()
         keep_enabled = [pname for pname in currently_enabled_plugins
@@ -200,7 +200,6 @@ class output_manager(Process):
         #    om.out.error(msg, ignore_plugins=set([self.get_name()])
         #
         ignored_plugins = kwds.pop('ignore_plugins', set())
-        
         
         for o_plugin in self._output_plugin_instances:
             
