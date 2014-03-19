@@ -36,7 +36,8 @@ class ExactDelayController(DelayMixIn):
     benchmark(...).
     """
 
-    DELTA = 0.5
+    # 25% more/less than the original wait time
+    DELTA_PERCENT = 1.25
 
     #
     # Note that these delays are applied ONLY if all the previous delays worked
@@ -46,7 +47,7 @@ class ExactDelayController(DelayMixIn):
     #
     # Also note that these delays can't be greater than the framework socket
     # timeout or that will break the algorithm
-    DELAY_SECONDS = [3, 1, 6, 1, 3]
+    DELAY_SECONDS = [3, 2, 6, 2, 3]
 
     def __init__(self, mutant, delay_obj, uri_opener):
         """
@@ -133,7 +134,7 @@ class ExactDelayController(DelayMixIn):
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         #    Test
-        delta = original_wait_time / 1.5
+        delta = original_wait_time * self.DELTA_PERCENT
         current_response_wait_time = response.get_wait_time()
 
         upper_bound = (delay * 2) + original_wait_time + delta
