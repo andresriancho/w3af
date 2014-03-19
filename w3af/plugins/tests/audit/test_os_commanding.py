@@ -43,7 +43,7 @@ class TestOSCommanding(PluginTest):
     def test_found_osc(self):
         # Run the scan
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(cfg['target'], cfg['plugins'], debug=True)
 
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
