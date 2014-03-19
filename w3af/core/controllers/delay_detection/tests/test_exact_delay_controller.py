@@ -31,7 +31,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-def generate_delays(wanted_delays, rand_range=(0,0)):
+def generate_delays(wanted_delays, rand_range=(0, 0)):
     for delay_secs in wanted_delays:
         delay_secs += random.randint(*rand_range) / 10.0
         
@@ -39,37 +39,75 @@ def generate_delays(wanted_delays, rand_range=(0,0)):
         mock_response.get_wait_time = Mock(return_value=delay_secs)
         
         yield mock_response
-    
+
+
 class TestExactDelay(unittest.TestCase):
     
     TEST_SUITE = [
                   # Basic, very easy to pass
-                  (True, (0.1, 0.1, 0.1, 3.5, 1.5, 6.1, 1.1, 3.4)),
+                  # The three 0.1 are the calls to get_original_time
+                  (True, (0.1, 0.1, 0.1, 3.5,
+                          0.1, 0.1, 0.1, 1.5,
+                          0.1, 0.1, 0.1, 6.1,
+                          0.1, 0.1, 0.1, 1.1,
+                          0.1, 0.1, 0.1, 3.4)),
                   
                   # Basic with a +0.1 delta
-                  (True, (0.1, 0.1, 0.1, 3.1, 1.1, 6.1, 1.1, 3.1)),
+                  (True, (0.1, 0.1, 0.1, 3.1,
+                          0.1, 0.1, 0.1, 1.1,
+                          0.1, 0.1, 0.1, 6.1,
+                          0.1, 0.1, 0.1, 1.1,
+                          0.1, 0.1, 0.1, 3.1)),
                   
                   # Basic without controlled delays
-                  (False, (0, 0, 0, 0, 0, 0, 0, 0)),
+                  (False, [0.1] * 20),
 
                   # Basic with server under heavy load after setup
-                  (False, (0, 0, 0, 5, 5, 5, 5, 5)),
+                  (False, (0, 0, 0, 5,
+                           0, 0, 0, 5,
+                           0, 0, 0, 5,
+                           0, 0, 0, 5,
+                           0, 0, 0, 5)),
 
                   # Basic with server under random heavy load after setup
-                  (False, (0, 0, 0, 5, 2, 2, 5, 7)),
+                  (False, (0, 0, 0, 5,
+                           0, 0, 0, 2,
+                           0, 0, 0, 2,
+                           0, 0, 0, 5,
+                           0, 0, 0, 7)),
 
                   # Basic with server under random heavy load after setup
-                  (False, (0.1, 0.2, 0.2, 5, 2, 2, 2, 2)),
+                  (False, (0.1, 0.2, 0.2, 5,
+                           0.1, 0.2, 0.2, 2,
+                           0.1, 0.2, 0.2, 2,
+                           0.1, 0.2, 0.2, 2,
+                           0.1, 0.2, 0.2, 2)),
 
                   # Basic with server under random heavy load after setup
-                  (False, (0.1, 0.2, 0.2, 7, 7, 7, 7, 7)),
+                  (False, (0.1, 0.2, 0.2, 7,
+                           0.1, 0.2, 0.2, 7,
+                           0.1, 0.2, 0.2, 7,
+                           0.1, 0.2, 0.2, 7,
+                           0.1, 0.2, 0.2, 7)),
                   
                   # With various delays in the setup phase
-                  (True, (0, 0.2, 0, 3.1, 1.1, 6.1, 1.1, 3.1)),
-                  (True, (0.1, 0.2, 0.1, 3.1, 1.1, 6.1, 1.1, 3.1)),
-                  (True, (0.2, 0.2, 0.2, 3.2, 1.2, 6.2, 1.2, 3.2)),
-                  
-                  ]
+                  (True, (0, 0.2, 0, 3.1,
+                          0, 0.1, 0.15, 1.1,
+                          0, 0.2, 0, 6.1,
+                          0, 0.2, 0, 1.1,
+                          0, 0.2, 0.1, 3.1)),
+
+                  (True, (0.1, 0.2, 0.1, 3.1,
+                          0.1, 0.2, 0.1, 1.1,
+                          0.1, 0.2, 0.1, 6.1,
+                          0.1, 0.2, 0.1, 1.1,
+                          0.1, 0.2, 0.1, 3.1)),
+
+                  (True, (0.2, 0.2, 0.21, 3.2,
+                          0.2, 0.2, 0.22, 1.2,
+                          0.2, 0.2, 0.23, 6.2,
+                          0.2, 0.2, 0.24, 1.2,
+                          0.2, 0.2, 0.25, 3.2)),]
     
     def test_delay_controlled(self):
         
@@ -92,7 +130,7 @@ class TestExactDelay(unittest.TestCase):
     
     def test_delay_controlled_random(self):
         for expected_result, delays in self.TEST_SUITE:
-            
+            print delays
             mock_uri_opener = Mock()
             side_effect = generate_delays(delays, rand_range=(0,2))
             mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
