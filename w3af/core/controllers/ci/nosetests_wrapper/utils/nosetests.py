@@ -43,7 +43,7 @@ def run_nosetests(nose_cmd, first, last):
     :return: (stdout, stderr, exit code) 
     """
     # Init the outputs
-    stdout = stderr = ''
+    console = stdout = stderr = ''
     output_file = open_nosetests_output('log', first, last)
     xunit_output = open_nosetests_output(NOSE_XUNIT_EXT, first, last)
     
@@ -75,6 +75,7 @@ def run_nosetests(nose_cmd, first, last):
             out = r.read(1)
             output_file.write(out)
             output_file.flush()
+            console += out
             
             # Write the output to the strings
             if r is p.stdout:
@@ -87,14 +88,14 @@ def run_nosetests(nose_cmd, first, last):
                 # There is a special case which happens with the first call to
                 # nose where the tests finish successfully (OK shown) but the
                 # nosetests process doesn't end. Handle that case here:
-                if stdout.strip().endswith('OK') and 'Ran ' in stdout:
+                if console.strip().endswith('OK') and 'Ran ' in console:
                     p.kill()
                     p.returncode = 0
                     break
 
                 # Debugging my workaround
-                output_file.write("stdout.strip().endswith('OK') == %s\n" % stdout.strip().endswith('OK'))
-                output_file.write("'Ran ' in stdout == %s\n" % ('Ran ' in stdout))
+                output_file.write("stdout.strip().endswith('OK') == %s\n" % console.strip().endswith('OK'))
+                output_file.write("'Ran ' in stdout == %s\n" % ('Ran ' in console))
 
 
                 # Log everywhere I can:
