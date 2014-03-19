@@ -70,7 +70,9 @@ class rootMenu(menu):
 
     def _cmd_start(self, params):
         """
-        Start the core in a different thread, monitor keystrokes in the main thread.
+        Start the core in a different thread, monitor keystrokes in the main
+        thread.
+
         :return: None
         """
         # Check if the console output plugin is enabled or not, and warn.
