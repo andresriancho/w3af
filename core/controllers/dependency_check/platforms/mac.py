@@ -53,7 +53,7 @@ PIP_PACKAGES = [PIPDependency('clamd', 'clamd'),
                 PIPDependency('sqlite3', 'pysqlite'),
                 PIPDependency('nltk', 'nltk'),
                 PIPDependency('chardet', 'chardet'),
-                PIPDependency('pdfminer', 'pdfminer'),
+                PIPDependency('pdfminer', 'pdfminer==20110515'),
                 PIPDependency('concurrent.futures', 'futures'),
                 PIPDependency('OpenSSL', 'pyOpenSSL'),
                 # http://lxml.de/installation.html
