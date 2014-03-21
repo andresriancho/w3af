@@ -313,10 +313,15 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(parse_qs('id=3+1'),
                          QueryString([(u'id', [u'3+1']),] ))
     
-    def test_parse_qs_case03(self):
+    def test_parse_qs_repeated_parameter_names(self):
         self.assertEqual(parse_qs('id=3&id=4'),
                          QueryString([(u'id', [u'3', u'4']),] ))
-    
+
+    def test_url_with_repeated_parameter_names(self):
+        u = URL('http://w3af.com/?id=3&id=4')
+        self.assertEqual(u.get_querystring(),
+                         QueryString([(u'id', [u'3', u'4']),] ))
+
     def test_parse_qs_case04(self):
         self.assertEqual(parse_qs('id=3&ff=4&id=5'),
                          QueryString([(u'id', [u'3', u'5']),
