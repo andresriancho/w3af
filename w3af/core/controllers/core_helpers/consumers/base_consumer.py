@@ -215,9 +215,10 @@ class BaseConsumer(Process):
         some time to process.
         """
         if not self.is_alive():
-            msg = 'Can NOT join a stopped consumer (class: %s)'
-            raise AssertionError(msg % self.__class__.__name__)
-        
+            # This return has a long history, follow it here:
+            # https://github.com/andresriancho/w3af/issues/1172
+            return
+
         self.in_queue_put(POISON_PILL)
         self.in_queue.join()
 
