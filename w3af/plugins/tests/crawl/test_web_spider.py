@@ -123,6 +123,7 @@ class TestWebSpider(PluginTest):
         raise SkipTest('FIXME: Need to test this feature!')
         self.dir_get_url
 
+    @attr('ci_fails')
     def test_wivet(self):
         clear_wivet()
 
