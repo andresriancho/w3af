@@ -70,12 +70,14 @@ class PluginTest(unittest.TestCase):
             self._register_httpretty_uri(proto, domain, port)
 
     def _register_httpretty_uri(self, proto, domain, port):
+        assert isinstance(port, int), 'Port needs to be an integer'
+
         if (port == 80 and proto == 'http') or\
         (port == 443 and proto == 'https'):
             re_str = "%s://%s/(.*)" % (proto, domain)
         else:
             re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
-
+        print re_str
         httpretty.register_uri(httpretty.GET,
                                re.compile(re_str),
                                body=self.request_callback)
