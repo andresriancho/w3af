@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import httpretty
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -52,3 +54,34 @@ class TestUnSSL(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(), 'Secure content over insecure channel')
         self.assertEquals(vuln.get_url().url_string, 'http://httpretty/')
+
+
+class TestNotFoundUnSSL(PluginTest):
+    """
+    Needed to create a different class since we don't want to use the
+    MOCK_RESPONSES framework.
+    """
+    target_url = 'http://httpretty/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'audit': (PluginConfig('un_ssl'),),
+            }
+        }
+    }
+
+    @httpretty.activate
+    def test_not_found_unssl(self):
+        httpretty.register_uri(httpretty.GET, "http://httpretty/",
+                               body='This is NOT SECURE')
+
+        httpretty.register_uri(httpretty.GET, "https://httpretty/",
+                               body='The banking application is here.')
+
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        vulns = self.kb.get('un_ssl', 'un_ssl')
+        self.assertEquals(0, len(vulns))
