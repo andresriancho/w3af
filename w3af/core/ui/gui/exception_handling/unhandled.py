@@ -66,7 +66,7 @@ def handle_keyboardinterrupt(w3af_core):
     helpers.end_threads()
         
     w3af_core.quit()
-    print 'a'
+
     if DEBUG_THREADS:
         import threading
         import pprint
@@ -85,6 +85,7 @@ def handle_keyboardinterrupt(w3af_core):
     # 130 seems to be the correct exit code for this case
     # http://tldp.org/LDP/abs/html/exitcodes.html
     sys.exit(130)
+
 
 def set_except_hook(w3af_core):
     sys.excepthook = partial(handle_crash, w3af_core)

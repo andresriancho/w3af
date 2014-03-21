@@ -86,7 +86,8 @@ class ExceptionHandler(object):
         #
         # There are some exceptions, that because of their nature I don't want
         # to handle. So what I do is to raise them in order for them to get to
-        # w3afCore.py , most likely to the except lines around self.strategy.start()
+        # w3afCore.py , most likely to the except lines around
+        # self.strategy.start()
         #
         if isinstance(exception, self.NO_HANDLING):
             raise exception, None, tb
@@ -97,10 +98,10 @@ class ExceptionHandler(object):
             # in most cases, and in the worse scenario it is just a developer
             # getting hit ;)
             #
-            # The risk is that the exception being raise is NOT the same exception
-            # that was caught before calling this handle method. This might happen
-            # (not sure actually) in places where lots of exceptions are raised
-            # in a threaded environment
+            # The risk is that the exception being raise is NOT the same
+            # exception that was caught before calling this handle method. This
+            # might happen (not sure actually) in places where lots of
+            # exceptions are raised in a threaded environment
             raise
 
         #

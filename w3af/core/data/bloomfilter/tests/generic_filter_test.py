@@ -49,8 +49,8 @@ class GenericFilterTest(unittest.TestCase):
         # I decided to comment this line. Given the probabilistic nature of
         # these filters, it might be the case that the length of the filter is
         # CAPACITY-1 (in other words, one insert failed because all the bits
-        # were already set to 1) and that doesn't mean that the filter is useless
-        # it just means that it's false positive rate is going up.
+        # were already set to 1) and that doesn't mean that the filter is
+        # useless it just means that it's false positive rate is going up.
         #self.assertEqual( len(self.filter), self.CAPACITY)
 
         for i in xrange(0, self.CAPACITY):
