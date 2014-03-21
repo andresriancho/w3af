@@ -79,10 +79,46 @@ class TestPostDataMutant(unittest.TestCase):
         self.assertEqual(created_mutants[2].get_var_index(), 0)
         self.assertEqual(created_mutants[2].get_original_value(), '')
 
-        self.assertTrue(
-            all(isinstance(m, PostDataMutant) for m in created_mutants))
-        self.assertTrue(
-            all(m.get_method().startswith('PUT') for m in created_mutants))
+        for m in created_mutants:
+            self.assertIsInstance(m, PostDataMutant)
+
+        for m in created_mutants:
+            self.assertEqual(m.get_method(), 'PUT')
+
+    def test_mutant_creation_repeated_parameter_name(self):
+        form = Form()
+        form.add_input([("name", "id"), ("value", "")])
+        form.add_input([("name", "id"), ("value", "")])
+
+        freq = HTTPPostDataRequest(URL('http://w3af.com/?foo=3'),
+                                   dc=form,
+                                   method='GET')
+
+        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
+                                                        False,
+                                                        self.fuzzer_config)
+
+        expected_dc_lst = [Form([('id', ['abc', '3419'])]),
+                           Form([('id', ['def', '3419'])]),
+                           Form([('id', ['3419', 'abc'])]),
+                           Form([('id', ['3419', 'def'])])]
+
+        created_dc_lst = [i.get_dc() for i in created_mutants]
+
+        self.assertEqual(created_dc_lst, expected_dc_lst)
+
+        self.assertEqual(created_mutants[0].get_var(), 'id')
+        self.assertEqual(created_mutants[0].get_var_index(), 0)
+        self.assertEqual(created_mutants[0].get_original_value(), '')
+        self.assertEqual(created_mutants[2].get_var(), 'id')
+        self.assertEqual(created_mutants[2].get_var_index(), 1)
+        self.assertEqual(created_mutants[2].get_original_value(), '')
+
+        for m in created_mutants:
+            self.assertIsInstance(m, PostDataMutant)
+
+        for m in created_mutants:
+            self.assertEqual(m.get_method(), 'GET')
 
     def test_mutant_creation_file(self):
         form = Form()
