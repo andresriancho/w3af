@@ -33,6 +33,7 @@ from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.form import Form
 
 HTML_DOC = u"""
 <html>
@@ -266,8 +267,8 @@ class TestSGMLParser(unittest.TestCase):
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
         p = _SGMLParser(_build_http_response(URL_INST, body))
-        emails = set(['jandalia@bing.com', 'ariancho@gmail.com',
-                      u'name_with_ñ@w3af.it'])
+        emails = {'jandalia@bing.com', 'ariancho@gmail.com',
+                  u'name_with_ñ@w3af.it'}
         self.assertEquals(emails, p.get_emails())
 
     def test_parsed_references(self):
@@ -345,7 +346,7 @@ class TestHTMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(0, len(p.forms))
 
-    def test_form_without_meth(self):
+    def test_form_without_method(self):
         """
         When the form has no 'method' => 'GET' will be used
         """
@@ -400,7 +401,6 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals('POST', form.get_method())
         self.assertIn('input', form)
         self.assertIn('csrfmiddlewaretoken', form)
-
 
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared
@@ -500,3 +500,23 @@ class TestHTMLParser(unittest.TestCase):
         # "xxx" and "yyy" options were not parsed
         self.assertFalse("xxx" in f._selects.values())
         self.assertFalse("yyy" in f._selects.values())
+
+    def test_form_with_repeated_parameter_names(self):
+        # Setup
+        form = FORM_METHOD_POST % {'form_content':
+                                   TEXTAREA_WITH_NAME_AND_DATA * 2}
+        body = HTML_DOC % {'head': '',
+                           'body': form}
+        resp = _build_http_response(URL_INST, body)
+        p = _HTMLParser(resp)
+
+        # Run the parser
+        p._parse(resp)
+
+        # Asserts
+        self.assertEquals(1, len(p.forms))
+        form = p.forms[0]
+
+        self.assertIsInstance(form, Form)
+        self.assertEqual('sample_name=sample_value&sample_name=sample_value',
+                         str(form))
