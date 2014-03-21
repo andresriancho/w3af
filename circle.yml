@@ -33,9 +33,8 @@ machine:
     version: 2.7.3
 
   # This is required to run WIVET
-  machine:
-    php:
-      version: 5.4.5
+  php:
+    version: 5.4.5
 
   post:
     # This was required to avoid issues with different builds of python being
