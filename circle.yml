@@ -9,6 +9,7 @@ dependencies:
   cache_directories:
     - "xpresser"
     - "django-moth"
+    - "wivet-svn"
   pre:
     # Install the core/console dependencies
     - w3af/core/controllers/ci/install_core_dependencies.sh
@@ -19,13 +20,23 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_test_dependencies.sh
 
+    # Install and run wivet in the background
+    - w3af/core/controllers/ci/install_wivet.sh
+    - php -S localhost:8899 -t wivet-svn/wivet/:
+        background: true
+
     # Wait for the daemon to be available to run the tests
     - w3af/core/controllers/ci/wait_for_moth.py
 
 machine:
   python:
     version: 2.7.3
-  
+
+  # This is required to run WIVET
+  machine:
+    php:
+      version: 5.4.5
+
   post:
     # This was required to avoid issues with different builds of python being
     # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
