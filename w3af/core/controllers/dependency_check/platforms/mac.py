@@ -71,11 +71,7 @@ def os_package_is_installed(package_name):
 
 def after_hook():
     # Is the default python executable the one in macports?
-    if sys.executable.startswith('/opt/'):
-        # That's what we need since pip-2.7 will install all the libs in
-        # that python site-packages directory
-        return
-    
+    #
     # We need to warn the user about this situation and let him know how to fix
     # See: http://stackoverflow.com/questions/118813/
     msg = '\nIt seems that your system has two different python installations:'\
@@ -87,8 +83,13 @@ def after_hook():
           'In order to have a working w3af installation you will have to'\
           ' switch to the Mac ports Python by using the following command:\n'\
           '    sudo port select python python27\n'
-    print msg % sys.executable
 
+    if sys.executable.startswith('/opt/'):
+        # That's what we need since pip-2.7 will install all the libs in
+        # that python site-packages directory
+        pass
+    else:
+        print msg % sys.executable
 
     #check if scapy is correctly installed/working on OSX
     try:
