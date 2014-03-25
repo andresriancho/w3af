@@ -42,6 +42,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.read_shell import ReadShell 
 
 os.chdir(W3AF_LOCAL_PATH)
+RE_COMPILE_TYPE = type(re.compile(''))
 
 
 @attr('moth')
@@ -77,7 +78,7 @@ class PluginTest(unittest.TestCase):
             re_str = "%s://%s/(.*)" % (proto, domain)
         else:
             re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
-        print re_str
+
         httpretty.register_uri(httpretty.GET,
                                re.compile(re_str),
                                body=self.request_callback)
@@ -95,13 +96,21 @@ class PluginTest(unittest.TestCase):
         content_type = 'text/html'
 
         for mock_response in self.MOCK_RESPONSES:
-            if uri.endswith(mock_response.url):
-                status = mock_response.status
-                body = mock_response.body
-                content_type = mock_response.content_type
-                
-                break
-            
+            if isinstance(mock_response.url, basestring):
+                if uri.endswith(mock_response.url):
+                    status = mock_response.status
+                    body = mock_response.body
+                    content_type = mock_response.content_type
+
+                    break
+            elif isinstance(mock_response.url, RE_COMPILE_TYPE):
+                if mock_response.url.match(uri):
+                    status = mock_response.status
+                    body = mock_response.body
+                    content_type = mock_response.content_type
+
+                    break
+
         headers['Content-Type'] = content_type
         headers['status'] = status
 
@@ -236,6 +245,7 @@ class PluginConfig(object):
     def options(self):
         return self._options
 
+
 class ReadExploitTest(PluginTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', exploit_plugin)
@@ -272,7 +282,8 @@ class ReadExploitTest(PluginTest):
             self.assertIn('/etc/passwd', _help)
         
         return shell
-        
+
+
 class ExecExploitTest(ReadExploitTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
         shell = super(ExecExploitTest, self)._exploit_vuln(vuln_to_exploit_id,
@@ -324,8 +335,7 @@ def create_target_option_list(*target):
     opt = opt_factory('target_framework',
                       ('unknown', 'php', 'asp', 'asp.net',
                        'java', 'jsp', 'cfm', 'ruby', 'perl'),
-                      '', 'combo'
-    )
+                      '', 'combo')
     opts.add(opt)
     
     return opts
@@ -337,3 +347,8 @@ class MockResponse(object):
         self.body = body
         self.content_type = content_type
         self.status = status
+
+        assert isinstance(url, (basestring, RE_COMPILE_TYPE))
+
+    def __repr__(self):
+        return '<MockResponse (%s|%s)>' % (self.url, self.status)
