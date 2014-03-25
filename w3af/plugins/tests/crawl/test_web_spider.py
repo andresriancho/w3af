@@ -123,7 +123,6 @@ class TestWebSpider(PluginTest):
         raise SkipTest('FIXME: Need to test this feature!')
         self.dir_get_url
 
-    @attr('ci_fails')
     def test_wivet(self):
         clear_wivet()
 
@@ -201,7 +200,7 @@ def clear_wivet():
     response = urllib2.urlopen(clear_url)
     html = response.read()
 
-    assert 'Done!' == html, html
+    assert 'Done!' in html, html
 
 
 def extract_all_stats():

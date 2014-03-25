@@ -22,7 +22,7 @@ dependencies:
 
     # Install and run wivet in the background
     - w3af/core/controllers/ci/install_wivet.sh
-    - php -S localhost:8899 -t wivet-svn/wivet/:
+    - php -S localhost:8899 -t wivet/:
         background: true
 
     # Wait for the daemon to be available to run the tests
