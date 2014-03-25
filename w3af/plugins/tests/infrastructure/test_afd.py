@@ -18,66 +18,62 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+import re
+
+from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
-class TestAFD(PluginTest):
+BAD_SIG_URI = re.compile('.*(passwd|uname|passthru|xp_cmdshell|WINNT).*', re.I)
 
-    modsecurity_https_url = 'https://modsecurity/'
-    modsecurity_http_url = 'http://modsecurity/'
-    moth_url = 'http://moth/'
+
+class TestFoundAFD(PluginTest):
+
+    target_url = 'http://httpretty/'
 
     _run_configs = {
         'cfg': {
-            'target': None,
+            'target': target_url,
             'plugins': {'infrastructure': (PluginConfig('afd'),)}
         }
     }
 
-    @attr('ci_fails')
+
+    MOCK_RESPONSES = [MockResponse('/', 'PASS'),
+                      MockResponse(BAD_SIG_URI, 'FAIL')]
+
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
-        self._scan(self.modsecurity_http_url, cfg['plugins'])
+        self._scan(self.target_url, cfg['plugins'])
 
         infos = self.kb.get('afd', 'afd')
 
         self.assertEqual(len(infos), 1, infos)
-
         info = infos[0]
 
         self.assertEqual(info.get_name(), 'Active filter detected')
-        values = [u.split('=')[1] for u in info['filtered']]
+        values = [u.url_string.split('=')[1] for u in info['filtered']]
 
-        expected = [
-            '..%2F..%2F..%2F..%2Fetc%2Fpasswd',
-            '.%2F..%2F..%2F..%2Fetc%2Fmotd%00html',
-            'id%3Buname+-a',
-            '%3C%3F+passthru%28%22id%22%29%3B%3F%3E',
-            'type%2Bc%3A%5Cwinnt%5Crepair%5Csam._',
-            '..%2F..%2FWINNT%2Fsystem32%2Fcmd.exe%3Fdir%2Bc%3A%5C',
-            'ps+-aux%3B',
-            '..%2F..%2F..%2F..%2Fbin%2Fchgrp+nobody+%2Fetc%2Fshadow%7C',
-            'SELECT+TOP+1+name+FROM+sysusers',
-            'exec+master..xp_cmdshell+dir',
-            'exec+xp_cmdshell+dir'
-        ]
+        self.assertIn('../../../../etc/passwd', set(values), values)
 
-        self.assertEqual(set(expected), set(values), values)
 
-    @attr('ci_fails')
-    def test_afd_found_https(self):
+class TestFoundHttpsAFD(TestFoundAFD):
+    target_url = 'https://httpretty/'
+
+
+class TestNotFoundAFD(PluginTest):
+    target_url = get_moth_http()
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('afd'),)}
+        }
+    }
+
+    def test_afd_not_found_http(self):
         cfg = self._run_configs['cfg']
-        self._scan(self.modsecurity_https_url, cfg['plugins'])
-
-        infos = self.kb.get('afd', 'afd')
-
-        self.assertEqual(len(infos), 1, infos)
-
-    @attr('ci_fails')
-    def test_afd_not_found(self):
-        cfg = self._run_configs['cfg']
-        self._scan(self.moth_url, cfg['plugins'])
+        self._scan(self.target_url, cfg['plugins'])
 
         infos = self.kb.get('afd', 'afd')
 

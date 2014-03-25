@@ -119,8 +119,8 @@ class afd(InfrastructurePlugin):
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
         else:
-            # I get here when the remote end returns a 403 or something like that...
-            # So I must analyze the response body
+            # I get here when the remote end returns a 403 or something like
+            # that... So I must analyze the response body
             resp_body = resp_body.replace(offending_string, '')
             resp_body = resp_body.replace(rnd_param, '')
             if relative_distance_lt(resp_body, original_resp_body, 0.15):
@@ -185,11 +185,11 @@ class afd(InfrastructurePlugin):
 
         afd plugin detects both TCP-Connection-reset and HTTP level filters, the
         first one (usually implemented by IPS devices) is easy to verify: if afd
-        requests the custom page and the GET method raises an exception, then its
-        being probably blocked by an active filter. The second one (usually
+        requests the custom page and the GET method raises an exception, then
+        its being probably blocked by an active filter. The second one (usually
         implemented by Web Application Firewalls like mod_security) is a little
         harder to verify: first afd requests a page without adding any offending
-        parameters, afterwards it requests the same URL but with a faked parameter
-        and customized values; if the response bodies differ, then its safe to
-        say that the remote end has an active filter.
+        parameters, afterwards it requests the same URL but with a faked
+        parameter and customized values; if the response bodies differ, then its
+        safe to say that the remote end has an active filter.
         """
