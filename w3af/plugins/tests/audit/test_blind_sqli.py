@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
 from nose.plugins.attrib import attr
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestBlindSQLI(PluginTest):
@@ -34,9 +35,8 @@ class TestBlindSQLI(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_integer(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php'
+        target_url = get_moth_http('/audit/blind_sqli/where_integer_qs.py')
         qs = '?id=1'
         self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
 
@@ -51,10 +51,17 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals("numeric", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_single_quote(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string.php'
-        qs = '?email=andres@w3af.org'
+        target_url = get_moth_http('/audit/blind_sqli/where_string_single_qs.py')
+        qs = '?uname=pablo'
+        self._scan_single_quote(target_url, qs)
+
+    def test_single_quote_non_true_value_as_init(self):
+        target_url = get_moth_http('/audit/blind_sqli/where_string_single_qs.py')
+        qs = '?uname=foobar39'
+        self._scan_single_quote(target_url, qs)
+
+    def _scan_single_quote(self, target_url, qs):
         self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
 
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
