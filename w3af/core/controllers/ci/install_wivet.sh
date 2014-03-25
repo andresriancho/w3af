@@ -1,13 +1,13 @@
 #!/bin/bash -x
 
 if [ ! -d "wivet" ]; then
-    git clone git@github.com:andresriancho/wivet.git
+    git clone git@github.com:bedirhan/wivet.git
 fi
 
 # Update to the latest revision
 cd wivet/
 git pull
-git checkout feature/clear-stats
+git checkout master
 
 # Setup the database
 mysql -u ubuntu < wivet.sql
