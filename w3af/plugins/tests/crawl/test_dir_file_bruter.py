@@ -138,7 +138,7 @@ class TestDirFileBruter(PluginTest):
         urls = self.kb.get_all_known_urls()
 
         expected_urls = ('spameggs/', 'spameggs/foobar/', '')
-        
+
         self.assertEquals(
             set(str(u) for u in urls),
             set((self.directory_url + end) for end in expected_urls)
