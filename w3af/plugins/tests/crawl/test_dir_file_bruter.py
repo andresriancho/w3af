@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
+
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from nose.plugins.skip import SkipTest
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestDirFileBruter(PluginTest):
@@ -34,8 +36,8 @@ class TestDirFileBruter(PluginTest):
     DIR_DB_PATH = os.path.join(TEST_PATH, 'test_dirs_small.db')
     FILE_DB_PATH = os.path.join(TEST_PATH, 'test_files_small.db')
 
-    directory_url = 'http://moth/w3af/crawl/dir_file_bruter/'
-    base_url = 'http://moth/'
+    directory_url = get_moth_http('/crawl/dir_file_bruter/')
+    base_url = get_moth_http()
 
     _run_directories = {
         'target': base_url,
@@ -98,17 +100,16 @@ class TestDirFileBruter(PluginTest):
                                            ),)}
     }
 
-    @attr('ci_fails')
     def test_directories(self):
-        self._scan(self._run_directories['target'], self._run_directories['plugins'])
+        self._scan(self._run_directories['target'],
+                   self._run_directories['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = (
-            'setup/', 'header/', 'images/', 'portal/', 'index/', '')
+        expected_urls = ('crawl/', '')
 
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.base_url + end) for end in EXPECTED_URLS)
+            set((self.base_url + end) for end in expected_urls)
         )
 
     @attr('ci_fails')
@@ -116,25 +117,24 @@ class TestDirFileBruter(PluginTest):
         self._scan(self._run_files['target'], self._run_files['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = (
-            'iamhidden.txt', '')
+        expected_urls = ('iamhidden.txt', '')
 
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.directory_url + end) for end in EXPECTED_URLS)
+            set((self.directory_url + end) for end in expected_urls)
         )
     
     @attr('ci_fails')
     def test_directories_files(self):
-        self._scan(self._run_directory_files['target'], self._run_directory_files['plugins'])
+        self._scan(self._run_directory_files['target'],
+                   self._run_directory_files['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = (
-            'iamhidden.txt', 'spameggs/', 'test/', '')
+        expected_urls = ('iamhidden.txt', 'spameggs/', 'test/', '')
 
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.directory_url + end) for end in EXPECTED_URLS)
+            set((self.directory_url + end) for end in expected_urls)
         )
     
     @attr('ci_fails')
@@ -146,14 +146,14 @@ class TestDirFileBruter(PluginTest):
 
     @attr('ci_fails')
     def test_recursive(self):
-        self._scan(
-            self._run_recursive['target'], self._run_recursive['plugins'])
+        self._scan(self._run_recursive['target'],
+                   self._run_recursive['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        EXPECTED_URLS = ('spameggs/', 'test/', 'spameggs/portal/',
+        expected_urls = ('spameggs/', 'test/', 'spameggs/portal/',
                          'spameggs/portal/andres/', '')
 
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.directory_url + end) for end in EXPECTED_URLS)
+            set((self.directory_url + end) for end in expected_urls)
         )
