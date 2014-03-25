@@ -2,8 +2,7 @@ plugins
 tests
 crawl
 dir_bruter
-test_dirs_small.db
-setup 
+setup
 header
 images 
 portal 

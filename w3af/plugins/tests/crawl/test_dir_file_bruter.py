@@ -20,9 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
-
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -36,7 +33,7 @@ class TestDirFileBruter(PluginTest):
     DIR_DB_PATH = os.path.join(TEST_PATH, 'test_dirs_small.db')
     FILE_DB_PATH = os.path.join(TEST_PATH, 'test_files_small.db')
 
-    directory_url = get_moth_http('/crawl/dir_file_bruter/')
+    directory_url = get_moth_http('/crawl/dir_bruter/')
     base_url = get_moth_http()
 
     _run_directories = {
@@ -123,35 +120,25 @@ class TestDirFileBruter(PluginTest):
             set((self.base_url + end) for end in expected_urls)
         )
     
-    @attr('ci_fails')
     def test_directories_files(self):
         self._scan(self._run_directory_files['target'],
                    self._run_directory_files['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('iamhidden.txt', 'spameggs/', 'test/', '')
+        expected_urls = ('hidden-inside-dir.txt', 'spameggs/', '')
 
         self.assertEquals(
             set(str(u) for u in urls),
             set((self.directory_url + end) for end in expected_urls)
         )
-    
-    @attr('ci_fails')
-    def test_no_index(self):
-        """
-        :see: test_directories , EXPECTED_URLS
-        """
-        raise SkipTest('FIXME: The index/ in EXPECTED_URLS is a bug!')
 
-    @attr('ci_fails')
     def test_recursive(self):
         self._scan(self._run_recursive['target'],
                    self._run_recursive['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('spameggs/', 'test/', 'spameggs/portal/',
-                         'spameggs/portal/andres/', '')
-
+        expected_urls = ('spameggs/', 'spameggs/foobar/', '')
+        
         self.assertEquals(
             set(str(u) for u in urls),
             set((self.directory_url + end) for end in expected_urls)
