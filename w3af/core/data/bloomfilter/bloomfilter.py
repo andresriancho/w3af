@@ -21,30 +21,49 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.bloomfilter.wrappers import GenericBloomFilter
+from w3af.core.controllers.dependency_check.os_detection import is_mac
 
 # This import can't fail, it is pure-python love ;)
 from w3af.core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter\
     as FileSeekFilter
 
+if is_mac():
+    # Awful workaround for Mac OS X:
+    # https://github.com/andresriancho/w3af/issues/485
+    WrappedBloomFilter = FileSeekFilter
 
-try:
-    # This might fail since it is a C library that only works in Linux
-    from pybloomfilter import BloomFilter as CMmapFilter
+    OSX_MSG = """
+    w3af runs slower on Mac OS X.
 
-    # There were reports of the C mmap filter not working properly in OSX,
-    # just in case, I'm testing here...
-    temp_file = GenericBloomFilter.get_temp_file()
+    We need OS X contributors that can spend a couple of hours helping the
+    pybloomfiltermmap [1] project improve their packaging for Mac. Contribute
+    to make both pybloomfiltermmap and w3af better!
+
+    For more information about this issue please visit [0][1].
+
+    [0] https://github.com/andresriancho/w3af/issues/485
+    [1] https://github.com/axiak/pybloomfiltermmap/issues/50
+    """
+    print(OSX_MSG)
+else:
     try:
-        bf = CMmapFilter(1000, 0.01, temp_file)
-        bf.add(1)
-        assert 1 in bf
-        assert 2 not in bf
+        # This might fail since it is a C library that only works in Linux
+        from pybloomfilter import BloomFilter as CMmapFilter
+
+        # There were reports of the C mmap filter not working properly in OSX,
+        # just in case, I'm testing here...
+        temp_file = GenericBloomFilter.get_temp_file()
+        try:
+            bf = CMmapFilter(1000, 0.01, temp_file)
+            bf.add(1)
+            assert 1 in bf
+            assert 2 not in bf
+        except:
+            WrappedBloomFilter = FileSeekFilter
+        else:
+            WrappedBloomFilter = CMmapFilter
     except:
         WrappedBloomFilter = FileSeekFilter
-    else:
-        WrappedBloomFilter = CMmapFilter
-except:
-    WrappedBloomFilter = FileSeekFilter
 
 
 class BloomFilter(GenericBloomFilter):
