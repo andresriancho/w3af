@@ -172,11 +172,11 @@ class TestWebSpider(PluginTest):
         inner_pages = 'innerpages/'
 
         urls = self.kb.get_all_known_urls()
-        self.assertEquals(
-            set(str(u) for u in urls if inner_pages in str(
-                u) and str(u).endswith('.php')),
-            set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)
-        )
+
+        found = set(str(u) for u in urls if inner_pages in str(u) and str(u).endswith('.php'))
+        expected = set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)
+
+        self.assertEquals(found, expected)
 
         #
         #    And now, verify that w3af used only one session to identify these
