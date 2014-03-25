@@ -29,6 +29,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.kb.read_shell import ReadShell
 from w3af.core.data.dc.form import Form
+from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
@@ -228,7 +229,11 @@ class SQLMapShell(ReadShell):
         Identify the remote operating system by reading different files from
         the OS.
         """
-        self._rOS = read_os_detection(self.read)
+        try:
+            self._rOS = read_os_detection(self.read)
+        except OSDetectionException, osde:
+            om.out.debug('%s' % osde)
+            self._rOS = 'unknown'
         
         # TODO: Could we determine this by calling some payloads?
         self._rSystem = 'sqlmap'
