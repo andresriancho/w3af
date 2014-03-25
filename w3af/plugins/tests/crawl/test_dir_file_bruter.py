@@ -49,7 +49,7 @@ class TestDirFileBruter(PluginTest):
     }
 
     _run_files = {
-        'target': directory_url,
+        'target': base_url,
         'plugins': {'crawl': (PluginConfig('dir_file_bruter',
                                            ('file_wordlist',
                                             FILE_DB_PATH,
@@ -112,7 +112,6 @@ class TestDirFileBruter(PluginTest):
             set((self.base_url + end) for end in expected_urls)
         )
 
-    @attr('ci_fails')
     def test_files(self):
         self._scan(self._run_files['target'], self._run_files['plugins'])
         urls = self.kb.get_all_known_urls()
@@ -121,7 +120,7 @@ class TestDirFileBruter(PluginTest):
 
         self.assertEquals(
             set(str(u) for u in urls),
-            set((self.directory_url + end) for end in expected_urls)
+            set((self.base_url + end) for end in expected_urls)
         )
     
     @attr('ci_fails')
