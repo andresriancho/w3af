@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import tempfile
 
+from .utils import running_in_virtualenv
+
+
 SCRIPT_NAME = 'w3af_dependency_install.sh'
 
 
@@ -51,6 +54,11 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
     #    Report all missing python modules
     #    
     if failed_deps:
+        script_file.write('\n')
+
+        if running_in_virtualenv():
+            script_file.write('# Run without sudo to install inside venv')
+
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
         
@@ -60,7 +68,7 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
-                cmd = 'sudo %s install --ignore-installed %s' % (pip_cmd, missing_git_pkg)
+                cmd = generate_pip_install_git(pip_cmd, missing_git_pkg)
                 script_file.write('%s\n' % cmd)
 
     # Make it executable
@@ -71,10 +79,29 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
 
 
 def generate_pip_install_non_git(pip_cmd, not_git_pkgs):
+    if running_in_virtualenv():
+        cmd_fmt = '%s install %s'
+    else:
+        cmd_fmt = 'sudo %s install %s'
+
     install_specs = []
     for fdep in not_git_pkgs:
         install_specs.append('%s==%s' % (fdep.package_name,
                                          fdep.package_version))
         
-    cmd = 'sudo %s install %s' % (pip_cmd, ' '.join(install_specs))
+    cmd = cmd_fmt % (pip_cmd, ' '.join(install_specs))
     return cmd
+
+
+def generate_pip_install_git(pip_cmd, git_pkg):
+    """
+    :param pip_cmd: The pip command for this platform
+    :param git_pkg: The name of the pip+git package
+    :return: The command to be run to install the pip+git package
+    """
+    if running_in_virtualenv():
+        cmd_fmt = '%s install --ignore-installed %s'
+    else:
+        cmd_fmt = 'sudo %s install --ignore-installed %s'
+
+    return cmd_fmt % (pip_cmd, git_pkg)

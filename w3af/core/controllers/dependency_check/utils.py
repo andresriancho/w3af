@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import sys
-import subprocess
 
 from .platforms.current_platform import PIP_CMD
 
@@ -50,3 +49,10 @@ def mem_test(when):
                                                                0]]), human(cmd[1])
                                                  )
     print 'Total memory usage %s: %s' % (when, msg)
+
+
+def running_in_virtualenv():
+    if hasattr(sys, 'real_prefix'):
+        return True
+
+    return False

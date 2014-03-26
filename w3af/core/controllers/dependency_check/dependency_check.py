@@ -31,7 +31,9 @@ except ImportError:
 
 from .lazy_load import lazy_load
 from .utils import verify_python_version
-from .helper_script import generate_helper_script, generate_pip_install_non_git
+from .helper_script import (generate_helper_script,
+                            generate_pip_install_non_git,
+                            generate_pip_install_git)
 from .helper_requirements_txt import generate_requirements_txt
 from .platforms.current_platform import (SYSTEM_NAME,
                                          PKG_MANAGER_CMD,
@@ -140,7 +142,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
-                msg += '    sudo %s install --ignore-installed %s\n' % (pip_cmd, missing_git_pkg)
+                msg += '    %s\n' % generate_pip_install_git(pip_cmd, missing_git_pkg)
         
         print msg
     
