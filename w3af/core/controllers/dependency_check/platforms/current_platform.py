@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.dependency_check.requirements import PIP_PACKAGES
-from ..os_detection import is_mac, is_openbsd, is_fedora, is_centos
+from ..os_detection import is_mac, is_openbsd, is_fedora, is_centos, is_kali
 
 
 if is_mac():
@@ -48,6 +48,12 @@ elif is_fedora():
 
 elif is_centos():
     from .centos import (SYSTEM_NAME, PKG_MANAGER_CMD,
+                         SYSTEM_PACKAGES, PIP_CMD,
+                         os_package_is_installed,
+                         after_hook)
+
+elif is_kali():
+    from .kali import (SYSTEM_NAME, PKG_MANAGER_CMD,
                          SYSTEM_PACKAGES, PIP_CMD,
                          os_package_is_installed,
                          after_hook)

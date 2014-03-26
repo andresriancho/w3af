@@ -45,6 +45,36 @@ One of the ugly details users can find is that ``w3af`` needs to detect the Oper
 
 The list of distributions ``w3af`` knows how to generate the installation script for `is extensive <https://github.com/andresriancho/w3af/tree/feature/module/w3af/core/controllers/dependency_check/platforms>`_ . If we don't support your distribution, we'll default to Ubuntu.
 
+Installation in Kali
+--------------------
+
+`According to Kali's documentation <http://www.kali.org/kali-monday/bleeding-edge-kali-repositories/>`_ in order to avoid breaking the packaged ``w3af`` version you should run the following commands:
+
+.. code-block:: console
+
+    cd ~
+    apt-get install -y python-pip
+    pip install virtualenv
+    mkdir w3af-latest
+    cd w3af-latest
+    virtualenv venv
+    . venv/bin/activate
+    git clone --depth 1 https://github.com/andresriancho/w3af.git
+    cd w3af
+    ./w3af_console
+    . /tmp/w3af_dependency_install.sh
+
+This will generate a new virtual environment which won't affect any system-wide installed packages, and allows you to use the latest w3af version.
+
+Each time you want to run ``w3af`` in a new console you'll have to activate the virtualenv:
+
+.. code-block:: console
+
+    $ cd w3af-latest
+    $ . venv/bin/activate
+    (venv)$ cd w3af
+    (venv)$ ./w3af_console
+
 Installing using virtualenv
 ---------------------------
 
