@@ -26,14 +26,14 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
 from w3af.core.data.parsers.url import URL
 
 
 class TestWebSpider(PluginTest):
 
-    follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/'
-    follow_links_80_url = 'http://moth:80/w3af/crawl/web_spider/follow_links/'
+    follow_links_url = get_moth_http('/crawl/web_spider/test_case_01/')
     dir_get_url = 'http://moth/w3af/crawl/web_spider/a/b/c/d/'
     encoding_url = 'http://moth/w3af/core/encoding/'
     relative_url = 'http://moth/w3af/crawl/web_spider/relativeRegex.html'
@@ -54,34 +54,20 @@ class TestWebSpider(PluginTest):
         },
     }
 
-    def generic_follow_links_scan(self, target_url):
-        cfg = self._run_configs['basic']
-        self._scan(target_url + '1.html', cfg['plugins'])
-        
-        expected_urls = (
-            '3.html', '4.html', '',
-            'd%20f/index.html', '2.html', 'a%20b.html',
-            'a.gif', 'd%20f/', '1.html'
-        )
-        
-        urls = self.kb.get_all_known_urls()
-        
-        self.assertEquals(
-            set(str(u) for u in urls),
-            set(URL(target_url + end).url_string for end in expected_urls)
-        )
-
     @attr('smoke')
-    @attr('ci_fails')
     def test_spider_found_urls(self):
-        self.generic_follow_links_scan(self.follow_links_url)
+        cfg = self._run_configs['basic']
+        self._scan(self.follow_links_url + '1.html', cfg['plugins'])
 
-    @attr('ci_fails')
-    def test_spider_found_urls_with_port(self):
-        """
-        Test for issue https://github.com/andresriancho/w3af/issues/134
-        """
-        self.generic_follow_links_scan(self.follow_links_80_url)
+        expected_files = ('', '1.html', '2.html', '3.html', '4.html',
+                          'd%20f/index.html', 'a%20b.html', 'd%20f/',)
+        expected_urls = set(URL(self.follow_links_url + end).url_string for end
+                            in expected_files)
+
+        urls = self.kb.get_all_known_urls()
+        found_urls = set(str(u) for u in urls)
+
+        self.assertEquals(found_urls, expected_urls)
 
     @attr('smoke')
     @attr('ci_fails')
