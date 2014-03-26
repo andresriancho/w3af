@@ -44,3 +44,7 @@ def is_centos():
 
 def is_openbsd():
     return 'openbsd' in curr_platform
+
+
+def is_kali():
+    return 'debian' in distro and 'kali' in platform.release()
