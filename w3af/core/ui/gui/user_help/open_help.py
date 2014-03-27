@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
 import webbrowser
 
-DOC_ROOT = 'http://docs.w3af.org/en/feature-module/gui/'
+from w3af.core.controllers.auto_update.utils import (get_current_branch,
+                                                     DETACHED_HEAD)
+
+
+DOC_ROOT_FMT = 'http://docs.w3af.org/en/%s/gui/'
 DOC_ROUTER = {
               'wizards': 'tools.html#wizards',
               'fuzzy_requests': 'tools.html#fuzzy-requests',
@@ -43,7 +46,11 @@ def open_help(chapter=''):
 
     :param chapter: the chapter of the help, optional.
     """
-    help_url = DOC_ROOT
+    current_branch = get_current_branch()
+    if current_branch is DETACHED_HEAD:
+        current_branch = 'master'
+
+    help_url = DOC_ROOT_FMT % current_branch
 
     if chapter:
         help_url += DOC_ROUTER.get(chapter.lower(), '')

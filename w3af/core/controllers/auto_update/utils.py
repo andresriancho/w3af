@@ -23,6 +23,8 @@ import time
 
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
+DETACHED_HEAD = 'detached HEAD'
+
 
 def to_short_id(commit_id):
     return commit_id[:10]
@@ -92,7 +94,7 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
     try:
         name = [name for name in names if 'origin/' not in name][0]
     except IndexError:
-        return 'detached HEAD'
+        return DETACHED_HEAD
 
     return name
 
