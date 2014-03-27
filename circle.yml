@@ -42,6 +42,9 @@ machine:
   php:
     version: 5.5.3
 
+  java:
+    version: oraclejdk7
+
   post:
     # This was required to avoid issues with different builds of python being
     # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
