@@ -192,8 +192,6 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
-
-    @attr('ci_fails')
     def test_found_wavsep_get_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.WAVSEP_PATH, cfg['plugins'])
