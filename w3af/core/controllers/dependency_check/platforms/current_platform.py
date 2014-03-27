@@ -54,9 +54,9 @@ elif is_centos():
 
 elif is_kali():
     from .kali import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                         SYSTEM_PACKAGES, PIP_CMD,
-                         os_package_is_installed,
-                         after_hook)
+                       SYSTEM_PACKAGES, PIP_CMD,
+                       os_package_is_installed,
+                       after_hook)
 
 elif is_suse():
     from .suse import (SYSTEM_NAME, PKG_MANAGER_CMD,
