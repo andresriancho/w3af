@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora, is_suse, is_centos
+from w3af.core.controllers.dependency_check.os_detection import is_mac, is_openbsd, is_fedora, is_suse, is_centos, is_kali
 from w3af.core.ui.gui.dependency_check.requirements import PIP_PACKAGES
 
 if is_mac():
