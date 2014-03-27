@@ -82,13 +82,12 @@ class TestWebSpider(PluginTest):
         self.generic_scan(config, self.follow_links_url,
                           start_url, expected_files)
 
-    @attr('ci_fails')
     def test_utf8_urls(self):
         config = self._run_configs['basic']
         expected_files = [u'vúlnerable.py',
                           u'é.py',
                           u'改.py',
-                          u'russian.html']
+                          u'проверка.py']
         start_url = self.encoding_url + '_utf8/'
 
         self.generic_scan(config, start_url, start_url, expected_files)
