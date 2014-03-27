@@ -25,6 +25,12 @@ dependencies:
     - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
         background: true
 
+    # Install and run wavsep in the background
+    - w3af/core/controllers/ci/install_wavsep.sh
+    - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
+        background: true
+        pwd: pico-wavsep
+
     # Wait for the daemon to be available to run the tests
     - w3af/core/controllers/ci/wait_for_moth.py
 

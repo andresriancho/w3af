@@ -14,3 +14,5 @@ mysql -u ubuntu < wivet.sql
 
 # Let the rest of the world know where we'll listen
 echo 'localhost:8899' > /tmp/wivet.txt
+
+# The service itself is started in circle.yml
