@@ -24,15 +24,10 @@ from w3af.core.controllers.dependency_check.platforms.suse import (SYSTEM_NAME,
                                                                	   PKG_MANAGER_CMD,
                                                                	   SYSTEM_PACKAGES,
                                                                	   PIP_CMD,
-                                                               	   PHPLY_GIT,
-                                                               	   PIP_PACKAGES,
                                                                	   os_package_is_installed,
                                                                	   after_hook)
 
 # I imported the information from the core, now I need to append the GUI
 # requirements to those lists!
-
-PIP_PACKAGES.extend([PIPDependency('xdot', 'xdot'),])
-
 SYSTEM_PACKAGES['GRAPHVIZ'] = ['graphviz']
 SYSTEM_PACKAGES['GTK'] = ['python-gtksourceview', 'python-gtk']
