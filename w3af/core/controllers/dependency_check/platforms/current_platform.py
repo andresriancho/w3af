@@ -61,7 +61,7 @@ elif is_kali():
 elif is_suse():
     from .suse import (SYSTEM_NAME, PKG_MANAGER_CMD,
                        SYSTEM_PACKAGES, PIP_CMD,
-                       PIP_PACKAGES, os_package_is_installed,
+                       os_package_is_installed,
                        after_hook)
 
 else:
