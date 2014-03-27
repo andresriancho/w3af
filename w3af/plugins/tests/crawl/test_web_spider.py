@@ -92,27 +92,11 @@ class TestWebSpider(PluginTest):
 
         self.generic_scan(config, start_url, start_url, expected_files)
 
-    @attr('ci_fails')
     def test_euc_jp_urls(self):
         config = self._run_configs['basic']
-        expected_files = [u'euc-jp/', u'euc-jp/jap1.php', u'euc-jp/jap2.php',]
+        expected_files = [u'raw-qs-jp.py',
+                          u'qs-jp.py']
         start_url = self.encoding_url + '_euc-jp/'
-
-        self.generic_scan(config, start_url, start_url, expected_files)
-
-    @attr('ci_fails')
-    def test_euc_jp_urls(self):
-        config = self._run_configs['basic']
-        expected_files = [u'jap1.php', u'jap2.php',]
-        start_url = self.encoding_url + '_euc-jp/'
-
-        self.generic_scan(config, start_url, start_url, expected_files)
-
-    @attr('ci_fails')
-    def test_hebrew_urls(self):
-        config = self._run_configs['basic']
-        expected_files = [u'heb1.php', u'heb2.php',]
-        start_url = self.encoding_url + '_windows-1255/'
 
         self.generic_scan(config, start_url, start_url, expected_files)
 
