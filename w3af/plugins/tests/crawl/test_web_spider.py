@@ -35,7 +35,7 @@ class TestWebSpider(PluginTest):
 
     follow_links_url = get_moth_http('/crawl/web_spider/test_case_01/')
     dir_get_url = 'http://moth/w3af/crawl/web_spider/a/b/c/d/'
-    encoding_url = 'http://moth/w3af/core/encoding/'
+    encoding_url = get_moth_http('/core/encoding')
     relative_url = 'http://moth/w3af/crawl/web_spider/relativeRegex.html'
 
     wivet = get_wivet_http()
@@ -46,68 +46,82 @@ class TestWebSpider(PluginTest):
             'plugins': {
                 'crawl': (
                     PluginConfig('web_spider',
+
                                  ('only_forward', True, PluginConfig.BOOL),
-                                 (
-                                 'ignore_regex', '.*pages/100.php.*', PluginConfig.STR)),
+
+                                 ('ignore_regex',
+                                  '.*logout.php*',
+                                  PluginConfig.STR)),
                 )
             }
         },
     }
 
-    @attr('smoke')
-    def test_spider_found_urls(self):
-        cfg = self._run_configs['basic']
-        self._scan(self.follow_links_url + '1.html', cfg['plugins'])
+    def generic_scan(self, config, base_directory, start_url, expected_files):
+        self._scan(start_url, config['plugins'])
 
-        expected_files = ('', '1.html', '2.html', '3.html', '4.html',
-                          'd%20f/index.html', 'a%20b.html', 'd%20f/',)
-        expected_urls = set(URL(self.follow_links_url + end).url_string for end
+        # Add the webroot to the list of expected files
+        expected_files.append('')
+        expected_urls = set(URL(base_directory).url_join(end).url_string for end
                             in expected_files)
 
+        # pylint: disable=E1101
+        # Pylint fails to detect the object types that come out of the KB
         urls = self.kb.get_all_known_urls()
-        found_urls = set(str(u) for u in urls)
+        found_urls = set(str(u).decode('utf-8') for u in urls)
 
         self.assertEquals(found_urls, expected_urls)
 
     @attr('smoke')
-    @attr('ci_fails')
-    def test_spider_urls_with_strange_charsets(self):
-        cfg = self._run_configs['basic']
-        self._scan(self.encoding_url + 'index.html', cfg['plugins'])
-        
-        # pylint: disable=E1101
-        # Pylint fails to detect the object types that come out of the KB            
-        urls = self.kb.get_all_known_urls()
-        
-        expected = (
-            u'', u'index.html',
-            # Japanese
-            u'euc-jp/', u'euc-jp/jap1.php', u'euc-jp/jap2.php',
-            # UTF8
-            u'utf-8/', u'utf-8/vúlnerable.php', u'utf-8/é.html', u'utf-8/改.php',
-            # Russian
-            u'utf-8/russian.html',
-            # Hebrew
-            u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php',
-            # Encoded spaces
-            'spaces/form_input_plus_POST.html', 'spaces/queryxpath.php',
-            'spaces/', 'spaces/start end.html', 'spaces/form_input_plus_GET.html',
-            'spaces/foo.html'
-        )
-        self.assertEquals(
-            set([(self.encoding_url + u) for u in expected]),
-            set([u.url_string for u in urls])
-        )
+    def test_spider_found_urls(self):
+        config = self._run_configs['basic']
+        expected_files = ['1.html', '2.html', '3.html', '4.html',
+                          'd%20f/index.html', 'a%20b.html', 'd%20f/',]
+        start_url = self.follow_links_url + '1.html'
+
+        self.generic_scan(config, self.follow_links_url,
+                          start_url, expected_files)
 
     @attr('ci_fails')
+    def test_utf8_urls(self):
+        config = self._run_configs['basic']
+        expected_files = [u'vúlnerable.py',
+                          u'é.py',
+                          u'改.py',
+                          u'russian.html']
+        start_url = self.encoding_url + '_utf8/'
+
+        self.generic_scan(config, start_url, start_url, expected_files)
+
+    @attr('ci_fails')
+    def test_euc_jp_urls(self):
+        config = self._run_configs['basic']
+        expected_files = [u'euc-jp/', u'euc-jp/jap1.php', u'euc-jp/jap2.php',]
+        start_url = self.encoding_url + '_euc-jp/'
+
+        self.generic_scan(config, start_url, start_url, expected_files)
+
+    @attr('ci_fails')
+    def test_euc_jp_urls(self):
+        config = self._run_configs['basic']
+        expected_files = [u'jap1.php', u'jap2.php',]
+        start_url = self.encoding_url + '_euc-jp/'
+
+        self.generic_scan(config, start_url, start_url, expected_files)
+
+    @attr('ci_fails')
+    def test_hebrew_urls(self):
+        config = self._run_configs['basic']
+        expected_files = [u'heb1.php', u'heb2.php',]
+        start_url = self.encoding_url + '_windows-1255/'
+
+        self.generic_scan(config, start_url, start_url, expected_files)
+
     def test_spider_relative_urls_found_with_regex(self):
         raise SkipTest('FIXME: Need to test this feature!')
-        self.relative_url
 
-    @attr('ci_fails')
     def test_spider_traverse_directories(self):
         raise SkipTest('FIXME: Need to test this feature!')
-        self.dir_get_url
 
     def test_wivet(self):
         clear_wivet()
