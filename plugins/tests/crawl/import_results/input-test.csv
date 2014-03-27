@@ -1,5 +1,0 @@
-GET,http://moth/,
-GET,HtTp://moth/w3af/,
-GET,http://moth/w3af/?id=1,
-POST,http://moth/w3af/audit/xss/data_receptor.php,firstname=abc
-

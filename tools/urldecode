@@ -21,27 +21,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import print_function
 
 import urllib
 import sys
 import getopt
-try:
-    import core.controllers.outputManager as om
-except:
-    class om:
-        class out:
-            def information( str ):
-                print '\r' + str
-            information = staticmethod(information)
 
 def usage():
-    om.out.information('w3af - urldecoder')
-    om.out.information('')
-    om.out.information('Options:')
-    om.out.information('    -h  Print this help message.')
-    om.out.information('    -d  String to be decoded.')
-    om.out.information('')
-    om.out.information('Example: urldecode -d decodeMeNow')
+    print('w3af - urldecoder')
+    print('')
+    print('Options:')
+    print('    -h  Print this help message.')
+    print('    -d  String to be decoded.')
+    print('')
+    print('Example: urldecode -d decodeMeNow')
     
 def main():
     
@@ -63,8 +56,8 @@ def main():
             usage()
             sys.exit()
     else:
-        om.out.information( urllib.unquote_plus( decode ) )
+        print( urllib.unquote_plus( decode ) )
         
 if __name__ == "__main__":
-  main()
+    main()
   

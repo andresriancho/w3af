@@ -21,28 +21,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import print_function
 
 import urllib
 import sys
 import getopt
-try:
-    import core.controllers.outputManager as om
-except:
-    class om:
-        class out:
-            def information( str ):
-                print '\r' + str
-            information = staticmethod(information)
 
 def usage():
-    om.out.information('w3af - urlencoder')
-    om.out.information('')
-    om.out.information('Options:')
-    om.out.information('    -h  Print this help message.')
-    om.out.information('    -s  Characters that should not be encoded, default is / .')
-    om.out.information('    -e  String to be encoded.')
-    om.out.information('')
-    om.out.information('Example: urlencode -s &% -e encodeMeNow')
+    print('w3af - urlencoder')
+    print('')
+    print('Options:')
+    print('    -h  Print this help message.')
+    print('    -s  Characters that should not be encoded, default is / .')
+    print('    -e  String to be encoded.')
+    print('')
+    print('Example: urlencode -s &% -e encodeMeNow')
     
 def main():
     
@@ -67,8 +60,8 @@ def main():
             usage()
             sys.exit()
     else:
-        om.out.information( urllib.quote_plus( encode, safe ) )
+        print( urllib.quote_plus( encode, safe ) )
         
 if __name__ == "__main__":
-  main()
+    main()
   

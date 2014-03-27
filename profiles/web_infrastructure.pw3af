@@ -28,7 +28,7 @@ msf_location = /opt/metasploit3/bin/
 [infrastructure.halberd]
 
 [infrastructure.hmap]
-genFpF = False
+gen_fingerprint = False
 
 [infrastructure.afd]
 

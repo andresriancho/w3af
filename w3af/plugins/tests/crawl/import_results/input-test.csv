@@ -1,0 +1,5 @@
+GET,http://127.0.0.1:8000/,
+GET,HtTp://127.0.0.1:8000/audit/,
+GET,http://127.0.0.1:8000/audit/?id=1,
+POST,http://127.0.0.1:8000/audit/xss/simple_xss_form.py,text=abc
+

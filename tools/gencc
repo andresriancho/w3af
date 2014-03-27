@@ -23,19 +23,13 @@ Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
 Modded for w3af.
 """
+from __future__ import print_function
 
 from random import Random
 import sys
 import copy
 import getopt
-try:
-    import core.controllers.outputManager as om
-except:
-    class om:
-        class out:
-            def information( str ):
-                print '\r' + str
-            information = staticmethod(information)
+
 
 visaPrefixList = [  ['4', '5', '3', '9'], 
                     ['4', '5', '5', '6'], 
@@ -150,14 +144,14 @@ generator.seed()        # Seed from current time
 types = ['mastercard','visa16','visa13','amex','discover','diners','enRoute','jcb15','jcb16','voyager']
 
 def usage():
-    om.out.information('w3af - Credit Card Generator, original version: Graham King')
-    om.out.information('')
-    om.out.information('Options:')
-    om.out.information('    -h  Print this help message.')
-    om.out.information('    -t  Type of CC to generate:')
+    print('w3af - Credit Card Generator, original version: Graham King')
+    print('')
+    print('Options:')
+    print('    -h  Print this help message.')
+    print('    -t  Type of CC to generate:')
     for type in types:
-        om.out.information('        - ' + type)
-    om.out.information('')
+        print('        - ' + type)
+    print('')
 
 #
 # Main
@@ -184,53 +178,53 @@ def main():
     else:
         
         if type not in types:
-            om.out.information( 'Card type not found.' )
+            print( 'Card type not found.' )
             return 2
         else:
         
             if type == 'mastercard':
                 mastercard = credit_card_number(generator, mastercardPrefixList, 16, 1)
-                om.out.information( output("Mastercard", mastercard) )
+                print( output("Mastercard", mastercard) )
             
             if type == 'visa16':
                 visa16 = credit_card_number(generator, visaPrefixList, 16, 1)
-                om.out.information( output("VISA 16 digit", visa16) )
+                print( output("VISA 16 digit", visa16) )
                 
             if type == 'visa13':
                 visa13 = credit_card_number(generator, visaPrefixList, 13, 1)
-                om.out.information( output("VISA 13 digit", visa13) )
+                print( output("VISA 13 digit", visa13) )
                 
             if type == 'amex':
                 amex = credit_card_number(generator, amexPrefixList, 15, 1)
-                om.out.information( output("American Express", amex) )
+                print( output("American Express", amex) )
                 
                 # Minor cards
             if type == 'discover':
                 discover = credit_card_number(generator, discoverPrefixList, 16, 1)
-                om.out.information( output("Discover", discover) )
+                print( output("Discover", discover) )
             
             if type == 'diners':
                 diners = credit_card_number(generator, dinersPrefixList, 14, 1)
-                om.out.information( output("Diners Club / Carte Blanche", diners) )
+                print( output("Diners Club / Carte Blanche", diners) )
             
             if type == 'enRoute':
                 enRoute = credit_card_number(generator, enRoutePrefixList, 15, 1)
-                om.out.information( output("enRoute", enRoute) )
+                print( output("enRoute", enRoute) )
                 
             if type == 'jcb15':
                 jcb15 = credit_card_number(generator, jcbPrefixList15, 15, 1)
-                om.out.information( output("JCB 15 digit", jcb15) )
+                print( output("JCB 15 digit", jcb15) )
                 
             if type == 'jcb16':
                 jcb16 = credit_card_number(generator, jcbPrefixList16, 16, 1)
-                om.out.information( output("JCB 16 digit", jcb16) )
+                print( output("JCB 16 digit", jcb16) )
                 
             if type == 'voyager':
                 voyager = credit_card_number(generator, voyagerPrefixList, 15, 1)
-                om.out.information( output("Voyager", voyager) )
+                print( output("Voyager", voyager) )
             
             return 0
         
 if __name__ == "__main__":
-  main()
+    main()
   
