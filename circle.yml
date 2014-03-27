@@ -10,6 +10,7 @@ dependencies:
     - "xpresser"
     - "django-moth"
     - "wivet-svn"
+    - "pico-wavsep"
   pre:
     # Install the core/console dependencies
     - w3af/core/controllers/ci/install_core_dependencies.sh
