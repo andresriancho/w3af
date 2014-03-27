@@ -121,8 +121,8 @@ import time
 import ssl
 import copy
 
-import core.controllers.output_manager as om
-import core.data.kb.config as cf
+import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
