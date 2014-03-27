@@ -73,7 +73,6 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
     
-    @attr('fails')
     def test_verify_vulnerability_ssl(self):
         uri = URL(self.SSL_SQLI_GET)
         target = Target(uri)

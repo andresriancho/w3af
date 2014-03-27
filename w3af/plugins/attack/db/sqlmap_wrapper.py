@@ -30,7 +30,7 @@ from w3af.core.controllers.daemons.proxy import Proxy
 
 class SQLMapWrapper(object):
     
-    
+    DEBUG_ARGS = ['-v6']
     SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
@@ -41,13 +41,14 @@ class SQLMapWrapper(object):
                      'unable to connect to the target url or proxy',
                      "[INFO] skipping '")
     
-    def __init__(self, target, uri_opener, coloring=False):
+    def __init__(self, target, uri_opener, coloring=False, debug=False):
         if not isinstance(target, Target):
             fmt = 'Invalid type %s for target parameter in SQLMapWrapper ctor.'
             raise TypeError(fmt % type(target))
 
         self._start_proxy(uri_opener)
 
+        self.debug = debug
         self.target = target
         self.coloring = coloring
         self.last_command = None
@@ -66,8 +67,6 @@ class SQLMapWrapper(object):
         self.proxy = Proxy(host, 0, uri_opener)
         self.proxy.start()
         self.local_proxy_url = 'http://%s:%s/' % (host, self.proxy.get_bind_port())
-        
-        return
     
     def cleanup(self):
         self.proxy.stop()
@@ -108,7 +107,10 @@ class SQLMapWrapper(object):
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = ['python', 'sqlmap.py'] + final_params + target_params
-        
+
+        if self.debug:
+            all_params += self.DEBUG_ARGS
+
         process = subprocess.Popen(args=all_params,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
@@ -119,7 +121,7 @@ class SQLMapWrapper(object):
         
         full_command = ' '.join(all_params)
         self.last_command = full_command
-                
+
         return process
     
     def run_sqlmap(self, custom_params):
@@ -226,7 +228,8 @@ class SQLMapWrapper(object):
                 return file(local_file).read()
         
         return 
-        
+
+
 class Target(object):
     def __init__(self, uri, post_data=None):
         if not isinstance(uri, URL):

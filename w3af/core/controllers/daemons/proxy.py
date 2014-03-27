@@ -105,14 +105,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             path = self.path
 
-        fuzzable_request = FuzzableRequest(
-            URL(path),
-            self.command,
-            Headers(self.headers.dict.items())
-        )
+        fuzzable_request = FuzzableRequest(URL(path), self.command,
+                                           Headers(self.headers.dict.items()))
+
         post_data = self._get_post_data()
         if post_data:
             fuzzable_request.set_data(post_data)
+
         return fuzzable_request
 
     def do_ALL(self):
@@ -147,13 +146,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.headers['Connection'] = 'close'
 
         path = self.path
-        uri_instance = URL(path)
 
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
             base_path = "https://" + self.server.chainedHandler.path
             path = base_path + path
-            uri_instance = URL(path)
+
+        uri_instance = URL(path)
 
         #
         # Do the request to the remote server
