@@ -43,7 +43,7 @@ def is_centos():
 
 
 def is_suse():
-	return 'SuSE' in distro[0]
+    return 'SuSE' in distro[0]
 
 
 def is_openbsd():
