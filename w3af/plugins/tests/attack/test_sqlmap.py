@@ -20,16 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.sqlmap_testenv import get_sqlmap_testenv_http
 
 from w3af.plugins.tests.helper import PluginConfig, ReadExploitTest
 from w3af.core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 
 
-@attr('fails')
 class TestSQLMapShell(ReadExploitTest):
 
-    SQLI = get_moth_http('/audit/sql_injection/where_string_single_qs.py?uname=pablo')
+    SQLI = get_sqlmap_testenv_http('/mysql/get_int.php?id=2')
     
     BSQLI = 'http://moth/w3af/audit/blind_sql_injection/forms/'
 
@@ -69,7 +68,7 @@ class TestSQLMapShell(ReadExploitTest):
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
-            ('where_string_single_qs.py', 'uname'),
+            ('get_int.php', 'id'),
         ]
 
         found_vulns = [(v.get_url().get_file_name(),
@@ -83,6 +82,7 @@ class TestSQLMapShell(ReadExploitTest):
         
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
+    @attr('ci_fails')
     def test_found_exploit_sqlmap_blind_sqli(self):
         # Run the scan
         cfg = self._run_configs['blind_sqli']
@@ -101,6 +101,7 @@ class TestSQLMapShell(ReadExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
+    @attr('ci_fails')
     def test_from_template(self):
         sqlit = SQLiTemplate()
         

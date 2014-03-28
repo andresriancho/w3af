@@ -11,23 +11,30 @@ dependencies:
     - "django-moth"
     - "wivet-svn"
     - "pico-wavsep"
+    - "sqlmap-testenv"
   pre:
     # Install the core/console dependencies
-    - w3af/core/controllers/ci/install_core_dependencies.sh
+    - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh
 
     # Install GUI dependencies
-    - w3af/core/controllers/ci/install_gui_dependencies.sh
+    - w3af/core/controllers/ci/install_scripts/install_gui_dependencies.sh
     
     # Install the test dependencies
-    - w3af/core/controllers/ci/install_test_dependencies.sh
+    - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
     # Install and run wivet in the background
-    - w3af/core/controllers/ci/install_wivet.sh
+    - w3af/core/controllers/ci/install_scripts/install_wivet.sh
     - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
         background: true
 
+    # Install and run sqlmap's testenv in the background
+    - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
+    - php -S localhost:8998 -t .:
+        background: true
+        pwd: sqlmap-testenv
+
     # Install and run wavsep in the background
-    - w3af/core/controllers/ci/install_wavsep.sh
+    - w3af/core/controllers/ci/install_scripts/install_wavsep.sh
     - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
         background: true
         pwd: pico-wavsep
