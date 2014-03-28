@@ -99,7 +99,7 @@ class sqlmap(AttackPlugin):
             post_data = str(dc) or None
         else:
             uri.set_querystring(dc)
-            
+        
         target = Target(uri, post_data)
         
         sqlmap = SQLMapWrapper(target, self._uri_opener)

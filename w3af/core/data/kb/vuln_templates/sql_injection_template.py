@@ -46,15 +46,16 @@ class SQLiTemplate(BaseTemplate):
         v.set_var(self.vulnerable_parameter)
         v.set_url(url)
         v.set_dc(self.data)
-        
+
         freq = FuzzableRequest(url, method=self.method, dc=self.data)
-        
+
         mutant = Mutant(freq)
         mutant.set_var(self.vulnerable_parameter)
         mutant.set_dc(self.data)
+        mutant.set_original_value(self.data[self.vulnerable_parameter][0])
         
         v.set_mutant(mutant)
-        
+
         return v
         
     def get_kb_location(self):

@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.ci.sqlmap_testenv import get_sqlmap_testenv_http
 
 from w3af.plugins.tests.helper import PluginConfig, ReadExploitTest
@@ -29,8 +27,7 @@ from w3af.core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 class TestSQLMapShell(ReadExploitTest):
 
     SQLI = get_sqlmap_testenv_http('/mysql/get_int.php?id=2')
-    
-    BSQLI = 'http://moth/w3af/audit/blind_sql_injection/forms/'
+    BSQLI = get_sqlmap_testenv_http('/mysql/get_int_noerror.php?id=3')
 
     _run_configs = {
         'sqli': {
@@ -44,11 +41,6 @@ class TestSQLMapShell(ReadExploitTest):
             'target': BSQLI,
             'plugins': {
                 'audit': (PluginConfig('blind_sqli'),),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                )
             }
         }
         
@@ -82,7 +74,6 @@ class TestSQLMapShell(ReadExploitTest):
         
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
-    @attr('ci_fails')
     def test_found_exploit_sqlmap_blind_sqli(self):
         # Run the scan
         cfg = self._run_configs['blind_sqli']
@@ -95,21 +86,20 @@ class TestSQLMapShell(ReadExploitTest):
         vuln = vulns[0]
         
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
-        self.assertEquals('user', vuln.get_mutant().get_var())
-        self.assertEquals('data_receptor.php', vuln.get_url().get_file_name())
+        self.assertEquals('id', vuln.get_mutant().get_var())
+        self.assertEquals('get_int_noerror.php', vuln.get_url().get_file_name())
         
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
-    @attr('ci_fails')
     def test_from_template(self):
         sqlit = SQLiTemplate()
         
         options = sqlit.get_options()
-        path = '/audit/sql_injection/where_string_single_qs.py'
-        options['url'].set_value(get_moth_http(path))
-        options['data'].set_value('uname=andres')
-        options['vulnerable_parameter'].set_value('name')
+        path = '/mysql/get_int.php'
+        options['url'].set_value(get_sqlmap_testenv_http(path))
+        options['data'].set_value('id=2')
+        options['vulnerable_parameter'].set_value('id')
         sqlit.set_options(options)
 
         sqlit.store_in_kb()

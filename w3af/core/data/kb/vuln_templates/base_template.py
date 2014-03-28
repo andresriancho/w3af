@@ -68,7 +68,10 @@ class BaseTemplate(Configurable):
             ' otherwise it will be sent using the HTTP request\'s body. If the'\
             ' vulnerability requires the request to be sent using multipart-'\
             'forms, the exploit will convert this url-encoded data into that'\
-            ' format.'
+            ' format.\n\n'\
+            'Enter the original parameter value, not the one which triggers'\
+            ' the vulnerability. Correct input looks like "id=2" not like'\
+            ' "id=2;cat /etc/passwd".'
         o = opt_factory('data', self.data, d, 'string', help=h)
         ol.add(o)
 
@@ -126,7 +129,8 @@ class BaseTemplate(Configurable):
 
     def create_vuln(self):
         """
-        Sample implementation of the
+        Sample implementation of the create_vuln method.
+
         :return: A vulnerability object based on the data that was configured
                  by the user with calls to set_options().
         """
