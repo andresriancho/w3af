@@ -1316,4 +1316,29 @@ http://www.pchart.net/advisory
 site:bitbucket.org inurl:.bash_history
 
 By Pharos
+</textualDescription></signature><signature><signatureReferenceNumber>3936</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3936/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:Admin inurl:login.php site:.co.in</querystring><shortDescription>intitle:Admin inurl:login.php site:.co.in</shortDescription><textualDescription>dork submitted by M4RKM3N aka Osama Mahmood
+
+revels admin login panels of sites :)
+</textualDescription></signature><signature><signatureReferenceNumber>3937</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3937/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:crossdomain filetype:xml intext:allow-access-from</querystring><shortDescription>inurl:crossdomain filetype:xml intext:allow-access-from</shortDescription><textualDescription>Locates crossdomain.xml files used by flash/flex/silverlight to
+determine the cross domain policy of that site's
+flash/flex/silverlight apps. An open setting of  will allow a weaponized flash application hosted on an
+attacker's site to read information from the target site while running
+in a victim's browser.
+
+-- 
+Google+ http://google.com/+EricGragsone
+Red Team http://www.crimsonagents.com/
+Blue Team http://www.erisresearch.org/
+Coding http://maetrics.github.io
+</textualDescription></signature><signature><signatureReferenceNumber>3938</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3938/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:clientaccesspolicy filetype:xml intext:allow-from</querystring><shortDescription>inurl:clientaccesspolicy filetype:xml intext:allow-from</shortDescription><textualDescription>Locates clientaccesspolicy.xml files used by silverlight to determine
+the cross domain policy of that site's silverlight apps. An open
+setting of  will allow a weaponized silverlight
+application hosted on an attacker's site to read information from the
+target site while running in a victim's browser.
+
+-- 
+Google+ http://google.com/+EricGragsone
+Red Team http://www.crimsonagents.com/
+Blue Team http://www.erisresearch.org/
+Coding http://maetrics.github.io
 </textualDescription></signature></searchEngineSignature>
