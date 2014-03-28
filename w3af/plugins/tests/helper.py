@@ -261,9 +261,9 @@ class ReadExploitTest(PluginTest):
         #
         shell = exploit_result[0]
         etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
-        self.assertTrue('root' in etc_passwd)
-        self.assertTrue('/bin/bash' in etc_passwd)
-        
+        self.assertIn('root', etc_passwd)
+        self.assertIn('/bin/bash', etc_passwd)
+
         lsp = shell.generic_user_input('lsp', [])
         self.assertTrue('apache_config_directory' in lsp)
 
