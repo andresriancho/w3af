@@ -60,7 +60,7 @@ class eval(AuditPlugin):
         # Perl http://perldoc.perl.org/functions/sleep.html
         ExactDelay("sleep(%s);"),
         # Python http://docs.python.org/library/time.html#time.sleep
-        ExactDelay("import time;time.sleep(%s);"),
+        ExactDelay("__import__('time').sleep(%s)"),
         # It seems that ASP doesn't support sleep! A language without sleep...
         # is not a language!
         # http://classicasp.aspfaq.com/general/how-do-i-make-my-asp-page-pause-or-sleep.html
@@ -79,6 +79,7 @@ class eval(AuditPlugin):
         # Create some random strings, which the plugin will use.
         # for the fuzz_with_echo
         self._rnd = rand_alpha(5)
+        self._rnd = self._rnd.lower()
         self._expected_result = self._rnd * self.PRINT_REPEATS
 
         # User configured parameters

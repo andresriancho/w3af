@@ -18,37 +18,37 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestEval(PluginTest):
 
-    target_echo = 'http://moth/w3af/audit/eval/eval.php'
-    target_delay = 'http://moth/w3af/audit/eval/eval-blind.php'
+    target_echo = get_moth_http('/audit/eval_vuln/eval_double.py')
+    target_delay = get_moth_http('/audit/eval_vuln/eval_blind.py')
 
     _run_configs = {
         'echo': {
-            'target': target_echo + '?c=',
+            'target': target_echo + '?text=1',
             'plugins': {
                 'audit': (PluginConfig('eval',
-                                       ('use_echo', True, PluginConfig.BOOL)),
+                                       ('use_echo', True, PluginConfig.BOOL),
+                                       ('use_time_delay', False, PluginConfig.BOOL)),
                           ),
             }
         },
 
         'delay': {
-            'target': target_delay + '?c=',
+            'target': target_delay + '?text=1',
             'plugins': {
                 'audit': (PluginConfig('eval',
-                                       ('use_echo', False, PluginConfig.BOOL)),
+                                       ('use_echo', False, PluginConfig.BOOL),
+                                       ('use_time_delay', True, PluginConfig.BOOL)),
                           ),
             }
         }
     }
 
-    @attr('ci_fails')
     def test_found_eval_echo(self):
         cfg = self._run_configs['echo']
         self._scan(cfg['target'], cfg['plugins'])
@@ -58,12 +58,11 @@ class TestEval(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals(
-            'eval() input injection vulnerability', vuln.get_name())
-        self.assertEquals("c", vuln.get_var())
+        self.assertEquals('eval() input injection vulnerability',
+                          vuln.get_name())
+        self.assertEquals("text", vuln.get_var())
         self.assertEquals(self.target_echo, str(vuln.get_url()))
 
-    @attr('ci_fails')
     def test_found_eval_delay(self):
         cfg = self._run_configs['delay']
         self._scan(cfg['target'], cfg['plugins'])
@@ -75,5 +74,5 @@ class TestEval(PluginTest):
         vuln = vulns[0]
         self.assertEquals(
             'eval() input injection vulnerability', vuln.get_name())
-        self.assertEquals("c", vuln.get_var())
+        self.assertEquals("text", vuln.get_var())
         self.assertEquals(self.target_delay, str(vuln.get_url()))
