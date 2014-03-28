@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 HTTP_WAVSEP = '/tmp/wavsep.txt'
-DEFAULT_WAVSEP = 'fallback:80'
+DEFAULT_WAVSEP = 'wavsep-fallback:80'
 
 
 def get_wavsep_http(path='/'):
