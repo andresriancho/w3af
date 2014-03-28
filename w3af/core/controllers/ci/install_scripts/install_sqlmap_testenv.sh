@@ -5,7 +5,7 @@ if [ ! -d "sqlmap-testenv" ]; then
 fi
 
 # Change the mysql database password
-mysql -u root -p < w3af/core/controllers/ci/helpers/set_root_password.sql
+mysql -u ubuntu < w3af/core/controllers/ci/helpers/set_root_password.sql
 
 # Update to the latest revision
 cd sqlmap-testenv/
