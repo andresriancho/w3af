@@ -1,12 +1,15 @@
 #VERSION,2.021
 #######################################################################
-# Source: http://cirt.net
+# File Source: https://cirt.net
+# (c) 2001-2014 Chris Sullo, All Rights Reserved.
 # This file may only be distributed and used with the full Nikto package.
-# This file may not be used with any software product without written permission from CIRT, Inc.
-# (c) 2007 CIRT, Inc., All Rights Reserved.
+# This file may not be used with any software product without written permission from
+# Chris Sullo (csullo@gmail.com)
 #
-# NOTE: By sending any database updates to CIRT, Inc., it is assumed that you
-# grant CIRT, Inc., the unlimited, non-exclusive right to reuse, modify and relicense the changes.
+# Note:
+# By submitting updates to this file you are transfering any and all copyright
+# interest in the data to Chris Sullo so it can modified, incorporated into this product
+# relicensed or reused.
 #######################################################################
 # Notes:
 #
@@ -1210,8 +1213,8 @@
 "001190","3092","23","/_vti_pvt/services.org","GET","200","","","","","FrontPage file found. This may contain useful information.","",""
 "001191","28260","3","/_vti_bin/shtml.dll/_vti_rpc?method=server+version%3a4%2e0%2e2%2e2611","POST","200","","","FrontPage Error","","Gives info about server settings. CVE-2000-0413, CVE-2000-0709, CVE-2000-0710, BID-1608, BID-1174.","",""
 "001192","28260","3","/_vti_bin/shtml.exe/_vti_rpc?method=server+version%3a4%2e0%2e2%2e2611","POST","200","","","Unknown CONTENT_TYPE","","Gives info about server settings.","",""
-"001193","3092","a","/_vti_bin/_vti_aut/author.dll?method=list+documents%3a3%2e0%2e2%2e1706&service%5fname=&listHiddenDocs=true&listExplorerDocs=true&listRecurse=false&listFiles=true&listFolders=true&listLinkInfo=true&listIncludeParent=true&listDerivedT=false&listBorders=fals","POST","200","","","specified module could not be found","","We seem to have authoring access to the FrontPage web.","",""
-"001194","3092","a","/_vti_bin/_vti_aut/author.exe?method=list+documents%3a3%2e0%2e2%2e1706&service%5fname=&listHiddenDocs=true&listExplorerDocs=true&listRecurse=false&listFiles=true&listFolders=true&listLinkInfo=true&listIncludeParent=true&listDerivedT=false&listBorders=fals","POST","200","","","specified module could not be found","","We seem to have authoring access to the FrontPage web.","",""
+"001193","3092","a","/_vti_bin/_vti_aut/author.dll?method=list+documents%3a3%2e0%2e2%2e1706&service%5fname=&listHiddenDocs=true&listExplorerDocs=true&listRecurse=false&listFiles=true&listFolders=true&listLinkInfo=true&listIncludeParent=true&listDerivedT=false&listBorders=false","POST","200","","","specified module could not be found","","We seem to have authoring access to the FrontPage web.","",""
+"001194","3092","a","/_vti_bin/_vti_aut/author.exe?method=list+documents%3a3%2e0%2e2%2e1706&service%5fname=&listHiddenDocs=true&listExplorerDocs=true&listRecurse=false&listFiles=true&listFolders=true&listLinkInfo=true&listIncludeParent=true&listDerivedT=false&listBorders=false","POST","200","","","specified module could not be found","","We seem to have authoring access to the FrontPage web.","",""
 "001195","3092","ad","/_vti_bin/_vti_aut/dvwssr.dll","GET","200","","","","","This dll allows anyone with authoring privs to change other users file, and may contain a buffer overflow for unauthenticated users. See also : http://www.wiretrip.net/rfp/p/doc.asp?id=45&iface=1. MS00-025.","",""
 "001196","3092","d","/_vti_bin/_vti_aut/fp30reg.dll?xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","GET","The remote procedure call failed","","","","","This dll is vulnerable to a remote overflow that can allow attackers to execute remote commands.","",""
 "001197","3092","d","/_vti_bin/_vti_aut/fp30reg.dll","GET","200","","","","","Some versions of the FrontPage fp30reg.dll are vulnerable to a buffer overflow. See http://www.microsoft.com/technet/security/bulletin/ms03-051.asp for details.","",""
@@ -3153,7 +3156,7 @@
 "003154","4191","7","/viewimg.php?path=../../../../../../../../../../etc/passwd&form=1&var=1","GET","root:","","","","","KorWebLog from http://weblog.kldp.org/ allows any file to be read on the system.","",""
 "003155","4192","d","@CGIDIRSgettransbitmap","GET","200","","","","","Sun Answerbook2 is vulnerable to a buffer overflow in the gettransbitmap CGI. All default CGIs should be disabled or removed, and Answerbook2 should be disabled if not being used.","",""
 "003156","4220","8","@CGIDIRSguestbook.cgi?user=cpanel&template=|/bin/cat%20/etc/passwd|","GET","root:","","","","","cpanel's guestbook.cgi allows any command to be executed on the remote server. Remove /usr/local/cpanel/cgi-sys/guestbook.cgi or update to a new version of cpanel.","",""
-"003157","4231","3","/JUNK(5).xml","GET","file:","","","","","Coccoon from Apache-XML project reveals file system path in error messages.","",""
+"003157","4231","3","/JUNK(5).xml","GET","file:","","","file:hover","","Coccoon from Apache-XML project reveals file system path in error messages.","",""
 "003158","4231","3","/JUNK(5)/","GET","FileNotFoundException: \/","","","","","Coccoon 2.1.4 from Apache-XML project reveals file system path in error messages.","",""
 "003159","4233","1","/cgi-bin/main_menu.pl","GET","NetDetector Traffic Analysis","","","","","The NetDetector allows unauthenticated users to perform database queries.","",""
 "003160","4237","2","/ban.bak","GET","200","","","","","Bannermatic versions 1-3 reveal sensitive information from unprotected files. These files should be protected.","",""
@@ -6703,3 +6706,9 @@
 "006734","0","0","/cqresource/","GET","200","","","","","CRX WebDAV upload","",""
 "006735","0","3","/etc/cloudservices","GET","200","","","","","Adobe Experience Manager Cloud Service Information","",""
 "006736","0","3","/etc/reports","GET","200","","","","","Adobe Experience Manager Reports","",""
+"006737","0","7","/wp-content/plugins/nextgen-gallery/products/photocrati_nextgen/modules/nextgen_addgallery_page/static/jquery.filetree/connectors/jqueryFileTree.php","GET","root","windows","","","","NextGEN Gallery LFI, see https://security.dxw.com/advisories/directory-traversal-in-nextgen-gallery-2-0-0/","dir=/",""
+"006738","0","8b","@CGIDIRSc99.php","GET","200","","r57 c99 shell","","","c99.php remote web shell","",""
+"006739","0","8b","/c99.php","GET","200","","r57 c99 shell","","","c99.php remote web shell","",""
+"006740","3092","3","/dumpinfo","GET","200","Service\sLocator\sURL\sMappings","","","","National Instruments Service Locator","",""
+"006741","0","3","/somenonexistingfile.epl","GET","404: somenonexistingfile.epl\(1\): Not found '/.*/somenonexistingfile.epl'","","","","","Embperl 404 message discloses full file path"
+"006742","0","1","/umbraco/ping.aspx","GET","I'm alive!","","","","","Umbraco ping page found","",""
