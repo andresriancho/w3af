@@ -27,7 +27,7 @@ target_path = 'scan_database.db'
 response = urllib2.urlopen(scan_db_url)
 db_content = response.read()
 
-if 'Source: http://cirt.net' not in db_content:
+if 'Source: https://cirt.net' not in db_content:
     print 'db_tests download failed'
     sys.exit(-1)
 
