@@ -18,7 +18,7 @@ When reporting installation bugs and issues that might relate to your environmen
 
 .. code-block:: none
 
-	user@box:~/w3af$ wget https://gist.githubusercontent.com/andresriancho/9873639/raw/adaff04e2ffe95dfd0b0069a294297107249f7b3/collect-sysinfo.py
+	user@box:~/w3af$ wget http://goo.gl/eXpPDl
 	user@box:~/w3af$ chmod +x collect-sysinfo.py
 	user@box:~/w3af$ ./collect-sysinfo.py
 
