@@ -57,7 +57,7 @@ def generate_helper_script(pkg_manager_cmd, os_packages,
         script_file.write('\n')
 
         if running_in_virtualenv():
-            script_file.write('# Run without sudo to install inside venv')
+            script_file.write('# Run without sudo to install inside venv\n')
 
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
