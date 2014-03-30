@@ -22,7 +22,7 @@ Installation
 
 Let me explain what's going on there:
 
- * First we use ``git`` to download w3af's source code
+ * First we use ``git`` to download ``w3af``'s source code
  * Then we try to run the ``w3af_console`` command, which will most likely fail because of missing dependencies. This command will generate a helper script at ``/tmp/w3af_dependency_install.sh`` that when run will install all the required dependencies.
  * Dependencies are installed by running ``/tmp/w3af_dependency_install.sh``
 
@@ -54,26 +54,19 @@ Installation in Kali
 
     cd ~
     apt-get install -y python-pip
-    pip install virtualenv
-    mkdir w3af-latest
-    cd w3af-latest
-    virtualenv venv
-    . venv/bin/activate
-    git clone --depth 1 https://github.com/andresriancho/w3af.git
+    git clone https://github.com/andresriancho/w3af.git
     cd w3af
     ./w3af_console
     . /tmp/w3af_dependency_install.sh
 
-This will generate a new virtual environment which won't affect any system-wide installed packages, and allows you to use the latest w3af version.
+This allows you to use the latest w3af version without breaking or overriding the one installed using Kali's package system.
 
-Each time you want to run ``w3af`` in a new console you'll have to activate the virtualenv:
+.. note::
 
-.. code-block:: console
+   There are two versions in your OS now:
+    * ``cd ~/w3af/ ; ./w3af_console`` will run the latest version
+    * ``w3af_console`` will run the one packaged in Kali
 
-    $ cd w3af-latest
-    $ . venv/bin/activate
-    (venv)$ cd w3af
-    (venv)$ ./w3af_console
 
 Installing using virtualenv
 ---------------------------
@@ -90,9 +83,40 @@ Virtualenv is a great tool that will allow you to install ``w3af`` in a virtual 
     $ virtualenv venv
     $ . venv/bin/activate
     (venv)$ ./w3af_console
-    (venv)$ pip install <missing dependencies>
+    (venv)$ . /tmp/w3af_dependency_install.sh
 
-Note that the last command doesn't require ``root`` privileges. All the packages installed with this command will be saved inside the ``venv`` directory and won't affect your system packages.
+All the packages installed using the ``/tmp/w3af_dependency_install.sh`` script will be stored inside the ``venv`` directory and won't affect your system packages.
+
+Installation of the GUI dependencies inside a ``virtualenv`` is a little bit trickier since it requires C libraries which are not installed using ``pip``. `This <http://stackoverflow.com/a/12831223/1347554>`_ information might be useful for installing ``w3af``'s GUI inside a virtualenv:
+
+.. code-block:: console
+
+    $ cd w3af
+    $ sudo apt-get install python-gtksourceview2 python-gtk2
+    $ virtualenv --system-site-packages venv
+    $ . venv/bin/activate
+    (venv)$ ./w3af_gui
+    (venv)$ . /tmp/w3af_dependency_install.sh
+
+Or,
+
+.. code-block:: console
+
+    $ cd w3af
+    $ sudo apt-get install python-gtksourceview2 python-gtk2
+    $ virtualenv venv
+    $ mkdir -p venv/lib/python2.7/dist-packages/
+    $ cd venv/lib/python2.7/dist-packages/
+    $ ln -s /usr/lib/python2.7/dist-packages/glib/ glib
+    $ ln -s /usr/lib/python2.7/dist-packages/gobject/ gobject
+    $ ln -s /usr/lib/python2.7/dist-packages/gtk-2.0* gtk-2.0
+    $ ln -s /usr/lib/python2.7/dist-packages/pygtk.pth pygtk.pth
+    $ ln -s /usr/lib/python2.7/dist-packages/cairo cairo
+    $ cd -
+    $ . venv/bin/activate
+    (venv)$ ./w3af_gui
+    (venv)$ . /tmp/w3af_dependency_install.sh
+
 
 Each time you want to run ``w3af`` in a new console you'll have to activate the virtualenv:
 
