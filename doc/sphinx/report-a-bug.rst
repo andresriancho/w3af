@@ -9,10 +9,20 @@ Good bug reporting practices
 If you're using **the latest version of the framework** and find a bug, please `report it <https://github.com/andresriancho/w3af/issues/new>`_ including the following information:
 
  * Detailed steps to reproduce it
- * Python traceback
- * Operating system
+ * Expected and obtained output
+ * Python traceback (if exists)
  * Output of the ``./w3af_console --version`` command
  * Log file with verbose set to ``True`` (see below)
+
+When reporting installation bugs and issues that might relate to your environment, it is a good idea to include `detailed system information <https://gist.githubusercontent.com/andresriancho/9873639/raw/adaff04e2ffe95dfd0b0069a294297107249f7b3/collect-sysinfo.py>`_.
+
+.. code-block:: none
+
+	user@box:~/w3af$ wget https://gist.githubusercontent.com/andresriancho/9873639/raw/adaff04e2ffe95dfd0b0069a294297107249f7b3/collect-sysinfo.py
+	user@box:~/w3af$ chmod +x collect-sysinfo.py
+	user@box:~/w3af$ ./collect-sysinfo.py
+
+This will generate a file called ``/tmp/w3af-sysinfo.txt`` which you may include in your bug report.
 
 Making sure you're on the latest version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
