@@ -52,8 +52,6 @@ class profilesMenu(menu):
             self._cmd_help(['use'])
         else:
             profile = params[0]
-            if profile not in self._profiles:
-                raise BaseFrameworkException('Unknown profile name: "%s"' % profile)
 
             try:
                 workdir = params[1]
