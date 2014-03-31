@@ -21,27 +21,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import print_function
 
 import base64
 import sys
 import getopt
-try:
-    import core.controllers.outputManager as om
-except:
-    class om:
-        class out:
-            def information( str ):
-                print '\r' + str
-            information = staticmethod(information)
 
 def usage():
-    om.out.information('w3af - base64 decoder')
-    om.out.information('')
-    om.out.information('Options:')
-    om.out.information('    -h  Print this help message.')
-    om.out.information('    -d  String to be decoded.')
-    om.out.information('')
-    om.out.information('Example: base64decode -d dzNhZiBpcyBncmVhdA==')
+    print('w3af - base64 decoder')
+    print('')
+    print('Options:')
+    print('    -h  Print this help message.')
+    print('    -d  String to be decoded.')
+    print('')
+    print('Example: base64decode -d dzNhZiBpcyBncmVhdA==')
     
 def main():
     
@@ -64,11 +57,11 @@ def main():
             sys.exit()
     else:
         try:
-            om.out.information( base64.b64decode( decode) )
+            print( base64.b64decode( decode) )
         except:
-            om.out.information( 'Could not decode string.' )
+            print( 'Could not decode string.' )
 
         
 if __name__ == "__main__":
-  main()
+    main()
   

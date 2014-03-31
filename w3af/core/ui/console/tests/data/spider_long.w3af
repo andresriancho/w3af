@@ -1,0 +1,21 @@
+# webspider
+
+plugins
+output console
+output config console
+set verbose False
+back
+
+crawl web_spider
+crawl config web_spider
+set only_forward True
+back
+back
+
+target
+set target %(moth)s
+back
+
+start
+
+exit

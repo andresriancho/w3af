@@ -1,0 +1,64 @@
+# Mail
+Exim,Debian-exim
+Fetchmail,fetchmail
+Sendmail,smmsp
+Exim,eximuser
+
+# Security
+Snort,snort
+TOR (The Onion Router),debian-tor
+Privoxy (generally installed with TOR),privoxy
+logwatch,logwatch
+Email filtering application using sendmail's milter interface,defang
+OpenVPN Daemon,openvpn
+Nagios,nagios
+ntop,ntop
+Big Sister is a network and system monitor,bigsis
+Packet Fence (not the openbsd pf),pf
+A port scan detection tool,iplog
+A tool to detect and log TCP port scans,scanlogd
+
+# X and related stuff
+Gnome,gdm
+Gnats Bug-Reporting System (admin),gnats
+X Font server,xfs
+
+# Clients
+NTP Time Synchronization Client,_ntp
+NTP Time Synchronization Client,ntp
+
+# Common services
+Apache web server,www-data
+Apache web server,apache
+SSH,sshd
+Bind,named
+MySQL,mysql
+PostgreSQL,postgres
+FreeRadius,radiusd
+IRCD-Hybrid is an Internet Relay Chat server,ircd
+
+# Strange services
+heartbeat subsystem for High-Availability Linux,hacluster
+Tinysnmp,tinysnmp
+TinyDNS,tinydns
+Plone,plone
+Rbldnsd is a small authoritate-only DNS nameserver,rbldns
+
+Zope: the open source web application server,zope
+LDAPdns,ldapdns
+dnsbl,dnsbl
+pwhois,pwhois
+Interchange web application platform,interch
+A DHCP relay agent,dhcp-fwd
+Extensible Web Application server written in Tcl,tclhttpd
+A simple personal server for the WorldForge project,cyphesis
+LDAP Update Monitor,lum
+
+# Web apps
+OpenCM,opencm
+The Open Ticket Request System,otrs
+
+# Anti virus
+Openfire,jive
+Kapersky antivirus SMTP Gateway,kavuser
+AMaViS A mail virus scanner,amavis

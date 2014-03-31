@@ -1,0 +1,82 @@
+#
+#   This file is used to configure the continuous integration for w3af
+#   see http://w3af.org/how-w3af-uses-continuous-integration-to-improve
+#
+#   As a user you don't need to understand this file.
+#
+
+dependencies:
+  cache_directories:
+    - "xpresser"
+    - "django-moth"
+    - "wivet-svn"
+    - "pico-wavsep"
+    - "sqlmap-testenv"
+  pre:
+    # Install the core/console dependencies
+    - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh
+
+    # Install GUI dependencies
+    - w3af/core/controllers/ci/install_scripts/install_gui_dependencies.sh
+    
+    # Install the test dependencies
+    - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
+
+    # Install and run wivet in the background
+    - w3af/core/controllers/ci/install_scripts/install_wivet.sh
+    - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
+        background: true
+
+    # Install and run sqlmap's testenv in the background
+    - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
+    - php -S localhost:8998 -t .:
+        background: true
+        pwd: sqlmap-testenv
+
+    # Install and run wavsep in the background
+    - w3af/core/controllers/ci/install_scripts/install_wavsep.sh
+    - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
+        background: true
+        pwd: pico-wavsep
+
+    # Wait for the daemon to be available to run the tests
+    - w3af/core/controllers/ci/wait_for_moth.py
+
+machine:
+  python:
+    version: 2.7.3
+
+  # This is required to run WIVET
+  php:
+    version: 5.5.3
+
+  java:
+    version: oraclejdk7
+
+  post:
+    # This was required to avoid issues with different builds of python being
+    # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
+    # and the python which was put inside my virtualenv
+    - pyenv global system
+    
+    # And we want to start the django-moth server
+    # https://circleci.com/docs/background-process
+    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
+    
+test:
+  pre:
+    # Since the auto_update feature needs the git repository history, we run
+    # this command which will retrieve it (since CircleCI doesn't for perf).
+    # In our case it is fine, and it will get cached.
+    - if [[ -e .git/shallow ]]; then git fetch --unshallow; fi
+
+  override:
+    - w3af/core/controllers/ci/nosetests_wrapper/main.py:
+        timeout: 360
+        
+    - w3af/core/controllers/ci/teardown_moth.py
+
+# https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
+#  post:
+#    - coverage combine
+#    - coveralls

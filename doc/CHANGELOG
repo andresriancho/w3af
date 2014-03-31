@@ -1,3 +1,12 @@
+(31 Mar 2014)    Version 1.6
+============================
+Github tag: https://github.com/andresriancho/w3af/tree/1.6
+Github milestone: https://github.com/andresriancho/w3af/issues?milestone=7
+
+* The core and plugins now use the producer/consumer model: Faster scans.
+* "import w3af": Easily embed w3af in other python tools
+* Running +1300 unittests on each push to the repository: Stability
+
 (10 Nov 2011)    1.1
 ====================
 
