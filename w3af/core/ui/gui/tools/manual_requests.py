@@ -105,8 +105,7 @@ class ManualRequests(entries.RememberingWindow):
 
         # threading game
         event = threading.Event()
-        print repr(tsup)
-        print repr(tlow)
+
         impact = ThreadedURLImpact(self.w3af, tsup, tlow, event,
                                    fix_content_len)
 
