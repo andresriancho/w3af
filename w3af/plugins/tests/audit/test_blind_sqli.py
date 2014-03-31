@@ -75,6 +75,23 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals("stringsingle", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
 
+    def test_found_exploit_blind_sqli_form(self):
+        # Run the scan
+        target = get_moth_http('/audit/blind_sqli/blind_where_integer_form.py')
+        cfg = self._run_configs['cfg']
+        self._scan(target, cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('blind_sqli', 'blind_sqli')
+
+        self.assertEquals(1, len(vulns))
+        vuln = vulns[0]
+
+        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('text', vuln.get_mutant().get_var())
+        self.assertEquals('blind_where_integer_form.py',
+                          vuln.get_url().get_file_name())
+
     @attr('ci_fails')
     def test_single_quote_random(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php'
