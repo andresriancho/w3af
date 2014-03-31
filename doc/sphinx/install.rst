@@ -54,6 +54,7 @@ Installation in Kali
 .. code-block:: console
 
     cd ~
+    apt-get update
     apt-get install -y python-pip
     pip install --upgrade pip
     git clone https://github.com/andresriancho/w3af.git
