@@ -39,7 +39,7 @@ class TestGitUtils(unittest.TestCase):
     def test_get_latest_commit(self):
         latest_commit = get_latest_commit()
         
-        self.assertEqual(len(latest_commit), 40)git co
+        self.assertEqual(len(latest_commit), 40)
         self.assertIsInstance(latest_commit, basestring)
         
     def test_get_latest_commit_negative(self):
