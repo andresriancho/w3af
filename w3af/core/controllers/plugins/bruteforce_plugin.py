@@ -37,7 +37,9 @@ from w3af.core.data.options.option_list import OptionList
 
 class BruteforcePlugin(AuditPlugin):
     """
-    This plugin is a superclass for plugins that want to bruteforce any type of login.
+    This plugin is a superclass for plugins that want to bruteforce any type of
+    login.
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
