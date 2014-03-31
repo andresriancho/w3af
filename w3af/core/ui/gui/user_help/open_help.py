@@ -47,8 +47,9 @@ def open_help(chapter=''):
     :param chapter: the chapter of the help, optional.
     """
     current_branch = get_current_branch()
-    if current_branch is DETACHED_HEAD:
-        current_branch = 'master'
+
+    if current_branch in (DETACHED_HEAD, 'master'):
+        current_branch = 'latest'
 
     help_url = DOC_ROOT_FMT % current_branch
 
