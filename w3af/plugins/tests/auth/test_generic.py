@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -28,32 +29,28 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 class TestGeneric(PluginTest):
 
-    base_url = 'http://moth/w3af/auth/generic/'
+    base_url = get_moth_http('/auth/auth_1/')
     demo_testfire = 'http://demo.testfire.net/bank/'
 
     _run_config = {
         'target': base_url,
         'plugins': {
-        'crawl': (
-        PluginConfig('web_spider',
-                     ('only_forward', True, PluginConfig.BOOL),
-                     (
-        'ignore_regex', '.*logout.*', PluginConfig.STR)),
-
-        ),
+            'crawl': (PluginConfig('web_spider',
+                        ('only_forward', True, PluginConfig.BOOL),
+                        ('ignore_regex', '.*logout.*', PluginConfig.STR)),),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('generic',
-                                 ('username', 'admin', PluginConfig.STR),
-                                 ('password', 'admin', PluginConfig.STR),
+                                 ('username', 'user@mail.com', PluginConfig.STR),
+                                 ('password', 'passw0rd', PluginConfig.STR),
                                  ('username_field',
                                   'username', PluginConfig.STR),
                                  ('password_field',
                                   'password', PluginConfig.STR),
                                  ('auth_url', URL(base_url +
-                                  'auth.php'), PluginConfig.URL),
+                                  'login_form.py'), PluginConfig.URL),
                                  ('check_url', URL(base_url +
-                                  'home.php'), PluginConfig.URL),
-                                 ('check_string', '<title>Home page</title>',
+                                  'post_auth_xss.py'), PluginConfig.URL),
+                                 ('check_string', 'read your input',
                                   PluginConfig.STR),
                                   ),
                          ),
@@ -89,7 +86,6 @@ class TestGeneric(PluginTest):
     }
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -100,7 +96,9 @@ class TestGeneric(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(),
                           'Cross site scripting vulnerability')
-        self.assertEquals(vuln.get_var(), 'section')
+        self.assertEquals(vuln.get_var(), 'text')
+        self.assertEquals(vuln.get_url().get_path(),
+                          '/auth/auth_1/post_auth_xss.py')
 
     @attr('internet')
     @attr('ci_fails')
