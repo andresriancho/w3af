@@ -38,7 +38,9 @@ class TestSQLMapUpdate(unittest.TestCase):
                           "git commit -m 'Merging sqlmap into our subdirectory'")
         setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
         
-        maintain_commands = ('git pull -s subtree sqlmap master',)
+        maintain_commands = ('git pull -s subtree --squash sqlmap master',
+                             'git commit w3af',
+                             'git push')
         maintain_str = ''.join(['    %s\n' % mcmd for mcmd in maintain_commands])
         
         msg = ('\nYou need to update the sqlmap installation that\'s embedded with'
