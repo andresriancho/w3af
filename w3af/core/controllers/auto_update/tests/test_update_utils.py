@@ -23,7 +23,8 @@ import subprocess
 
 import git
 
-from w3af.core.controllers.auto_update.utils import (is_git_repo, get_latest_commit,
+from w3af.core.controllers.auto_update.utils import (is_git_repo,
+                                                     get_latest_commit,
                                                      get_current_branch)
 
 
@@ -38,7 +39,7 @@ class TestGitUtils(unittest.TestCase):
     def test_get_latest_commit(self):
         latest_commit = get_latest_commit()
         
-        self.assertEqual(len(latest_commit), 40)
+        self.assertEqual(len(latest_commit), 40)git co
         self.assertIsInstance(latest_commit, basestring)
         
     def test_get_latest_commit_negative(self):
