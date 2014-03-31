@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys
 import subprocess
+import tempfile
 
 from nose.plugins.attrib import attr
 
@@ -72,13 +73,32 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected)
         self.assertTrue(assert_result, msg)
 
+    def test_load_profile_by_filepath(self):
+        tmp_profile = tempfile.NamedTemporaryFile(suffix='.pw3af')
+        commands_to_run = ['profiles',
+                           'help',
+                           'use ' + tmp_profile.name,
+                           'exit']
+
+        expected = (
+            'The plugins configured by the scan profile have been enabled',
+            'Please set the target URL',
+            ' | Use a profile.')
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        assert_result, msg = self.all_expected_substring_in_output(expected)
+        self.assertTrue(assert_result, msg)
+
+
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
                            'help',
                            'use do_not_exist',
                            'exit']
 
-        expected = ('Unknown profile name: "do_not_exist"',)
+        expected = ('The profile "do_not_exist.pw3af" wasn\'t found.',)
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
