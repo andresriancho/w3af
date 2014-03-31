@@ -35,22 +35,11 @@ According to Kali's documentation [0] in order to avoid breaking the packaged\
 
 cd ~
 apt-get install -y python-pip
-pip install virtualenv
-mkdir w3af-latest
-cd w3af-latest
-virtualenv venv
-. venv/bin/activate
+pip install --upgrade pip
 git clone --depth 1 https://github.com/andresriancho/w3af.git
 cd w3af
 ./w3af_console
 . /tmp/w3af_dependency_install.sh
-
-This will generate a new virtual environment which won't affect any system-wide\
- installed packages, and allows you to use the latest w3af version.
-
-Reminder: Make sure you activate your virtualenv before running w3af_console,\
- in other words, each time you open a new console where you want to run w3af\
- you'll have to run ". venv/bin/activate" before the framework.
 
 [0] http://www.kali.org/kali-monday/bleeding-edge-kali-repositories/
 '''
