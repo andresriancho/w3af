@@ -10,6 +10,7 @@ Bleeding edge vs. stable
 ------------------------
 
 We develop ``w3af`` using ``git flow``, this means that we'll always have at least two branches in our repository:
+
  * ``master``: The branch where our latest stable code lives. We take it very seriously to make sure all unittests ``PASS`` in this branch.
  * ``develop``: The branch where new features are merged and tested. Not as stable as ``master`` but we try to keep this one working too.
 
