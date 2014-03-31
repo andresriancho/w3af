@@ -56,6 +56,7 @@ Contents
    :maxdepth: 2
 
    install
+   advanced-install
    update
 
    phases
