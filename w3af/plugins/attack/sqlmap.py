@@ -90,10 +90,12 @@ class sqlmap(AttackPlugin):
         """
         uri = vuln_obj.get_uri()
         dc = vuln_obj.get_dc()
+
+        m = vuln_obj.get_mutant()
+        orig_value = m.get_original_value()
         
-        orig_value = vuln_obj.get_mutant().get_original_value()
-        dc[vuln_obj.get_var()] = orig_value
-        
+        dc[vuln_obj.get_var()][m.get_var_index()] = orig_value
+
         post_data = None
         if isinstance(dc, Form):
             post_data = str(dc) or None
