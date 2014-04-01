@@ -36,7 +36,7 @@ According to Kali's documentation [0] in order to avoid breaking the packaged\
 cd ~
 apt-get install -y python-pip
 pip install --upgrade pip
-git clone  1 https/github.com/andresriancho/w3af.git
+git clone https/github.com/andresriancho/w3af.git
 cd w3af
 ./w3af_console
 . /tmp/w3af_dependency_install.sh
