@@ -129,4 +129,8 @@ class halberd(InfrastructurePlugin):
         """
         return """
         This plugin tries to find if an HTTP Load balancer is present.
+
+        One important thing to notice is that halberd connects directly to the
+        remote web server, without using the framework's HTTP configurations
+        (like proxy or authentication).
         """

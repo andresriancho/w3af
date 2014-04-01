@@ -75,11 +75,11 @@ class hmap(InfrastructurePlugin):
             results = originalHmap.testServer(ssl, server, port, 1,
                                               self._gen_fp)
         except BaseFrameworkException, w3:
-            msg = 'A BaseFrameworkException occurred while running hmap: "%s"' % w3
-            om.out.error(msg)
+            msg = 'A BaseFrameworkException occurred while running hmap: "%s"'
+            om.out.error(msg % w3)
         except Exception, e:
-            msg = 'An unhandled exception occurred while running hmap: "%s"' % e
-            om.out.error(msg)
+            msg = 'An unhandled exception occurred while running hmap: "%s"'
+            om.out.error(msg % e)
         else:
             #
             #   Found any results?
@@ -165,6 +165,6 @@ class hmap(InfrastructurePlugin):
         to the framework.
 
         One important thing to notice is that hmap connects directly to the
-        remote web server, without using the framework HTTP configurations (like
-        proxy or authentication).
+        remote web server, without using the framework's HTTP configurations
+        (like proxy or authentication).
         """
