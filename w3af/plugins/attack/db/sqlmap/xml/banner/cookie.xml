@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     References:
+     * http://www.http-stats.com/Set-Cookie2
+     * http://www.owasp.org/index.php/Category:OWASP_Cookies_Database
+-->
+
+<root>
+    <regexp value="ASPSESSIONID">
+        <info technology="ASP" type="Windows"/>
+    </regexp>
+
+    <regexp value="ASP\.NET_SessionId">
+        <info technology="ASP.NET" type="Windows"/>
+    </regexp>
+
+    <regexp value="JSESSIONID">
+        <info technology="JSP"/>
+    </regexp>
+
+    <regexp value="PHPSESSION">
+        <info technology="PHP"/>
+    </regexp>
+
+    <regexp value="Apache">
+        <info technology="Apache"/>
+    </regexp>
+
+    <regexp value="JServSessionId">
+        <info technology="Apache|JSP"/>
+    </regexp>
+
+    <regexp value="CFID|CFTOKEN|CFMAGIC">
+        <info technology="ColdFusion"/>
+    </regexp>
+</root>
