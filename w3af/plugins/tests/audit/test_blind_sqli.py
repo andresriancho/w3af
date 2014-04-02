@@ -45,8 +45,7 @@ class TestBlindSQLI(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals(
-            "Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals("numeric", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
@@ -90,6 +89,23 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
         self.assertEquals('text', vuln.get_mutant().get_var())
         self.assertEquals('blind_where_integer_form.py',
+                          vuln.get_url().get_file_name())
+
+    def test_found_exploit_blind_sqli_form_GET(self):
+        # Run the scan
+        target = get_moth_http('/audit/blind_sqli/blind_where_integer_form_get.py')
+        cfg = self._run_configs['cfg']
+        self._scan(target, cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('blind_sqli', 'blind_sqli')
+
+        self.assertEquals(1, len(vulns))
+        vuln = vulns[0]
+
+        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('q', vuln.get_mutant().get_var())
+        self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
 
     @attr('ci_fails')

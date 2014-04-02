@@ -27,11 +27,11 @@ from multiprocessing.dummy import Process
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.data.dc.form import Form
 from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
+from w3af.core.data.kb.read_shell import ReadShell
+from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -90,17 +90,18 @@ class sqlmap(AttackPlugin):
         """
         uri = vuln_obj.get_uri()
         dc = vuln_obj.get_dc()
+        fuzzable_request = vuln_obj.get_mutant().get_fuzzable_req()
 
         m = vuln_obj.get_mutant()
         orig_value = m.get_original_value()
-        
+
         dc[vuln_obj.get_var()][m.get_var_index()] = orig_value
 
         post_data = None
-        if isinstance(dc, Form):
-            post_data = str(dc) or None
-        else:
+        if isinstance(fuzzable_request, HTTPQSRequest):
             uri.set_querystring(dc)
+        else:
+            post_data = str(dc) or None
         
         target = Target(uri, post_data)
         
