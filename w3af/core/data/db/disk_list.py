@@ -149,7 +149,7 @@ class DiskList(object):
         # TODO: How do I make the __iter__ thread safe?
         # How do I avoid loading all items in memory?
         objects = []
-        results = self.db.select('SELECT pickle FROM %s' %  self.table_name)
+        results = self.db.select('SELECT pickle FROM %s' % self.table_name)
         
         for r in results:
             obj = cPickle.loads(r[0])
