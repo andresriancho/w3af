@@ -129,8 +129,9 @@ class file_upload(AttackPlugin):
         :return: Name of the file that was created.
         """
         # Get content
-        file_content, real_extension = shell_handler.get_webshells(extension,
-                                                                   force_extension=True)[0]
+        ws = shell_handler.get_webshells(extension, force_extension=True)[0]
+        file_content, real_extension = ws
+
         if extension == '':
             extension = real_extension
 
