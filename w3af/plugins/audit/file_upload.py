@@ -103,8 +103,8 @@ class file_upload(AuditPlugin):
                 content = file(
                     os.path.join(self.TEMPLATE_DIR, template_filename)).read()
             else:
-                # Since I don't have a template for this file extension, I'll simply
-                # put some random alnum inside the file
+                # Since I don't have a template for this file extension, I'll
+                # simply put some random alnum inside the file
                 content = rand_alnum(64)
 
             # Write content to target
@@ -164,8 +164,8 @@ class file_upload(AuditPlugin):
             # find all directories; which will make the current plugin run with
             # less information.
 
-            url_generator = self._generate_urls(
-                domain_path_list, mutant.uploaded_file_name)
+            url_generator = self._generate_urls(domain_path_list,
+                                                mutant.uploaded_file_name)
             mutant_repeater = repeat(mutant)
             http_response_repeater = repeat(mutant_response)
             args = izip(url_generator, mutant_repeater, http_response_repeater)
