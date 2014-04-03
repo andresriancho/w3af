@@ -161,7 +161,8 @@ class form_auth(BruteforcePlugin):
 
         return login_failed_result_list
 
-    def _matches_failed_login(self, resp_body, login_failed_result_list):
+    @staticmethod
+    def _matches_failed_login(resp_body, login_failed_result_list):
         """
         :return: True if the resp_body matches the previously created
                  responses that are stored in login_failed_result_list.
@@ -173,7 +174,8 @@ class form_auth(BruteforcePlugin):
             # I'm happy! The response_body *IS NOT* a failed login page.
             return False
 
-    def _is_login_form(self, freq):
+    @staticmethod
+    def _is_login_form(freq):
         """
         :return: True if this FuzzableRequest is a loginForm.
         """
@@ -212,7 +214,8 @@ class form_auth(BruteforcePlugin):
                     freq.get_url() + ' is a password change form.')
             return False
 
-    def _get_login_field_names(self, freq):
+    @staticmethod
+    def _get_login_field_names(freq):
         """
         :return: The names of the form fields where to input the user and the
             password. Please remember that maybe user_parameter might be None,
@@ -232,7 +235,8 @@ class form_auth(BruteforcePlugin):
 
         return user_parameter, passwd_parameter
 
-    def _true_extra_fields(self, data_container, user_field, passwd_field):
+    @staticmethod
+    def _true_extra_fields(data_container, user_field, passwd_field):
         """
         Some login forms have "extra" parameters. In some cases I've seen
         login forms that have an "I agree with the terms and conditions"
