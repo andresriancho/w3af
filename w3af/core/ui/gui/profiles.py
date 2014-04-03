@@ -211,6 +211,7 @@ class ProfileList(gtk.TreeView):
         path = self.get_cursor()[0]
         if not path:
             return
+
         row = self.liststore[path]
         row[3] = changed
         if changed:
@@ -246,7 +247,9 @@ class ProfileList(gtk.TreeView):
         path = self.get_cursor()[0]
         if not path:
             return
+
         row = self.liststore[path]
+
         if row[3]:
             # The profile is changed
             if event.button != 1:
@@ -260,9 +263,9 @@ class ProfileList(gtk.TreeView):
             stayhere = dlg.run() != gtk.RESPONSE_YES
             dlg.destroy()
             if not stayhere:
-                # even if it's modified, we're leaving it: when we come back, the previous
-                # configuration will be loaded... so here we just unbold it and set it as
-                # not modified
+                # even if it's modified, we're leaving it: when we come back,
+                # the previous configuration will be loaded... so here we just
+                # unbold it and set it as not modified
                 row[0] = row[4]
                 row[3] = False
                 self.w3af.mainwin.sb(
@@ -283,7 +286,9 @@ class ProfileList(gtk.TreeView):
         path = self.get_cursor()[0]
         if not path:
             return
+
         row = self.liststore[path]
+
         posic = self.get_path_at_pos(int(event.x), int(event.y))
         if posic is None:
             return
@@ -492,7 +497,13 @@ class ProfileList(gtk.TreeView):
         if opt == gtk.RESPONSE_YES:
             self.selectedProfile = -1
             path = self.get_cursor()[0]
+
+            if not path:
+                # https://github.com/andresriancho/w3af/issues/1886
+                return
+
             row = self.liststore[path]
+
             row[0] = row[4]
             row[3] = False
             self._use_profile()
