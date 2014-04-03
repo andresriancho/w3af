@@ -33,12 +33,11 @@ class x_forwarded_for(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
         
-        """
-        random.seed(..) is used to generate the same IP addresses in every scan
-        otherwise the plugin could generate false negatives
-        (scan #1 finds bug because of some specific IP it's sent in the header; 
-        and then scan #2 doesn't send the same IP and the bug is not found).
-        """
+        # random.seed(..) is used to generate the same IP addresses in every
+        # scan otherwise the plugin could generate false negatives
+        # (scan #1 finds bug because of some specific IP it's sent in the
+        # header; and then scan #2 doesn't send the same IP and the bug is not
+        # found).
         self.random = random.Random()
         self.random.seed(42)
         
@@ -56,10 +55,12 @@ class x_forwarded_for(EvasionPlugin):
             ret_ip += '%d.'%(self.random.randint(1, 254))
         return ret_ip[:-1]
         
-    def get_priority(self):
+    @staticmethod
+    def get_priority():
         return 86
     
-    def get_long_desc(self):
+    @staticmethod
+    def get_long_desc():
         return """
         This plugin adds an X-Forwarded-For header to every request (except when
         it already has one). It generates a new random IP for every request.

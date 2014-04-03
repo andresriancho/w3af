@@ -33,9 +33,6 @@ class EvasionPlugin(Plugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        Plugin.__init__(self)
-
     def modify_request(self, request):
         """
         This method mangles the request in order to evade simple IDSs.

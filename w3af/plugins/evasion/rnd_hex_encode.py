@@ -32,9 +32,6 @@ class rnd_hex_encode(EvasionPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -68,7 +65,8 @@ class rnd_hex_encode(EvasionPlugin):
 
         return new_req
 
-    def _mutate(self, data):
+    @staticmethod
+    def _mutate(data):
         """
         Replace some strings by it's hex encoded value.
 
@@ -82,7 +80,8 @@ class rnd_hex_encode(EvasionPlugin):
             new_data += char
         return new_data
 
-    def get_priority(self):
+    @staticmethod
+    def get_priority():
         """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -91,7 +90,8 @@ class rnd_hex_encode(EvasionPlugin):
         """
         return 50
 
-    def get_long_desc(self):
+    @staticmethod
+    def get_long_desc():
         """
         :return: A DETAILED description of the plugin functions and features.
         """

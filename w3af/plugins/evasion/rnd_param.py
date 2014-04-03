@@ -32,8 +32,6 @@ class rnd_param(EvasionPlugin):
     Add a random parameter.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self):
-        EvasionPlugin.__init__(self)
 
     def modify_request(self, request):
         """
@@ -68,7 +66,8 @@ class rnd_param(EvasionPlugin):
 
         return new_req
 
-    def _mutate(self, data):
+    @staticmethod
+    def _mutate(data):
         """
         Add a random parameter.
 
@@ -80,7 +79,8 @@ class rnd_param(EvasionPlugin):
         data[key] = value
         return data
 
-    def get_priority(self):
+    @staticmethod
+    def get_priority():
         """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -89,7 +89,8 @@ class rnd_param(EvasionPlugin):
         """
         return 50
 
-    def get_long_desc(self):
+    @staticmethod
+    def get_long_desc():
         """
         :return: A DETAILED description of the plugin functions and features.
         """

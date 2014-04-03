@@ -32,10 +32,7 @@ class rnd_path(EvasionPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
-    def modify_request(self, request):
+    def modify_request(request):
         """
         Mangles the request
 
@@ -59,7 +56,8 @@ class rnd_path(EvasionPlugin):
 
         return new_req
 
-    def get_priority(self):
+    @staticmethod
+    def get_priority():
         """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -68,7 +66,8 @@ class rnd_path(EvasionPlugin):
         """
         return 0
 
-    def get_long_desc(self):
+    @staticmethod
+    def get_long_desc():
         """
         :return: A DETAILED description of the plugin functions and features.
         """
