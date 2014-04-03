@@ -186,6 +186,14 @@ class Plugin(Configurable):
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
         """
+        # You can use this code to debug issues that happen in threads, by
+        # simply not using them:
+        #
+        # for i in iterable:
+        #    callback(i, func(i))
+        # return
+        #
+        # Now the real code:
         func = return_args(func, **kwds)
         imap_unordered = self.worker_pool.imap_unordered
 
