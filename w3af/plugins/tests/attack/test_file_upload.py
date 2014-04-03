@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
+from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.core.data.kb.vuln_templates.file_upload_template import FileUploadTemplate
 
 
 class TestFileUploadShell(ExecExploitTest):
 
-    file_upload_url = 'http://moth/w3af/audit/file_upload/'
+    file_upload_url = get_php_moth_http('/audit/file_upload/')
 
     _run_configs = {
         'cfg': {
@@ -40,7 +40,6 @@ class TestFileUploadShell(ExecExploitTest):
             }, }
     }
 
-    @attr('ci_fails')
     def test_found_exploit_file_upload(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -57,15 +56,16 @@ class TestFileUploadShell(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
 
-    @attr('ci_fails')
     def test_from_template(self):
         fut = FileUploadTemplate()
-        
+
+        base_url = get_php_moth_http('/audit/file_upload/')
+
         options = fut.get_options()
-        options['url'].set_value('http://moth/w3af/audit/file_upload/uploader.php')
+        options['url'].set_value(base_url + 'uploader.php')
         options['data'].set_value('uploadedfile=&MAX_FILE_SIZE=10000000')
         options['file_vars'].set_value('uploadedfile')
-        options['file_dest'].set_value('http://moth/w3af/audit/file_upload/uploads/')
+        options['file_dest'].set_value(base_url + '/uploads/')
         options['vulnerable_parameter'].set_value('uploadedfile')
         fut.set_options(options)
 
@@ -74,4 +74,3 @@ class TestFileUploadShell(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         
         self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
-        
