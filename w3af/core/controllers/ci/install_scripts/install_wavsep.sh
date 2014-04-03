@@ -8,6 +8,7 @@ fi
 cd pico-wavsep/
 git pull
 git checkout master
+git log -n 1
 
 # Let the rest of the world know where we'll listen
 echo 'localhost:8098' > /tmp/wavsep.txt
