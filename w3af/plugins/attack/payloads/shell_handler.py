@@ -40,7 +40,7 @@ def get_webshells(extension, force_extension=False):
     the extension, or based on the x-powered-by header.
 
     Plugins calling this function, should depend on "infrastructure.server_header"
-    if they want to use the complete power if this function.
+    if they want to use the complete power of this function.
     """
     return _get_file_list('webshell', extension, force_extension)
 
@@ -111,7 +111,7 @@ def _get_file_list(type_of_list, extension, force_extension=False):
     known_framework = []
     uncertain_framework = []
     
-    path = os.path.join(ROOT_PATH, 'plugins', 'attack' , 'payloads', type_of_list)
+    path = os.path.join(ROOT_PATH, 'plugins', 'attack', 'payloads', type_of_list)
     path += os.path.sep
     
     if force_extension:
@@ -119,12 +119,12 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         real_extension = extension
         known_framework.append((filename, real_extension))
     else:
-        powered_by_header_list = kb.kb.raw_read('server_header', 'powered_by_string')
-        filename = ''
+        powered_by_header_list = kb.kb.raw_read('server_header',
+                                                'powered_by_string')
 
         file_list = [x for x in os.listdir(path) if x.startswith(type_of_list)]
-        
         file_name = '%s.%s' % (type_of_list, extension)
+
         if file_name in file_list: 
             file_list.remove(file_name)
             file_list.insert(0, file_name)
@@ -150,8 +150,8 @@ def _get_file_list(type_of_list, extension, force_extension=False):
             # (this happens in dav)
             uncertain_framework.append((filename, real_extension))
 
-    # We keep the order, first the ones we think could work, then the ones that may
-    # work but... are just a long shot.
+    # We keep the order, first the ones we think could work, then the ones that
+    # may work but... are just a long shot.
     known_framework.extend(uncertain_framework)
     
     res = []
@@ -159,7 +159,8 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         try:
             cmd_file = open(filename)
         except:
-            raise BaseFrameworkException('Failed to open filename: ' + filename)
+            msg = 'Failed to open filename: "%s"'
+            raise BaseFrameworkException(msg % filename)
         else:
             file_content = cmd_file.read()
             cmd_file.close()

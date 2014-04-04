@@ -24,6 +24,7 @@ import unittest
 import urllib2
 import httpretty
 import tempfile
+import pprint
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
@@ -192,8 +193,16 @@ class PluginTest(unittest.TestCase):
         #
         if assert_exceptions:
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-            msg = [e.get_summary() for e in caught_exceptions]
+            msg = self._pprint_exception_summary(caught_exceptions)
             self.assertEqual(len(caught_exceptions), 0, msg)
+
+    def _pprint_exception_summary(self, caught_exceptions):
+        """
+        Given a list of caught exceptions, as returned by
+        exception_handler.get_all_exceptions() , we'll return a string that
+        shows the information about them.
+        """
+        return [e for e in caught_exceptions]
 
     def _configure_debug(self):
         """

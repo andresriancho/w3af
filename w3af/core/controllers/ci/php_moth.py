@@ -1,7 +1,7 @@
 """
-wivet.py
+php_moth.py
 
-Copyright 2013 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -20,15 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 
-HTTP_WIVET = '/tmp/wivet.txt'
-DEFAULT_WIVET = 'wivet-fallback:80'
+HTTP_PHP_MOTH = '/tmp/php_moth.txt'
+DEFAULT_PHP_MOTH = 'php_moth-fallback:80'
 
 
-def get_wivet_http(path='/'):
+def get_php_moth_http(path='/'):
     try:
-        wivet_netloc = file(HTTP_WIVET).read().strip()
+        php_moth_netloc = file(HTTP_PHP_MOTH).read().strip()
     except IOError:
-        wivet_netloc = DEFAULT_WIVET
+        php_moth_netloc = DEFAULT_PHP_MOTH
 
-    return 'http://%s%s' % (wivet_netloc, path)
+    return 'http://%s%s' % (php_moth_netloc, path)
+
 
