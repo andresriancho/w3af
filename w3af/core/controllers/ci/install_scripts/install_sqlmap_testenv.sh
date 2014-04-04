@@ -11,7 +11,7 @@ mysql -u ubuntu < w3af/core/controllers/ci/helpers/set_root_password.sql
 cd sqlmap-testenv/
 git pull
 git checkout master
-git log -n 1
+#git log -n 1
 
 # Create the DB, using the new password
 mysql -u root -ptestpass < schema/mysql.sql
