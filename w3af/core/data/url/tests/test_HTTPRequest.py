@@ -76,4 +76,4 @@ class TestHTTPRequest(unittest.TestCase):
         headers = Headers([('Hola', 'Múndo')])
         req = HTTPRequest(u, headers=headers)
         
-        self.assertEqual(req.dump(), expected)
+        self.assertEqual(req.dump(), expected.encode('utf-8'))
