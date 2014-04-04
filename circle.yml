@@ -12,6 +12,7 @@ dependencies:
     - "wivet-svn"
     - "pico-wavsep"
     - "sqlmap-testenv"
+    - "php-moth"
   pre:
     # Install the core/console dependencies
     - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh
