@@ -48,6 +48,8 @@ class file_upload(AuditPlugin):
 
     TEMPLATE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'constants',
                                 'file_templates')
+    UPLOAD_PATHS = ['uploads', 'upload', 'file', 'user', 'files', 'downloads',
+                    'download', 'up', 'down']
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -61,7 +63,7 @@ class file_upload(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        if freq.get_method().upper() == 'POST' and len(freq.get_file_vars()) != 0:
+        if freq.get_method().upper() == 'POST' and len(freq.get_file_vars()):
 
             for file_parameter in freq.get_file_vars():
                 fileh_filen_list = self._create_files()
@@ -78,7 +80,7 @@ class file_upload(AuditPlugin):
                                               mutants,
                                               self._analyze_result)
 
-            self._remove_files(fileh_filen_list)
+                self._remove_files(fileh_filen_list)
 
     def _create_files(self):
         """
@@ -152,26 +154,25 @@ class file_upload(AuditPlugin):
         In this case, check if the file was uploaded to any of the known
         directories, or one of the "default" ones like "upload" or "files".
         """
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            # Gen expr for directories where I can search for the uploaded file
-            domain_path_list = set(u.get_domain_path() for u in
-                                   kb.kb.get_all_known_urls())
+        # Gen expr for directories where I can search for the uploaded file
+        domain_path_list = set(u.get_domain_path() for u in
+                               kb.kb.get_all_known_urls())
 
-            # FIXME: Note that in all cases where I'm using kb's url_object info
-            # I'll be making a mistake if the audit plugin is run before all
-            # crawl plugins haven't run yet, since I'm not letting them
-            # find all directories; which will make the current plugin run with
-            # less information.
+        # FIXME: Note that in all cases where I'm using kb's url_object info
+        # I'll be making a mistake if the audit plugin is run before all
+        # crawl plugins haven't run yet, since I'm not letting them
+        # find all directories; which will make the current plugin run with
+        # less information.
+        url_generator = self._generate_urls(domain_path_list,
+                                            mutant.uploaded_file_name)
+        mutant_repeater = repeat(mutant)
+        http_response_repeater = repeat(mutant_response)
+        args = izip(url_generator, mutant_repeater, http_response_repeater)
 
-            url_generator = self._generate_urls(domain_path_list,
-                                                mutant.uploaded_file_name)
-            mutant_repeater = repeat(mutant)
-            http_response_repeater = repeat(mutant_response)
-            args = izip(url_generator, mutant_repeater, http_response_repeater)
-
-            self.worker_pool.map_multi_args(self._confirm_file_upload,
-                                               args)
+        self.worker_pool.map_multi_args(self._confirm_file_upload, args)
 
     def _confirm_file_upload(self, path, mutant, http_response):
         """
@@ -200,7 +201,6 @@ class file_upload(AuditPlugin):
             v['file_vars'] = mutant.get_file_vars()
 
             self.kb_append_uniq(self, 'file_upload', v)
-            return
 
     def _generate_urls(self, domain_path_list, uploaded_file_name):
         """
@@ -208,11 +208,8 @@ class file_upload(AuditPlugin):
         :param uploaded_file_name: The name of the file that was uploaded to the server
         :return: A list of paths where the file could be.
         """
-        tmp = ['uploads', 'upload', 'file', 'user', 'files', 'downloads',
-               'download', 'up', 'down']
-
         for url in domain_path_list:
-            for default_path in tmp:
+            for default_path in self.UPLOAD_PATHS:
                 for sub_url in url.get_directories():
                     possible_location = sub_url.url_join(default_path + '/')
                     possible_location = possible_location.url_join(
