@@ -25,7 +25,7 @@ from w3af.core.data.kb.vuln_templates.file_upload_template import FileUploadTemp
 
 class TestFileUploadShell(ExecExploitTest):
 
-    file_upload_url = get_php_moth_http('/audit/file_upload/')
+    file_upload_url = get_php_moth_http('/audit/file_upload/trivial/')
 
     _run_configs = {
         'cfg': {
@@ -59,7 +59,7 @@ class TestFileUploadShell(ExecExploitTest):
     def test_from_template(self):
         fut = FileUploadTemplate()
 
-        base_url = get_php_moth_http('/audit/file_upload/')
+        base_url = get_php_moth_http('/audit/file_upload/trivial/')
 
         options = fut.get_options()
         options['url'].set_value(base_url + 'uploader.php')
@@ -73,4 +73,23 @@ class TestFileUploadShell(ExecExploitTest):
         vuln = self.kb.get(*fut.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
         
+        self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
+
+    def test_from_template_534(self):
+        fut = FileUploadTemplate()
+
+        base_url = get_php_moth_http('/audit/file_upload/strange_extension_534/')
+
+        options = fut.get_options()
+        options['url'].set_value(base_url + 'uploader.534')
+        options['data'].set_value('uploadedfile=&MAX_FILE_SIZE=10000000')
+        options['file_vars'].set_value('uploadedfile')
+        options['file_dest'].set_value(get_php_moth_http('/audit/file_upload/trivial/uploads/'))
+        options['vulnerable_parameter'].set_value('uploadedfile')
+        fut.set_options(options)
+
+        fut.store_in_kb()
+        vuln = self.kb.get(*fut.get_kb_location())[0]
+        vuln_to_exploit_id = vuln.get_id()
+
         self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
