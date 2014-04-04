@@ -33,10 +33,8 @@ class htaccess_methods(AuditPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    BAD_METHODS = set([http_constants.UNAUTHORIZED,
-                       http_constants.NOT_IMPLEMENTED,
-                       http_constants.METHOD_NOT_ALLOWED,
-                       http_constants.FORBIDDEN])
+    BAD_METHODS = {http_constants.UNAUTHORIZED, http_constants.NOT_IMPLEMENTED,
+                   http_constants.METHOD_NOT_ALLOWED, http_constants.FORBIDDEN}
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -137,7 +135,7 @@ class htaccess_methods(AuditPlugin):
             methods = ', '.join([m for m, i in allowed_methods]) + '.'
             desc = 'The resource: "%s" requires authentication but the access'\
                    ' is misconfigured and can be bypassed using these'\
-                   ' methods: %s.'
+                   ' methods: %s'
             desc = desc % (url, methods)
             
             v = Vuln('Misconfigured access control', desc,
@@ -166,6 +164,6 @@ class htaccess_methods(AuditPlugin):
                 require valid-user
             </LIMIT>
 
-        The configuration only allows authenticated users to perform GET requests,
-        but POST requests (for example) can be performed by any user.
+        The configuration only allows authenticated users to perform GET
+        requests, but POST requests (for example) can be performed by any user.
         """
