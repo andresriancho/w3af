@@ -1,5 +1,5 @@
 """
-__init__.py
+utils.py
 
 Copyright 2014 Andres Riancho
 
@@ -19,15 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .cpu_usage import start_cpu_profiling, stop_cpu_profiling
-from .memory_usage import start_memory_profiling, stop_memory_profiling
+import os
 
 
-def start_profiling():
-    start_cpu_profiling()
-    start_memory_profiling()
+def should_profile():
+    """
+    If the environment variable W3AF_PROFILING is set to 1, then return True
+    """
+    should_profile = os.environ.get('W3AF_PROFILING', '0')
 
+    if should_profile.isdigit() and int(should_profile) == 1:
+        return True
 
-def stop_profiling():
-    stop_cpu_profiling()
-    stop_memory_profiling()
+    return False
