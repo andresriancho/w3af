@@ -20,15 +20,49 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import datetime
+import threading
 
 
 def should_profile():
     """
     If the environment variable W3AF_PROFILING is set to 1, then return True
     """
-    should_profile = os.environ.get('W3AF_PROFILING', '0')
+    _should_profile = os.environ.get('W3AF_PROFILING', '0')
 
-    if should_profile.isdigit() and int(should_profile) == 1:
+    if _should_profile.isdigit() and int(_should_profile) == 1:
         return True
 
     return False
+
+
+def get_filename_fmt():
+    pid = os.getpid()
+    date = datetime.datetime.today().strftime("%Y-%d-%m-%I_%M")
+
+    return pid, date
+
+
+def dump_data_every_thread(func, delay_minutes, save_thread_ptr):
+    """
+    This is a thread target which every X minutes
+    """
+    func()
+
+    save_thread = threading.Timer(delay_minutes * 60,
+                                  dump_data_every_thread,
+                                  args=(func, delay_minutes, save_thread_ptr))
+    save_thread.start()
+
+    if save_thread_ptr:
+        # Remove the old one if it exists in the ptr
+        save_thread_ptr.pop(0)
+
+    save_thread_ptr.append(save_thread)
+
+
+def cancel_thread(save_thread_ptr):
+    if save_thread_ptr:
+        save_thread = save_thread_ptr[0]
+        save_thread.cancel()
+        save_thread_ptr.pop(0)

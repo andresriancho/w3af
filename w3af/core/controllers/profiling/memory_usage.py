@@ -19,15 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import threading
-import time
-
-from .utils import should_profile
+from .utils import (should_profile, get_filename_fmt, dump_data_every_thread,
+                    cancel_thread)
 
 
-PROFILING_OUTPUT_FMT = '/tmp/meliae-w3af-%s.memory'
+PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.memory'
 DELAY_MINUTES = 2
-SAVE_THREAD = None
+SAVE_THREAD_PTR = []
 
 
 def start_memory_profiling():
@@ -37,28 +35,26 @@ def start_memory_profiling():
 
     :return: None
     """
-    if should_profile():
-        dump_objects()
+    if not should_profile():
+        return
+
+    dump_data_every_thread(dump_objects, DELAY_MINUTES, SAVE_THREAD_PTR)
 
 
-def dump_objects(start_thread=True):
+def dump_objects():
     """
     This is a thread target which every X minutes
     """
     from meliae import scanner
-    scanner.dump_all_objects(PROFILING_OUTPUT_FMT % time.time())
-
-    if start_thread:
-        global SAVE_THREAD
-        SAVE_THREAD = threading.Timer(DELAY_MINUTES * 60, dump_objects)
-        SAVE_THREAD.start()
+    scanner.dump_all_objects(PROFILING_OUTPUT_FMT % get_filename_fmt())
 
 
 def stop_memory_profiling():
     """
     We cancel the save thread and dump objects for the last time.
     """
-    if SAVE_THREAD is not None:
-        SAVE_THREAD.cancel()
+    if not should_profile():
+        return
 
-    dump_objects(start_thread=False)
+    cancel_thread(SAVE_THREAD_PTR)
+    dump_objects()
