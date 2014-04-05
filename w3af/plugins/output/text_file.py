@@ -106,7 +106,7 @@ class text_file(OutputPlugin):
             self._file = None
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
-            om.out.error(msg  % (self._output_file_name, e),
+            om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins=set([self.get_name()]))
 
     def _write_to_HTTP_log(self, msg):
@@ -125,7 +125,7 @@ class text_file(OutputPlugin):
             self._http = None
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
-            om.out.error(msg  % (self._http_file_name, e),
+            om.out.error(msg % (self._http_file_name, e),
                          ignore_plugins=set([self.get_name()]))
             
     def write(self, message, log_type, new_line=True):
