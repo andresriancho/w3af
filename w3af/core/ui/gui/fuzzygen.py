@@ -20,13 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+
 try:
     from w3af.core.controllers.exceptions import BaseFrameworkException
 except ImportError:
     # this is to easy the test when executing this file directly
     BaseFrameworkException = Exception
-
-from w3af.core.data.parsers.url import URL
 
 REPP = re.compile("\$.*?\$")
 
@@ -34,19 +33,16 @@ REPP = re.compile("\$.*?\$")
 class FuzzyError(BaseFrameworkException):
     pass
 
-# Syntax rules:
-#
-# - the "$" is the delimiter
-#
-# - to actually include a "$", use "\$"
-#
-# - if you write "$something$", the "something" will be evaluated with
-#   eval, having the "string" module already imported (eg:
-#   "$range(1,5,2)$", "$string.lowercase$").
-
 
 class FuzzyGenerator(object):
     """Handles two texts with the fuzzy syntax.
+
+    Syntax rules:
+        - the "$" is the delimiter
+        - to actually include a "$", use "\$"
+        - if you write "$something$", the "something" will be evaluated with
+          eval, having the "string" module already imported
+          (eg: "$range(1,5,2)$", "$string.lowercase$").
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
