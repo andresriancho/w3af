@@ -392,11 +392,16 @@ class requestResponsePart(gtk.Notebook):
 class requestPart(requestResponsePart):
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(
-            self, parent, w3af, enableWidget, editable,
-            widgname=widgname + "request")
-        self.add_view(HttpRawView(w3af, self, editable))
+        requestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
+                                     widgname=widgname + "request")
+
+        self.raw_view = HttpRawView(w3af, self, editable)
+        self.add_view(self.raw_view)
+
         self.add_view(HttpHeadersView(w3af, self, editable))
+
+    def get_both_texts_raw(self):
+        return self.raw_view.get_text(splitted=True)
 
     def get_both_texts(self):
         head = self._obj.dump_request_head()
