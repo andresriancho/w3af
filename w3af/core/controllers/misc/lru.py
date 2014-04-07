@@ -39,7 +39,8 @@ class LRU(object):
     http://pype.sourceforge.net
     Copyright 2003 Josiah Carlson.
 
-    These is a list of the modifications that I (Andres Riancho) introduced to the code:
+    These is a list of the modifications that I (Andres Riancho) introduced to
+    the code:
         - Thread safety
 
     >>> lru_test = LRU(4)
