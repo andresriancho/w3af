@@ -55,8 +55,8 @@ def main():
     if encode is None:
             usage()
             sys.exit()
-    else:
-        print( md5.new(encode).hexdigest() )
+
+    print( md5.new(encode).hexdigest() )
         
 if __name__ == "__main__":
     main()
