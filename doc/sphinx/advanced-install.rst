@@ -11,10 +11,10 @@ Bleeding edge vs. stable
 
 We develop ``w3af`` using ``git flow``, this means that we'll always have at least two branches in our repository:
 
- * ``master``: The branch where our latest stable code lives. We take it very seriously to make sure all unittests ``PASS`` in this branch.
+ * ``master``: The branch where our latest stable code lives. We take it very seriously to make sure all unit tests ``PASS`` in this branch.
  * ``develop``: The branch where new features are merged and tested. Not as stable as ``master`` but we try to keep this one working too.
 
-Advanced users might want to be on the bleeding edge aka. ``develop`` to get the latest features, while users using ``w3af`` for continuous scanning and other tasks which require stability would choose ``master`` (our stable release).
+Advanced users might want to be on the bleeding edge aka ``develop`` to get the latest features, while users using ``w3af`` for continuous scanning and other tasks which require stability would choose ``master`` (our stable release).
 
 Moving to bleeding edge ``w3af`` is easy:
 
@@ -26,7 +26,7 @@ Moving to bleeding edge ``w3af`` is easy:
     ./w3af_console
     . /tmp/w3af_dependency_install.sh
 
-To the regular installation procedure we added the ``git checkout develop``, that's it! If you're running in this branch and find an issue, please report it back to us too, we're interested in hearing about **any issues** users identify.
+To the regular installation procedure we added the ``git checkout develop``, that's it! If you're running in this branch and find an issue, please report it back to us too. We're interested in hearing about **any issues** users identify.
 
 Installing using virtualenv
 ---------------------------
