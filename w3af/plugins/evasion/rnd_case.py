@@ -32,6 +32,9 @@ class rnd_case(EvasionPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
+    def __init__(self):
+        EvasionPlugin.__init__(self)
+
     def modify_request(self, request):
         """
         Mangles the request
@@ -65,8 +68,7 @@ class rnd_case(EvasionPlugin):
 
         return new_req
 
-    @staticmethod
-    def _mutate(data):
+    def _mutate(self, data):
         """
         Change the case of the data string.
         :return: a string.
@@ -80,8 +82,7 @@ class rnd_case(EvasionPlugin):
             new_data += char
         return new_data
 
-    @staticmethod
-    def get_priority():
+    def get_priority(self):
         """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -90,8 +91,7 @@ class rnd_case(EvasionPlugin):
         """
         return 25
 
-    @staticmethod
-    def get_long_desc():
+    def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """

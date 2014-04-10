@@ -35,8 +35,10 @@ class mod_security(EvasionPlugin):
     :author: Francisco Amato ( famato |at| infobyte.com.ar )
     """
 
-    @staticmethod
-    def modify_request(request):
+    def __init__(self):
+        EvasionPlugin.__init__(self)
+
+    def modify_request(self, request):
         """
         Mangles the request
 
@@ -63,8 +65,7 @@ class mod_security(EvasionPlugin):
 
         return request
 
-    @staticmethod
-    def get_priority():
+    def get_priority(self):
         """
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -73,8 +74,7 @@ class mod_security(EvasionPlugin):
         """
         return 50
 
-    @staticmethod
-    def get_long_desc():
+    def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
