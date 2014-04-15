@@ -247,30 +247,32 @@ class fingerprint_404(object):
 
             if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
-                fmt = (
-                    http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
+                fmt = (http_response.get_url(),
+                       http_response.id,
+                       IS_EQUAL_RATIO)
                 om.out.debug(msg % fmt)
                 return self._fingerprinted_as_404(http_response)
 
         else:
             #
-            #    I get here when the for ends and no body_404_db matched with the
-            #    html_body that was sent as a parameter by the user. This means one
-            #    of two things:
+            #    I get here when the for ends and no body_404_db matched with
+            #    the html_body that was sent as a parameter by the user. This
+            #    means one of two things:
             #        * There is not enough knowledge in self._404_bodies, or
             #        * The answer is NOT a 404.
             #
             #    Because we want to reduce the amount of "false positives" that
-            #    this method returns, we'll perform one extra check before saying
-            #    that this is NOT a 404.
+            #    this method returns, we'll perform one extra check before
+            #    saying that this is NOT a 404.
             if http_response.get_url().get_domain_path() not in self._fingerprinted_paths:
                 if self._single_404_check(http_response, html_body):
                     self._404_bodies.append(html_body)
-                    self._fingerprinted_paths.add(
-                        http_response.get_url().get_domain_path())
+                    domain_path = http_response.get_url().get_domain_path()
+                    self._fingerprinted_paths.add(domain_path)
 
-                    msg = '"%s" (id:%s) is a 404 (similarity_index > %s). Adding new'
-                    msg += ' knowledge to the 404_bodies database (length=%s).'
+                    msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
+                          ' Adding new knowledge to the 404_bodies database'\
+                          ' (length=%s).'
                     fmt = (http_response.get_url(), http_response.id,
                            IS_EQUAL_RATIO, len(self._404_bodies))
                     om.out.debug(msg % fmt)
