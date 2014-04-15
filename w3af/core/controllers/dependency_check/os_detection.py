@@ -39,7 +39,7 @@ def is_fedora():
 
 
 def is_centos():
-    return 'redhat' in distro[0]
+    return distro[0] in ('centos', 'redhat')
 
 
 def is_suse():
