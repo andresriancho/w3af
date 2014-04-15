@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import weakref
 from datetime import date
 
 import w3af.core.controllers.output_manager as om
@@ -251,7 +252,7 @@ class VersionMgr(object):
         Register the caller to `event` so when it takes place call its `func`
         with `msg` as param.
         """
-        self._reg_funcs[event] = (func, msg)
+        self._reg_funcs[event] = (weakref.proxy(func), msg)
 
     def _notify(self, event, msg=''):
         """
