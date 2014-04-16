@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 
 from functools import partial
+
+from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from .utils import (should_profile, get_filename_fmt, dump_data_every_thread,
                     cancel_thread)
 
@@ -48,7 +50,8 @@ def start_core_profiling(w3af_core):
 def dump_data(w3af_core):
     s = w3af_core.status
     try:
-        data = {'Requests per minute': s.get_rpm(),
+        data = {'Requests sent': consecutive_number_generator.get(),
+                'Requests per minute': s.get_rpm(),
                 'Crawl queue input speed': s.get_crawl_input_speed(),
                 'Crawl queue output speed': s.get_crawl_output_speed(),
                 'Crawl queue size': s.get_crawl_qsize(),
