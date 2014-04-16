@@ -116,7 +116,7 @@ class w3afCore(object):
         
         :return: None
         """
-        start_profiling()
+        start_profiling(self)
 
         if not self._first_scan:
             self.cleanup()
@@ -412,7 +412,7 @@ class w3afCore(object):
             self.target.clear()
 
             # Finish the profiling
-            stop_profiling()
+            stop_profiling(self)
 
     def exploit_phase_prerequisites(self):
         """

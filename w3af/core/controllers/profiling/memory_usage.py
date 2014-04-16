@@ -28,7 +28,7 @@ DELAY_MINUTES = 2
 SAVE_THREAD_PTR = []
 
 
-def start_memory_profiling():
+def start_memory_profiling(w3af_core):
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
     the CPU and memory profiling.
@@ -49,7 +49,7 @@ def dump_objects():
     scanner.dump_all_objects(PROFILING_OUTPUT_FMT % get_filename_fmt())
 
 
-def stop_memory_profiling():
+def stop_memory_profiling(w3af_core):
     """
     We cancel the save thread and dump objects for the last time.
     """

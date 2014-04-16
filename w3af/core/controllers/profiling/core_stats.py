@@ -1,7 +1,7 @@
 """
-cpu_usage.py
+core_stats.py
 
-Copyright 2012 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,16 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import json
+
+from functools import partial
 from .utils import (should_profile, get_filename_fmt, dump_data_every_thread,
                     cancel_thread)
 
 
-PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.cpu'
+PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.core'
 DELAY_MINUTES = 2
 SAVE_THREAD_PTR = []
 
 
-def start_cpu_profiling(w3af_core):
+def start_core_profiling(w3af_core):
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
     the CPU and memory profiling.
@@ -38,19 +41,29 @@ def start_cpu_profiling(w3af_core):
     if not should_profile():
         return
 
-    import yappi
-    yappi.start()
-
-    dump_data_every_thread(dump_data, DELAY_MINUTES, SAVE_THREAD_PTR)
+    dd_partial = partial(dump_data, w3af_core)
+    dump_data_every_thread(dd_partial, DELAY_MINUTES, SAVE_THREAD_PTR)
 
 
-def dump_data():
-    import yappi
-    yappi.get_func_stats().save(PROFILING_OUTPUT_FMT % get_filename_fmt(),
-                                type="pstat")
+def dump_data(w3af_core):
+    s = w3af_core.status
+    try:
+        data = {'Requests per minute': s.get_rpm(),
+                'Crawl queue input speed': s.get_crawl_input_speed(),
+                'Crawl queue output speed': s.get_crawl_output_speed(),
+                'Crawl queue size': s.get_crawl_qsize(),
+                'Audit queue input speed': s.get_audit_input_speed(),
+                'Audit queue output speed': s.get_audit_output_speed(),
+                'Audit queue size': s.get_audit_qsize()}
+    except Exception, e:
+        print('Failed to retrieve status data: "%s"' % e)
+    else:
+        json_data = json.dumps(data, indent=4)
+        output_file = PROFILING_OUTPUT_FMT % get_filename_fmt()
+        file(output_file, 'w').write(json_data)
 
 
-def stop_cpu_profiling(w3af_core):
+def stop_core_profiling(w3af_core):
     """
     Save profiling information (if available)
     """
@@ -58,4 +71,5 @@ def stop_cpu_profiling(w3af_core):
         return
 
     cancel_thread(SAVE_THREAD_PTR)
-    dump_data()
+    dump_data(w3af_core)
+

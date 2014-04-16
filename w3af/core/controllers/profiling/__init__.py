@@ -21,13 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from .cpu_usage import start_cpu_profiling, stop_cpu_profiling
 from .memory_usage import start_memory_profiling, stop_memory_profiling
+from .core_stats import start_core_profiling, stop_core_profiling
 
 
-def start_profiling():
-    start_cpu_profiling()
-    start_memory_profiling()
+def start_profiling(w3af_core):
+    start_cpu_profiling(w3af_core)
+    start_memory_profiling(w3af_core)
+    start_core_profiling(w3af_core)
 
 
-def stop_profiling():
-    stop_cpu_profiling()
-    stop_memory_profiling()
+def stop_profiling(w3af_core):
+    stop_cpu_profiling(w3af_core)
+    stop_memory_profiling(w3af_core)
+    stop_core_profiling(w3af_core)
