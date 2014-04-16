@@ -25,6 +25,8 @@ import cgi
 import thread
 import urllib
 
+from functools import wraps
+
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
@@ -37,6 +39,22 @@ from w3af.core.controllers.misc.decorators import retry
 
 
 IS_EQUAL_RATIO = 0.90
+
+
+def lru_404_cache(wrapped_method):
+
+    @wraps(wrapped_method)
+    def inner(self, http_response):
+        path = http_response.get_url().get_path()
+
+        if path in self.is_404_LRU:
+            return self.is_404_LRU[path]
+        else:
+            result = wrapped_method(self, http_response)
+            self.is_404_LRU[path] = result
+            return result
+
+    return inner
 
 
 class fingerprint_404(object):
@@ -67,7 +85,7 @@ class fingerprint_404(object):
 
         # It is OK to store 200 here, I'm only storing path+filename as the key,
         # and bool as the value.
-        self.is_404_LRU = LRU(200)
+        self.is_404_LRU = LRU(250)
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
@@ -98,14 +116,12 @@ class fingerprint_404(object):
         self._response_body_list = []
 
         #
-        #   This is a list of the most common handlers, in some configurations, the 404
-        #   depends on the handler, so I want to make sure that I catch the 404 for each one
+        #   This is a list of the most common handlers, in some configurations,
+        #   the 404 depends on the handler, so I want to make sure that I catch
+        #   the 404 for each one
         #
-        handlers = set()
-        handlers.update(
-            ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do'])
-        handlers.update(
-            ['gif', 'htm', 'pl', 'cgi', 'xhtml', 'htmls', 'foobar'])
+        handlers = {'py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do',
+                    'gif', 'htm', 'pl', 'cgi', 'xhtml', 'htmls', 'foobar'}
         if extension:
             handlers.add(extension)
 
@@ -130,7 +146,8 @@ class fingerprint_404(object):
                     # They are equal, we are ok with that
                     continue
                 else:
-                    # They are no equal, this means that we'll have to add this to the list
+                    # They are no equal, this means that we'll have to add this
+                    # to the list
                     result.append(j)
 
         # I don't need these anymore
@@ -142,20 +159,18 @@ class fingerprint_404(object):
                      str(len(result)) + '.')
 
         self._404_bodies = result
-        self._already_analyzed = True
         self._fingerprinted_paths.add(domain_path)
-
-    def need_analysis(self):
-        return not self._already_analyzed
 
     @retry(tries=2, delay=0.5, backoff=2)
     def _send_404(self, url404, store=True):
         """
-        Sends a GET request to url404 and saves the response in self._response_body_list .
+        Sends a GET request to url404 and saves the response in
+        self._response_body_list .
+
         :return: The HTTP response body.
         """
-        # I don't use the cache, because the URLs are random and the only thing that
-        # cache does is to fill up disk space
+        # I don't use the cache, because the URLs are random and the only thing
+        # that cache does is to fill up disk space
         response = self._uri_opener.GET(url404, cache=False, grep=False)
 
         if store:
@@ -166,6 +181,7 @@ class fingerprint_404(object):
 
         return response
 
+    @lru_404_cache
     def is_404(self, http_response):
         """
         All of my previous versions of is_404 were very complex and tried to
@@ -203,11 +219,11 @@ class fingerprint_404(object):
             return True
 
         #
-        #   This is the most simple case, we don't even have to think about this.
+        #   This is the most simple case, we don't even have to think about this
         #
-        #   If there is some custom website that always returns 404 codes, then we
-        #   are screwed, but this is open source, and the pentester working on
-        #   that site can modify these lines.
+        #   If there is some custom website that always returns 404 codes, then
+        #   we are screwed, but this is open source, and the pentester working
+        #   on that site can modify these lines.
         #
         if http_response.get_code() == 404:
             return True
@@ -221,16 +237,10 @@ class fingerprint_404(object):
                 http_response.get_code() != 404:
             return False
 
-        #
-        #   Before actually working, I'll check if this response is in the LRU,
-        #   if it is I just return the value stored there.
-        #
-        if http_response.get_url().get_path() in self.is_404_LRU:
-            return self.is_404_LRU[http_response.get_url().get_path()]
-
         with self._lock:
-            if self.need_analysis():
+            if not self._already_analyzed:
                 self.generate_404_knowledge(http_response.get_url())
+                self._already_analyzed = True
 
         # self._404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one in order to have a fair comparison
@@ -251,7 +261,7 @@ class fingerprint_404(object):
                        http_response.id,
                        IS_EQUAL_RATIO)
                 om.out.debug(msg % fmt)
-                return self._fingerprinted_as_404(http_response)
+                return True
 
         else:
             #
@@ -277,28 +287,12 @@ class fingerprint_404(object):
                            IS_EQUAL_RATIO, len(self._404_bodies))
                     om.out.debug(msg % fmt)
 
-                    return self._fingerprinted_as_404(http_response)
+                    return True
 
             msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
             fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
             om.out.debug(msg % fmt)
-            return self._fingerprinted_as_200(http_response)
-
-    def _fingerprinted_as_404(self, http_response):
-        """
-        Convenience function so that I don't forget to update the LRU
-        :return: True
-        """
-        self.is_404_LRU[http_response.get_url().get_path()] = True
-        return True
-
-    def _fingerprinted_as_200(self, http_response):
-        """
-        Convenience function so that I don't forget to update the LRU
-        :return: False
-        """
-        self.is_404_LRU[http_response.get_url().get_path()] = False
-        return False
+            return False
 
     def _single_404_check(self, http_response, html_body):
         """
@@ -330,7 +324,8 @@ class fingerprint_404(object):
                 url_404.get_domain_path() not in self._directory_uses_404_codes:
             self._directory_uses_404_codes.add(url_404.get_domain_path())
 
-        return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
+        return relative_distance_ge(clean_response_404_body,
+                                    html_body, IS_EQUAL_RATIO)
 
 
 def fingerprint_404_singleton(cleanup=False):
@@ -367,9 +362,9 @@ def get_clean_body(response):
     All of them, are removed encoded and "as is".
 
     :param response: The HTTPResponse object to clean
-    :return: A string that represents the "cleaned" response body of the response.
+    :return: A string that represents the "cleaned" response body of the
+             response.
     """
-
     body = response.body
 
     if response.is_text_or_html():
