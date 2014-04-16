@@ -21,11 +21,10 @@ s = shelve.open('data.shelve')
 
 # This is a "resume" feature
 last = len(s)
+print 'c(%s)' % last,
 
 for i, line in enumerate(file(ALEXA_FILE)):
     if i <= last:
-        sys.stdout.write('c')
-        sys.stdout.flush()
         continue
 
     line = line.strip()
