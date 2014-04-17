@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .utils import (should_profile, get_filename_fmt, dump_data_every_thread,
-                    cancel_thread)
+import os
+
+from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
 
 PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.memory'
@@ -28,6 +29,17 @@ DELAY_MINUTES = 2
 SAVE_THREAD_PTR = []
 
 
+def should_profile_memory(wrapped):
+    def inner(w3af_core):
+        _should_profile = os.environ.get('W3AF_MEMORY_PROFILING', '0')
+
+        if _should_profile.isdigit() and int(_should_profile) == 1:
+            return wrapped(w3af_core)
+
+    return inner
+
+
+@should_profile_memory
 def start_memory_profiling(w3af_core):
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
@@ -35,9 +47,6 @@ def start_memory_profiling(w3af_core):
 
     :return: None
     """
-    if not should_profile():
-        return
-
     dump_data_every_thread(dump_objects, DELAY_MINUTES, SAVE_THREAD_PTR)
 
 
@@ -49,12 +58,10 @@ def dump_objects():
     scanner.dump_all_objects(PROFILING_OUTPUT_FMT % get_filename_fmt())
 
 
+@should_profile_memory
 def stop_memory_profiling(w3af_core):
     """
     We cancel the save thread and dump objects for the last time.
     """
-    if not should_profile():
-        return
-
     cancel_thread(SAVE_THREAD_PTR)
     dump_objects()

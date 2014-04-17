@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
+import os
 
 from functools import partial
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
-from .utils import (should_profile, get_filename_fmt, dump_data_every_thread,
-                    cancel_thread)
+from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
 
 PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.core'
@@ -33,6 +33,17 @@ DELAY_MINUTES = 2
 SAVE_THREAD_PTR = []
 
 
+def should_profile_core(wrapped):
+    def inner(w3af_core):
+        _should_profile = os.environ.get('W3AF_CORE_PROFILING', '0')
+
+        if _should_profile.isdigit() and int(_should_profile) == 1:
+            return wrapped(w3af_core)
+
+    return inner
+
+
+@should_profile_core
 def start_core_profiling(w3af_core):
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
@@ -40,9 +51,6 @@ def start_core_profiling(w3af_core):
 
     :return: None
     """
-    if not should_profile():
-        return
-
     dd_partial = partial(dump_data, w3af_core)
     dump_data_every_thread(dd_partial, DELAY_MINUTES, SAVE_THREAD_PTR)
 
@@ -66,13 +74,11 @@ def dump_data(w3af_core):
         file(output_file, 'w').write(json_data)
 
 
+@should_profile_core
 def stop_core_profiling(w3af_core):
     """
     Save profiling information (if available)
     """
-    if not should_profile():
-        return
-
     cancel_thread(SAVE_THREAD_PTR)
     dump_data(w3af_core)
 

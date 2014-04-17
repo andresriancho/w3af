@@ -24,18 +24,6 @@ import datetime
 import threading
 
 
-def should_profile():
-    """
-    If the environment variable W3AF_PROFILING is set to 1, then return True
-    """
-    _should_profile = os.environ.get('W3AF_PROFILING', '0')
-
-    if _should_profile.isdigit() and int(_should_profile) == 1:
-        return True
-
-    return False
-
-
 def get_filename_fmt():
     pid = os.getpid()
     date = datetime.datetime.today().strftime("%Y-%d-%m-%I_%M")
