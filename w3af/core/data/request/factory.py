@@ -68,7 +68,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     req_headers = Headers(req_headers.items())
 
     # Get the cookie!
-    cookieObj = _create_cookie(resp)
+    cookie_obj = _create_cookie(resp)
 
     # Create the fuzzable request that represents the request object
     # passed as parameter
@@ -76,7 +76,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         qsr = HTTPQSRequest(
             resp.get_uri(),
             headers=req_headers,
-            cookie=cookieObj
+            cookie=cookie_obj
         )
         res.append(qsr)
 
@@ -99,7 +99,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 qsr = HTTPQSRequest(
                     absolute_location,
                     headers=req_headers,
-                    cookie=cookieObj
+                    cookie=cookie_obj
                 )
                 res.append(qsr)
 
@@ -146,14 +146,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                         variant.get_action(),
                         variant.get_method(),
                         req_headers,
-                        cookieObj,
+                        cookie_obj,
                         variant)
                 else:
                     # The default is a GET request
                     r = HTTPQSRequest(
                         variant.get_action(),
                         headers=req_headers,
-                        cookie=cookieObj
+                        cookie=cookie_obj
                     )
                     r.set_dc(variant)
 
