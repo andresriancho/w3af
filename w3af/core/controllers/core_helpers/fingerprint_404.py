@@ -25,6 +25,7 @@ import cgi
 import thread
 import urllib
 
+from collections import deque
 from functools import wraps
 
 import w3af.core.data.kb.config as cf
@@ -39,6 +40,7 @@ from w3af.core.controllers.misc.decorators import retry
 
 
 IS_EQUAL_RATIO = 0.90
+MAX_404_RESPONSES = 20
 
 
 def lru_404_cache(wrapped_method):
@@ -78,7 +80,7 @@ class fingerprint_404(object):
         #   Internal variables
         #
         self._already_analyzed = False
-        self._404_bodies = []
+        self._404_responses = deque(maxlen=MAX_404_RESPONSES)
         self._lock = thread.allocate_lock()
         self._fingerprinted_paths = ScalableBloomFilter()
         self._directory_uses_404_codes = ScalableBloomFilter()
@@ -112,9 +114,6 @@ class fingerprint_404(object):
         extension = url.get_extension()
         domain_path = url.get_domain_path()
 
-        # the result
-        self._response_body_list = []
-
         #
         #   This is a list of the most common handlers, in some configurations,
         #   the 404 depends on the handler, so I want to make sure that I catch
@@ -125,60 +124,52 @@ class fingerprint_404(object):
         if extension:
             handlers.add(extension)
 
-        args_list = []
+        test_urls = []
 
         for extension in handlers:
             rand_alnum_file = rand_alnum(8) + '.' + extension
             url404 = domain_path.url_join(rand_alnum_file)
-            args_list.append(url404)
+            test_urls.append(url404)
 
-        self._worker_pool.map(self._send_404, args_list)
+        imap_unordered = self._worker_pool.imap_unordered
+        not_exist_resp_lst = []
+        
+        for not_exist_resp in imap_unordered(self._send_404, test_urls):
+            not_exist_resp_lst.append(not_exist_resp)
 
         #
-        #   I have the bodies in self._response_body_list , but maybe they
+        #   I have the 404 responses in not_exist_resp_lst, but maybe they
         #   all look the same, so I'll filter the ones that look alike.
         #
-        result = [self._response_body_list[0], ]
-        for i in self._response_body_list:
-            for j in self._response_body_list:
+        for i in not_exist_resp_lst:
+            for j in not_exist_resp_lst:
 
-                if fuzzy_equal(i, j, IS_EQUAL_RATIO):
-                    # They are equal, we are ok with that
+                if i is j:
+                    continue
+
+                if fuzzy_equal(i.get_body(), j.get_body(), IS_EQUAL_RATIO):
+                    # They are equal, just ignore it
                     continue
                 else:
                     # They are no equal, this means that we'll have to add this
-                    # to the list
-                    result.append(j)
-
-        # I don't need these anymore
-        self._response_body_list = None
+                    # one to the 404 responses
+                    self._404_responses.append(j)
 
         # And I return the ones I need
-        result = list(set(result))
         msg_fmt = 'The 404 body result database has a length of %s.'
-        om.out.debug(msg_fmt % len(result))
-
-        self._404_bodies = result
+        om.out.debug(msg_fmt % len(self._404_responses))
         self._fingerprinted_paths.add(domain_path)
 
     @retry(tries=2, delay=0.5, backoff=2)
-    def _send_404(self, url404, store=True):
+    def _send_404(self, url404):
         """
-        Sends a GET request to url404 and saves the response in
-        self._response_body_list .
+        Sends a GET request to url404.
 
         :return: The HTTP response body.
         """
         # I don't use the cache, because the URLs are random and the only thing
         # that cache does is to fill up disk space
         response = self._uri_opener.GET(url404, cache=False, grep=False)
-
-        if store:
-            # I don't want the random file name to affect the 404, so I replace
-            # it with a blank space,
-            response_body = get_clean_body(response)
-            self._response_body_list.append(response_body)
-
         return response
 
     @lru_404_cache
@@ -234,7 +225,7 @@ class fingerprint_404(object):
         #    then we're return False!
         #
         if domain_path in self._directory_uses_404_codes and \
-                http_response.get_code() != 404:
+        http_response.get_code() != 404:
             return False
 
         #
@@ -252,13 +243,13 @@ class fingerprint_404(object):
         #
         #    Compare this response to all the 404's I have in my DB
         #
-        #    Note: while self._404_bodies is a list, we can perform this for loop
+        #    Note: while self._404_responses is a list, we can perform this for loop
         #          without "with self._lock", read comments in stackoverflow:
         #          http://stackoverflow.com/questions/9515364/does-python-freeze-the-list-before-for-loop
         #
-        for body_404_db in self._404_bodies:
+        for resp_404 in self._404_responses:
 
-            if fuzzy_equal(body_404_db, html_body, IS_EQUAL_RATIO):
+            if fuzzy_equal(resp_404.get_body(), html_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
                 fmt = (http_response.get_url(),
                        http_response.id,
@@ -271,7 +262,7 @@ class fingerprint_404(object):
             #    I get here when the for ends and no body_404_db matched with
             #    the html_body that was sent as a parameter by the user. This
             #    means one of two things:
-            #        * There is not enough knowledge in self._404_bodies, or
+            #        * There is not enough knowledge in self._404_responses, or
             #        * The answer is NOT a 404.
             #
             #    Because we want to reduce the amount of "false positives" that
@@ -284,14 +275,14 @@ class fingerprint_404(object):
                     #
                     #   Aha! It actually was a 404!
                     #
-                    self._404_bodies.append(html_body)
+                    self._404_responses.append(http_response)
                     self._fingerprinted_paths.add(domain_path)
 
                     msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
                           ' Adding new knowledge to the 404_bodies database'\
                           ' (length=%s).'
                     fmt = (http_response.get_url(), http_response.id,
-                           IS_EQUAL_RATIO, len(self._404_bodies))
+                           IS_EQUAL_RATIO, len(self._404_responses))
                     om.out.debug(msg % fmt)
 
                     return True
@@ -326,7 +317,7 @@ class fingerprint_404(object):
             relative_url = 'not-%s' % filename
             url_404 = response_url.url_join(relative_url)
 
-        response_404 = self._send_404(url_404, store=False)
+        response_404 = self._send_404(url_404)
         clean_response_404_body = get_clean_body(response_404)
 
         if response_404.get_code() == 404 and \
