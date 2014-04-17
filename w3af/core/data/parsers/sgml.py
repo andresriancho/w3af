@@ -40,18 +40,18 @@ class SGMLParser(BaseParser):
              Andres Riancho ((andres.riancho@gmail.com))
     """
 
-    TAGS_WITH_URLS = (
+    TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
         'form', 'ilayer', 'bgsound', 'html', 'audio', 'video'
-    )
+    }
 
-    URL_ATTRS = ('href', 'src', 'data', 'action', 'manifest')
+    URL_ATTRS = {'href', 'src', 'data', 'action', 'manifest'}
 
     # I don't want to inject into Apache's directory indexing parameters
-    APACHE_INDEXING = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
+    APACHE_INDEXING = {"?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
                        '?C=N;O=D', '?C=D;O=A', '?N=D', '?M=A', '?S=A',
-                       '?D=A', '?D=D', '?S=D', '?M=D', '?N=D')
+                       '?D=A', '?D=D', '?S=D', '?M=D', '?N=D'}
 
     def __init__(self, http_resp):
         BaseParser.__init__(self, http_resp)
@@ -83,14 +83,20 @@ class SGMLParser(BaseParser):
         """
         try:
             # Call start_tag handler method
-            meth = getattr(self, '_handle_' + tag + '_tag_start',
-                           lambda *args: None)
+            handler = '_handle_%s_tag_start' % tag
+            meth = getattr(self, handler, lambda *args: None)
             meth(tag, attrs)
+        except Exception, ex:
+            msg = 'An exception occurred while parsing a document: %s' % ex
+            om.out.error(msg)
+            om.out.error('Error traceback: %s' % traceback.format_exc())
 
+        try:
             if tag in self.TAGS_WITH_URLS:
                 self._find_references(tag, attrs)
         except Exception, ex:
-            msg = 'An exception occurred while parsing a document: %s' % ex
+            msg = 'An exception occurred while extracting references from'\
+                  ' tag "%s": %s' % ex
             om.out.error(msg)
             om.out.error('Error traceback: %s' % traceback.format_exc())
 
@@ -169,9 +175,9 @@ class SGMLParser(BaseParser):
             )
             dom = etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
-            msg = 'An error occurred while parsing "%s", original exception: "%s"'
-            msg = msg % (http_resp.get_url(), etree.XMLSyntaxError)
-            om.out.debug(msg)
+            msg = 'An error occurred while parsing "%s",'\
+                  ' original exception: "%s"'
+            om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
 
         # Performance improvement! Read the docs before removing this!
         http_resp.set_dom(dom)
@@ -180,7 +186,7 @@ class SGMLParser(BaseParser):
         key = attr[0]
         value = attr[1]
 
-        return  key in self.URL_ATTRS and value \
+        return key in self.URL_ATTRS and value \
             and not value.startswith('#') \
             and not value in self.APACHE_INDEXING
 
@@ -208,8 +214,7 @@ class SGMLParser(BaseParser):
                 self._tag_and_url.add((tag, url))
 
     def _fill_forms(self, tag, attrs):
-        raise NotImplementedError(
-            'This method must be overriden by a subclass')
+        raise NotImplementedError('This method must be overriden by a subclass')
 
     ## Properties ##
     @property
@@ -232,7 +237,7 @@ class SGMLParser(BaseParser):
         other with the URLs that came out from a regular expression. The
         second list is less trustworthy.
         """
-        return (list(self._parsed_urls), list(self._re_urls - self._parsed_urls))
+        return list(self._parsed_urls), list(self._re_urls - self._parsed_urls)
 
     def get_references(self):
         return self.references
