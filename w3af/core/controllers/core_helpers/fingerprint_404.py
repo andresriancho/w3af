@@ -155,8 +155,8 @@ class fingerprint_404(object):
 
         # And I return the ones I need
         result = list(set(result))
-        om.out.debug('The 404 body result database has a length of ' +
-                     str(len(result)) + '.')
+        msg_fmt = 'The 404 body result database has a length of %s.'
+        om.out.debug(msg_fmt % len(result))
 
         self._404_bodies = result
         self._fingerprinted_paths.add(domain_path)
@@ -237,12 +237,15 @@ class fingerprint_404(object):
                 http_response.get_code() != 404:
             return False
 
+        #
+        #   Lets start with the rather complex code...
+        #
         with self._lock:
             if not self._already_analyzed:
                 self.generate_404_knowledge(http_response.get_url())
                 self._already_analyzed = True
 
-        # self._404_body was already cleaned inside generate_404_knowledge
+        # 404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one in order to have a fair comparison
         html_body = get_clean_body(http_response)
 
@@ -274,10 +277,14 @@ class fingerprint_404(object):
             #    Because we want to reduce the amount of "false positives" that
             #    this method returns, we'll perform one extra check before
             #    saying that this is NOT a 404.
-            if http_response.get_url().get_domain_path() not in self._fingerprinted_paths:
-                if self._single_404_check(http_response, html_body):
+            domain_path = http_response.get_url().get_domain_path()
+            if domain_path not in self._fingerprinted_paths:
+
+                if self._is_404_with_extra_request(http_response, html_body):
+                    #
+                    #   Aha! It actually was a 404!
+                    #
                     self._404_bodies.append(html_body)
-                    domain_path = http_response.get_url().get_domain_path()
                     self._fingerprinted_paths.add(domain_path)
 
                     msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
@@ -292,9 +299,10 @@ class fingerprint_404(object):
             msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
             fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
             om.out.debug(msg % fmt)
+
             return False
 
-    def _single_404_check(self, http_response, html_body):
+    def _is_404_with_extra_request(self, http_response, clean_html_body):
         """
         Performs a very simple check to verify if this response is a 404 or not.
 
@@ -304,7 +312,8 @@ class fingerprint_404(object):
         request is a 404.
 
         :param http_response: The original HTTP response
-        :param html_body: The original HTML body after passing it by a cleaner
+        :param clean_html_body: The original HTML body you could find in
+                                http_response after passing it by a cleaner
 
         :return: True if the original response was a 404 !
         """
@@ -321,11 +330,11 @@ class fingerprint_404(object):
         clean_response_404_body = get_clean_body(response_404)
 
         if response_404.get_code() == 404 and \
-                url_404.get_domain_path() not in self._directory_uses_404_codes:
+        url_404.get_domain_path() not in self._directory_uses_404_codes:
             self._directory_uses_404_codes.add(url_404.get_domain_path())
 
         return relative_distance_ge(clean_response_404_body,
-                                    html_body, IS_EQUAL_RATIO)
+                                    clean_html_body, IS_EQUAL_RATIO)
 
 
 def fingerprint_404_singleton(cleanup=False):
