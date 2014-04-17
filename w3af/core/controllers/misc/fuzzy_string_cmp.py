@@ -106,7 +106,17 @@ def relative_distance(a_str, b_str):
     :param b_str: A string object
     :return: A float with the distance
     """
-    return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+    set_a = set(a_str.split(' '))
+    set_b = set(b_str.split(' '))
+
+    if min(len(set_a), len(set_b)) in (0, 1):
+        #
+        #   This is a rare case, where the http response body is one long
+        #   non-space separated string.
+        #
+        return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+
+    return len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
 
 
 def _generate_upper_bounds():
