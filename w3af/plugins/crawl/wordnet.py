@@ -23,7 +23,7 @@ from itertools import chain, repeat, izip
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
@@ -70,7 +70,7 @@ class wordnet(CrawlPlugin):
         response = self._uri_opener.send_mutant(mutant)
         
         if not is_404(response) and \
-        relative_distance_lt(original_response.body, response.body, 0.85):
+        fuzzy_not_equal(original_response.body, response.body, 0.85):
             
             # Verify against something random
             rand = rand_alpha()
@@ -78,7 +78,7 @@ class wordnet(CrawlPlugin):
             rand_mutant.set_mod_value(rand)
             rand_response = self._uri_opener.send_mutant(rand_mutant)
             
-            if relative_distance_lt(response.body, rand_response.body, 0.85):
+            if fuzzy_not_equal(response.body, rand_response.body, 0.85):
                 
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)

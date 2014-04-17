@@ -33,7 +33,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 
-from w3af.core.controllers.misc.levenshtein import relative_distance_ge
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.misc.lru import LRU
 from w3af.core.controllers.misc.decorators import retry
 
@@ -142,7 +142,7 @@ class fingerprint_404(object):
         for i in self._response_body_list:
             for j in self._response_body_list:
 
-                if relative_distance_ge(i, j, IS_EQUAL_RATIO):
+                if fuzzy_equal(i, j, IS_EQUAL_RATIO):
                     # They are equal, we are ok with that
                     continue
                 else:
@@ -258,7 +258,7 @@ class fingerprint_404(object):
         #
         for body_404_db in self._404_bodies:
 
-            if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
+            if fuzzy_equal(body_404_db, html_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
                 fmt = (http_response.get_url(),
                        http_response.id,
@@ -333,7 +333,7 @@ class fingerprint_404(object):
         url_404.get_domain_path() not in self._directory_uses_404_codes:
             self._directory_uses_404_codes.add(url_404.get_domain_path())
 
-        return relative_distance_ge(clean_response_404_body,
+        return fuzzy_equal(clean_response_404_body,
                                     clean_html_body, IS_EQUAL_RATIO)
 
 

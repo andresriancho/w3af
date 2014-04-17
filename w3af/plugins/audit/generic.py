@@ -32,7 +32,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.misc.levenshtein import relative_distance
+from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance
 
 
 class generic(AuditPlugin):

@@ -29,7 +29,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
 
@@ -144,8 +144,8 @@ class find_vhosts(InfrastructurePlugin):
 
             vhost_resp_body = vhost_response.get_body()
 
-            if relative_distance_lt(vhost_resp_body, base_resp_body, 0.35) and \
-                    relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
+            if fuzzy_not_equal(vhost_resp_body, base_resp_body, 0.35) and \
+                    fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
                 desc = 'The content of "%s" references a non existant domain:'\
@@ -199,8 +199,8 @@ class find_vhosts(InfrastructurePlugin):
             vhost_resp_body = vhost_response.get_body()
 
             # If they are *really* different (not just different by some chars)
-            if relative_distance_lt(vhost_resp_body, orig_resp_body, 0.35) and \
-                    relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
+            if fuzzy_not_equal(vhost_resp_body, orig_resp_body, 0.35) and \
+                    fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((vhost, vhost_response.id))
 
         return res

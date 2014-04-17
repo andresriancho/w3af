@@ -23,14 +23,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import division
 
 import unittest
+import random
 import os
 import shelve
 import time
 import re
+import gzip
+
+from string import printable
+from cStringIO import StringIO
 
 from nose.plugins.skip import SkipTest
 
-from w3af.core.controllers.misc.levenshtein import relative_distance_ge
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -45,10 +50,10 @@ class Test404FuzzyStringMatch(unittest.TestCase):
     This is written as a test to be able to run it easily using nosetests,
     but is mostly a simple check to verify the following:
 
-        * relative_distance_ge is too slow
+        * fuzzy_equal is too slow
 
         * The patch I'm working on can distinguish 404s just as good as the slow
-        relative_distance_ge, and is much faster.
+        fuzzy_equal, and is much faster.
 
     :see: https://github.com/andresriancho/w3af/issues/2072
     """
@@ -73,7 +78,67 @@ class Test404FuzzyStringMatch(unittest.TestCase):
         resp = HTTPResponse(200, body, self.empty_headers, url, url)
         return resp
 
-    def generic_fuzzy_string_diff_runner(self, fuzzy_func, ratio):
+    def _gunzip(self, http_body):
+        try:
+            data = gzip.GzipFile(fileobj=StringIO(http_body)).read()
+        except:
+            return http_body
+        else:
+            return data
+
+    def generic_fuzzy_string_diff_runner_against_200(self, fuzzy_func, ratio):
+        """
+        Generic runner for fuzzy string diff, choose the first five 200
+        responses, match it against all the other. None should match.
+        """
+        MAX_TESTS = 5
+        failed_domains = set()
+        total = 0
+        run_tests = 0
+        start = time.time()
+
+        for domain_base, (base, _) in self.not_exists_data.iteritems():
+            base = self._gunzip(base)
+
+            if run_tests == MAX_TESTS:
+                break
+
+            run_tests += 1
+
+            base_resp = self._create_http_response(domain_base, base, False)
+            clean_body_base = get_clean_body(base_resp)
+
+            for domain_test, (ok, _) in self.not_exists_data.iteritems():
+                total += 1
+                ok = self._gunzip(ok)
+
+                # Skip myself
+                if base == ok:
+                    continue
+
+                ok_resp = self._create_http_response(domain_test, ok, False)
+                clean_body_ok = get_clean_body(ok_resp)
+
+                if fuzzy_func(clean_body_base, clean_body_ok, ratio):
+                    failed_domains.add((domain_base, domain_test))
+
+        end = time.time()
+
+        perc_fail = len(failed_domains) / total
+        func_name = fuzzy_func.__name__
+
+        print('%s fail rate: %s' % (func_name, perc_fail))
+        print('Total time: %ss' % (end-start))
+        print('Analyzed samples: %s' % total)
+
+        output = '/tmp/%s.txt' % func_name
+        output_fh = file(output, 'w')
+        for domain_a, domain_b in sorted(failed_domains):
+            output_fh.write('%s - %s\n' % (domain_a, domain_b))
+
+        print('Failed domains stored at %s' % output)
+
+    def generic_fuzzy_string_diff_runner_against_404(self, fuzzy_func, ratio):
         """
         Generic runner for fuzzy string diff
         """
@@ -83,6 +148,8 @@ class Test404FuzzyStringMatch(unittest.TestCase):
 
         for domain, (ok, not_exists) in self.not_exists_data.iteritems():
             total += 1
+            ok = self._gunzip(ok)
+            not_exists = self._gunzip(not_exists)
 
             ok_resp = self._create_http_response(domain, ok, False)
             not_exists_resp = self._create_http_response(domain, not_exists,
@@ -114,16 +181,77 @@ class Test404FuzzyStringMatch(unittest.TestCase):
         #
         #self.assertEqual(failed_domains, set())
 
-    def test_relative_distance_ge(self):
-        """
-        Test the optimized call to difflib: relative_distance_ge
+    def _add_noise_to_str(self, orig_str, noise_num, each_noise_len):
+        if not orig_str:
+            return orig_str
 
-        relative_distance_ge fail rate: 0.138044371405
+        if len(orig_str) < noise_num:
+            return orig_str
+
+        lchunk = int(len(orig_str) / noise_num)
+        str_with_noise = ''
+        chunks = [orig_str[x:x+lchunk] for x in xrange(1, len(orig_str), lchunk)]
+
+        for i in xrange(len(chunks)):
+            noise = ''.join(random.choice(printable) for _ in range(each_noise_len))
+            str_with_noise += '%s%s' % (chunks[i], noise)
+
+        return str_with_noise
+
+    def generic_fuzzy_string_diff_runner_noise(self, fuzzy_func, ratio):
+        """
+        Generic runner for fuzzy string diff which adds noise to the cmp
+        """
+        failed_domains = set()
+        total = 0
+        start = time.time()
+
+        for domain, (ok, _) in self.not_exists_data.iteritems():
+            total += 1
+
+            ok = self._gunzip(ok)
+
+            ok_resp = self._create_http_response(domain, ok, False)
+            ok_with_noise = self._add_noise_to_str(ok, 10, 12)
+            #print ok_with_noise
+            #break
+            ok_noise_resp = self._create_http_response(domain, ok_with_noise,
+                                                       True)
+
+            clean_body_ok = get_clean_body(ok_resp)
+            clean_body_noise = get_clean_body(ok_noise_resp)
+
+            if not fuzzy_func(clean_body_noise, clean_body_ok, ratio):
+                failed_domains.add(domain)
+
+        end = time.time()
+
+        perc_fail = len(failed_domains) / total
+        func_name = fuzzy_func.__name__
+
+        print('%s fail rate: %s' % (func_name, perc_fail))
+        print('Total time: %ss' % (end-start))
+        print('Analyzed samples: %s' % total)
+
+        output = '/tmp/%s.txt' % func_name
+        output_fh = file(output, 'w')
+        for domain in sorted(failed_domains):
+            output_fh.write('%s\n' % domain)
+
+        print('Failed domains stored at %s' % output)
+
+    def test_fuzzy_equal(self):
+        """
+        Test the optimized call to difflib: fuzzy_equal
+
+        fuzzy_equal fail rate: 0.138044371405
         Total time: 12.5121450424s
         Analyzed samples: 1217
         """
-        self.generic_fuzzy_string_diff_runner(relative_distance_ge,
-                                              IS_EQUAL_RATIO)
+        #self.generic_fuzzy_string_diff_runner_against_404(fuzzy_equal,
+                                              #IS_EQUAL_RATIO)
+        #self.generic_fuzzy_string_diff_runner_against_200(fuzzy_equal, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_noise(fuzzy_equal, IS_EQUAL_RATIO)
 
     def test_jellyfish_jaro(self):
         """
@@ -137,7 +265,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             str_b = str_b.replace('\0', '')
             return jellyfish.jaro_distance(str_a, str_b) > ratio
 
-        self.generic_fuzzy_string_diff_runner(jelly_fuzzy, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(jelly_fuzzy, IS_EQUAL_RATIO)
 
     def test_jellyfish_levenshtein_distance(self):
         """
@@ -155,7 +283,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             minl = min(len(str_a), len(str_b))
             return (jellyfish.levenshtein_distance(str_a, str_b) / minl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(jelly_fuzzy, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(jelly_fuzzy, IS_EQUAL_RATIO)
 
     def test_tokenized_set(self):
         """
@@ -169,7 +297,9 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             maxl = max(len(set_a), len(set_b))
             return (len(set_a.intersection(set_b)) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set, IS_EQUAL_RATIO)
+        #self.generic_fuzzy_string_diff_runner_against_404(tokenized_set, IS_EQUAL_RATIO)
+        #self.generic_fuzzy_string_diff_runner_against_200(tokenized_set, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_noise(tokenized_set, IS_EQUAL_RATIO)
 
     def test_tokenized_set_str_hash(self):
         """
@@ -185,7 +315,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             maxl = max(len(set_a), len(set_b))
             return (len(set_a.intersection(set_b)) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(tokenized_set, IS_EQUAL_RATIO)
 
     def test_tokenized_set_split_re(self):
         """
@@ -202,7 +332,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             maxl = max(len(set_a), len(set_b))
             return (len(set_a.intersection(set_b)) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(tokenized_set, IS_EQUAL_RATIO)
 
     def test_tokenized_set_large(self):
         """
@@ -221,7 +351,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
 
             return (len(intersect) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(tokenized_set, IS_EQUAL_RATIO)
 
     def test_tokenized_set_small(self):
         """
@@ -240,7 +370,7 @@ class Test404FuzzyStringMatch(unittest.TestCase):
 
             return (len(intersect) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set, IS_EQUAL_RATIO)
+        self.generic_fuzzy_string_diff_runner_against_404(tokenized_set, IS_EQUAL_RATIO)
 
     def test_tokenized_set_split_tag(self):
         """
@@ -285,5 +415,5 @@ class Test404FuzzyStringMatch(unittest.TestCase):
             maxl = max(len(set_a), len(set_b))
             return (len(set_a.intersection(set_b)) / maxl) > ratio
 
-        self.generic_fuzzy_string_diff_runner(tokenized_set_split_tag,
+        self.generic_fuzzy_string_diff_runner_against_404(tokenized_set_split_tag,
                                               IS_EQUAL_RATIO)

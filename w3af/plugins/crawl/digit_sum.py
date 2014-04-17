@@ -24,7 +24,7 @@ import re
 from itertools import izip, repeat
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -106,7 +106,7 @@ class digit_sum(CrawlPlugin):
 
             #    - If we changed the query string parameters, we have to check
             #      the content
-            elif relative_distance_lt(response.get_clear_text_body(),
+            elif fuzzy_not_equal(response.get_clear_text_body(),
                                       original_resp.get_clear_text_body(),
                                       0.8):
                 # In this case what might happen is that the number we changed
