@@ -129,7 +129,8 @@ class sqli(AuditPlugin):
         # ASP / MSSQL
         (r"Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL),
         # ORACLE
-        (r'(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE),
+        (r'PLS-[0-9][0-9][0-9][0-9]', dbms.ORACLE),
+        (r'ORA-[0-9][0-9][0-9][0-9]', dbms.ORACLE),
         # MYSQL
         (r"Table '[^']+' doesn't exist", dbms.MYSQL),
         # Generic errors..
