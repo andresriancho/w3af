@@ -25,6 +25,7 @@ import cgi
 import thread
 import urllib
 import string
+import copy
 
 from collections import deque
 from functools import wraps
@@ -243,13 +244,14 @@ class fingerprint_404(object):
         html_body = get_clean_body(http_response)
 
         #
-        #    Compare this response to all the 404's I have in my DB
+        #   Compare this response to all the 404's I have in my DB
         #
-        #    Note: while self._404_responses is a list, we can perform this for loop
-        #          without "with self._lock", read comments in stackoverflow:
-        #          http://stackoverflow.com/questions/9515364/does-python-freeze-the-list-before-for-loop
+        #   Copy the 404_responses deque in order to be able to iterate over
+        #   it from one thread, while it is changed in another.
         #
-        for resp_404 in self._404_responses:
+        copy_404_responses = copy.copy(self._404_responses)
+
+        for resp_404 in copy_404_responses:
 
             if fuzzy_equal(resp_404.get_body(), html_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
