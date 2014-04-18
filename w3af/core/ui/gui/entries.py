@@ -27,7 +27,7 @@ from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.ui.gui.user_help.open_help import open_help
 
 from w3af.core.data.options.preferences import Preferences
-from w3af.core.data.parsers.baseparser import BaseParser
+from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
@@ -290,7 +290,7 @@ class EmailEntry(ValidatedEntry, ModifiedMixIn):
         ValidatedEntry.__init__(self, '')
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ''
-        self.EMAIL_RE = BaseParser.EMAIL_RE
+        self.EMAIL_RE = SGMLParser.EMAIL_RE
 
     def validate(self, text):
         """Redefinition of ValidatedEntry's method.
