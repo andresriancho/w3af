@@ -25,6 +25,8 @@ import re
 import urllib
 import urlparse
 
+from functools import wraps
+
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -43,6 +45,7 @@ def set_changed(meth):
     Function to decorate methods in order to set the "self._changed" attribute
     of the object to True.
     """
+    @wraps(meth)
     def wrapper(self, *args, **kwargs):
         self._changed = True
         return meth(self, *args, **kwargs)
