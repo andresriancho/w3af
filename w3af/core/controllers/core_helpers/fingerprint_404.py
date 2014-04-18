@@ -24,9 +24,11 @@ from __future__ import with_statement
 import cgi
 import thread
 import urllib
+import string
 
 from collections import deque
 from functools import wraps
+from itertools import izip_longest
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -293,6 +295,85 @@ class fingerprint_404(object):
 
             return False
 
+    def _generate_404_filename(self, filename):
+        """
+        Some web applications are really picky about the URL format, or have
+        different 404 handling for the URL format. So we're going to apply these
+        rules for generating a filename that doesn't exist:
+
+            * Flip the characters of the same type (digit, letter), ignoring
+            the file extension (if any):
+                'ab-23'      ==> 'ba-32'
+                'abc-12'     ==> 'bac-12'
+                'ab-23.html' ==> 'ba-32.html'
+
+            * If after the character flipping the filename is equal to the
+            original one, +2 to each char:
+                'a1a2'      ==> 'c3c4"
+                'a1a2.html' ==> 'c3c4.html"
+
+        :param filename: The original filename
+        :return: A mutated filename
+        """
+        split_filename = filename.rsplit('.', 1)
+        if len(split_filename) == 2:
+            orig_filename, extension = split_filename
+        else:
+            extension = None
+            orig_filename = split_filename[0]
+
+        def grouper(iterable, n, fillvalue=None):
+            "Collect data into fixed-length chunks or blocks"
+            # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
+            args = [iter(iterable)] * n
+            return izip_longest(fillvalue=fillvalue, *args)
+
+        mod_filename = ''
+
+        for x, y in grouper(orig_filename, 2):
+
+            # Handle the last iteration
+            if y is None:
+                mod_filename += x
+                break
+
+            if x.isdigit() and y.isdigit():
+                mod_filename += y + x
+            elif x in string.letters and y in string.letters:
+                mod_filename += y + x
+            else:
+                # Don't flip chars
+                mod_filename += x + y
+
+        if mod_filename == orig_filename:
+            # Damn!
+            plus_three_filename = ''
+            letters = string.letters
+            digits = string.digits
+            lletters = len(letters)
+            ldigits = len(digits)
+
+            for c in mod_filename:
+                indexl = letters.find(c)
+                if indexl != -1:
+                    new_index = (indexl + 3) % lletters
+                    plus_three_filename += letters[new_index]
+                else:
+                    indexd = digits.find(c)
+                    if indexd != -1:
+                        new_index = (indexd + 3) % ldigits
+                        plus_three_filename += digits[new_index]
+                    else:
+                        plus_three_filename += c
+
+            mod_filename = plus_three_filename
+
+        final_result = mod_filename
+        if extension is not None:
+            final_result += '.%s' % extension
+
+        return final_result
+
     def _is_404_with_extra_request(self, http_response, clean_html_body):
         """
         Performs a very simple check to verify if this response is a 404 or not.
@@ -314,7 +395,7 @@ class fingerprint_404(object):
             relative_url = '../%s/' % rand_alnum(8)
             url_404 = response_url.url_join(relative_url)
         else:
-            relative_url = 'not-%s' % filename
+            relative_url = self._generate_404_filename(filename)
             url_404 = response_url.url_join(relative_url)
 
         response_404 = self._send_404(url_404)
