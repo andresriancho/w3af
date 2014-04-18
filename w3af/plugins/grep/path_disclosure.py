@@ -124,7 +124,7 @@ class path_disclosure(GrepPlugin):
 
                 # This if is to avoid false positives
                 if not request.sent(match) and not \
-                self._attr_value(match, html_string):
+                self._is_attr_value(match, response):
 
                     # Check for dups
                     if (realurl, match) in self._already_added:
@@ -173,11 +173,12 @@ class path_disclosure(GrepPlugin):
         """
         return cmp(len(a), len(b))
 
-    def _attr_value(self, path_disclosure_string, response_body):
+    def _is_attr_value(self, path_disclosure_string, response):
         """
         This method was created to remove some false positives.
 
-        :return: True if path_disclosure_string is the value of an attribute inside a tag.
+        :return: True if path_disclosure_string is the value of an attribute
+                 inside a tag.
 
         Examples:
             path_disclosure_string = '/home/image.png'
@@ -188,10 +189,16 @@ class path_disclosure(GrepPlugin):
             response_body = '...<b>Error while processing /home/image.png</b>...'
             return: False
         """
-        regex = '<.+?(["|\']%s["|\']).*?>' % re.escape(path_disclosure_string)
-        regex_res = re.findall(regex, response_body)
-        in_attr = path_disclosure_string in regex_res
-        return in_attr
+        dom = response.get_dom()
+        if dom is None:
+            return False
+
+        for elem in dom.iterdescendants():
+            for key, value in elem.items():
+                if path_disclosure_string in value:
+                    return True
+
+        return False
 
     def _update_KB_path_list(self):
         """
