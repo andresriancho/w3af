@@ -251,11 +251,13 @@ class SGMLParser(BaseParser):
         Find references inside the document.
         """
         filter_ref = self._filter_ref
+        base_url = self._base_url
+        decode_url = self._decode_url
 
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
-                url_path = self._decode_url(url_path)
-                url = self._base_url.url_join(url_path, encoding=self._encoding)
+                url_path = decode_url(url_path)
+                url = base_url.url_join(url_path, encoding=self._encoding)
             except ValueError:
                 # Just ignore it, this happens in many cases but one
                 # of the most noticeable is "d:url.html", where the
@@ -263,7 +265,10 @@ class SGMLParser(BaseParser):
                 msg = 'Ignoring URL "%s" as it generated an invalid URL.'
                 om.out.debug(msg % url_path)
             else:
-                url.normalize_url()
+                # The url_join call already normalizes the URL, there is no
+                # need to call normalize again
+                # url.normalize_url()
+
                 # Save url
                 self._parsed_urls.add(url)
                 self._tag_and_url.add((tag, url))

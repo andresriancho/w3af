@@ -475,7 +475,12 @@ class URL(DiskItem):
         resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = URL(joined_url, resp_encoding)
-        jurl_obj.normalize_url()
+
+        # There is no need to call normalize_url here, since it is called in the
+        # URL object __init__
+        #
+        #jurl_obj.normalize_url()
+
         return jurl_obj
 
     def get_domain(self):
