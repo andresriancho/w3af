@@ -42,7 +42,6 @@ class WMLParser(SGMLParser):
         :param HTTPResponse: The HTTP response document that contains the WML
         document inside its body.
         """
-        
         SGMLParser._pre_parse(self, HTTPResponse)
         assert self._base_url is not None, 'The base URL must be set.'
 

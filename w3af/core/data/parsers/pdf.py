@@ -23,7 +23,7 @@ import StringIO
 import re
 
 from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
+from pdfminer.pdfinterp import PDFResourceManager, process_pdf
 from pdfminer.layout import LAParams
 from pdfminer.pdfparser import PDFSyntaxError
 
@@ -56,25 +56,25 @@ class PDFParser(BaseParser):
             except ValueError:
                 pass
 
-        # Get the mail addys
-        self._extract_emails(content_text)
-
     def get_references(self):
         """
-        Searches for references on a page. w3af searches references in every html tag, including:
+        Searches for references on a page. w3af searches references in every
+        html tag, including:
             - a
             - forms
             - images
             - frames
             - etc.
 
-        :return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
-        regular expression. The second list if less trustworthy.
+        :return: Two lists, one with the parsed URLs, and one with the URLs
+                 that came out of a regular expression. The second list if less
+                 trustworthy.
         """
-        return ([], list(self._re_urls))
+        return [], list(self._re_urls)
 
-    get_references_of_tag = get_forms = get_comments = \
-        get_meta_redir = get_meta_tags = lambda *args, **kwds: []
+    get_references_of_tag = get_forms = BaseParser._return_empty_list
+    get_comments = BaseParser._return_empty_list
+    get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
 
 
 def pdf_to_text(pdf_string):

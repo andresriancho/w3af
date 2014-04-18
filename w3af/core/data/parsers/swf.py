@@ -140,22 +140,9 @@ class SWFParser(BaseParser):
                  that came out of a regular expression. The second list if less
                  trustworthy.
         """
-        return ([], list(self._re_urls))
+        return [], list(self._re_urls)
 
-    def _return_empty_list(self, *args, **kwds):
-        """
-        This method is called (see below) when the caller invokes one of:
-            - get_forms
-            - get_comments
-            - get_meta_redir
-            - get_meta_tags
-            - get_references_of_tag
-
-        :return: Because we are a PDF document, we don't have the same things that
-        a nice HTML document has, so we simply return an empty list.
-        """
-        return []
-
-    get_references_of_tag = get_forms = get_comments = _return_empty_list
-    get_meta_redir = get_meta_tags = _return_empty_list
+    get_references_of_tag = get_forms = BaseParser._return_empty_list
+    get_comments = BaseParser._return_empty_list
+    get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
 

@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import urllib
 import re
 import traceback
 
@@ -39,12 +40,17 @@ class SGMLParser(BaseParser):
     :author: Javier Andalia (jandalia =at= gmail.com)
              Andres Riancho ((andres.riancho@gmail.com))
     """
+    EMAIL_RE = re.compile(
+        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+        re.I | re.U)
 
     TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
         'form', 'ilayer', 'bgsound', 'html', 'audio', 'video'
     }
+
+    TAGS_WITH_MAILTO = {'a'}
 
     URL_ATTRS = {'href', 'src', 'data', 'action', 'manifest'}
 
@@ -70,6 +76,7 @@ class SGMLParser(BaseParser):
         self._scripts_in_doc = []
         self._meta_redirs = []
         self._meta_tags = []
+        self._emails = set()
 
         # Do some stuff before actually parsing
         self._pre_parse(http_resp)
@@ -77,28 +84,35 @@ class SGMLParser(BaseParser):
         # Parse!
         self._parse(http_resp)
 
+    def _handle_exception(self, where, ex):
+        msg = 'An exception occurred while %s: "%s"' % (where, ex)
+        om.out.error(msg)
+        om.out.error('Error traceback: %s' % traceback.format_exc())
+
     def start(self, tag, attrs):
         """
         Called by the parser on element open.
         """
+        # Call start_tag handler method
+        handler = '_handle_%s_tag_start' % tag
+
         try:
-            # Call start_tag handler method
-            handler = '_handle_%s_tag_start' % tag
             meth = getattr(self, handler, lambda *args: None)
             meth(tag, attrs)
         except Exception, ex:
-            msg = 'An exception occurred while parsing a document: %s' % ex
-            om.out.error(msg)
-            om.out.error('Error traceback: %s' % traceback.format_exc())
+            self._handle_exception('parsing document', ex)
 
         try:
             if tag in self.TAGS_WITH_URLS:
                 self._find_references(tag, attrs)
         except Exception, ex:
-            msg = 'An exception occurred while extracting references from'\
-                  ' tag "%s": %s' % ex
-            om.out.error(msg)
-            om.out.error('Error traceback: %s' % traceback.format_exc())
+            self._handle_exception('extracting references', ex)
+
+        try:
+            if tag in self.TAGS_WITH_MAILTO:
+                self._find_emails(tag, attrs)
+        except Exception, ex:
+            self._handle_exception('finding emails', ex)
 
     def end(self, tag):
         """
@@ -135,7 +149,6 @@ class SGMLParser(BaseParser):
         # part of a memory usage improvement where the body is NOT saved
         # as an attribute
         self._regex_url_parse(body)
-        self._extract_emails(body)
 
     def _parse(self, http_resp):
         """
@@ -190,11 +203,53 @@ class SGMLParser(BaseParser):
             and not value.startswith('#') \
             and not value in self.APACHE_INDEXING
 
+    def get_emails(self, domain=None):
+        """
+        :param domain: Indicates what email addresses I want to retrieve.
+                       All are returned if the domain is not set.
+
+        :return: A list of email accounts that are inside the document.
+        """
+        if domain:
+            return [i for i in self._emails if domain == i.split('@')[1]]
+        else:
+            return self._emails
+
+    def _find_emails(self, tag, attrs):
+        """
+        Extract "mailto:" email addresses
+
+        :param tag: The tag which is being parsed
+        :param attrs: The attributes for that tag
+        :return: Store the emails in self._emails
+        """
+        filter_ref = self._filter_ref
+
+        for _, mailto_address in filter(filter_ref, attrs.iteritems()):
+            if '@' in mailto_address:
+                if mailto_address.lower().startswith('mailto:'):
+                    try:
+                        email = self._parse_mailto(mailto_address)
+                    except ValueError:
+                        # It was an invalid email
+                        pass
+                    else:
+                        self._emails.add(email)
+
+    def _parse_mailto(self, mailto):
+        mailto = urllib.unquote_plus(mailto)
+        colon_split = mailto.split(':', 1)
+        quest_split = colon_split[1].split('?', 1)
+        email = quest_split[0].strip()
+        if self.EMAIL_RE.match(email):
+            return email
+        else:
+            raise ValueError('Invalid email address "%s"' % email)
+
     def _find_references(self, tag, attrs):
         """
         Find references inside the document.
         """
-
         filter_ref = self._filter_ref
 
         for _, url_path in filter(filter_ref, attrs.iteritems()):

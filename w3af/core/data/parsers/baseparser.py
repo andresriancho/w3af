@@ -43,9 +43,6 @@ class BaseParser(object):
     RELATIVE_URL_RE = re.compile(
         '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}'
         '((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)', re.U)
-    EMAIL_RE = re.compile(
-        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
-        re.I | re.U)
     SAFE_CHARS = (('\x00', '%00'),)
 
     # Matches
@@ -59,7 +56,7 @@ class BaseParser(object):
         if not is_known_encoding(encoding):
             raise ValueError('Unknown encoding: %s' % encoding)
 
-        # "setBaseUrl"
+        # "set_base_url"
         url = HTTPResponse.get_url()
         redir_url = HTTPResponse.get_redir_url()
         if redir_url:
@@ -71,50 +68,14 @@ class BaseParser(object):
         self._encoding = HTTPResponse.get_charset()
 
         # To store results
-        self._emails = set()
         self._re_urls = set()
-
-    def get_emails(self, domain=None):
-        """
-        :param domain: Indicates what email addresses I want to retrieve.
-                       All are returned if the domain is not set.
-
-        :return: A list of email accounts that are inside the document.
-        """
-        if domain:
-            return [i for i in self._emails if domain == i.split('@')[1]]
-        else:
-            return self._emails
-
-    def _extract_emails(self, doc_str):
-        """
-        :return: A set() with all mail users that are present in the doc_str.
-        @see: We don't support emails like myself <at> gmail !dot! com
-        """
-        # Revert url-encoded sub-strings
-        doc_str = urllib.unquote_plus(doc_str)
-
-        # Then html-decode HTML special characters
-        doc_str = htmldecode(doc_str)
-
-        self._emails = set()
-
-        # Perform a fast search for the @. In w3af, if we don't have an @ we
-        # don't have an email.
-        if doc_str.find('@') != -1:
-            compiled_re = re.compile('[^\w@\-\\.]', re.UNICODE)
-            doc_str = re.sub(compiled_re, ' ', doc_str)
-            for email, domain in re.findall(self.EMAIL_RE, doc_str):
-                self._emails.add(email)
-
-        return self._emails
 
     def _regex_url_parse(self, doc_str):
         """
         Use regular expressions to find new URLs.
 
         :param HTTPResponse: The http response object that stores the
-            response body and the URL.
+                             response body and the URL.
         :return: None. The findings are stored in self._re_urls as url_objects
         """
         re_urls = self._re_urls
@@ -265,6 +226,13 @@ class BaseParser(object):
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_references() method.')
 
+    def get_emails(self, domain=None):
+        """
+        :return: A set with email addresses
+        """
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the get_emails() method.')
+
     def get_comments(self):
         """
         :return: A list of comments.
@@ -292,3 +260,14 @@ class BaseParser(object):
         """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_tags() method.')
+
+    def _return_empty_list(self, *args, **kwds):
+        """
+        Some parsers don't implement some of the features, so they can add
+        something like:
+
+        get_forms = _return_empty_list
+
+        At the class definition, and simply return an empty list.
+        """
+        return []
