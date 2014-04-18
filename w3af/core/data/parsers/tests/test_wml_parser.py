@@ -25,14 +25,14 @@ from w3af.core.data.parsers.wml_parser import WMLParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
 
 
 class TestWMLParser(unittest.TestCase):
 
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
-    def test_parser_simple_form(self): 
+
+    def test_parser_simple_form(self):
         form = """<go method="post" href="post.php">
                     <postfield name="clave" value="$(clave)"/>
                     <postfield name="cuenta" value="$(cuenta)"/>
@@ -55,23 +55,12 @@ class TestWMLParser(unittest.TestCase):
         self.assertIn('tipdat', form)
 
     def test_parser_simple_link(self):
-        response = HTTPResponse( 200, '<a href="/index.aspx">ASP.NET</a>', 
-                                 Headers(), self.url, self.url )
-        w = WMLParser( response )
+        response = HTTPResponse(200, '<a href="/index.aspx">ASP.NET</a>',
+                                Headers(), self.url, self.url)
+        w = WMLParser(response)
         re, parsed = w.get_references()
         
         # TODO: Shouldn't this be the other way around?!
         self.assertEqual(len(parsed), 0)
         self.assertEqual(u'http://www.w3af.com/index.aspx', re[0].url_string)
 
-    def test_parser_re_link(self):
-        """Get a link by applying regular expressions"""
-        response = HTTPResponse(200, 'header /index.aspx footer',
-                                Headers(), self.url, self.url)
-        w = WMLParser( response )
-        re, parsed = w.get_references()
-        
-        # TODO: Shouldn't this be the other way around?!
-        self.assertEqual([], re)
-        self.assertEqual(len(parsed), 1)
-        self.assertEqual(u'http://www.w3af.com/index.aspx', parsed[0].url_string)

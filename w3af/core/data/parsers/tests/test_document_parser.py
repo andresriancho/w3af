@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
-from nose.plugins.skip import SkipTest
-
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.parsers.document_parser import document_parser_factory, DocumentParser
@@ -90,13 +88,10 @@ class TestDocumentParserFactory(unittest.TestCase):
         paths.extend(url.get_path_qs() for url in parser.get_references()[0])
         paths.extend(url.get_path_qs() for url in parser.get_references()[1])
         
-        expected_paths = set(['/szukaj/_vti_bin/search.asmx',
-                              '/_vti_bin/search.asmx?disco=',
-                              '/_vti_bin/search.asmx',
-                              '/2003/05/soap-envelope',
-                              '/soap/envelope/',
-                              '/2001/XMLSchema',
-                              '/2001/XMLSchema-instance'])
+        expected_paths = {'/szukaj/_vti_bin/search.asmx',
+                          '/_vti_bin/search.asmx?disco=',
+                          '/2003/05/soap-envelope',
+                          '/soap/envelope/', '/2001/XMLSchema',
+                          '/2001/XMLSchema-instance'}
         
         self.assertEqual(expected_paths, set(paths))
-        
