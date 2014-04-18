@@ -53,7 +53,7 @@ class TestSWFParser(unittest.TestCase):
     
     def test_swf_parser_wivet(self):
         raise SkipTest('See https://github.com/andresriancho/w3af/issues/1128')
-        
+
         parser = self.parse(self.WIVET_SAMPLE)
         parsed, re_refs = parser.get_references()
         
