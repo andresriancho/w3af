@@ -299,7 +299,7 @@ class Form(DataContainer):
         matrix = self._selects.values()
 
         # Build self variant based on `sample_path`
-        for sample_path in self._getSamplePaths(mode, matrix):
+        for sample_path in self._get_sample_paths(mode, matrix):
             # Clone self
             self_variant = self.copy()
 
@@ -332,7 +332,7 @@ class Form(DataContainer):
 
             yield self_variant
 
-    def _getSamplePaths(self, mode, matrix):
+    def _get_sample_paths(self, mode, matrix):
 
         if mode in ["t", "tb"]:
             yield [0] * len(matrix)
@@ -342,18 +342,18 @@ class Form(DataContainer):
         # mode in ["tmb", "all"]
         elif mode in ["tmb", "all"]:
 
-            variants_total = self._get_variantsCount(matrix, mode)
+            variants_total = self._get_variants_count(matrix, mode)
 
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
             # matrix by using `SEED` in the random generation
             if variants_total > self.TOP_VARIANTS:
                 # Inform user
-                om.out.information("w3af found an HTML form that has several"
-                                   " checkbox, radio and select input tags inside. Testing "
-                                   "all combinations of those values would take too much "
-                                   "time, the framework will only test %s randomly "
-                                   "distributed variants." % self.TOP_VARIANTS)
+                om.out.debug("w3af found an HTML form that has several"
+                             " checkbox, radio and select input tags inside."
+                             " Testing all combinations of those values would"
+                             " take too much time, the framework will only"
+                             " test %s randomly distributed variants." % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed so we get the same variants
                 # in two runs. This is important for users because they expect
@@ -383,7 +383,7 @@ class Form(DataContainer):
 
                 for path in rand.sample(xrange(variants_total),
                                         self.TOP_VARIANTS):
-                    yield self._decodePath(path, matrix)
+                    yield self._decode_path(path, matrix)
 
             # Less than TOP_VARIANTS elems in matrix
             else:
@@ -398,14 +398,14 @@ class Form(DataContainer):
                             matrix[row] = new_vector
 
                     # New variants total
-                    variants_total = self._get_variantsCount(matrix, mode)
+                    variants_total = self._get_variants_count(matrix, mode)
 
                 # Now get all paths!
                 for path in xrange(variants_total):
-                    decoded_path = self._decodePath(path, matrix)
+                    decoded_path = self._decode_path(path, matrix)
                     yield decoded_path
 
-    def _decodePath(self, path, matrix):
+    def _decode_path(self, path, matrix):
         """
         Decode the integer `path` into a tuple of ints where the ith-elem
         is the index to select from vector given by matrix[i].
@@ -433,7 +433,7 @@ class Form(DataContainer):
 
         return decoded_path
 
-    def _get_variantsCount(self, matrix, mode):
+    def _get_variants_count(self, matrix, mode):
         """
 
         :param matrix:
