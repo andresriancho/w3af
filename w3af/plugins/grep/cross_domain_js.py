@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from lxml import etree
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 
@@ -67,7 +69,13 @@ class cross_domain_js(GrepPlugin):
                 continue
 
             script_src = script_src_tag.attrib['src']
-            script_full_url = response.get_url().url_join(script_src)
+            try:
+                script_full_url = response.get_url().url_join(script_src)
+            except ValueError:
+                msg = 'Invalid URL found by cross_domain_js: "%s"'
+                om.out.debug(msg % script_src)
+                continue
+
             script_domain = script_full_url.get_domain()
 
             if script_domain != response.get_url().get_domain():

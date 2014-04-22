@@ -99,7 +99,7 @@ class TestFuzzableRequest(unittest.TestCase):
         # appearing in the dump. It might be a bug...
         fr = FuzzableRequest(self.url, method='GET', dc={u'á': ['b']},
                              headers=headers)
-        self.assertEqual(fr.dump(), expected)
+        self.assertEqual(fr.dump(), expected.encode('utf-8'))
 
     def test_dump_case03(self):
         header_value = ''.join(chr(i) for i in xrange(256))
@@ -171,4 +171,3 @@ class TestFuzzableRequest(unittest.TestCase):
         url = URL('http://www.google.com/')
         r = FuzzableRequest(url)
         self.assertEqual(r.get_url(), url)
-    

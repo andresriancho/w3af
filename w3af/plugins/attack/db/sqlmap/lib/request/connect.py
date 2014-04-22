@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -12,9 +12,9 @@ import re
 import socket
 import string
 import time
+import traceback
 import urllib2
 import urlparse
-import traceback
 
 from extra.safe2bin.safe2bin import safecharencode
 from lib.core.agent import agent
@@ -22,6 +22,7 @@ from lib.core.common import asciifyUrl
 from lib.core.common import calculateDeltaSeconds
 from lib.core.common import clearConsoleLine
 from lib.core.common import cpuThrottle
+from lib.core.common import dataToStdout
 from lib.core.common import evaluateCode
 from lib.core.common import extractRegexResult
 from lib.core.common import findMultipartPostBoundary
@@ -80,6 +81,7 @@ from lib.core.settings import LARGE_CHUNK_TRIM_MARKER
 from lib.core.settings import PAYLOAD_DELIMITER
 from lib.core.settings import PERMISSION_DENIED_REGEX
 from lib.core.settings import PLAIN_TEXT_CONTENT_TYPE
+from lib.core.settings import REPLACEMENT_MARKER
 from lib.core.settings import UNENCODED_ORIGINAL_VALUE
 from lib.core.settings import URI_HTTP_HEADER
 from lib.core.settings import WARN_TIME_STDEV
@@ -613,7 +615,6 @@ class Connect(object):
         pageLength = None
         uri = None
         code = None
-        urlEncodePost = None
 
         if not place:
             place = kb.injection.place or PLACE.GET
@@ -627,10 +628,9 @@ class Connect(object):
         if conf.httpHeaders:
             headers = dict(conf.httpHeaders)
             contentType = max(headers[_] if _.upper() == HTTP_HEADER.CONTENT_TYPE.upper() else None for _ in headers.keys())
-            urlEncodePost = contentType and "urlencoded" in contentType or contentType is None
 
-            if (kb.postHint or conf.skipUrlEncode) and urlEncodePost:
-                urlEncodePost = False
+            if (kb.postHint or conf.skipUrlEncode) and kb.postUrlEncode:
+                kb.postUrlEncode = False
                 conf.httpHeaders = [_ for _ in conf.httpHeaders if _[1] != contentType]
                 contentType = POST_HINT_CONTENT_TYPES.get(kb.postHint, PLAIN_TEXT_CONTENT_TYPE)
                 conf.httpHeaders.append((HTTP_HEADER.CONTENT_TYPE, contentType))
@@ -658,11 +658,18 @@ class Connect(object):
                         payload = json.dumps(payload[1:-1])
                     else:
                         payload = json.dumps(payload)[1:-1]
+                elif kb.postHint == POST_HINT.JSON_LIKE:
+                    payload = payload.replace("'", REPLACEMENT_MARKER).replace('"', "'").replace(REPLACEMENT_MARKER, '"')
+                    if payload.startswith('"') and payload.endswith('"'):
+                        payload = json.dumps(payload[1:-1])
+                    else:
+                        payload = json.dumps(payload)[1:-1]
+                    payload = payload.replace("'", REPLACEMENT_MARKER).replace('"', "'").replace(REPLACEMENT_MARKER, '"')
                 value = agent.replacePayload(value, payload)
             else:
                 # GET, POST, URI and Cookie payload needs to be throughly URL encoded
-                if place in (PLACE.GET, PLACE.URI, PLACE.COOKIE) and not conf.skipUrlEncode or place in (PLACE.POST, PLACE.CUSTOM_POST) and urlEncodePost:
-                    payload = urlencode(payload, '%', False, place != PLACE.URI)
+                if place in (PLACE.GET, PLACE.URI, PLACE.COOKIE) and not conf.skipUrlEncode or place in (PLACE.POST, PLACE.CUSTOM_POST) and kb.postUrlEncode:
+                    payload = urlencode(payload, '%', False, place != PLACE.URI)  # spaceplus is handled down below
                     value = agent.replacePayload(value, payload)
 
             if conf.hpp:
@@ -805,7 +812,7 @@ class Connect(object):
         if post is not None:
             if place not in (PLACE.POST, PLACE.CUSTOM_POST) and hasattr(post, UNENCODED_ORIGINAL_VALUE):
                 post = getattr(post, UNENCODED_ORIGINAL_VALUE)
-            elif urlEncodePost:
+            elif kb.postUrlEncode:
                 post = urlencode(post, spaceplus=kb.postSpaceToPlus)
 
         if timeBasedCompare:
@@ -817,16 +824,20 @@ class Connect(object):
                     warnMsg += "time-based injections because of its high latency time"
                     singleTimeWarnMessage(warnMsg)
 
-                warnMsg = "time-based comparison needs larger statistical "
-                warnMsg += "model. Making a few dummy requests, please wait.."
-                singleTimeWarnMessage(warnMsg)
+                warnMsg = "[%s] [WARNING] time-based comparison requires " % time.strftime("%X")
+                warnMsg += "larger statistical model, please wait"
+                dataToStdout(warnMsg)
 
                 while len(kb.responseTimes) < MIN_TIME_RESPONSES:
                     Connect.queryPage(content=True)
+                    dataToStdout('.')
+
+                dataToStdout("\n")
 
             elif not kb.testMode:
-                warnMsg = "it is very important not to stress the network adapter's "
-                warnMsg += "bandwidth during usage of time-based payloads"
+                warnMsg = "it is very important not to stress the network adapter "
+                warnMsg += "during usage of time-based payloads to prevent potential "
+                warnMsg += "errors "
                 singleTimeWarnMessage(warnMsg)
 
             if not kb.laggingChecked:

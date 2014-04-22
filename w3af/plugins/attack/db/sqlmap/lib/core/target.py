@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -44,6 +44,7 @@ from lib.core.settings import ASTERISK_MARKER
 from lib.core.settings import CUSTOM_INJECTION_MARK_CHAR
 from lib.core.settings import HOST_ALIASES
 from lib.core.settings import JSON_RECOGNITION_REGEX
+from lib.core.settings import JSON_LIKE_RECOGNITION_REGEX
 from lib.core.settings import MULTIPART_RECOGNITION_REGEX
 from lib.core.settings import PROBLEMATIC_CUSTOM_INJECTION_PATTERNS
 from lib.core.settings import REFERER_ALIASES
@@ -114,7 +115,7 @@ def _setRequestParams():
 
         if not (kb.processUserMarks and CUSTOM_INJECTION_MARK_CHAR in conf.data):
             if re.search(JSON_RECOGNITION_REGEX, conf.data):
-                message = "JSON like data found in %s data. " % conf.method
+                message = "JSON data found in %s data. " % conf.method
                 message += "Do you want to process it? [Y/n/q] "
                 test = readInput(message, default="Y")
                 if test and test[0] in ("q", "Q"):
@@ -125,8 +126,20 @@ def _setRequestParams():
                     conf.data = re.sub(r'("(?P<name>[^"]+)"\s*:\s*)(-?\d[\d\.]*\b)', functools.partial(process, repl=r'\g<0>%s' % CUSTOM_INJECTION_MARK_CHAR), conf.data)
                     kb.postHint = POST_HINT.JSON
 
+            elif re.search(JSON_LIKE_RECOGNITION_REGEX, conf.data):
+                message = "JSON-like data found in %s data. " % conf.method
+                message += "Do you want to process it? [Y/n/q] "
+                test = readInput(message, default="Y")
+                if test and test[0] in ("q", "Q"):
+                    raise SqlmapUserQuitException
+                elif test[0] not in ("n", "N"):
+                    conf.data = conf.data.replace(CUSTOM_INJECTION_MARK_CHAR, ASTERISK_MARKER)
+                    conf.data = re.sub(r"('(?P<name>[^']+)'\s*:\s*'[^']+)'", functools.partial(process, repl=r"\g<1>%s'" % CUSTOM_INJECTION_MARK_CHAR), conf.data)
+                    conf.data = re.sub(r"('(?P<name>[^']+)'\s*:\s*)(-?\d[\d\.]*\b)", functools.partial(process, repl=r"\g<0>%s" % CUSTOM_INJECTION_MARK_CHAR), conf.data)
+                    kb.postHint = POST_HINT.JSON_LIKE
+
             elif re.search(SOAP_RECOGNITION_REGEX, conf.data):
-                message = "SOAP/XML like data found in %s data. " % conf.method
+                message = "SOAP/XML data found in %s data. " % conf.method
                 message += "Do you want to process it? [Y/n/q] "
                 test = readInput(message, default="Y")
                 if test and test[0] in ("q", "Q"):
@@ -564,11 +577,15 @@ def initTargetEnv():
         class _(unicode):
             pass
 
-        original = conf.data
-        conf.data = _(urldecode(conf.data))
-        setattr(conf.data, UNENCODED_ORIGINAL_VALUE, original)
-
-        kb.postSpaceToPlus = '+' in original
+        for key, value in conf.httpHeaders:
+            if key.upper() == HTTP_HEADER.CONTENT_TYPE.upper():
+                kb.postUrlEncode = "urlencoded" in value
+                break
+        if kb.postUrlEncode:
+            original = conf.data
+            conf.data = _(urldecode(conf.data))
+            setattr(conf.data, UNENCODED_ORIGINAL_VALUE, original)
+            kb.postSpaceToPlus = '+' in original
 
 def setupTargetEnv():
     _createTargetDirs()

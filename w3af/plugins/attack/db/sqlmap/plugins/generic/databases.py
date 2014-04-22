@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -227,7 +227,7 @@ class Databases:
                     resumeAvailable = True
                     break
 
-            if resumeAvailable:
+            if resumeAvailable and not conf.freshQueries:
                 for db, table in kb.brute.tables:
                     if db == conf.db:
                         if conf.db not in kb.data.cachedTables:
@@ -281,7 +281,7 @@ class Databases:
 
                 for db, table in filterPairValues(values):
                     db = safeSQLIdentificatorNaming(db)
-                    table = safeSQLIdentificatorNaming(table, True)
+                    table = safeSQLIdentificatorNaming(unArrayizeValue(table), True)
 
                     if db not in kb.data.cachedTables:
                         kb.data.cachedTables[db] = [table]
@@ -331,6 +331,8 @@ class Databases:
                         query = rootQuery.blind.query % (kb.data.cachedTables[-1] if kb.data.cachedTables else " ")
                     elif Backend.getIdentifiedDbms() in (DBMS.SQLITE, DBMS.FIREBIRD):
                         query = rootQuery.blind.query % index
+                    elif Backend.isDbms(DBMS.HSQLDB):
+                        query = rootQuery.blind.query % (index, unsafeSQLIdentificatorNaming(db))
                     else:
                         query = rootQuery.blind.query % (unsafeSQLIdentificatorNaming(db), index)
 
@@ -399,9 +401,12 @@ class Databases:
             if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
                 conf.col = conf.col.upper()
 
-            colList = conf.col.split(",")
+            colList = conf.col.split(',')
         else:
             colList = []
+
+        if conf.excludeCol:
+            colList = [_ for _ in colList if _ not in conf.excludeCol.split(',')]
 
         for col in colList:
             colList[colList.index(col)] = safeSQLIdentificatorNaming(col)
@@ -455,7 +460,7 @@ class Databases:
                         resumeAvailable = True
                         break
 
-            if resumeAvailable or colList:
+            if resumeAvailable and not conf.freshQueries or colList:
                 columns = {}
 
                 for column in colList:

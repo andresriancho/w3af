@@ -49,6 +49,7 @@ NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
            'javascript', 'rss+xml', 'soap+xml', 'font-woff',
            'xhtml+xml', 'xml-dtd', 'xop+xml')
 
+
 class xml_file(OutputPlugin):
     """
     Print all messages to a xml file.

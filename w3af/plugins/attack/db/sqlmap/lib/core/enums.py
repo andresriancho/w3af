@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -71,6 +71,7 @@ class PLACE:
 class POST_HINT:
     SOAP = "SOAP"
     JSON = "JSON"
+    JSON_LIKE = "JSON-like"
     MULTIPART = "MULTIPART"
     XML = "XML (generic)"
 
@@ -135,6 +136,7 @@ class MOBILES:
 
 class PROXY_TYPE:
     HTTP = "HTTP"
+    HTTPS = "HTTPS"
     SOCKS4 = "SOCKS4"
     SOCKS5 = "SOCKS5"
 

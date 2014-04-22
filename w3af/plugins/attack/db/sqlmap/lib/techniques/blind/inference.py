@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -198,7 +198,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
             value are not equal there will be a deliberate delay).
             """
 
-            if CHAR_INFERENCE_MARK not in payload:
+            if "'%s'" % CHAR_INFERENCE_MARK not in payload:
                 forgedPayload = safeStringFormat(payload.replace(INFERENCE_GREATER_CHAR, INFERENCE_NOT_EQUALS_CHAR), (expressionUnescaped, idx, value))
             else:
                 # e.g.: ... > '%c' -> ... > ORD(..)
@@ -254,7 +254,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                 position = (len(charTbl) >> 1)
                 posValue = charTbl[position]
 
-                if CHAR_INFERENCE_MARK not in payload:
+                if "'%s'" % CHAR_INFERENCE_MARK not in payload:
                     forgedPayload = safeStringFormat(payload, (expressionUnescaped, idx, posValue))
                 else:
                     # e.g.: ... > '%c' -> ... > ORD(..)

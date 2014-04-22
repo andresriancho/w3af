@@ -238,31 +238,44 @@ class ssl_certificate(AuditPlugin):
         return cert, cert_der, cipher
 
     def _cert_expiration_analysis(self, url, domain):
-        cert, cert_der, cipher = self._get_cert(url, domain)
+        try:
+            cert, cert_der, cipher = self._get_cert(url, domain)
+        except RuntimeError, rte:
+            msg = 'Failed to analyze certificate expiration due to an error in'\
+                  ' the get_cert method: "%s".'
+            om.out.debug(msg % rte)
+            return
 
         try:
             exp_date = gmtime(ssl.cert_time_to_seconds(cert['notAfter']))
         except ValueError:
             msg = 'Invalid SSL certificate date format.'
             om.out.debug(msg)
+            return
         except KeyError:
             msg = 'SSL certificate does not have notAfter field.'
             om.out.debug(msg)
-        else:
-        
-            expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
-                           exp_date.tm_mday) - date.today()).days
-            
-            if expire_days < self._min_expire_days:
-                desc = 'The certificate for "%s" will expire soon.' % domain
-                
-                i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
-                i.set_url(url)
-                
-                self.kb_append(self, 'ssl_soon_expire', i)
+            return
+
+        expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
+                       exp_date.tm_mday) - date.today()).days
+
+        if expire_days < self._min_expire_days:
+            desc = 'The certificate for "%s" will expire soon.' % domain
+
+            i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
+            i.set_url(url)
+
+            self.kb_append(self, 'ssl_soon_expire', i)
 
     def _ssl_info_to_kb(self, url, domain):
-        cert, cert_der, cipher = self._get_cert(url, domain)
+        try:
+            cert, cert_der, cipher = self._get_cert(url, domain)
+        except RuntimeError, rte:
+            msg = 'Failed to store SSL information to KB due to an error in'\
+                  ' the get_cert method: "%s".'
+            om.out.debug(msg % rte)
+            return
         
         # Print the SSL information to the log
         desc = 'This is the information about the SSL certificate used for'\

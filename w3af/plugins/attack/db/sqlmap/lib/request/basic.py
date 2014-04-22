@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -15,6 +15,7 @@ import zlib
 
 from lib.core.common import extractErrorMessage
 from lib.core.common import extractRegexResult
+from lib.core.common import getPublicTypeMembers
 from lib.core.common import getUnicode
 from lib.core.common import readInput
 from lib.core.common import resetCookieJar
@@ -53,7 +54,27 @@ def forgeHeaders(items=None):
     headers = dict(conf.httpHeaders)
     headers.update(items or {})
 
-    headers = dict(("-".join(_.capitalize() for _ in key.split('-')), value) for (key, value) in headers.items())
+    class _str(str):
+        def capitalize(self):
+            return _str(self)
+
+        def title(self):
+            return _str(self)
+
+    _ = headers
+    headers = {}
+    for key, value in _.items():
+        success = False
+        if key.upper() not in (_.upper() for _ in getPublicTypeMembers(HTTP_HEADER, True)):
+            try:
+                headers[_str(key)] = value  # dirty hack for http://bugs.python.org/issue12455
+            except UnicodeEncodeError:      # don't do the hack on non-ASCII header names (they have to be properly encoded later on)
+                pass
+            else:
+                success = True
+        if not success:
+            key = '-'.join(_.capitalize() for _ in key.split('-'))
+            headers[key] = value
 
     if conf.cj:
         if HTTP_HEADER.COOKIE in headers:
@@ -120,7 +141,7 @@ def checkCharEncoding(encoding, warn=True):
         return encoding
 
     # Reference: http://www.destructor.de/charsets/index.htm
-    translate = {"windows-874": "iso-8859-11", "en_us": "utf8", "macintosh": "iso-8859-1", "euc_tw": "big5_tw", "th": "tis-620", "unicode": "utf8",  "utc8": "utf8", "ebcdic": "ebcdic-cp-be", "iso-8859": "iso8859-1"}
+    translate = {"windows-874": "iso-8859-11", "en_us": "utf8", "macintosh": "iso-8859-1", "euc_tw": "big5_tw", "th": "tis-620", "unicode": "utf8",  "utc8": "utf8", "ebcdic": "ebcdic-cp-be", "iso-8859": "iso8859-1", "ansi": "ascii"}
 
     for delimiter in (';', ',', '('):
         if delimiter in encoding:

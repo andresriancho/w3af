@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -242,6 +242,7 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
 
         for match in reqResList:
             request = match if isinstance(match, basestring) else match.group(0)
+            request = re.sub(r"\A[^\w]+", "", request)
 
             schemePort = re.search(r"(http[\w]*)\:\/\/.*?\:([\d]+).+?={10,}", request, re.I | re.S)
 
@@ -669,6 +670,15 @@ def _setMetasploit():
     msfEnvPathExists = False
 
     if IS_WIN:
+        try:
+            import win32file
+        except ImportError:
+            errMsg = "sqlmap requires third-party module 'pywin32' "
+            errMsg += "in order to use Metasploit functionalities on "
+            errMsg += "Windows. You can download it from "
+            errMsg += "'http://sourceforge.net/projects/pywin32/files/pywin32/'"
+            raise SqlmapMissingDependence(errMsg)
+
         if not conf.msfPath:
             def _(key, value):
                 retVal = None
@@ -991,6 +1001,10 @@ def _setHTTPProxy():
     """
     global proxyHandler
 
+    for _ in ("http", "https"):
+        if hasattr(proxyHandler, "%s_open" % _):
+            delattr(proxyHandler, "%s_open" % _)
+
     if not conf.proxy:
         if conf.proxyList:
             conf.proxy = conf.proxyList[0]
@@ -1106,8 +1120,8 @@ def _setAuthCred():
     (used by connection handler)
     """
 
-    if kb.passwordMgr:
-        kb.passwordMgr.add_password(None, "%s://%s" % (conf.scheme, conf.hostname), conf.authUsername, conf.authPassword)
+    if kb.passwordMgr and all(_ is not None for _ in (conf.scheme, conf.hostname, conf.port, conf.authUsername, conf.authPassword)):
+        kb.passwordMgr.add_password(None, "%s://%s:%d" % (conf.scheme, conf.hostname, conf.port), conf.authUsername, conf.authPassword)
 
 def _setHTTPAuthentication():
     """
@@ -1572,6 +1586,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.arch = None
     kb.authHeader = None
     kb.bannerFp = AttribDict()
+    kb.binaryField = False
 
     kb.brute = AttribDict({"tables": [], "columns": []})
     kb.bruteMode = False
@@ -1658,6 +1673,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.permissionFlag = False
     kb.postHint = None
     kb.postSpaceToPlus = False
+    kb.postUrlEncode = True
     kb.prependFlag = False
     kb.processResponseCounter = 0
     kb.previousMethod = None
@@ -2005,12 +2021,12 @@ def _basicOptionValidation():
         errMsg = "value for option '--stop' (limitStop) must be an integer value greater than zero (>0)"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.level is not None and not (isinstance(conf.level, int) and conf.level > 0):
-        errMsg = "value for option '--level' must be an integer value greater than zero (>0)"
+    if conf.level is not None and not (isinstance(conf.level, int) and conf.level >= 1 and conf.level <= 5):
+        errMsg = "value for option '--level' must be an integer value from range [1, 5]"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.risk is not None and not (isinstance(conf.risk, int) and conf.risk > 0):
-        errMsg = "value for option '--risk' must be an integer value greater than zero (>0)"
+    if conf.risk is not None and not (isinstance(conf.risk, int) and conf.risk >= 1 and conf.risk <= 3):
+        errMsg = "value for option '--risk' must be an integer value from range [1, 3]"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.limitStart is not None and isinstance(conf.limitStart, int) and conf.limitStart > 0 and \

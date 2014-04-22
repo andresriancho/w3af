@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -72,6 +72,7 @@ optDict = {
                                "os":                "string",
                                "invalidBignum":     "boolean",
                                "invalidLogical":    "boolean",
+                               "invalidString":     "boolean",
                                "noCast":            "boolean",
                                "noEscape":          "boolean",
                                "prefix":            "string",
@@ -127,6 +128,8 @@ optDict = {
                                "db":                "string",
                                "tbl":               "string",
                                "col":               "string",
+                               "excludeCol":        "string",
+                               "dumpWhere":         "string",
                                "user":              "string",
                                "excludeSysDbs":     "boolean",
                                "limitStart":        "integer",

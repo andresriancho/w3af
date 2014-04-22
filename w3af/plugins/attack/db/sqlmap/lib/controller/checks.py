@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -253,7 +253,7 @@ def checkSqlInjection(place, parameter, value):
 
             # Parse test's <request>
             comment = agent.getComment(test.request) if len(conf.boundaries) > 1 else None
-            fstPayload = agent.cleanupPayload(test.request.payload, origValue=value)
+            fstPayload = agent.cleanupPayload(test.request.payload, origValue=value if place not in (PLACE.URI, PLACE.CUSTOM_POST, PLACE.CUSTOM_HEADER) else None)
 
             # Favoring non-string specific boundaries in case of digit-like parameter values
             if value.isdigit():
@@ -322,18 +322,24 @@ def checkSqlInjection(place, parameter, value):
 
                     # Threat the parameter original value according to the
                     # test's <where> tag
-                    if where == PAYLOAD.WHERE.ORIGINAL:
+                    if where == PAYLOAD.WHERE.ORIGINAL or conf.prefix:
                         origValue = value
+
+                        if kb.tamperFunctions:
+                            templatePayload = agent.payload(place, parameter, value="", newValue=origValue, where=where)
                     elif where == PAYLOAD.WHERE.NEGATIVE:
                         # Use different page template than the original
                         # one as we are changing parameters value, which
                         # will likely result in a different content
                         kb.data.setdefault("randomInt", str(randomInt(10)))
+                        kb.data.setdefault("randomStr", str(randomStr(10)))
                         if conf.invalidLogical:
                             _ = int(kb.data.randomInt[:2])
                             origValue = "%s AND %s=%s" % (value, _, _ + 1)
                         elif conf.invalidBignum:
-                            origValue = "%s.%s" % (kb.data.randomInt[:6], kb.data.randomInt[0])
+                            origValue = kb.data.randomInt[:6]
+                        elif conf.invalidString:
+                            origValue = kb.data.randomStr[:6]
                         else:
                             origValue = "-%s" % kb.data.randomInt[:4]
                         templatePayload = agent.payload(place, parameter, value="", newValue=origValue, where=where)
@@ -353,13 +359,13 @@ def checkSqlInjection(place, parameter, value):
                     # payload was successful
                     # Parse test's <response>
                     for method, check in test.response.items():
-                        check = agent.cleanupPayload(check, origValue=value)
+                        check = agent.cleanupPayload(check, origValue=value if place not in (PLACE.URI, PLACE.CUSTOM_POST, PLACE.CUSTOM_HEADER) else None)
 
                         # In case of boolean-based blind SQL injection
                         if method == PAYLOAD.METHOD.COMPARISON:
                             # Generate payload used for comparison
                             def genCmpPayload():
-                                sndPayload = agent.cleanupPayload(test.response.comparison, origValue=value)
+                                sndPayload = agent.cleanupPayload(test.response.comparison, origValue=value if place not in (PLACE.URI, PLACE.CUSTOM_POST, PLACE.CUSTOM_HEADER) else None)
 
                                 # Forge response payload by prepending with
                                 # boundary's prefix and appending the boundary's
@@ -387,7 +393,7 @@ def checkSqlInjection(place, parameter, value):
 
                                 # Perform the test's False request
                                 if not falseResult:
-                                    infoMsg = "%s parameter '%s' is '%s' injectable " % (place, parameter, title)
+                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (place, parameter, title)
                                     logger.info(infoMsg)
 
                                     injectable = True
@@ -442,7 +448,7 @@ def checkSqlInjection(place, parameter, value):
                                 trueResult = Request.queryPage(reqPayload, place, timeBasedCompare=True, raise404=False)
 
                                 if trueResult:
-                                    infoMsg = "%s parameter '%s' is '%s' injectable " % (place, parameter, title)
+                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (place, parameter, title)
                                     logger.info(infoMsg)
 
                                     injectable = True
@@ -662,7 +668,7 @@ def checkFalsePositives(injection):
 
         # Simple arithmetic operations which should show basic
         # arithmetic ability of the backend if it's really injectable
-        for i in xrange(1 + conf.level / 2):
+        for i in xrange(conf.level):
             randInt1, randInt2, randInt3 = (_() for j in xrange(3))
 
             randInt1 = min(randInt1, randInt2, randInt3)
