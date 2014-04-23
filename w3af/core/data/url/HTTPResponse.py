@@ -43,7 +43,7 @@ LF = '\n'
 CRLF = CR + LF
 SP = ' '
 
-CONTENT_TYPE = CONTENT_TYPE
+CONTENT_TYPE = 'content-type'
 
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
