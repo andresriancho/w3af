@@ -71,7 +71,7 @@ class Headers(DataContainer):
             if isinstance(value, basestring):
                 value = smart_unicode(value)
             
-            cleaned_vals.append( (smart_unicode(key), value) )
+            cleaned_vals.append((smart_unicode(key), value))
         
         return cleaned_vals
     
