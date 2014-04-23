@@ -337,6 +337,20 @@ class test_form(unittest.TestCase):
                                       form_select_cars)
         self.assertEqual(str(new_form), 'cars=fiat&sex=male&vehicle=Bike')
 
+    def test_form_copy(self):
+        form = create_form_helper(form_with_radio + form_with_checkbox)
+        copy = form.copy()
+
+        self.assertEqual(form.items(), copy.items())
+        self.assertEqual(form._method, copy._method)
+        self.assertEqual(form._action, copy._action)
+        self.assertEqual(form._types, copy._types)
+        self.assertEqual(form._files, copy._files)
+        self.assertEqual(form._selects, copy._selects)
+        self.assertEqual(form._submit_map, copy._submit_map)
+
+        self.assertIsNot(form, copy)
+
 
 def get_gruped_data(form_data):
     """

@@ -51,6 +51,9 @@ class Form(DataContainer):
     INPUT_TYPE_SUBMIT = 'submit'
     INPUT_TYPE_SELECT = 'select'
 
+    # This is used for processing checkboxes
+    SECRET_VALUE = "3_!21#47w@"
+
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(Form, self).__init__(init_val, encoding)
 
@@ -61,9 +64,6 @@ class Form(DataContainer):
         self._files = []
         self._selects = {}
         self._submit_map = {}
-
-        # This is used for processing checkboxes
-        self._secret_value = "3_!21#47w@"
 
     def get_action(self):
         """
@@ -230,7 +230,7 @@ class Form(DataContainer):
 
         if value not in self._selects[name]:
             self._selects[name].append(value)
-            self._selects[name].append(self._secret_value)
+            self._selects[name].append(self.SECRET_VALUE)
 
         self._types[name] = self.INPUT_TYPE_CHECKBOX
 
@@ -294,7 +294,7 @@ class Form(DataContainer):
         if not self._selects:
             return
 
-        secret_value = self._secret_value
+        secret_value = self.SECRET_VALUE
         sel_names = self._selects.keys()
         matrix = self._selects.values()
 
@@ -446,3 +446,24 @@ class Form(DataContainer):
         else:
             len_fun = (lambda x: min(len(x), 3)) if mode == "tmb" else len
             return reduce(operator.mul, map(len_fun, matrix))
+
+    def copy(self):
+        """
+        This method returns a deep copy of the Form instance. I'm NOT using
+        copy.deepcopy(self) here because its very slow!
+
+        :return: A copy of myself.
+        """
+        init_val = self.items()
+        copy = Form(init_val=init_val, encoding=self.encoding)
+
+        # Internal variables
+        copy._method = self._method
+        copy._action = self._action
+        copy._types = self._types
+        copy._files = self._files
+        copy._selects = self._selects
+        copy._submit_map = self._submit_map
+
+        return copy
+
