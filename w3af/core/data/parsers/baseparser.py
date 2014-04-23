@@ -69,20 +69,17 @@ class BaseParser(object):
         :return: None. The findings are stored in self._re_urls as url_objects
         """
         re_urls = self._re_urls
+        decode_url = self._decode_url
 
         for url in self.URL_RE.findall(doc_str):
             # This try is here because the _decode_url method raises an
             # exception whenever it fails to decode a url.
             try:
-                decoded_url = URL(self._decode_url(url[0]),
-                                  encoding=self._encoding)
+                decoded_url = URL(decode_url(url[0]), encoding=self._encoding)
             except ValueError:
                 pass
             else:
                 re_urls.add(decoded_url)
-
-        # Finally, normalize the urls
-        map(lambda u: u.normalize_url(), re_urls)
 
     def _decode_url(self, url_string):
         """
