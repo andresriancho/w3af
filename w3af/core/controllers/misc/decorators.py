@@ -130,6 +130,7 @@ class memoized(object):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func(*args)
+
         if args in self.cache:
             return self.cache[args]
         else:
