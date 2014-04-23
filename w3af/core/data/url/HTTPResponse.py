@@ -34,6 +34,7 @@ from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af.core.controllers.misc.decorators import memoized
 
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
@@ -404,7 +405,8 @@ class HTTPResponse(object):
 
 
     headers = property(get_headers, set_headers)
-    
+
+    @memoized
     def get_lower_case_headers(self):
         """
         If the original headers were:
@@ -414,8 +416,8 @@ class HTTPResponse(object):
 
         The only thing that changes is the header name.
         """
-        lcase_headers = dict(
-            (k.lower(), v) for k, v in self.headers.iteritems())
+        regular_headers = self.headers.iteritems()
+        lcase_headers = dict((k.lower(), v) for k, v in regular_headers)
         return Headers(lcase_headers.items())
 
     def set_url(self, url):
@@ -552,26 +554,20 @@ class HTTPResponse(object):
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(
-                    rawbody,
-                    charset,
-                    errors=ESCAPED_CHAR,
-                    on_error_guess=False
-                )
+                _body = smart_unicode(rawbody, charset,
+                                      errors=ESCAPED_CHAR,
+                                      on_error_guess=False)
             except LookupError:
                 # Warn about a buggy charset
                 msg = ('Charset LookupError: unknown charset: %s; '
                        'ignored and set to default: %s' %
                       (charset, self._charset))
                 om.out.debug(msg)
+
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(
-                    rawbody,
-                    charset,
-                    errors=ESCAPED_CHAR,
-                    on_error_guess=False
-                )
+                _body = smart_unicode(rawbody, charset, errors=ESCAPED_CHAR,
+                                      on_error_guess=False)
 
         return _body, charset
 
@@ -674,4 +670,3 @@ class HTTPResponse(object):
     def __setstate__(self, state):
         self.__dict__ = state
         self._body_lock = threading.RLock()
-        
