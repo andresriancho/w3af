@@ -30,6 +30,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import ScanMustStopOnUrlError
+from w3af.core.controllers.misc.decorators import memoized
 
 
 class Plugin(Configurable):
@@ -161,6 +162,7 @@ class Plugin(Configurable):
     def get_type(self):
         return 'plugin'
 
+    @memoized
     def get_name(self):
         return self.__class__.__name__
 
