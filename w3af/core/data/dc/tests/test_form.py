@@ -98,6 +98,16 @@ class test_form(unittest.TestCase):
                     self.assertTrue(evalue in new_form[ename])
                     self.assertTrue(evalue in new_form._selects[ename])
 
+    def test_variants_dont_modify_original(self):
+        bigform_data = form_with_radio + form_select_misc
+        form = create_form_helper(bigform_data)
+        orig_items = form.items()
+
+        # Generate the variants
+        variants = [v for v in form.get_variants(mode="tmb")]
+
+        self.assertEqual(orig_items, form.items())
+
     def test_tmb_variants(self):
         # 'top-middle-bottom' mode variants
         def filter_tmb(values):
@@ -119,8 +129,8 @@ class test_form(unittest.TestCase):
 
             for name, values in clean_data.items():
                 tmb_values = filter_tmb(values)
-                msg = 'Failed to find "%s" in "%s"' % (
-                    form_variant[name][0], tmb_values)
+                msg = 'Failed to find "%s" in "%s"' % (form_variant[name][0],
+                                                       tmb_values)
                 self.assertTrue(form_variant[name][0] in tmb_values, msg)
 
             variants_set.add(repr(form_variant))
