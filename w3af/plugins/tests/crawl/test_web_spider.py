@@ -148,7 +148,11 @@ class TestWebSpider(PluginTest):
                       '9_12ee31.php', '9_5ee31.php', '9_6ee31.php',
                       '9_22ee31.php', '11_2d3ff.php', '17_2da76.php',
                       '18_1a2f3.php', '9_24ee31.php', '9_7ee31.php',
-                      '9_10ee31.php', '9_21ee31.php'}
+                      '9_10ee31.php', '9_21ee31.php',
+
+                      # These were added to the fails group after #2104
+                      '15_1c95a.php', '6_14b3c.php', '8_1b6e1.php',
+                      '14_1eeab.php', '8_2b6f1.php'}
 
         EXPECTED_URLS = ALL_WIVET_URLS - W3AF_FAILS
 
