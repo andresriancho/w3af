@@ -35,9 +35,9 @@ class WMLParser(SGMLParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, HTTPResponse):
+    def __init__(self, http_response):
         self._select_tag_name = ""
-        SGMLParser.__init__(self, HTTPResponse)
+        SGMLParser.__init__(self, http_response)
 
     @staticmethod
     def can_parse(http_resp):
@@ -56,14 +56,6 @@ class WMLParser(SGMLParser):
                 return True
 
         return False
-
-    def _pre_parse(self, HTTPResponse):
-        """
-        :param HTTPResponse: The HTTP response document that contains the WML
-        document inside its body.
-        """
-        SGMLParser._pre_parse(self, HTTPResponse)
-        assert self._base_url is not None, 'The base URL must be set.'
 
     def _handle_go_tag_start(self, tag, attrs):
 
