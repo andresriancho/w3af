@@ -173,7 +173,7 @@ class TestWebSpider(PluginTest):
         self.assertEquals(len(stats), 1)
 
         coverage = get_coverage_for_scan_id(stats[0][0])
-        self.assertEqual(coverage, 42)
+        self.assertEqual(coverage, 44)
 
 
 def clear_wivet():
