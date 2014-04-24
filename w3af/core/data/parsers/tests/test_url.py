@@ -917,3 +917,20 @@ class TestURLParser(unittest.TestCase):
     def test_file_url_full_path(self):
         u = URL('file:///etc/passwd')
         self.assertIn('root', urllib2.urlopen(u.url_string).read())
+
+    #
+    #   Test memoize
+    #
+    def test_memoized(self):
+        u = URL('http://www.w3af.com/')
+        self.assertEqual(u._cache, dict())
+
+        domain_path = u.get_domain_path()
+        self.assertNotEqual(u._cache, dict())
+        self.assertIn(domain_path, u._cache.values())
+
+        second_domain_path = u.get_domain_path()
+        self.assertIs(domain_path, second_domain_path)
+
+        self.assertIsInstance(domain_path, URL)
+        self.assertIsInstance(second_domain_path, URL)
