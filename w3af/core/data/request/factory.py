@@ -43,7 +43,6 @@ from w3af.core.data.parsers.url import URL, parse_qs
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.misc.encoding import smart_unicode
 
-__all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
 
 URL_HEADERS = ('location', 'uri', 'content-location')
 
