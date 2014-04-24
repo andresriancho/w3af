@@ -26,7 +26,6 @@ import urllib
 import urlparse
 
 from functools import wraps
-from weakref import WeakValueDictionary
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.misc.ordereddict import OrderedDict
@@ -47,7 +46,7 @@ def set_changed(meth):
     """
     @wraps(meth)
     def changed_wrapper(self, *args, **kwargs):
-        self._cache = WeakValueDictionary()
+        self._cache = {}
         return meth(self, *args, **kwargs)
 
     return changed_wrapper
@@ -181,7 +180,7 @@ class URL(DiskItem):
 
         """
         self._querystr = None
-        self._cache = WeakValueDictionary()
+        self._cache = {}
         self._encoding = encoding
 
         if not isinstance(data, basestring):
@@ -863,3 +862,7 @@ class URL(DiskItem):
 
     def get_eq_attrs(self):
         return ['url_string']
+
+    def __getstate__(self):
+        self._cache = {}
+        return self.__dict__

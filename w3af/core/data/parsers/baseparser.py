@@ -51,9 +51,6 @@ class BaseParser(object):
         self._rootDomain = url.get_root_domain()
         self._encoding = http_response.get_charset()
 
-        # To store results
-        self._re_urls = set()
-
     @staticmethod
     def can_parse(http_resp):
         """
@@ -157,13 +154,6 @@ class BaseParser(object):
         """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_comments() method.')
-
-    def get_scripts(self):
-        """
-        :return: A list of scripts (like javascript).
-        """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_scripts() method.')
 
     def get_meta_redir(self):
         """

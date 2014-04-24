@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import zlib
 
 from w3af.core.data.parsers.baseparser import BaseParser
+from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
 class SWFParser(BaseParser):
@@ -33,18 +34,11 @@ class SWFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, HTTPResponse):
-        BaseParser.__init__(self, HTTPResponse)
+    def __init__(self, http_response):
+        BaseParser.__init__(self, http_response)
 
-        swf = HTTPResponse.get_body()
-        if self._is_compressed(swf):
-            try:
-                swf = self._inflate(swf)
-            except Exception:
-                # If the inflate fails... there is nothing else to do.
-                return
-
-        self._parse(swf)
+        self._re_urls = set()
+        self._parse(http_response)
 
     @staticmethod
     def can_parse(http_resp):
@@ -90,16 +84,33 @@ class SWFParser(BaseParser):
             # more carefully?
             return uncompressed_data
 
-    def _parse(self, swf_body):
+    def _parse(self, http_response):
         """
         Parse the SWF bytecode.
         For now... don't decompile anything, just apply regular
         expressions to it.
 
-        :param swf_body: SWF bytecode string
+        :param http_response: The HTTP response to parse
         """
+        swf_body = http_response.get_body()
+
+        if self._is_compressed(swf_body):
+            try:
+                swf_body = self._inflate(swf_body)
+            except Exception:
+                # If the inflate fails... there is nothing else to do.
+                return
+
         self._0x83_getURL_parse(swf_body)
-    
+        self._re_extract(swf_body)
+
+    def _re_extract(self, swf_body):
+        """
+        Get the URLs using a regex
+        """
+        re_extract = ReExtract(swf_body, self._base_url, self._encoding)
+        self._re_urls.update(re_extract.get_references())
+
     def _0x83_getURL_parse(self, swf_body):
         """
         After reading a couple of SWF files with a hex editor it was possible

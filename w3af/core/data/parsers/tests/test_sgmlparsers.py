@@ -234,7 +234,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals(set(), getattr(p, '_parsed_urls'))
         self.assertEquals([], getattr(p, '_forms'))
         self.assertEquals([], getattr(p, '_comments_in_doc'))
-        self.assertEquals([], getattr(p, '_scripts_in_doc'))
         self.assertEquals([], getattr(p, '_meta_redirs'))
         self.assertEquals([], getattr(p, '_meta_tags'))
 
@@ -547,3 +546,19 @@ class TestHTMLParser(unittest.TestCase):
         self.assertIsInstance(form, Form)
         self.assertEqual('sample_name=sample_value&sample_name=sample_value',
                          str(form))
+
+    def test_script_tag_link_extraction(self):
+        body = '''<script>window.location = "http://w3af.com/";</script>'''
+        resp = _build_http_response(URL_INST, body)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+
+        self.assertEquals([URL('http://w3af.com/')], p.references[1])
+
+    def test_script_tag_link_extraction_relative(self):
+        body = '''<script>window.location = "/foo.php";</script>'''
+        resp = _build_http_response(URL_INST, body)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+
+        self.assertEquals([URL('http://w3af.com/foo.php')], p.references[1])

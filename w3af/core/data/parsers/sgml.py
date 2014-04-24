@@ -73,7 +73,6 @@ class SGMLParser(BaseParser):
         self._parsed_urls = set()
         self._forms = []
         self._comments_in_doc = []
-        self._scripts_in_doc = []
         self._meta_redirs = []
         self._meta_tags = []
         self._emails = set()
@@ -126,9 +125,11 @@ class SGMLParser(BaseParser):
 
     def comment(self, text):
         if self._inside_script:
-            self._scripts_in_doc.append(text)
-        else:
-            self._comments_in_doc.append(text)
+            # This handles the case where we have:
+            # <script><!-- code(); --></script>
+            return
+
+        self._comments_in_doc.append(text)
 
     def close(self):
         pass
@@ -164,11 +165,9 @@ class SGMLParser(BaseParser):
             # yet the parsed elems will be unicode.
             resp_body = resp_body.encode(http_resp.charset,
                                          'xmlcharrefreplace')
-            parser = etree.HTMLParser(
-                target=self,
-                recover=True,
-                encoding=http_resp.charset,
-            )
+            parser = etree.HTMLParser(target=self,
+                                      recover=True,
+                                      encoding=http_resp.charset)
             dom = etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
             msg = 'An error occurred while parsing "%s",'\
@@ -280,7 +279,7 @@ class SGMLParser(BaseParser):
         other with the URLs that came out from a regular expression. The
         second list is less trustworthy.
         """
-        return list(self._parsed_urls), list(self._re_urls - self._parsed_urls)
+        return list(self._parsed_urls), []
 
     def get_references(self):
         return self.references
@@ -294,16 +293,6 @@ class SGMLParser(BaseParser):
 
     def get_comments(self):
         return self.comments
-
-    @property
-    def scripts(self):
-        """
-        Return list of scripts (mainly javascript, but can be anything)
-        """
-        return set(self._scripts_in_doc)
-
-    def get_scripts(self):
-        return self.scripts
 
     @property
     def meta_redirs(self):

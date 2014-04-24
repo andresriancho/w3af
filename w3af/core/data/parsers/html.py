@@ -23,6 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.dc.form as form
 
 from w3af.core.data.parsers.sgml import SGMLParser
+from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
 class HTMLParser(SGMLParser):
@@ -48,6 +49,8 @@ class HTMLParser(SGMLParser):
         # Save for using in form parsing
         self._source_url = http_resp.get_url()
 
+        self._re_urls = set()
+
         # Call parent's __init__
         SGMLParser.__init__(self, http_resp)
 
@@ -72,6 +75,18 @@ class HTMLParser(SGMLParser):
         """
         if self._inside_textarea:
             self._textarea_data = data.strip()
+
+        elif self._inside_script:
+            re_extract = ReExtract(data.strip(), self._base_url, self._encoding)
+            self._re_urls.update(re_extract.get_references())
+
+    @property
+    def references(self):
+        """
+        Override to return the references parsed from the JavaScript code using
+        regular expressions.
+        """
+        return list(self._parsed_urls), list(self._re_urls - self._parsed_urls)
 
     def _form_elems_generic_handler(self, tag, attrs):
         side = 'inside' if self._inside_form else 'outside'

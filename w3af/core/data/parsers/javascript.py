@@ -1,7 +1,7 @@
 """
-pdf.py
+javascript.py
 
-Copyright 2006 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,29 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import StringIO
-
-from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, process_pdf
-from pdfminer.layout import LAParams
-from pdfminer.pdfparser import PDFSyntaxError
-
 from w3af.core.data.parsers.baseparser import BaseParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
-class PDFParser(BaseParser):
+class JavaScriptParser(BaseParser):
     """
-    This class parses pdf documents to find emails and URLs. It's based on the
-    pdfminer library.
+    This class extracts links from javascript http responses
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self, http_response):
-        super(PDFParser, self).__init__(http_response)
+        super(JavaScriptParser, self).__init__(http_response)
 
         self._re_urls = set()
-        self._parse(http_response.body)
+        self._parse(http_response)
 
     @staticmethod
     def can_parse(http_resp):
@@ -49,34 +41,22 @@ class PDFParser(BaseParser):
         :param http_resp: A http response object that contains a document of
                           type HTML / PDF / WML / etc.
 
-        :return: True if the document parameter is a string that contains a PDF
-                 document.
+        :return: True if the document parameter is a string that contains JS
         """
-        if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
-            document = http_resp.body
+        response_content_type = http_resp.content_type.lower()
 
-            #   Safety check:
-            if not document:
-                return False
-
-            #   Some PDF files don't end with %%EOF, they end with
-            #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n.
-            #   So... just to be sure I search in the last 12 characters.
-            if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
-                try:
-                    text = pdf_to_text(document)
-                except Exception:
-                    return False
-                else:
-                    return text != u''
+        if 'javascript' in response_content_type or \
+        'ecmascript' in response_content_type or \
+        'jscript' in response_content_type:
+            return True
 
         return False
 
-    def _parse(self, resp_body):
+    def _parse(self, http_response):
         """
         Get the URLs using a regex
         """
-        doc_string = pdf_to_text(resp_body)
+        doc_string = http_response.get_body()
         re_extract = ReExtract(doc_string, self._base_url, self._encoding)
         self._re_urls = re_extract.get_references()
 
@@ -100,25 +80,3 @@ class PDFParser(BaseParser):
     get_comments = BaseParser._return_empty_list
     get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
 
-
-def pdf_to_text(pdf_string):
-    """
-    :param pdf_string: The PDF file contents.
-    :return: A string with the content of the PDF file.
-    """
-    rsrcmgr = PDFResourceManager(caching=True)
-    laparams = LAParams()
-    
-    output = StringIO.StringIO()
-    device = TextConverter(rsrcmgr, output, codec='utf-8', laparams=laparams)
-    
-    document_io = StringIO.StringIO(pdf_string)
-    pagenos = set()
-    try:
-        process_pdf(rsrcmgr, device, document_io, pagenos, check_extractable=False)
-    except PDFSyntaxError:
-        return u''
-    
-    device.close()
-    output.seek(0)
-    return output.read().decode('utf-8')

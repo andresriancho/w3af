@@ -1,5 +1,5 @@
 """
-DocumentParser.py
+document_parser.py
 
 Copyright 2006 Andres Riancho
 
@@ -23,6 +23,7 @@ from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.pdf import PDFParser
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.parsers.wml_parser import WMLParser
+from w3af.core.data.parsers.javascript import JavaScriptParser
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
@@ -33,7 +34,7 @@ class DocumentParser(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    PARSERS = [WMLParser, HTMLParser, PDFParser, SWFParser]
+    PARSERS = [WMLParser, HTMLParser, JavaScriptParser, PDFParser, SWFParser]
 
     def __init__(self, http_resp):
 
@@ -95,12 +96,6 @@ class DocumentParser(object):
         :return: A list of comments.
         """
         return self._parser.get_comments()
-
-    def get_scripts(self):
-        """
-        :return: A list of scripts (like javascript).
-        """
-        return self._parser.get_scripts()
 
     def get_meta_redir(self):
         """
