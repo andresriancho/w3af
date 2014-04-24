@@ -25,14 +25,15 @@ import os
 from w3af.core.data.parsers.pynarcissus.string_extractor import StringExtractor
 
 
-class TestStringExtractor(unittest.TestCase):
-
+class JSParserMixin(object):
     DATA_PATH = 'w3af/core/data/parsers/pynarcissus/tests/data/'
 
     def get_file_contents(self, filename):
         test_file = os.path.join(self.DATA_PATH, filename)
         return file(test_file).read()
 
+
+class TestStringExtractor(unittest.TestCase, JSParserMixin):
     def test_1_js(self):
         e = StringExtractor(self.get_file_contents('test_1.js'))
         expected = {'John', 'Doe', 'blue', 'demo', ' is ', ' years old.'}

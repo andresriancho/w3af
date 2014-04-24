@@ -23,14 +23,38 @@ from .jsparser import parse
 
 
 class StringExtractor(object):
- 
+    """
+    This class was an experiment related with performance enhancements of w3af's
+    parsers.
+
+    There were many issues, one of them was that I was applying greedy
+    regular expressions to all HTTP responses; so I thought it might be a good
+    idea to actually parse JS and then extract links from the strings!
+
+    Sadly parsing JS was really slow (at least for just extracting strings),
+    both pynarcissus and pynoceros used 100% CPU for >=1.5 seconds to parse
+    the latest jquery.
+
+    If we compare that with just applying the regular expressions to the JS,
+    which takes around 0.005 seconds... it simply makes no sense.
+
+    Not removing this class because I believe it might be useful for the future,
+    in case I actually want to do something advanced with a javascript source
+    code.
+
+    :see: https://github.com/andresriancho/w3af/issues/2104
+    """
     CHILD_ATTRS = ['thenPart', 'elsePart', 'expression', 'body', 'initializer']
  
     def __init__(self, js_source):
         self.js_strings = set()
 
-        root = parse(js_source)
-        self.visit(root)
+        try:
+            root = parse(js_source)
+        except Exception, e:
+            pass
+        else:
+            self.visit(root)
  
     def visit(self, root):
         call = lambda n: getattr(self, "visit_%s" % n.type.lower(), self.noop)(n)
