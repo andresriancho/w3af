@@ -25,6 +25,7 @@ import random
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -474,7 +475,7 @@ def deepish_copy(org):
 
     http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
     """
-    out = dict().fromkeys(org)
+    out = OrderedDict().fromkeys(org)
 
     for k, v in org.iteritems():
         try:
