@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import operator
 import random
 
-from copy import deepcopy
-
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -456,7 +454,7 @@ class Form(DataContainer):
 
         :return: A copy of myself.
         """
-        init_val = deepcopy(self.items())
+        init_val = deepish_copy(self).items()
         copy = Form(init_val=init_val, encoding=self.encoding)
 
         # Internal variables
@@ -469,3 +467,22 @@ class Form(DataContainer):
 
         return copy
 
+
+def deepish_copy(org):
+    """
+    Much, much faster than deepcopy, for a dict of the simple python types.
+
+    http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
+    """
+    out = dict().fromkeys(org)
+
+    for k, v in org.iteritems():
+        try:
+            out[k] = v.copy()   # dicts, sets
+        except AttributeError:
+            try:
+                out[k] = v[:]   # lists, tuples, strings, unicode
+            except TypeError:
+                out[k] = v      # ints
+
+    return out
