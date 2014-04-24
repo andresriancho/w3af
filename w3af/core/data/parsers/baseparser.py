@@ -20,11 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import urllib
 
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.data.parsers.url import URL
 from w3af.core.data.misc.encoding import is_known_encoding
 
 
@@ -35,10 +33,6 @@ class BaseParser(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     SAFE_CHARS = (('\x00', '%00'),)
-
-    #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
-    #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
-    URL_RE = re.compile('((http|https)://([\w:@\-\./]*?)[^ \n\r\t"\'<>]*)', re.U)
 
     def __init__(self, http_response):
 
@@ -59,27 +53,6 @@ class BaseParser(object):
 
         # To store results
         self._re_urls = set()
-
-    def _regex_url_parse(self, doc_str):
-        """
-        Use regular expressions to find new URLs.
-
-        :param HTTPResponse: The http response object that stores the
-                             response body and the URL.
-        :return: None. The findings are stored in self._re_urls as url_objects
-        """
-        re_urls = self._re_urls
-        decode_url = self._decode_url
-
-        for url in self.URL_RE.findall(doc_str):
-            # This try is here because the _decode_url method raises an
-            # exception whenever it fails to decode a url.
-            try:
-                decoded_url = URL(decode_url(url[0]), encoding=self._encoding)
-            except ValueError:
-                pass
-            else:
-                re_urls.add(decoded_url)
 
     def _decode_url(self, url_string):
         """

@@ -78,9 +78,6 @@ class SGMLParser(BaseParser):
         self._meta_tags = []
         self._emails = set()
 
-        # Do some stuff before actually parsing
-        self._pre_parse(http_resp)
-
         # Parse!
         self._parse(http_resp)
 
@@ -135,20 +132,6 @@ class SGMLParser(BaseParser):
 
     def close(self):
         pass
-
-    def _pre_parse(self, http_resp):
-        """
-        Perform some initialization tasks
-        """
-        body = http_resp.body
-
-        # These two need to be performed here because the response body is
-        # not going to be stored as an attr for this object. This makes the
-        # parsing process a little bit slower, since we could otherwise
-        # extract the emails when the user runs get_emails(), but is actually
-        # part of a memory usage improvement where the body is NOT saved
-        # as an attribute
-        self._regex_url_parse(body)
 
     def _parse(self, http_resp):
         """

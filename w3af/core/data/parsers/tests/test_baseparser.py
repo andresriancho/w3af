@@ -45,18 +45,6 @@ class TestBaseParser(unittest.TestCase):
         self.assertRaises(NotImplementedError, bp_inst.get_references)
         self.assertRaises(NotImplementedError, bp_inst.get_scripts)
 
-    def test_regex_url_parse_blank(self):
-        self.bp_inst._regex_url_parse('')
-        self.assertEqual(self.bp_inst._re_urls, set())
-
-    def test_regex_url_parse_full_url(self):
-        input_str = u'header http://www.w3af.com/foo/bar/index.html footer'
-        expected_urls = {URL('http://www.w3af.com/foo/bar/index.html')}
-
-        self.bp_inst._regex_url_parse(input_str)
-
-        self.assertEqual(expected_urls, self.bp_inst._re_urls)
-
     def test_decode_url_simple(self):
         u = URL('http://www.w3af.com/')
         response = HTTPResponse(200, u'', Headers(), u, u, charset='latin1')
@@ -81,10 +69,12 @@ class TestBaseParser(unittest.TestCase):
         bp_inst = BaseParser(response)
         bp_inst._encoding = 'latin1'
 
-        decoded_url = bp_inst._decode_url(
-            u'http://w3af.com/search.php?a=%00x&b=2%20c=3%D1')
-        self.assertEqual(
-            decoded_url, u'http://w3af.com/search.php?a=%00x&b=2 c=3\xd1')
+        test_url = u'http://w3af.com/search.php?a=%00x&b=2%20c=3%D1'
+        expected = u'http://w3af.com/search.php?a=%00x&b=2 c=3\xd1'
+
+        decoded_url = bp_inst._decode_url(test_url)
+
+        self.assertEqual(decoded_url, expected)
 
     def test_decode_url_ignore_errors(self):
         u = URL('http://www.w3af.com/')
@@ -92,7 +82,9 @@ class TestBaseParser(unittest.TestCase):
         bp_inst = BaseParser(response)
         bp_inst._encoding = 'utf-8'
 
-        decoded_url = bp_inst._decode_url(
-            u'http://w3af.com/blah.jsp?p=SQU-300&bgc=%FFAAAA')
-        self.assertEqual(
-            decoded_url, u'http://w3af.com/blah.jsp?p=SQU-300&bgc=AAAA')
+        test_url = u'http://w3af.com/blah.jsp?p=SQU-300&bgc=%FFAAAA'
+        expected = u'http://w3af.com/blah.jsp?p=SQU-300&bgc=AAAA'
+
+        decoded_url = bp_inst._decode_url(test_url)
+
+        self.assertEqual(decoded_url, expected)

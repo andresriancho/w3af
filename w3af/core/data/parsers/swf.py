@@ -80,7 +80,6 @@ class SWFParser(BaseParser):
 
         :param swf_body: SWF bytecode string
         """
-        self._regex_url_parse(swf_body)
         self._0x83_getURL_parse(swf_body)
     
     def _0x83_getURL_parse(self, swf_body):
