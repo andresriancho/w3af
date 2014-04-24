@@ -46,6 +46,24 @@ class SWFParser(BaseParser):
 
         self._parse(swf)
 
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :return: True if the http_resp contains a SWF file.
+        """
+        if http_resp.content_type == 'application/x-shockwave-flash':
+
+            body = http_resp.get_body()
+
+            if len(body) > 5:
+                magic = body[:3]
+
+                # TODO: Add more checks here?
+                if magic in ('FWS', 'CWS'):
+                    return True
+
+        return False
+
     def _is_compressed(self, swf_document):
         """
 

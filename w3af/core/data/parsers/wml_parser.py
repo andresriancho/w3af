@@ -26,16 +26,36 @@ from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
 
 
+WML_HEADER = '<!DOCTYPE wml PUBLIC'.lower()
+
+
 class WMLParser(SGMLParser):
     """
     This class is a WML parser. WML is used in cellphone "web" pages.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self, HTTPResponse):
         self._select_tag_name = ""
         SGMLParser.__init__(self, HTTPResponse)
+
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
+
+        :return: True if the document parameter is a string that contains a
+                 WML document.
+        """
+        if 'wml' in http_resp.content_type:
+
+            document = http_resp.get_body().lower()
+
+            if WML_HEADER in document:
+                return True
+
+        return False
 
     def _pre_parse(self, HTTPResponse):
         """

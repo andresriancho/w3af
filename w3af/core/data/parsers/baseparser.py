@@ -54,6 +54,13 @@ class BaseParser(object):
         # To store results
         self._re_urls = set()
 
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :return: True if this parser can extract links from the http_response
+        """
+        raise NotImplementedError
+
     def _decode_url(self, url_string):
         """
         Decode `url_string` using urllib's url-unquote

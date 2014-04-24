@@ -34,19 +34,36 @@ class HTMLParser(SGMLParser):
     """
 
     def __init__(self, http_resp):
-
         # An internal list to be used to save input tags found
         # outside of the scope of a form tag.
         self._saved_inputs = []
+
         # For <textarea> elems parsing
         self._textarea_tag_name = ""
         self._textarea_data = ""
+
         # For <select> elems parsing
         self._selects = []
+
         # Save for using in form parsing
         self._source_url = http_resp.get_url()
+
         # Call parent's __init__
         SGMLParser.__init__(self, http_resp)
+
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
+
+        :return: True if the document parameter is a string that contains an
+                 HTML document.
+        """
+        if 'html' in http_resp.content_type.lower():
+            return True
+
+        return False
 
     def data(self, data):
         """
@@ -55,14 +72,6 @@ class HTMLParser(SGMLParser):
         """
         if self._inside_textarea:
             self._textarea_data = data.strip()
-
-    def _pre_parse(self, http_resp):
-        """
-        :param http_resp: The HTTP response document that contains the
-        HTML document inside its body.
-        """
-        SGMLParser._pre_parse(self, http_resp)
-        assert self._base_url, 'The base URL must be set.'
 
     def _form_elems_generic_handler(self, tag, attrs):
         side = 'inside' if self._inside_form else 'outside'

@@ -38,19 +38,53 @@ class PDFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
+    #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
+    URL_RE = re.compile('((http|https)://([\w:@\-\./]*?)[^ \n\r\t"\'<>]*)', re.U)
+
     def __init__(self, HTTPResponse):
         super(PDFParser, self).__init__(HTTPResponse)
         # Work !
         self._pre_parse(HTTPResponse.body)
+
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
+
+        :return: True if the document parameter is a string that contains a PDF
+                 document.
+        """
+        if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
+            document = http_resp.body
+
+            #   Safety check:
+            if not document:
+                return False
+
+            #   Some PDF files don't end with %%EOF, they end with
+            #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n.
+            #   So... just to be sure I search in the last 12 characters.
+            if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
+                try:
+                    text = pdf_to_text(document)
+                except Exception:
+                    return False
+                else:
+                    return text != u''
+
+        return False
 
     def _pre_parse(self, document):
         content_text = pdf_to_text(document)
         self._parse(content_text)
 
     def _parse(self, content_text):
-
-        # Get the URLs using a regex
-        for x in re.findall(BaseParser.URL_RE, content_text):
+        """
+        Get the URLs using a regex
+        """
+        for x in re.findall(self.URL_RE, content_text):
             try:
                 self._re_urls.add(URL(x[0]))
             except ValueError:

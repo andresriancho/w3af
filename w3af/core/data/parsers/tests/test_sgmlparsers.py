@@ -245,21 +245,6 @@ class TestSGMLParser(unittest.TestCase):
         p._parse(resp)
         self.assertEquals(URL('http://www.w3afbase.com/'), p._base_url)
 
-    def test_regex_urls(self):
-        u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
-        u2 = u'http://w3af.com/tésoro.php?id=GÓLD'
-        body = """
-        <html>
-          <body>Estas s%C3%B3n las URLs absolutas que te comente:<br>
-                http://w3af.com/t%C3%A9soro.php?id=G%C3%93LD<br>
-                http://w3af.com/tr%C3%A9asure.php?id=%C3%93R%C3%93%C2%AA<br>
-        """
-        resp = _build_http_response(URL_INST, body)
-        p = _SGMLParser(resp)
-        urls = tuple(u.url_string for u in p._re_urls)
-        self.assertIn(u1, urls)
-        self.assertIn(u2, urls)
-
     def test_meta_tags(self):
         body = HTML_DOC % \
             {'head': META_REFRESH + META_REFRESH_WITH_URL,
