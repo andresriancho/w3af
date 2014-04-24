@@ -29,6 +29,7 @@ from pdfminer.pdfparser import PDFSyntaxError
 
 from w3af.core.data.parsers.baseparser import BaseParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers import URL_RE
 
 
 class PDFParser(BaseParser):
@@ -38,10 +39,6 @@ class PDFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
-    #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
-    URL_RE = re.compile('((http|https)://([\w:@\-\./]*?)[^ \n\r\t"\'<>]*)', re.U)
-
     def __init__(self, HTTPResponse):
         super(PDFParser, self).__init__(HTTPResponse)
         # Work !
@@ -84,7 +81,7 @@ class PDFParser(BaseParser):
         """
         Get the URLs using a regex
         """
-        for x in re.findall(self.URL_RE, content_text):
+        for x in URL_RE.findall(content_text):
             try:
                 self._re_urls.add(URL(x[0]))
             except ValueError:
