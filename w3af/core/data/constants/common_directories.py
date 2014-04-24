@@ -29,6 +29,7 @@ def get_common_directories(os=None):
     :return: A list of common directories
     """
     directories = []
+
     if os == 'linux' or os is None:
         directories.append("/bin/")
         directories.append("/boot/")
