@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import urllib2
+import cPickle
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
@@ -934,3 +935,11 @@ class TestURLParser(unittest.TestCase):
 
         self.assertIsInstance(domain_path, URL)
         self.assertIsInstance(second_domain_path, URL)
+
+    def test_can_be_pickled(self):
+        # Pickle a URL object that contains a cache
+        u = URL('http://www.w3af.com/')
+        domain_path = u.get_domain_path()
+
+        cPickle.dumps(u)
+        cPickle.dumps(domain_path)
