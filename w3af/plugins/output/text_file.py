@@ -52,9 +52,11 @@ class text_file(OutputPlugin):
         self._flush_counter = 0
         self._flush_number = 10
         self._initialized = False
+
         # File handlers
         self._file = None
         self._http = None
+
         # XXX Only set '_show_caller' to True for debugging purposes. It
         # causes the execution of potentially slow code that handles
         # with introspection.
@@ -239,6 +241,13 @@ class text_file(OutputPlugin):
             #
             #self._file.flush()
             pass
+
+    def end(self):
+        if self._http is not None:
+            self._http.close()
+
+        if self._file is not None:
+            self._file.close()
 
     def set_options(self, option_list):
         """
