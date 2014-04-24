@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import operator
 import random
 
+from copy import deepcopy
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -454,7 +456,7 @@ class Form(DataContainer):
 
         :return: A copy of myself.
         """
-        init_val = self.items()
+        init_val = deepcopy(self.items())
         copy = Form(init_val=init_val, encoding=self.encoding)
 
         # Internal variables
