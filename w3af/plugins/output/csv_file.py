@@ -59,13 +59,20 @@ class csv_file(OutputPlugin):
         self.output_file = os.path.expanduser(self.output_file)
 
         try:
-            csv_writer = csv.writer(
-                open(self.output_file, 'wb'), delimiter=',',
-                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            output_handler = file(self.output_file, 'wb')
+        except IOError, ioe:
+            msg = 'Failed to open the output file for writing: "%s"'
+            om.out.error(msg % ioe)
+            return
+
+        try:
+            csv_writer = csv.writer(output_handler, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
         except Exception, e:
             msg = 'An exception was raised while trying to open the '
-            msg += ' output file. Exception: "%s"' % e
-            om.out.error(msg)
+            msg += ' CSV writer. Exception: "%s"'
+            om.out.error(msg % e)
+            output_handler.close()
             return
 
         for data in itertools.chain(all_vulns, all_infos):
@@ -85,7 +92,10 @@ class csv_file(OutputPlugin):
                 msg += ' vulnerabilities to the output file. Exception: "%s"'
                 msg = msg % e
                 om.out.error(msg)
+                output_handler.close()
                 return
+
+        output_handler.close()
 
     def get_long_desc(self):
         """
