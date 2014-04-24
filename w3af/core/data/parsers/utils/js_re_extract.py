@@ -29,6 +29,8 @@ class JSReExtract(ReExtract):
 
     This reduces false positives in the RE's.
 
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     STRING_DELIMS = {'"', "'"}
@@ -50,5 +52,6 @@ class JSReExtract(ReExtract):
                 continue
 
             if not inside_string and c in self.STRING_DELIMS:
-
+                pass
+            
         return ' \n'.join(string_vals)
