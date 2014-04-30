@@ -31,7 +31,7 @@ class esmre_multire(object):
     easy to use API to esmre.
     """
 
-    def __init__(self, re_list, re_compile_flags=0, hint_len=None):
+    def __init__(self, re_list, re_compile_flags=0, hint_len=3):
         """
 
         :param re_list: A list with all the regular expressions that we want

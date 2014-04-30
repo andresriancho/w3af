@@ -125,6 +125,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual('\x00\x01\x02\x03', result[0][1])
 
+
 class TestEsmreMultire(BaseMultiReTest):
     def __init__(self, testname):
         super(TestEsmreMultire, self).__init__(testname)
@@ -133,6 +134,7 @@ class TestEsmreMultire(BaseMultiReTest):
     def test_short_keyword(self):
         re_list = ['abc']
         self.assertRaises(ValueError, self.klass, re_list)
+
 
 class TestReMultire(BaseMultiReTest):
     def __init__(self, testname):
