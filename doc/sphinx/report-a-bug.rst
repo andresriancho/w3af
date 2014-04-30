@@ -109,7 +109,6 @@ and the `profiles` stored in the user directory are incompatible with the latest
 `w3af` will try to open the old profile and fail, users will see something like:
 
 .. |profile-error| image:: images/profile-error.png
-   :scale: 100 %
    :align: center
    :alt: Profile error
 
