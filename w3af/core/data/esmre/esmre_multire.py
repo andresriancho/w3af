@@ -44,7 +44,7 @@ class esmre_multire(object):
         in the second case we'll return [ (match_obj, re_str_N, pattern_obj, objN), ]
 
         """
-        self._index = esmre.Index()
+        self._index = LongKeywordIndex()
         self._re_cache = {}
 
         for item in re_list:
@@ -92,3 +92,28 @@ class esmre_multire(object):
                 result.append(resitem)
 
         return result
+
+
+class LongKeywordIndex(esmre.Index):
+    def enter(self, regex, obj):
+        self.lock.acquire()
+        try:
+            
+            if self.fixed:
+                raise TypeError("enter() cannot be called after query()")
+            
+            regex_hints = esmre.hints(regex)
+            keywords = esmre.shortlist(regex_hints)
+            
+            if not keywords:
+                raise ValueError('Failed due to performance reasons. Need more hints for RE: %s' % regex)
+            
+            for hint in keywords:
+            	if len(hint) <= 3:
+            		print hint
+            		raise ValueError('Failed due to performance reasons. Need longer hints for RE: %s' % regex)
+
+                self.esm.enter(hint.lower(), obj)
+        
+        finally:
+            self.lock.release()
