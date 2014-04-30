@@ -102,7 +102,7 @@ After many years of `w3af` development we've found some common problems that, wh
 not a bug, annoy our users and are common enough to include in this section.
 
 Outdated profiles
-.................
+-----------------
 
 One of those issues appears when the user migrates from an old `w3af` version to a new one,
 and the `profiles` stored in the user directory are incompatible with the latest version.
