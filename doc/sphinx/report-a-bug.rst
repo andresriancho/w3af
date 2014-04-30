@@ -108,11 +108,9 @@ One of those issues appears when the user migrates from an old `w3af` version to
 and the `profiles` stored in the user directory are incompatible with the latest version.
 `w3af` will try to open the old profile and fail, users will see something like:
 
-.. |profile-error| image:: images/profile-error.png
+.. image:: images/profile-error.png
    :align: center
    :alt: Profile error
-
-|profile-error|
 
 The error is self explanatory: "The profile you are trying to load is outdated", but
 lacks some "quick actions" that the user can perform to avoid seeing this error. If you
