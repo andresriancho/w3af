@@ -32,7 +32,7 @@ class re_multire(object):
     w3af users which don't have the esmre package installed.
     """
 
-    def __init__(self, re_list, re_compile_flags=0):
+    def __init__(self, re_list, re_compile_flags=0, hint_len=None):
         """
 
         :param re_list: A list with all the regular expressions that we want

@@ -28,14 +28,14 @@ from w3af.core.controllers.misc.is_source_file import is_source_file
 class TestIsSourceFile(unittest.TestCase):
     
     def test_php(self):
-        source = 'foo <? echo "a"; ?> bar'
+        source = 'foo <?php echo "a"; ?> bar'
         match, lang = is_source_file(source)
 
         self.assertNotEqual(match, None)
         self.assertEqual(lang, 'PHP')
     
     def test_no_code_case01(self):
-        source = 'foo <? echo "bar'
+        source = 'foo <?php echo "bar'
         match, lang = is_source_file(source)
         
         self.assertEqual(match, None)
@@ -49,14 +49,14 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertEqual(lang, None)
 
     def test_no_code_case03(self):
-        source = 'foo <?xpacket ?> "bar'
+        source = 'foo <?php xpacket ?> "bar'
         match, lang = is_source_file(source)
         
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
 
-    def test_no_code_case04(self):
-        source = 'foo <?ypacket ?> "bar'
+    def test_code_case04(self):
+        source = 'foo <?php ypacket ?> "bar'
         match, lang = is_source_file(source)
         
         self.assertNotEqual(match, None)
