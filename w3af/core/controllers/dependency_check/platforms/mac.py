@@ -59,7 +59,7 @@ def os_package_is_installed(package_name):
         # We're not on a debian based system
         return None
     else:
-        port_output = p.stdout.read()
+        port_output, _ = p.communicate()
 
         if not_installed in port_output:
             return False
