@@ -46,28 +46,19 @@ class TestJavaScriptParser(unittest.TestCase):
         return parser
 
     def test_false_positives(self):
-        for filename in ('jquery.js',):
+        for filename in ('jquery.js', 'angular.js', 'test_1.js', 'test_2.js',
+                         'test_3.js'):
             p = self.parse(filename)
             self.assertEqual(p.get_references(), ([], []))
 
-    def test_angular(self):
-        p = self.parse('angular.js')
-        expected = [], [URL('http://angularjs.org/')]
-        self.assertEqual(p.get_references(), expected)
-
-    def test_simplest(self):
-
-        START = 'http://www.w3schools.com/js/tryit.asp?filename='
-        SUITE = [('test_1.js', [URL('%stryjs_create_object1' % START)]),
-                 ('test_2.js', [URL('%stryjs_create_object2' % START)]),
-                 ('test_3.js', [URL('%stryjs_ifthenelse' % START)])]
-
-        for fname, expected_urls in SUITE:
-            p = self.parse(fname)
-            self.assertEqual(p.get_references(), ([], expected_urls))
-
     def test_relative(self):
         p = self.parse('test_4.js')
+        expected = [], [URL('http://moth/spam.html'),
+                        URL('http://moth/eggs.html')]
+        self.assertEqual(p.get_references(), expected)
+
+    def test_full(self):
+        p = self.parse('test_full_url.js')
         expected = [], [URL('http://moth/spam.html'),
                         URL('http://moth/eggs.html')]
         self.assertEqual(p.get_references(), expected)

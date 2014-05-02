@@ -38,12 +38,15 @@ class ReExtract(BaseParser):
     # "PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
     # used in _find_relative() method
     PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
+    QUOTES = {"'", '"'}
 
-    def __init__(self, doc_string, base_url, encoding, relative=True):
+    def __init__(self, doc_string, base_url, encoding, relative=True,
+                 require_quotes=False):
         self._re_urls = set()
 
         self._encoding = encoding
         self._base_url = base_url
+        self._require_quotes = require_quotes
 
         self._parse(doc_string, relative)
 
@@ -56,15 +59,36 @@ class ReExtract(BaseParser):
         if relative:
             self._extract_relative_urls(doc_string)
 
+    def _is_quoted(self, url_mo, doc_string):
+        start, end = url_mo.span()
+        doc_string_len = len(doc_string)
+
+        if end == doc_string_len:
+            return False
+
+        if doc_string[start-1] not in self.QUOTES:
+            return False
+
+        if doc_string[end] not in self.QUOTES:
+            return False
+
+        return True
+
     def _extract_full_urls(self, doc_string):
         """
         Detect full URLs, which look like http://foo/bar?id=1
         """
-        for x in URL_RE.findall(doc_string):
+        for url_mo in URL_RE.finditer(doc_string):
+            if self._require_quotes:
+                if not self._is_quoted(url_mo, doc_string):
+                    continue
+
             try:
-                self._re_urls.add(URL(x[0]))
+                url = URL(url_mo.group(0))
             except ValueError:
                 pass
+            else:
+                self._re_urls.add(url)
 
     def _extract_relative_urls(self, doc_string):
         """
@@ -72,14 +96,16 @@ class ReExtract(BaseParser):
         """
         # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
         # I'm removing those matches with the filter
-        relative_urls = RELATIVE_URL_RE.findall(doc_string)
+        relative_urls = RELATIVE_URL_RE.finditer(doc_string)
         filter_false_urls = self._filter_false_urls
 
-        for match_tuple in filter(filter_false_urls, relative_urls):
-            match_str = match_tuple[0]
+        for url_mo in filter(filter_false_urls, relative_urls):
+            if self._require_quotes:
+                if not self._is_quoted(url_mo, doc_string):
+                    continue
 
             try:
-                url = self._base_url.url_join(match_str).url_string
+                url = self._base_url.url_join(url_mo.group(0)).url_string
                 url = URL(self._decode_url(url), encoding=self._encoding)
             except ValueError:
                 # In some cases, the relative URL is invalid and triggers an
@@ -94,8 +120,8 @@ class ReExtract(BaseParser):
 
                     self._re_urls.add(url)
 
-    def _filter_false_urls(self, potential_url):
-        potential_url = potential_url[0]
+    def _filter_false_urls(self, potential_url_mo):
+        potential_url = potential_url_mo.group(0)
 
         if potential_url.startswith('//') or \
         potential_url.startswith('://') or \
