@@ -332,7 +332,6 @@ class URL(DiskItem):
         """
         return self.fragment
 
-    @memoized
     def remove_fragment(self):
         """
         :return: A URL containing the URL without the fragment.
@@ -342,7 +341,6 @@ class URL(DiskItem):
                   None)
         return URL.from_parts(*params, encoding=self._encoding)
 
-    @memoized
     def base_url(self):
         """
         :return: A string contaning the URL without the query string and
@@ -351,6 +349,7 @@ class URL(DiskItem):
         params = (self.scheme, self.netloc, None, None, None, None)
         return URL.from_parts(*params, encoding=self._encoding)
 
+    @set_changed
     def normalize_url(self):
         """
         This method was added to be able to avoid some issues which are
@@ -586,7 +585,6 @@ class URL(DiskItem):
         else:
             return decompose_uri()
 
-    @memoized
     def get_domain_path(self):
         """
         :return: Returns the domain name and the path for the url.
@@ -681,7 +679,6 @@ class URL(DiskItem):
             res += u'?' + unicode(self.querystring)
         return res
 
-    @memoized
     def url_decode(self):
         """
         @see: Unittests at test_url.py
@@ -738,7 +735,6 @@ class URL(DiskItem):
         """
         return self.params
 
-    @memoized
     def remove_params(self):
         """
         :return: Returns a new url object contaning the URL without the
@@ -857,12 +853,13 @@ class URL(DiskItem):
 
         return other + self.url_string
 
-    def copy(self):
-        return copy.deepcopy(self)
-
     def get_eq_attrs(self):
         return ['url_string']
 
     def __getstate__(self):
         self._cache = {}
         return self.__dict__
+
+    def copy(self):
+        self._cache = {}
+        return copy.deepcopy(self)
