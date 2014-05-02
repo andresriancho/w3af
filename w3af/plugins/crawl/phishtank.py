@@ -55,7 +55,7 @@ class phishtank(CrawlPlugin):
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
-        Plugin entry point, perform all the work.
+        Plugin entry point, performs all the work.
         """
         to_check = self._get_to_check(fuzzable_request.get_url())
 
@@ -81,7 +81,7 @@ class phishtank(CrawlPlugin):
 
     def _get_to_check(self, target_url):
         """
-        :param target_url: The url object we can use to extract some information.
+        :param target_url: The url object we can use to extract some information
         :return: From the domain, get a list of FQDN, rootDomain and IP address.
         """
         def addrinfo(url):
@@ -247,13 +247,19 @@ class PhishTankErrorHandler(ErrorHandler):
     SAXParseException as the only parameter."""
 
     def error(self, exception):
-        "Handle a recoverable error."
+        """
+        Handle a recoverable error.
+        """
         pass
 
     def fatalError(self, exception):
-        "Handle a non-recoverable error."
+        """
+        Handle a non-recoverable error.
+        """
         pass
 
     def warning(self, exception):
-        "Handle a warning."
+        """
+        Handle a warning.
+        """
         pass
