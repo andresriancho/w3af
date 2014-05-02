@@ -634,7 +634,6 @@ class ExtendedUrllib(object):
         if isinstance(error, URLTimeoutError):
             # New exception type raised by keepalive handler
             reason_msg = error.message
-            reason_err = error.message
 
         # Exceptions may be of type httplib.HTTPException or socket.error
         # We're interested on handling them in different ways
@@ -671,11 +670,10 @@ class ExtendedUrllib(object):
             #
             reason_msg = '%s: %s' % (error.__class__.__name__,
                                      error.args)
-            reason_err = error.message
-        
+
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
-            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_err)
+            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
 
         else:
             errors = [] if parsed_traceback else last_errors
