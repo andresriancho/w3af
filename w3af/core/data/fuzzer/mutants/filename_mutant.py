@@ -26,11 +26,15 @@ from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 
+CHUNK_RE = re.compile(r'([a-zA-Z0-9]+)')
+CHUNK_RE_2 = re.compile(r'[a-zA-Z0-9]')
+
 
 class FileNameMutant(URLPartsMutant):
     """
     This class is a filename mutant.
     """
+
     def __init__(self, freq):
         URLPartsMutant.__init__(self, freq)
 
@@ -104,7 +108,7 @@ class FileNameMutant(URLPartsMutant):
 
         res = []
         fname = freq.get_url().get_file_name()
-        fname_chunks = [x for x in re.split(r'([a-zA-Z0-9]+)', fname) if x]
+        fname_chunks = [x for x in CHUNK_RE.split(fname) if x]
 
         for idx, fn_chunk in enumerate(fname_chunks):
 
@@ -113,7 +117,7 @@ class FileNameMutant(URLPartsMutant):
 
             for mutant_str in mutant_str_list:
 
-                if re.match('[a-zA-Z0-9]', fn_chunk):
+                if CHUNK_RE_2.match(fn_chunk):
                     divided_fname = DataContainer()
                     divided_fname['start'] = ''.join(fname_chunks[:idx])
                     divided_fname['end'] = ''.join(fname_chunks[idx + 1:])
