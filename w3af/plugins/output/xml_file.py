@@ -31,8 +31,8 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
+from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
 from w3af.core.data.misc.encoding import smart_str
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -311,20 +311,26 @@ class xml_file(OutputPlugin):
                 transaction_set = self._xmldoc.createElement(
                     'http-transactions')
                 messageNode.appendChild(transaction_set)
+
                 for requestid in i.get_id():
-                    details = self._history.read(requestid)
-                    # Wrap the entire http transaction in a single block
-                    actionset = self._xmldoc.createElement("http-transaction")
-                    actionset.setAttribute("id", str(requestid))
-                    transaction_set.appendChild(actionset)
+                    try:
+                        details = self._history.read(requestid)
+                    except DBException:
+                        msg = 'Failed to retrieve request with id %s from DB.'
+                        print(msg % requestid)
+                    else:
+                        # Wrap the entire http transaction in a single block
+                        actionset = self._xmldoc.createElement("http-transaction")
+                        actionset.setAttribute("id", str(requestid))
+                        transaction_set.appendChild(actionset)
 
-                    requestNode = self._xmldoc.createElement("httprequest")
-                    self.report_http_action(requestNode, details.request)
-                    actionset.appendChild(requestNode)
+                        requestNode = self._xmldoc.createElement("httprequest")
+                        self.report_http_action(requestNode, details.request)
+                        actionset.appendChild(requestNode)
 
-                    responseNode = self._xmldoc.createElement("httpresponse")
-                    self.report_http_action(responseNode, details.response)
-                    actionset.appendChild(responseNode)
+                        responseNode = self._xmldoc.createElement("httpresponse")
+                        self.report_http_action(responseNode, details.response)
+                        actionset.appendChild(responseNode)
 
             self._topElement.appendChild(messageNode)
 
@@ -348,20 +354,25 @@ class xml_file(OutputPlugin):
                     'http-transactions')
                 messageNode.appendChild(transaction_set)
                 for requestid in i.get_id():
-                    details = self._history.read(requestid)
-                    # Wrap the entire http transaction in a single block
-                    actionset = self._xmldoc.createElement("http-transaction")
-                    actionset.setAttribute("id", str(requestid))
-                    transaction_set.appendChild(actionset)
-                    # create a node for the request content
-                    requestNode = self._xmldoc.createElement("httprequest")
-                    self.report_http_action(requestNode, details.request)
-                    actionset.appendChild(requestNode)
-                    # create a node for the response content
-                    responseNode = self._xmldoc.createElement("httpresponse")
-                    responseNode.setAttribute("id", str(requestid))
-                    self.report_http_action(responseNode, details.response)
-                    actionset.appendChild(responseNode)
+                    try:
+                        details = self._history.read(requestid)
+                    except DBException:
+                        msg = 'Failed to retrieve request with id %s from DB.'
+                        print(msg % requestid)
+                    else:
+                        # Wrap the entire http transaction in a single block
+                        actionset = self._xmldoc.createElement("http-transaction")
+                        actionset.setAttribute("id", str(requestid))
+                        transaction_set.appendChild(actionset)
+                        # create a node for the request content
+                        requestNode = self._xmldoc.createElement("httprequest")
+                        self.report_http_action(requestNode, details.request)
+                        actionset.appendChild(requestNode)
+                        # create a node for the response content
+                        responseNode = self._xmldoc.createElement("httpresponse")
+                        responseNode.setAttribute("id", str(requestid))
+                        self.report_http_action(responseNode, details.response)
+                        actionset.appendChild(responseNode)
 
             self._topElement.appendChild(messageNode)
 
