@@ -103,8 +103,7 @@ def main():
 
 def _main():
     _configure_output_manager()
-    err_code = main()
-    sys.exit(err_code)
+    sys.exit(main())
 
 
 if __name__ == "__main__":

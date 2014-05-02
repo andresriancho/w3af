@@ -1,7 +1,7 @@
 Basic steps and phases
 ======================
 
-Before running ``w3af`` users need to know the basis about how the application works behind the scenes. This will enable users to be more efficient in the process of identifying and exploiting vulnerabilities.
+Before running ``w3af`` users need to know how the application works behind the scenes. This will enable users to be more efficient in the process of identifying and exploiting vulnerabilities.
 
 The framework has three main types of plugins: ``crawl``, ``audit`` and ``attack``.
 
@@ -11,7 +11,7 @@ Crawl plugins
 They have only one responsibility, finding new URLs, forms, and other injection points. A classic example of a discovery plugin is
 the web spider. This plugin takes a URL as input and returns one or more injection points.
 
-When a user enables more than one plugin of this type, they are run in a loop: If ``plugin A`` finds a new URL in the first run, the ``w3af`` core will send that URL to ``plugin B``. If ``plugin B`` then finds a new URL, it will be sent to ``plugin A``. This process will go on until all plugins are run and no more knowledge about the application can be found.
+When a user enables more than one plugin of this type, they are run in a loop: If ``plugin A`` finds a new URL in the first run, the ``w3af`` core will send that URL to ``plugin B``. If ``plugin B`` then finds a new URL, it will be sent to ``plugin A``. This process will go on until all plugins have run and no more information about the application can be found.
 
 Audit plugins
 -------------
@@ -21,7 +21,7 @@ Take the injection points found by crawl plugins and send specially crafted data
 Attack plugins
 --------------
 
-Their objective is to exploit vulnerabilities found by audit plugins. They usually return a shell on the remote server, or a dump remote tables in the case of SQL injections exploits.
+Their objective is to exploit vulnerabilities found by audit plugins. They usually return a shell on the remote server, or a dump of remote tables in the case of SQL injection exploits.
 
 Scan configuration
 ==================
@@ -42,8 +42,8 @@ At this point it should be obvious but:
 In most cases we recommend running ``w3af`` with the following configuration:
  
  * ``crawl``: ``web_spider``
- * ``audit``: Enable all
- * ``grep``: Enable all
+ * ``audit``: ``Enable all``
+ * ``grep``: ``Enable all``
 
 Other plugins
 =============
@@ -54,7 +54,7 @@ Identify information about the target system such as installed WAF (web applicat
 
 Grep
 ----
-Analyze HTTP requests and responses which are sent by other plugins and identify vulnerabilities, for example, a grep plugin will find a comment on the HTML body that has the word “password” inside and generate a vulnerability.
+Analyze HTTP requests and responses which are sent by other plugins and identify vulnerabilities. For example, a grep plugin will find a comment in the HTML body that has the word “password” and generate a vulnerability.
 
 Output
 ------

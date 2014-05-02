@@ -4,7 +4,7 @@ Updating to the latest version
 Manually updating
 -----------------
 
-Manually updating to the latest ``w3af`` is trivial:
+Manually updating to the latest ``w3af`` version is trivial:
 
 .. code-block:: bash
 
@@ -13,7 +13,7 @@ Manually updating to the latest ``w3af`` is trivial:
 
 .. note::
 
-   After an update ``w3af`` might require new dependencies.
+   After an update, ``w3af`` might require new dependencies.
 
 Auto-update feature
 -------------------
@@ -41,7 +41,7 @@ Branches
 
    This section is only interesting for advanced users.
 
-We use ``git flow`` to manage our development process, this means that you'll find the latest stable code at ``master``, a development version at ``develop`` and experiments and unstable code in ``feature/`` branches. I encourage advanced users to experiment with the code at ``develop`` and feature branches and report bugs, it helps us advance our development and get real testers while we don't disturb other users which require stable releases.
+We use ``git flow`` to manage our development process, this means that you'll find the latest stable code at ``master``, a development version at ``develop`` and experiments and unstable code in ``feature`` branches. I encourage advanced users to experiment with the code at ``develop`` and ``feature`` branches and report bugs, it helps us advance our development and get real testers while we don't disturb other users that require stable releases.
 
 .. code-block:: bash
 

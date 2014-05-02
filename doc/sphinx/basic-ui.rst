@@ -1,7 +1,7 @@
 Running w3af
 ------------
 
-w3af has two user interfaces, the console user interface and the graphical user interface. This user guide will focus on the console user interface, where it's easier to explain the framework's features. To fire up the console UI execute:
+``w3af`` has two user interfaces, the console user interface and the graphical user interface. This user guide will focus on the console user interface where it's easier to explain the framework's features. To fire up the console UI execute:
 
 .. code-block:: none
 
@@ -60,7 +60,7 @@ All the configuration menus provide the following commands:
  * ``set``
  * ``back``
 
-Here is a usage example of this commands in the ``http-settings`` menu:
+Here is a usage example of these commands in the ``http-settings`` menu:
 
 .. code-block:: none
 
@@ -94,7 +94,7 @@ Here is a usage example of this commands in the ``http-settings`` menu:
     w3af/config:http-settings>>> back
     w3af>>>
 
-To summarize, the ``view`` command is used to list all configurable parameters, with their values and a description. The set command is used to change a value. Finally we can execute ``back``, “.” or press CTRL+C to return to the previous menu. A detailed help for every configuration parameter can be obtained using ``help parameter`` as shown in this example:
+To summarize, the ``view`` command is used to list all configurable parameters, with their values and a description. The ``set`` command is used to change a value. Finally we can execute ``back``, “.” or press CTRL+C to return to the previous menu. A detailed help for every configuration parameter can be obtained using ``help parameter`` as shown in this example:
 
 .. code-block:: none
 
@@ -106,7 +106,7 @@ To summarize, the ``view`` command is used to list all configurable parameters, 
     w3af/config:http-settings>>>
 
 
-The ``http-settings`` and the ``misc-settings`` configuration menus are used to set system wide parameters that are used by the framework. All the parameters have defaults and in most cases you can leave them as they are. w3af was designed in a way that allows beginners to run it without having to learn a lot of its internals.
+The ``http-settings`` and the ``misc-settings`` configuration menus are used to set system wide parameters that are used by the framework. All the parameters have defaults and in most cases you can leave them as they are. ``w3af`` was designed in a way that allows beginners to run it without having to learn a lot of its internals.
 
 It is also flexible enough to be tuned by experts that know what they want and need to change internal configuration parameters to fulfill their tasks.
 

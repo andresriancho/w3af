@@ -175,55 +175,53 @@ def main():
     if type is None:
             usage()
             sys.exit()
-    else:
+
+    if type not in types:
+        print( 'Card type not found.' )
+        return 2
+    
+    if type == 'mastercard':
+        mastercard = credit_card_number(generator, mastercardPrefixList, 16, 1)
+        print( output("Mastercard", mastercard) )
+    
+    elif type == 'visa16':
+        visa16 = credit_card_number(generator, visaPrefixList, 16, 1)
+        print( output("VISA 16 digit", visa16) )
         
-        if type not in types:
-            print( 'Card type not found.' )
-            return 2
-        else:
+    elif type == 'visa13':
+        visa13 = credit_card_number(generator, visaPrefixList, 13, 1)
+        print( output("VISA 13 digit", visa13) )
         
-            if type == 'mastercard':
-                mastercard = credit_card_number(generator, mastercardPrefixList, 16, 1)
-                print( output("Mastercard", mastercard) )
-            
-            if type == 'visa16':
-                visa16 = credit_card_number(generator, visaPrefixList, 16, 1)
-                print( output("VISA 16 digit", visa16) )
-                
-            if type == 'visa13':
-                visa13 = credit_card_number(generator, visaPrefixList, 13, 1)
-                print( output("VISA 13 digit", visa13) )
-                
-            if type == 'amex':
-                amex = credit_card_number(generator, amexPrefixList, 15, 1)
-                print( output("American Express", amex) )
-                
-                # Minor cards
-            if type == 'discover':
-                discover = credit_card_number(generator, discoverPrefixList, 16, 1)
-                print( output("Discover", discover) )
-            
-            if type == 'diners':
-                diners = credit_card_number(generator, dinersPrefixList, 14, 1)
-                print( output("Diners Club / Carte Blanche", diners) )
-            
-            if type == 'enRoute':
-                enRoute = credit_card_number(generator, enRoutePrefixList, 15, 1)
-                print( output("enRoute", enRoute) )
-                
-            if type == 'jcb15':
-                jcb15 = credit_card_number(generator, jcbPrefixList15, 15, 1)
-                print( output("JCB 15 digit", jcb15) )
-                
-            if type == 'jcb16':
-                jcb16 = credit_card_number(generator, jcbPrefixList16, 16, 1)
-                print( output("JCB 16 digit", jcb16) )
-                
-            if type == 'voyager':
-                voyager = credit_card_number(generator, voyagerPrefixList, 15, 1)
-                print( output("Voyager", voyager) )
-            
-            return 0
+    elif type == 'amex':
+        amex = credit_card_number(generator, amexPrefixList, 15, 1)
+        print( output("American Express", amex) )
+        
+        # Minor cards
+    elif type == 'discover':
+        discover = credit_card_number(generator, discoverPrefixList, 16, 1)
+        print( output("Discover", discover) )
+    
+    elif type == 'diners':
+        diners = credit_card_number(generator, dinersPrefixList, 14, 1)
+        print( output("Diners Club / Carte Blanche", diners) )
+    
+    elif type == 'enRoute':
+        enRoute = credit_card_number(generator, enRoutePrefixList, 15, 1)
+        print( output("enRoute", enRoute) )
+        
+    elif type == 'jcb15':
+        jcb15 = credit_card_number(generator, jcbPrefixList15, 15, 1)
+        print( output("JCB 15 digit", jcb15) )
+        
+    elif type == 'jcb16':
+        jcb16 = credit_card_number(generator, jcbPrefixList16, 16, 1)
+        print( output("JCB 16 digit", jcb16) )
+        
+    elif type == 'voyager':
+        voyager = credit_card_number(generator, voyagerPrefixList, 15, 1)
+        print( output("Voyager", voyager) )
+    
+    return 0
         
 if __name__ == "__main__":
     main()

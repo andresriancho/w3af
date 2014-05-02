@@ -55,8 +55,8 @@ def main():
     if encode is None:
             usage()
             sys.exit()
-    else:
-        print( sha.new(encode).hexdigest() )
+
+    print( sha.new(encode).hexdigest() )
         
 if __name__ == "__main__":
     main()

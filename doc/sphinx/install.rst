@@ -36,7 +36,7 @@ The framework should work on all Python supported platforms and has been tested 
 
 .. note::
 
-   The platform used for development and running our continuous integration tests is Ubuntu 12.04 LTS and is the one where the software is more tested.
+   The platform used for development and running our continuous integration tests is Ubuntu 12.04 LTS.
 
 .. warning::
 
@@ -92,7 +92,7 @@ First you'll want to check that all the dependencies are installed. To do that j
     futures==2.1.5
     $
 
-Replace ``futures`` with the library that is missing in your system. If the ``pip freeze | grep futures`` command returns an empty result, you'll need to install the dependency using the ``/tmp/w3af_dependency_install.sh`` command. Take special attention to the output of that command, if installation fails you won't be able to run ``w3af``.
+Replace ``futures`` with the library that is missing in your system. If the ``pip freeze | grep futures`` command returns an empty result, you'll need to install the dependency using the ``/tmp/w3af_dependency_install.sh`` command. Pay special attention to the output of that command, if installation fails you won't be able to run ``w3af``.
 
 It is important to notice that ``w3af`` requires specific versions of the third-party libraries. The specific versions required at ``/tmp/w3af_dependency_install.sh`` need to match the ones you see in the output of ``pip freeze``. If the versions don't match you can always install a specific version using ``pip install --upgrade futures==2.1.5``.
 
@@ -101,7 +101,7 @@ _______________________________________________________________________________
 
 You will recognize this when this message appears: "please install the following operating system packages".
 
-Most likely you're using an unsupported Linux distribution. *This doesn't mean that w3af doesn't work with your distribution!* It just means that we haven't defined the steps required for making it run into our code.
+Most likely you're using an unsupported Linux distribution. *This doesn't mean that w3af won't work with your distribution!* It just means that we haven't defined the steps required for making it run into our code.
 
 What you need to do is:
 
