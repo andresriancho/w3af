@@ -44,7 +44,7 @@ The framework should work on all Python supported platforms and has been tested 
 
 One of the ugly details users can find is that ``w3af`` needs to detect the Operating System / Linux distribution, and then have support for creating the ``/tmp/w3af_dependency_install.sh`` for that specific combination. In other words, for Ubuntu we use ``apt-get install`` and for Suse we use ``yum install``.
 
-The list of distributions ``w3af`` knows how to generate the installation script for `is extensive <https://github.com/andresriancho/w3af/tree/feature/module/w3af/core/controllers/dependency_check/platforms>`_ . If we don't support your distribution, we'll default to Ubuntu.
+The list of distributions ``w3af`` knows how to generate the installation script for `is extensive <https://github.com/andresriancho/w3af/tree/master/w3af/core/controllers/dependency_check/platforms>`_ . If we don't support your distribution, we'll default to Ubuntu.
 
 Installation in Kali
 --------------------
