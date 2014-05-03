@@ -40,7 +40,7 @@ class SWFParser(BaseParser):
         if self._is_compressed(swf):
             try:
                 swf = self._inflate(swf)
-            except Exception:
+            except ValueError:
                 # If the inflate fails... there is nothing else to do.
                 return
 
@@ -65,7 +65,7 @@ class SWFParser(BaseParser):
         try:
             uncompressed_data = zlib.decompress(compressed_data)
         except zlib.error, e:
-            raise Exception('Failed to inflate: ' + str(e))
+            raise ValueError('Failed to inflate: ' + str(e))
         else:
             # TODO: Strings in SWF are NULL-Byte delimited. Maybe we can
             # use that to extract strings and apply regular expressions
@@ -123,8 +123,14 @@ class SWFParser(BaseParser):
                         #
                         # In case you're wondering, this url_join does work with
                         # both relative and full URLs
-                        url = self._base_url.url_join(url_str)
-                        self._re_urls.add(url)
+                        try:
+                            url = self._base_url.url_join(url_str)
+                        except ValueError:
+                            # Handle cases like "javascript:foo(1)" URLs
+                            # https://github.com/andresriancho/w3af/issues/2091
+                            pass
+                        else:
+                            self._re_urls.add(url)
 
     def get_references(self):
         """
@@ -140,7 +146,7 @@ class SWFParser(BaseParser):
                  that came out of a regular expression. The second list if less
                  trustworthy.
         """
-        return ([], list(self._re_urls))
+        return [], list(self._re_urls)
 
     def _return_empty_list(self, *args, **kwds):
         """
