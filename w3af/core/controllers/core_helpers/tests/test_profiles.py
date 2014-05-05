@@ -21,14 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import os
 
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class TestCoreProfiles(unittest.TestCase):
+
+    INPUT_FILE = os.path.relpath(os.path.join(ROOT_PATH, 'plugins', 'audit',
+                                              'ssl_certificate', 'ca.pem'))
 
     @attr('smoke')
     def test_use_profile(self):
@@ -133,3 +138,13 @@ class TestCoreProfiles(unittest.TestCase):
                 profile_name = profile_inst.get_name()
 
                 w3af_core.profiles.use_profile(profile_name, workdir='.')
+
+    def test_use_profile_variable_replace(self):
+        w3af_core = w3afCore()
+        w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
+
+        plugin_opts = w3af_core.plugins.get_plugin_options('audit',
+                                                           'ssl_certificate')
+        ca_path = plugin_opts['caFileName'].get_value()
+        self.assertEqual(ca_path, self.INPUT_FILE)
+

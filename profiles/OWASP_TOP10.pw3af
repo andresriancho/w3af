@@ -80,7 +80,7 @@ only_forward = False
 
 [audit.ssl_certificate]
 minExpireDays = 30
-caFileName = w3af/plugins/audit/ssl_certificate/ca.pem
+caFileName = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
 
 [audit.os_commanding]
 

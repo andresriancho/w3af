@@ -36,18 +36,18 @@ class InputFileOption(BaseOption):
     def set_value(self, value):
         """
         :param value: The value parameter is set by the user interface, which
-        for example sends 'True' or 'a,b,c'
+        for example sends "w3af/plugins/audit/ssl_certificate/ca.pem" or
+        "%ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem".
 
-        Based on the value parameter and the option type, I have to create a
-        nice looking object like True or ['a','b','c'].
+        If required we replace the %ROOT_PATH% with the right value for this
+        platform.
         """
         if value == '':
             self._value = value
             return
 
-        value = value.replace(ROOT_PATH_VAR, ROOT_PATH)
         validated_value = self.validate(value)
-        
+
         # I want to make the paths shorter, so we're going to make them
         # relative, at least in the case where they are inside the cwd
         current_dir = os.path.abspath(os.curdir)
@@ -57,7 +57,7 @@ class InputFileOption(BaseOption):
         else:
             self._value = validated_value
 
-    def get_value_str(self):
+    def get_value_for_profile(self):
         """
         This method is called before saving the option value to the profile file
 
@@ -73,6 +73,8 @@ class InputFileOption(BaseOption):
         return replaced_value
 
     def validate(self, value):
+
+        value = value.replace(ROOT_PATH_VAR, ROOT_PATH)
 
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):

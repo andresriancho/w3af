@@ -216,7 +216,8 @@ class profile(object):
             self._config.add_section(section)
 
         for option in options:
-            self._config.set(section, option.get_name(), option.get_value_str())
+            self._config.set(section, option.get_name(),
+                             option.get_value_for_profile())
 
     def get_plugin_options(self, plugin_type, plugin_name):
         """
@@ -275,7 +276,8 @@ class profile(object):
             self._config.add_section(section)
 
         for option in options:
-            self._config.set(section, option.get_name(), option.get_value_str())
+            self._config.set(section, option.get_name(),
+                             option.get_value_for_profile())
 
     def get_misc_settings(self):
         """
