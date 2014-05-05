@@ -37,9 +37,9 @@ Now the user configures the browser to use the ``127.0.0.1:44444`` address as hi
 SSL Installation
 ----------------
 
-The `spider_man <http://docs.w3af.org/en/latest/complex-web-apps.html?highlight=spiderman>`_ plugin allows ``w3af`` to intercept and record your actions while browsing a web application with a standard browser. ``w3af`` will crawl the site and store the pages as they are visited in ``w3af``.
+The spider_man plugin allows ``w3af`` to intercept and record your actions while browsing a web application with a standard browser. ``w3af`` will crawl the site and store the pages as they are visited in ``w3af``.
 
-The `spider_man <http://docs.w3af.org/en/latest/complex-web-apps.html?highlight=spiderman>`_ plugin works great on non-secure sites, however, to crawl a secure site, the `spider_man <http://docs.w3af.org/en/latest/complex-web-apps.html?highlight=spiderman>`_ plugin requires an additional SSL Certificate to be installed.  This tutorial will help with the steps to install the SSL Certificate in Firefox, Internet Explorer, Chrome, and Opera browsers.
+The spider_man plugin works great on non-secure sites, however, to crawl a secure site, the spider_man plugin requires an additional SSL Certificate to be installed.  This tutorial will help with the steps to install the SSL Certificate in Firefox, Internet Explorer, Chrome, and Opera browsers.
 
 Ideally use private browsing mode when recording the session. This should ensure that the browser starts with no stored cookies, and prevents certain changes from being saved. For example, Firefox does not allow certificate overrides to be saved permanently.
 
