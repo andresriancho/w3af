@@ -142,11 +142,23 @@ class TestOptionFactory(unittest.TestCase):
         opt = opt_factory('name', self.INPUT_FILE, 'desc', INPUT_FILE,
                           'help', 'tab1')
 
-        self.assertEqual(opt.get_value_str(), self.SHORT_INPUT_FILE)
+        self.assertEqual(opt.get_value_for_profile(), self.SHORT_INPUT_FILE)
+        self.assertEqual(opt.get_value_str(), self.INPUT_FILE)
+
+    def test_root_path_variable_init(self):
+        opt = opt_factory('name', self.SHORT_INPUT_FILE, 'desc', INPUT_FILE,
+                          'help', 'tab1')
+
+        self.assertEqual(opt.get_value_for_profile(), self.SHORT_INPUT_FILE)
+        self.assertEqual(opt.get_value_str(), self.INPUT_FILE)
+        self.assertEqual(opt._value, self.INPUT_FILE)
 
     def test_root_path_variable_set(self):
         opt = opt_factory('name', self.SHORT_INPUT_FILE, 'desc', INPUT_FILE,
                           'help', 'tab1')
 
-        self.assertEqual(opt.get_value_str(), self.SHORT_INPUT_FILE)
+        opt.set_value(self.SHORT_INPUT_FILE)
+
+        self.assertEqual(opt.get_value_for_profile(), self.SHORT_INPUT_FILE)
+        self.assertEqual(opt.get_value_str(), self.INPUT_FILE)
         self.assertEqual(opt._value, self.INPUT_FILE)
