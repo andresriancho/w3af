@@ -52,7 +52,7 @@ persistent_xss = True
 
 [audit.ssl_certificate]
 minExpireDays = 30
-caFileName = w3af/plugins/audit/ssl_certificate/ca.pem
+caFileName = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
 
 [audit.xst]
 
@@ -73,8 +73,8 @@ use_w3af_site = True
 [crawl.spider_man]
 
 [bruteforce.basic_auth]
-usersFile = w3af/core/controllers/bruteforce/users.txt
-passwdFile = w3af/core/controllers/bruteforce/passwords.txt
+usersFile = %ROOT_PATH%/core/controllers/bruteforce/users.txt
+passwdFile = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
 useSvnUsers = True
 stopOnFirst = True
 passEqUser = True

@@ -41,20 +41,23 @@ Options:
 For more info visit http://w3af.org/
 '''    
 
+
 def _configure_output_manager():
-    '''
+    """
     Make sure that the output manager is started before doing anything else,
     since it is used by most w3af modules
-    ''' 
+    """
     try:
-        om.out.set_output_plugins( ['console'] )
+        om.out.set_output_plugins(['console'])
     except Exception, e:
         print('Something went wrong, w3af failed to start the output manager.')
         print('Exception: "%s"' % e)
         sys.exit(-9)
-        
+
+
 def usage():
     print(USAGE_DOC)
+
 
 def main():
     try:
@@ -69,11 +72,11 @@ def main():
     doupdate = None
     
     for o, a in opts:
-        if o in ( "-e"  ):
+        if o in ("-e"):
             # easter egg
             msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'\
                   'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
-            print( base64.b64decode( msg ) )
+            print(base64.b64decode(msg))
         if o in ('-p', '--profile'):
             # selected profile
             profile = a
@@ -100,8 +103,7 @@ def main():
 
 def _main():
     _configure_output_manager()
-    err_code = main()
-    sys.exit(err_code)
+    sys.exit(main())
 
 
 if __name__ == "__main__":

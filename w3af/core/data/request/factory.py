@@ -43,7 +43,6 @@ from w3af.core.data.parsers.url import URL, parse_qs
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.misc.encoding import smart_unicode
 
-__all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
 
 URL_HEADERS = ('location', 'uri', 'content-location')
 
@@ -68,7 +67,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     req_headers = Headers(req_headers.items())
 
     # Get the cookie!
-    cookieObj = _create_cookie(resp)
+    cookie_obj = _create_cookie(resp)
 
     # Create the fuzzable request that represents the request object
     # passed as parameter
@@ -76,7 +75,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         qsr = HTTPQSRequest(
             resp.get_uri(),
             headers=req_headers,
-            cookie=cookieObj
+            cookie=cookie_obj
         )
         res.append(qsr)
 
@@ -99,7 +98,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 qsr = HTTPQSRequest(
                     absolute_location,
                     headers=req_headers,
-                    cookie=cookieObj
+                    cookie=cookie_obj
                 )
                 res.append(qsr)
 
@@ -146,14 +145,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                         variant.get_action(),
                         variant.get_method(),
                         req_headers,
-                        cookieObj,
+                        cookie_obj,
                         variant)
                 else:
                     # The default is a GET request
                     r = HTTPQSRequest(
                         variant.get_action(),
                         headers=req_headers,
-                        cookie=cookieObj
+                        cookie=cookie_obj
                     )
                     r.set_dc(variant)
 

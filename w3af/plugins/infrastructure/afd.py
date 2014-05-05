@@ -27,7 +27,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.kb.info import Info
@@ -123,7 +123,7 @@ class afd(InfrastructurePlugin):
             # that... So I must analyze the response body
             resp_body = resp_body.replace(offending_string, '')
             resp_body = resp_body.replace(rnd_param, '')
-            if relative_distance_lt(resp_body, original_resp_body, 0.15):
+            if fuzzy_not_equal(resp_body, original_resp_body, 0.15):
                 self._filtered.append(offending_URL)
             else:
                 self._not_filtered.append(offending_URL)

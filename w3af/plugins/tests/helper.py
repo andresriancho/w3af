@@ -24,6 +24,7 @@ import unittest
 import urllib2
 import httpretty
 import tempfile
+import pprint
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
@@ -79,9 +80,12 @@ class PluginTest(unittest.TestCase):
         else:
             re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
 
-        httpretty.register_uri(httpretty.GET,
-                               re.compile(re_str),
-                               body=self.request_callback)
+        all_methods = set(mock_resp.method for mock_resp in self.MOCK_RESPONSES)
+
+        for http_method in all_methods:
+            httpretty.register_uri(http_method,
+                                   re.compile(re_str),
+                                   body=self.request_callback)
 
     def tearDown(self):
         self.w3afcore.quit()
@@ -96,6 +100,9 @@ class PluginTest(unittest.TestCase):
         content_type = 'text/html'
 
         for mock_response in self.MOCK_RESPONSES:
+            if mock_response.method != method.command:
+                continue
+
             if isinstance(mock_response.url, basestring):
                 if uri.endswith(mock_response.url):
                     status = mock_response.status
@@ -192,8 +199,16 @@ class PluginTest(unittest.TestCase):
         #
         if assert_exceptions:
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-            msg = [e.get_summary() for e in caught_exceptions]
+            msg = self._pprint_exception_summary(caught_exceptions)
             self.assertEqual(len(caught_exceptions), 0, msg)
+
+    def _pprint_exception_summary(self, caught_exceptions):
+        """
+        Given a list of caught exceptions, as returned by
+        exception_handler.get_all_exceptions() , we'll return a string that
+        shows the information about them.
+        """
+        return [e for e in caught_exceptions]
 
     def _configure_debug(self):
         """
@@ -342,12 +357,17 @@ def create_target_option_list(*target):
 
 
 class MockResponse(object):
-    def __init__(self, url, body, content_type='text/html', status=200): 
+    def __init__(self, url, body, content_type='text/html', status=200,
+                 method='GET'):
         self.url = url
         self.body = body
         self.content_type = content_type
         self.status = status
+        self.method = method
 
+        assert method in ('GET', 'PUT', 'POST', 'DELETE', 'HEAD', 'PATCH',
+                          'OPTIONS', 'CONNECT'), 'httpretty can not mock this'\
+                                                 ' method'
         assert isinstance(url, (basestring, RE_COMPILE_TYPE))
 
     def __repr__(self):

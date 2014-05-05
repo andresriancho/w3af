@@ -100,16 +100,16 @@ def _get_fuzzer_config(freq):
              things that can be fuzzed.
     """
     config = cf.cf
-
     fuzzer_config = {}
 
-    fuzzer_config['fuzzable_headers'] = config.get('fuzzable_headers')
-    fuzzer_config['fuzz_cookies'] = config.get('fuzz_cookies', False)
-    fuzzer_config['fuzz_url_filenames'] = config.get(
-        'fuzz_url_filenames', False)
-    fuzzer_config['fuzzed_files_extension'] = config.get(
-        'fuzzed_files_extension', 'gif')
-    fuzzer_config['fuzz_form_files'] = config.get('fuzz_form_files', False)
-    fuzzer_config['fuzz_url_parts'] = config.get('fuzz_url_parts', False)
+    CONF_KEYS = [('fuzzable_headers', []),
+                 ('fuzz_cookies', False),
+                 ('fuzz_url_filenames', False),
+                 ('fuzzed_files_extension', 'gif'),
+                 ('fuzz_form_files', False),
+                 ('fuzz_url_parts', False),]
+
+    for conf_name, default in CONF_KEYS:
+        fuzzer_config[conf_name] = config.get(conf_name, default)
 
     return fuzzer_config

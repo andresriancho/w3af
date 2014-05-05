@@ -19,56 +19,50 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 
-DEBUG_CPU_USAGE = False
-TOP_N_FUNCTIONS = 50
-
-if DEBUG_CPU_USAGE:
-    import w3af.core.controllers.output_manager as om
-
-    try:
-        import yappi
-    except:
-        DEBUG_CPU_USAGE = False
-    else:
-        DEBUG_CPU_USAGE = True
-        import pprint
-        yappi.start()
+from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
 
-def dump_cpu_usage():
+PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.cpu'
+DELAY_MINUTES = 2
+SAVE_THREAD_PTR = []
+
+
+def should_profile_cpu(wrapped):
+    def inner(w3af_core):
+        _should_profile = os.environ.get('W3AF_CPU_PROFILING', '0')
+
+        if _should_profile.isdigit() and int(_should_profile) == 1:
+            return wrapped(w3af_core)
+
+    return inner
+
+
+@should_profile_cpu
+def start_cpu_profiling(w3af_core):
     """
-    This is a function that prints the memory usage of w3af in real time.
-    :author: Andres Riancho (andres.riancho@gmail.com)
+    If the environment variable W3AF_PROFILING is set to 1, then we start
+    the CPU and memory profiling.
+
+    :return: None
     """
-    if not DEBUG_CPU_USAGE:
-        return
-    else:
+    import yappi
+    yappi.start()
 
-        # Where data is stored, entries look like:
-        # ('/home/dz0/workspace/w3af/plugins/infrastructure/afd.py.get_options:183',
-        #  1, 3.1150000000000002e-06, 2.4320000000000002e-06)
-        entries = []
+    dump_data_every_thread(dump_data, DELAY_MINUTES, SAVE_THREAD_PTR)
 
-        # Load the data into entries
-        yappi.enum_stats(entries.append)
 
-        # Order it, put the function that takes more time in the first
-        # position so we can understand why it is consuming so much time
-        def sort_tsub(a, b):
-            return cmp(a[2], b[2])
+def dump_data():
+    import yappi
+    yappi.get_func_stats().save(PROFILING_OUTPUT_FMT % get_filename_fmt(),
+                                type="pstat")
 
-        entries.sort(sort_tsub)
-        entries.reverse()
 
-        # Print the information in an "easy to read" way
-        pp = pprint.PrettyPrinter(indent=4)
-        data = pp.pformat(entries[:TOP_N_FUNCTIONS])
-        om.out.debug('CPU usage information:\n' + data)
-
-        # Filtered information example
-        filter_string = 'sqli.py'
-        filtered = [x for x in entries if filter_string in x[0]]
-        data = pp.pformat(filtered)
-        fmt = 'CPU usage for "%s":\n%s'
-        om.out.debug(fmt % (filter_string, data))
+@should_profile_cpu
+def stop_cpu_profiling(w3af_core):
+    """
+    Save profiling information (if available)
+    """
+    cancel_thread(SAVE_THREAD_PTR)
+    dump_data()

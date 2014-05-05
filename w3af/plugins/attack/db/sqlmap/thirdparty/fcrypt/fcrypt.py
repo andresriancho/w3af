@@ -36,8 +36,8 @@ Functions:
 __author__ = 'Carey Evans <careye@spamcop.net>'
 __version__ = '1.3.1'
 __date__ = '21 February 2004'
-__credits__ = """michal j wallace for inspiring me to write this.
-Eric Young for the C code this module was copied from."""
+__credits__ = '''michal j wallace for inspiring me to write this.
+Eric Young for the C code this module was copied from.'''
 
 __all__ = ['crypt']
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -180,6 +180,9 @@ class Enumeration(GenericEnumeration):
             colList = conf.col.split(",")
         else:
             colList = []
+
+        if conf.excludeCol:
+            colList = [_ for _ in colList if _ not in conf.excludeCol.split(',')]
 
         for col in colList:
             colList[colList.index(col)] = safeSQLIdentificatorNaming(col)

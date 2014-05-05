@@ -30,6 +30,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import ScanMustStopOnUrlError
+from w3af.core.controllers.misc.decorators import memoized
 
 
 class Plugin(Configurable):
@@ -161,6 +162,7 @@ class Plugin(Configurable):
     def get_type(self):
         return 'plugin'
 
+    @memoized
     def get_name(self):
         return self.__class__.__name__
 
@@ -186,6 +188,14 @@ class Plugin(Configurable):
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
         """
+        # You can use this code to debug issues that happen in threads, by
+        # simply not using them:
+        #
+        # for i in iterable:
+        #    callback(i, func(i))
+        # return
+        #
+        # Now the real code:
         func = return_args(func, **kwds)
         imap_unordered = self.worker_pool.imap_unordered
 
@@ -203,6 +213,7 @@ class UrlOpenerProxy(object):
         self._plugin_inst = plugin_inst
 
     def __getattr__(self, name):
+
         def meth(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
@@ -210,11 +221,9 @@ class UrlOpenerProxy(object):
                 stopbubbling, result = \
                     self._plugin_inst.handle_url_error(w3aferr)
                 if not stopbubbling:
-                    try:
-                        exc_info = sys.exc_info()
-                        raise exc_info[0], exc_info[1], exc_info[2]
-                    finally:
-                        del exc_info
+                    exc_info = sys.exc_info()
+                    raise exc_info[0], exc_info[1], exc_info[2]
                 return result
+
         attr = getattr(self._url_opener, name)
         return meth if callable(attr) else attr

@@ -110,59 +110,66 @@ class path_disclosure(GrepPlugin):
             path_disc_regex = self._compiled_regexes[potential_disclosure]
             match_list = path_disc_regex.findall(html_string)
 
-            # Decode the URL, this will transform things like
-            #     http://host.tld/?id=%2Fhome
-            # into,
-            #     http://host.tld/?id=/home
-            realurl = response.get_url().url_decode()
-
             #   Sort by the longest match, this is needed for filtering out
             #   some false positives please read the note below.
             match_list.sort(self._longest)
 
             for match in match_list:
+                if self._analyze_match(match, request, response):
+                    return True
 
-                # This if is to avoid false positives
-                if not request.sent(match) and not \
-                self._attr_value(match, html_string):
+        return False
 
-                    # Check for dups
-                    if (realurl, match) in self._already_added:
-                        continue
+    def _analyze_match(self, match, request, response):
+        # This if is to avoid false positives
+        if request.sent(match):
+            return False
 
-                    #   There is a rare bug also, which is triggered in cases like this one:
-                    #
-                    #   >>> import re
-                    #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
-                    #   ['/var/www/foobar/htdocs/article.php']
-                    #   >>> re.findall('/htdocs/.*','/var/www/foobar/htdocs/article.php')
-                    #   ['/htdocs/article.php']
-                    #   >>>
-                    #
-                    #   What I need to do here, is to keep the longest match.
-                    for realurl_added, match_added in self._already_added:
-                        if match_added.endswith(match):
-                            break
-                    else:
+        if self._is_attr_value(match, response):
+            return False
 
-                        #   Note to self: I get here when "break" is NOT executed.
-                        #   It's a new one, report!
-                        self._already_added.append((realurl, match))
+        # Decode the URL, this will transform things like
+        #     http://host.tld/?id=%2Fhome
+        # into,
+        #     http://host.tld/?id=/home
+        realurl = response.get_url().url_decode()
 
-                        desc = 'The URL: "%s" has a path disclosure'\
-                               ' vulnerability which discloses "%s".'
-                        desc = desc % (response.get_url(), match)
+        # Check for dups
+        if (realurl, match) in self._already_added:
+            return False
 
-                        v = Vuln('Path disclosure vulnerability', desc,
-                                 severity.LOW, response.id, self.get_name())
+        #   There is a rare bug also, which is triggered in cases like this one:
+        #
+        #   >>> import re
+        #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
+        #   ['/var/www/foobar/htdocs/article.php']
+        #   >>> re.findall('/htdocs/.*','/var/www/foobar/htdocs/article.php')
+        #   ['/htdocs/article.php']
+        #   >>>
+        #
+        #   What I need to do here, is to keep the longest match.
+        for realurl_added, match_added in self._already_added:
+            if match_added.endswith(match):
+                break
+        else:
+            #   Note to self: I get here when "break" is NOT executed.
+            #   It's a new one, report!
+            self._already_added.append((realurl, match))
 
-                        v.set_url(realurl)
-                        v['path'] = match
-                        v.add_to_highlight(match)
-                        
-                        self.kb_append(self, 'path_disclosure', v)
-                        return True
-                    
+            desc = 'The URL: "%s" has a path disclosure'\
+                   ' vulnerability which discloses "%s".'
+            desc = desc % (response.get_url(), match)
+
+            v = Vuln('Path disclosure vulnerability', desc, severity.LOW,
+                     response.id, self.get_name())
+
+            v.set_url(realurl)
+            v['path'] = match
+            v.add_to_highlight(match)
+
+            self.kb_append(self, 'path_disclosure', v)
+            return True
+
         return False
 
     def _longest(self, a, b):
@@ -173,11 +180,12 @@ class path_disclosure(GrepPlugin):
         """
         return cmp(len(a), len(b))
 
-    def _attr_value(self, path_disclosure_string, response_body):
+    def _is_attr_value(self, path_disclosure_string, response):
         """
         This method was created to remove some false positives.
 
-        :return: True if path_disclosure_string is the value of an attribute inside a tag.
+        :return: True if path_disclosure_string is the value of an attribute
+                 inside a tag.
 
         Examples:
             path_disclosure_string = '/home/image.png'
@@ -188,10 +196,16 @@ class path_disclosure(GrepPlugin):
             response_body = '...<b>Error while processing /home/image.png</b>...'
             return: False
         """
-        regex = '<.+?(["|\']%s["|\']).*?>' % re.escape(path_disclosure_string)
-        regex_res = re.findall(regex, response_body)
-        in_attr = path_disclosure_string in regex_res
-        return in_attr
+        dom = response.get_dom()
+        if dom is None:
+            return False
+
+        for elem in dom.iterdescendants():
+            for key, value in elem.items():
+                if path_disclosure_string in value:
+                    return True
+
+        return False
 
     def _update_KB_path_list(self):
         """

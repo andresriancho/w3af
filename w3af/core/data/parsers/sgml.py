@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import urllib
 import re
 import traceback
 
@@ -39,19 +40,24 @@ class SGMLParser(BaseParser):
     :author: Javier Andalia (jandalia =at= gmail.com)
              Andres Riancho ((andres.riancho@gmail.com))
     """
+    EMAIL_RE = re.compile(
+        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+        re.I | re.U)
 
-    TAGS_WITH_URLS = (
+    TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
         'form', 'ilayer', 'bgsound', 'html', 'audio', 'video'
-    )
+    }
 
-    URL_ATTRS = ('href', 'src', 'data', 'action', 'manifest')
+    TAGS_WITH_MAILTO = {'a'}
+
+    URL_ATTRS = {'href', 'src', 'data', 'action', 'manifest'}
 
     # I don't want to inject into Apache's directory indexing parameters
-    APACHE_INDEXING = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
+    APACHE_INDEXING = {"?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
                        '?C=N;O=D', '?C=D;O=A', '?N=D', '?M=A', '?S=A',
-                       '?D=A', '?D=D', '?S=D', '?M=D', '?N=D')
+                       '?D=A', '?D=D', '?S=D', '?M=D', '?N=D'}
 
     def __init__(self, http_resp):
         BaseParser.__init__(self, http_resp)
@@ -67,32 +73,42 @@ class SGMLParser(BaseParser):
         self._parsed_urls = set()
         self._forms = []
         self._comments_in_doc = []
-        self._scripts_in_doc = []
         self._meta_redirs = []
         self._meta_tags = []
-
-        # Do some stuff before actually parsing
-        self._pre_parse(http_resp)
+        self._emails = set()
 
         # Parse!
         self._parse(http_resp)
+
+    def _handle_exception(self, where, ex):
+        msg = 'An exception occurred while %s: "%s"' % (where, ex)
+        om.out.error(msg)
+        om.out.error('Error traceback: %s' % traceback.format_exc())
 
     def start(self, tag, attrs):
         """
         Called by the parser on element open.
         """
-        try:
-            # Call start_tag handler method
-            meth = getattr(self, '_handle_' + tag + '_tag_start',
-                           lambda *args: None)
-            meth(tag, attrs)
+        # Call start_tag handler method
+        handler = '_handle_%s_tag_start' % tag
 
+        try:
+            meth = getattr(self, handler, lambda *args: None)
+            meth(tag, attrs)
+        except Exception, ex:
+            self._handle_exception('parsing document', ex)
+
+        try:
             if tag in self.TAGS_WITH_URLS:
                 self._find_references(tag, attrs)
         except Exception, ex:
-            msg = 'An exception occurred while parsing a document: %s' % ex
-            om.out.error(msg)
-            om.out.error('Error traceback: %s' % traceback.format_exc())
+            self._handle_exception('extracting references', ex)
+
+        try:
+            if tag in self.TAGS_WITH_MAILTO:
+                self._find_emails(tag, attrs)
+        except Exception, ex:
+            self._handle_exception('finding emails', ex)
 
     def end(self, tag):
         """
@@ -109,27 +125,14 @@ class SGMLParser(BaseParser):
 
     def comment(self, text):
         if self._inside_script:
-            self._scripts_in_doc.append(text)
-        else:
-            self._comments_in_doc.append(text)
+            # This handles the case where we have:
+            # <script><!-- code(); --></script>
+            return
+
+        self._comments_in_doc.append(text)
 
     def close(self):
         pass
-
-    def _pre_parse(self, http_resp):
-        """
-        Perform some initialization tasks
-        """
-        body = http_resp.body
-
-        # These two need to be performed here because the response body is
-        # not going to be stored as an attr for this object. This makes the
-        # parsing process a little bit slower, since we could otherwise
-        # extract the emails when the user runs get_emails(), but is actually
-        # part of a memory usage improvement where the body is NOT saved
-        # as an attribute
-        self._regex_url_parse(body)
-        self._extract_emails(body)
 
     def _parse(self, http_resp):
         """
@@ -162,16 +165,14 @@ class SGMLParser(BaseParser):
             # yet the parsed elems will be unicode.
             resp_body = resp_body.encode(http_resp.charset,
                                          'xmlcharrefreplace')
-            parser = etree.HTMLParser(
-                target=self,
-                recover=True,
-                encoding=http_resp.charset,
-            )
+            parser = etree.HTMLParser(target=self,
+                                      recover=True,
+                                      encoding=http_resp.charset)
             dom = etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
-            msg = 'An error occurred while parsing "%s", original exception: "%s"'
-            msg = msg % (http_resp.get_url(), etree.XMLSyntaxError)
-            om.out.debug(msg)
+            msg = 'An error occurred while parsing "%s",'\
+                  ' original exception: "%s"'
+            om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
 
         # Performance improvement! Read the docs before removing this!
         http_resp.set_dom(dom)
@@ -180,21 +181,65 @@ class SGMLParser(BaseParser):
         key = attr[0]
         value = attr[1]
 
-        return  key in self.URL_ATTRS and value \
+        return key in self.URL_ATTRS and value \
             and not value.startswith('#') \
             and not value in self.APACHE_INDEXING
+
+    def get_emails(self, domain=None):
+        """
+        :param domain: Indicates what email addresses I want to retrieve.
+                       All are returned if the domain is not set.
+
+        :return: A list of email accounts that are inside the document.
+        """
+        if domain:
+            return [i for i in self._emails if domain == i.split('@')[1]]
+        else:
+            return self._emails
+
+    def _find_emails(self, tag, attrs):
+        """
+        Extract "mailto:" email addresses
+
+        :param tag: The tag which is being parsed
+        :param attrs: The attributes for that tag
+        :return: Store the emails in self._emails
+        """
+        filter_ref = self._filter_ref
+
+        for _, mailto_address in filter(filter_ref, attrs.iteritems()):
+            if '@' in mailto_address:
+                if mailto_address.lower().startswith('mailto:'):
+                    try:
+                        email = self._parse_mailto(mailto_address)
+                    except ValueError:
+                        # It was an invalid email
+                        pass
+                    else:
+                        self._emails.add(email)
+
+    def _parse_mailto(self, mailto):
+        mailto = urllib.unquote_plus(mailto)
+        colon_split = mailto.split(':', 1)
+        quest_split = colon_split[1].split('?', 1)
+        email = quest_split[0].strip()
+        if self.EMAIL_RE.match(email):
+            return email
+        else:
+            raise ValueError('Invalid email address "%s"' % email)
 
     def _find_references(self, tag, attrs):
         """
         Find references inside the document.
         """
-
         filter_ref = self._filter_ref
+        base_url = self._base_url
+        decode_url = self._decode_url
 
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
-                url_path = self._decode_url(url_path)
-                url = self._base_url.url_join(url_path, encoding=self._encoding)
+                url_path = decode_url(url_path)
+                url = base_url.url_join(url_path, encoding=self._encoding)
             except ValueError:
                 # Just ignore it, this happens in many cases but one
                 # of the most noticeable is "d:url.html", where the
@@ -202,14 +247,16 @@ class SGMLParser(BaseParser):
                 msg = 'Ignoring URL "%s" as it generated an invalid URL.'
                 om.out.debug(msg % url_path)
             else:
-                url.normalize_url()
+                # The url_join call already normalizes the URL, there is no
+                # need to call normalize again
+                # url.normalize_url()
+
                 # Save url
                 self._parsed_urls.add(url)
                 self._tag_and_url.add((tag, url))
 
     def _fill_forms(self, tag, attrs):
-        raise NotImplementedError(
-            'This method must be overriden by a subclass')
+        raise NotImplementedError('This method must be overriden by a subclass')
 
     ## Properties ##
     @property
@@ -232,7 +279,7 @@ class SGMLParser(BaseParser):
         other with the URLs that came out from a regular expression. The
         second list is less trustworthy.
         """
-        return (list(self._parsed_urls), list(self._re_urls - self._parsed_urls))
+        return list(self._parsed_urls), []
 
     def get_references(self):
         return self.references
@@ -246,16 +293,6 @@ class SGMLParser(BaseParser):
 
     def get_comments(self):
         return self.comments
-
-    @property
-    def scripts(self):
-        """
-        Return list of scripts (mainly javascript, but can be anything)
-        """
-        return set(self._scripts_in_doc)
-
-    def get_scripts(self):
-        return self.scripts
 
     @property
     def meta_redirs(self):

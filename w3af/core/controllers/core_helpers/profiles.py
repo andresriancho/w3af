@@ -187,9 +187,8 @@ class w3af_core_profiles(object):
                 except BaseFrameworkException, w3e:
                     msg = 'Setting the options for plugin "%s.%s" raised an' \
                           ' exception due to unknown or invalid configuration' \
-                          ' parameters.'
-                    msg += ' ' + str(w3e)
-                    error_messages.append(msg % (plugin_type, plugin_name))
+                          ' parameters. %s'
+                    error_messages.append(msg % (plugin_type, plugin_name, w3e))
 
         if error_messages:
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages))

@@ -52,9 +52,11 @@ class text_file(OutputPlugin):
         self._flush_counter = 0
         self._flush_number = 10
         self._initialized = False
+
         # File handlers
         self._file = None
         self._http = None
+
         # XXX Only set '_show_caller' to True for debugging purposes. It
         # causes the execution of potentially slow code that handles
         # with introspection.
@@ -106,7 +108,7 @@ class text_file(OutputPlugin):
             self._file = None
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
-            om.out.error(msg  % (self._output_file_name, e),
+            om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins=set([self.get_name()]))
 
     def _write_to_HTTP_log(self, msg):
@@ -125,7 +127,7 @@ class text_file(OutputPlugin):
             self._http = None
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
-            om.out.error(msg  % (self._http_file_name, e),
+            om.out.error(msg % (self._http_file_name, e),
                          ignore_plugins=set([self.get_name()]))
             
     def write(self, message, log_type, new_line=True):
@@ -239,6 +241,13 @@ class text_file(OutputPlugin):
             #
             #self._file.flush()
             pass
+
+    def end(self):
+        if self._http is not None:
+            self._http.close()
+
+        if self._file is not None:
+            self._file.close()
 
     def set_options(self, option_list):
         """

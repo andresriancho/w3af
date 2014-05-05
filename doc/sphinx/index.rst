@@ -5,7 +5,7 @@ This document is the user's guide for the Web Application Attack and Audit Frame
 
 w3af is a complete environment for auditing and exploiting Web applications. This environment provides a solid platform for web vulnerability assessments and penetration tests.
 
- .. |Github| image:: images/github-logo.png
+.. |Github| image:: images/github-logo.png
    :scale: 50 %                                   
    :target: https://github.com/andresriancho/w3af/
    :alt: Github repository

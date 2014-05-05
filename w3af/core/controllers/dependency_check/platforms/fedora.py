@@ -46,7 +46,7 @@ def os_package_is_installed(package_name):
         # We're not on a debian based system
         return None
     else:
-        dpkg_output = p.stdout.read()
+        dpkg_output, _ = p.communicate()
 
         if not_installed in dpkg_output:
             return False

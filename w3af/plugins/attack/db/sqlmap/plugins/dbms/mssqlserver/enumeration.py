@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -263,6 +263,10 @@ class Enumeration(GenericEnumeration):
         infoMsgTbl = ""
         infoMsgDb = ""
         colList = conf.col.split(",")
+
+        if conf.excludeCol:
+            colList = [_ for _ in colList if _ not in conf.excludeCol.split(',')]
+
         origTbl = conf.tbl
         origDb = conf.db
         colCond = rootQuery.inband.condition
@@ -341,7 +345,7 @@ class Enumeration(GenericEnumeration):
                                 conf.tbl = foundTbl
                                 conf.col = column
 
-                                self.getColumns(onlyColNames=True, bruteForce=False)
+                                self.getColumns(onlyColNames=True, colTuple=(colConsider, colCondParam), bruteForce=False)
 
                                 if db in kb.data.cachedColumns and foundTbl in kb.data.cachedColumns[db]\
                                   and not isNoneValue(kb.data.cachedColumns[db][foundTbl]):
@@ -400,7 +404,7 @@ class Enumeration(GenericEnumeration):
                             conf.tbl = tbl
                             conf.col = column
 
-                            self.getColumns(onlyColNames=True, bruteForce=False)
+                            self.getColumns(onlyColNames=True, colTuple=(colConsider, colCondParam), bruteForce=False)
 
                             if db in kb.data.cachedColumns and tbl in kb.data.cachedColumns[db]:
                                 dbs[db][tbl].update(kb.data.cachedColumns[db][tbl])

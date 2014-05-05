@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -99,11 +99,14 @@ BACKDOOR_RUN_CMD_TIMEOUT = 5
 # Maximum number of techniques used in inject.py/getValue() per one value
 MAX_TECHNIQUES_PER_VALUE = 2
 
+# In case of missing piece of partial union dump, buffered array must be flushed after certain size
+MAX_BUFFERED_PARTIAL_UNION_LENGTH = 1024
+
 # Suffix used for naming meta databases in DBMS(es) without explicit database name
 METADB_SUFFIX = "_masterdb"
 
 # Minimum time response set needed for time-comparison based on standard deviation
-MIN_TIME_RESPONSES = 15
+MIN_TIME_RESPONSES = 30
 
 # Minimum comparison ratio set needed for searching valid union column number based on standard deviation
 MIN_UNION_RESPONSES = 5
@@ -245,7 +248,7 @@ ERROR_PARSING_REGEXES = (
 META_CHARSET_REGEX = r'(?si)<head>.*<meta http-equiv="?content-type"?[^>]+charset=(?P<result>[^">]+).*</head>'
 
 # Regular expression used for parsing refresh info from meta html headers
-META_REFRESH_REGEX = r'(?si)<head>.*<meta http-equiv="?refresh"?[^>]+content="?[^">]+url=(?P<result>[^">]+).*</head>'
+META_REFRESH_REGEX = r'(?si)<head>.*<meta http-equiv="?refresh"?[^>]+content="?[^">]+url=["\']?(?P<result>[^\'">]+).*</head>'
 
 # Regular expression used for parsing empty fields in tested form data
 EMPTY_FORM_FIELDS_REGEX = r'(&|\A)(?P<result>[^=]+=(&|\Z))'
@@ -389,10 +392,10 @@ DUMMY_SQL_INJECTION_CHARS = ";()'"
 DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b"
 
 # Extensions skipped by crawler
-CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jpeg", "image", "jar", "tif", "bmp", "war", "ear", "mpg", "mpeg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "mkv", "bin", "iso", "tar", "png", "pdf", "ps", "wav", "mp3", "mp4", "au", "aiff", "aac", "zip", "rar", "7z", "gz", "flv", "mov")
+CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jpeg", "image", "jar", "tif", "bmp", "war", "ear", "mpg", "mpeg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "mkv", "bin", "iso", "tar", "png", "pdf", "ps", "wav", "mp3", "mp4", "au", "aiff", "aac", "zip", "rar", "7z", "gz", "flv", "mov", "doc", "docx", "xls", "dot", "dotx", "xlt", "xlsx", "ppt", "pps", "pptx")
 
 # Patterns often seen in HTTP headers containing custom injection marking character
-PROBLEMATIC_CUSTOM_INJECTION_PATTERNS = r"(\bq=[^;']+)|(\*/\*)"
+PROBLEMATIC_CUSTOM_INJECTION_PATTERNS = r"(;q=[^;']+)|(\*/\*)"
 
 # Template used for common table existence check
 BRUTE_TABLE_EXISTS_TEMPLATE = "EXISTS(SELECT %d FROM %s)"
@@ -456,6 +459,9 @@ HASHDB_FLUSH_THRESHOLD = 32
 
 # Number of retries for unsuccessful HashDB flush attempts
 HASHDB_FLUSH_RETRIES = 3
+
+# Number of retries for unsuccessful HashDB end transaction attempts
+HASHDB_END_TRANSACTION_RETRIES = 3
 
 # Unique milestone value used for forced deprecation of old HashDB values (e.g. when changing hash/pickle mechanism)
 HASHDB_MILESTONE_VALUE = "cAWxkLYCQT"  # r5129 "".join(random.sample(string.ascii_letters, 10))
@@ -532,11 +538,14 @@ LIMITED_ROWS_TEST_NUMBER = 15
 # Format used for representing invalid unicode characters
 INVALID_UNICODE_CHAR_FORMAT = r"\?%02x"
 
-# Regular expression for SOAP-like POST data
+# Regular expression for SOAP POST data
 SOAP_RECOGNITION_REGEX = r"(?s)\A(<\?xml[^>]+>)?\s*<([^> ]+)( [^>]+)?>.+</\2.*>\s*\Z"
 
-# Regular expression used for detecting JSON-like POST data
+# Regular expression used for detecting JSON POST data
 JSON_RECOGNITION_REGEX = r'(?s)\A(\s*\[)*\s*\{.*"[^"]+"\s*:\s*("[^"]+"|\d+).*\}\s*(\]\s*)*\Z'
+
+# Regular expression used for detecting JSON-like POST data
+JSON_LIKE_RECOGNITION_REGEX = r"(?s)\A(\s*\[)*\s*\{.*'[^']+'\s*:\s*('[^']+'|\d+).*\}\s*(\]\s*)*\Z"
 
 # Regular expression used for detecting multipart POST data
 MULTIPART_RECOGNITION_REGEX = r"(?i)Content-Disposition:[^;]+;\s*name="

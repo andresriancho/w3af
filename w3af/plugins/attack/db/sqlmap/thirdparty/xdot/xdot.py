@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Visualize dot graphs via the xdot Format."""
+'''Visualize dot graphs via the xdot Format.'''
 
 __author__ = "Jose Fonseca"
 
@@ -1690,7 +1690,7 @@ class DotWidget(gtk.DrawingArea):
 
 class DotWindow(gtk.Window):
 
-    ui = """
+    ui = '''
     <ui>
         <toolbar name="ToolBar">
             <toolitem action="Open"/>
@@ -1702,7 +1702,7 @@ class DotWindow(gtk.Window):
             <toolitem action="Zoom100"/>
         </toolbar>
     </ui>
-    """
+    '''
 
     def __init__(self):
         gtk.Window.__init__(self)

@@ -124,7 +124,6 @@ class pykto(CrawlPlugin):
                                             parser.test_generator(),
                                             chunksize=10)
 
-
     def _send_and_check(self, nikto_test):
         """
         This method sends the request to the server.
@@ -272,6 +271,7 @@ NiktoTest = namedtuple('NiktoTest', ['id', 'osvdb','tune','uri','method',
                                      'match_1','match_1_or','match_1_and',
                                      'fail_1','fail_2','message','data',
                                      'headers', 'is_vulnerable'])
+
 
 class IsVulnerableHelper(object):
     def __init__(self, match_1, match_1_or, match_1_and, fail_1, fail_2):

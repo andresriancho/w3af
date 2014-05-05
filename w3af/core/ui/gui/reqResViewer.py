@@ -26,8 +26,9 @@ import gobject
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException,
-                                         ScanMustStopOnUrlError)
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException,
+                                              ScanMustStopOnUrlError)
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.constants import severity
@@ -43,13 +44,21 @@ from w3af.core.ui.gui.rrviews.headers import HttpHeadersView
 from w3af.core.ui.gui.rrviews.rendering import getRenderingView
 from w3af.core.ui.gui.export_request import export_request
 from w3af.core.ui.gui import helpers
-from git.refs.head import HEAD
 
 
 def sigsegv_handler(signum, frame):
-    print _('We caught a segmentation fault! Please report this bug to the'
-            ' w3af-develop mailing list, providing details on how to reproduce'
-            ' the issue in our environment.')
+    #
+    # Might be a good idea to use https://pypi.python.org/pypi/faulthandler/
+    # in future versions.
+    #
+    # For now I'm making this handler as small as possible to avoid issues like:
+    #
+    # https://github.com/andresriancho/w3af/issues/1850
+    # https://github.com/andresriancho/w3af/issues/1899
+    #
+    print('We caught a segmentation fault! Please report this bug to the'
+          ' w3af-develop mailing list, providing details on how to reproduce'
+          ' the issue in our environment.')
 
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
@@ -383,11 +392,16 @@ class requestResponsePart(gtk.Notebook):
 class requestPart(requestResponsePart):
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(
-            self, parent, w3af, enableWidget, editable,
-            widgname=widgname + "request")
-        self.add_view(HttpRawView(w3af, self, editable))
+        requestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
+                                     widgname=widgname + "request")
+
+        self.raw_view = HttpRawView(w3af, self, editable)
+        self.add_view(self.raw_view)
+
         self.add_view(HttpHeadersView(w3af, self, editable))
+
+    def get_both_texts_raw(self):
+        return self.raw_view.get_text(splitted=True)
 
     def get_both_texts(self):
         head = self._obj.dump_request_head()
@@ -486,7 +500,8 @@ class ThreadedURLImpact(threading.Thread):
                         om.out.error(str(e))
                     else:
                         #
-                        #   Save the plugin that found the vulnerability in the result
+                        #   Save the plugin that found the vulnerability in the
+                        #   result
                         #
                         for r in tmp_result:
                             r.plugin_name = plugin_name
@@ -516,7 +531,8 @@ class ThreadedURLImpact(threading.Thread):
         except Exception, e:
             self.exception = e
             #
-            #   This is for debugging errors in the audit button of the reqResViewer
+            #   This is for debugging errors in the audit button of the
+            #   reqResViewer
             #
             #import traceback
             #print traceback.format_exc()

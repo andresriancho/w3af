@@ -9,6 +9,8 @@ import gtk
 import diffutil
 import traceback
 
+from w3af import ROOT_PATH
+
 
 class FifoScheduler(object):
     """Base class with common functionality for schedulers.
@@ -103,7 +105,7 @@ class ListItem(object):
     def __str__(self):
         return "<%s %s %i %s>" % (self.__class__, self.name, self.active, self.value)
 
-_pixmap_path = "w3af/core/ui/gui/comparator/pixmaps"
+_pixmap_path = os.path.join(ROOT_PATH, "core/ui/gui/comparator/pixmaps")
 
 
 def load_pixbuf(fname, size=0):
@@ -420,8 +422,8 @@ class FileDiff(object):
             for c, r in self.regexes:
                 txt = c.sub(killit, txt)
         except AssertionError:
-            print "Regular expression '%s' changed the number of lines in the file. " \
-                  "Comparison will be incorrect. " % r
+            print "Regular expression '%s' changed the number of lines in" \
+                  "the file. Comparison will be incorrect. " % r
         return txt
 
     def after_text_insert_text(self, buffer, it, newtext, textlen):

@@ -55,11 +55,11 @@ def main():
     if decode is None:
             usage()
             sys.exit()
-    else:
-        try:
-            print( base64.b64decode( decode) )
-        except:
-            print( 'Could not decode string.' )
+
+    try:
+        print( base64.b64decode(decode) )
+    except:
+        print( 'Could not decode string.' )
 
         
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 
 PHPLY_GIT = 'git+https://github.com/andresriancho/phply.git#egg=phply'
-PHPLY_GIT_TGZ = 'https://github.com/andresriancho/phply/archive/0.9.tar.gz#egg=phply'
+PHPLY_GIT_TGZ = 'https://github.com/andresriancho/phply/archive/0.9.1.tar.gz#egg=phply'
 
 PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                 PIPDependency('github', 'PyGithub', '1.21.0'),

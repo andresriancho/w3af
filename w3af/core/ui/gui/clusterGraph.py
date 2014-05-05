@@ -24,7 +24,7 @@ import gtk.gdk
 import gobject
 import xdot
 
-from w3af.core.controllers.misc.levenshtein import relative_distance
+from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.ui.gui.constants import W3AF_ICON

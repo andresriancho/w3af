@@ -913,8 +913,16 @@ class php_eggs(InfrastructurePlugin):
                     found = True
 
             if matching_versions:
-                desc = 'The PHP framework version running on the remote'\
-                       ' server was identified as:\n- %s'
+
+                if len(matching_versions) > 1:
+                    desc = 'A PHP easter egg was found that matches several'\
+                           ' different versions of PHP. The PHP framework'\
+                           ' version running on the remote server was'\
+                           ' identified as one of the following:\n- %s'
+                else:
+                    desc = 'The PHP framework version running on the remote'\
+                           ' server was identified as:\n- %s'
+                
                 versions = '\n- '.join(matching_versions)
                 desc = desc % versions
                 

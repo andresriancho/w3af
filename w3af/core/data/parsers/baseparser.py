@@ -20,12 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import urllib
 
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.data.parsers.encode_decode import htmldecode
-from w3af.core.data.parsers.url import URL
 from w3af.core.data.misc.encoding import is_known_encoding
 
 
@@ -35,152 +32,31 @@ class BaseParser(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    #URL_RE = ('((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%'
-    #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
-    URL_RE = re.compile(
-        '((http|https)://([\w:@\-\./]*?)[^ \n\r\t"\'<>]*)', re.U)
-    RELATIVE_URL_RE = re.compile(
-        '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}'
-        '((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)', re.U)
-    EMAIL_RE = re.compile(
-        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
-        re.I | re.U)
     SAFE_CHARS = (('\x00', '%00'),)
 
-    # Matches
-    # "PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
-    # used in _find_relative() method
-    PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
+    def __init__(self, http_response):
 
-    def __init__(self, HTTPResponse):
-
-        encoding = HTTPResponse.get_charset()
+        encoding = http_response.get_charset()
         if not is_known_encoding(encoding):
             raise ValueError('Unknown encoding: %s' % encoding)
 
-        # "setBaseUrl"
-        url = HTTPResponse.get_url()
-        redir_url = HTTPResponse.get_redir_url()
+        # "set_base_url"
+        url = http_response.get_url()
+        redir_url = http_response.get_redir_url()
         if redir_url:
             url = redir_url
 
         self._base_url = url
         self._baseDomain = url.get_domain()
         self._rootDomain = url.get_root_domain()
-        self._encoding = HTTPResponse.get_charset()
+        self._encoding = http_response.get_charset()
 
-        # To store results
-        self._emails = set()
-        self._re_urls = set()
-
-    def get_emails(self, domain=None):
+    @staticmethod
+    def can_parse(http_resp):
         """
-        :param domain: Indicates what email addresses I want to retrieve.
-                       All are returned if the domain is not set.
-
-        :return: A list of email accounts that are inside the document.
+        :return: True if this parser can extract links from the http_response
         """
-        if domain:
-            return [i for i in self._emails if domain == i.split('@')[1]]
-        else:
-            return self._emails
-
-    def _extract_emails(self, doc_str):
-        """
-        :return: A set() with all mail users that are present in the doc_str.
-        @see: We don't support emails like myself <at> gmail !dot! com
-        """
-        # Revert url-encoded sub-strings
-        doc_str = urllib.unquote_plus(doc_str)
-
-        # Then html-decode HTML special characters
-        doc_str = htmldecode(doc_str)
-
-        self._emails = set()
-
-        # Perform a fast search for the @. In w3af, if we don't have an @ we
-        # don't have an email.
-        if doc_str.find('@') != -1:
-            compiled_re = re.compile('[^\w@\-\\.]', re.UNICODE)
-            doc_str = re.sub(compiled_re, ' ', doc_str)
-            for email, domain in re.findall(self.EMAIL_RE, doc_str):
-                self._emails.add(email)
-
-        return self._emails
-
-    def _regex_url_parse(self, doc_str):
-        """
-        Use regular expressions to find new URLs.
-
-        :param HTTPResponse: The http response object that stores the
-            response body and the URL.
-        :return: None. The findings are stored in self._re_urls as url_objects
-        """
-        re_urls = self._re_urls
-
-        for url in self.URL_RE.findall(doc_str):
-            # This try is here because the _decode_url method raises an
-            # exception whenever it fails to decode a url.
-            try:
-                decoded_url = URL(self._decode_url(url[0]),
-                                  encoding=self._encoding)
-            except ValueError:
-                pass
-            else:
-                re_urls.add(decoded_url)
-
-        re_urls.update(self._find_relative(doc_str))
-
-        # Finally, normalize the urls
-        map(lambda u: u.normalize_url(), re_urls)
-
-    def _filter_false_urls(self, potential_url):
-        potential_url = potential_url[0]
-        if potential_url.startswith('//') or \
-            potential_url.startswith('://') or \
-            potential_url.startswith('HTTP/') or \
-                self.PHP_VERSION_RE.match(potential_url):
-            return False
-
-        return True
-
-    def _find_relative(self, doc_str):
-        """
-
-        Now detect some relative URL's (also using regexs)
-
-        """
-        res = set()
-
-        # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
-        # I'm removing those matches with the filter
-        relative_urls = self.RELATIVE_URL_RE.findall(doc_str)
-        filter_false_urls = self._filter_false_urls
-        
-        
-        for match_tuple in filter(filter_false_urls, relative_urls):
-
-            match_str = match_tuple[0]
-
-            try:
-                url = self._base_url.url_join(match_str).url_string
-                url = URL(self._decode_url(url),
-                          encoding=self._encoding)
-            except ValueError:
-                # In some cases, the relative URL is invalid and triggers an
-                # ValueError: Invalid URL "%s" exception. All we can do at this
-                # point is to ignore this "fake relative URL".
-                pass
-            else:
-                url_lower = url.url_string.lower()
-                
-                if url_lower.startswith('http://') or \
-                url_lower.startswith('https://'):
-                    
-                    res.add(url)
-
-        return res
+        raise NotImplementedError
 
     def _decode_url(self, url_string):
         """
@@ -265,19 +141,19 @@ class BaseParser(object):
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_references() method.')
 
+    def get_emails(self, domain=None):
+        """
+        :return: A set with email addresses
+        """
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the get_emails() method.')
+
     def get_comments(self):
         """
         :return: A list of comments.
         """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_comments() method.')
-
-    def get_scripts(self):
-        """
-        :return: A list of scripts (like javascript).
-        """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_scripts() method.')
 
     def get_meta_redir(self):
         """
@@ -292,3 +168,14 @@ class BaseParser(object):
         """
         raise NotImplementedError('You should create your own parser class '
                                   'and implement the get_meta_tags() method.')
+
+    def _return_empty_list(self, *args, **kwds):
+        """
+        Some parsers don't implement some of the features, so they can add
+        something like:
+
+        get_forms = _return_empty_list
+
+        At the class definition, and simply return an empty list.
+        """
+        return []

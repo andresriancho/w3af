@@ -57,7 +57,7 @@ class test_http_auth_detect(unittest.TestCase):
 
     def test_http_auth_detect_uri(self):
         body = 'ABC ' * 100
-        body += 'http://abc:def@www.w3af.com/foo.bar'
+        body += '<a href="http://abc:def@www.w3af.com/foo.bar">test</a>'
         body += '</br> ' * 50
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
         self.plugin.grep(self.request, response)

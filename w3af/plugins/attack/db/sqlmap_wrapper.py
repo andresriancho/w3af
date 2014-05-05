@@ -39,7 +39,8 @@ class SQLMapWrapper(object):
                      'infinite redirect loop detected',
                      'it is not recommended to continue in this kind of cases',
                      'unable to connect to the target url or proxy',
-                     "[INFO] skipping '")
+                     "[INFO] skipping '",
+                     '[CRITICAL] unable to retrieve page content')
     
     def __init__(self, target, uri_opener, coloring=False, debug=False):
         if not isinstance(target, Target):

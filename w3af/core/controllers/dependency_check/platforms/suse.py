@@ -48,7 +48,7 @@ def os_package_is_installed(package_name):
         # We're not on a suse based system
         return None
     else:
-        rpm_output = p.stdout.read()
+        rpm_output, _ = p.communicate()
 
         if not_installed in rpm_output:
             return False

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import webbrowser
+import git
 
 from w3af.core.controllers.auto_update.utils import (get_current_branch,
                                                      DETACHED_HEAD)
@@ -46,10 +47,13 @@ def open_help(chapter=''):
 
     :param chapter: the chapter of the help, optional.
     """
-    current_branch = get_current_branch()
-
-    if current_branch in (DETACHED_HEAD, 'master'):
+    try:
+        current_branch = get_current_branch()
+    except git.exc.InvalidGitRepositoryError:
         current_branch = 'latest'
+    else:
+        if current_branch in (DETACHED_HEAD, 'master'):
+            current_branch = 'latest'
 
     help_url = DOC_ROOT_FMT % current_branch
 

@@ -55,8 +55,7 @@ def main():
     if encode is None:
             usage()
             sys.exit()
-    else:
-        print( base64.b64encode( encode) )
+    print( base64.b64encode( encode) )
         
 if __name__ == "__main__":
     main()

@@ -55,7 +55,7 @@ class test_code_disclosure(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_PHP_code_disclosure(self, *args):
-        body = 'header <? echo $a; ?> footer'
+        body = 'header <?php echo $a; ?> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)

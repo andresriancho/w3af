@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import threading
+import weakref
+
 import git
 
 from git.util import RemoteProgress
@@ -160,7 +162,7 @@ class GitRemoteProgress(RemoteProgress):
     observers = []
     
     def add_observer(self, observer):
-        self.observers.append(observer)
+        self.observers.append(weakref.proxy(observer))
     
     def update(self, op_code, cur_count, max_count=None, message=''):
         for observer in self.observers: 

@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException)
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.esmre.multi_in import multi_in
@@ -114,7 +114,7 @@ class buffer_overflow(AuditPlugin):
             desc = desc % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
 
             i = Info.from_mutant('Potential buffer overflow vulnerability',
-                                 desc, response.ids, self.get_name(), mutant)
+                                 desc, [], self.get_name(), mutant)
             
             self.kb_append_uniq(self, 'buffer_overflow', i)
         else:
@@ -140,8 +140,8 @@ class buffer_overflow(AuditPlugin):
 
     def get_plugin_deps(self):
         """
-        :return: A list with the names of the plugins that should be run before the
-        current one.
+        :return: A list with the names of the plugins that should be run before
+                 the current one.
         """
         return ['grep.error_500']
 

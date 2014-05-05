@@ -273,13 +273,14 @@ class TestFuzzer(unittest.TestCase):
         self.assertTrue(
             all(m.get_method() == 'PUT' for m in generated_mutants))
 
-        expected_dc_lst = [Form(
-            [('username', ['abc']), ('address', ['Bonsai Street 123'])]),
-            Form([('username', [
-                   'def']), ('address', ['Bonsai Street 123'])]),
-            Form([('username', [
-                   'John8212']), ('address', ['abc'])]),
-            Form([('username', ['John8212']), ('address', ['def'])])]
+        expected_dc_lst = [Form([('username', ['abc']),
+                                 ('address', ['Bonsai Street 123'])]),
+                           Form([('username', ['def']),
+                                 ('address', ['Bonsai Street 123'])]),
+                           Form([('username', ['John8212']),
+                                 ('address', ['abc'])]),
+                           Form([('username', ['John8212']),
+                                 ('address', ['def'])])]
 
         created_dc_lst = [i.get_dc() for i in generated_mutants]
 

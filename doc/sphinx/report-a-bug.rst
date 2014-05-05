@@ -94,3 +94,41 @@ False positives
 Nobody likes false positives, you go from the adrenaline of "The site is vulnerable to SQL injection!" to "Nope, false positive" in less than a minute. Not good for your heart.
 
 Please report the false positives `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , in our repository. Include as much information as possible, remember that we'll have to verify the false positive, write a unittest and then fix it.
+
+Common problems
+---------------
+
+After many years of `w3af` development we've found some common problems that, while
+not a bug, annoy our users and are common enough to include in this section.
+
+Outdated profiles
+-----------------
+
+One of those issues appears when the user migrates from an old `w3af` version to a new one,
+and the `profiles` stored in the user directory are incompatible with the latest version.
+`w3af` will try to open the old profile and fail, users will see something like:
+
+.. image:: images/profile-error.png
+   :align: center
+   :alt: Profile error
+
+The error is self explanatory: "The profile you are trying to load is outdated", but
+lacks some "quick actions" that the user can perform to avoid seeing this error. If you
+don't care about the old profiles just:
+
+.. code-block:: none
+
+	user@box:~/$ rm -rf ~/.w3af/profiles/
+
+The next time `w3af` is run, it will copy the default profiles to the user's home directory.
+
+For users that really care about the profiles which are in the old version, I recommend you
+migrate them manually using these steps:
+
+ * Backup your profiles
+ * Remove them from the home directory (`~/.w3af/profiles/`)
+ * Open the profile to migrate using a text editor
+ * Open `w3af` and create a new plugin
+ * Save the newly created plugin
+
+

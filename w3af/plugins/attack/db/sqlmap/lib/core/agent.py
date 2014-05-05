@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -100,6 +100,8 @@ class Agent(object):
                 origValue = origValue.split('>')[-1]
             elif kb.postHint == POST_HINT.JSON:
                 origValue = extractRegexResult(r"(?s)\"\s*:\s*(?P<result>\d+\Z)", origValue) or extractRegexResult(r'(?s)(?P<result>[^"]+\Z)', origValue)
+            elif kb.postHint == POST_HINT.JSON_LIKE:
+                origValue = extractRegexResult(r'(?s)\'\s*:\s*(?P<result>\d+\Z)', origValue) or extractRegexResult(r"(?s)(?P<result>[^']+\Z)", origValue)
             else:
                 _ = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"]+\Z)", origValue) or ""
                 origValue = _.split('=', 1)[1] if '=' in _ else ""
@@ -107,6 +109,9 @@ class Agent(object):
             paramString = origValue
             origValue = origValue.split(CUSTOM_INJECTION_MARK_CHAR)[0]
             origValue = origValue[origValue.index(',') + 1:]
+
+        if conf.prefix:
+            value = origValue
 
         if value is None:
             if where == PAYLOAD.WHERE.ORIGINAL:
@@ -118,7 +123,9 @@ class Agent(object):
                     _ = randomInt(2)
                     value = "%s%s AND %s=%s" % (origValue, match.group() if match else "", _, _ + 1)
                 elif conf.invalidBignum:
-                    value = "%d.%d" % (randomInt(6), randomInt(1))
+                    value = randomInt(6)
+                elif conf.invalidString:
+                    value = randomStr(6)
                 else:
                     if newValue.startswith("-"):
                         value = ""
@@ -137,6 +144,8 @@ class Agent(object):
             _ = "%s%s" % (origValue, CUSTOM_INJECTION_MARK_CHAR)
             if kb.postHint == POST_HINT.JSON and not isNumber(newValue) and not '"%s"' % _ in paramString:
                 newValue = '"%s"' % newValue
+            elif kb.postHint == POST_HINT.JSON_LIKE and not isNumber(newValue) and not "'%s'" % _ in paramString:
+                newValue = "'%s'" % newValue
             newValue = newValue.replace(CUSTOM_INJECTION_MARK_CHAR, REPLACEMENT_MARKER)
             retVal = paramString.replace(_, self.addPayloadDelimiters(newValue))
             retVal = retVal.replace(CUSTOM_INJECTION_MARK_CHAR, "").replace(REPLACEMENT_MARKER, CUSTOM_INJECTION_MARK_CHAR)
@@ -229,7 +238,7 @@ class Agent(object):
             pass
 
         elif suffix and not comment:
-            expression += " %s" % suffix
+            expression += suffix
 
         return re.sub(r"(?s);\W*;", ";", expression)
 
@@ -351,7 +360,8 @@ class Agent(object):
                 else:
                     nulledCastedField = rootQuery.isnull.query % nulledCastedField
 
-            if conf.hexConvert or conf.binaryFields and field in conf.binaryFields.split(','):
+            kb.binaryField = conf.binaryFields and field in conf.binaryFields.split(',')
+            if conf.hexConvert or kb.binaryField:
                 nulledCastedField = self.hexConvertField(nulledCastedField)
 
         return nulledCastedField
@@ -943,35 +953,35 @@ class Agent(object):
 
         return caseExpression
 
-    def addPayloadDelimiters(self, inpStr):
+    def addPayloadDelimiters(self, value):
         """
         Adds payload delimiters around the input string
         """
 
-        return "%s%s%s" % (PAYLOAD_DELIMITER, inpStr, PAYLOAD_DELIMITER) if inpStr else inpStr
+        return "%s%s%s" % (PAYLOAD_DELIMITER, value, PAYLOAD_DELIMITER) if value else value
 
-    def removePayloadDelimiters(self, inpStr):
+    def removePayloadDelimiters(self, value):
         """
         Removes payload delimiters from inside the input string
         """
 
-        return inpStr.replace(PAYLOAD_DELIMITER, '') if inpStr else inpStr
+        return value.replace(PAYLOAD_DELIMITER, '') if value else value
 
-    def extractPayload(self, inpStr):
+    def extractPayload(self, value):
         """
         Extracts payload from inside of the input string
         """
 
         _ = re.escape(PAYLOAD_DELIMITER)
-        return extractRegexResult("(?s)%s(?P<result>.*?)%s" % (_, _), inpStr)
+        return extractRegexResult("(?s)%s(?P<result>.*?)%s" % (_, _), value)
 
-    def replacePayload(self, inpStr, payload):
+    def replacePayload(self, value, payload):
         """
         Replaces payload inside the input string with a given payload
         """
 
         _ = re.escape(PAYLOAD_DELIMITER)
-        return re.sub("(%s.*?%s)" % (_, _), ("%s%s%s" % (PAYLOAD_DELIMITER, payload, PAYLOAD_DELIMITER)).replace("\\", r"\\"), inpStr) if inpStr else inpStr
+        return re.sub("(%s.*?%s)" % (_, _), ("%s%s%s" % (PAYLOAD_DELIMITER, payload, PAYLOAD_DELIMITER)).replace("\\", r"\\"), value) if value else value
 
     def runAsDBMSUser(self, query):
         if conf.dbmsCred and "Ad Hoc Distributed Queries" not in query:

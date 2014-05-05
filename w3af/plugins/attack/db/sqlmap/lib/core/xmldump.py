@@ -75,10 +75,10 @@ CHARACTERS_TO_ENCODE = range(32) + range(127, 256)
 ENTITIES = {'"': '&quot;', "'": "&apos;"}
 
 class XMLDump(object):
-    """
+    '''
     This class purpose is to dump the data into an xml Format.
     The format of the xml file is described in the scheme file xml/sqlmap.xsd
-    """
+    '''
 
     def __init__(self):
         self._outputFile = None
@@ -87,15 +87,15 @@ class XMLDump(object):
         self.__doc = Document()
 
     def _addToRoot(self, element):
-        """
+        '''
         Adds element to the root element
-        """
+        '''
         self.__root.appendChild(element)
 
     def __write(self, data, n=True):
-        """
+        '''
         Writes the data into the file
-        """
+        '''
         if n:
             self._outputFP.write("%s\n" % data)
         else:
@@ -106,9 +106,9 @@ class XMLDump(object):
         kb.dataOutputFlag = True
 
     def _getRootChild(self, elemName):
-        """
+        '''
         Returns the child of the root with the described name
-        """
+        '''
         elements = self.__root.getElementsByTagName(elemName)
         if elements:
             return elements[0]
@@ -116,10 +116,10 @@ class XMLDump(object):
         return elements
 
     def _createTextNode(self, data):
-        """
+        '''
         Creates a text node with utf8 data inside.
         The text is escaped to an fit the xml text Format.
-        """
+        '''
         if data is None:
             return self.__doc.createTextNode(u'')
         else:
@@ -127,10 +127,10 @@ class XMLDump(object):
             return self.__doc.createTextNode(escaped_data)
 
     def _createAttribute(self, attrName, attrValue):
-        """
+        '''
         Creates an attribute node with utf8 data inside.
         The text is escaped to an fit the xml text Format.
-        """
+        '''
         attr = self.__doc.createAttribute(attrName)
         if attrValue is None:
             attr.nodeValue = u''
@@ -139,9 +139,9 @@ class XMLDump(object):
         return attr
 
     def string(self, header, data, sort=True):
-        """
+        '''
         Adds string element to the xml.
-        """
+        '''
         if isinstance(data, (list, tuple, set)):
             self.lister(header, data, sort)
             return
@@ -162,9 +162,9 @@ class XMLDump(object):
         messagesElem.appendChild(elem)
 
     def lister(self, header, elements, sort=True):
-        """
+        '''
         Adds information formatted as list element
-        """
+        '''
         lstElem = self.__doc.createElement(LST_ELEM_NAME)
         lstElem.setAttributeNode(self._createAttribute(TYPE_ATTR, header))
         if elements:
@@ -196,9 +196,9 @@ class XMLDump(object):
         listsElem.appendChild(lstElem)
 
     def technic(self, technicType, data):
-        """
+        '''
         Adds information about the technic used to extract data from the db
-        """
+        '''
         technicElem = self.__doc.createElement(TECHNIC_ELEM_NAME)
         technicElem.setAttributeNode(self._createAttribute(TYPE_ATTR, technicType))
         textNode = self._createTextNode(data)
@@ -210,44 +210,44 @@ class XMLDump(object):
         technicsElem.appendChild(technicElem)
 
     def banner(self, data):
-        """
+        '''
         Adds information about the database banner to the xml.
         The banner contains information about the type and the version of the database.
-        """
+        '''
         bannerElem = self.__doc.createElement(BANNER_ELEM_NAME)
         bannerElem.appendChild(self._createTextNode(data))
         self._addToRoot(bannerElem)
 
     def currentUser(self, data):
-        """
+        '''
         Adds information about the current database user to the xml
-        """
+        '''
         currentUserElem = self.__doc.createElement(CURRENT_USER_ELEM_NAME)
         textNode = self._createTextNode(data)
         currentUserElem.appendChild(textNode)
         self._addToRoot(currentUserElem)
 
     def currentDb(self, data):
-        """
+        '''
         Adds information about the current database is use to the xml
-        """
+        '''
         currentDBElem = self.__doc.createElement(CURRENT_DB_ELEM_NAME)
         textNode = self._createTextNode(data)
         currentDBElem.appendChild(textNode)
         self._addToRoot(currentDBElem)
 
     def dba(self, isDBA):
-        """
+        '''
         Adds information to the xml that indicates whether the user has DBA privileges
-        """
+        '''
         isDBAElem = self.__doc.createElement(IS_DBA_ELEM_NAME)
         isDBAElem.setAttributeNode(self._createAttribute(VALUE_ATTR, getUnicode(isDBA)))
         self._addToRoot(isDBAElem)
 
     def users(self, users):
-        """
+        '''
         Adds a list of the existing users to the xml
-        """
+        '''
         usersElem = self.__doc.createElement(USERS_ELEM_NAME)
         if isinstance(users, basestring):
             users = [users]
@@ -259,9 +259,9 @@ class XMLDump(object):
         self._addToRoot(usersElem)
 
     def dbs(self, dbs):
-        """
+        '''
         Adds a list of the existing databases to the xml
-        """
+        '''
         dbsElem = self.__doc.createElement(DBS_ELEM_NAME)
         if dbs:
             for db in dbs:
@@ -271,10 +271,10 @@ class XMLDump(object):
         self._addToRoot(dbsElem)
 
     def userSettings(self, header, userSettings, subHeader):
-        """
+        '''
         Adds information about the user's settings to the xml.
         The information can be user's passwords, privileges and etc..
-        """
+        '''
         self._areAdmins = set()
         userSettingsElem = self._getRootChild(USER_SETTINGS_ELEM_NAME)
         if (not(userSettingsElem)):
@@ -312,9 +312,9 @@ class XMLDump(object):
         userSettingsElem.appendChild(userSettingElem)
 
     def dbTables(self, dbTables):
-        """
+        '''
         Adds information of the existing db tables to the xml
-        """
+        '''
         if not isinstance(dbTables, dict):
             self.string(TABLES_ELEM_NAME, dbTables)
             return
@@ -333,9 +333,9 @@ class XMLDump(object):
         self._addToRoot(dbTablesElem)
 
     def dbTableColumns(self, tableColumns):
-        """
+        '''
         Adds information about the columns of the existing tables to the xml
-        """
+        '''
 
         columnsElem = self._getRootChild(COLUMNS_ELEM_NAME)
         if not(columnsElem):
@@ -368,10 +368,10 @@ class XMLDump(object):
         self._addToRoot(columnsElem)
 
     def dbTableValues(self, tableValues):
-        """
+        '''
         Adds the values of specific table to the xml.
         The values are organized according to the relevant row and column.
-        """
+        '''
         tableElem = self.__doc.createElement(DB_TABLE_VALUES_ELEM_NAME)
         if (tableValues is not None):
             db = tableValues["__infos__"]["db"]
@@ -412,9 +412,9 @@ class XMLDump(object):
         logger.info("Table '%s.%s' dumped to XML file" % (db, table))
 
     def dbColumns(self, dbColumns, colConsider, dbs):
-        """
+        '''
         Adds information about the columns
-        """
+        '''
         for column in dbColumns.keys():
             printDbs = {}
             for db, tblData in dbs.items():
@@ -435,10 +435,10 @@ class XMLDump(object):
         self.dbTableColumns(printDbs)
 
     def query(self, query, queryRes):
-        """
+        '''
         Adds details of an executed query to the xml.
         The query details are the query itself and its results.
-        """
+        '''
         queryElem = self.__doc.createElement(QUERY_ELEM_NAME)
         queryElem.setAttributeNode(self._createAttribute(VALUE_ATTR, query))
         queryElem.appendChild(self._createTextNode(queryRes))
@@ -449,9 +449,9 @@ class XMLDump(object):
         queriesElem.appendChild(queryElem)
 
     def registerValue(self, registerData):
-        """
+        '''
         Adds information about an extracted registry key to the xml
-        """
+        '''
         registerElem = self.__doc.createElement(REGISTER_DATA_ELEM_NAME)
         registerElem.appendChild(self._createTextNode(registerData))
         registriesElem = self._getRootChild(REGISTERY_ENTRIES_ELEM_NAME)
@@ -461,18 +461,18 @@ class XMLDump(object):
         registriesElem.appendChild(registerElem)
 
     def rFile(self, filePath, data):
-        """
+        '''
         Adds an extracted file's content to the xml
-        """
+        '''
         fileContentElem = self.__doc.createElement(FILE_CONTENT_ELEM_NAME)
         fileContentElem.setAttributeNode(self._createAttribute(NAME_ATTR, filePath))
         fileContentElem.appendChild(self._createTextNode(data))
         self._addToRoot(fileContentElem)
 
     def setOutputFile(self):
-        """
+        '''
         Initiates the xml file from the configuration.
-        """
+        '''
         if (conf.xmlFile):
             try:
                 self._outputFile = conf.xmlFile
@@ -499,12 +499,12 @@ class XMLDump(object):
         return self._outputFile
 
     def finish(self, resultStatus, resultMsg=""):
-        """
+        '''
         Finishes the dumper operation:
         1. Adds the session status to the xml
         2. Writes the xml to the file
         3. Closes the xml file
-        """
+        '''
         if ((self._outputFP is not None) and not(self._outputFP.closed)):
             statusElem = self.__doc.createElement(STATUS_ELEM_NAME)
             statusElem.setAttributeNode(self._createAttribute(SUCESS_ATTR, getUnicode(resultStatus)))

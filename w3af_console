@@ -13,12 +13,11 @@ from w3af.core.controllers.dependency_check.dependency_check import dependency_c
 dependency_check()
 
 from w3af.core.ui.console.console_ui import ConsoleUI
-from w3af.core.controllers.profiling.cpu_usage import dump_cpu_usage
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
 import w3af.core.controllers.output_manager as om
 
 
-USAGE_DOC = '''
+USAGE_DOC = """
 w3af - Web Application Attack and Audit Framework
 
 Usage:
@@ -53,13 +52,14 @@ Options:
         Show w3af's version
 
 For more info visit http://w3af.org/
-'''
+"""
+
 
 def _configure_output_manager():
-    '''
+    """
     Make sure that the output manager is started before doing anything else,
     since it is used by most w3af modules
-    ''' 
+    """ 
     try:
         om.out.set_output_plugins( ['console'] )
     except Exception, e:
@@ -67,31 +67,34 @@ def _configure_output_manager():
         print('Exception: "%s"' % e)
         sys.exit(-9)
 
+
 def _usage():
     print(USAGE_DOC)
 
+
 def _generate_run_commands(script_file, profile, force_profile):
-    '''
+    """
     Given the user configuration, generate the commands to run in the console
     user interface at startup.
     
     :param script_file: The script (-s) file name
     :param profile: The profile (-p) name
     :param force_profile: Should we run the profile? (-P)
-    '''
+    """
     commands_to_run = []
 
     if script_file is not None:
         try:
             fd = open(script_file)
-        except:
+        except IOError:
             print('Failed to open script file: "%s"' % script_file)
-            return 2
+            sys.exit(2)
         else:
             for line in fd:   
                 line = line.strip()
-                if line != '' and line[0] != '#': # if not a comment..
-                    commands_to_run.append( line )
+                # if not a comment..
+                if line != '' and line[0] != '#':
+                    commands_to_run.append(line)
             fd.close() 
     elif profile is not None:
         
@@ -103,6 +106,7 @@ def _generate_run_commands(script_file, profile, force_profile):
             commands_to_run.append("exit")
 
     return commands_to_run
+
 
 def main():
     try:
@@ -156,11 +160,7 @@ def main():
 
 def _main():
     _configure_output_manager()
-    exit_code = main()
-
-    dump_cpu_usage()
-
-    sys.exit(exit_code)
+    sys.exit(main())
 
 
 if __name__ == "__main__":

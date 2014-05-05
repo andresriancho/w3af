@@ -70,8 +70,7 @@ class get_emails(GrepPlugin):
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
-            msg = 'If I can\'t parse the document, I won\'t be able to find'\
-                  '  any emails. Ignoring the response for "%s".'
+            msg = 'Failed to get document parser for "%s" at get_emails.'
             om.out.debug(msg % response.get_url())
             return
 

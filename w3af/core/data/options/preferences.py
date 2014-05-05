@@ -24,7 +24,9 @@ from __future__ import with_statement
 import os
 
 from ConfigParser import RawConfigParser
+
 from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class Preferences(object):
@@ -77,8 +79,9 @@ class Preferences(object):
             self.options[section][option.get_name()] = option
 
     def set_value(self, section, option, value):
-        """If the given section exists, set the given option to the specified value;
-        otherwise raise NoSectionError."""
+        """
+        If the given section exists, set the given option to the specified
+        value; otherwise raise NoSectionError."""
         if self.has_section(section):
             self.options[section][option].set_value(value)
 
@@ -103,13 +106,23 @@ class Preferences(object):
         config = RawConfigParser()
         config.read(self.filename)
         sections = config.sections()
+
         for section in sections:
+
             if self.has_section(section):
                 options = config.options(section)
+
                 for option in options:
                     if self.has_option(section, option):
-                        self.set_value(
-                            section, option, config.get(section, option))
+                        try:
+                            self.set_value(section, option,
+                                           config.get(section, option))
+                        except BaseFrameworkException:
+                            # In some cases the user touches the file by hand
+                            # and then the framework will fail to validate
+                            #
+                            # https://github.com/andresriancho/w3af/issues/1816
+                            pass
 
     def save(self):
         """Save values of options to file."""

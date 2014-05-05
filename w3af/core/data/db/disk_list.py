@@ -27,6 +27,10 @@ from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.db.dbms import get_default_temp_db_instance
 from w3af.core.data.fuzzer.utils import rand_alpha
 
+# Disk list states
+OPEN = 1
+CLOSED = 2
+
 
 class DiskList(object):
     """
@@ -35,7 +39,6 @@ class DiskList(object):
         - Stores all list items in a sqlite3 table
         - Is thread safe
         - Implements an iterator and a reversed iterator
-        - Deletes the table when the DiskList object is deleted from memory
 
     I had to replace the old DiskList because the old one did not support
     iteration, and the only way of adding iteration to that object was doing
@@ -70,8 +73,13 @@ class DiskList(object):
         self.db.create_index(self.table_name, ['eq_attrs',])
         self.db.commit()
 
+        self._state = OPEN
+
     def cleanup(self):
+        assert self._state == OPEN
+
         self.db.drop_table(self.table_name)
+        self._state = CLOSED
 
     def _get_eq_attrs_values(self, obj):
         """
@@ -111,6 +119,7 @@ class DiskList(object):
         """
         :return: True if the value is in our list.
         """
+        assert self._state == OPEN
         t = (self._get_eq_attrs_values(value),)
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the
@@ -125,6 +134,7 @@ class DiskList(object):
 
         :param value: The value to append.
         """
+        assert self._state == OPEN
         pickled_obj = cPickle.dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
@@ -133,6 +143,7 @@ class DiskList(object):
         self.db.execute(query, t)
 
     def clear(self):
+        assert self._state == OPEN
         self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
 
     def extend(self, value_list):
@@ -142,14 +153,17 @@ class DiskList(object):
 
         :return: None
         """
+        assert self._state == OPEN
         for value in value_list:
             self.append(value)
 
     def ordered_iter(self):
+        assert self._state == OPEN
+
         # TODO: How do I make the __iter__ thread safe?
         # How do I avoid loading all items in memory?
         objects = []
-        results = self.db.select('SELECT pickle FROM %s' %  self.table_name)
+        results = self.db.select('SELECT pickle FROM %s' % self.table_name)
         
         for r in results:
             obj = cPickle.loads(r[0])
@@ -159,6 +173,8 @@ class DiskList(object):
             yield obj
 
     def __iter__(self):
+        assert self._state == OPEN
+
         # TODO: How do I make the __iter__ thread safe?
         results = self.db.select('SELECT pickle FROM %s' % self.table_name)
         for r in results:
@@ -166,6 +182,8 @@ class DiskList(object):
             yield obj
 
     def __reversed__(self):
+        assert self._state == OPEN
+
         # TODO: How do I make the __iter__ thread safe?
         query = 'SELECT pickle FROM %s ORDER BY index_ DESC'
         results = self.db.select(query % self.table_name)
@@ -174,6 +192,8 @@ class DiskList(object):
             yield obj
 
     def __getitem__(self, key):
+        assert self._state == OPEN
+
         if isinstance(key, slice):
             return self._slice_list(key)
         
@@ -197,6 +217,8 @@ class DiskList(object):
             return obj
     
     def _slice_list(self, slice_inst):
+        assert self._state == OPEN
+
         start = slice_inst.start or 0
         stop = slice_inst.stop or len(self)
         step = slice_inst.step or 1
@@ -214,6 +236,8 @@ class DiskList(object):
         return copy
             
     def __len__(self):
+        assert self._state == OPEN
+
         query = 'SELECT count(*) FROM %s' % self.table_name
         r = self.db.select_one(query)
         return r[0]

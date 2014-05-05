@@ -18,13 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
-@attr('ci_ready')
 class TestGetEmails(PluginTest):
 
     get_emails_url = get_moth_http('/grep/get_emails/')
@@ -34,8 +31,9 @@ class TestGetEmails(PluginTest):
             'target': get_emails_url,
             'plugins': {
                 'grep': (PluginConfig('get_emails',
-                                      (
-                                          'only_target_domain', False, PluginConfig.BOOL)),),
+                                      ('only_target_domain',
+                                       False,
+                                       PluginConfig.BOOL)),),
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('only_forward', True, PluginConfig.BOOL)),
@@ -55,8 +53,7 @@ class TestGetEmails(PluginTest):
         all_email_infos = self.kb.get('emails', 'external_emails')
         all_emails = set([i['mail'] for i in all_email_infos])
 
-        EXPECTED = set([u'f00@moth.com', u'bar@moth.com', u'hello@world.com',
-                        u'world@f00.net', u'planer@moth.com', u'pp@moth.com',
-                        u'notme@gmail.com'])
+        EXPECTED = {u'one@moth.com', u'two@moth.com', u'three@moth.com',
+                    u'four@moth.com'}
 
         self.assertEqual(all_emails, EXPECTED)

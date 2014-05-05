@@ -274,6 +274,14 @@ class TestDiskList(unittest.TestCase):
         
         self.assertFalse(db.table_exists(table_name))
 
+    def test_remove_table_then_add(self):
+        disk_list = DiskList()
+        disk_list.append(1)
+
+        disk_list.cleanup()
+
+        self.assertRaises(AssertionError, disk_list.append, 1)
+
     def test_islice(self):
         disk_list = DiskList()
         disk_list.extend('ABCDEFG')

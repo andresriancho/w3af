@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2013 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -295,10 +295,14 @@ class Backend:
 
         # Little precaution, in theory this condition should always be false
         elif kb.dbms is not None and kb.dbms != dbms:
-            msg = "sqlmap previously fingerprinted back-end DBMS "
+            warnMsg = "there seems to be a high probability that "
+            warnMsg += "this could be a false positive case"
+            logger.warn(warnMsg)
+
+            msg = "sqlmap previously fingerprinted back-end DBMS as "
             msg += "%s. However now it has been fingerprinted " % kb.dbms
-            msg += "to be %s. " % dbms
-            msg += "Please, specify which DBMS is "
+            msg += "as %s. " % dbms
+            msg += "Please, specify which DBMS should be "
             msg += "correct [%s (default)/%s] " % (kb.dbms, dbms)
 
             while True:
@@ -610,15 +614,15 @@ def paramToDict(place, parameters=None):
 
     return testableParameters
 
-def getDocRoot():
-    docRoot = None
+def getManualDirectories():
+    directories = None
     pagePath = directoryPath(conf.path)
 
     defaultDocRoot = DEFAULT_DOC_ROOTS.get(Backend.getOs(), DEFAULT_DOC_ROOTS[OS.LINUX])
 
     if kb.absFilePaths:
         for absFilePath in kb.absFilePaths:
-            if docRoot:
+            if directories:
                 break
 
             if directoryPath(absFilePath) == '/':
@@ -636,41 +640,41 @@ def getDocRoot():
                     _ = "/%s/" % _
 
                     if _ in absFilePath:
-                        docRoot = "%s%s" % (absFilePath.split(_)[0], _)
+                        directories = "%s%s" % (absFilePath.split(_)[0], _)
                         break
 
             if pagePath and pagePath in absFilePath:
-                docRoot = absFilePath.split(pagePath)[0]
+                directories = absFilePath.split(pagePath)[0]
                 if windowsDriveLetter:
-                    docRoot = "%s/%s" % (windowsDriveLetter, ntToPosixSlashes(docRoot))
+                    directories = "%s/%s" % (windowsDriveLetter, ntToPosixSlashes(directories))
 
-    docRoot = normalizePath(docRoot)
+    directories = normalizePath(directories)
 
-    if docRoot:
-        infoMsg = "retrieved the web server document root: '%s'" % docRoot
+    if directories:
+        infoMsg = "retrieved the web server document root: '%s'" % directories
         logger.info(infoMsg)
     else:
         warnMsg = "unable to retrieve automatically the web server "
         warnMsg += "document root"
         logger.warn(warnMsg)
 
-        docRoot = []
+        directories = []
 
-        message = "what do you want to use for web server document root?\n"
+        message = "what do you want to use for writable directory?\n"
         message += "[1] common location(s) '%s' (default)\n" % ", ".join(root for root in defaultDocRoot)
-        message += "[2] custom location\n"
+        message += "[2] custom location(s)\n"
         message += "[3] custom directory list file\n"
         message += "[4] brute force search\n"
         choice = readInput(message, default="1").strip()
 
         if choice == "2":
-            message = "please provide the web server document root: "
-            docRoot = readInput(message, default="").split(',')
+            message = "please provide a comma separate list of absolute directory paths: "
+            directories = readInput(message, default="").split(',')
         elif choice == "3":
             message = "what's the list file location?\n"
             listPath = readInput(message, default="")
             checkFile(listPath)
-            docRoot = getFileItems(listPath)
+            directories = getFileItems(listPath)
         elif choice == "4":
             targets = set([conf.hostname])
             _ = conf.hostname.split('.')
@@ -691,31 +695,30 @@ def getDocRoot():
                     for target in targets:
                         item = "%s/%s" % (prefix, suffix)
                         item = item.replace(BRUTE_DOC_ROOT_TARGET_MARK, target).replace("//", '/').rstrip('/')
-                        docRoot.append(item)
+                        directories.append(item)
 
                         if BRUTE_DOC_ROOT_TARGET_MARK not in prefix:
                             break
 
-            infoMsg = "using common document root locations: %s" % ','.join(docRoot)
+            infoMsg = "using common directories: %s" % ','.join(directories)
             logger.info(infoMsg)
 
-            msg = "use additional custom "
-            msg += "document root locations [Enter for None]: "
+            msg = "use additional custom directories [Enter for None]: "
             answer = readInput(msg)
 
             if answer:
-                docRoot.extend(answer.split(','))
+                directories.extend(answer.split(','))
 
         else:
-            docRoot = defaultDocRoot
+            directories = defaultDocRoot
 
-    return docRoot
+    return directories
 
-def getDirs():
-    directories = set("/")
+def getAutoDirectories():
+    retVal = set("/")
 
     if kb.absFilePaths:
-        infoMsg = "retrieved web server full paths: "
+        infoMsg = "retrieved web server absolute paths: "
         infoMsg += "'%s'" % ", ".join(ntToPosixSlashes(path) for path in kb.absFilePaths)
         logger.info(infoMsg)
 
@@ -723,16 +726,17 @@ def getDirs():
             if absFilePath:
                 directory = directoryPath(absFilePath)
                 directory = ntToPosixSlashes(directory)
-                directories.add(directory)
+                retVal.add(directory)
     else:
         warnMsg = "unable to retrieve automatically any web server path"
         logger.warn(warnMsg)
 
-    webDir = extractRegexResult(r"//[^/]+?/(?P<result>.*)/", conf.url)
-    if webDir:
-        directories.add(webDir)
+    _ = extractRegexResult(r"//[^/]+?(?P<result>/.*)/", conf.url)  # web directory
 
-    return list(directories)
+    if _:
+        retVal.add(_)
+
+    return list(retVal)
 
 def filePathToSafeString(filePath):
     """
@@ -1030,7 +1034,7 @@ def setPaths():
     paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
 
     # sqlmap files
-    paths.SQLMAP_HISTORY = os.path.join(paths.SQLMAP_ROOT_PATH, ".sqlmap_history")
+    paths.SQLMAP_HISTORY = os.path.join(os.path.expanduser('~'), ".sqlmap_history")
     paths.SQLMAP_CONFIG = os.path.join(paths.SQLMAP_ROOT_PATH, "sqlmap-%s.conf" % randomStr())
     paths.COMMON_COLUMNS = os.path.join(paths.SQLMAP_TXT_PATH, "common-columns.txt")
     paths.COMMON_TABLES = os.path.join(paths.SQLMAP_TXT_PATH, "common-tables.txt")
@@ -1188,7 +1192,7 @@ def parseTargetUrl():
     conf.hostname = hostnamePort[0].strip()
 
     conf.ipv6 = conf.hostname != conf.hostname.strip("[]")
-    conf.hostname = conf.hostname.strip("[]")
+    conf.hostname = conf.hostname.strip("[]").replace(CUSTOM_INJECTION_MARK_CHAR, "")
 
     try:
         _ = conf.hostname.encode("idna")
@@ -1351,6 +1355,10 @@ def parseFilePaths(page):
                     kb.absFilePaths.add(absFilePath)
 
 def getLocalIP():
+    """
+    Get local IP address (exposed to the remote/target)
+    """
+
     retVal = None
 
     try:
@@ -1366,6 +1374,10 @@ def getLocalIP():
     return retVal
 
 def getRemoteIP():
+    """
+    Get remote/target IP address
+    """
+
     retVal = None
 
     try:
@@ -1472,7 +1484,12 @@ def safeStringFormat(format_, params):
     u'foobar12'
     """
 
-    retVal = format_.replace("%d", "%s")
+    if format_.count(PAYLOAD_DELIMITER) == 2:
+        _ = format_.split(PAYLOAD_DELIMITER)
+        _[1] = _[1].replace("%d", "%s")
+        retVal = PAYLOAD_DELIMITER.join(_)
+    else:
+        retVal = format_.replace("%d", "%s")
 
     if isinstance(params, basestring):
         retVal = retVal.replace("%s", params, 1)
@@ -1486,7 +1503,7 @@ def safeStringFormat(format_, params):
                 if count < len(params):
                     retVal = retVal[:index] + getUnicode(params[count]) + retVal[index + 2:]
                 else:
-                    raise SqlmapNoneDataException("wrong number of parameters during string formatting")
+                    raise Exception("wrong number of parameters during string formatting")
                 count += 1
 
     return retVal
@@ -1529,6 +1546,10 @@ def getPageWordSet(page):
     return retVal
 
 def showStaticWords(firstPage, secondPage):
+    """
+    Prints words appearing in two different response pages
+    """
+
     infoMsg = "finding static words in longest matching part of dynamic page content"
     logger.info(infoMsg)
 
@@ -2168,7 +2189,7 @@ def urldecode(value, encoding=None, unsafe="%%&=;+%s" % CUSTOM_INJECTION_MARK_CH
 
     return result
 
-def urlencode(value, safe="%&=", convall=False, limit=False, spaceplus=False):
+def urlencode(value, safe="%&=-_", convall=False, limit=False, spaceplus=False):
     """
     URL encodes given value
 
@@ -2948,7 +2969,7 @@ def safeSQLIdentificatorNaming(name, isTable=False):
                 retVal = "\"%s\"" % retVal.strip("\"")
             elif Backend.getIdentifiedDbms() in (DBMS.ORACLE,):
                 retVal = "\"%s\"" % retVal.strip("\"").upper()
-            elif Backend.getIdentifiedDbms() in (DBMS.MSSQL,):
+            elif Backend.getIdentifiedDbms() in (DBMS.MSSQL,) and not re.match(r"\A\w+\Z", retVal, re.U):
                 retVal = "[%s]" % retVal.strip("[]")
 
         if _ and DEFAULT_MSSQL_SCHEMA not in retVal and '.' not in re.sub(r"\[[^]]+\]", "", retVal):
@@ -3478,18 +3499,19 @@ def decodeHexValue(value):
         if value and isinstance(value, basestring) and len(value) % 2 == 0:
             retVal = hexdecode(retVal)
 
-            if Backend.isDbms(DBMS.MSSQL) and value.startswith("0x"):
-                try:
-                    retVal = retVal.decode("utf-16-le")
-                except UnicodeDecodeError:
-                    pass
-            elif Backend.isDbms(DBMS.HSQLDB):
-                try:
-                    retVal = retVal.decode("utf-16-be")
-                except UnicodeDecodeError:
-                    pass
-            if not isinstance(retVal, unicode):
-                retVal = getUnicode(retVal, "utf8")
+            if not kb.binaryField:
+                if Backend.isDbms(DBMS.MSSQL) and value.startswith("0x"):
+                    try:
+                        retVal = retVal.decode("utf-16-le")
+                    except UnicodeDecodeError:
+                        pass
+                elif Backend.isDbms(DBMS.HSQLDB):
+                    try:
+                        retVal = retVal.decode("utf-16-be")
+                    except UnicodeDecodeError:
+                        pass
+                if not isinstance(retVal, unicode):
+                    retVal = getUnicode(retVal, "utf8")
 
         return retVal
 
@@ -3693,6 +3715,10 @@ def splitFields(fields, delimiter=','):
     return [fields[x + 1:y] for (x, y) in zip(commas, commas[1:])]
 
 def pollProcess(process, suppress_errors=False):
+    """
+    Checks for process status (prints . if still running)
+    """
+
     while True:
         dataToStdout(".")
         time.sleep(1)

@@ -26,7 +26,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.kb.read_shell import ReadShell
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
-from w3af.core.controllers.misc.levenshtein import relative_distance_ge
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -324,7 +324,7 @@ class FileReaderShell(ReadShell):
 
             # Now I compare both strings, if they are VERY similar, then
             # filename is a non existing file.
-            if relative_distance_ge(self._application_file_not_found_error,
+            if fuzzy_equal(self._application_file_not_found_error,
                                     clean_result, 0.9):
                 error = NO_SUCH_FILE
 
