@@ -28,8 +28,9 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
 from w3af.core.controllers.misc.levenshtein import relative_distance_ge
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopOnUrlError)
 from w3af.core.data.dc import form
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.kb.vuln import Vuln
@@ -59,9 +60,15 @@ class form_auth(BruteforcePlugin):
             self._already_tested.append(freq_url)
 
             user_field, passwd_field = self._get_login_field_names(freq)
-            login_failed_result_list = self._id_failed_login_page(freq,
-                                                                  user_field,
-                                                                  passwd_field)
+
+            try:
+                login_failed_bodies = self._id_failed_login_page(freq,
+                                                                 user_field,
+                                                                 passwd_field)
+            except BaseFrameworkException, bfe:
+                msg = 'Unexpected response during form bruteforce setup: "%s"'
+                om.out.debug(msg % bfe)
+                return
 
             # Let the user know what we are doing
             om.out.information('Found a form login. The action of the '
@@ -80,7 +87,7 @@ class form_auth(BruteforcePlugin):
                 generator = self._create_pass_generator(freq_url)
 
             self._bruteforce_test(freq, user_field, passwd_field,
-                                  login_failed_result_list, generator)
+                                  login_failed_bodies, generator)
 
             # Report that we've finished.
             msg = 'Finished bruteforcing "%s".' % freq_url
@@ -111,8 +118,8 @@ class form_auth(BruteforcePlugin):
         login_failed_result_list = []
 
         data_container = freq.get_dc()
-        data_container = self._true_extra_fields(
-            data_container, user_field, passwd_field)
+        data_container = self._true_extra_fields(data_container, user_field,
+                                                 passwd_field)
 
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
@@ -136,8 +143,8 @@ class form_auth(BruteforcePlugin):
             # Save it
             login_failed_result_list.append(body)
 
-        # Now I perform a self test, before starting with the actual bruteforcing
-        # The first tuple is an invalid username and a password
+        # Now I perform a self test, before starting with the actual
+        # bruteforcing. The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
         tests = [(rand_alnum(8), rand_alnum(8)),
                  (rand_alnum(8), '')]
@@ -156,8 +163,9 @@ class form_auth(BruteforcePlugin):
             body = body.replace(passwd, '')
 
             if not self._matches_failed_login(body, login_failed_result_list):
-                raise BaseFrameworkException('Failed to generate a response that '
-                                    'matches the failed login page.')
+                raise BaseFrameworkException('Failed to generate a response'
+                                             'that matches the failed login'
+                                             ' page.')
 
         return login_failed_result_list
 
