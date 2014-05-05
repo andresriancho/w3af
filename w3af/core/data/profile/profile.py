@@ -114,7 +114,8 @@ class profile(object):
 
     def get_profile_file(self):
         """
-        :return: The path and name of the file that contains the profile definition.
+        :return: The path and name of the file that contains the profile
+                 definition.
         """
         return self._profile_file_name
 
@@ -131,55 +132,56 @@ class profile(object):
         else:
             return True
 
-    def copy(self, copyProfileName):
+    def copy(self, copy_profile_name):
         """
-        Create a copy of the profile file into copyProfileName. The directory
+        Create a copy of the profile file into copy_profile_name. The directory
         of the profile is kept unless specified.
         """
-        new_profilePathAndName = copyProfileName
+        new_profile_path_name = copy_profile_name
 
         # Check path
-        if os.path.sep not in copyProfileName:
+        if os.path.sep not in copy_profile_name:
             dir = os.path.dirname(self._profile_file_name)
-            new_profilePathAndName = os.path.join(dir, copyProfileName)
+            new_profile_path_name = os.path.join(dir, copy_profile_name)
 
         # Check extension
-        if not new_profilePathAndName.endswith('.pw3af'):
-            new_profilePathAndName += '.pw3af'
+        if not new_profile_path_name.endswith('.pw3af'):
+            new_profile_path_name += '.pw3af'
 
         try:
-            shutil.copyfile(self._profile_file_name, new_profilePathAndName)
+            shutil.copyfile(self._profile_file_name, new_profile_path_name)
         except Exception, e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
             raise BaseFrameworkException(msg % e)
         else:
-            # Now I have to change the data inside the copied profile, to reflect the changes.
-            pNew = profile(new_profilePathAndName)
-            pNew.set_name(copyProfileName)
-            pNew.save(new_profilePathAndName)
+            # Now I have to change the data inside the copied profile, to
+            # reflect the changes.
+            pNew = profile(new_profile_path_name)
+            pNew.set_name(copy_profile_name)
+            pNew.save(new_profile_path_name)
 
             return True
 
-    def set_enabled_plugins(self, plugin_type, plugin_nameList):
+    def set_enabled_plugins(self, plugin_type, plugin_names):
         """
         Set the enabled plugins of type plugin_type.
 
         :param plugin_type: 'audit', 'output', etc.
-        :param plugin_nameList: ['xss', 'sqli'] ...
+        :param plugin_names: ['xss', 'sqli'] ...
         :return: None
         """
         # First, get the enabled plugins of the current profile
-        currentEnabledPlugins = self.get_enabled_plugins(plugin_type)
-        for alreadyEnabledPlugin in currentEnabledPlugins:
-            if alreadyEnabledPlugin not in plugin_nameList:
+        current_enabled_plugins = self.get_enabled_plugins(plugin_type)
+        for already_enabled_plugin in current_enabled_plugins:
+            if already_enabled_plugin not in plugin_names:
                 # The plugin was disabled!
                 # I should remove the section from the config
                 self._config.remove_section(
-                    plugin_type + '.' + alreadyEnabledPlugin)
+                    plugin_type + '.' + already_enabled_plugin)
 
         # Now enable the plugins that the user wants to run
-        for plugin in plugin_nameList:
+        for plugin in plugin_names:
             try:
                 self._config.add_section(plugin_type + "." + plugin)
             except ConfigParser.DuplicateSectionError, ds:
@@ -193,11 +195,11 @@ class profile(object):
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             try:
-                type, name = section.split('.')
+                _type, name = section.split('.')
             except:
                 pass
             else:
-                if type == plugin_type:
+                if _type == plugin_type:
                     res.append(name)
         return res
 
@@ -214,12 +216,12 @@ class profile(object):
             self._config.add_section(section)
 
         for option in options:
-            self._config.set(
-                section, option.get_name(), option.get_value_str())
+            self._config.set(section, option.get_name(), option.get_value_str())
 
     def get_plugin_options(self, plugin_type, plugin_name):
         """
-        :return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
+        :return: A dict with the options for a plugin. For example:
+                { 'LICENSE_KEY':'AAAA' }
         """
         # Get the plugin defaults with their types
         plugin_instance = factory('w3af.plugins.%s.%s' % (plugin_type, plugin_name))
@@ -228,11 +230,11 @@ class profile(object):
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             try:
-                type, name = section.split('.')
+                _type, name = section.split('.')
             except:
                 pass
             else:
-                if type == plugin_type and name == plugin_name:
+                if _type == plugin_type and name == plugin_name:
                     for option in self._config.options(section):
                         try:
                             value = self._config.get(section, option)
@@ -273,8 +275,7 @@ class profile(object):
             self._config.add_section(section)
 
         for option in options:
-            self._config.set(
-                section, option.get_name(), option.get_value_str())
+            self._config.set(section, option.get_name(), option.get_value_str())
 
     def get_misc_settings(self):
         """
@@ -306,8 +307,8 @@ class profile(object):
                     value = self._config.get(section, option)
                 except KeyError, k:
                     # We should never get here...
-                    msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
-                    raise BaseFrameworkException(msg)
+                    msg = 'The option "%s" is unknown for the "%s" section.'
+                    raise BaseFrameworkException(msg % (option, section))
                 else:
                     options_list[option].set_value(value)
         except:
@@ -356,7 +357,8 @@ class profile(object):
 
     def get_target(self):
         """
-        :return: The profile target with the options (target_os, target_framework, etc.)
+        :return: The profile target with the options (target_os,
+                 target_framework, etc.)
         """
         # Get the plugin defaults with their types
         target_instance = w3af_core_target()
@@ -406,8 +408,8 @@ class profile(object):
         """
         if not self._profile_file_name:
             if not file_name:
-                raise BaseFrameworkException('Error while saving profile, you didn\'t '
-                                    'specified the file name.')
+                raise BaseFrameworkException('Error while saving profile, you'
+                                             'didn\'t specified the file name.')
             else:  # The user's specified a file_name!
                 if not file_name.endswith('.pw3af'):
                     file_name += '.pw3af'
