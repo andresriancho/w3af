@@ -34,16 +34,16 @@ from w3af.core.controllers.exception_handling.helpers import get_versions
 TICKET_TEMPLATE = string.Template(
 """# User description
 $user_desc
-# Version Information
+## Version Information
 ```
 $w3af_v
 ```
-# Traceback
-```
+## Traceback
+```pytb
 $t_back
 ```
-# Enabled Plugins
-```
+## Enabled Plugins
+```python
 $plugins
 ```""")
 
@@ -89,11 +89,13 @@ class GithubIssues(object):
                 return False
             except socket.gaierror:
                 return False
+            except socket.timeout:
+                return False
         
         return True
         
-    def report_bug(self, summary, userdesc, tback='',
-                   fname=None, plugins='', autogen=True, email=None):
+    def report_bug(self, summary, userdesc, tback='', fname=None, plugins='',
+                   autogen=True, email=None):
         if self.gh is None:
             raise Exception('Please login before reporting a bug.')
         
@@ -143,7 +145,8 @@ class GithubIssues(object):
         #    email provided by the user or not).
         #
         if email is not None:
-            email_fmt = '\n\nThe user provided the following email address for contact: %s'
+            email_fmt = '\n\nThe user provided the following email address for'\
+                        'contact: %s'
             desc += email_fmt % email
 
         #
