@@ -103,6 +103,10 @@ class crawl_infrastructure(BaseConsumer):
         else:
             to_teardown = [plugin, ]
 
+        # When we disable a plugin, we call .end() , so no need to call the
+        # same method twice
+        to_teardown = set(to_teardown) - self._disabled_plugins
+
         for plugin in to_teardown:
             try:
                 plugin.end()
@@ -275,8 +279,7 @@ class crawl_infrastructure(BaseConsumer):
             if plugin_to_remove in self._w3af_core.plugins.plugins[plugin_type]:
 
                 msg = 'The %s plugin: "%s" wont be run anymore.'
-                om.out.debug(
-                    msg % (plugin_type, plugin_to_remove.get_name()))
+                om.out.debug(msg % (plugin_type, plugin_to_remove.get_name()))
 
                 # Add it to the list of disabled plugins, and run the end() method
                 self._disabled_plugins.add(plugin_to_remove)
@@ -284,7 +287,6 @@ class crawl_infrastructure(BaseConsumer):
 
                 # TODO: unittest that they are really disabled after adding them
                 #       to the disabled_plugins set.
-
                 break
 
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
