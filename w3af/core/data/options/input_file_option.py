@@ -21,9 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import INPUT_FILE
+
+ROOT_PATH_VAR = '%ROOT_PATH%'
 
 
 class InputFileOption(BaseOption):
@@ -35,13 +38,14 @@ class InputFileOption(BaseOption):
         :param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
-        Based on the value parameter and the option type, I have to create a nice
-        looking object like True or ['a','b','c'].
+        Based on the value parameter and the option type, I have to create a
+        nice looking object like True or ['a','b','c'].
         """
         if value == '':
             self._value = value
             return
 
+        value = value.replace(ROOT_PATH_VAR, ROOT_PATH)
         validated_value = self.validate(value)
         
         # I want to make the paths shorter, so we're going to make them
@@ -52,6 +56,21 @@ class InputFileOption(BaseOption):
             self._value = os.path.relpath(validated_value)
         else:
             self._value = validated_value
+
+    def get_value_str(self):
+        """
+        This method is called before saving the option value to the profile file
+
+        Added when fixing:
+            https://github.com/andresriancho/w3af/issues/402
+
+        :return: A string representation of the path, with the ROOT_PATH
+                 replaced with %ROOT_PATH%. Then when we load a value in
+                 set_value we're going to replace the %ROOT_PATH% with ROOT_PATH
+        """
+        abs_path = os.path.abspath(self._value)
+        replaced_value = abs_path.replace(ROOT_PATH, ROOT_PATH_VAR)
+        return replaced_value
 
     def validate(self, value):
 

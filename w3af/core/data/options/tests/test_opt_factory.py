@@ -33,11 +33,13 @@ from w3af.core.data.options.option_types import (
 
 class TestOptionFactory(unittest.TestCase):
 
+    SHORT_INPUT_FILE = '%ROOT_PATH%/core/data/options/tests/test.txt'
+    INPUT_FILE = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data',
+                                              'options', 'tests', 'test.txt'))
+
     def test_factory_ok(self):
-        input_file = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data',
-                                                  'options', 'tests',
-                                                  'test.txt'))
-        output_file = input_file
+        input_file = self.INPUT_FILE
+        output_file = self.INPUT_FILE
 
         data = {BOOL: [('true', True),],
                 INT: [('1', 1),],
@@ -135,3 +137,16 @@ class TestOptionFactory(unittest.TestCase):
             self.assertIsInstance(opt.get_desc(), basestring)
             self.assertIsInstance(opt.get_type(), basestring)
             self.assertIsInstance(opt.get_help(), basestring)
+
+    def test_root_path_variable_get(self):
+        opt = opt_factory('name', self.INPUT_FILE, 'desc', INPUT_FILE,
+                          'help', 'tab1')
+
+        self.assertEqual(opt.get_value_str(), self.SHORT_INPUT_FILE)
+
+    def test_root_path_variable_set(self):
+        opt = opt_factory('name', self.SHORT_INPUT_FILE, 'desc', INPUT_FILE,
+                          'help', 'tab1')
+
+        self.assertEqual(opt.get_value_str(), self.SHORT_INPUT_FILE)
+        self.assertEqual(opt._value, self.INPUT_FILE)
