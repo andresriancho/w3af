@@ -19,9 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
-import esmre
 import re
+import esmre
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
@@ -32,7 +31,7 @@ class esmre_multire(object):
     easy to use API to esmre.
     """
 
-    def __init__(self, re_list, re_compile_flags=0):
+    def __init__(self, re_list, re_compile_flags=0, hint_len=3):
         """
 
         :param re_list: A list with all the regular expressions that we want
@@ -44,7 +43,7 @@ class esmre_multire(object):
         in the second case we'll return [ (match_obj, re_str_N, pattern_obj, objN), ]
 
         """
-        self._index = esmre.Index()
+        self._index = LongKeywordIndex(hint_len=hint_len)
         self._re_cache = {}
 
         for item in re_list:
@@ -92,3 +91,33 @@ class esmre_multire(object):
                 result.append(resitem)
 
         return result
+
+
+class LongKeywordIndex(esmre.Index):
+    def __init__(self, hint_len=3):
+        super(LongKeywordIndex, self).__init__()
+        self.hint_len = hint_len
+
+    def enter(self, regex, obj):
+        self.lock.acquire()
+        try:
+            
+            if self.fixed:
+                raise TypeError("enter() cannot be called after query()")
+            
+            regex_hints = esmre.hints(regex)
+            keywords = esmre.shortlist(regex_hints)
+            
+            if not keywords:
+                raise ValueError('Failed due to performance reasons.'
+                                 'Need more hints for RE: %s' % regex)
+            
+            for hint in keywords:
+                if len(hint) <= self.hint_len:
+                    raise ValueError('Failed due to performance reasons.'
+                                     'Need longer hints for RE: %s' % regex)
+
+                self.esm.enter(hint.lower(), obj)
+        
+        finally:
+            self.lock.release()

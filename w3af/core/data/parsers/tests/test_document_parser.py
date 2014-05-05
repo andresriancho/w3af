@@ -23,16 +23,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
-from nose.plugins.skip import SkipTest
-
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.url import URL
-from w3af.core.data.parsers.document_parser import document_parser_factory, DocumentParser
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.document_parser import (document_parser_factory,
+                                                    DocumentParser)
 
 
 def _build_http_response(body_content, content_type):
@@ -58,6 +57,12 @@ class TestDocumentParserFactory(unittest.TestCase):
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
 
+    def test_html_upper(self):
+        parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))
+
+        self.assertIsInstance(parser, DocumentParser)
+        self.assertIsInstance(parser._parser, HTMLParser)
+
     def test_pdf_case01(self):
         parser = document_parser_factory(
             _build_http_response(file(self.PDF_FILE).read(),
@@ -68,12 +73,14 @@ class TestDocumentParserFactory(unittest.TestCase):
 
     def test_no_parser(self):
         response = _build_http_response('%!23', u'application/bar')
-        self.assertRaises(BaseFrameworkException, document_parser_factory, response)
+        self.assertRaises(BaseFrameworkException, document_parser_factory,
+                          response)
 
     def test_no_parser_binary(self):
         all_chars = ''.join([chr(i) for i in xrange(0,255)])
         response = _build_http_response(all_chars, u'application/bar')
-        self.assertRaises(BaseFrameworkException, document_parser_factory, response)
+        self.assertRaises(BaseFrameworkException, document_parser_factory,
+                          response)
         
     def test_issue_106_invalid_url(self):
         """
@@ -90,13 +97,7 @@ class TestDocumentParserFactory(unittest.TestCase):
         paths.extend(url.get_path_qs() for url in parser.get_references()[0])
         paths.extend(url.get_path_qs() for url in parser.get_references()[1])
         
-        expected_paths = set(['/szukaj/_vti_bin/search.asmx',
-                              '/_vti_bin/search.asmx?disco=',
-                              '/_vti_bin/search.asmx',
-                              '/2003/05/soap-envelope',
-                              '/soap/envelope/',
-                              '/2001/XMLSchema',
-                              '/2001/XMLSchema-instance'])
+        expected_paths = {'/szukaj/_vti_bin/search.asmx',
+                          '/_vti_bin/search.asmx?disco='}
         
         self.assertEqual(expected_paths, set(paths))
-        

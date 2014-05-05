@@ -287,6 +287,7 @@ class w3af_core_status(object):
         
         return status_str % data
 
+
 def round_or_None(float_or_none):
     if float_or_none is None:
         return None

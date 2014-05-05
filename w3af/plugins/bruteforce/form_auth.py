@@ -28,9 +28,8 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
-from w3af.core.controllers.misc.levenshtein import relative_distance_ge
-from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              ScanMustStopOnUrlError)
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.data.dc import form
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.kb.vuln import Vuln
@@ -175,7 +174,7 @@ class form_auth(BruteforcePlugin):
                  responses that are stored in login_failed_result_list.
         """
         for login_failed_result in login_failed_result_list:
-            if relative_distance_ge(resp_body, login_failed_result, 0.65):
+            if fuzzy_equal(resp_body, login_failed_result, 0.65):
                 return True
         else:
             # I'm happy! The response_body *IS NOT* a failed login page.

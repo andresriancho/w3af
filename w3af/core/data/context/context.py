@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from functools import wraps
 
+from w3af.core.controllers.misc.decorators import cached_property
+
+
 ATTR_DELIMITERS = {'"', '`', "'"}
 JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus', 
@@ -648,24 +651,6 @@ def get_context_iter(data, payload):
             if context.match(byte_chunk):
                 context.save(data)
                 yield context
-
-
-def cached_property(fun):
-    """
-    A memoize decorator for class properties.
-    """
-    @wraps(fun)
-    def get(self):
-        try:
-            return self._cache[fun]
-        except AttributeError:
-            self._cache = {}
-        except KeyError:
-            pass
-        ret = self._cache[fun] = fun(self)
-        return ret
-
-    return property(get)
 
 
 class ByteChunk(object):

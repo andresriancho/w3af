@@ -27,7 +27,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
-from w3af.core.controllers.misc.levenshtein import relative_distance_boolean
+from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.controllers.misc.diff import diff
 
 

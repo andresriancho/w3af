@@ -1,5 +1,5 @@
 """
-PDFParser.py
+pdf.py
 
 Copyright 2006 Andres Riancho
 
@@ -20,15 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import StringIO
-import re
 
 from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
+from pdfminer.pdfinterp import PDFResourceManager, process_pdf
 from pdfminer.layout import LAParams
 from pdfminer.pdfparser import PDFSyntaxError
 
 from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
 class PDFParser(BaseParser):
@@ -38,43 +37,68 @@ class PDFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, HTTPResponse):
-        super(PDFParser, self).__init__(HTTPResponse)
-        # Work !
-        self._pre_parse(HTTPResponse.body)
+    def __init__(self, http_response):
+        super(PDFParser, self).__init__(http_response)
 
-    def _pre_parse(self, document):
-        content_text = pdf_to_text(document)
-        self._parse(content_text)
+        self._re_urls = set()
+        self._parse(http_response.body)
 
-    def _parse(self, content_text):
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
 
-        # Get the URLs using a regex
-        for x in re.findall(BaseParser.URL_RE, content_text):
-            try:
-                self._re_urls.add(URL(x[0]))
-            except ValueError:
-                pass
+        :return: True if the document parameter is a string that contains a PDF
+                 document.
+        """
+        if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
+            document = http_resp.body
 
-        # Get the mail addys
-        self._extract_emails(content_text)
+            #   Safety check:
+            if not document:
+                return False
+
+            #   Some PDF files don't end with %%EOF, they end with
+            #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n.
+            #   So... just to be sure I search in the last 12 characters.
+            if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
+                try:
+                    text = pdf_to_text(document)
+                except Exception:
+                    return False
+                else:
+                    return text != u''
+
+        return False
+
+    def _parse(self, resp_body):
+        """
+        Get the URLs using a regex
+        """
+        doc_string = pdf_to_text(resp_body)
+        re_extract = ReExtract(doc_string, self._base_url, self._encoding)
+        self._re_urls = re_extract.get_references()
 
     def get_references(self):
         """
-        Searches for references on a page. w3af searches references in every html tag, including:
+        Searches for references on a page. w3af searches references in every
+        html tag, including:
             - a
             - forms
             - images
             - frames
             - etc.
 
-        :return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
-        regular expression. The second list if less trustworthy.
+        :return: Two lists, one with the parsed URLs, and one with the URLs
+                 that came out of a regular expression. The second list if less
+                 trustworthy.
         """
-        return ([], list(self._re_urls))
+        return [], list(self._re_urls)
 
-    get_references_of_tag = get_forms = get_comments = \
-        get_meta_redir = get_meta_tags = lambda *args, **kwds: []
+    get_references_of_tag = get_forms = BaseParser._return_empty_list
+    get_comments = BaseParser._return_empty_list
+    get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
 
 
 def pdf_to_text(pdf_string):

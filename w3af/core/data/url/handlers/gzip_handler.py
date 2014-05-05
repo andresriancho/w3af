@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib2
 import gzip
+import zlib
 
 from cStringIO import StringIO
 
@@ -31,7 +32,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
     handler_order = 200  # response processing before HTTPEquivProcessor
 
     def http_request(self, request):
-        request.add_header("Accept-encoding", "gzip")
+        request.add_header("Accept-encoding", "gzip, deflate")
         return request
 
     def http_response(self, request, response):
@@ -49,19 +50,23 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         #
         enc_hdrs = response.info().getheaders("Content-encoding")
         for enc_hdr in enc_hdrs:
-            if ("gzip" in enc_hdr) or ("compress" in enc_hdr):
+            try:
                 # Decompress
-                try:
-                    data = gzip.GzipFile(
-                        fileobj=StringIO(response.read())).read()
-                except:
-                    # I get here when the HTTP response body is corrupt
-                    # return the same thing that I got... can't do magic yet!
-                    return response
-                else:
-                    # The response was successfully unzipped
-                    response.set_body(data)
-                    return response
+                if ("gzip" in enc_hdr) or ("compress" in enc_hdr):
+                    body = response.read()
+                    data = gzip.GzipFile(fileobj=StringIO(body)).read()
+                elif "deflate" in enc_hdr:
+                    body = response.read()
+                    data = zlib.decompress(body)
+            except:
+                # I get here when the HTTP response body is corrupt
+                # return the same thing that I got... can't do magic yet!
+                return response
+            else:
+                # The response was successfully unzipped
+                response.set_body(data)
+                return response
+
         return response
 
     https_request = http_request

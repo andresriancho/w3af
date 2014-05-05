@@ -25,6 +25,7 @@ import random
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -51,6 +52,9 @@ class Form(DataContainer):
     INPUT_TYPE_SUBMIT = 'submit'
     INPUT_TYPE_SELECT = 'select'
 
+    # This is used for processing checkboxes
+    SECRET_VALUE = "3_!21#47w@"
+
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(Form, self).__init__(init_val, encoding)
 
@@ -61,9 +65,6 @@ class Form(DataContainer):
         self._files = []
         self._selects = {}
         self._submit_map = {}
-
-        # This is used for processing checkboxes
-        self._secret_value = "3_!21#47w@"
 
     def get_action(self):
         """
@@ -230,7 +231,7 @@ class Form(DataContainer):
 
         if value not in self._selects[name]:
             self._selects[name].append(value)
-            self._selects[name].append(self._secret_value)
+            self._selects[name].append(self.SECRET_VALUE)
 
         self._types[name] = self.INPUT_TYPE_CHECKBOX
 
@@ -294,12 +295,12 @@ class Form(DataContainer):
         if not self._selects:
             return
 
-        secret_value = self._secret_value
+        secret_value = self.SECRET_VALUE
         sel_names = self._selects.keys()
         matrix = self._selects.values()
 
         # Build self variant based on `sample_path`
-        for sample_path in self._getSamplePaths(mode, matrix):
+        for sample_path in self._get_sample_paths(mode, matrix):
             # Clone self
             self_variant = self.copy()
 
@@ -332,7 +333,7 @@ class Form(DataContainer):
 
             yield self_variant
 
-    def _getSamplePaths(self, mode, matrix):
+    def _get_sample_paths(self, mode, matrix):
 
         if mode in ["t", "tb"]:
             yield [0] * len(matrix)
@@ -342,18 +343,18 @@ class Form(DataContainer):
         # mode in ["tmb", "all"]
         elif mode in ["tmb", "all"]:
 
-            variants_total = self._get_variantsCount(matrix, mode)
+            variants_total = self._get_variants_count(matrix, mode)
 
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
             # matrix by using `SEED` in the random generation
             if variants_total > self.TOP_VARIANTS:
                 # Inform user
-                om.out.information("w3af found an HTML form that has several"
-                                   " checkbox, radio and select input tags inside. Testing "
-                                   "all combinations of those values would take too much "
-                                   "time, the framework will only test %s randomly "
-                                   "distributed variants." % self.TOP_VARIANTS)
+                om.out.debug("w3af found an HTML form that has several"
+                             " checkbox, radio and select input tags inside."
+                             " Testing all combinations of those values would"
+                             " take too much time, the framework will only"
+                             " test %s randomly distributed variants." % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed so we get the same variants
                 # in two runs. This is important for users because they expect
@@ -383,7 +384,7 @@ class Form(DataContainer):
 
                 for path in rand.sample(xrange(variants_total),
                                         self.TOP_VARIANTS):
-                    yield self._decodePath(path, matrix)
+                    yield self._decode_path(path, matrix)
 
             # Less than TOP_VARIANTS elems in matrix
             else:
@@ -398,14 +399,14 @@ class Form(DataContainer):
                             matrix[row] = new_vector
 
                     # New variants total
-                    variants_total = self._get_variantsCount(matrix, mode)
+                    variants_total = self._get_variants_count(matrix, mode)
 
                 # Now get all paths!
                 for path in xrange(variants_total):
-                    decoded_path = self._decodePath(path, matrix)
+                    decoded_path = self._decode_path(path, matrix)
                     yield decoded_path
 
-    def _decodePath(self, path, matrix):
+    def _decode_path(self, path, matrix):
         """
         Decode the integer `path` into a tuple of ints where the ith-elem
         is the index to select from vector given by matrix[i].
@@ -433,7 +434,7 @@ class Form(DataContainer):
 
         return decoded_path
 
-    def _get_variantsCount(self, matrix, mode):
+    def _get_variants_count(self, matrix, mode):
         """
 
         :param matrix:
@@ -446,3 +447,43 @@ class Form(DataContainer):
         else:
             len_fun = (lambda x: min(len(x), 3)) if mode == "tmb" else len
             return reduce(operator.mul, map(len_fun, matrix))
+
+    def copy(self):
+        """
+        This method returns a deep copy of the Form instance. I'm NOT using
+        copy.deepcopy(self) here because its very slow!
+
+        :return: A copy of myself.
+        """
+        init_val = deepish_copy(self).items()
+        copy = Form(init_val=init_val, encoding=self.encoding)
+
+        # Internal variables
+        copy._method = self._method
+        copy._action = self._action
+        copy._types = self._types
+        copy._files = self._files
+        copy._selects = self._selects
+        copy._submit_map = self._submit_map
+
+        return copy
+
+
+def deepish_copy(org):
+    """
+    Much, much faster than deepcopy, for a dict of the simple python types.
+
+    http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
+    """
+    out = OrderedDict().fromkeys(org)
+
+    for k, v in org.iteritems():
+        try:
+            out[k] = v.copy()   # dicts, sets
+        except AttributeError:
+            try:
+                out[k] = v[:]   # lists, tuples, strings, unicode
+            except TypeError:
+                out[k] = v      # ints
+
+    return out

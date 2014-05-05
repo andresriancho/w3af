@@ -135,10 +135,7 @@ BASE_TAG = u"""
 META_REFRESH = u"""<meta http-equiv="refresh" content="600">"""
 META_REFRESH_WITH_URL = u"""
 <meta http-equiv="refresh" content="2;url=http://crawler.w3af.com/">"""
-BODY_FRAGMENT_WITH_EMAILS = u"""===>jandalia@bing.com%^&1!
-<script>ariancho%40gmail.com<script> name_with_ñ@w3af.it
-תגובות_לאתר
-"""
+
 
 URL_INST = URL('http://w3af.com')
 
@@ -168,6 +165,61 @@ class _SGMLParser(SGMLParser):
 @attr('smoke')
 class TestSGMLParser(unittest.TestCase):
 
+    def test_get_emails_filter(self):
+        resp = _build_http_response(URL_INST, '')
+        p = _SGMLParser(resp)
+        p._emails = {'a@w3af.com', 'foo@not.com'}
+
+        self.assertEqual(p.get_emails(), {'a@w3af.com', 'foo@not.com'})
+
+        self.assertEqual(p.get_emails(domain='w3af.com'), ['a@w3af.com'])
+        self.assertEqual(p.get_emails(domain='not.com'), ['foo@not.com'])
+
+    def test_extract_emails_blank(self):
+        resp = _build_http_response(URL_INST, '')
+        p = _SGMLParser(resp)
+
+        self.assertEqual(p.get_emails(), set())
+
+    def test_extract_emails_mailto(self):
+        body = u'<a href="mailto:abc@w3af.com">test</a>'
+        resp = _build_http_response(URL_INST, body)
+        p = _SGMLParser(resp)
+        p._parse(resp)
+
+        expected_res = {u'abc@w3af.com'}
+        self.assertEqual(p.get_emails(), expected_res)
+
+    def test_extract_emails_mailto_dup(self):
+        body = u'<a href="mailto:abc@w3af.com">a</a>'\
+               u'<a href="mailto:abc@w3af.com">b</a>'
+        resp = _build_http_response(URL_INST, body)
+        p = _SGMLParser(resp)
+        p._parse(resp)
+
+        expected_res = {u'abc@w3af.com'}
+        self.assertEqual(p.get_emails(), expected_res)
+
+    def test_extract_emails_mailto_not_dup(self):
+        body = u'<a href="mailto:abc@w3af.com">a</a>'\
+               u'<a href="mailto:abc_def@w3af.com">b</a>'
+        resp = _build_http_response(URL_INST, body)
+        p = _SGMLParser(resp)
+        p._parse(resp)
+
+        expected_res = {u'abc@w3af.com', u'abc_def@w3af.com'}
+        self.assertEqual(p.get_emails(), expected_res)
+
+    def test_mailto_subject_body(self):
+        body = u'<a href="mailto:abc@w3af.com?subject=testing out mailto'\
+               u'&body=Just testing">test</a>'
+        resp = _build_http_response(URL_INST, body)
+        p = _SGMLParser(resp)
+        p._parse(resp)
+
+        expected_res = {u'abc@w3af.com'}
+        self.assertEqual(p.get_emails(), expected_res)
+
     def test_parser_attrs(self):
         body_content = HTML_DOC % {'head': '', 'body': ''}
         p = _SGMLParser(_build_http_response(URL_INST, body_content))
@@ -182,7 +234,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals(set(), getattr(p, '_parsed_urls'))
         self.assertEquals([], getattr(p, '_forms'))
         self.assertEquals([], getattr(p, '_comments_in_doc'))
-        self.assertEquals([], getattr(p, '_scripts_in_doc'))
         self.assertEquals([], getattr(p, '_meta_redirs'))
         self.assertEquals([], getattr(p, '_meta_tags'))
 
@@ -192,24 +243,6 @@ class TestSGMLParser(unittest.TestCase):
         p = _SGMLParser(resp)
         p._parse(resp)
         self.assertEquals(URL('http://www.w3afbase.com/'), p._base_url)
-
-    def test_regex_urls(self):
-        u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
-        u2 = u'http://w3af.com/tésoro.php?id=GÓLD'
-        u3 = u'http://w3af.com/gold.py?típo=silvër'
-        body = """
-        <html>
-          <body>estas s%C3%B3n las urls absolutas q te comente para llegar al tesoro<br>
-                http://w3af.com/t%C3%A9soro.php?id=G%C3%93LD http://w3af.com/tr%C3%A9asure.php?id=%C3%93R%C3%93%C2%AA
-            y las relativas son<br>
-                /gold.py?t%C3%ADpo=silv%C3%ABr
-        """
-        resp = _build_http_response(URL_INST, body)
-        p = _SGMLParser(resp)
-        urls = tuple(u.url_string for u in p._re_urls)
-        self.assertTrue(u1 in urls)
-        self.assertTrue(u2 in urls)
-        self.assertTrue(u3 in urls)
 
     def test_meta_tags(self):
         body = HTML_DOC % \
@@ -263,13 +296,6 @@ class TestSGMLParser(unittest.TestCase):
             wrapped_start = partial(start_wrapper, orig_start)
             p.start = wrapped_start
             p._parse(resp)
-
-    def test_find_emails(self):
-        body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
-        p = _SGMLParser(_build_http_response(URL_INST, body))
-        emails = {'jandalia@bing.com', 'ariancho@gmail.com',
-                  u'name_with_ñ@w3af.it'}
-        self.assertEquals(emails, p.get_emails())
 
     def test_parsed_references(self):
         # The *parsed* urls *must* come both from valid tags and tag attributes
@@ -520,3 +546,19 @@ class TestHTMLParser(unittest.TestCase):
         self.assertIsInstance(form, Form)
         self.assertEqual('sample_name=sample_value&sample_name=sample_value',
                          str(form))
+
+    def test_script_tag_link_extraction(self):
+        body = '''<script>window.location = "http://w3af.com/";</script>'''
+        resp = _build_http_response(URL_INST, body)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+
+        self.assertEquals([URL('http://w3af.com/')], p.references[1])
+
+    def test_script_tag_link_extraction_relative(self):
+        body = '''<script>window.location = "/foo.php";</script>'''
+        resp = _build_http_response(URL_INST, body)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+
+        self.assertEquals([URL('http://w3af.com/foo.php')], p.references[1])

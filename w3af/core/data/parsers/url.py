@@ -25,6 +25,8 @@ import re
 import urllib
 import urlparse
 
+from functools import wraps
+
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -40,14 +42,32 @@ from w3af.core.data.db.disk_item import DiskItem
 
 def set_changed(meth):
     """
-    Function to decorate methods in order to set the "self._changed" attribute
-    of the object to True.
+    Function to decorate methods in order to empty the memoized cache
     """
-    def wrapper(self, *args, **kwargs):
-        self._changed = True
+    @wraps(meth)
+    def changed_wrapper(self, *args, **kwargs):
+        self._cache = {}
         return meth(self, *args, **kwargs)
 
-    return wrapper
+    return changed_wrapper
+
+
+def memoized(meth):
+    """
+    Function to decorate methods in order to query the memoized cache, very
+    simplistic decorator since it can only be used for getters which take
+    "self" as parameter.
+    """
+    @wraps(meth)
+    def cache_wrapper(self, *args, **kwargs):
+        if meth in self._cache:
+            return self._cache[meth]
+        else:
+            value = meth(self, *args, **kwargs)
+            self._cache[meth] = value
+            return value
+
+    return cache_wrapper
 
 
 def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
@@ -159,9 +179,8 @@ class URL(DiskItem):
         Simple generic test, more detailed tests in each method!
 
         """
-        self._already_calculated_url = None
         self._querystr = None
-        self._changed = True
+        self._cache = {}
         self._encoding = encoding
 
         if not isinstance(data, basestring):
@@ -193,7 +212,7 @@ class URL(DiskItem):
 
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
-            raise ValueError, 'Invalid URL "%s"' % (data,)
+            raise ValueError('Invalid URL "%s"' % data)
 
         self.normalize_url()
 
@@ -249,18 +268,14 @@ class URL(DiskItem):
         """
         :return: A <unicode> representation of the URL
         """
-        calc = self._already_calculated_url
+        data = (self.scheme, self.netloc, self.path,
+                self.params, unicode(self.querystring),
+                self.fragment)
+        calc = urlparse.urlunparse(data)
 
-        if self._changed or calc is None:
-            data = (self.scheme, self.netloc, self.path,
-                    self.params, unicode(self.querystring),
-                    self.fragment)
-            calc = urlparse.urlunparse(data)
-            # ensuring this is actually unicode
-            if not isinstance(calc, unicode):
-                calc = unicode(calc, self.encoding, 'replace')
-            self._already_calculated_url = calc
-            self._changed = False
+        # ensuring this is actually unicode
+        if not isinstance(calc, unicode):
+            calc = unicode(calc, self.encoding, 'replace')
 
         return calc
 
@@ -303,14 +318,13 @@ class URL(DiskItem):
 
     querystring = property(get_querystring, set_querystring)
 
+    @memoized
     def uri2url(self):
         """
         :return: Returns a string contaning the URL without the query string.
         """
-        return URL.from_parts(
-            self.scheme, self.netloc, self.path,
-            None, None, None, encoding=self._encoding
-        )
+        return URL.from_parts(self.scheme, self.netloc, self.path,
+                              None, None, None, encoding=self._encoding)
 
     def get_fragment(self):
         """
@@ -335,6 +349,7 @@ class URL(DiskItem):
         params = (self.scheme, self.netloc, None, None, None, None)
         return URL.from_parts(*params, encoding=self._encoding)
 
+    @set_changed
     def normalize_url(self):
         """
         This method was added to be able to avoid some issues which are
@@ -472,7 +487,12 @@ class URL(DiskItem):
         resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = URL(joined_url, resp_encoding)
-        jurl_obj.normalize_url()
+
+        # There is no need to call normalize_url here, since it is called in the
+        # URL object __init__
+        #
+        #jurl_obj.normalize_url()
+
         return jurl_obj
 
     def get_domain(self):
@@ -717,7 +737,8 @@ class URL(DiskItem):
 
     def remove_params(self):
         """
-        :return: Returns a new url object contaning the URL without the parameter.
+        :return: Returns a new url object contaning the URL without the
+                 parameter.
         """
         parts = (self.scheme, self.netloc, self.path,
                  None, unicode(self.querystring), self.fragment)
@@ -737,19 +758,22 @@ class URL(DiskItem):
 
         :return: A QueryString object.
         """
-        parsedData = None
         result = {}
+
         if self.has_params():
             try:
-                parsedData = urlparse.parse_qs(self.params,
-                                               keep_blank_values=True, strict_parsing=True)
+                parsed_data = urlparse.parse_qs(self.params,
+                                                keep_blank_values=True,
+                                                strict_parsing=True)
             except Exception:
                 if not ignore_exc:
-                    raise BaseFrameworkException('Strange things found when parsing '
-                                        'params string: ' + self.params)
+                    raise BaseFrameworkException('Strange things found when'
+                                                 ' parsing params string: %s' %
+                                                 self.params)
             else:
-                for k, v in parsedData.iteritems():
+                for k, v in parsed_data.iteritems():
                     result[k] = v[0]
+
         return result
 
     def __iter__(self):
@@ -829,8 +853,13 @@ class URL(DiskItem):
 
         return other + self.url_string
 
-    def copy(self):
-        return copy.deepcopy(self)
-
     def get_eq_attrs(self):
         return ['url_string']
+
+    def __getstate__(self):
+        self._cache = {}
+        return self.__dict__
+
+    def copy(self):
+        self._cache = {}
+        return copy.deepcopy(self)

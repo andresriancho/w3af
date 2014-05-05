@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import zlib
 
 from w3af.core.data.parsers.baseparser import BaseParser
+from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
 class SWFParser(BaseParser):
@@ -33,18 +34,29 @@ class SWFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, HTTPResponse):
-        BaseParser.__init__(self, HTTPResponse)
+    def __init__(self, http_response):
+        BaseParser.__init__(self, http_response)
 
-        swf = HTTPResponse.get_body()
-        if self._is_compressed(swf):
-            try:
-                swf = self._inflate(swf)
-            except ValueError:
-                # If the inflate fails... there is nothing else to do.
-                return
+        self._re_urls = set()
+        self._parse(http_response)
 
-        self._parse(swf)
+    @staticmethod
+    def can_parse(http_resp):
+        """
+        :return: True if the http_resp contains a SWF file.
+        """
+        if http_resp.content_type == 'application/x-shockwave-flash':
+
+            body = http_resp.get_body()
+
+            if len(body) > 5:
+                magic = body[:3]
+
+                # TODO: Add more checks here?
+                if magic in ('FWS', 'CWS'):
+                    return True
+
+        return False
 
     def _is_compressed(self, swf_document):
         """
@@ -72,17 +84,33 @@ class SWFParser(BaseParser):
             # more carefully?
             return uncompressed_data
 
-    def _parse(self, swf_body):
+    def _parse(self, http_response):
         """
         Parse the SWF bytecode.
         For now... don't decompile anything, just apply regular
         expressions to it.
 
-        :param swf_body: SWF bytecode string
+        :param http_response: The HTTP response to parse
         """
-        self._regex_url_parse(swf_body)
+        swf_body = http_response.get_body()
+
+        if self._is_compressed(swf_body):
+            try:
+                swf_body = self._inflate(swf_body)
+            except Exception:
+                # If the inflate fails... there is nothing else to do.
+                return
+
         self._0x83_getURL_parse(swf_body)
-    
+        self._re_extract(swf_body)
+
+    def _re_extract(self, swf_body):
+        """
+        Get the URLs using a regex
+        """
+        re_extract = ReExtract(swf_body, self._base_url, self._encoding)
+        self._re_urls.update(re_extract.get_references())
+
     def _0x83_getURL_parse(self, swf_body):
         """
         After reading a couple of SWF files with a hex editor it was possible
@@ -148,20 +176,7 @@ class SWFParser(BaseParser):
         """
         return [], list(self._re_urls)
 
-    def _return_empty_list(self, *args, **kwds):
-        """
-        This method is called (see below) when the caller invokes one of:
-            - get_forms
-            - get_comments
-            - get_meta_redir
-            - get_meta_tags
-            - get_references_of_tag
-
-        :return: Because we are a PDF document, we don't have the same things that
-        a nice HTML document has, so we simply return an empty list.
-        """
-        return []
-
-    get_references_of_tag = get_forms = get_comments = _return_empty_list
-    get_meta_redir = get_meta_tags = _return_empty_list
+    get_references_of_tag = get_forms = BaseParser._return_empty_list
+    get_comments = BaseParser._return_empty_list
+    get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
 

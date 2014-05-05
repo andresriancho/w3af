@@ -24,7 +24,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
 
@@ -82,7 +82,7 @@ class domain_dot(InfrastructurePlugin):
         :param resp: The HTTPResponse object that holds the content of
                          the response to analyze.
         """
-        if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
+        if fuzzy_not_equal(original_resp.get_body(), resp.get_body(), 0.7):
             response_ids = [original_resp.id, resp.id]
             desc = '[Manual verification required] The response body for a ' \
                   'request with a trailing dot in the domain, and the response ' \

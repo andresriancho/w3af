@@ -71,12 +71,13 @@ class BlacklistHandler(urllib2.BaseHandler):
         """
         if uri.uri2url() in self._non_targets:
             msg = 'The URL you are trying to reach (%s) was configured as a' \
-                  'non-target. NOT performing the HTTP request and returning an' \
-                  ' empty response.'
+                  ' non-target. NOT performing the HTTP request and returning'\
+                  ' an empty response.'
             om.out.debug(msg % uri)
             return True
 
         return False
+
 
 def http_response_to_httplib(nncr):
     header_string = cStringIO.StringIO(str(nncr.get_headers()))

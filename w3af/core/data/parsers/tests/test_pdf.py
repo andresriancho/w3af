@@ -58,5 +58,4 @@ class TestPDF(unittest.TestCase):
         parsed, re_refs = parser.get_references()
         
         self.assertEqual(parsed, [])
-        self.assertEqual(re_refs, [URL('http://moth/pdf/'),])
-        
+        self.assertEqual(re_refs, [URL('http://moth/pdf/')])
