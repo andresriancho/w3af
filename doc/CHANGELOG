@@ -1,3 +1,11 @@
+(05 May 2014)    Version 1.6.0.2
+================================
+Github tag: https://github.com/andresriancho/w3af/tree/1.6.0.2
+Github milestone: https://github.com/andresriancho/w3af/issues?milestone=10
+
+* Fixing Kali packaging bugs in our code
+* Minor performance enhancements and code cleanups
+
 (31 Mar 2014)    Version 1.6
 ============================
 Github tag: https://github.com/andresriancho/w3af/tree/1.6
