@@ -915,7 +915,7 @@ class php_eggs(InfrastructurePlugin):
             if matching_versions:
 
                 if len(matching_versions) > 1:
-                    desc = 'A PHP Easter Egg was found that matches several'\ 
+                    desc = 'A PHP Easter Egg was found that matches several'\
                            ' different versions of PHP. The PHP framework'\
                            ' version running on the remote server was'\
                            ' identified as one of the following:\n- %s'
