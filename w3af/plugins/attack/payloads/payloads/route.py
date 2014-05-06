@@ -1,4 +1,3 @@
-import re
 from w3af.plugins.attack.payloads.base_payload import Payload
 from w3af.core.ui.console.tables import table
 
@@ -8,21 +7,23 @@ class route(Payload):
     This payload shows the IP Routing Table.
     """
     def api_read(self):
-        result = {}
-        result['route'] = []
-        list = []
 
         def parse_route(net_route):
-            new = []
-            list = net_route.split(' ')
-            list[0] = list[0] + list[1]
-            list.remove(list[1])
-            list = [i for i in list if i != '']
-            for line in list:
+            data = net_route.split(' ')
+            if len(data) < 2:
+                return []
+
+            parsed_data = []
+            data[0] = data[0] + data[1]
+            data.remove(data[1])
+            data = [i for i in data if i != '']
+
+            for line in data:
                 tmp = line.split('\t')
                 tmp = [i for i in tmp if i != '']
-                new.append(tmp)
-            return new
+                parsed_data.append(tmp)
+
+            return parsed_data
 
         def dec_to_dotted_quad(n):
             d = 256 * 256 * 256
@@ -30,12 +31,14 @@ class route(Payload):
             while d > 0:
                 m, n = divmod(n, d)
                 q.append(str(m))
-                d = d / 256
+                d /= 256
             q.reverse()
             return '.'.join(q)
 
-        list = parse_route(self.shell.read('/proc/net/route'))
-        for line in list:
+        data = parse_route(self.shell.read('/proc/net/route'))
+        result = {'route': []}
+
+        for line in data:
             if len(line) > 7 and 'Iface' not in line:
                 result['route'].append({'Iface': line[0][1:],
                                         'Destination': str(dec_to_dotted_quad(int(line[1], 16))),
@@ -45,7 +48,7 @@ class route(Payload):
         return result
 
     def run_read(self):
-        api_result = self.api_read()
+        api_result = self.api_read
 
         if not api_result['route']:
             return 'Remote host routes could not be retrieved.'
