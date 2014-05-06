@@ -38,6 +38,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
 
+from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
@@ -115,6 +116,8 @@ class w3afCore(object):
         
         :return: None
         """
+        start_profiling(self)
+
         if not self._first_scan:
             self.cleanup()
         
@@ -407,6 +410,9 @@ class w3afCore(object):
             
             # No targets to be scanned.
             self.target.clear()
+
+            # Finish the profiling
+            stop_profiling(self)
 
     def exploit_phase_prerequisites(self):
         """

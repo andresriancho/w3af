@@ -68,10 +68,20 @@ class BaseOption(object):
         return str(value)
 
     def get_default_value_str(self):
-        return self._get_str(self._default_value)
+        return self._get_str(self.get_default_value())
 
     def get_value_str(self):
-        return self._get_str(self._value)
+        return self._get_str(self.get_value())
+
+    def get_value_for_profile(self):
+        """
+        Allows the option to be serialized differently when used as a profile
+        value.
+
+        Added when fixing:
+            https://github.com/andresriancho/w3af/issues/402
+        """
+        return self._get_str(self.get_value())
 
     def get_type(self):
         return self._type

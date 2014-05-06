@@ -31,7 +31,6 @@ class in_multi_in(object):
 
     def __init__(self, str_list):
         """
-
         :param str_list: A list with all the strings that we want
         to match against one or more strings using the "query" function.
 
@@ -39,7 +38,6 @@ class in_multi_in(object):
         [ (str_1, obj1) , (str_2, obj2) ... , (str_N, objN)]. In the first
         case, if a match is found this class will return [ str_N, ]
         in the second case we'll return [ [str_N, objN], ]
-
         """
         self._in = []
         self._assoc_obj = {}
@@ -60,8 +58,8 @@ class in_multi_in(object):
 
     def query(self, target_str):
         """
-        Run through all the "in" statements on top of target_str and return a list
-        according to the class __init__ documentation.
+        Run through all the "in" statements on top of target_str and return a
+        list according to the class __init__ documentation.
 
         :param target_str: The target string where the in statements are
         going to be applied.

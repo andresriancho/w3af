@@ -34,6 +34,7 @@ from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af.core.controllers.misc.decorators import memoized
 
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
@@ -42,10 +43,12 @@ LF = '\n'
 CRLF = CR + LF
 SP = ' '
 
+CONTENT_TYPE = 'content-type'
+
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
 ANY_TAG_MATCH = re.compile('(<.*?>)')
-    
+
 
 class HTTPResponse(object):
 
@@ -366,7 +369,7 @@ class HTTPResponse(object):
 
         find_word = lambda w: content_type.find(w) != -1
 
-        content_type_hvalue, _ = self._headers.iget('content-type', None)
+        content_type_hvalue, _ = self._headers.iget(CONTENT_TYPE, None)
 
         # we need exactly content type but not charset
         if content_type_hvalue is not None:
@@ -404,7 +407,8 @@ class HTTPResponse(object):
 
 
     headers = property(get_headers, set_headers)
-    
+
+    @memoized
     def get_lower_case_headers(self):
         """
         If the original headers were:
@@ -414,8 +418,8 @@ class HTTPResponse(object):
 
         The only thing that changes is the header name.
         """
-        lcase_headers = dict(
-            (k.lower(), v) for k, v in self.headers.iteritems())
+        regular_headers = self.headers.iteritems()
+        lcase_headers = dict((k.lower(), v) for k, v in regular_headers)
         return Headers(lcase_headers.items())
 
     def set_url(self, url):
@@ -507,7 +511,7 @@ class HTTPResponse(object):
         used by FF:
 
             1) First try to find a charset using the following search criteria:
-                a) Look in the 'content-type' HTTP header. Example:
+                a) Look in the CONTENT_TYPE HTTP header. Example:
                     content-type: text/html; charset=iso-8859-1
                 b) Look in the 'meta' HTML header. Example:
                     <meta .* content="text/html; charset=utf-8" />
@@ -521,7 +525,8 @@ class HTTPResponse(object):
 
         Note: If the body is already a unicode string return it as it is.
         """
-        lcase_headers = self.get_lower_case_headers()
+        headers = self.get_headers()
+        content_type, _ = headers.iget(CONTENT_TYPE, None)
         charset = self._charset
         rawbody = self._raw_body
 
@@ -531,12 +536,12 @@ class HTTPResponse(object):
             assert charset is not None, ("HTTPResponse objects containing "
                                          "unicode body must have an associated "
                                          "charset")
-        elif 'content-type' not in lcase_headers:
+        elif content_type is None:
             _body = rawbody
             charset = DEFAULT_CHARSET
 
             if len(_body):
-                msg = "The remote web server failed to send the 'content-type'"\
+                msg = "The remote web server failed to send the CONTENT_TYPE"\
                       " header in HTTP response with id %s" % self.id
                 om.out.debug(msg)
 
@@ -547,37 +552,32 @@ class HTTPResponse(object):
         else:
             # Figure out charset to work with
             if not charset:
-                charset = self.guess_charset(rawbody, lcase_headers)
+                charset = self.guess_charset(rawbody, headers)
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(
-                    rawbody,
-                    charset,
-                    errors=ESCAPED_CHAR,
-                    on_error_guess=False
-                )
+                _body = smart_unicode(rawbody, charset,
+                                      errors=ESCAPED_CHAR,
+                                      on_error_guess=False)
             except LookupError:
                 # Warn about a buggy charset
                 msg = ('Charset LookupError: unknown charset: %s; '
                        'ignored and set to default: %s' %
                       (charset, self._charset))
                 om.out.debug(msg)
+
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(
-                    rawbody,
-                    charset,
-                    errors=ESCAPED_CHAR,
-                    on_error_guess=False
-                )
+                _body = smart_unicode(rawbody, charset, errors=ESCAPED_CHAR,
+                                      on_error_guess=False)
 
         return _body, charset
 
     def guess_charset(self, rawbody, headers):
         # Start with the headers
-        charset_mo = CHARSET_EXTRACT_RE.search(headers['content-type'], re.I)
+        content_type, _ = headers.iget(CONTENT_TYPE, None)
+        charset_mo = CHARSET_EXTRACT_RE.search(content_type, re.I)
         if charset_mo:
             # Seems like the response's headers contain a charset
             charset = charset_mo.groups()[0].lower().strip()
@@ -674,4 +674,3 @@ class HTTPResponse(object):
     def __setstate__(self, state):
         self.__dict__ = state
         self._body_lock = threading.RLock()
-        

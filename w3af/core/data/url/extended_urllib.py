@@ -37,12 +37,12 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
 
-from w3af.core.controllers.profiling.memory_usage import dump_memory_usage
-from w3af.core.controllers.exceptions import (ScanMustStopException, BaseFrameworkException,
-                                         ScanMustStopByUnknownReasonExc,
-                                         ScanMustStopByKnownReasonExc,
-                                         ScanMustStopByUserRequest,
-                                         ScanMustStopOnUrlError)
+from w3af.core.controllers.exceptions import (ScanMustStopException,
+                                              BaseFrameworkException,
+                                              ScanMustStopByUnknownReasonExc,
+                                              ScanMustStopByKnownReasonExc,
+                                              ScanMustStopByUserRequest,
+                                              ScanMustStopOnUrlError)
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.factory import create_fuzzable_request_from_parts
@@ -65,7 +65,6 @@ class ExtendedUrllib(object):
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
-        self._memory_usage_counter = 0
 
         # For error handling
         self._last_request_failed = False
@@ -104,11 +103,6 @@ class ExtendedUrllib(object):
             - Memory debugging features
         """
         self._sleep_if_paused_die_if_stopped()
-
-        self._memory_usage_counter += 1
-        if self._memory_usage_counter == 150:
-            dump_memory_usage()
-            self._memory_usage_counter = 0
 
     def _sleep_if_paused_die_if_stopped(self):
         """
@@ -439,7 +433,6 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         # This is the place where I hook the pause and stop feature
-        # And some other things like memory usage debugging.
         self._before_send_hook()
 
         # Sanitize the URL

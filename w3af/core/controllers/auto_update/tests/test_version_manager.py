@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import gc
 import unittest
 import datetime
 
@@ -204,3 +205,8 @@ class TestVersionMgr(unittest.TestCase):
             self.assertEqual(on_update_mock.call_count, 1)
         finally:
             git_client.pull()
+
+    def test_no_cycle_refs(self):
+    	vmgr = VersionMgr(W3AF_LOCAL_PATH, MagicMock(return_value=None))
+    	self.assertEqual(len(gc.get_referrers(vmgr)), 1)
+    	

@@ -24,7 +24,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce
-from w3af.core.controllers.misc.levenshtein import relative_distance_ge
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.url import URL
 
@@ -73,7 +73,7 @@ class fingerprint_os(InfrastructurePlugin):
 
             original_response = self._uri_opener.GET(freq_url)
 
-            if relative_distance_ge(original_response.get_body(),
+            if fuzzy_equal(original_response.get_body(),
                                     windows_response.get_body(), 0.98):
                 desc = 'Fingerprinted this host as a Microsoft Windows system.'
                 os_str = 'windows'

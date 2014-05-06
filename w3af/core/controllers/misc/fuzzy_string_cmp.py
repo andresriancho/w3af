@@ -1,5 +1,5 @@
 """
-levenshtein.py
+fuzzy_string_cmp.py
 
 Copyright 2008 Andres Riancho
 
@@ -79,7 +79,7 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
                     return False
 
 
-def relative_distance_ge(a_str, b_str, threshold=0.6):
+def fuzzy_equal(a_str, b_str, threshold=0.6):
     """
     Indicates if the 'similarity' index between strings
     is *greater equal* than 'threshold'. See 'relative_distance_boolean'.
@@ -87,7 +87,7 @@ def relative_distance_ge(a_str, b_str, threshold=0.6):
     return relative_distance_boolean(a_str, b_str, threshold)
 
 
-def relative_distance_lt(a_str, b_str, threshold=0.6):
+def fuzzy_not_equal(a_str, b_str, threshold=0.6):
     """
     Indicates if the 'similarity' index between strings
     is *less than* 'threshold'
@@ -97,14 +97,26 @@ def relative_distance_lt(a_str, b_str, threshold=0.6):
 
 def relative_distance(a_str, b_str):
     """
-    Measures the "similarity" of the strings. A return value value over 0.6
-    means the strings are close matches.
+    Measures the "similarity" of the strings.
+
+    Depends on the algorithm we finally implement, but usually a return value
+    over 0.6 means the strings are close matches.
 
     :param a_str: A string object
     :param b_str: A string object
     :return: A float with the distance
     """
-    return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+    set_a = set(a_str.split(' '))
+    set_b = set(b_str.split(' '))
+
+    if min(len(set_a), len(set_b)) in (0, 1):
+        #
+        #   This is a rare case, where the http response body is one long
+        #   non-space separated string.
+        #
+        return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+
+    return len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
 
 
 def _generate_upper_bounds():
@@ -149,7 +161,7 @@ if __name__ == "__main__":
     # Uncomment next function call to generate 'upper_bounds.py' module
     #_generate_upper_bounds()
 
-    # This tests should be reallocated in a test module.
+    # These tests should be reallocated in a test module.
     """import time
     import urllib2
 

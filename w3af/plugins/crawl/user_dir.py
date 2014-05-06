@@ -36,7 +36,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 
 
 class user_dir(CrawlPlugin):
@@ -111,7 +111,7 @@ class user_dir(CrawlPlugin):
         path = mutated_url.get_path()
         response_body = response.get_body().replace(path, '')
 
-        if relative_distance_lt(response_body, self._non_existent, 0.7):
+        if fuzzy_not_equal(response_body, self._non_existent, 0.7):
 
             # Avoid duplicates
             if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:

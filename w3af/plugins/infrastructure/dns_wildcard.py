@@ -28,7 +28,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.misc.levenshtein import relative_distance_lt
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
 
@@ -93,7 +93,7 @@ class dns_wildcard(InfrastructurePlugin):
                   ' dns_wildcard plugin: "%s"' % w3
             om.out.debug(msg)
         else:
-            if relative_distance_lt(modified_response.get_body(),
+            if fuzzy_not_equal(modified_response.get_body(),
                                     original_response.get_body(), 0.35):
 
                 desc = 'The contents of %s and %s differ.' 
@@ -120,7 +120,7 @@ class dns_wildcard(InfrastructurePlugin):
         except BaseFrameworkException:
             return
         else:
-            if relative_distance_lt(modified_response.get_body(),
+            if fuzzy_not_equal(modified_response.get_body(),
                                     original_response.get_body(), 0.35):
                 desc = 'The target site has NO DNS wildcard, and the contents' \
                        ' of "%s" differ from the contents of "%s".'

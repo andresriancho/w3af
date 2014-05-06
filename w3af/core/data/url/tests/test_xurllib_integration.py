@@ -76,7 +76,18 @@ class TestXUrllibIntegration(unittest.TestCase):
         content_encoding, _ = headers.iget('content-encoding', '')
         test_res = 'gzip' in content_encoding or \
                    'compress' in content_encoding
+
         self.assertTrue(test_res, content_encoding)
+        self.assertIn('View HTTP response headers.', res.get_body())
+
+    def test_deflate(self):
+        url = URL(get_moth_http('/core/deflate/deflate.html'))
+        res = self.uri_opener.GET(url, cache=False)
+        headers = res.get_headers()
+        content_encoding, _ = headers.iget('content-encoding', '')
+
+        self.assertIn('deflate', content_encoding)
+        self.assertIn('View HTTP response headers.', res.get_body())
 
     def test_get_cookies(self):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)

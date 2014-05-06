@@ -38,17 +38,6 @@ def verify_python_version():
         sys.exit(1)
 
 
-def mem_test(when):
-    from w3af.core.controllers.profiling.ps_mem import get_memory_usage, human
-    sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True)
-    cmd = sorted_cmds[0]
-    msg = "%8sB Private + %8sB Shared = %8sB" % (human(cmd[1] - shareds[cmd[0]]),
-                                                 human(shareds[cmd[
-                                                               0]]), human(cmd[1])
-                                                 )
-    print 'Total memory usage %s: %s' % (when, msg)
-
-
 def running_in_virtualenv():
     if hasattr(sys, 'real_prefix'):
         return True

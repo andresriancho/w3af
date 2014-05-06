@@ -116,8 +116,8 @@ def is_known_encoding(encoding):
     True
     """
     try:
-        ''.decode(encoding)
+        codecs.lookup(encoding)
+        return True
     except LookupError:
         return False
-    else:
-        return True
+

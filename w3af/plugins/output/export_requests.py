@@ -58,6 +58,12 @@ class export_requests(OutputPlugin):
 
         try:
             out_file = open(filename, 'w')
+        except IOError, ioe:
+            msg = 'Failed to open the output file for writing: "%s"'
+            om.out.error(msg % ioe)
+            return
+
+        try:
             out_file.write('HTTP-METHOD,URI,POSTDATA\n')
 
             for fr in fuzzable_request_set:
@@ -65,12 +71,12 @@ class export_requests(OutputPlugin):
                 if not isinstance(fr, WebServiceRequest):
                     out_file.write(fr.export() + '\n')
 
-            out_file.close()
         except Exception, e:
             msg = 'An exception was raised while trying to export fuzzable'\
                   ' requests to the output file: "%s".' % e
             om.out.error(msg)
-            print msg
+        finally:
+            out_file.close()
 
     def set_options(self, option_list):
         """
