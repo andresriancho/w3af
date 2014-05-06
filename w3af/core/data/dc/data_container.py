@@ -31,6 +31,9 @@ from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 
 
+ERR_MSG = 'Not supported init_val, expected format is [(u"b", [u"2", u"3"])]'
+
+
 class DataContainer(OrderedDict, DiskItem):
     """
     This class represents a data container. It's basically the way
@@ -53,12 +56,17 @@ class DataContainer(OrderedDict, DiskItem):
                 try:
                     key, val = item
                 except TypeError:
-                    raise TypeError('key, val = item')
+                    raise TypeError(ERR_MSG)
 
                 if key in self:
-                    msg = 'Not supported init_val, the way of using repeated' \
-                          ' parameter names is [(u"b", [u"2", u"3"])]'
-                    TypeError(msg)
+                    raise TypeError(ERR_MSG)
+
+                if not isinstance(val, (list, tuple)):
+                    raise TypeError(ERR_MSG)
+
+                for sub_val in val:
+                    if not isinstance(sub_val, basestring):
+                        raise TypeError(ERR_MSG)
 
                 self[key] = val
 
