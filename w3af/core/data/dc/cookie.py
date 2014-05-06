@@ -24,6 +24,8 @@ import re
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.data_container import DataContainer
 
+KEY_VALUE_RE = re.compile('(.*?)=(.*?);')
+
 
 class Cookie(DataContainer):
     """
@@ -35,7 +37,7 @@ class Cookie(DataContainer):
 
         super(Cookie, self).__init__(encoding=encoding)
 
-        for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';'):
+        for k, v in KEY_VALUE_RE.findall(cookie_str + ';'):
             k = k.strip()
             v = v.strip()
 
