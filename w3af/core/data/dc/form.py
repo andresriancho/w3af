@@ -131,8 +131,8 @@ class Form(DataContainer):
         if name:
             self._files.append(name)
             self._set_var(name, '')
-            # TODO: This does not work if there are different parameters in a form
-            # with the same name, and different types
+            # TODO: This does not work if there are different parameters in a
+            # form with the same name, and different types
             self._types[name] = self.INPUT_TYPE_FILE
 
     def __str__(self):
