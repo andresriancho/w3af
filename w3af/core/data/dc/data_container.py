@@ -32,6 +32,7 @@ from w3af.core.controllers.misc.ordereddict import OrderedDict
 
 
 ERR_MSG = 'Not supported init_val, expected format is [(u"b", [u"2", u"3"])]'
+ERR_MSG_NO_REP = 'Not supported init_val, expected format is [("b", "2")]'
 
 
 class DataContainer(OrderedDict, DiskItem):
@@ -82,19 +83,6 @@ class DataContainer(OrderedDict, DiskItem):
         """
         Return string representation.
 
-        >>> str(DataContainer([(u'a','1'), (u'b', ['2','3'])]))
-        'a=1&b=2&b=3'
-        >>> str(DataContainer([(u'aaa', None)]))
-        'aaa='
-        >>> str(DataContainer([(u'aaa', '')]))
-        'aaa='
-        >>> str(DataContainer([(u'aaa', (None, ''))]))
-        'aaa=&aaa='
-        >>> import urllib
-        >>> dc = DataContainer([(u'a','1'), (u'u', u'Ú-ú-Ü-ü')], 'latin1')
-        >>> urllib.unquote(str(dc)).decode('latin-1') == u'a=1&u=Ú-ú-Ü-ü'
-        True
-
         :return: string representation of the DataContainer Object.
         """
         return enc_dec.urlencode(self, encoding=self.encoding)
@@ -102,13 +90,6 @@ class DataContainer(OrderedDict, DiskItem):
     def __unicode__(self):
         """
         Return unicode representation
-
-        >>> unicode(DataContainer([(u'a', u'1'), (u'b', [u'2', u'3'])]))
-        u'a=1&b=2&b=3'
-        >>> unicode(DataContainer([(u'aaa', None)]))
-        u'aaa='
-        >>> unicode(DataContainer([(u'aaa', u'')]))
-        u'aaa='
         """
         return self._to_str_with_separators(u'=', u'&')
 
@@ -123,10 +104,11 @@ class DataContainer(OrderedDict, DiskItem):
 
             for ele in v:
                 if not ele:
-                    toapp = k + key_val_sep
+                    to_app = k + key_val_sep
                 else:
-                    toapp = k + key_val_sep + ele
-                lst.append(toapp)
+                    to_app = k + key_val_sep + ele
+                lst.append(to_app)
+
         return pair_sep.join(lst)
     
     @property
@@ -135,3 +117,40 @@ class DataContainer(OrderedDict, DiskItem):
     
     def get_eq_attrs(self):
         return ['_allitems']
+
+
+class NonRepeatDataContainer(DataContainer):
+    """
+    This class represents a data container for data which doesn't allow
+    repeated parameter names.
+
+    The DataContainer supports things like a=1&a=2 for query strings, but for
+    example HTTP headers can't be repeated (by RFC) and thus we don't
+    need any repeated parameter names.
+
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    """
+    def __init__(self, init_val=(), encoding=UTF8):
+        super(DataContainer, self).__init__()
+
+        self.encoding = encoding
+
+        if isinstance(init_val, NonRepeatDataContainer):
+            self.update(init_val)
+        elif isinstance(init_val, dict):
+            # we lose compatibility with other ordered dict types this way
+            raise TypeError('Undefined order, cannot get items from dict')
+        else:
+            for item in init_val:
+                try:
+                    key, val = item
+                except TypeError:
+                    raise TypeError(ERR_MSG_NO_REP)
+
+                if key in self:
+                    raise TypeError(ERR_MSG_NO_REP)
+
+                if not isinstance(val, basestring):
+                    raise TypeError(ERR_MSG_NO_REP)
+
+                self[key] = val

@@ -55,10 +55,8 @@ class TestDataContainer(unittest.TestCase):
         self.assertEquals(u'a=1&u=Ú-ú-Ü-ü', decoded_str)
         
     def test_unicode(self):
-        dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
+        dc = DataContainer([(u'a',['1']), (u'b', ['2', u'3'])])
         udc = unicode(dc)
         
         self.assertEqual(udc, u'a=1&b=2&b=3')
         self.assertIsInstance(udc, unicode)
-        
-        

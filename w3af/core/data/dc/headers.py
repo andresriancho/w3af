@@ -19,14 +19,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import string
-
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.data_container import NonRepeatDataContainer
 from w3af.core.data.misc.encoding import smart_unicode
 
 
-class Headers(DataContainer):
+class Headers(NonRepeatDataContainer):
     """
     This class represents the set of HTTP request headers.
 
@@ -60,7 +58,7 @@ class Headers(DataContainer):
         return cls(res)
  
     def clean_values(self, init_val):
-        if isinstance(init_val, DataContainer)\
+        if isinstance(init_val, NonRepeatDataContainer)\
         or isinstance(init_val, dict):
             return init_val
 

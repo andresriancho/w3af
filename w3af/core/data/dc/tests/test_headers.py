@@ -68,11 +68,8 @@ class TestHeaders(unittest.TestCase):
         # smart_unicode which might change in the future
         self.assertIn('Hola: \x00\x01\x02', str(headers))
         
-    def test_repeated_overwrite(self):
-        headers = Headers([('a', 'b'), ('a', '3')])
-
-        self.assertIn('a', headers)
-        self.assertEqual(headers['a'], '3')
+    def test_repeated_raises(self):
+        self.assertRaises(TypeError, Headers, [('a', 'b'), ('a', '3')])
 
     def test_special_chars(self):
         headers = Headers([('á', 'ç')])
