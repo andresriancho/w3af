@@ -415,14 +415,15 @@ class OpenerSettings(Configurable):
     def get_max_retrys(self):
         return cfg.get('max_http_retries')
 
-    def set_url_parameter(self, urlParam):
+    def set_url_parameter(self, url_param):
         # Do some input cleanup/validation
-        urlParam = urlParam.replace("'", "")
-        urlParam = urlParam.replace("\"", "")
-        urlParam = urlParam.lstrip().rstrip()
-        if urlParam != '':
-            cfg.save('url_parameter', urlParam)
-            self._url_parameterHandler = URLParameterHandler(urlParam)
+        url_param = url_param.replace("'", "")
+        url_param = url_param.replace("\"", "")
+        url_param = url_param.lstrip().rstrip()
+
+        if url_param != '':
+            cfg.save('url_parameter', url_param)
+            self._url_parameterHandler = URLParameterHandler(url_param)
 
     def get_url_parameter(self):
         return cfg.get('url_parameter')
