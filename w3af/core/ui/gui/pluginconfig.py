@@ -594,9 +594,11 @@ class PluginConfigBody(gtk.VBox):
 
         # entry
         histfile = os.path.join(get_home_dir(), "urlhistory.pkl")
-        self.target = entries.AdvisedEntry(_("Insert the target URL here"),
-                                           mainwin.scanok.change, histfile,
-                                           alertmodif=mainwin.profile_changed)
+        hint = _("Insert the target URL here")
+        self.target = entries.ValidatedAdvisedEntry(hint,
+                                                    mainwin.scanok.change,
+                                                    histfile,
+                                                    alertmodif=mainwin.profile_changed)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insert_url)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
@@ -611,9 +613,9 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
 
         # advanced config
-        advbut = entries.SemiStockButton(
-            "", gtk.STOCK_PREFERENCES, _("Advanced Target URL configuration"))
-        advbut.connect("clicked", self._advancedTarget)
+        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES,
+                                         _("Advanced Target URL configuration"))
+        advbut.connect("clicked", self._advanced_target)
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
         targetbox.show_all()
         self.pack_start(targetbox, expand=False, fill=False)
@@ -668,11 +670,28 @@ class PluginConfigBody(gtk.VBox):
         pan.show()
         return pan
 
-    def _advancedTarget(self, widg):
-        """Builds the advanced target widget."""
+    def _advanced_target(self, widg):
+        """
+        Builds the advanced target widget.
+
+        Before building the widget we verify that the target set in the main
+        window is a valid target, this allows us to avoid some issues like
+
+        https://github.com/andresriancho/w3af/issues/2410
+        """
+        url = self.target.get_text()
+
+        if not self.target.validate():
+            msg = 'Invalid target URL: "%s", correct this value to open the'\
+                  ' advanced target configuration.'
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
+                                    gtk.BUTTONS_OK, msg % url)
+            dlg.run()
+            dlg.destroy()
+            return
+
         # overwrite the plugin info with the target url
         configurable_target = self.w3af.target
-        url = self.target.get_text()
 
         # open config
         confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"),
@@ -688,7 +707,9 @@ class PluginConfigBody(gtk.VBox):
 
         :return: all the plugins that are active.
         """
-        return self.std_plugin_tree.get_activated_plugins() + self.out_plugin_tree.get_activated_plugins()
+        plugins = self.std_plugin_tree.get_activated_plugins()
+        output_plugins = self.out_plugin_tree.get_activated_plugins()
+        return plugins + output_plugins
 
     def edit_selected_plugin(self):
         """Edits the selected plugin."""
