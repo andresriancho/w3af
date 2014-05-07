@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-formFiller.py
+form_filler.py
 
 Copyright 2006 Andres Riancho
 
@@ -20,20 +20,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.misc.decorators import memoized
 
-parameter_name_knowledge = {
-    'John8212': ['username', 'user', 'uname', 'usuario', 'benutzername', 'benutzer',
-                 'nickname', 'logname', 'ident'],
+
+PARAM_NAME_KNOWLEDGE = {
+    'John8212': ['username', 'user', 'uname', 'usuario', 'benutzername',
+                 'benutzer', 'nickname', 'logname', 'ident'],
     'John': ['name', 'nombre', 'nome', 'name', 'naam'],
-    'Smith': ['lastname', 'surname', 'apellido', 'sobrenome', 'vorname', 'nachname'],
+    'Smith': ['lastname', 'surname', 'apellido', 'sobrenome', 'vorname',
+              'nachname'],
 
     'FrAmE30.': ['pass', 'word', 'pswd', 'pwd', 'auth', 'password', 'passwort',
                  u'contraseña', 'senha', 'key', 'hash', 'pword', 'passe'],
 
-    'w3af@email.com': ['mail', 'email', 'e-mail', 'correo', 'correio', 'to', 'cc', 'bcc'],
+    'w3af@email.com': ['mail', 'email', 'e-mail', 'correo', 'correio', 'to',
+                       'cc', 'bcc'],
     'http://www.w3af.org/': ['link', 'enlace', 'target', 'destino', 'website',
                              'web', 'url', 'page', 'homepage'],
 
@@ -82,13 +85,14 @@ parameter_name_knowledge = {
     '127.0.0.1': ['ip', 'ipaddress', 'host', 'server', 'servidor'],
     '255.255.255.0': ['netmask', 'mask', 'mascara'],
     'www.w3af.org': ['domain', 'dominio']
-
 }
 
 
 def sortfunc(x_obj, y_obj):
     """
-    A simple sort function to sort the values of a list using the second item of each item.
+    A simple sort function to sort the values of a list using the second item
+    of each item.
+
     :return: The answer to: which one is greater?
     """
     return cmp(y_obj[1], x_obj[1])
@@ -107,6 +111,7 @@ def get_match_rate(variable_name, variable_name_db):
     return match_rate
 
 
+@memoized
 def smart_fill(variable_name):
     """
     This method returns a "smart" option for a variable name inside a form. For
@@ -120,7 +125,7 @@ def smart_fill(variable_name):
 
     possible_results = []
 
-    for filled_value, variable_name_list in parameter_name_knowledge.items():
+    for filled_value, variable_name_list in PARAM_NAME_KNOWLEDGE.items():
 
         for variable_name_db in variable_name_list:
 

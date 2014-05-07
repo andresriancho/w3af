@@ -41,5 +41,14 @@ class TestSmartFill(unittest.TestCase):
     def test_ip_case_insensitive(self):
         self.assertEquals(smart_fill('IP'), '127.0.0.1')
 
+    def test_ip_memoized(self):
+        result_1 = smart_fill('ip')
+        result_2 = smart_fill('ip')
+
+        self.assertEquals(result_1, '127.0.0.1')
+        self.assertIs(result_1, result_2)
+
+        self.assertIn(('ip',), smart_fill.cache.d)
+
     def test_default(self):
         self.assertEquals(smart_fill('foobar'), '56')
