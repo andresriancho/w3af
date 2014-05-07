@@ -23,7 +23,7 @@ import copy
 
 from w3af.core.controllers.misc.io import NamedStringIO
 
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.data_container import DataContainer, NonRepeatDataContainer
 from w3af.core.data.dc.form import Form
 from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
@@ -53,7 +53,7 @@ class Mutant(DiskItem):
         return self._mutant_dc
 
     def set_mutant_dc(self, dc):
-        if not isinstance(dc, DataContainer):
+        if not isinstance(dc, (DataContainer, NonRepeatDataContainer)):
             raise TypeError('Argument must be a DataContainer instance.')
         self._mutant_dc = dc
 

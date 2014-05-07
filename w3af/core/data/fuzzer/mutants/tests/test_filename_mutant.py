@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.data_container import NonRepeatDataContainer
 
 
 class TestFileNameMutant(unittest.TestCase):
@@ -34,7 +34,7 @@ class TestFileNameMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
 
     def test_basics(self):
-        divided_path = DataContainer()
+        divided_path = NonRepeatDataContainer()
         divided_path['start'] = ''
         divided_path['modified_part'] = 'ping!'
         divided_path['end'] = '.htm'

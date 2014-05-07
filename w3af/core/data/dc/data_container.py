@@ -35,42 +35,7 @@ ERR_MSG = 'Not supported init_val, expected format is [(u"b", [u"2", u"3"])]'
 ERR_MSG_NO_REP = 'Not supported init_val, expected format is [("b", "2")]'
 
 
-class DataContainer(OrderedDict, DiskItem):
-    """
-    This class represents a data container. It's basically the way
-    query-string and post-data are stored when using url-encoding.
-
-    :author: Andres Riancho (andres.riancho@gmail.com)
-    """
-    def __init__(self, init_val=(), encoding=UTF8):
-        super(DataContainer, self).__init__()
-
-        self.encoding = encoding
-
-        if isinstance(init_val, DataContainer):
-            self.update(init_val)
-        elif isinstance(init_val, dict):
-            # we lose compatibility with other ordered dict types this way
-            raise TypeError('Undefined order, cannot get items from dict')
-        else:
-            for item in init_val:
-                try:
-                    key, val = item
-                except TypeError:
-                    raise TypeError(ERR_MSG)
-
-                if key in self:
-                    raise TypeError(ERR_MSG)
-
-                if not isinstance(val, (list, tuple)):
-                    raise TypeError(ERR_MSG)
-
-                for sub_val in val:
-                    if not isinstance(sub_val, basestring):
-                        raise TypeError(ERR_MSG)
-
-                self[key] = val
-
+class DataContainerMixin(OrderedDict, DiskItem):
     def copy(self):
         """
         This method returns a copy of the DataContainer Object.
@@ -110,16 +75,53 @@ class DataContainer(OrderedDict, DiskItem):
                 lst.append(to_app)
 
         return pair_sep.join(lst)
-    
+
     @property
-    def _allitems(self):
+    def _all_items(self):
         return ''.join(str((k, v)) for k, v in self.iteritems())
-    
+
     def get_eq_attrs(self):
-        return ['_allitems']
+        return ['_all_items']
 
 
-class NonRepeatDataContainer(DataContainer):
+class DataContainer(DataContainerMixin):
+    """
+    This class represents a data container. It's basically the way
+    query-string and post-data are stored when using url-encoding.
+
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    """
+    def __init__(self, init_val=(), encoding=UTF8):
+        super(DataContainer, self).__init__()
+
+        self.encoding = encoding
+
+        if isinstance(init_val, DataContainer):
+            self.update(init_val)
+        elif isinstance(init_val, dict):
+            # we lose compatibility with other ordered dict types this way
+            raise TypeError('Undefined order, cannot get items from dict')
+        else:
+            for item in init_val:
+                try:
+                    key, val = item
+                except TypeError:
+                    raise TypeError(ERR_MSG)
+
+                if key in self:
+                    raise TypeError(ERR_MSG)
+
+                if not isinstance(val, (list, tuple)):
+                    raise TypeError(ERR_MSG)
+
+                for sub_val in val:
+                    if not isinstance(sub_val, basestring):
+                        raise TypeError(ERR_MSG)
+
+                self[key] = val
+
+
+class NonRepeatDataContainer(DataContainerMixin):
     """
     This class represents a data container for data which doesn't allow
     repeated parameter names.
@@ -131,7 +133,7 @@ class NonRepeatDataContainer(DataContainer):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self, init_val=(), encoding=UTF8):
-        super(DataContainer, self).__init__()
+        super(NonRepeatDataContainer, self).__init__()
 
         self.encoding = encoding
 
