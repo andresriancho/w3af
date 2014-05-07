@@ -44,6 +44,7 @@ CRLF = CR + LF
 SP = ' '
 
 CONTENT_TYPE = 'content-type'
+STATUS_LINE = 'HTTP/1.1 %s %s' + CRLF
 
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
@@ -491,8 +492,10 @@ class HTTPResponse(object):
         return self._info
 
     def get_status_line(self):
-        """Return status-line of response."""
-        return 'HTTP/1.1' + SP + str(self._code) + SP + self._msg + CRLF
+        """
+        Return status-line of response.
+        """
+        return STATUS_LINE % (self._code, self._msg)
 
     def get_msg(self):
         return self._msg
@@ -581,7 +584,7 @@ class HTTPResponse(object):
                 charset = charset_mo.groups()[0].lower().strip()
             else:
                 charset = DEFAULT_CHARSET
-        
+
         return charset
 
     @property
