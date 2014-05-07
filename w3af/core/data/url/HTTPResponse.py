@@ -96,7 +96,6 @@ class HTTPResponse(object):
         self._raw_body = read
         self._content_type = None
         self._dom = None
-        self._clear_text_body = None
         # A unique id identifier for the response
         self.id = _id
         # From cache defaults to False
@@ -127,8 +126,8 @@ class HTTPResponse(object):
     @classmethod
     def from_httplib_resp(cls, httplibresp, original_url=None):
         """
-        Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
-        instance
+        Factory function. Build a HTTPResponse object from a
+        httplib.HTTPResponse instance
     
         :param httplibresp: httplib.HTTPResponse instance
         :param original_url: Optional 'url_object' instance.
@@ -138,14 +137,14 @@ class HTTPResponse(object):
         resp = httplibresp
         code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
         hdrs = Headers(hdrs.items())
-    
+
         if original_url:
             url_inst = URL(resp.geturl(), original_url.encoding)
             url_inst = url_inst.url_decode()
         else:
             url_inst = original_url = URL(resp.geturl())
-    
-        
+
+
         if isinstance(resp, urllib2.HTTPError):
             # This is possible because in errors.py I do:
             # err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
@@ -214,7 +213,6 @@ class HTTPResponse(object):
                self._uri == other._uri
 
     def __repr__(self):
-
         vals = {
             'code': self.get_code(),
             'url': str(self.get_url()),
@@ -255,26 +253,21 @@ class HTTPResponse(object):
             
         self._body = None
         self._raw_body = body
-    
+
     body = property(get_body, set_body)
 
+    @memoized
     def get_clear_text_body(self):
         """
         :return: A clear text representation of the HTTP response body.
         """
-        clear_text_body = self._clear_text_body
-
-        if clear_text_body is None:
+        # Calculate the clear text body
+        dom = self.get_dom()
+        if dom is not None:
+            clear_text_body = ''.join(dom.itertext())
+        else:
+            clear_text_body = ANY_TAG_MATCH.sub('', self.get_body())
             
-            # Calculate the clear text body
-            dom = self.get_dom()
-            if dom is not None:
-                clear_text_body = ''.join(dom.itertext())
-            else:
-                clear_text_body = ANY_TAG_MATCH.sub('', self.get_body())
-            
-            self._clear_text_body = clear_text_body
-
         return clear_text_body
 
     def set_dom(self, dom_inst):
