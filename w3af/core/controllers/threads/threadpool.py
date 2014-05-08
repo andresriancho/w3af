@@ -63,7 +63,8 @@ class DaemonProcess(Process):
 
 class Pool(ThreadPool):
 
-    def __init__(self, processes=None, initializer=None, initargs=(), worker_names=None):
+    def __init__(self, processes=None, initializer=None, initargs=(),
+                 worker_names=None):
         self.Process = partial(DaemonProcess, name=worker_names)
         ThreadPool.__init__(self, processes, initializer, initargs)
     
