@@ -15,7 +15,7 @@ lxml==2.3.2
 msgpack-python==0.2.4
 nltk==2.0.4
 pdfminer==20110515
-phply==dev
+-e git+https://github.com/andresriancho/phply.git@435f523918145437e22d43712abcb4956e106178#egg=phply-master
 ply==3.4
 pyOpenSSL==0.13.1
 pybloomfiltermmap==0.3.11
