@@ -53,7 +53,7 @@ Installation in Kali
 
 .. code-block:: console
 
-    cd ~
+	cd ~
     apt-get update
     apt-get install -y python-pip
     pip install --upgrade pip
@@ -69,6 +69,25 @@ This allows you to use the latest w3af version without breaking or overriding th
    There are two versions in your OS now:
     * ``cd ~/w3af/ ; ./w3af_console`` will run the latest version
     * ``w3af_console`` will run the one packaged in Kali
+
+Installation in Mac OSX
+-----------------------
+In order to start the process, you need XCode and MacPorts installed. 
+
+.. code-block:: console
+	sudo port selfupdate
+	sudo port upgrade outdated
+	sudo port install py27-pip py27-libdnet git-core automake python27 gcc48 py27-setuptools autoconf py27-pcapy py27-pip
+	sudo pip-2.7 install clamd==1.0.1 PyGithub==1.21.0 GitPython==0.3.2.RC1 esmre==0.3.1 nltk==2.0.4 chardet==2.1.1 pdfminer==20110515 futures==2.1.5 pyOpenSSL==0.13.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 msgpack-python==0.2.4 python-ntlm==1.0.1 halberd==0.2.4
+	sudo pip-2.7 install --ignore-installed git+https://github.com/andresriancho/phply.git#egg=phply
+
+That will get the initial dependencies out of the way. 
+
+.. code-block:: console
+	sudo port select python python27
+	sudo port install py27-pygtk py27-pygtksourceview graphviz
+	sudo pip-2.7 install lxml==2.3.2 xdot==0.6
+
 
 Troubleshooting
 ---------------
@@ -110,6 +129,14 @@ What you need to do is:
  * Run ``./w3af_console`` again. Repeat until fixed
 
 If you have two minutes, please `create a ticket <https://github.com/andresriancho/w3af/issues/new>`_ explaining the packages you installed, your distribution, etc. and we'll add the code necessary for others to be able to install ``w3af`` without going through any manual steps.
+
+Troubleshooting OSX issues
+_____________________________________________________________________________________________________
+
+Night Lion Security has a free public forum available on their website, www.nightlionsecurity.com. They provide a free community forum dedicated to the installation and troubleshooting of OSX based security tools, free of charge. 
+
+https://www.nightlionsecurity.com
+
 
 How do I ask for support on installation issues?
 ________________________________________________
