@@ -336,7 +336,7 @@ class html_file(OutputPlugin):
         if self._file is not None:
             self._file.close()
         
-        self._aditional_info.cleanup()
+        self._aditional_info.clear()
 
     def get_long_desc(self):
         """

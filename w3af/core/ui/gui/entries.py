@@ -26,6 +26,7 @@ from w3af.core.ui.gui import helpers
 from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.ui.gui.user_help.open_help import open_help
 
+from w3af.core.data.parsers.url import URL
 from w3af.core.data.options.preferences import Preferences
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -453,6 +454,26 @@ class AdvisedEntry(gtk.Entry):
                 self.liststore.insert(0, [txt])
             self.hist.insert(txt)
             self.hist.save()
+
+
+class ValidatedAdvisedEntry(AdvisedEntry):
+    """
+    For now I'm only using this one for URLs, but we could make a more generic
+    one for any configurable option.
+    """
+    def __init__(self, message, alertb=None, historyfile=None, alertmodif=None):
+        super(ValidatedAdvisedEntry, self).__init__(message, alertb=alertb,
+                                                    historyfile=historyfile,
+                                                    alertmodif=alertmodif)
+
+    def validate(self):
+        configured_url = self.get_text()
+        try:
+            URL(configured_url)
+        except ValueError:
+            return False
+        else:
+            return True
 
 
 class EntryDialog(gtk.Dialog):
@@ -969,6 +990,7 @@ class StatusBar(gtk.Statusbar):
         
         # Don't call me again please
         return False
+
 
 class ConfigOptions(gtk.VBox, Preferences):
     """Configuration class.

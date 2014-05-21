@@ -1,5 +1,5 @@
 """
-CrawlPlugin.py
+crawl_plugin.py
 
 Copyright 2006 Andres Riancho
 
