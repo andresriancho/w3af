@@ -39,7 +39,10 @@ PIP_CMD = 'pip'
 
 def os_package_is_installed(package_name):
     not_installed = 'is not installed and no info is available'
+
+    # The hold string was added after a failed build of w3af-module
     installed = 'Status: install ok installed'
+    hold = 'Status: hold ok installed'
     
     try:
         p = subprocess.Popen(['dpkg', '-s', package_name], stdout=subprocess.PIPE,
@@ -52,7 +55,7 @@ def os_package_is_installed(package_name):
 
         if not_installed in dpkg_output:
             return False
-        elif installed in dpkg_output:
+        elif installed in dpkg_output or hold in dpkg_output:
             return True
         else:
             return None
