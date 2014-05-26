@@ -21,16 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 
-PHPLY_GIT = 'git+https://github.com/andresriancho/phply.git#egg=phply'
-PHPLY_GIT_TGZ = 'https://github.com/andresriancho/phply/archive/0.9.1.tar.gz#egg=phply'
-
 PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                 PIPDependency('github', 'PyGithub', '1.21.0'),
                 PIPDependency('git.util', 'GitPython', '0.3.2.RC1'),
                 PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.11'),
                 PIPDependency('esmre', 'esmre', '0.3.1'),
-                PIPDependency('phply', 'phply', 'dev', git_src=PHPLY_GIT,
-                              tgz_src=PHPLY_GIT_TGZ),
+                PIPDependency('phply', 'phply', '0.9.1'),
                 PIPDependency('nltk', 'nltk', '2.0.4'),
                 PIPDependency('chardet', 'chardet', '2.1.1'),
                 PIPDependency('pdfminer', 'pdfminer', '20110515'),
