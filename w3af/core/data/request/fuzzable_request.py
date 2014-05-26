@@ -39,6 +39,8 @@ from w3af.core.data.request.request_mixin import RequestMixIn
 
 ALL_CHARS = ''.join(chr(i) for i in xrange(256))
 TRANS_TABLE = string.maketrans(ALL_CHARS, ALL_CHARS)
+DELETE_CHARS = ''.join(['\\', "'", '"', '+', ' ', chr(0), chr(int("0D", 16)),
+                       chr(int("0A", 16))])
 
 
 class FuzzableRequest(RequestMixIn, DiskItem):
@@ -134,9 +136,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             """
             This basically removes characters that are hard to compare
             """
-            delete_chars = ('\\', '\'', '"', '+', ' ', chr(0),
-                            chr(int("0D", 16)), chr(int("0A", 16)))
-            return string.translate(heterogen_string, TRANS_TABLE, delete_chars)
+            return string.translate(heterogen_string.encode('utf-8'),
+                                    TRANS_TABLE, deletions=DELETE_CHARS)
 
         data = self._data or ''
         # This is the easy part. If it was exactly like this in the request
