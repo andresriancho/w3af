@@ -373,7 +373,7 @@ class HTTPResponse(object):
                 msg = 'Invalid Content-Type value "%s" sent in HTTP response.'
                 om.out.debug(msg % (content_type_hvalue,))
             else:
-                content_type = self._content_type.lower()
+                content_type = self._content_type.strip().lower()
 
                 # Set the doc_type
                 if content_type.count('image'):
