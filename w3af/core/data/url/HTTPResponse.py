@@ -368,12 +368,12 @@ class HTTPResponse(object):
         # we need exactly content type but not charset
         if content_type_hvalue is not None:
             try:
-                self._content_type = content_type_hvalue.split(';', 1)[0]
+                self._content_type = content_type_hvalue.split(';', 1)[0].strip().lower()
             except:
                 msg = 'Invalid Content-Type value "%s" sent in HTTP response.'
                 om.out.debug(msg % (content_type_hvalue,))
             else:
-                content_type = self._content_type.strip().lower()
+                content_type = self._content_type
 
                 # Set the doc_type
                 if content_type.count('image'):
