@@ -124,7 +124,7 @@ SELECT_WITH_ID = u"""
 
 # Anchor templates
 A_LINK_RELATIVE = u'<a href="/index.php">XXX</a>'
-A_LINK_ABSOLUTE = u'<a href="www.w3af.com/home.php">XXX</a>'
+A_LINK_ABSOLUTE = u'<a href="http://w3af.com/home.php">XXX</a>'
 A_LINK_FRAGMENT = u'<a href="#mark">XXX</a>'
 
 # Other templates
@@ -546,6 +546,14 @@ class TestHTMLParser(unittest.TestCase):
         self.assertIsInstance(form, Form)
         self.assertEqual('sample_name=sample_value&sample_name=sample_value',
                          str(form))
+
+    def test_a_link_absolute(self):
+        headers = Headers([('content-type', 'text/html')])
+        resp = _build_http_response(URL_INST, A_LINK_ABSOLUTE, headers=headers)
+        p = _HTMLParser(resp)
+        p._parse(resp)
+
+        self.assertEquals([URL('http://w3af.com/home.php')], p.references[0])
 
     def test_script_tag_link_extraction(self):
         body = '''<script>window.location = "http://w3af.com/";</script>'''
