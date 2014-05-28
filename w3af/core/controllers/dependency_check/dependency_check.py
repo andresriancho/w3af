@@ -72,6 +72,8 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     #    Check for missing python modules
     #
     failed_deps = []
+
+    pip_distributions = []
     if HAS_PIP: pip_distributions = pip.get_installed_distributions()
     
     for w3af_req in pip_packages:
