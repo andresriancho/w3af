@@ -45,29 +45,13 @@ class TestW3afCore(unittest.TestCase):
         self._exceptions.append(exp)
 
     def test_multiple_instances(self):
-        """Just making sure nothing crashes if I have more than 1 instance
-        of w3afCore"""
+        """
+        Just making sure nothing crashes if I have more than 1 instance of
+        w3afCore
+        """
         instances = []
         for _ in xrange(5):
             instances.append(w3afCore())
-
-    def test_multiple_instances_in_different_threads(self):
-        """
-        Create different w3afCore instances, in different threads.
-
-        https://github.com/andresriancho/w3af-module/issues/5
-        """
-        t = threading.Thread(target=start_w3af_core,
-                             args=(self._exception_handler,))
-        t.start()
-        t.join()
-
-        t = threading.Thread(target=start_w3af_core,
-                             args=(self._exception_handler,))
-        t.start()
-        t.join()
-
-        self.assertEqual(self._exceptions, [])
 
     def test_multiple_instances_in_different_dummy_processes(self):
         """
@@ -80,20 +64,15 @@ class TestW3afCore(unittest.TestCase):
         t.start()
         t.join()
 
-        t = DummyProcess(target=start_w3af_core,
-                         args=(self._exception_handler,))
-        t.start()
-        t.join()
-
         self.assertEqual(self._exceptions, [])
 
     def test_dummy_in_dummy(self):
-        def outer():
-            t = DummyProcess(target=start_w3af_core,
-                             args=(self._exception_handler,))
-            t.start()
-            t.join()
+        """
+        Create different w3afCore instances, in different threads.
 
+        https://github.com/andresriancho/w3af-module/issues/5
+        """
+        def outer():
             t = DummyProcess(target=start_w3af_core,
                              args=(self._exception_handler,))
             t.start()

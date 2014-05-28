@@ -38,6 +38,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
 
+from w3af.core.controllers.output_manager import fresh_output_manager_inst
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
@@ -69,6 +70,9 @@ class w3afCore(object):
         Init some variables and files.
         Create the URI opener.
         """
+        # Make sure we get a fresh new instance of the output manager
+        fresh_output_manager_inst()
+
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
         # on output manager instantiation but there are issues with starting
