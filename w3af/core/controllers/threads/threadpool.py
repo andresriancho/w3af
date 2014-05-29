@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+import time
 
 from functools import partial
 
@@ -90,3 +91,23 @@ class Pool(ThreadPool):
     def terminate_join(self):
         self.terminate()
         self.join()
+
+    def finish(self):
+        """
+        Wait until all tasks in the self._inqueue have been processed (the queue
+        has size == 0) and then call terminate on the Pool.
+
+        I know this is not the best way of doing it, but had some dead-lock
+        issues with:
+
+            self.close()
+            self.join()
+
+        :return: None
+        """
+        while self.in_qsize() != 0:
+            time.sleep(0.1)
+
+        self.terminate()
+        self.join()
+

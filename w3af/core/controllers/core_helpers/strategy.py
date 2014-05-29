@@ -101,8 +101,7 @@ class w3af_core_strategy(object):
 
             # While the consumers might have finished, they certainly queue
             # tasks in the core's worker_pool, which need to be processed too
-            self._w3af_core.worker_pool.join()
-            self._w3af_core.worker_pool.close()
+            self._w3af_core.worker_pool.finish()
 
         except Exception, e:
             self.terminate()
