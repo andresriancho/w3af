@@ -92,7 +92,7 @@ class Pool(ThreadPool):
         self.terminate()
         self.join()
 
-    def finish(self):
+    def finish(self, timeout=120):
         """
         Wait until all tasks in the self._inqueue have been processed (the queue
         has size == 0) and then call terminate on the Pool.
@@ -103,10 +103,17 @@ class Pool(ThreadPool):
             self.close()
             self.join()
 
-        :return: None
+        :param timeout: Wait up to timeout seconds for the queues to be empty
         """
-        while self.in_qsize() != 0:
-            time.sleep(0.1)
+        delay = 0.1
+
+        for _ in xrange(int(timeout / delay)):
+            if (self._inqueue.qsize() == 0 and
+                self._outqueue.qsize() == 0 and
+                self._taskqueue.qsize() == 0):
+                break
+            else:
+                time.sleep(delay)
 
         self.terminate()
         self.join()
