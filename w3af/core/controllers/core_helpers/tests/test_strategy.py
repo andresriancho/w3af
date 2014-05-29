@@ -104,7 +104,7 @@ class TestStrategy(PluginTest):
             print('Start run #%s' % i)
 
             p = subprocess.Popen([python_executable, 'w3af_console',
-                                  '-n', '-s', script_path],
+                                  '-n', '-s', SCRIPT_PATH],
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   stdin=subprocess.PIPE,
