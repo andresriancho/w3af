@@ -23,6 +23,7 @@ import threading
 
 from mock import Mock
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
@@ -85,7 +86,7 @@ class TestStrategy(unittest.TestCase):
         # Disabled because this can't run @ CircleCI
         #
         # IMPORTANT!
-        return
+        raise SkipTest('This fails @ CircleCI')
 
         thread_names = [t.name for t in threading.enumerate()]
         thread_names = set(thread_names)
