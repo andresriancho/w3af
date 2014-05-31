@@ -75,6 +75,7 @@ Installation in Mac OSX
 In order to start the process, you need XCode and MacPorts installed. 
 
 .. code-block:: console
+
 	sudo port selfupdate
 	sudo port upgrade outdated
 	sudo port install py27-pip py27-libdnet git-core automake python27 gcc48 py27-setuptools autoconf py27-pcapy py27-pip
@@ -84,6 +85,7 @@ In order to start the process, you need XCode and MacPorts installed.
 That will get the initial dependencies out of the way. 
 
 .. code-block:: console
+
 	sudo port select python python27
 	sudo port install py27-pygtk py27-pygtksourceview graphviz
 	sudo pip-2.7 install lxml==2.3.2 xdot==0.6
@@ -129,13 +131,6 @@ What you need to do is:
  * Run ``./w3af_console`` again. Repeat until fixed
 
 If you have two minutes, please `create a ticket <https://github.com/andresriancho/w3af/issues/new>`_ explaining the packages you installed, your distribution, etc. and we'll add the code necessary for others to be able to install ``w3af`` without going through any manual steps.
-
-Troubleshooting OSX issues
-_____________________________________________________________________________________________________
-
-Night Lion Security has a free public forum available on their website, www.nightlionsecurity.com. They provide a free community forum dedicated to the installation and troubleshooting of OSX based security tools, free of charge. 
-
-https://www.nightlionsecurity.com
 
 
 How do I ask for support on installation issues?
