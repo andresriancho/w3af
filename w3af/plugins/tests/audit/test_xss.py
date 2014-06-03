@@ -117,7 +117,7 @@ class TestXSS(PluginTest):
         https://github.com/andresriancho/w3af/issues/1557
         """
         cfg = self._run_configs['smoke']
-        self._scan(self.WAVSEP_2919 + '?userinput=1', cfg['plugins'], debug=True)
+        self._scan(self.WAVSEP_2919 + '?userinput=1', cfg['plugins'])
 
         xss_vulns = self.kb.get('xss', 'xss')
         self.assertEqual(xss_vulns, [])
