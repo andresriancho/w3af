@@ -122,7 +122,7 @@ class xss(AuditPlugin):
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
         
-        if payload in response.get_body():
+        if payload in response.get_body().lower():
             self._report_vuln(mutant, response, payload)
             return True
         
@@ -161,8 +161,11 @@ class xss(AuditPlugin):
             
             mod_value = mutant.get_mod_value()
 
-            for context in get_context_iter(response.get_body(), mod_value):
-                if context.is_executable() or context.can_break(mod_value):
+            body_lower = response.get_body().lower()
+            mod_value_lower = mod_value.lower()
+
+            for context in get_context_iter(body_lower, mod_value_lower):
+                if context.is_executable() or context.can_break(mod_value_lower):
                     self._report_vuln(mutant, response, mod_value)
                     return
 
@@ -299,4 +302,5 @@ class xss(AuditPlugin):
 
 
 def replace_randomize(data):
-    return data.replace("RANDOMIZE", rand_alnum(5))
+    rand_str = rand_alnum(5).lower()
+    return data.replace("RANDOMIZE", rand_str)

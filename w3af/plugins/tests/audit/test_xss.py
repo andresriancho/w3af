@@ -151,6 +151,9 @@ class TestXSS(PluginTest):
             ('script_insensitive_blacklist_xss.py', 'text', ['text']),
             ('script_blacklist_xss.py', 'text', ['text']),
 
+            # Simple encodings
+            ('lower_str_xss.py', 'text', ['text']),
+
             # Forms with POST
             ('simple_xss_form.py', 'text', ['text']),
             ('two_inputs_form.py', 'address', ['address', 'name']),
