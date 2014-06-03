@@ -27,6 +27,8 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.w3afCore import w3afCore
 
+TEST_PLUGIN_NAME = 'failing_spider'
+
 
 @attr('smoke')
 class Test_w3afCore_plugins(unittest.TestCase):
@@ -34,22 +36,22 @@ class Test_w3afCore_plugins(unittest.TestCase):
     def test_get_plugin_types(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.get_plugin_types()
-        expected = set(['grep', 'output', 'mangle', 'audit', 'crawl',
-                        'evasion', 'bruteforce', 'auth', 'infrastructure'])
+        expected = {'grep', 'output', 'mangle', 'audit', 'crawl', 'evasion',
+                    'bruteforce', 'auth', 'infrastructure'}
         self.assertEquals(set(plugin_types), expected)
 
     def test_get_plugin_listAudit(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('audit')
 
-        expected = set(['sqli', 'xss', 'eval'])
+        expected = {'sqli', 'xss', 'eval'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_listCrawl(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('crawl')
 
-        expected = set(['web_spider', 'spider_man'])
+        expected = {'web_spider', 'spider_man'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_inst(self):
@@ -131,11 +133,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.set_plugins(enabled, 'crawl')
         w3af_core.plugins.init_plugins()
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          set(w3af_core.plugins.get_plugin_list('crawl')))
+        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          remove_fs(w3af_core.plugins.get_plugin_list('crawl')))
 
-        self.assertEquals(len(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          len(w3af_core.plugins.get_plugin_list('crawl')))
+        self.assertEquals(len(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl'))),
+                          len(remove_fs(w3af_core.plugins.get_plugin_list('crawl'))))
 
     def test_enable_all_but_web_spider(self):
         w3af_core = w3afCore()
@@ -147,8 +149,8 @@ class Test_w3afCore_plugins(unittest.TestCase):
         all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          set(all_plugins))
+        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          remove_fs(all_plugins))
 
     def test_enable_all_but_two(self):
         w3af_core = w3afCore()
@@ -157,12 +159,12 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.init_plugins()
 
         all_plugins = w3af_core.plugins.get_plugin_list('crawl')
-        all_plugins = all_plugins[:]
+        all_plugins = remove_fs(all_plugins[:])
         all_plugins.remove('web_spider')
         all_plugins.remove('archive_dot_org')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          set(all_plugins))
+        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          all_plugins)
 
     def test_enable_not_web_spider_all(self):
         w3af_core = w3afCore()
@@ -171,11 +173,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.init_plugins()
 
         all_plugins = w3af_core.plugins.get_plugin_list('crawl')
-        all_plugins = all_plugins[:]
+        all_plugins = remove_fs(all_plugins[:])
         all_plugins.remove('web_spider')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          set(all_plugins))
+        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          all_plugins)
 
     def test_enable_dependency_same_type(self):
         w3af_core = w3afCore()
@@ -231,5 +233,26 @@ class Test_w3afCore_plugins(unittest.TestCase):
             enabled_plugins = w3af_core.plugins.get_enabled_plugins(
                 plugin_type)
             all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
-            self.assertEqual(set(enabled_plugins), set(all_plugins))
+            self.assertEqual(remove_fs(enabled_plugins), remove_fs(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
+
+
+def remove_fs(plugin_list):
+    """
+    Many builds, such as [0], fail because we're running multiple tests at the
+    same time; and some of those tests write new/test plugins to disk. I've
+    tried to modify those tests to avoid writing the file... but it was almost
+    impossible and too hacky solution.
+
+    This simple function filters the 'failing_spider' plugin name from a list
+    of plugins and returns the plugin list.
+
+    [0] https://circleci.com/gh/andresriancho/w3af/801
+
+    :param plugin_list: List of plugins to filter
+    :return: A set without 'failing_spider'
+    """
+    if TEST_PLUGIN_NAME in plugin_list:
+        plugin_list.remove(TEST_PLUGIN_NAME)
+
+    return set(plugin_list)
