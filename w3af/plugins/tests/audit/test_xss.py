@@ -32,8 +32,10 @@ class TestXSS(PluginTest):
     XSS_PATH = get_moth_http('/audit/xss/')
     XSS_302_URL = 'http://moth/w3af/audit/xss/302/'
     XSS_URL_SMOKE = get_moth_http('/audit/xss/')
-    
-    WAVSEP_PATH = get_wavsep_http('/active/RXSS-Detection-Evaluation-GET/')
+
+    WAVSEP_BASE = '/active/RXSS-Detection-Evaluation-GET/'
+    WAVSEP_PATH = get_wavsep_http(WAVSEP_BASE)
+    WAVSEP_2919 = get_wavsep_http('%sCase16-Js2ScriptSupportingProperty.jsp' % WAVSEP_BASE)
 
     _run_configs = {
         'cfg': {
@@ -108,6 +110,17 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
+
+    def test_2919_javascript_src_frame(self):
+        """
+        https://github.com/andresriancho/w3af/issues/2919
+        https://github.com/andresriancho/w3af/issues/1557
+        """
+        cfg = self._run_configs['smoke']
+        self._scan(self.WAVSEP_2919 + '?userinput=1', cfg['plugins'], debug=True)
+
+        xss_vulns = self.kb.get('xss', 'xss')
+        self.assertEqual(xss_vulns, [])
 
     def test_no_false_positive_499(self):
         """
