@@ -1368,4 +1368,22 @@ Bruno Schmid
 
 Daniel Maldonado
 http://caceriadespammers.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>3948</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3948/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=&quot;OpenSSL&quot; AND &quot;1.0.1 Server at&quot; OR &quot;1.0.1a Server at&quot; OR &quot;1.0.1b Server at&quot; OR &quot;1.0.1c Server at&quot; OR &quot;1.0.1d Server at&quot; OR &quot;1.0.1e Server at&quot; OR &quot;1.0.1f Server at&quot;</querystring><shortDescription>&quot;OpenSSL&quot; AND &quot;1.0.1 Server at&quot; OR &quot;1.0.1a Server at&quot; OR &quot;1.0.1b Server at&quot; OR &quot;1.0.1c Server at&quot; OR &quot;1.0.1d Server at&quot; OR &quot;1.0.1e Server at&quot; OR &quot;1.0.1f Server at&quot;</shortDescription><textualDescription>Search for all Apache servers that are running specific versions of
+OpenSSL. These specific versions of OpenSSL could potentially be vulnerable
+to the heartbleed attack.
+
+Ahmad Al-Nounou
+http://www.linkedin.com/in/ahmadalnounou
+</textualDescription></signature><signature><signatureReferenceNumber>3949</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3949/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/public.php?service=files&quot;</querystring><shortDescription>inurl:&quot;/public.php?service=files&quot;</shortDescription><textualDescription>Search for shared files from ownCloud
+
+Daniel Maldonado
+http://caceriadespammers.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>3950</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3950/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intext:&quot;Hikvision&quot; inurl:&quot;login.asp&quot;</querystring><shortDescription>intext:&quot;Hikvision&quot; inurl:&quot;login.asp&quot;</shortDescription><textualDescription>Hikvision IP Camera login page
+</textualDescription></signature><signature><signatureReferenceNumber>3951</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3951/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:dfshealth.jsp</querystring><shortDescription>inurl:dfshealth.jsp</shortDescription><textualDescription>dork:inurl:dfshealth.jsp
+
+direct get the access of hadoop cluster with root user
+
+
+-- 
+Simmant Yadav
 </textualDescription></signature></searchEngineSignature>
