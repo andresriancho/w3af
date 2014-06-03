@@ -83,7 +83,7 @@ def _goInference(payload, expression, charsetType=None, firstChar=None, lastChar
                 expression = "SELECT %s FROM (%s)" % (field, expression)
 
                 if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
-                    expression += " AS %s" % randomStr(lowercase=True)
+                    expression += " AS %s" % randomStr(lowercase=True, seed=hash(expression))
 
             if field and conf.hexConvert or conf.binaryFields and field in conf.binaryFields.split(','):
                 nulledCastedField = agent.nullAndCastField(field)
@@ -421,9 +421,10 @@ def getValue(expression, blind=True, union=True, error=True, time=True, fromUser
 
     kb.safeCharEncode = False
 
-    if not kb.testMode and value is None and Backend.getDbms() and conf.dbmsHandler:
+    if not kb.testMode and value is None and Backend.getDbms() and conf.dbmsHandler and not conf.noCast and not conf.hexConvert:
         warnMsg = "in case of continuous data retrieval problems you are advised to try "
-        warnMsg += "a switch '--no-cast' or switch '--hex'"
+        warnMsg += "a switch '--no-cast' "
+        warnMsg += "or switch '--hex'" if Backend.getIdentifiedDbms() not in (DBMS.ACCESS, DBMS.FIREBIRD) else ""
         singleTimeWarnMessage(warnMsg)
 
     return extractExpectedValue(value, expected)

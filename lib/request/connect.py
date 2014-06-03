@@ -191,7 +191,7 @@ class Connect(object):
         the target URL page content
         """
 
-        if conf.delay is not None and isinstance(conf.delay, (int, float)) and conf.delay > 0:
+        if isinstance(conf.delay, (int, float)) and conf.delay > 0:
             time.sleep(conf.delay)
         elif conf.cpuThrottle:
             cpuThrottle(conf.cpuThrottle)
@@ -493,7 +493,7 @@ class Connect(object):
 
             logger.log(CUSTOM_LOGGING.TRAFFIC_IN, responseMsg)
 
-            if e.code == httplib.UNAUTHORIZED:
+            if e.code == httplib.UNAUTHORIZED and not conf.ignore401:
                 errMsg = "not authorized, try to provide right HTTP "
                 errMsg += "authentication type and valid credentials (%d)" % code
                 raise SqlmapConnectionException(errMsg)
@@ -757,7 +757,7 @@ class Connect(object):
                             cookie = _randomizeParameter(cookie, randomParameter)
 
         if conf.evalCode:
-            delimiter = conf.pDel or DEFAULT_GET_POST_DELIMITER
+            delimiter = conf.paramDel or DEFAULT_GET_POST_DELIMITER
             variables = {}
             originals = {}
 
@@ -769,7 +769,7 @@ class Connect(object):
                         evaluateCode("%s=%s" % (name.strip(), repr(value)), variables)
 
             if cookie:
-                for part in cookie.split(conf.cDel or DEFAULT_COOKIE_DELIMITER):
+                for part in cookie.split(conf.cookieDel or DEFAULT_COOKIE_DELIMITER):
                     if '=' in part:
                         name, value = part.split('=', 1)
                         value = urldecode(value, convall=True)
@@ -793,7 +793,7 @@ class Connect(object):
                             found = True
                             post = re.sub(regex, "\g<1>%s\g<3>" % value, post)
 
-                        regex = r"((\A|%s)%s=).+?(%s|\Z)" % (re.escape(conf.cDel or DEFAULT_COOKIE_DELIMITER), name, re.escape(conf.cDel or DEFAULT_COOKIE_DELIMITER))
+                        regex = r"((\A|%s)%s=).+?(%s|\Z)" % (re.escape(conf.cookieDel or DEFAULT_COOKIE_DELIMITER), name, re.escape(conf.cookieDel or DEFAULT_COOKIE_DELIMITER))
                         if re.search(regex, (cookie or "")):
                             found = True
                             cookie = re.sub(regex, "\g<1>%s\g<3>" % value, cookie)
@@ -804,7 +804,7 @@ class Connect(object):
                             elif get is not None:
                                 get += "%s%s=%s" % (delimiter, name, value)
                             elif cookie is not None:
-                                cookie += "%s%s=%s" % (conf.cDel or DEFAULT_COOKIE_DELIMITER, name, value)
+                                cookie += "%s%s=%s" % (conf.cookieDel or DEFAULT_COOKIE_DELIMITER, name, value)
 
         if not conf.skipUrlEncode:
             get = urlencode(get, limit=True)

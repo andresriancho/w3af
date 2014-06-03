@@ -20,6 +20,7 @@ from lib.controller.checks import checkWaf
 from lib.controller.checks import heuristicCheckSqlInjection
 from lib.controller.checks import identifyWaf
 from lib.core.agent import agent
+from lib.core.common import dataToStdout
 from lib.core.common import extractRegexResult
 from lib.core.common import getFilteredPageContent
 from lib.core.common import getPublicTypeMembers
@@ -277,7 +278,7 @@ def start():
             testSqlInj = False
 
             if PLACE.GET in conf.parameters and not any([conf.data, conf.testParameter]):
-                for parameter in re.findall(r"([^=]+)=([^%s]+%s?|\Z)" % (conf.pDel or DEFAULT_GET_POST_DELIMITER, conf.pDel or DEFAULT_GET_POST_DELIMITER), conf.parameters[PLACE.GET]):
+                for parameter in re.findall(r"([^=]+)=([^%s]+%s?|\Z)" % (re.escape(conf.paramDel or "") or DEFAULT_GET_POST_DELIMITER, re.escape(conf.paramDel or "") or DEFAULT_GET_POST_DELIMITER), conf.parameters[PLACE.GET]):
                     paramKey = (conf.hostname, conf.path, PLACE.GET, parameter[0])
 
                     if paramKey not in kb.testedParams:
@@ -352,6 +353,7 @@ def start():
                     if not test or test[0] in ("y", "Y"):
                         pass
                     elif test[0] in ("n", "N"):
+                        dataToStdout(os.linesep)
                         continue
                     elif test[0] in ("q", "Q"):
                         break

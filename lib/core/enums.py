@@ -140,6 +140,11 @@ class PROXY_TYPE:
     SOCKS4 = "SOCKS4"
     SOCKS5 = "SOCKS5"
 
+class REGISTRY_OPERATION:
+    READ = "read"
+    ADD = "add"
+    DELETE = "delete"
+
 class DUMP_FORMAT:
     CSV = "CSV"
     HTML = "HTML"
@@ -173,6 +178,12 @@ class HTTP_HEADER:
 class EXPECTED:
     BOOL = "bool"
     INT = "int"
+
+class OPTION_TYPE:
+    BOOLEAN = "boolean"
+    INTEGER = "integer"
+    FLOAT = "float"
+    STRING = "string"
 
 class HASHDB_KEYS:
     DBMS = "DBMS"
