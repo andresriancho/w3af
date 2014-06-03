@@ -81,7 +81,6 @@ class TestFileUpload(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         fu_vulns = self.kb.get('file_upload', 'file_upload')
-        self.assertEquals(2, len(fu_vulns))
         self.assertTrue(all(v.get_name() == 'Insecure file upload' for v in fu_vulns))
 
         EXPECTED_FILES = {'uploader.php', 'uploader.534'}
