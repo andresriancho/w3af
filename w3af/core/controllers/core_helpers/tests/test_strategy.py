@@ -115,7 +115,7 @@ class TestStrategy(PluginTest):
         URL_VULN_RE = re.compile('%s: "(.*?)"' % VULN_STRING)
         all_previous_vulns = []
 
-        for i in xrange(15):
+        for i in xrange(5):
             print('Start run #%s' % i)
             found_vulns = set()
 
