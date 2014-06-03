@@ -86,7 +86,7 @@ class AuditPlugin(Plugin):
         """
         the_stack = inspect.stack()
 
-        for _,_,_,function_name,_,_ in the_stack:
+        for _, _, _, function_name, _, _ in the_stack:
             if function_name == 'audit_return_vulns':
                 return True
             
