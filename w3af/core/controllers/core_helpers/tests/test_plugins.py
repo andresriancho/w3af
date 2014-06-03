@@ -22,8 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import itertools
+import os
 
+from os import listdir as orig_listdir
 from nose.plugins.attrib import attr
+from mock import patch
 
 from w3af.core.controllers.w3afCore import w3afCore
 
@@ -31,7 +34,19 @@ TEST_PLUGIN_NAME = 'failing_spider'
 
 
 @attr('smoke')
-class Test_w3afCore_plugins(unittest.TestCase):
+class TestW3afCorePlugins(unittest.TestCase):
+
+    def setUp(self):
+        super(TestW3afCorePlugins, self).setUp()
+
+        self.listdir_patch = patch('os.listdir')
+        self.listdir_mock = self.listdir_patch.start()
+        self.listdir_mock.side_effect = listdir_remove_fs
+
+    def tearDown(self):
+        super(TestW3afCorePlugins, self).tearDown()
+
+        self.listdir_patch.stop()
 
     def test_get_plugin_types(self):
         w3af_core = w3afCore()
@@ -133,11 +148,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.set_plugins(enabled, 'crawl')
         w3af_core.plugins.init_plugins()
 
-        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          remove_fs(w3af_core.plugins.get_plugin_list('crawl')))
+        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          set(w3af_core.plugins.get_plugin_list('crawl')))
 
-        self.assertEquals(len(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl'))),
-                          len(remove_fs(w3af_core.plugins.get_plugin_list('crawl'))))
+        self.assertEquals(len(set(w3af_core.plugins.get_enabled_plugins('crawl'))),
+                          len(set(w3af_core.plugins.get_plugin_list('crawl'))))
 
     def test_enable_all_but_web_spider(self):
         w3af_core = w3afCore()
@@ -149,8 +164,8 @@ class Test_w3afCore_plugins(unittest.TestCase):
         all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
 
-        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          remove_fs(all_plugins))
+        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          set(all_plugins))
 
     def test_enable_all_but_two(self):
         w3af_core = w3afCore()
@@ -159,12 +174,12 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.init_plugins()
 
         all_plugins = w3af_core.plugins.get_plugin_list('crawl')
-        all_plugins = remove_fs(all_plugins[:])
+        all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
         all_plugins.remove('archive_dot_org')
 
-        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          all_plugins)
+        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          set(all_plugins))
 
     def test_enable_not_web_spider_all(self):
         w3af_core = w3afCore()
@@ -173,11 +188,11 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core.plugins.init_plugins()
 
         all_plugins = w3af_core.plugins.get_plugin_list('crawl')
-        all_plugins = remove_fs(all_plugins[:])
+        all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
 
-        self.assertEquals(remove_fs(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          all_plugins)
+        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+                          set(all_plugins))
 
     def test_enable_dependency_same_type(self):
         w3af_core = w3afCore()
@@ -235,26 +250,31 @@ class Test_w3afCore_plugins(unittest.TestCase):
             enabled_plugins = w3af_core.plugins.get_enabled_plugins(
                 plugin_type)
             all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
-            self.assertEqual(remove_fs(enabled_plugins), remove_fs(all_plugins))
+            self.assertEqual(set(enabled_plugins), set(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
 
 
-def remove_fs(plugin_list):
+def listdir_remove_fs(query_dir):
     """
     Many builds, such as [0], fail because we're running multiple tests at the
     same time; and some of those tests write new/test plugins to disk. I've
     tried to modify those tests to avoid writing the file... but it was almost
     impossible and too hacky solution.
 
-    This simple function filters the 'failing_spider' plugin name from a list
-    of plugins and returns the plugin list.
+    This simple function replaces the "os.listdir" command, returning a list of
+    the files in the the query_dir, removing 'failing_spider' plugin name from
+    the list.
 
     [0] https://circleci.com/gh/andresriancho/w3af/801
 
-    :param plugin_list: List of plugins to filter
-    :return: A set without 'failing_spider'
+    :param query_dir: The directory to query
+    :return: A list without 'failing_spider'
     """
-    if TEST_PLUGIN_NAME in plugin_list:
-        plugin_list.remove(TEST_PLUGIN_NAME)
+    original = orig_listdir(query_dir)
+    result = []
 
-    return set(plugin_list)
+    for fname in original:
+        if TEST_PLUGIN_NAME not in fname:
+            result.append(fname)
+
+    return result
