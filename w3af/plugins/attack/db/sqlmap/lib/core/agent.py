@@ -44,10 +44,10 @@ class Agent(object):
     def payloadDirect(self, query):
         query = self.cleanupPayload(query)
 
-        if query.startswith("AND "):
-            query = query.replace("AND ", "SELECT ", 1)
-        elif query.startswith(" UNION ALL "):
-            query = query.replace(" UNION ALL ", "", 1)
+        if query.upper().startswith("AND "):
+            query = re.sub(r"(?i)AND ", "SELECT ", query, 1)
+        elif query.upper().startswith(" UNION ALL "):
+            query = re.sub(r"(?i) UNION ALL ", "", query, 1)
         elif query.startswith("; "):
             query = query.replace("; ", "", 1)
 
@@ -103,7 +103,7 @@ class Agent(object):
             elif kb.postHint == POST_HINT.JSON_LIKE:
                 origValue = extractRegexResult(r'(?s)\'\s*:\s*(?P<result>\d+\Z)', origValue) or extractRegexResult(r"(?s)(?P<result>[^']+\Z)", origValue)
             else:
-                _ = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"]+\Z)", origValue) or ""
+                _ = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"&]+\Z)", origValue) or ""
                 origValue = _.split('=', 1)[1] if '=' in _ else ""
         elif place == PLACE.CUSTOM_HEADER:
             paramString = origValue
@@ -185,7 +185,7 @@ class Agent(object):
 
         # If we are replacing (<where>) the parameter original value with
         # our payload do not prepend with the prefix
-        if where == PAYLOAD.WHERE.REPLACE:
+        if where == PAYLOAD.WHERE.REPLACE and not conf.prefix:
             query = ""
 
         # If the technique is stacked queries (<stype>) do not put a space
@@ -201,7 +201,7 @@ class Agent(object):
         else:
             query = kb.injection.prefix or prefix or ""
 
-            if not (expression and expression[0] == ";"):
+            if not (expression and expression[0] == ';') and not (query and query[-1] in ('(', ')') and expression and expression[0] in ('(', ')')) and not (query and query[-1] == '('):
                 query += " "
 
         query = "%s%s" % (query, expression)
@@ -234,7 +234,7 @@ class Agent(object):
 
         # If we are replacing (<where>) the parameter original value with
         # our payload do not append the suffix
-        if where == PAYLOAD.WHERE.REPLACE:
+        if where == PAYLOAD.WHERE.REPLACE and not conf.suffix:
             pass
 
         elif suffix and not comment:

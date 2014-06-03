@@ -8,6 +8,7 @@ See the file 'doc/COPYING' for copying permission
 import codecs
 
 from ConfigParser import MissingSectionHeaderError
+from ConfigParser import ParsingError
 
 from lib.core.common import checkFile
 from lib.core.common import unArrayizeValue
@@ -30,12 +31,17 @@ def configFileProxy(section, option, boolean=False, integer=False):
     global config
 
     if config.has_option(section, option):
-        if boolean:
-            value = config.getboolean(section, option) if config.get(section, option) else False
-        elif integer:
-            value = config.getint(section, option) if config.get(section, option) else 0
-        else:
-            value = config.get(section, option)
+        try:
+            if boolean:
+                value = config.getboolean(section, option) if config.get(section, option) else False
+            elif integer:
+                value = config.getint(section, option) if config.get(section, option) else 0
+            else:
+                value = config.get(section, option)
+        except ValueError, ex:
+            errMsg = "error occurred while processing the option "
+            errMsg += "'%s' in provided configuration file ('%s')" % (option, str(ex))
+            raise SqlmapSyntaxException(errMsg)
 
         if value:
             conf[option] = value
@@ -64,15 +70,16 @@ def configFileParser(configFile):
     try:
         config = UnicodeRawConfigParser()
         config.readfp(configFP)
-    except MissingSectionHeaderError:
-        errMsg = "you have provided an invalid configuration file"
+    except (MissingSectionHeaderError, ParsingError), ex:
+        errMsg = "you have provided an invalid configuration file ('%s')" % str(ex)
         raise SqlmapSyntaxException(errMsg)
 
     if not config.has_section("Target"):
         errMsg = "missing a mandatory section 'Target' in the configuration file"
         raise SqlmapMissingMandatoryOptionException(errMsg)
 
-    condition = not config.has_option("Target", "url")
+    condition = not config.has_option("Target", "direct")
+    condition &= not config.has_option("Target", "url")
     condition &= not config.has_option("Target", "logFile")
     condition &= not config.has_option("Target", "bulkFile")
     condition &= not config.has_option("Target", "googleDork")
@@ -81,7 +88,7 @@ def configFileParser(configFile):
 
     if condition:
         errMsg = "missing a mandatory option in the configuration file "
-        errMsg += "(url, logFile, bulkFile, googleDork, requestFile or wizard)"
+        errMsg += "(direct, url, logFile, bulkFile, googleDork, requestFile or wizard)"
         raise SqlmapMissingMandatoryOptionException(errMsg)
 
     for family, optionData in optDict.items():

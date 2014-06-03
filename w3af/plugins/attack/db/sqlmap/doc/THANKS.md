@@ -238,6 +238,9 @@ Dirk Jagdmann, <doj@cubic.org>
 Luke Jahnke, <luke.jahnke@gmail.com>
 * for reporting a bug when running against MySQL < 5.0
 
+Andrew Kitis <andrew.kitis@gmail.com>
+* for contributing a tamper script lowercase.py
+
 David Klein, <david.klein@ipfocus.com.au>
 * for reporting a minor code improvement
 
@@ -304,6 +307,9 @@ Michael Majchrowicz, <mmajchrowicz@gmail.com>
 * for extensively beta-testing sqlmap on various MySQL DBMS
 * for providing really appreciated feedback
 * for suggesting a lot of ideas and features
+
+Vinícius Henrique Marangoni, <vinicius_marangoni1@hotmail.com>
+* for contributing a Portuguese translation of README.md
 
 Ahmad Maulana, <matdhule@gmail.com>
 * for contributing a tamper script halfversionedmorekeywords.py
