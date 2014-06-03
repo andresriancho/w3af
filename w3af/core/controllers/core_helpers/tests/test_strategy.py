@@ -95,7 +95,7 @@ class TestStrategy(PluginTest):
     def tearDown(self):
         if os.path.exists(SCRIPT_PATH):
             os.unlink(SCRIPT_PATH)
-        return
+
         # Add a return right below this line if you want the logs for debugging
         if os.path.exists(OUTPUT_PATH):
             os.unlink(OUTPUT_PATH)
@@ -108,7 +108,7 @@ class TestStrategy(PluginTest):
         """
         script = TEST_SCRIPT_1557 % (OUTPUT_PATH, get_wavsep_http())
         file(SCRIPT_PATH, 'w').write(script)
-        stdoutout = file(OUTPUT_PATH + '2', 'w')
+
         python_executable = sys.executable
 
         VULN_STRING = 'A Cross Site Scripting vulnerability was found at'
@@ -130,7 +130,7 @@ class TestStrategy(PluginTest):
             stdout, stderr = p.communicate()
             i_vuln_count = stdout.count(VULN_STRING)
             print('%s vulnerabilities found' % i_vuln_count)
-            stdoutout.write(stdout)
+
             self.assertNotEqual(i_vuln_count, 0)
 
             for line in stdout.split('\n'):
