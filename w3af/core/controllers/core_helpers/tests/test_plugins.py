@@ -225,8 +225,10 @@ class Test_w3afCore_plugins(unittest.TestCase):
 
     def test_enable_all_all(self):
         w3af_core = w3afCore()
+
         for plugin_type in w3af_core.plugins.get_plugin_types():
             w3af_core.plugins.set_plugins(['all', ], plugin_type)
+
         w3af_core.plugins.init_plugins()
 
         for plugin_type in w3af_core.plugins.get_plugin_types():
