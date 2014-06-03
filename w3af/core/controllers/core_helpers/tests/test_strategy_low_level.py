@@ -68,7 +68,7 @@ class TestStrategy(unittest.TestCase):
         self.assertTrue(self.called_teardown_audit)
         
         vulns = kb.get('sqli', 'sqli')
-        self.assertEqual(len(vulns), 1)
+        self.assertEqual(len(vulns), 1, vulns)
         
         # Tell the core that we've finished, this should kill the WorkerThreads
         core.exploit_phase_prerequisites = lambda: 42
