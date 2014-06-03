@@ -23,6 +23,8 @@ import re
 import shlex
 import subprocess
 
+import w3af.core.controllers.output_manager as om
+
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.daemons.proxy import Proxy
@@ -138,6 +140,11 @@ class SQLMapWrapper(object):
         """
         process = self._run(custom_params)
         self.last_stdout, self.last_stderr = process.communicate()
+
+        om.out.debug('[sqlmap_wrapper] %s' % self.last_command)
+        for line in self.last_stdout.split('\n'):
+            om.out.debug('[sqlmap_wrapper] %s' % line)
+
         return self.last_command, self.last_stdout, self.last_stderr
         
     def run_sqlmap_with_pipes(self, custom_params):
