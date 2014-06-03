@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import subprocess
 import sys
 import os
+import re
 
 from nose.plugins.attrib import attr
 
@@ -97,11 +98,13 @@ class TestStrategy(PluginTest):
 
         python_executable = sys.executable
 
-        VULN_STRING = 'A Cross Site Scripting vulnerability'
-        vuln_count = []
+        VULN_STRING = 'A Cross Site Scripting vulnerability was found at'
+        URL_VULN_RE = re.compile('%s: "(.*?)"' % VULN_STRING)
+        all_previous_vulns = []
 
         for i in xrange(25):
             print('Start run #%s' % i)
+            found_vulns = set()
 
             p = subprocess.Popen([python_executable, 'w3af_console',
                                   '-n', '-s', SCRIPT_PATH],
@@ -117,7 +120,11 @@ class TestStrategy(PluginTest):
 
             self.assertNotEqual(i_vuln_count, 0)
 
-            for previous_count in vuln_count:
-                self.assertEqual(previous_count, i_vuln_count)
+            for line in stdout.split('\n'):
+                if VULN_STRING in line:
+                    found_vulns.add(URL_VULN_RE.search(line).group(1))
 
-            vuln_count.append(i_vuln_count)
+            for previous_found in all_previous_vulns:
+                self.assertEqual(found_vulns, previous_found)
+
+            all_previous_vulns.append(found_vulns)
