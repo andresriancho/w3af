@@ -30,11 +30,19 @@ from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 SCRIPT_PATH = '/tmp/script-1557.w3af'
+OUTPUT_PATH = '/tmp/1557-output-w3af.txt'
 TEST_SCRIPT_1557 = """\
 plugins
-output console
+
+output console,text_file
+
 output config console
 set verbose False
+back
+
+output config text_file
+set output_file %s
+set verbose True
 back
 
 audit xss
@@ -87,6 +95,10 @@ class TestStrategy(PluginTest):
     def tearDown(self):
         if os.path.exists(SCRIPT_PATH):
             os.unlink(SCRIPT_PATH)
+        return
+        # Add a return right below this line if you want the logs for debugging
+        if os.path.exists(OUTPUT_PATH):
+            os.unlink(OUTPUT_PATH)
 
     def test_1557_random_number_of_results(self):
         """
@@ -94,8 +106,9 @@ class TestStrategy(PluginTest):
 
         https://github.com/andresriancho/w3af/issues/1557
         """
-        file(SCRIPT_PATH, 'w').write(TEST_SCRIPT_1557 % get_wavsep_http())
-
+        script = TEST_SCRIPT_1557 % (OUTPUT_PATH, get_wavsep_http())
+        file(SCRIPT_PATH, 'w').write(script)
+        stdoutout = file(OUTPUT_PATH + '2', 'w')
         python_executable = sys.executable
 
         VULN_STRING = 'A Cross Site Scripting vulnerability was found at'
@@ -117,7 +130,7 @@ class TestStrategy(PluginTest):
             stdout, stderr = p.communicate()
             i_vuln_count = stdout.count(VULN_STRING)
             print('%s vulnerabilities found' % i_vuln_count)
-
+            stdoutout.write(stdout)
             self.assertNotEqual(i_vuln_count, 0)
 
             for line in stdout.split('\n'):
