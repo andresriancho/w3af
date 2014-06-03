@@ -233,6 +233,7 @@ class PluginTest(unittest.TestCase):
         default_opts = text_file_inst.get_options()
         default_opts['output_file'].set_value(text_output)
         default_opts['http_output_file'].set_value(http_output)
+        default_opts['verbose'].set_value(True)
 
         self.w3afcore.plugins.set_plugin_options(ptype, pname, default_opts)
 
