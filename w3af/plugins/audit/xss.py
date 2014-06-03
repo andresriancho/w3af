@@ -74,7 +74,7 @@ class xss(AuditPlugin):
     def _check_xss_in_parameter(self, mutant):
         """
         Tries to identify (persistent) XSS in one parameter.
-        """ 
+        """
         if not self._identify_trivial_xss(mutant):
             self._search_xss(mutant)
 
@@ -136,11 +136,9 @@ class xss(AuditPlugin):
             was echoed back or not
         """
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
-        mutant_list = create_mutants(
-                                     mutant.get_fuzzable_req(),
+        mutant_list = create_mutants(mutant.get_fuzzable_req(),
                                      xss_strings,
-                                     fuzzable_param_list=[mutant.get_var()]
-                                     )
+                                     fuzzable_param_list=[mutant.get_var()])
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutant_list,
@@ -155,7 +153,7 @@ class xss(AuditPlugin):
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((mutant, response.id))
-        
+
         with self._plugin_lock:
             
             if self._has_bug(mutant):
@@ -167,7 +165,7 @@ class xss(AuditPlugin):
                 if context.is_executable() or context.can_break(mod_value):
                     self._report_vuln(mutant, response, mod_value)
                     return
-       
+
     def end(self):
         """
         This method is called when the plugin wont be used anymore.
