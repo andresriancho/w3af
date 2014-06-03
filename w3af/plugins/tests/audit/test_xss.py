@@ -120,7 +120,17 @@ class TestXSS(PluginTest):
         self._scan(self.WAVSEP_2919 + '?userinput=1', cfg['plugins'])
 
         xss_vulns = self.kb.get('xss', 'xss')
-        self.assertEqual(xss_vulns, [])
+        kb_data = self.normalize_kb_data(xss_vulns)
+
+        EXPECTED = [('Case16-Js2ScriptSupportingProperty.jsp', 'userinput',
+                     ['userinput']), ]
+        expected_data = self.normalize_expected_data(self.WAVSEP_PATH,
+                                                     EXPECTED)
+
+        self.assertEquals(
+            set(expected_data),
+            set(kb_data),
+        )
 
     def test_no_false_positive_499(self):
         """
@@ -231,7 +241,7 @@ class TestXSS(PluginTest):
             #('Case13-Vbs2DoubleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
             #('Case14-Vbs2SingleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
             ('Case15-Vbs2VbsEventScope.jsp', 'userinput', ['userinput']),
-            #('Case16-Js2ScriptSupportingProperty.jsp', 'userinput', ['userinput']),
+            ('Case16-Js2ScriptSupportingProperty.jsp', 'userinput', ['userinput']),
             #('Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
             #('Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp', 'userinput', ['userinput']),
             #('Case19-Js2PropertyJsScope.jsp', 'userinput', ['userinput']),
