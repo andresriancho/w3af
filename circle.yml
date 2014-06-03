@@ -30,7 +30,7 @@ dependencies:
 
     # Install and run php-moth in the background
     - w3af/core/controllers/ci/install_scripts/install_php_moth.sh
-    - php -S localhost:9009 -t . -c conf/default.ini:
+    - php -S localhost:9009 -t . -c conf/default.ini router.php:
         background: true
         pwd: php-moth
 
