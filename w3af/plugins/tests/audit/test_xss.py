@@ -177,7 +177,7 @@ class TestXSS(PluginTest):
         
         severities = [v.get_severity() for v in csp_vulns]
         self.assertEqual(set(severities),
-                         set([severity.MEDIUM, severity.LOW]),
+                         {severity.MEDIUM, severity.LOW},
                          csp_vulns)
 
     @attr('ci_fails')
