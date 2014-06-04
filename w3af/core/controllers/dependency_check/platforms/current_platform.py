@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from .ubuntu import Ubuntu1204
 from .centos import CentOS
+from .centos65 import CentOS65
 from .fedora import Fedora
 from .kali import Kali
 from .mac import MacOSX
@@ -28,7 +29,8 @@ from .openbsd import OpenBSD5
 from .suse import SuSE
 from .default import DefaultPlatform
 
-KNOWN_PLATFORMS = [Ubuntu1204, CentOS, Fedora, Kali, MacOSX, OpenBSD5, SuSE]
+KNOWN_PLATFORMS = [Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX, OpenBSD5,
+                   SuSE]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
