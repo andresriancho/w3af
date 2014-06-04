@@ -136,7 +136,7 @@ class TestStrategy(PluginTest):
             i_vuln_count = stdout.count(VULN_STRING)
             print('%s vulnerabilities found' % i_vuln_count)
 
-            self.assertNotEqual(i_vuln_count, 0)
+            self.assertNotEqual(i_vuln_count, 0, stdout)
 
             for line in stdout.split('\n'):
                 if VULN_STRING in line:
