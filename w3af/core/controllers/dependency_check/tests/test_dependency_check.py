@@ -34,7 +34,7 @@ class TestDependencyCheck(unittest.TestCase):
 
     DEPE_MODULE = 'w3af.core.controllers.dependency_check.dependency_check'
     CURR_PLATFORM = '%s.get_current_platform' % DEPE_MODULE
-    MISSING_DEP_CMD = 'sudo pip install rumbamanager==3.2.1'
+    MISSING_DEP_CMD = 'pip install rumbamanager==3.2.1'
 
     def setUp(self):
         self.fake_rumba_dependency = PIPDependency('rumbamanager',
