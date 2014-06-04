@@ -38,7 +38,7 @@ def handle_exceptions(w3af_core):
     and you should read it before this one.
     """
     # Save the info to a file for later analysis by the user
-    for edata in w3af_core.exception_handler.get_all_exceptions():
+    for edata in w3af_core.exception_handler.get_unique_exceptions():
         edata_str = edata.get_details()
         create_crash_file(edata_str)
 

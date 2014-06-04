@@ -39,7 +39,7 @@ class BugReportWindow(SimpleBaseWindow, GithubMultiBugReport):
     def __init__(self, w3af_core, title):
         SimpleBaseWindow.__init__(self)
 
-        exception_list = w3af_core.exception_handler.get_all_exceptions()
+        exception_list = w3af_core.exception_handler.get_unique_exceptions()
         scan_id = w3af_core.exception_handler.get_scan_id()
 
         GithubMultiBugReport.__init__(self, exception_list, scan_id)
