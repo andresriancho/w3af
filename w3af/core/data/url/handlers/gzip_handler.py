@@ -58,6 +58,8 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                 elif "deflate" in enc_hdr:
                     body = response.read()
                     data = zlib.decompress(body)
+                else:
+                    data = response.read()
             except:
                 # I get here when the HTTP response body is corrupt
                 # return the same thing that I got... can't do magic yet!
