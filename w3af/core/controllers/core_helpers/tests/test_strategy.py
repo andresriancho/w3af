@@ -94,6 +94,8 @@ class TestStrategy(PluginTest):
         self.assertEquals(id_before_ur, id_after_ur)
 
     def tearDown(self):
+        super(TestStrategy, self).tearDown()
+
         if os.path.exists(SCRIPT_PATH):
             os.unlink(SCRIPT_PATH)
 
