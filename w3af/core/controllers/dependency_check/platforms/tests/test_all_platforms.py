@@ -58,3 +58,7 @@ class TestAllPlatforms(unittest.TestCase):
     def test_os_package_is_installed(self):
         # Just looking for exceptions
         [p.os_package_is_installed('foo') for p in KNOWN_PLATFORMS]
+
+    def test_after_hook(self):
+        # Just looking for exceptions
+        [p.after_hook() for p in KNOWN_PLATFORMS]
