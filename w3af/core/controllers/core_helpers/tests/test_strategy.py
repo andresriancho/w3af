@@ -29,6 +29,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.detect import is_running_on_ci
+from w3af.core.data.db.startup_cfg import StartUpConfig
 
 SCRIPT_PATH = '/tmp/script-1557.w3af'
 OUTPUT_PATH = '/tmp/1557-output-w3af.txt'
@@ -92,6 +93,13 @@ class TestStrategy(PluginTest):
 
         self.assertEquals(id_before_fr, id_after_fr)
         self.assertEquals(id_before_ur, id_after_ur)
+
+    def setUp(self):
+        super(TestStrategy, self).setUp()
+
+        startup_cfg = StartUpConfig()
+        startup_cfg.accepted_disclaimer = True
+        startup_cfg.save()
 
     def tearDown(self):
         super(TestStrategy, self).tearDown()
