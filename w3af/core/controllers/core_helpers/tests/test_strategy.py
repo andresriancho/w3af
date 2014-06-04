@@ -28,6 +28,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.detect import is_running_on_ci
 
 SCRIPT_PATH = '/tmp/script-1557.w3af'
 OUTPUT_PATH = '/tmp/1557-output-w3af.txt'
@@ -115,7 +116,9 @@ class TestStrategy(PluginTest):
         URL_VULN_RE = re.compile('%s: "(.*?)"' % VULN_STRING)
         all_previous_vulns = []
 
-        for i in xrange(5):
+        loops = 2 if is_running_on_ci() else 10
+
+        for i in xrange(loops):
             print('Start run #%s' % i)
             found_vulns = set()
 
