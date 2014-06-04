@@ -1,7 +1,7 @@
 """
-requirements.py
+default.py
 
-Copyright 2013 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,9 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-from w3af.core.controllers.dependency_check.requirements import PIP_PACKAGES
+from .base_platform import Platform
 
-# I imported the information from the core, now I need to append the GUI
-# requirements to those lists!
-PIP_PACKAGES.extend([PIPDependency('xdot', 'xdot', '0.6'),])
+
+class DefaultPlatform(Platform):
+    @staticmethod
+    def is_current_platform():
+        return True
+
+    @staticmethod
+    def os_package_is_installed():
+        return False

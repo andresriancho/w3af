@@ -33,8 +33,8 @@ except ImportError:
     print('http://www.pip-installer.org/en/latest/installing.html')
     HAS_PIP = False
 except AttributeError:
-    print('A very old version of pip was detected. We recommend you update your'
-          ' your pip installation before continuing:')
+    print('A very old version of pip was detected. We recommend a pip update'
+          ' before continuing:')
     print('    sudo pip install --upgrade pip')
     HAS_PIP = False
 else:
@@ -46,18 +46,11 @@ from .helper_script import (generate_helper_script,
                             generate_pip_install_non_git,
                             generate_pip_install_git)
 from .helper_requirements_txt import generate_requirements_txt
-from .platforms.current_platform import (SYSTEM_NAME,
-                                         PKG_MANAGER_CMD,
-                                         SYSTEM_PACKAGES,
-                                         PIP_CMD,
-                                         PIP_PACKAGES,
-                                         os_package_is_installed,
-                                         after_hook)
+from .platforms.current_platform import get_current_platform
+from .platforms.base_platform import CORE
 
     
-def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
-                     system_name=SYSTEM_NAME, pkg_manager_cmd=PKG_MANAGER_CMD,
-                     pip_cmd=PIP_CMD, exit_on_failure=True):
+def dependency_check(dependency_set=CORE, exit_on_failure=True):
     """
     This function verifies that the dependencies that are needed by the
     framework core are met.
@@ -67,16 +60,19 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     verify_python_version()
     
     disable_warnings()
-    
+
+    platform = get_current_platform()
+
     #
     #    Check for missing python modules
     #
     failed_deps = []
-
     pip_distributions = []
-    if HAS_PIP: pip_distributions = pip.get_installed_distributions()
+
+    if HAS_PIP:
+        pip_distributions = pip.get_installed_distributions()
     
-    for w3af_req in pip_packages:
+    for w3af_req in platform.PIP_PACKAGES[dependency_set]:
         if HAS_PIP:
             dependency_specs = w3af_req.package_name, w3af_req.package_version
             for dist in pip_distributions:
@@ -98,15 +94,11 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     #    Check for missing operating system packages
     #
     missing_os_packages = []
-    for _, packages in system_packages.items():
-        for package in packages:
-            if not os_package_is_installed(package):
-                missing_os_packages.append(package)
+    for os_package in platform.SYSTEM_PACKAGES[dependency_set]:
+        if not platform.os_package_is_installed(os_package):
+            missing_os_packages.append(os_package)
     
     os_packages = list(set(missing_os_packages))
-
-    if not HAS_PIP:
-        os_packages.extend(system_packages['PIP'])
 
     # All installed?
     if not failed_deps and not os_packages:
@@ -114,8 +106,8 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         return False
 
     generate_requirements_txt(failed_deps)
-    script_path = generate_helper_script(pkg_manager_cmd, os_packages,
-                                         pip_cmd, failed_deps)
+    script_path = generate_helper_script(platform.PKG_MANAGER_CMD, os_packages,
+                                         platform.PIP_CMD, failed_deps)
 
     #
     #    Report the missing system packages
@@ -129,7 +121,8 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
         msg += 'On %s systems please install the following operating'\
                ' system packages before running the pip installer:\n'\
                '    %s %s\n' 
-        print msg % (system_name, pkg_manager_cmd, missing_pkgs)
+        print msg % (platform.SYSTEM_NAME, platform.PKG_MANAGER_CMD,
+                     missing_pkgs)
         
     #
     #    Report all missing python modules
@@ -150,12 +143,13 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
               ' pip to install the remaining modules:\n'
         
         if not_git_pkgs:
-            cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
+            cmd = generate_pip_install_non_git(platform.PIP_CMD, not_git_pkgs)
             msg += '    %s\n' % cmd
         
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
-                msg += '    %s\n' % generate_pip_install_git(pip_cmd, missing_git_pkg)
+                msg += '    %s\n' % generate_pip_install_git(platform.PIP_CMD,
+                                                             missing_git_pkg)
         
         print msg
     
@@ -163,7 +157,7 @@ def dependency_check(pip_packages=PIP_PACKAGES, system_packages=SYSTEM_PACKAGES,
     print msg % script_path
     
     enable_warnings()
-    after_hook()
+    platform.after_hook()
     
     if exit_on_failure:
         sys.exit(1)
@@ -177,6 +171,7 @@ def disable_warnings():
 
     # scapy raises an error if tcpdump is not found in PATH
     logging.disable(logging.CRITICAL)
+
 
 def enable_warnings():
     # Enable warnings once again

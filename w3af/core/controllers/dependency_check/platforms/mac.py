@@ -21,93 +21,117 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import subprocess
 import sys
+import platform
 
-from w3af.core.controllers.dependency_check.requirements import PIP_PACKAGES
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-
-SYSTEM_NAME = 'Mac OS X'
-
-PKG_MANAGER_CMD = 'sudo port install'
-
-#
-#    Remember to use http://www.macports.org/ports.php to search for packages
-#
-SYSTEM_PACKAGES = {
-                   'PIP': ['py27-pip'],
-                   # Python port includes the dev headers
-                   'C_BUILD': ['python27', 'py27-setuptools',
-                                'gcc48', 'autoconf', 'automake'],
-                   'GIT': ['git-core'],
-                   'SCAPY': ['py27-pcapy', 'py27-libdnet'],
-                  }
-PIP_CMD = 'pip-2.7' 
-
-# pybloomfilter is broken in Mac OS X, so we don't require it
-# https://github.com/andresriancho/w3af/issues/485
-PIP_PACKAGES.remove(PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.11'))
+from .base_platform import Platform
+from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_PACKAGES, CORE, GUI
 
 
-def os_package_is_installed(package_name):
-    not_installed = 'None of the specified ports are installed'
-    installed = 'The following ports are currently installed'
-    
-    try:
-        p = subprocess.Popen(['port', '-v', 'installed', package_name],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-    except OSError:
-        # We're not on a debian based system
-        return None
-    else:
-        port_output, _ = p.communicate()
+TWO_PYTHON_MSG = """\
+It seems that your system has two different python installations: One provided
+by the operating system, at %s, and another which you installed using Mac ports.
 
-        if not_installed in port_output:
-            return False
-        elif installed in port_output:
-            return True
-        else:
-            return None
+The default python executable for your system is the one provided by Apple,
+and pip-2.7 will install all new libraries in the Mac ports Python.
+
+In order to have a working w3af installation you will have to switch to the Mac
+ports Python by using the following command:
+    sudo port select python python27
+"""
+
+TRACEROUTE_SCAPY_MSG = """\
+Tried to import traceroute from scapy.all and found an OSError including the
+message "Device not configured".
+
+This is a bug in the scapy library and happens on OSX with MacPorts i.e. when
+Virtualbox is installed.
+
+Please apply the following fix (example for python 2.7):
+    - Open the file /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scapy/arch/unix.py
+    - Change line 34 to read:
+        f=os.popen("netstat -rn|grep -v vboxnet") # -f inet
+
+Original bug report:
+    http://bb.secdev.org/scapy/issue/418/scapy-error-in-mac-osx-leopard
+"""
 
 
-def after_hook():
-    # Is the default python executable the one in macports?
+class MacOSX(Platform):
+    SYSTEM_NAME = 'Mac OS X'
+    PKG_MANAGER_CMD = 'sudo port install'
+    PIP_CMD = 'pip-2.7'
+
     #
-    # We need to warn the user about this situation and let him know how to fix
-    # See: http://stackoverflow.com/questions/118813/
-    msg = '\nIt seems that your system has two different python installations:'\
-          ' One provided by the operating system, at %s, and another which'\
-          ' you installed using Mac ports. '\
-          'The default python executable for your system is the one provided'\
-          ' by Apple, and pip-2.7 will install all new libraries in the Mac'\
-          ' ports Python.\n\n'\
-          'In order to have a working w3af installation you will have to'\
-          ' switch to the Mac ports Python by using the following command:\n'\
-          '    sudo port select python python27\n'
+    # Remember to use http://www.macports.org/ports.php to search for
+    # packages
+    #
+    # Python port includes the dev headers
+    CORE_SYSTEM_PACKAGES = ['py27-pip', 'python27', 'py27-setuptools', 'gcc48',
+                            'autoconf', 'automake', 'git-core', 'py27-pcapy',
+                            'py27-libdnet']
 
-    if sys.executable.startswith('/opt/'):
-        # That's what we need since pip-2.7 will install all the libs in
-        # that python site-packages directory
-        pass
-    else:
-        print msg % sys.executable
+    GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
+    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'py27-pygtksourceview',
+                                'py27-pygtk'])
 
-    #check if scapy is correctly installed/working on OSX
-    try:
-        from scapy.all import traceroute
-    except ImportError:
-        # The user just needs to work on his dependencies.
-        pass
-    except OSError, ose:
-        if "Device not configured" in str(ose):
-            print('Tried to import traceroute from scapy.all and found an'
-                  ' OSError including the message "Device not configured".'
-                  ' This is a bug in the scapy library and happens on OSX with'
-                  ' MacPorts i.e. when Virtualbox is installed.\n\n'
-                  'Please apply the following fix (example for python 2.7):\n'
-                  '    - Open the file /opt/local/Library/Frameworks/Python'
-                  '.framework/Versions/2.7/lib/python2.7/site-packages/scapy/'
-                  'arch/unix.py\n'
-                  '    - Change line 34 to read:\n'
-                  '        f=os.popen("netstat -rn|grep -v vboxnet") # -f inet\n\n'
-                  'Original bug report: '
-                  'http://bb.secdev.org/scapy/issue/418/scapy-error-in-mac-osx-leopard')
+    SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
+                       GUI: GUI_SYSTEM_PACKAGES}
+
+    # pybloomfilter is broken in Mac OS X, so we don't require it
+    # https://github.com/andresriancho/w3af/issues/485
+    MAC_CORE_PIP_PACKAGES = CORE_PIP_PACKAGES[:]
+    MAC_CORE_PIP_PACKAGES.remove(PIPDependency('pybloomfilter',
+                                               'pybloomfiltermmap', '0.3.11'))
+
+    PIP_PACKAGES = {CORE: MAC_CORE_PIP_PACKAGES,
+                    GUI: GUI_PIP_PACKAGES}
+
+    @staticmethod
+    def is_current_platform():
+        return 'darwin' in platform.dist() or 'mac' in platform.dist()
+
+    @staticmethod
+    def os_package_is_installed(package_name):
+        not_installed = 'None of the specified ports are installed'
+        installed = 'The following ports are currently installed'
+
+        try:
+            p = subprocess.Popen(['port', '-v', 'installed', package_name],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        except OSError:
+            # We're not on a mac based system
+            return None
+        else:
+            port_output, _ = p.communicate()
+
+            if not_installed in port_output:
+                return False
+            elif installed in port_output:
+                return True
+            else:
+                return None
+
+    @staticmethod
+    def after_hook():
+        # Is the default python executable the one in macports?
+        #
+        # We need to warn the user about this situation and let him know how to
+        # fix. See: http://stackoverflow.com/questions/118813/
+        if sys.executable.startswith('/opt/'):
+            # That's what we need since pip-2.7 will install all the libs in
+            # that python site-packages directory
+            pass
+        else:
+            print TWO_PYTHON_MSG % sys.executable
+
+        #check if scapy is correctly installed/working on OSX
+        try:
+            from scapy.all import traceroute
+        except ImportError:
+            # The user just needs to work on his dependencies.
+            pass
+        except OSError, ose:
+            if "Device not configured" in str(ose):
+                print(TRACEROUTE_SCAPY_MSG)
