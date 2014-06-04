@@ -1,5 +1,5 @@
 """
-default.py
+test_current_platform.py
 
 Copyright 2014 Andres Riancho
 
@@ -19,23 +19,34 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .base_platform import Platform
-from ..requirements import CORE, GUI
+import unittest
+
+from ..current_platform import get_current_platform
+from ..default import DefaultPlatform
+from ..base_platform import Platform
 
 
-class DefaultPlatform(Platform):
-    PIP_CMD = 'pip'
+class TestCurrentPlatform(unittest.TestCase):
+    def test_get_current_platform_default(self):
+        default = get_current_platform([])
+        self.assertIsInstance(default, DefaultPlatform)
 
-    # Should never be used since we have an empty SYSTEM_PACKAGES
-    PKG_MANAGER_CMD = ''
+    def test_get_current_platform_choose_match(self):
+        default = get_current_platform([ChooseMe, NotMe])
+        self.assertIsInstance(default, ChooseMe)
 
-    SYSTEM_PACKAGES = {CORE: [],
-                       GUI: []}
+    def test_get_current_platform_choose_match_second(self):
+        default = get_current_platform([NotMe, ChooseMe])
+        self.assertIsInstance(default, ChooseMe)
 
+
+class ChooseMe(Platform):
     @staticmethod
     def is_current_platform():
         return True
 
+
+class NotMe(Platform):
     @staticmethod
-    def os_package_is_installed():
+    def is_current_platform():
         return False

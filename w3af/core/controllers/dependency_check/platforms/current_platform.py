@@ -31,8 +31,8 @@ from .default import DefaultPlatform
 KNOWN_PLATFORMS = [Ubuntu1204, CentOS, Fedora, Kali, MacOSX, OpenBSD5, SuSE]
 
 
-def get_current_platform():
-    for known_platform in KNOWN_PLATFORMS:
+def get_current_platform(known_platforms=KNOWN_PLATFORMS):
+    for known_platform in known_platforms:
         if known_platform.is_current_platform():
             return known_platform()
     else:
