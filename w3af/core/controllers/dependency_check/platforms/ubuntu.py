@@ -1,5 +1,5 @@
 """
-fedora.py
+linux.py
 
 Copyright 2013 Andres Riancho
 
@@ -26,42 +26,47 @@ from .base_platform import Platform
 from ..requirements import CORE, GUI
 
 
-class Fedora(Platform):
-    SYSTEM_NAME = 'fedora'
-    PKG_MANAGER_CMD = 'sudo yum install'
-    PIP_CMD = 'python-pip'
+class Ubuntu1204(Platform):
+    SYSTEM_NAME = 'Ubuntu 12.04'
+    PKG_MANAGER_CMD = 'sudo apt-get install'
+    PIP_CMD = 'pip'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
-                            'libsqlite3x-devel', 'git', 'libxml2-devel',
-                            'libxslt-devel']
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'python2.7-dev',
+                            'python-setuptools', 'build-essential',
+                            'libsqlite3-dev', 'libssl-dev', 'git',
+                            'libxml2-dev', 'libxslt1-dev', 'libyaml-dev']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
-    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'pygtksourceview', 'pygtk2'])
+    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview2',
+                                'python-gtk2'])
 
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}
 
     @staticmethod
     def os_package_is_installed(package_name):
-        not_installed = 'is not installed'
+        not_installed = 'is not installed and no info is available'
+
+        # The hold string was added after a failed build of w3af-module
         installed = 'Status: install ok installed'
+        hold = 'Status: hold ok installed'
 
         try:
-            p = subprocess.Popen(['rpm', '-q', package_name],
+            p = subprocess.Popen(['dpkg', '-s', package_name],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except OSError:
-            # We're not on a fedora based system
+            # We're not on a debian based system
             return None
         else:
             dpkg_output, _ = p.communicate()
 
             if not_installed in dpkg_output:
                 return False
-            elif package_name in dpkg_output:
+            elif installed in dpkg_output or hold in dpkg_output:
                 return True
             else:
                 return None
 
     @staticmethod
     def is_current_platform():
-        return 'fedora' in platform.dist()
+        return 'Ubuntu' in platform.dist() and '12.04' in platform.dist()

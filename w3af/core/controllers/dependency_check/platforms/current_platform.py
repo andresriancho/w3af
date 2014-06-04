@@ -19,53 +19,24 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.dependency_check.requirements import PIP_PACKAGES
-from ..os_detection import is_mac, is_openbsd, is_fedora, is_centos, is_kali, is_suse
+from .ubuntu import Ubuntu1204
+from .centos import CentOS
+from .fedora import Fedora
+from .kali import Kali
+from .mac import MacOSX
+from .openbsd import OpenBSD5
+from .suse import SuSE
+from .default import DefaultPlatform
+
+KNOWN_PLATFORMS = [Ubuntu1204, CentOS, Fedora, Kali, MacOSX, OpenBSD5, SuSE]
 
 
-if is_mac():
-    from .mac import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                      SYSTEM_PACKAGES, PIP_CMD,
-                      os_package_is_installed,
-                      after_hook)
-    # Note that I'm overriding the previous import of PIP_PACKAGES, this allows
-    # us to have a different set of pip dependencies for Mac
-    #
-    # https://github.com/andresriancho/w3af/issues/485
-    from .mac import PIP_PACKAGES
+def get_current_platform(known_platforms=KNOWN_PLATFORMS):
+    for known_platform in known_platforms:
+        if known_platform.is_current_platform():
+            return known_platform()
+    else:
+        return DefaultPlatform()
 
-elif is_openbsd():
-    from .openbsd import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                          SYSTEM_PACKAGES, PIP_CMD,
-                          os_package_is_installed,
-                          after_hook)
-    
-elif is_fedora():
-    from .fedora import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                        SYSTEM_PACKAGES, PIP_CMD,
-                        os_package_is_installed,
-                        after_hook)
 
-elif is_centos():
-    from .centos import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                         SYSTEM_PACKAGES, PIP_CMD,
-                         os_package_is_installed,
-                         after_hook)
 
-elif is_kali():
-    from .kali import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                       SYSTEM_PACKAGES, PIP_CMD,
-                       os_package_is_installed,
-                       after_hook)
-
-elif is_suse():
-    from .suse import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                       SYSTEM_PACKAGES, PIP_CMD,
-                       os_package_is_installed,
-                       after_hook)
-
-else:
-    from .linux import (SYSTEM_NAME, PKG_MANAGER_CMD,
-                        SYSTEM_PACKAGES, PIP_CMD,
-                        os_package_is_installed,
-                        after_hook)

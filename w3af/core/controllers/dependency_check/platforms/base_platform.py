@@ -1,7 +1,7 @@
 """
-os_detection.py
+platform.py
 
-Copyright 2013 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,36 +19,28 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import platform
+from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_PACKAGES, CORE, GUI
 
 
-curr_platform = platform.system().lower()
-distro = platform.dist()
+class Platform(object):
+    """
+    Simple base class for defining platforms/operating systems for dependency
+    checks.
+    """
+    PIP_PACKAGES = {CORE: CORE_PIP_PACKAGES,
+                    GUI: GUI_PIP_PACKAGES}
 
+    SYSTEM_PACKAGES = {CORE: [],
+                       GUI: []}
 
-def is_mac():
-    return 'darwin' in curr_platform or 'mac' in curr_platform
+    @staticmethod
+    def is_current_platform():
+        raise NotImplementedError
 
+    @staticmethod
+    def os_package_is_installed():
+        raise NotImplementedError
 
-def is_linux():
-    return 'linux' in curr_platform
-
-
-def is_fedora():
-    return 'fedora' in distro[0]
-
-
-def is_centos():
-    return 'redhat' in distro[0]
-
-
-def is_suse():
-    return 'SuSE' in distro[0]
-
-
-def is_openbsd():
-    return 'openbsd' in curr_platform
-
-
-def is_kali():
-    return 'debian' in distro and 'kali' in platform.release()
+    @staticmethod
+    def after_hook():
+        pass

@@ -19,23 +19,29 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.dependency_check.platforms.fedora import os_package_is_installed
+import platform
 
-SYSTEM_NAME = 'CentOS'
-
-PKG_MANAGER_CMD = 'sudo yum install'
-
-SYSTEM_PACKAGES = {
-                   'PIP': ['python-pip'],
-                   'C_BUILD': ['python-devel', 'python-setuptools',
-                               'libsqlite3x-devel', 'gcc-c++', 'gcc', 'make'],
-                   'GIT': ['git'],
-                   'XML': ['libxml2-devel', 'libxslt-devel'],
-                   'SSL': ['pyOpenSSL', 'openssl-devel', 'libcom_err-devel',
-                           'libcom_err'],
-                  }
-PIP_CMD = 'pip-python'
+from .fedora import Fedora
+from ..requirements import CORE, GUI
 
 
-def after_hook():
-    pass
+class CentOS(Fedora):
+    SYSTEM_NAME = 'CentOS'
+    PKG_MANAGER_CMD = 'sudo yum install'
+    PIP_CMD = 'pip-python'
+
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
+                            'libsqlite3x-devel', 'gcc-c++', 'gcc', 'make',
+                            'git', 'libxml2-devel', 'libxslt-devel',
+                            'pyOpenSSL', 'openssl-devel', 'libcom_err-devel',
+                            'libcom_err']
+
+    GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
+    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'gtksourceview2', 'pygtksourceview'])
+
+    SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
+                       GUI: GUI_SYSTEM_PACKAGES}
+
+    @staticmethod
+    def is_current_platform():
+        return 'redhat' in platform.dist()
