@@ -718,7 +718,7 @@ class MainApp(object):
         # features for exploitation
         om.out.set_output_plugin_inst(GtkOutput())
         
-        exception_list = self.w3af.exception_handler.get_all_exceptions()
+        exception_list = self.w3af.exception_handler.get_unique_exceptions()
         if exception_list:
             # damn...
             self.sb(_("Scan finished with exceptions"))

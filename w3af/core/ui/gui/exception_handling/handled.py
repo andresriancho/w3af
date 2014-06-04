@@ -38,7 +38,7 @@ def handle_exceptions(w3af_core):
     and you should read it before this one.
     """
     # Save the info to a file for later analysis by the user
-    for edata in w3af_core.exception_handler.get_all_exceptions():
+    for edata in w3af_core.exception_handler.get_unique_exceptions():
         edata_str = edata.get_details()
         create_crash_file(edata_str)
 
@@ -53,7 +53,7 @@ def handle_exceptions(w3af_core):
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Github.
     title = _('Handled exceptions to report')
-    bug_report_win = handled_bug_report.bug_report_window(w3af_core, title)
+    bug_report_win = handled_bug_report.BugReportWindow(w3af_core, title)
 
     # Blocks waiting for user interaction
     bug_report_win.show()
