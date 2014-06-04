@@ -36,25 +36,12 @@ class LRU(object):
     """
     Implementation of a length-limited O(1) LRU queue.
     Built for and used by PyPE:
-    http://pype.sourceforge.net
-    Copyright 2003 Josiah Carlson.
+        http://pype.sourceforge.net
+        Copyright 2003 Josiah Carlson.
 
     These is a list of the modifications that I (Andres Riancho) introduced to
     the code:
         - Thread safety
-
-    >>> lru_test = LRU(4)
-    >>> lru_test['1'] = 1
-    >>> lru_test['2'] = 1
-    >>> lru_test['3'] = 1
-    >>> lru_test['4'] = 1
-
-    # Adding one more, the '1' should go away
-    >>> lru_test['5'] = 1
-    >>> '1' in lru_test
-    False
-    >>> '5' in lru_test
-    True
     """
     def __init__(self, count, pairs=[]):
         self.lock = threading.RLock()
