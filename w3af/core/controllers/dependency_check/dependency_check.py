@@ -87,7 +87,7 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
                 if not lazy_load(w3af_req.module_name):
                     failed_deps.append(w3af_req)
             except KeyboardInterrupt:
-                print 'User exit with Ctrl+C.'
+                print('User exit with Ctrl+C.')
                 sys.exit(-1)
     
     #
@@ -121,8 +121,8 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
         msg += 'On %s systems please install the following operating'\
                ' system packages before running the pip installer:\n'\
                '    %s %s\n' 
-        print msg % (platform.SYSTEM_NAME, platform.PKG_MANAGER_CMD,
-                     missing_pkgs)
+        print(msg % (platform.SYSTEM_NAME, platform.PKG_MANAGER_CMD,
+                     missing_pkgs))
         
     #
     #    Report all missing python modules
@@ -131,7 +131,8 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
         msg = 'Your python installation needs the following modules'\
               ' to run w3af:\n'
         msg += '    ' + ' '.join([fdep.module_name for fdep in failed_deps])
-        print msg, '\n'
+        print(msg)
+        print('\n')
         
         #
         #    Report missing pip packages
@@ -151,10 +152,10 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
                 msg += '    %s\n' % generate_pip_install_git(platform.PIP_CMD,
                                                              missing_git_pkg)
         
-        print msg
+        print(msg)
     
     msg = 'A script with these commands has been created for you at %s'
-    print msg % script_path
+    print(msg % script_path)
     
     enable_warnings()
     platform.after_hook()
