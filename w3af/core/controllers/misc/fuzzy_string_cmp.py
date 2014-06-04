@@ -116,7 +116,7 @@ def relative_distance(a_str, b_str):
         #
         return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
 
-    return len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
+    return 1.0 * len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
 
 
 def _generate_upper_bounds():
