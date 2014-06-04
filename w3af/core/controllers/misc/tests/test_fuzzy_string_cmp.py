@@ -68,3 +68,17 @@ class TestLevenshtein(unittest.TestCase):
                   '    - Threshold: %s\n'\
             
             self.assertEqual(res1, res2, msg % (e, d, f))
+
+    def test_relative_distance(self):
+        acceptance_tests = []
+        acceptance_tests.append(('a', 'a', 1.0))
+        acceptance_tests.append(('ab ac ad', 'ab ae ad', 0.6))
+        acceptance_tests.append(('ab ac ae', 'ab af ad', 0.3))
+        acceptance_tests.append(('ab ac ad', 'aa ae af', 0.0))
+        acceptance_tests.append(('a', 'b', 0.0))
+        acceptance_tests.append(('aaaa', 'aaab', 0.75))
+        acceptance_tests.append(('a' * 25, 'a', 0.04))
+        for e, d, f in acceptance_tests:
+            res = relative_distance(e, d)
+            msg = "return value:%f, given value:%f" % (res, f)
+            self.assertTrue(res >= f, msg)
