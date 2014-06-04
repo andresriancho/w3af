@@ -81,12 +81,9 @@ class TestStrategy(unittest.TestCase):
         Makes sure that the threads which are living in my process are the
         ones that I want.
         """
-        # IMPORTANT!
-        #
-        # Disabled because this can't run @ CircleCI
-        #
-        # IMPORTANT!
-        raise SkipTest('This fails @ CircleCI')
+        # PASS: nosetests test_strategy_low_level.py:TestStrategy.test_strategy_run
+        # FAIL: nosetests test_strategy_low_level.py
+        raise SkipTest('This fails if you run multiple tests.')
 
         thread_names = [t.name for t in threading.enumerate()]
         thread_names = set(thread_names)
