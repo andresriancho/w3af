@@ -25,7 +25,8 @@ import platform
 
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 from .base_platform import Platform
-from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_PACKAGES, CORE, GUI
+from ..requirements import (CORE_PIP_PACKAGES, GUI_PIP_PACKAGES,
+                            GUI_PIP_EXTRAS, CORE, GUI)
 
 
 TWO_PYTHON_MSG = """\
@@ -84,8 +85,11 @@ class MacOSX(Platform):
     MAC_CORE_PIP_PACKAGES.remove(PIPDependency('pybloomfilter',
                                                'pybloomfiltermmap', '0.3.11'))
 
+    MAC_GUI_PIP_PACKAGES = MAC_CORE_PIP_PACKAGES[:]
+    MAC_GUI_PIP_PACKAGES.extend(GUI_PIP_EXTRAS)
+
     PIP_PACKAGES = {CORE: MAC_CORE_PIP_PACKAGES,
-                    GUI: GUI_PIP_PACKAGES}
+                    GUI: MAC_GUI_PIP_PACKAGES}
 
     @staticmethod
     def is_current_platform():
