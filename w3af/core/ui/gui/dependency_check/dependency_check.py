@@ -22,11 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check as mdep_check
-from .platforms.current_platform import (SYSTEM_NAME,
-                                         PKG_MANAGER_CMD,
-                                         SYSTEM_PACKAGES,
-                                         PIP_CMD,
-                                         PIP_PACKAGES)
+from w3af.core.controllers.dependency_check.platforms.base_platform import GUI
 
 
 def dependency_check():
@@ -40,11 +36,7 @@ def dependency_check():
     we extend() the lists present in the base module before passing them to
     mdep_check() 
     """
-    should_exit = mdep_check(pip_packages=PIP_PACKAGES,
-                             system_packages=SYSTEM_PACKAGES,
-                             system_name=SYSTEM_NAME,
-                             pkg_manager_cmd=PKG_MANAGER_CMD,
-                             pip_cmd=PIP_CMD, exit_on_failure=False)
+    should_exit = mdep_check(dependency_set=GUI, exit_on_failure=False)
     
     try:
         import pygtk

@@ -471,7 +471,8 @@ class ExtendedUrllib(object):
         if not req.ignore_errors:
             self._increment_global_error_count(exception)
 
-        return self._generic_send_error_handler(req, exception, grep, original_url)
+        return self._generic_send_error_handler(req, exception, grep,
+                                                original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
         """
@@ -482,7 +483,8 @@ class ExtendedUrllib(object):
         if not req.ignore_errors:
             self._increment_global_error_count(exception)
 
-        return self._generic_send_error_handler(req, exception, grep, original_url)
+        return self._generic_send_error_handler(req, exception, grep,
+                                                original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
         if req.ignore_errors:
@@ -522,12 +524,10 @@ class ExtendedUrllib(object):
                 printable_data = printable_data.replace('\r', ' ')
                 
             msg = ('%s %s with data: "%s" returned HTTP code "%s"'
-                   % (
-                      req.get_method(),
+                   % (req.get_method(),
                       original_url,
                       printable_data,
-                      res.code)
-                     )
+                      res.code))
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
         flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,

@@ -120,6 +120,7 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
         while self.get_port() is None:
             time.sleep(0.5)
 
+
 class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):

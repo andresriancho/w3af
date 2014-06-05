@@ -115,8 +115,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         
         return cls(url, data=data, headers=headers_inst,
                    cookies=cookies, cache=cache, method=method)
- 
-        
+
     def copy(self):
         return copy.deepcopy(self)
 

@@ -82,13 +82,13 @@ def cmdLineParser():
         request.add_option("--data", dest="data",
                            help="Data string to be sent through POST")
 
-        request.add_option("--param-del", dest="pDel",
+        request.add_option("--param-del", dest="paramDel",
                            help="Character used for splitting parameter values")
 
         request.add_option("--cookie", dest="cookie",
                            help="HTTP Cookie header value")
 
-        request.add_option("--cookie-del", dest="cDel",
+        request.add_option("--cookie-del", dest="cookieDel",
                            help="Character used for splitting cookie values")
 
         request.add_option("--load-cookies", dest="loadCookies",
@@ -505,12 +505,12 @@ def cmdLineParser():
         takeover.add_option("--os-pwn", dest="osPwn",
                             action="store_true",
                             help="Prompt for an OOB shell, "
-                                 "meterpreter or VNC")
+                                 "Meterpreter or VNC")
 
         takeover.add_option("--os-smbrelay", dest="osSmb",
                             action="store_true",
                             help="One click prompt for an OOB shell, "
-                                 "meterpreter or VNC")
+                                 "Meterpreter or VNC")
 
         takeover.add_option("--os-bof", dest="osBof",
                             action="store_true",
@@ -611,7 +611,7 @@ def cmdLineParser():
                             action="store_true",
                             help="Use DBMS hex function(s) for data retrieval")
 
-        general.add_option("--output-dir", dest="oDir",
+        general.add_option("--output-dir", dest="outputDir",
                             action="store",
                             help="Custom output directory path")
 
@@ -712,6 +712,9 @@ def cmdLineParser():
                           help=SUPPRESS_HELP)
 
         parser.add_option("--force-dns", dest="forceDns", action="store_true",
+                          help=SUPPRESS_HELP)
+
+        parser.add_option("--ignore-401", dest="ignore401", action="store_true",
                           help=SUPPRESS_HELP)
 
         parser.add_option("--smoke-test", dest="smokeTest", action="store_true",

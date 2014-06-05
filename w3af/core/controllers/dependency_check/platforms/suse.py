@@ -20,43 +20,49 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import subprocess
+import platform
 
-SYSTEM_NAME = 'SuSE'
-
-PKG_MANAGER_CMD = 'sudo zypper install'
-
-SYSTEM_PACKAGES = {
-                   'PIP': ['python-pip'],
-                   'C_BUILD': ['python-devel', 
-                               'sqlite3-devel'],
-                   'GIT': ['git'],
-                   'XML': ['libxml2-devel', 'libxslt-devel'],
-                   'other' : ['python-webkitgtk']
-                  }
-
-PIP_CMD = 'pip-2.7'
+from .base_platform import Platform
+from ..requirements import CORE, GUI
 
 
-def os_package_is_installed(package_name):
-    not_installed = 'is not installed'
-    installed = 'Status: install ok installed'
+class SuSE(Platform):
+    SYSTEM_NAME = 'SuSE'
+    PKG_MANAGER_CMD = 'sudo zypper install'
+    PIP_CMD = 'pip-2.7'
 
-    try:
-        p = subprocess.Popen(['rpm', '-q', package_name],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except OSError:
-        # We're not on a suse based system
-        return None
-    else:
-        rpm_output, _ = p.communicate()
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'sqlite3-devel',
+                            'git', 'libxml2-devel', 'libxslt-devel',
+                            'python-webkitgtk']
 
-        if not_installed in rpm_output:
-            return False
-        elif package_name in rpm_output:
-            return True
-        else:
+    GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
+    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview',
+                                'python-gtk'])
+
+    SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
+                       GUI: GUI_SYSTEM_PACKAGES}
+
+    @staticmethod
+    def os_package_is_installed(package_name):
+        not_installed = 'is not installed'
+        installed = 'Status: install ok installed'
+
+        try:
+            p = subprocess.Popen(['rpm', '-q', package_name],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except OSError:
+            # We're not on a suse based system
             return None
+        else:
+            rpm_output, _ = p.communicate()
 
+            if not_installed in rpm_output:
+                return False
+            elif package_name in rpm_output:
+                return True
+            else:
+                return None
 
-def after_hook():
-    pass
+    @staticmethod
+    def is_current_platform():
+        return 'SuSE' in platform.dist()[0]

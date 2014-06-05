@@ -43,7 +43,7 @@ def are_variants(uri, other_uri):
         return False
 
     if not uri.has_query_string() and not other_uri.has_query_string():
-        # No QS and same Domain
+        # No QS and same Domain and path
         return True
 
     if uri.has_query_string() and other_uri.has_query_string():
@@ -59,7 +59,7 @@ def are_variants(uri, other_uri):
             fillvalue=None
         ):
             if None in (vself, vother) or \
-                    vself.isdigit() != vother.isdigit():
+            vself.isdigit() != vother.isdigit():
                 return False
 
         return True

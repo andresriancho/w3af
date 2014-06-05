@@ -34,17 +34,19 @@ class DocumentParser(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    PARSERS = [WMLParser, HTMLParser, JavaScriptParser, PDFParser, SWFParser]
+    # WARNING! The order of this list is important. See note below
+    PARSERS = [WMLParser, JavaScriptParser, PDFParser, SWFParser, HTMLParser]
 
     def __init__(self, http_resp):
-
-        # Create the proper parser instance, please note that
-        # the order in which we ask for the type is not random,
-        # first we discard the images which account for a great
-        # % of the URLs in a site, then we ask for WML which is
-        # a very specific thing to match, then we try text or HTML
-        # which is very generic (if we would have exchanged these two
-        # we would have never got to WML), etc.
+        """
+        Create the proper parser instance, please note that the order in which
+        we ask for the type is not random, first we discard the images which
+        account for a great % of the URLs in a site, then we ask for WML which
+        is a very specific thing to match, then we try JavaScript, PDF and SWF
+        (also very specific) and finally we'll try to parse using the HTMLParser
+        which will return True to "can_parse" in lots of cases (even when we're
+        unsure that the response is really an HTML document).
+        """
         if http_resp.is_image():
             msg = 'There is no parser for images.'
             raise BaseFrameworkException(msg)

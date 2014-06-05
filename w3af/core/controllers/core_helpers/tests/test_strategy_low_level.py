@@ -23,6 +23,7 @@ import threading
 
 from mock import Mock
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
@@ -67,7 +68,7 @@ class TestStrategy(unittest.TestCase):
         self.assertTrue(self.called_teardown_audit)
         
         vulns = kb.get('sqli', 'sqli')
-        self.assertEqual(len(vulns), 1)
+        self.assertEqual(len(vulns), 1, vulns)
         
         # Tell the core that we've finished, this should kill the WorkerThreads
         core.exploit_phase_prerequisites = lambda: 42
@@ -80,12 +81,9 @@ class TestStrategy(unittest.TestCase):
         Makes sure that the threads which are living in my process are the
         ones that I want.
         """
-        # IMPORTANT!
-        #
-        # Disabled because this can't run @ CircleCI
-        #
-        # IMPORTANT!
-        return
+        # PASS: nosetests test_strategy_low_level.py:TestStrategy.test_strategy_run
+        # FAIL: nosetests test_strategy_low_level.py
+        raise SkipTest('This fails if you run multiple tests.')
 
         thread_names = [t.name for t in threading.enumerate()]
         thread_names = set(thread_names)

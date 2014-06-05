@@ -44,7 +44,7 @@ class bug_report_menu(menu):
         om.out.console(summary)
 
     def _cmd_list(self, params):
-        all_edata = self._w3af.exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_unique_exceptions()
 
         if len(params) == 0:
             ptype = 'all'
@@ -72,7 +72,7 @@ class bug_report_menu(menu):
         """
         Show details for a bug referenced by id.
         """
-        all_edata = self._w3af.exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_unique_exceptions()
 
         if len(params) != 1:
             om.out.console(
@@ -97,7 +97,7 @@ class bug_report_menu(menu):
         """
         Report one or more bugs to w3af's Github, menu command.
         """
-        all_edata = self._w3af.exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_unique_exceptions()
 
         if not all_edata:
             om.out.console('There are no exceptions to report for this scan.')
@@ -156,7 +156,7 @@ class bug_report_menu(menu):
         if len(params):
             return []
 
-        all_edata = self._w3af.exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_unique_exceptions()
         suggestions = [str(i) for i in xrange(len(all_edata))]
 
         return suggest(suggestions, part)

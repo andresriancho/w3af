@@ -1,7 +1,7 @@
 """
-test_os_detection.py
+default.py
 
-Copyright 2013 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,16 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
-
-from w3af.core.controllers.dependency_check.os_detection import (is_mac,
-                                                                 is_fedora,
-                                                                 is_linux,
-                                                                 is_openbsd)
+from .base_platform import Platform
+from ..requirements import CORE, GUI
 
 
-class TestOSDetection(unittest.TestCase):
-    def test_only_one(self):
-        results = [is_mac(), is_fedora(), is_linux(), is_openbsd()]
-        self.assertEqual(1, results.count(True))
-        
+class DefaultPlatform(Platform):
+    PIP_CMD = 'pip'
+
+    # Should never be used since we have an empty SYSTEM_PACKAGES
+    PKG_MANAGER_CMD = ''
+
+    SYSTEM_PACKAGES = {CORE: [],
+                       GUI: []}
+
+    @staticmethod
+    def is_current_platform():
+        return True
+
+    @staticmethod
+    def os_package_is_installed():
+        return False

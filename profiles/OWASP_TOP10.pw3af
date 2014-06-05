@@ -136,8 +136,6 @@ diff_ratio = 0.35
 gen_fingerprint = False
 
 [crawl.user_dir]
-identify_os = True
-identify_apps = True
 
 [audit.htaccess_methods]
 

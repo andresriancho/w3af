@@ -34,7 +34,9 @@ class TestUserDir(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('/~www/', 'www user home directory.')]
+    MOCK_RESPONSES = [MockResponse('/~www/', 'www user home directory.'),
+                      MockResponse('/~kmem/', 'kmem user home directory.'),
+                      MockResponse('/xfs/', 'home sweet home')]
 
     def test_fuzzer_user(self):
         # Don't enable dependencies
@@ -45,9 +47,13 @@ class TestUserDir(PluginTest):
 
         users = self.kb.get('user_dir', 'users')
 
-        self.assertEqual(len(users), 1, users)
+        self.assertEqual(len(users), 5, users)
 
-        user = users[0]
+        EXPECTED_NAMES = {'Web user home directory',
+                          'Fingerprinted operating system',
+                          'Identified installed application'}
+        EXPECTED_URLS = {'http://moth/~www/', 'http://moth/~kmem/',
+                         'http://moth/xfs/'}
 
-        self.assertTrue(user.get_name().startswith('Web user home directory'))
-        self.assertEquals(user.get_url().url_string, 'http://moth/~www/')
+        self.assertEqual(EXPECTED_NAMES, set(u.get_name() for u in users))
+        self.assertEqual(EXPECTED_URLS, set(str(u.get_url()) for u in users))

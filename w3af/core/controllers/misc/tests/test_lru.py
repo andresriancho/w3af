@@ -1,7 +1,8 @@
+# -*- encoding: utf-8 -*-
 """
-os_detection.py
+test_lru.py
 
-Copyright 2013 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,36 +20,24 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import platform
+import unittest
+
+from w3af.core.controllers.misc.lru import LRU
 
 
-curr_platform = platform.system().lower()
-distro = platform.dist()
+class TestLRU(unittest.TestCase):
+    def test_basic_lru(self):
+        lru_test = LRU(4)
+        lru_test['1'] = 1
+        lru_test['2'] = 1
+        lru_test['3'] = 1
+        lru_test['4'] = 1
 
+        # Adding one more, the '1' should go away
+        lru_test['5'] = 1
+        self.assertNotIn('1', lru_test)
+        self.assertIn('5', lru_test)
 
-def is_mac():
-    return 'darwin' in curr_platform or 'mac' in curr_platform
-
-
-def is_linux():
-    return 'linux' in curr_platform
-
-
-def is_fedora():
-    return 'fedora' in distro[0]
-
-
-def is_centos():
-    return 'redhat' in distro[0]
-
-
-def is_suse():
-    return 'SuSE' in distro[0]
-
-
-def is_openbsd():
-    return 'openbsd' in curr_platform
-
-
-def is_kali():
-    return 'debian' in distro and 'kali' in platform.release()
+    def test_keyerror(self):
+        lru_test = LRU(4)
+        self.assertRaises(KeyError, lru_test.__getitem__, '3')

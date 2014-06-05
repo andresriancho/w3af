@@ -23,9 +23,9 @@ optDict = {
 
             "Request":       {
                                "data":              "string",
-                               "pDel":              "string",
+                               "paramDel":          "string",
                                "cookie":            "string",
-                               "cDel":              "string",
+                               "cookieDel":         "string",
                                "loadCookies":       "string",
                                "dropSetCookie":     "boolean",
                                "agent":             "string",
@@ -191,7 +191,7 @@ optDict = {
                                "forms":             "boolean",
                                "freshQueries":      "boolean",
                                "hexConvert":        "boolean",
-                               "oDir":              "string",
+                               "outputDir":         "string",
                                "parseErrors":       "boolean",
                                "pivotColumn":       "string",
                                "saveCmdline":       "boolean",
@@ -224,6 +224,7 @@ optDict = {
                                "cpuThrottle":       "integer",
                                "forceDns":          "boolean",
                                "identifyWaf":       "boolean",
+                               "ignore401":         "boolean",
                                "smokeTest":         "boolean",
                                "liveTest":          "boolean",
                                "stopFail":          "boolean",

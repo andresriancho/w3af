@@ -10,6 +10,7 @@ import glob
 import inspect
 import logging
 import os
+import random
 import re
 import socket
 import string
@@ -45,8 +46,8 @@ from lib.core.common import openFile
 from lib.core.common import parseTargetDirect
 from lib.core.common import parseTargetUrl
 from lib.core.common import paths
-from lib.core.common import randomRange
 from lib.core.common import randomStr
+from lib.core.common import readCachedFileContent
 from lib.core.common import readInput
 from lib.core.common import resetCookieJar
 from lib.core.common import runningAsAdmin
@@ -74,6 +75,7 @@ from lib.core.enums import DUMP_FORMAT
 from lib.core.enums import HTTP_HEADER
 from lib.core.enums import HTTPMETHOD
 from lib.core.enums import MOBILES
+from lib.core.enums import OPTION_TYPE
 from lib.core.enums import PAYLOAD
 from lib.core.enums import PRIORITY
 from lib.core.enums import PROXY_TYPE
@@ -91,7 +93,6 @@ from lib.core.exception import SqlmapUnsupportedDBMSException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.log import FORMATTER
 from lib.core.optiondict import optDict
-from lib.core.purge import purge
 from lib.core.settings import ACCESS_ALIASES
 from lib.core.settings import BURP_REQUEST_REGEX
 from lib.core.settings import BURP_XML_HISTORY_REGEX
@@ -120,6 +121,7 @@ from lib.core.settings import PGSQL_ALIASES
 from lib.core.settings import PROBLEMATIC_CUSTOM_INJECTION_PATTERNS
 from lib.core.settings import SITE
 from lib.core.settings import SQLITE_ALIASES
+from lib.core.settings import SQLMAP_ENVIRONMENT_PREFIX
 from lib.core.settings import SUPPORTED_DBMS
 from lib.core.settings import SUPPORTED_OS
 from lib.core.settings import SYBASE_ALIASES
@@ -145,6 +147,7 @@ from lib.request.templates import getPageTemplate
 from lib.utils.crawler import crawl
 from lib.utils.deps import checkDependencies
 from lib.utils.google import Google
+from lib.utils.purge import purge
 from thirdparty.colorama.initialise import init as coloramainit
 from thirdparty.keepalive import keepalive
 from thirdparty.oset.pyoset import oset
@@ -234,7 +237,16 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
 
         if not re.search(BURP_REQUEST_REGEX, content, re.I | re.S):
             if re.search(BURP_XML_HISTORY_REGEX, content, re.I | re.S):
-                reqResList = [_.decode("base64") for _ in re.findall(BURP_XML_HISTORY_REGEX, content, re.I | re.S)]
+                reqResList = []
+                for match in re.finditer(BURP_XML_HISTORY_REGEX, content, re.I | re.S):
+                    port, request = match.groups()
+                    request = request.decode("base64")
+                    _ = re.search(r"%s:.+" % HTTP_HEADER.HOST, request)
+                    if _:
+                        host = _.group(0).strip()
+                        if not re.search(r":\d+\Z", host):
+                            request = request.replace(host, "%s:%d" % (host, int(port)))
+                    reqResList.append(request)
             else:
                 reqResList = [content]
         else:
@@ -502,7 +514,7 @@ def _setCrawler():
                 crawl(target)
 
                 if conf.verbose in (1, 2):
-                    status = '%d/%d links visited (%d%%)' % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
+                    status = "%d/%d links visited (%d%%)" % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
                     dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
             except Exception, ex:
                 errMsg = "problem occurred while crawling at '%s' ('%s')" % (target, ex)
@@ -1037,7 +1049,7 @@ def _setHTTPProxy():
             pass  # drops into the next check block
 
     if not all((scheme, hasattr(PROXY_TYPE, scheme), hostname, port)):
-        errMsg = "proxy value must be in format '(%s)://url:port'" % "|".join(_[0].lower() for _ in getPublicTypeMembers(PROXY_TYPE))
+        errMsg = "proxy value must be in format '(%s)://address:port'" % "|".join(_[0].lower() for _ in getPublicTypeMembers(PROXY_TYPE))
         raise SqlmapSyntaxException(errMsg)
 
     if conf.proxyCred:
@@ -1321,15 +1333,7 @@ def _setHTTPUserAgent():
                 conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, _defaultHTTPUserAgent()))
                 return
 
-        count = len(kb.userAgents)
-
-        if count == 1:
-            userAgent = kb.userAgents[0]
-        else:
-            userAgent = kb.userAgents[randomRange(stop=count - 1)]
-
-        userAgent = sanitizeStr(userAgent)
-        conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, userAgent))
+        userAgent = random.sample(kb.userAgents or [_defaultHTTPUserAgent()], 1)[0]
 
         infoMsg = "fetched random HTTP User-Agent header from "
         infoMsg += "file '%s': %s" % (paths.USER_AGENTS, userAgent)
@@ -1422,8 +1426,8 @@ def _cleanupOptions():
     else:
         conf.rParam = []
 
-    if conf.pDel and '\\' in conf.pDel:
-        conf.pDel = conf.pDel.decode("string_escape")
+    if conf.paramDel and '\\' in conf.paramDel:
+        conf.paramDel = conf.paramDel.decode("string_escape")
 
     if conf.skip:
         conf.skip = conf.skip.replace(" ", "")
@@ -1498,8 +1502,8 @@ def _cleanupOptions():
     if conf.torType:
         conf.torType = conf.torType.upper()
 
-    if conf.oDir:
-        paths.SQLMAP_OUTPUT_PATH = conf.oDir
+    if conf.outputDir:
+        paths.SQLMAP_OUTPUT_PATH = conf.outputDir
         setPaths()
 
     if conf.string:
@@ -1602,6 +1606,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.chars.stop = "%s%s%s" % (KB_CHARS_BOUNDARY_CHAR, randomStr(length=3, lowercase=True), KB_CHARS_BOUNDARY_CHAR)
     kb.chars.at, kb.chars.space, kb.chars.dollar, kb.chars.hash_ = ("%s%s%s" % (KB_CHARS_BOUNDARY_CHAR, _, KB_CHARS_BOUNDARY_CHAR) for _ in randomStr(length=4, lowercase=True))
 
+    kb.columnExistsChoice = None
     kb.commonOutputs = None
     kb.counters = {}
     kb.data = AttribDict()
@@ -1700,6 +1705,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.testQueryCount = 0
     kb.threadContinue = True
     kb.threadException = False
+    kb.tableExistsChoice = None
     kb.timeValidCharsRun = 0
     kb.uChar = NULL
     kb.unionDuplicates = False
@@ -1736,11 +1742,11 @@ def _useWizardInterface():
         message = "POST data (--data) [Enter for None]: "
         conf.data = readInput(message, default=None)
 
-        if filter(lambda x: '=' in str(x), [conf.url, conf.data]) or '*' in conf.url:
+        if filter(lambda _: '=' in unicode(_), (conf.url, conf.data)) or '*' in conf.url:
             break
         else:
             warnMsg = "no GET and/or POST parameter(s) found for testing "
-            warnMsg += "(e.g. GET parameter 'id' in 'www.site.com/index.php?id=1')"
+            warnMsg += "(e.g. GET parameter 'id' in 'http://www.site.com/vuln.php?id=1')"
             logger.critical(warnMsg)
 
             if conf.crawlDepth or conf.forms:
@@ -1821,16 +1827,14 @@ def _saveCmdline():
                 datatype = datatype[0]
 
             if value is None:
-                if datatype == "boolean":
+                if datatype == OPTION_TYPE.BOOLEAN:
                     value = "False"
-                elif datatype in ("integer", "float"):
-                    if option in ("threads", "verbose"):
-                        value = "1"
-                    elif option == "timeout":
-                        value = "10"
+                elif datatype in (OPTION_TYPE.INTEGER, OPTION_TYPE.FLOAT):
+                    if option in defaults:
+                        value = str(defaults[option])
                     else:
                         value = "0"
-                elif datatype == "string":
+                elif datatype == OPTION_TYPE.STRING:
                     value = ""
 
             if isinstance(value, basestring):
@@ -1901,6 +1905,37 @@ def _mergeOptions(inputOptions, overrideOptions):
         if hasattr(conf, key) and conf[key] is None:
             conf[key] = value
 
+    _ = {}
+    for key, value in os.environ.items():
+        if key.upper().startswith(SQLMAP_ENVIRONMENT_PREFIX):
+            _[key[len(SQLMAP_ENVIRONMENT_PREFIX):].upper()] = value
+
+    types_ = {}
+    for group in optDict.keys():
+        types_.update(optDict[group])
+
+    for key in conf:
+        if key.upper() in _:
+            value = _[key.upper()]
+
+            if types_[key] == OPTION_TYPE.BOOLEAN:
+                try:
+                    value = bool(value)
+                except ValueError:
+                    value = False
+            elif types_[key] == OPTION_TYPE.INTEGER:
+                try:
+                    value = int(value)
+                except ValueError:
+                    value = 0
+            elif types_[key] == OPTION_TYPE.FLOAT:
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = 0.0
+
+            conf[key] = value
+
     mergedOptions.update(conf)
 
 def _setTrafficOutputFP():
@@ -1938,7 +1973,10 @@ def _setProxyList():
     if not conf.proxyFile:
         return
 
-    conf.proxyList = getFileItems(conf.proxyFile)
+    conf.proxyList = []
+    for match in re.finditer(r"(?i)((http[^:]*|socks[^:]*)://)?([\w.]+):(\d+)", readCachedFileContent(conf.proxyFile)):
+        _, type_, address, port = match.groups()
+        conf.proxyList.append("%s://%s:%s" % (type_ or "http", address, port))
 
 def _setTorProxySettings():
     if not conf.tor:
@@ -2029,17 +2067,17 @@ def _basicOptionValidation():
         errMsg = "value for option '--risk' must be an integer value from range [1, 3]"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.limitStart is not None and isinstance(conf.limitStart, int) and conf.limitStart > 0 and \
-       conf.limitStop is not None and isinstance(conf.limitStop, int) and conf.limitStop < conf.limitStart:
+    if isinstance(conf.limitStart, int) and conf.limitStart > 0 and \
+       isinstance(conf.limitStop, int) and conf.limitStop < conf.limitStart:
         errMsg = "value for option '--start' (limitStart) must be smaller or equal than value for --stop (limitStop) option"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.firstChar is not None and isinstance(conf.firstChar, int) and conf.firstChar > 0 and \
-       conf.lastChar is not None and isinstance(conf.lastChar, int) and conf.lastChar < conf.firstChar:
+    if isinstance(conf.firstChar, int) and conf.firstChar > 0 and \
+       isinstance(conf.lastChar, int) and conf.lastChar < conf.firstChar:
         errMsg = "value for option '--first' (firstChar) must be smaller than or equal to value for --last (lastChar) option"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.cpuThrottle is not None and isinstance(conf.cpuThrottle, int) and (conf.cpuThrottle > 100 or conf.cpuThrottle < 0):
+    if isinstance(conf.cpuThrottle, int) and (conf.cpuThrottle > 100 or conf.cpuThrottle < 0):
         errMsg = "value for option '--cpu-throttle' (cpuThrottle) must be in range [0,100]"
         raise SqlmapSyntaxException(errMsg)
 

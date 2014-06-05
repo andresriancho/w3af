@@ -19,16 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .linux import (PKG_MANAGER_CMD, SYSTEM_PACKAGES, PIP_CMD,
-                    os_package_is_installed)
+import platform
+
+from .ubuntu import Ubuntu1204
 
 #
 #   This piece of code will most likely be patched to be ignored when we create
 #   the latest deb package for Kali.
 #
-
-SYSTEM_NAME = 'Kali'
-
 KALI_MESSAGE = '''
 According to Kali's documentation [0] in order to avoid breaking the packaged\
  w3af version you should run the following commands:
@@ -45,7 +43,14 @@ cd w3af
 '''
 
 
-def after_hook():
-    print(KALI_MESSAGE)
+class Kali(Ubuntu1204):
+    SYSTEM_NAME = 'Kali'
 
+    @staticmethod
+    def after_hook():
+        print(KALI_MESSAGE)
+
+    @staticmethod
+    def is_current_platform():
+        return 'debian' in platform.dist() and 'kali' in platform.release()
 

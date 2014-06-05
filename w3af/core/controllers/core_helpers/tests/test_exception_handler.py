@@ -82,16 +82,44 @@ class TestExceptionHandler(unittest.TestCase):
             except Exception, e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
-                self.exception_handler.handle(
-                    self.status, e, exec_info, enabled_plugins)
+                self.exception_handler.handle(self.status, e, exec_info,
+                                              enabled_plugins)
 
         self.exception_handler.get_scan_id()
         all_edata = self.exception_handler.get_all_exceptions()
 
-        self.assertEqual(
-            self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN, len(all_edata))
+        self.assertEqual(self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN,
+                         len(all_edata))
 
         edata = all_edata[0]
+
+        self.assertTrue(
+            edata.get_summary().startswith('An exception was found'))
+        self.assertTrue('traceback' in edata.get_details())
+        self.assertEquals(edata.plugin, 'plugin')
+        self.assertEquals(edata.phase, 'phase')
+        self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
+        self.assertEquals(edata.filename, 'test_exception_handler.py')
+
+    def test_get_unique_exceptions(self):
+
+        for _ in xrange(10):
+            try:
+                raise Exception('unittest')
+            except Exception, e:
+                exec_info = sys.exc_info()
+                enabled_plugins = ''
+                self.exception_handler.handle(self.status, e, exec_info,
+                                              enabled_plugins)
+
+        all_edata = self.exception_handler.get_all_exceptions()
+        self.assertEqual(self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN,
+                         len(all_edata))
+
+        unique_edata = self.exception_handler.get_unique_exceptions()
+        self.assertEqual(1, len(unique_edata))
+
+        edata = unique_edata[0]
 
         self.assertTrue(
             edata.get_summary().startswith('An exception was found'))
@@ -133,7 +161,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.filename, 'test_exception_handler.py')
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 107)
+        self.assertEquals(edata.lineno, 135)
 
     def test_handle_multi_calls(self):
 
@@ -160,7 +188,8 @@ class TestExceptionHandler(unittest.TestCase):
 
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 141)        
-                
+        self.assertEquals(edata.lineno, 169)
+
+
 class fake_status(w3af_core_status):
     pass

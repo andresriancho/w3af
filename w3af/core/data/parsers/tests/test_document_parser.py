@@ -51,11 +51,15 @@ class TestDocumentParserFactory(unittest.TestCase):
     HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
                              'data', 'sharepoint-pl.html')
 
-    def test_html(self):
-        parser = document_parser_factory(_build_http_response('', u'text/html'))
+    def test_html_ok(self):
+        mime_types = ['text/html', 'TEXT/HTML', 'TEXT/plain',
+                      'application/xhtml+xml']
 
-        self.assertIsInstance(parser, DocumentParser)
-        self.assertIsInstance(parser._parser, HTMLParser)
+        for mtype in mime_types:
+            parser = document_parser_factory(_build_http_response('body', mtype))
+
+            self.assertIsInstance(parser, DocumentParser)
+            self.assertIsInstance(parser._parser, HTMLParser)
 
     def test_html_upper(self):
         parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))
@@ -72,9 +76,13 @@ class TestDocumentParserFactory(unittest.TestCase):
         self.assertIsInstance(parser._parser, PDFParser)
 
     def test_no_parser(self):
-        response = _build_http_response('%!23', u'application/bar')
-        self.assertRaises(BaseFrameworkException, document_parser_factory,
-                          response)
+        mime_types = ['application/bar', 'application/zip', 'video/abc',
+                      'image/jpeg']
+
+        for mtype in mime_types:
+            response = _build_http_response('body', mtype)
+            self.assertRaises(BaseFrameworkException, document_parser_factory,
+                              response)
 
     def test_no_parser_binary(self):
         all_chars = ''.join([chr(i) for i in xrange(0,255)])

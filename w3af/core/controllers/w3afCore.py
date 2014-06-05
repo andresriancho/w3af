@@ -38,6 +38,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
 
+from w3af.core.controllers.output_manager import fresh_output_manager_inst
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
@@ -69,6 +70,9 @@ class w3afCore(object):
         Init some variables and files.
         Create the URI opener.
         """
+        # Make sure we get a fresh new instance of the output manager
+        fresh_output_manager_inst()
+
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
         # on output manager instantiation but there are issues with starting
@@ -379,6 +383,12 @@ class w3afCore(object):
         """
         This method is called when the process ends normally or by an error.
         """
+        # The scan has ended, and we've already joined() the workers in the
+        # strategy (in a nice way, waiting for them to finish before returning
+        # from strategy.start call), so there is no need to call this:
+        #
+        #self.worker_pool.terminate_join()
+
         try:
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
@@ -398,9 +408,6 @@ class w3afCore(object):
             raise
 
         finally:
-            # The scan has ended, terminate all workers
-            self.worker_pool.terminate_join()
-
             self.exploit_phase_prerequisites()
 
             self.status.stop()

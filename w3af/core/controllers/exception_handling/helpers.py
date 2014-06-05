@@ -45,7 +45,7 @@ def pprint_plugins(w3af_core):
 
     plugins = StringIO.StringIO()
     pprint.pprint(plugs_opts, plugins)
-    return  plugins.getvalue()
+    return plugins.getvalue()
 
 
 def gettempdir():
@@ -63,10 +63,10 @@ def get_versions():
         pygtk_version = ".".join(str(x) for x in gtk.pygtk_version)
 
     # String containing the versions for python, gtk and pygtk
-    versions =  '  Python version: %s\n'\
-                '  GTK version: %s\n'\
-                '  PyGTK version: %s\n'\
-                '  w3af version:\n    %s'
+    versions = '  Python version: %s\n'\
+               '  GTK version: %s\n'\
+               '  PyGTK version: %s\n'\
+               '  w3af version:\n    %s'
     
     w3af_version = '\n    '.join(get_w3af_version().split('\n'))
     

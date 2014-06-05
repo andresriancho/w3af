@@ -33,13 +33,13 @@ from w3af.core.ui.gui.helpers import Throbber
 from w3af.core.ui.gui.constants import W3AF_ICON
 
 
-class simple_base_window(gtk.Window):
+class SimpleBaseWindow(gtk.Window):
 
     def __init__(self, type=gtk.WINDOW_TOPLEVEL):
         """
         One simple class to create other windows.
         """
-        super(simple_base_window, self).__init__(type=type)
+        super(SimpleBaseWindow, self).__init__(type=type)
 
         self.connect("delete-event", self._handle_cancel)
         self.connect("destroy", self._handle_cancel)
@@ -511,7 +511,7 @@ Please provide any additional information below:
         return False, summary, description
 
 
-class github_bug_report(object):
+class GithubBugReport(object):
     """
     Class that models user interaction with Github to report ONE bug.
     """
@@ -608,13 +608,13 @@ class github_bug_report(object):
         return (False, gh, email)
 
 
-class github_multi_bug_report(github_bug_report):
+class GithubMultiBugReport(GithubBugReport):
     """
     Class that models user interaction with Github to report ONE OR MORE bugs.
     """
 
     def __init__(self, exception_list, scan_id):
-        github_bug_report.__init__(self)
+        GithubBugReport.__init__(self)
         self.gh = None
         self.exception_list = exception_list
         self.scan_id = scan_id

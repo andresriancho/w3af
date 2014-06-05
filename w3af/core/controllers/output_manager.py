@@ -36,6 +36,28 @@ from w3af.core.data.constants.encodings import UTF8
 start_lock = threading.Lock()
 
 
+def fresh_output_manager_inst():
+    """
+    Creates a new "out" instance at the module level.
+
+    :return: A reference to the newly created instance
+    """
+    global out
+
+    #
+    #   Stop the old instance thread
+    #
+    if out.is_alive():
+        out.in_queue.put(POISON_PILL)
+        out.join()
+
+    #
+    #   Create the new instance
+    #
+    out = output_manager()
+    return out
+
+
 def start_thread_on_demand(func):
     """
     Given that the output manager has been migrated into a producer/consumer
