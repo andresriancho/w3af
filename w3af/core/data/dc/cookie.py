@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.kv_container import KeyValueContainer
 
 KEY_VALUE_RE = re.compile('(.*?)=(.*?);')
 
 
-class Cookie(DataContainer):
+class Cookie(KeyValueContainer):
     """
     This class represents a cookie.
 
@@ -41,7 +41,7 @@ class Cookie(DataContainer):
             k = k.strip()
             v = v.strip()
 
-            # This was added to support repeated parameter names
+            # This was added to support repeated cookie names
             if k in self:
                 self[k].append(v)
             else:

@@ -27,14 +27,14 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.parsers.url import URL
 
 
-class Form(DataContainer):
+class Form(KeyValueContainer):
     """
-    This class represents a HTML form.
+    This class represents an HTML form.
 
     :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
@@ -51,6 +51,9 @@ class Form(DataContainer):
     INPUT_TYPE_HIDDEN = 'hidden'
     INPUT_TYPE_SUBMIT = 'submit'
     INPUT_TYPE_SELECT = 'select'
+
+    AVOID_STR_DUPLICATES = (INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT)
 
     # This is used for processing checkboxes
     SECRET_VALUE = "3_!21#47w@"
@@ -102,11 +105,10 @@ class Form(DataContainer):
     def get_file_vars(self):
         return self._files
 
-    def _set_var(self, name, value):
+    def setdefault_var(self, name, value):
         """
-        Auxiliary setter for name=value
+        Auxiliary setter for name=value with support repeated parameter names
         """
-        # added to support repeated parameter names
         vals = self.setdefault(name, [])
         vals.append(value)
 
@@ -130,7 +132,7 @@ class Form(DataContainer):
 
         if name:
             self._files.append(name)
-            self._set_var(name, '')
+            self.setdefault_var(name, '')
             # TODO: This does not work if there are different parameters in a
             # form with the same name, and different types
             self._types[name] = self.INPUT_TYPE_FILE
@@ -143,18 +145,15 @@ class Form(DataContainer):
         first value will be put into the string representation and the
         others will be lost.
 
-        @see: Unittest in test_form.py
+        :see: Unittest in test_form.py
         :return: string representation of the Form object.
         """
         d = dict(self)
         d.update(self._submit_map)
 
-        avoid_duplicates = (self.INPUT_TYPE_CHECKBOX, self.INPUT_TYPE_RADIO,
-                            self.INPUT_TYPE_SELECT)
-
         for key in d:
             key_type = self._types.get(key, None)
-            if key_type in avoid_duplicates:
+            if key_type in self.AVOID_STR_DUPLICATES:
                 d[key] = d[key][:1]
 
         return urlencode(d, encoding=self.encoding)
@@ -162,7 +161,7 @@ class Form(DataContainer):
     def add_submit(self, name, value):
         """
         This is something I hadn't thought about !
-        <input type="submit" name="b0f" value="Submit Request">
+            <input type="submit" name="b0f" value="Submit Request">
         """
         self._submit_map[name] = value
 
@@ -203,7 +202,7 @@ class Form(DataContainer):
         if attr_type == self.INPUT_TYPE_SUBMIT:
             self.add_submit(name, value)
         else:
-            self._set_var(name, value)
+            self.setdefault_var(name, value)
 
         # Save the attr_type
         self._types[name] = attr_type
@@ -212,7 +211,7 @@ class Form(DataContainer):
         # TODO May be create special internal method instead of using
         # add_input()?
         #
-        return (name, value)
+        return name, value
 
     def get_type(self, name):
         return self._types[name]
@@ -274,7 +273,7 @@ class Form(DataContainer):
                     value = attr[1]
                     self._selects[name].append(value)
 
-        self._set_var(name, value)
+        self.setdefault_var(name, value)
 
     def get_variants(self, mode="tmb"):
         """
@@ -285,7 +284,6 @@ class Form(DataContainer):
           "t" - top values
           "b" - bottom values
         """
-
         if mode not in ("all", "tb", "tmb", "t", "b"):
             raise ValueError("mode must be in ('all', 'tb', 'tmb', 't', 'b')")
 

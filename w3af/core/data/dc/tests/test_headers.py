@@ -106,13 +106,6 @@ class TestHeaders(unittest.TestCase):
 
         self.assertNotEqual(upper_headers, lower_headers)
 
-    def test_clone_with_list_values(self):
-        headers = Headers([('a', 'b'), ('c', 'd')])
-        cloned = headers.clone_with_list_values()
-
-        self.assertEqual(cloned['a'], ['b'])
-        self.assertEqual(cloned['c'], ['d'])
-
     def test_from_string(self):
         headers_from_str = Headers.from_string('a: b\r\n')
         headers_from_obj = Headers([('a', 'b')])
