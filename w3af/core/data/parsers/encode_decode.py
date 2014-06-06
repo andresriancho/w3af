@@ -119,12 +119,9 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
             # allowed empty dicts that type of behavior probably should be
             # preserved for consistency
         except TypeError:
-            try:
-                tb = sys.exc_info()[2]
-                raise TypeError, "not a valid non-string sequence or " \
-                    "mapping object", tb
-            finally:
-                del tb
+            tb = sys.exc_info()[2]
+            msg = "not a valid non-string sequence or mapping object"
+            raise TypeError, msg, tb
 
     l = []
     is_unicode = lambda x: isinstance(x, unicode)

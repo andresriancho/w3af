@@ -926,15 +926,15 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://www.w3af.com/')
         self.assertEqual(u._cache, dict())
 
-        domain_path = u.get_domain_path()
+        url = u.uri2url()
         self.assertNotEqual(u._cache, dict())
-        self.assertIn(domain_path, u._cache.values())
+        self.assertIn(url, u._cache.values())
 
-        second_domain_path = u.get_domain_path()
-        self.assertIs(domain_path, second_domain_path)
+        second_url = u.uri2url()
+        self.assertIs(url, second_url)
 
-        self.assertIsInstance(domain_path, URL)
-        self.assertIsInstance(second_domain_path, URL)
+        self.assertIsInstance(url, URL)
+        self.assertIsInstance(second_url, URL)
 
     def test_can_be_pickled(self):
         # Pickle a URL object that contains a cache
