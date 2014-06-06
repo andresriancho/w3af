@@ -114,7 +114,7 @@ class xss(AuditPlugin):
         payload = replace_randomize(''.join(self.PAYLOADS))
         
         trivial_mutant = mutant.copy()
-        trivial_mutant.set_mod_value(payload)
+        trivial_mutant.set_token_value(payload)
         
         response = self._uri_opener.send_mutant(trivial_mutant)
 
@@ -159,7 +159,7 @@ class xss(AuditPlugin):
             if self._has_bug(mutant):
                 return
             
-            mod_value = mutant.get_mod_value()
+            mod_value = mutant.get_token_value()
 
             body_lower = response.get_body().lower()
             mod_value_lower = mod_value.lower()
@@ -208,7 +208,7 @@ class xss(AuditPlugin):
         
         for mutant, mutant_response_id in self._xss_mutants:
             
-            mod_value = mutant.get_mod_value()
+            mod_value = mutant.get_token_value()
             
             for context in get_context_iter(response_body, mod_value):
                 if context.is_executable() or context.can_break(mod_value):
@@ -251,7 +251,7 @@ class xss(AuditPlugin):
         v['persistent'] = True
         v['write_payload'] = mutant
         v['read_payload'] = fuzzable_request
-        v.add_to_highlight(mutant.get_mod_value())
+        v.add_to_highlight(mutant.get_token_value())
 
         om.out.vulnerability(v.get_desc())
         self.kb_append_uniq(self, 'xss', v)

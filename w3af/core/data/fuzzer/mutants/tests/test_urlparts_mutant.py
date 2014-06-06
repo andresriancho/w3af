@@ -47,7 +47,7 @@ class TestURLPartsMutant(unittest.TestCase):
                          u'http://www.w3af.com/ping%21/bar')
 
         expected_mod_value = 'The sent urlparts is: "/ping!/bar".'
-        generated_mod_value = m.print_mod_value()
+        generated_mod_value = m.print_token_value()
 
         self.assertEqual(generated_mod_value, expected_mod_value)
 

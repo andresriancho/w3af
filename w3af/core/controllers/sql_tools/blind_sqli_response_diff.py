@@ -106,10 +106,10 @@ class blind_sqli_response_diff(object):
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
 
-        mutant.set_mod_value(true_statement)
+        mutant.set_token_value(true_statement)
         _, body_true_response = self.send_clean(mutant)
 
-        mutant.set_mod_value(false_statement)
+        mutant.set_token_value(false_statement)
         _, body_false_response = self.send_clean(mutant)
 
         if body_true_response == body_false_response:
@@ -134,7 +134,7 @@ class blind_sqli_response_diff(object):
             compare_diff = True
 
         syntax_error = "d'z'0"
-        mutant.set_mod_value(syntax_error)
+        mutant.set_token_value(syntax_error)
         syntax_error_response, body_syntax_error_response = self.send_clean(
             mutant)
 
@@ -150,11 +150,11 @@ class blind_sqli_response_diff(object):
         second_true_stm = statements[statement_type][0]
         second_false_stm = statements[statement_type][1]
 
-        mutant.set_mod_value(second_true_stm)
+        mutant.set_token_value(second_true_stm)
         second_true_response, body_second_true_response = self.send_clean(
             mutant)
 
-        mutant.set_mod_value(second_false_stm)
+        mutant.set_token_value(second_false_stm)
         second_false_response, body_second_false_response = self.send_clean(mutant)
 
         self.debug(
@@ -251,7 +251,7 @@ def get_clean_body(mutant, response):
     body = response.body
 
     if response.is_text_or_html():
-        mod_value = mutant.get_mod_value()
+        mod_value = mutant.get_token_value()
 
         body = body.replace(mod_value, '')
         body = body.replace(urllib.unquote_plus(mod_value), '')

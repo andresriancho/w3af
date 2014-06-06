@@ -62,7 +62,7 @@ class ExactDelayController(DelayMixIn):
             raise TypeError('ExactDelayController requires ExactDelay as input')
         
         self.mutant = mutant
-        self.mutant.set_mod_value(self.mutant.get_original_value())
+        self.mutant.set_token_value(self.mutant.get_original_value())
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
@@ -127,7 +127,7 @@ class ExactDelayController(DelayMixIn):
         """
         delay_str = self.delay_obj.get_string_for_delay(delay)
         mutant = self.mutant.copy()
-        mutant.set_mod_value(delay_str)
+        mutant.set_token_value(delay_str)
 
         #    Send, it is important to notice that we don't use the cache
         #    to avoid any interference

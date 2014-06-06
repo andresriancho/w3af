@@ -62,7 +62,7 @@ class ssi(AuditPlugin):
         # Used in end() to detect "persistent SSI"
         for mut in mutants:
             expected_result = self._extract_result_from_payload(
-                mut.get_mod_value())
+                mut.get_token_value())
             self._expected_res_mutant[expected_result] = mut
 
         self._freq_list.append(freq)
@@ -98,7 +98,7 @@ class ssi(AuditPlugin):
         :return: None, save the vuln to the kb.
         """
         if self._has_no_bug(mutant):
-            e_res = self._extract_result_from_payload(mutant.get_mod_value())
+            e_res = self._extract_result_from_payload(mutant.get_token_value())
             if e_res in response and not e_res in mutant.get_original_response_body():
                 
                 desc = 'Server side include (SSI) was found at: %s'

@@ -27,34 +27,15 @@ class CookieMutant(Mutant):
     """
     This class is a headers mutant.
     """
-    def __init__(self, freq):
-        Mutant.__init__(self, freq)
-
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'cookie'
 
     def set_dc(self, c):
-        self.set_cookie(c)
+        self._freq.set_cookie(c)
 
     def get_dc(self):
-        return self.get_cookie()
-
-    def set_mod_value(self, val):
-        """
-        Set the value of the variable that this mutant modifies.
-        """
-        try:
-            self._freq._cookie[self.get_var()][self._index] = val
-        except Exception:
-            msg = 'The mutant object wasn\'t correctly initialized.'
-            raise ValueError(msg)
-
-    def get_mod_value(self):
-        try:
-            return self._freq._cookie[self.get_var()][self._index]
-        except:
-            msg = 'The mutant object wasn\'t correctly initialized.'
-            raise ValueError(msg)
+        return self._freq.get_cookie()
 
     def found_at(self):
         """
@@ -70,7 +51,7 @@ class CookieMutant(Mutant):
 
         return msg % (self.get_url(), self.get_method(), dc_short)
 
-    def print_mod_value(self):
+    def print_token_value(self):
         fmt = 'The cookie data that was sent is: "%s".'
         return fmt % self.get_dc()
 

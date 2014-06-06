@@ -169,7 +169,7 @@ class lfi(AuditPlugin):
         #   (note that this is run if no vulns were identified)
         #
         #   http://host.tld/show_user.php?id=show_user.php
-        if mutant.get_mod_value() == mutant.get_url().get_file_name():
+        if mutant.get_token_value() == mutant.get_url().get_file_name():
             match, lang = is_source_file(response.get_body())
             if match:
                 # We were able to read the source code of the file that is

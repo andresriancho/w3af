@@ -64,7 +64,7 @@ class LocalFileReadTemplate(BaseTemplate):
         mutant = Mutant(freq)
         mutant.set_var(self.vulnerable_parameter)
         mutant.set_dc(self.data)
-        mutant.set_mod_value(self.payload)
+        mutant.set_token_value(self.payload)
         
         v.set_mutant(mutant)
         

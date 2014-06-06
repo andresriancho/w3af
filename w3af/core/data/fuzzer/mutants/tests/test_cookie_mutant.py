@@ -41,14 +41,14 @@ class TestCookieMutant(unittest.TestCase):
 
         m = CookieMutant(freq)
         m.set_var('foo', 0)
-        m.set_mod_value('abc')
+        m.set_token_value('abc')
 
         self.assertEqual(m.get_url().url_string, 'http://moth/')
         self.assertEqual(str(m.get_cookie()), 'foo=abc; spam=eggs;')
 
         expected_mod_value = 'The cookie data that was sent is: "foo=abc;'\
                              ' spam=eggs;".'
-        generated_mod_value = m.print_mod_value()
+        generated_mod_value = m.print_token_value()
 
         self.assertEqual(generated_mod_value, expected_mod_value)
 

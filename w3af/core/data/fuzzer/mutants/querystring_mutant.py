@@ -34,7 +34,7 @@ class QSMutant(Mutant):
     def get_mutant_type():
         return 'query string'
 
-    def print_mod_value(self):
+    def print_token_value(self):
         return 'The sent URI was ' + self.get_uri() + ' .'
 
     @staticmethod

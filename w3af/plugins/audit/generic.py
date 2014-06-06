@@ -85,7 +85,7 @@ class generic(AuditPlugin):
             #     If http://localhost/a.php?b=abc ; then I should request b=
             for error_string in self.ERROR_STRINGS:
 
-                m.set_mod_value(error_string)
+                m.set_token_value(error_string)
                 error_response = self._uri_opener.send_mutant(m)
 
                 # Now I compare responses
@@ -145,9 +145,9 @@ class generic(AuditPlugin):
         dc = copy.deepcopy(m.get_dc())
 
         if m.get_original_value().isdigit():
-            m.set_mod_value(rand_number(length=8))
+            m.set_token_value(rand_number(length=8))
         else:
-            m.set_mod_value(rand_alnum(length=8))
+            m.set_token_value(rand_alnum(length=8))
         limit_response = self._uri_opener.send_mutant(m)
 
         # restore the dc

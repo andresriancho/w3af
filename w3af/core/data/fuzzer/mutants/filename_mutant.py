@@ -43,7 +43,7 @@ class FileNameMutant(URLPartsMutant):
 
     def get_url(self):
         """
-        :return: The URL, as modified by "set_mod_value()"
+        :return: The URL, as modified by "set_token_value()"
         """
         domain_path = self._freq.get_url().get_domain_path()
 
@@ -63,15 +63,15 @@ class FileNameMutant(URLPartsMutant):
     def get_data(self):
         return None
 
-    def print_mod_value(self):
+    def print_token_value(self):
         fmt = 'The sent %s is: "%s%s%s".'
         return fmt % (self.get_mutant_type(), self._mutant_dc['start'],
                       self._mutant_dc['modified_part'], self._mutant_dc['end'])
 
-    def set_mod_value(self, val):
+    def set_token_value(self, val):
         self._mutant_dc['modified_part'] = val
 
-    def get_mod_value(self):
+    def get_token_value(self):
         return self._mutant_dc['modified_part']
 
     def set_url(self, u):
@@ -85,7 +85,7 @@ class FileNameMutant(URLPartsMutant):
         """
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' filename, with value: "%s".'
-        return fmt % (self.get_url(), self.get_method(), self.get_mod_value())
+        return fmt % (self.get_url(), self.get_method(), self.get_token_value())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
@@ -133,7 +133,7 @@ class FileNameMutant(URLPartsMutant):
                     m.set_original_value(fn_chunk)
                     m.set_var('modified_part')
                     m.set_mutant_dc(divided_fname)
-                    m.set_mod_value(mutant_str)
+                    m.set_token_value(mutant_str)
                     # Special for filename fuzzing and some configurations
                     # of mod_rewrite
                     m.set_double_encoding(False)

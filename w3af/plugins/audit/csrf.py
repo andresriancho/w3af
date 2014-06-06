@@ -149,7 +149,7 @@ class csrf(AuditPlugin):
         mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
         mutant.set_original_value(freq.get_referer())
-        mutant.set_mod_value(fake_ref)
+        mutant.set_token_value(fake_ref)
         mutant_response = self._uri_opener.send_mutant(mutant)
         
         if not self._is_resp_equal(orig_response, mutant_response):

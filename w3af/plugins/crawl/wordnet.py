@@ -75,7 +75,7 @@ class wordnet(CrawlPlugin):
             # Verify against something random
             rand = rand_alpha()
             rand_mutant = mutant.copy()
-            rand_mutant.set_mod_value(rand)
+            rand_mutant.set_token_value(rand)
             rand_response = self._uri_opener.send_mutant(rand_mutant)
             
             if fuzzy_not_equal(response.body, rand_response.body, 0.85):

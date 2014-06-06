@@ -46,11 +46,11 @@ class TestFileContentMutant(unittest.TestCase):
 
         m = FileContentMutant(freq)
         m.set_var('file', 0)
-        m.set_mod_value('abc')
+        m.set_token_value('abc')
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 
         expected_mod_value = 'The data that was sent is: "username=&file=abc&address=".'
-        generated_mod_value = m.print_mod_value()
+        generated_mod_value = m.print_token_value()
 
         self.assertEqual(generated_mod_value, expected_mod_value)
 

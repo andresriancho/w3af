@@ -44,7 +44,7 @@ class PostDataMutant(Mutant):
         dc_length = len(str(self.get_dc()))
 
         if dc_length > 65:
-            res += '...' + self.get_var() + '=' + self.get_mod_value() + '...'
+            res += '...' + self.get_var() + '=' + self.get_token_value() + '...'
         else:
             res += str(self.get_dc())
 

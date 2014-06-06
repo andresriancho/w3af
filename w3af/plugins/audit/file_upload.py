@@ -73,7 +73,7 @@ class file_upload(AuditPlugin):
                                          fuzzable_param_list=[file_parameter, ])
 
                 for mutant in mutants:
-                    _, filename = os.path.split(mutant.get_mod_value().name)
+                    _, filename = os.path.split(mutant.get_token_value().name)
                     mutant.uploaded_file_name = filename
 
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -188,7 +188,7 @@ class file_upload(AuditPlugin):
             # This is necessary, if I don't do this, the session
             # saver will break cause REAL file objects can't
             # be picked
-            mutant.set_mod_value('<file_object>')
+            mutant.set_token_value('<file_object>')
 
             desc = 'A file upload to a directory inside the webroot' \
                    ' was found at: %s' % mutant.found_at()

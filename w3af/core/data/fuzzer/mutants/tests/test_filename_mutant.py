@@ -47,7 +47,7 @@ class TestFileNameMutant(unittest.TestCase):
                          u'http://www.w3af.com/foo/ping%21.htm')
 
         expected_mod_value = 'The sent url filename is: "ping!.htm".'
-        generated_mod_value = m.print_mod_value()
+        generated_mod_value = m.print_token_value()
 
         self.assertEqual(generated_mod_value, expected_mod_value)
 

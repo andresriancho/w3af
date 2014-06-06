@@ -56,9 +56,9 @@ class HeadersMutant(Mutant):
               ' and it\'s value was: "%s".'
 
         return fmt % (self.get_url(), self.get_method(), self.get_var(),
-                      self.get_mod_value())
+                      self.get_token_value())
 
-    def set_mod_value(self, val):
+    def set_token_value(self, val):
         """
         Set the value of the variable that this mutant modifies.
         """
@@ -68,7 +68,7 @@ class HeadersMutant(Mutant):
             msg = 'The headers mutant object wasn\'t  correctly initialized.'
             raise ValueError(msg)
 
-    def get_mod_value(self):
+    def get_token_value(self):
         try:
             return self._freq._headers[self.get_var()]
         except:

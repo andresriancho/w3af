@@ -78,7 +78,7 @@ class AproxDelayController(DelayMixIn):
                             ' or EXPONENTIALLY')
 
         self.mutant = mutant
-        self.mutant.set_mod_value(self.mutant.get_original_value())
+        self.mutant.set_token_value(self.mutant.get_original_value())
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
@@ -138,7 +138,7 @@ class AproxDelayController(DelayMixIn):
         delay_str = self.delay_obj.get_string_for_multiplier(multiplier)
 
         mutant = self.mutant.copy()
-        mutant.set_mod_value(delay_str)
+        mutant.set_token_value(delay_str)
 
         #    Send
         response = self.uri_opener.send_mutant(mutant, cache=False)

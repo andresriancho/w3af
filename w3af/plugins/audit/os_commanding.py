@@ -133,7 +133,7 @@ class os_commanding(AuditPlugin):
 
         ### BUGBUG: Are you sure that this works as expected?!?!?!
         for comm in command_list:
-            if comm.get_command() in mutant.get_mod_value():
+            if comm.get_command() in mutant.get_token_value():
                 os = comm.get_OS()
                 separator = comm.get_separator()
 

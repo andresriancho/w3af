@@ -34,12 +34,12 @@ class TestQSMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
         self.fuzzer_config = {}
 
-    def test_print_mod_value(self):
+    def test_print_token_value(self):
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'))
         m = QSMutant(freq)
 
         expected = 'The sent URI was http://www.w3af.com/?id=3 .'
-        self.assertEqual(m.print_mod_value(), expected)
+        self.assertEqual(m.print_token_value(), expected)
 
     def test_mutant_creation(self):
         self.url = URL('http://moth/?a=1&b=2')

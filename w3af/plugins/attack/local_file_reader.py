@@ -136,7 +136,7 @@ class local_file_reader(AttackPlugin):
         vuln_dc = vuln_obj.get_dc()
         
         # Check if we can apply a stricter extraction method
-        if 'passwd' in vuln_obj.get_mutant().get_mod_value():
+        if 'passwd' in vuln_obj.get_mutant().get_token_value():
             try:
                 response_a = function_reference(vuln_obj.get_url(), str(vuln_dc),
                                                 cache=False)

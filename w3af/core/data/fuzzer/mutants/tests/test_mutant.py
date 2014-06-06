@@ -83,7 +83,7 @@ class TestMutant(unittest.TestCase):
 
         self.assertEqual(repr(mutant),
                          '<mutant-generic | GET | http://moth/ >')
-        self.assertEqual(mutant.print_mod_value(),
+        self.assertEqual(mutant.print_token_value(),
                          'The data that was sent is: "None".')
         self.assertNotEqual(id(mutant.copy()), id(mutant))
 

@@ -42,7 +42,7 @@ class TestHeadersMutant(unittest.TestCase):
         mutant.set_var('Referer')
         original_referer = freq.get_referer()
         mutant.set_original_value(original_referer)
-        mutant.set_mod_value(fake_ref)
+        mutant.set_token_value(fake_ref)
 
         self.assertEqual(mutant.get_headers()['Referer'], fake_ref)
         self.assertEqual(mutant.get_original_value(), original_referer)
@@ -53,7 +53,7 @@ class TestHeadersMutant(unittest.TestCase):
                                headers=headers)
         m = HeadersMutant(freq)
         m.set_var('Referer')
-        m.set_mod_value('foo')
+        m.set_token_value('foo')
 
         expected = '"http://www.w3af.com/", using HTTP method GET. The modified'\
                    ' header was: "Referer" and it\'s value was: "foo".'

@@ -56,9 +56,23 @@ class Mutant(DiskItem):
     def get_token(self):
         return self._freq.get_dc().get_token()
 
-    def print_mod_value(self):
+    def get_token_value(self):
+        """
+        Shortcut!
+        :return: The current token value
+        """
+        return self.get_token().get_value()
+
+    def set_token_value(self, value):
+        """
+        Shortcut!
+        :return: Sets the current token to :value:
+        """
+        return self.get_token().set_value(value)
+
+    def print_token_value(self):
         fmt = 'The data that was sent is: "%s".'
-        return fmt % self._freq.get_data()
+        return fmt % self.get_token().get_value()
 
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
