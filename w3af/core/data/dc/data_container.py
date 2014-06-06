@@ -54,6 +54,44 @@ class DataContainer(DiskItem):
         """
         raise NotImplementedError
 
+    def iter_tokens(self):
+        """
+        DataToken instances unbound to any data container are (mostly)
+        useless. Most likely you should use iter_bound_tokens
+
+        :yield: DataToken instances to help in the fuzzing process of this
+                DataContainer.
+        """
+        raise NotImplementedError
+
+    def iter_bound_tokens(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/580
+        :see: Mostly used in Mutant._create_mutants_worker
+        :yield: Tuples with:
+                    - A copy of self
+                    - A token set to the right location in the copy of self
+        """
+        raise NotImplementedError
+
+    def iter_setters(self):
+        """
+        :yield: Tuples containing:
+                    * The key as a string
+                    * The value as a string
+                    * The setter to modify the value
+        """
+        raise NotImplementedError
+
+    def get_param_names(self):
+        """
+        :return: A list with the names of the parameters for this DataContainer,
+                 while this sounds easy there are some cases like JSON or
+                 XMLRPC data containers where it actually requires some work
+                 to be done.
+        """
+        return [t.get_name() for t in self.iter_tokens()]
+
     def get_short_printable_repr(self):
         """
         :return: A string with a short printable representation of self which is
