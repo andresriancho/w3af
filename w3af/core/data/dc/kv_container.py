@@ -22,9 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
+from functools import partial
+
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.data.dc.tokens import DataToken
+from w3af.core.data.dc.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
@@ -69,8 +71,6 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
                 self[key] = val
 
-        self.enforce_no_set = True
-
     def __str__(self):
         """
         Return string representation.
@@ -87,7 +87,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
     def iter_tokens(self):
         """
-        DataToken instances unbound to any data container are (almost always)
+        DataToken instances unbound to any data container are (mostly)
         useless. Most likely you should use iter_bound_tokens
 
         :yield: DataToken instances to help in the fuzzing process of this
@@ -98,6 +98,13 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 yield DataToken(k, ele)
 
     def iter_bound_tokens(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/580
+        :see: Mostly used in Mutant._create_mutants_worker
+        :yield: Tuples with:
+                    - A copy of self
+                    - A token set to the right location in the copy of self
+        """
         for k, v in self.items():
             for idx, ele in enumerate(v):
                 token = DataToken(k, ele)
@@ -107,6 +114,17 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 dcc.set_token(token)
 
                 yield dcc, token
+
+    def iter_setters(self):
+        """
+        :yield: Tuples containing:
+                    * The key as a string
+                    * The value as a string
+                    * The setter to modify the value
+        """
+        for k, v in self.items():
+            for idx, ele in enumerate(v):
+                yield k, ele, partial(v.__setitem__, idx)
 
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """

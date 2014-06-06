@@ -20,9 +20,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
+from functools import partial
+
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.data.dc.tokens import DataToken
+from w3af.core.data.dc.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
@@ -79,6 +83,44 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
             lst.append(to_app)
 
         return pair_sep.join(lst)
+
+    def iter_setters(self):
+        """
+        :yield: Tuples containing:
+                    * The key as a string
+                    * The value as a string
+                    * The setter to modify the value
+        """
+        for k, v in self.items():
+             yield k, v, partial(self.__setitem__, k)
+
+    def iter_tokens(self):
+        """
+        DataToken instances unbound to any data container are (almost always)
+        useless. Most likely you should use iter_bound_tokens
+
+        :yield: DataToken instances to help in the fuzzing process of this
+                DataContainer.
+        """
+        for k, v in self.items():
+            yield DataToken(k, v)
+
+    def iter_bound_tokens(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/580
+        :see: Mostly used in Mutant._create_mutants_worker
+        :yield: Tuples with:
+                    - A copy of self
+                    - A token set to the right location in the copy of self
+        """
+        for k, v in self.items():
+            token = DataToken(k, v)
+
+            dcc = copy.deepcopy(self)
+            dcc[k] = token
+            dcc.set_token(token)
+
+            yield dcc, token
 
     def __str__(self):
         """

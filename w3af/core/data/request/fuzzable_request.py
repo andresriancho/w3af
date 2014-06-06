@@ -31,6 +31,7 @@ from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
@@ -62,7 +63,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         super(FuzzableRequest, self).__init__()
         
         # Internal variables
-        self._dc = dc or DataContainer()
+        self._dc = dc if dc is not None else KeyValueContainer()
         self._method = method
         self._headers = Headers(headers or ())
         self._cookie = cookie or Cookie()
@@ -282,11 +283,11 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def set_method(self, method):
         self._method = method
 
-    def set_dc(self, dataCont):
-        if not isinstance(dataCont, DataContainer):
+    def set_dc(self, data_container):
+        if not isinstance(data_container, DataContainer):
             raise TypeError('Invalid call to fuzzable_request.set_dc(), the '
                             'argument must be a DataContainer instance.')
-        self._dc = dataCont
+        self._dc = data_container
 
     def set_headers(self, headers):
         self._headers = Headers(headers)

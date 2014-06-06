@@ -25,13 +25,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class DataToken(object):
     def __init__(self, name, value):
         self.name = name
-        self.value = value
+        self.value = self.original_value = value
 
     def get_name(self):
         return self.name
 
     def get_value(self):
         return self.value
+
+    def get_original_value(self):
+        return self.original_value
 
     def set_value(self, new_value):
         self.value = new_value
@@ -50,5 +53,7 @@ class DataToken(object):
         elif isinstance(other, basestring):
             return self.get_value() == other
 
+        elif other is None:
+            return False
         else:
             raise RuntimeError('Can not compare %s with DataToken.' % other)

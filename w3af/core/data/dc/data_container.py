@@ -48,3 +48,6 @@ class DataContainer(DiskItem):
 
     def get_eq_attrs(self):
         return ['all_items']
+
+    def __eq__(self, other):
+        return self.get_token() == other.get_token() and str(self) == str(other)

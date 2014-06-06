@@ -97,3 +97,23 @@ class TestDataContainer(unittest.TestCase):
         token = dcc.get_token()
         token.set_value('5')
         self.assertEqual(str(dcc), 'a=1&b=2&b=5')
+
+    def test_iter_setters(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        kv_setter = [(key, value, setter) for key, value, setter in dc.iter_setters()]
+
+        EXPECTED_KEY_VALUES = [('a', '1'), ('b', '2'), ('b', '3')]
+        self.assertEqual(EXPECTED_KEY_VALUES,
+                         [(key, value) for (key, value, _) in kv_setter])
+
+        for idx, (key, value, setter) in enumerate(kv_setter):
+            if idx == 2:
+                setter('w')
+
+        self.assertEqual(str(dc), 'a=1&b=2&b=w')
+
+        SET_VALUES = ['x', 'y', 'z']
+        for idx, (key, value, setter) in enumerate(kv_setter):
+            setter(SET_VALUES[idx])
+
+        self.assertEqual(str(dc), 'a=x&b=y&b=z')

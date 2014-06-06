@@ -27,7 +27,7 @@ from w3af.core.data.fuzzer.mutants.json_mutant import (JSONMutant, is_json,
                                                   _fuzz_json, _make_json_mutants)
 
 
-class TestQSMutant(unittest.TestCase):
+class TestJSONMutant(unittest.TestCase):
 
     def setUp(self):
         self.fuzzer_config = {}

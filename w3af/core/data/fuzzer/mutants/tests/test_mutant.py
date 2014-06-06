@@ -25,42 +25,45 @@ from w3af.core.data.fuzzer.mutants.mutant import Mutant, mutant_smart_fill
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.dc.form import Form
 
 
 class TestMutant(unittest.TestCase):
 
+    SIMPLE_KV = [('a', ['1']), ('b', ['2'])]
+
     def setUp(self):
-        self.dc = DataContainer()
         self.url = URL('http://moth/')
         self.payloads = ['abc', 'def']
-        self.fuzzer_config = {}
-        self.fuzzer_config['fuzz_form_files'] = 'gif'
+        self.fuzzer_config = {'fuzz_form_files': 'gif'}
 
     def test_mutant_creation(self):
-        self.dc['a'] = ['1', ]
-        self.dc['b'] = ['2', ]
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer(self.SIMPLE_KV)
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('a', ['abc']), ('b', ['2'])]),
-                           DataContainer([('a', ['def']), ('b', ['2'])]),
-                           DataContainer([('a', ['1']), ('b', ['abc'])]),
-                           DataContainer([('a', ['1']), ('b', ['def'])])]
+        expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
+                        'a=def&b=2', 'a=1&b=def',]
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEquals(expected_dcs, created_dcs)
 
-        self.assertEqual(created_mutants[0].get_var(), 'a')
-        self.assertEqual(created_mutants[0].get_var_index(), 0)
-        self.assertEqual(created_mutants[0].get_original_value(), '1')
-        self.assertEqual(created_mutants[2].get_var(), 'b')
-        self.assertEqual(created_mutants[2].get_var_index(), 0)
-        self.assertEqual(created_mutants[2].get_original_value(), '2')
+        token_0 = created_mutants[0].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_0.get_name(), 'a')
+        self.assertEqual(token_0.get_original_value(), '1')
+        self.assertEqual(token_0.get_value(), 'abc')
+
+        token_2 = created_mutants[1].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_2.get_name(), 'b')
+        self.assertEqual(token_2.get_original_value(), '2')
+        self.assertEqual(token_2.get_value(), 'abc')
 
         self.assertTrue(all(isinstance(m, Mutant) for m in created_mutants))
         self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
@@ -70,9 +73,8 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(m.get_mutant_class(), 'Mutant')
         
     def test_mutant_generic_methods(self):
-        self.dc['a'] = ['1', ]
-        self.dc['b'] = ['2', ]
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer(self.SIMPLE_KV)
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -92,22 +94,20 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(mutant.get_original_response_body(), body)
 
     def test_mutant_creation_ignore_params(self):
-        self.dc['a'] = ['1', ]
-        self.dc['b'] = ['2', ]
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer(self.SIMPLE_KV)
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
                                                 False, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('a', ['abc']), ('b', ['2'])]),
-                           DataContainer([('a', ['def']), ('b', ['2'])])]
+        expected_dcs = ['a=abc&b=2', 'a=def&b=2']
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
-
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEqual(expected_dcs, created_dcs)
 
     def test_mutant_creation_empty_dc(self):
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer(init_val=())
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -130,46 +130,47 @@ class TestMutant(unittest.TestCase):
 
         self.assertEqual(len(created_mutants), 4, created_mutants)
 
-        expected_username_values = self.payloads + ['John8212'] * 2
-        expected_address_values = ['Bonsai Street 123'] * 2 + self.payloads
-        expected_file_values = ['GIF89a'] * 4
+        pay = self.payloads
+        name = 'John8212'
+        address = 'Bonsai Street 123'
+
+        expected_username_values = [pay[0], name, pay[1], name]
+        expected_address_values = [address, pay[0], address, pay[1]]
 
         created_dc_lst = [i.get_dc() for i in created_mutants]
-        generated_username_values = [dc['username'][0]
+        generated_username_values = [str(dc['username'][0])
                                      for dc in created_dc_lst]
-        generated_address_values = [dc['address'][0] for dc in created_dc_lst]
+        generated_address_values = [str(dc['address'][0])
+                                    for dc in created_dc_lst]
         generated_file_values = [dc['file'][0] for dc in created_dc_lst]
 
         self.assertEqual(expected_username_values, generated_username_values)
         self.assertEqual(expected_address_values, generated_address_values)
+
         for index, gen_file_value in enumerate(generated_file_values):
-            startswith = gen_file_value.startswith(expected_file_values[index])
+            startswith = gen_file_value.startswith('GIF89a')
             self.assertTrue(startswith, gen_file_value)
 
         self.assertTrue(all(str_file.name[-4:].startswith('.gif') for
                             str_file in generated_file_values))
 
     def test_mutant_creation_append(self):
-        self.dc['a'] = ['1', ]
-        self.dc['b'] = ['2', ]
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer(self.SIMPLE_KV)
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 True, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('a', ['1abc']), ('b', ['2'])]),
-                           DataContainer([('a', ['1def']), ('b', ['2'])]),
-                           DataContainer([('a', ['1']), ('b', ['2abc'])]),
-                           DataContainer([('a', ['1']), ('b', ['2def'])])]
+        expected_dcs = ['a=1abc&b=2', 'a=1&b=2abc',
+                        'a=1def&b=2', 'a=1&b=2def',]
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEquals(expected_dcs, created_dcs)
 
     def test_mutant_creation_repeated_params(self):
-        self.dc['a'] = ['1', '2']
-        self.dc['b'] = ['3', ]
-        freq = FuzzableRequest(self.url, dc=self.dc)
+        dc = KeyValueContainer([('a', ['1', '2']), ('b', ['3'])])
+        freq = FuzzableRequest(self.url, dc=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
