@@ -177,18 +177,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def __str__(self):
         """
         :return: A string representation of this fuzzable request.
-
-        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        >>> str(fr)
-        'http://www.w3af.com/ | Method: GET'
-
-        >>> repr( fr )
-        '<fuzzable request | GET | http://www.w3af.com/>'
-
-        >>> fr.set_method('TRACE')
-        >>> str(fr)
-        'http://www.w3af.com/ | Method: TRACE'
-
         """
         strelems = [unicode(self._url)]
         strelems.append(u' | Method: ' + self._method)

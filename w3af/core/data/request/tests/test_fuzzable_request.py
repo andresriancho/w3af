@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
 
 
@@ -145,8 +145,7 @@ class TestFuzzableRequest(unittest.TestCase):
     
     def test_export_with_dc(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        d = DataContainer()
-        d['a'] = ['1',]
+        d = KeyValueContainer(init_val=[('a', ['1',])])
         fr.set_dc(d)
         self.assertEqual(fr.export(),
                          'GET,http://www.w3af.com/?a=1,')
@@ -171,3 +170,13 @@ class TestFuzzableRequest(unittest.TestCase):
         url = URL('http://www.google.com/')
         r = FuzzableRequest(url)
         self.assertEqual(r.get_url(), url)
+
+    def test_str(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"))
+        self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: GET')
+
+        self.assertEqual(repr(fr),
+                         '<fuzzable request | GET | http://www.w3af.com/>')
+
+        fr.set_method('TRACE')
+        self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: TRACE')
