@@ -25,7 +25,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.token import DataToken
 
 
 class TestQSMutant(unittest.TestCase):
@@ -48,21 +48,24 @@ class TestQSMutant(unittest.TestCase):
         created_mutants = QSMutant.create_mutants(freq, self.payloads, [],
                                                   False, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('a', ['abc']), ('b', ['2'])]),
-                           DataContainer([('a', ['def']), ('b', ['2'])]),
-                           DataContainer([('a', ['1']), ('b', ['abc'])]),
-                           DataContainer([('a', ['1']), ('b', ['def'])])]
+        expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
+                        'a=def&b=2', 'a=1&b=def',]
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEquals(expected_dcs, created_dcs)
 
-        self.assertEqual(created_mutants[0].get_var(), 'a')
-        self.assertEqual(created_mutants[0].get_var_index(), 0)
-        self.assertEqual(created_mutants[0].get_original_value(), '1')
-        self.assertEqual(created_mutants[2].get_var(), 'b')
-        self.assertEqual(created_mutants[2].get_var_index(), 0)
-        self.assertEqual(created_mutants[2].get_original_value(), '2')
+        token_0 = created_mutants[0].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_0.get_name(), 'a')
+        self.assertEqual(token_0.get_original_value(), '1')
+        self.assertEqual(token_0.get_value(), 'abc')
+
+        token_2 = created_mutants[1].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_2.get_name(), 'b')
+        self.assertEqual(token_2.get_original_value(), '2')
+        self.assertEqual(token_2.get_value(), 'abc')
 
         self.assertTrue(all(isinstance(m, QSMutant) for m in created_mutants))
 
@@ -73,21 +76,23 @@ class TestQSMutant(unittest.TestCase):
         created_mutants = QSMutant.create_mutants(freq, self.payloads, [],
                                                   False, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('id', ['abc', '2'])]),
-                           DataContainer([('id', ['def', '2'])]),
-                           DataContainer([('id', ['1', 'abc'])]),
-                           DataContainer([('id', ['1', 'def'])])]
+        expected_dcs = ['id=abc&id=2', 'id=1&id=abc',
+                        'id=def&id=2', 'id=1&id=def']
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEquals(expected_dcs, created_dcs)
 
-        self.assertEqual(created_mutants[0].get_var(), 'id')
-        self.assertEqual(created_mutants[0].get_var_index(), 0)
-        self.assertEqual(created_mutants[0].get_original_value(), '1')
+        token_0 = created_mutants[0].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_0.get_name(), 'id')
+        self.assertEqual(token_0.get_original_value(), '1')
+        self.assertEqual(token_0.get_value(), 'abc')
 
-        self.assertEqual(created_mutants[2].get_var(), 'id')
-        self.assertEqual(created_mutants[2].get_var_index(), 1)
-        self.assertEqual(created_mutants[2].get_original_value(), '2')
+        token_1 = created_mutants[1].get_token()
+        self.assertIsInstance(token_1, DataToken)
+        self.assertEqual(token_1.get_name(), 'id')
+        self.assertEqual(token_1.get_original_value(), '2')
+        self.assertEqual(token_1.get_value(), 'abc')
 
         self.assertTrue(all(isinstance(m, QSMutant) for m in created_mutants))
