@@ -184,7 +184,6 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
 
     else:
         # Seems to be something that has post data
-        data = {}
         conttype, header_name = headers.iget('content-type', '')
         if conttype:
             del headers[header_name]
@@ -254,16 +253,6 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
 def _create_cookie(http_response):
     """
     Create a cookie object based on a HTTP response.
-
-    >>> from w3af.core.data.parsers.url import URL
-    >>> from w3af.core.data.url.HTTPResponse import HTTPResponse
-    >>> url = URL('http://www.w3af.com/')
-    >>> headers = Headers({'content-type': 'text/html', 'Cookie': 'abc=def' }.items())
-    >>> response = HTTPResponse(200, '' , headers, url, url)
-    >>> cookie = _create_cookie(response)
-    >>> cookie
-    Cookie({u'abc': [u'def']})
-
     """
     cookies = []
 
