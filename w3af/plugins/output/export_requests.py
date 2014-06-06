@@ -28,7 +28,6 @@ from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.request.WebServiceRequest import WebServiceRequest
 
 
 class export_requests(OutputPlugin):
@@ -67,9 +66,7 @@ class export_requests(OutputPlugin):
             out_file.write('HTTP-METHOD,URI,POSTDATA\n')
 
             for fr in fuzzable_request_set:
-                # TODO: How shall we export WebServiceRequests?
-                if not isinstance(fr, WebServiceRequest):
-                    out_file.write(fr.export() + '\n')
+                out_file.write(fr.export() + '\n')
 
         except Exception, e:
             msg = 'An exception was raised while trying to export fuzzable'\

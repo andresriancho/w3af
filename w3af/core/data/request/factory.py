@@ -37,9 +37,6 @@ from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.url import URL, parse_qs
-#TODO: Rewrite web service support
-#from w3af.core.data.parsers.wsdl import WSDLParser
-#from w3af.core.data.request.WebServiceRequest import WebServiceRequest
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.misc.encoding import smart_unicode
 
@@ -114,28 +111,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                 resp.get_url().get_domain()
         form_list = [f for f in form_list if same_domain(f)]
 
-    if not form_list:
-        # Check if its a wsdl file
-        #TODO: Rewrite web service support
-        """
-        wsdlp = WSDLParser()
-        try:
-            wsdlp.set_wsdl(resp.get_body())
-        except BaseFrameworkException:
-            pass
-        else:
-            for rem_meth in wsdlp.get_methods():
-                wspdr = WebServiceRequest(
-                    rem_meth.get_location(),
-                    rem_meth.get_action(),
-                    rem_meth.get_parameters(),
-                    rem_meth.get_namespace(),
-                    rem_meth.get_methodName(),
-                    req_headers
-                )
-                res.append(wspdr)
-        """
-    else:
+    if form_list:
         # Create one HTTPPostDataRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')
         for form in form_list:
