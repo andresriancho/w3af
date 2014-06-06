@@ -19,24 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import json
-
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class JSONPostDataRequest(HTTPPostDataRequest):
+class JSONPostDataRequest(FuzzableRequest):
     """
     This class represents a fuzzable request for a http request that contains
     JSON postdata.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    def set_dc(self, data_container):
+        self._post_data = data_container
 
-    def get_data(self):
-        """
-        :return: A string that represents the JSON data saved in the dc.
-        """
-        return json.dumps(self._dc)
+    def get_dc(self):
+        return self._post_data
 
     def __str__(self):
         """
@@ -46,12 +43,10 @@ class JSONPostDataRequest(HTTPPostDataRequest):
         str_res += self._url
         str_res += ' | Method: ' + self._method
         str_res += ' | JSON: ('
-        str_res += json.dumps(self._dc)
+        str_res += ','.join(self.get_dc().get_param_names())
         str_res += ')'
         return str_res
 
-    def set_dc(self, data_cont):
-        self._dc = data_cont
-
     def __repr__(self):
-        return '<JSON fuzzable request | ' + self.get_method() + ' | ' + self.get_uri() + ' >'
+        return '<JSON fuzzable request | %s | %s >' % (self.get_method(),
+                                                       self.get_uri())

@@ -23,7 +23,6 @@ from itertools import imap
 
 from w3af.core.controllers.misc.io import is_file_like
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.form import Form
 
 
@@ -34,15 +33,21 @@ class HTTPPostDataRequest(FuzzableRequest):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, uri, method='POST', headers=Headers(),
-                 cookie=None, dc=None):
+    def __init__(self, uri, method='GET', headers=None, cookie=None,
+                 post_data=None):
 
-        if dc is not None and not isinstance(dc, Form):
-            msg = 'The dc parameter for forms needs to be a Form instance,'\
-                  'got %s instead.' % type(dc)
+        if post_data is not None and not isinstance(post_data, Form):
+            msg = 'The post_data parameter for HTTPPostDataRequest needs to'\
+                  'be a Form instance got %s instead.' % type(post_data)
             TypeError(msg)
 
-        FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
+        FuzzableRequest.__init__(self, uri, method, headers, cookie, post_data)
+
+    def set_dc(self, data_container):
+        self._post_data = data_container
+
+    def get_dc(self):
+        return self._post_data
 
     def get_data(self):
         """
@@ -56,23 +61,23 @@ class HTTPPostDataRequest(FuzzableRequest):
         # be a fancier way to do this.
         # If it contains a file then we are not interested in returning
         # its string representation
-        for value in self._dc.itervalues():
+        for value in self._post_data.itervalues():
 
             if isinstance(value, basestring):
                 continue
             elif is_file_like(value) or (hasattr(value, "__iter__") and
                                          any(imap(is_file_like, value))):
-                return self._dc
+                return self._post_data
 
         # Ok, no file was found; return the string representation
-        return str(self._dc)
+        return str(self._post_data)
 
     def get_file_vars(self):
         """
         :return: A list of postdata parameters that contain a file
         """
-        if isinstance(self._dc, Form):
-            return self._dc.get_file_vars()
+        if isinstance(self._post_data, Form):
+            return self._post_data.get_file_vars()
         else:
             return []
 

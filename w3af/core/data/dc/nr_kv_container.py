@@ -32,7 +32,7 @@ from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
 
-ERR_MSG_NO_REP = 'Not supported init_val, expected format is [("b", "2")]'
+ERR_MSG_NO_REP = 'Unsupported init_val "%s", expected format is [("b", "2")]'
 
 
 class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
@@ -60,13 +60,13 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                 try:
                     key, val = item
                 except TypeError:
-                    raise TypeError(ERR_MSG_NO_REP)
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 if key in self:
-                    raise TypeError(ERR_MSG_NO_REP)
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 if not isinstance(val, (basestring, DataToken)):
-                    raise TypeError(ERR_MSG_NO_REP)
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 self[key] = val
 
@@ -118,9 +118,31 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
 
             dcc = copy.deepcopy(self)
             dcc[k] = token
-            dcc.set_token(token)
+            dcc.token = token
 
             yield dcc, token
+
+    def set_token(self, key_name):
+        """
+        Sets the token in the DataContainer to point to the variable specified
+        in *args. Usually args will be one of:
+            * ('id',) - When the data container doesn't support repeated params
+            * ('id', 3) - When it does
+
+        :raises: An exception when the DataContainer does NOT contain the
+                 specified path in *args to find the variable
+        :return: The token if we were able to set it in the DataContainer
+        """
+        for k, v in self.items():
+            if key_name == k:
+                token = DataToken(k, v)
+
+                self[k] = token
+                self.token = token
+
+                return token
+
+        raise RuntimeError('Invalid token path "%s"' % key_name)
 
     def __str__(self):
         """

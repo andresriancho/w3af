@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant, mutant_smart_fill
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.token import DataToken
@@ -41,7 +41,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -74,17 +74,17 @@ class TestMutant(unittest.TestCase):
         
     def test_mutant_generic_methods(self):
         dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
 
         mutant = created_mutants[0]
 
-        self.assertEqual(
-            repr(mutant), '<mutant-generic | GET | http://moth/ >')
-        self.assertEqual(
-            mutant.print_mod_value(), 'The data that was sent is: "None".')
+        self.assertEqual(repr(mutant),
+                         '<mutant-generic | GET | http://moth/ >')
+        self.assertEqual(mutant.print_mod_value(),
+                         'The data that was sent is: "None".')
         self.assertNotEqual(id(mutant.copy()), id(mutant))
 
         self.assertRaises(ValueError, mutant.get_original_response_body)
@@ -95,7 +95,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_ignore_params(self):
         dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
                                                 False, self.fuzzer_config)
@@ -107,7 +107,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_empty_dc(self):
         dc = KeyValueContainer(init_val=())
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -118,12 +118,12 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(created_dc_lst, expected_dc_lst)
 
     def test_mutant_creation_post_data(self):
-        original_form = Form()
-        original_form.add_input([("name", "username"), ("value", "")])
-        original_form.add_input([("name", "address"), ("value", "")])
-        original_form.add_file_input([("name", "file"), ("type", "file")])
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = HTTPPostDataRequest(self.url, dc=original_form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -156,7 +156,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_append(self):
         dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 True, self.fuzzer_config)
@@ -170,7 +170,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_repeated_params(self):
         dc = KeyValueContainer([('a', ['1', '2']), ('b', ['3'])])
-        freq = FuzzableRequest(self.url, dc=dc)
+        freq = HTTPQSRequest(self.url, post_data=dc)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -199,14 +199,13 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(token_1.get_value(), 'abc')
 
     def test_mutant_creation_qs_and_postdata(self):
-        self.maxDiff = None
-        original_form = Form()
-        original_form.add_input([("name", "username"), ("value", "")])
-        original_form.add_input([("name", "password"), ("value", "")])
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "password"), ("value", "")])
 
         url = URL('http://moth/foo.bar?action=login')
 
-        freq = HTTPPostDataRequest(url, dc=original_form)
+        freq = HTTPPostDataRequest(url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -228,7 +227,7 @@ class TestMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, dc=form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
         filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 
@@ -245,7 +244,7 @@ class TestMutant(unittest.TestCase):
         form.add_file_input([("name", "file"), ("type", "file")])
         form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, dc=form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
         filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 

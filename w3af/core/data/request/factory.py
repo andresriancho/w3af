@@ -205,7 +205,8 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
                 om.out.debug(msg % e)
 
                 empty_data = QueryString()
-                return HTTPPostDataRequest(url, method, headers, dc=empty_data)
+                return HTTPPostDataRequest(url, method, headers,
+                                           post_data=empty_data)
             else:
                 data = QueryString()
                 data.update(dc)
@@ -216,7 +217,7 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
                 # because the headers contain the multipart/form-data header
                 headers['content-type'] = conttype
 
-                return HTTPPostDataRequest(url, method, headers, dc=data)
+                return HTTPPostDataRequest(url, method, headers, post_data=data)
 
         #
         # Case #2 - JSON request
@@ -227,7 +228,7 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
             pass
         else:
             if data:
-                return JSONPostDataRequest(url, method, headers, dc=data)
+                return JSONPostDataRequest(url, method, headers, post_data=data)
 
         #
         # Case #3 - XMLRPC request
@@ -245,7 +246,7 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
                          'can store this data: "' + post_data + '".')
         else:
             # Finally create request
-            return HTTPPostDataRequest(url, method, headers, dc=data)
+            return HTTPPostDataRequest(url, method, headers, post_data=data)
 
         return None
 

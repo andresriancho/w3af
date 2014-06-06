@@ -117,3 +117,10 @@ class TestDataContainer(unittest.TestCase):
             setter(SET_VALUES[idx])
 
         self.assertEqual(str(dc), 'a=x&b=y&b=z')
+
+    def test_set_token(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        token = dc.set_token('a', 0)
+        self.assertEqual(token.get_name(), 'a')
+        self.assertEqual(token, dc['a'][0])

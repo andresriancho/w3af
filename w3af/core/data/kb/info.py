@@ -20,9 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.constants.severity import INFORMATION
-from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.request.empty_request import EmptyFuzzableRequest
 
 
 class Info(dict):
@@ -35,27 +36,25 @@ class Info(dict):
         """
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
-        
         :param desc: The vulnerability description
-        
         :param severity: The severity for this object
-        
         :param response_ids: A list of response ids associated with this vuln
-        
         :param plugin_name: The name of the plugin which identified the vuln
         """
         # Default values
-        self._url = None
-        self._uri = None
-        self._method = 'GET'
-        self._variable = None
-        self._dc = None
         self._string_matches = set()
-        self._mutant = None
-        
-        self.set_id(response_ids)
+        self._mutant = QSMutant(EmptyFuzzableRequest())
+
+        # We set these to None just for PyCharm's code analyzer to be happy
+        self._name = None
+        self._desc = None
+        self._id = []
+        self._plugin_name = None
+
+        # Set the values provided by the user
         self.set_name(name)
         self.set_desc(desc)
+        self.set_id(response_ids)
         self.set_plugin_name(plugin_name)
     
     @classmethod
@@ -68,11 +67,6 @@ class Info(dict):
             raise TypeError('Mutant expected in from_mutant.')
         
         inst = cls(name, desc, response_ids, plugin_name)
-
-        inst.set_uri(mutant.get_uri())
-        inst.set_method(mutant.get_method())
-        inst.set_var(mutant.get_var())
-        inst.set_dc(mutant.get_dc())
         inst.set_mutant(mutant)
             
         return inst
@@ -85,15 +79,11 @@ class Info(dict):
         """
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
-        
-        inst = cls(name, desc, response_ids, plugin_name)
 
-        inst.set_uri(freq.get_uri())
-        inst.set_method(freq.get_method())
-        inst.set_dc(freq.get_dc())
-            
-        return inst
-            
+        mutant = Mutant(freq)
+
+        return Info.from_mutant(name, desc, response_ids, plugin_name, mutant)
+
     @classmethod
     def from_info(cls, other_info):
         """
@@ -108,12 +98,6 @@ class Info(dict):
         plugin_name = other_info.get_plugin_name()
         
         inst = cls(name, desc, response_ids, plugin_name)
-
-        inst._uri = other_info.get_uri()
-        inst._url = other_info.get_url()
-        inst._method = other_info.get_method()
-        inst._variable = other_info.get_var()
-        inst._dc = other_info.get_dc()
         inst._string_matches = other_info.get_to_highlight()
         inst._mutant = other_info.get_mutant()
 
@@ -141,32 +125,26 @@ class Info(dict):
         return self._name
 
     def set_url(self, url):
-        if not isinstance(url, URL):
-            error = 'The URL in the info object must be of url.URL type.'
-            raise TypeError(error)
-
-        self._url = url.uri2url()
-        self._uri = url
+        """
+        I've been using set_url and set_uri in mixed cases, in this case they
+        are the same thing, so just call set_uri.
+        """
+        return self.set_uri(url)
 
     def get_url(self):
-        return self._url
+        return self._mutant.get_url()
 
     def set_uri(self, uri):
-        if not isinstance(uri, URL):
-            msg = 'The URI in the info object must be of url.URL type.'
-            raise TypeError(msg)
-
-        self._uri = uri
-        self._url = uri.uri2url()
+        return self._mutant.set_uri(uri)
 
     def get_uri(self):
-        return self._uri
+        return self._mutant.get_uri()
 
     def set_method(self, method):
-        self._method = method.upper()
+        return self._mutant.set_method(method)
 
     def get_method(self):
-        return self._method
+        return self._mutant.get_method()
 
     def set_desc(self, desc):
         if not isinstance(desc, basestring):
@@ -265,7 +243,7 @@ class Info(dict):
         return self._desc
 
     def __repr__(self):
-        return '<info object for issue: "' + self._desc + '">'
+        return '<info object for issue: "%s">' % self._desc
     
     def get_uniq_id(self):
         """
@@ -354,21 +332,48 @@ class Info(dict):
         """
         return self._id
 
-    def set_var(self, variable):
-        self._variable = variable
+    def set_var(self, *args):
+        """
+        Sets the token in the DataContainer to point to the variable specified
+        in *args. Usually args will be one of:
+            * ('id',) - When the data container doesn't support repeated params
+            * ('id', 3) - When it does
+
+        :raises: An exception when the DataContainer does NOT contain the
+                 specified path in *args to find the variable
+        :return: The token if we were able to set it in the DataContainer
+        """
+        return self._mutant.get_dc().set_token(*args)
 
     def get_var(self):
-        return self._variable
+        """
+        :return: The name of the variable where the vulnerability was found
+        """
+        try:
+            return self._mutant.get_dc().get_token().get_name()
+        except AttributeError:
+            # get_token() -> None
+            # None.get_name() -> raise AttributeError
+            return None
 
-    def set_dc(self, dc):
-        self._dc = dc
+    def set_dc(self, data_container):
+        """
+        Set the data_container variable as the current DataContainer for this
+        Info instance.
+
+        This shouldn't be used much, since in most cases we'll be creating and
+        setting all attributes for the instance using from_fr and from_mutant.
+
+        Once the instance is configured, the rest of the calls are all to get_*
+        """
+        return self._mutant.set_dc(data_container)
 
     def get_dc(self):
-        return self._dc
+        return self._mutant.get_dc()
 
     def set_mutant(self, mutant):
         """
-        Sets the mutant that created this vuln.
+        Sets the mutant that triggered this vuln.
         """
         self._mutant = mutant
 

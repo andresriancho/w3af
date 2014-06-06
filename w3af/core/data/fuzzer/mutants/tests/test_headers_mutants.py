@@ -32,8 +32,7 @@ class TestHeadersMutant(unittest.TestCase):
 
     def setUp(self):
         self.payloads = ['abc', 'def']
-        self.fuzzer_config = {}
-        self.fuzzer_config['fuzzable_headers'] = ['Referer']
+        self.fuzzer_config = {'fuzzable_headers': ['Referer']}
 
     def test_basic(self):
         freq = FuzzableRequest(URL('http://www.w3af.com/'))

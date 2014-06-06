@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import cgi
+import urlparse
 import copy
 
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
@@ -30,8 +30,8 @@ from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 def is_json(postdata):
     # Only do the JSON stuff if this is really a JSON request...
     try:
-        cgi.parse_qs(postdata, keep_blank_values=True,
-                     strict_parsing=True)
+        urlparse.parse_qs(postdata, keep_blank_values=True,
+                          strict_parsing=True)
     except Exception:
         # We have something that's not URL encoded in the postdata, it could
         # be something like JSON, XML, or multipart encoding. Let's try with
@@ -144,7 +144,6 @@ class JSONMutant(PostDataMutant):
 
     def get_headers(self):
         headers = self._headers
-        # TODO: Verify this, I had no internet while adding the next line
         headers['Content-Type'] = 'application/json'
         return headers
 

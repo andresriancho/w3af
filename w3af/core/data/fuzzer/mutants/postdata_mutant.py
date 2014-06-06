@@ -54,7 +54,7 @@ class PostDataMutant(Mutant):
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config):
+                       append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.

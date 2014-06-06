@@ -45,6 +45,7 @@ class Vuln(Info):
         """
         Info.__init__(self, name, desc, response_ids, plugin_name)
 
+        self._severity = None
         self.set_severity(severity)
 
     @classmethod
@@ -64,8 +65,6 @@ class Vuln(Info):
 
         inst.set_uri(mutant.get_uri())
         inst.set_method(mutant.get_method())
-        inst.set_var(mutant.get_var())
-        inst.set_dc(mutant.get_dc())
         inst.set_mutant(mutant)
             
         return inst
@@ -79,13 +78,10 @@ class Vuln(Info):
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
         
-        inst = cls(name, desc, severity, response_ids, plugin_name)
-
-        inst.set_uri(freq.get_uri())
-        inst.set_method(freq.get_method())
-        inst.set_dc(freq.get_dc())
+        mutant = Mutant(freq)
             
-        return inst
+        return Vuln.from_mutant(name, desc, severity, response_ids, plugin_name,
+                                mutant)
     
     @classmethod
     def from_vuln(cls, other_vuln):
@@ -102,16 +98,9 @@ class Vuln(Info):
         severity = other_vuln.get_severity()
         
         inst = cls(name, desc, severity, response_ids, plugin_name)
-
-        inst._uri = other_vuln.get_uri()
-        inst._url = other_vuln.get_url()
-        inst._method = other_vuln.get_method()
-        inst._variable = other_vuln.get_var()
-        inst._dc = other_vuln.get_dc()
         inst._string_matches = other_vuln.get_to_highlight()
         inst._mutant = other_vuln.get_mutant()
-        inst._severity = other_vuln.get_severity()
-        
+
         for k in other_vuln.keys():
             inst[k] = other_vuln[k]
 
@@ -123,6 +112,7 @@ class Vuln(Info):
     def set_severity(self, severity):
         if severity not in (INFORMATION, LOW, MEDIUM, HIGH):
             raise ValueError('Invalid severity value: %s' % severity)
+
         self._severity = severity
 
     def get_desc(self, with_id=True):

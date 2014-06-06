@@ -180,3 +180,13 @@ class TestFuzzableRequest(unittest.TestCase):
 
         fr.set_method('TRACE')
         self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: TRACE')
+
+    def test_sent(self):
+        f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
+        self.assertTrue(f.sent('d%5C%27z%5C%220'))
+
+        f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
+        self.assertTrue(f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>'))
+
+        f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
+        self.assertTrue(f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>'))

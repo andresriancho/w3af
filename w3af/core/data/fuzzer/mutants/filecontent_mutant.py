@@ -35,35 +35,21 @@ class FileContentMutant(Mutant):
     def get_mutant_type(self):
         return 'file content'
 
-    def get_data(self):
-        """
-        Override the default get_data() of the fuzzable request that contains a
-        str(self._dc) <<---- that kills the file I contain in my DC.
-        """
-        return self._dc
-
     def found_at(self):
         """
         :return: A string representing WHAT was fuzzed.
         """
-        res = '"' + self.get_uri() + '", using HTTP method '
-        res += self.get_method() + '. The sent post-data was: "'
+        dc = self.get_dc()
+        dc_short = dc.get_short_printable_repr()
 
-        # Depending on the data container, print different things:
-        dc_length = len(str(self.get_dc()))
+        msg = '"%s", using HTTP method %s. The sent post-data was: "%s"' \
+              " which modified the uploaded file content."
 
-        if dc_length > 65:
-            res += '...' + self.get_var() + '=' + self.get_mod_value() + '...'
-        else:
-            res += str(self.get_dc())
-
-        res += '" which modifies the uploaded file content.'
-
-        return res
+        return msg % (self.get_url(), self.get_method(), dc_short)
 
     @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config):
+    def create_mutants(freq, payload_list, fuzzable_param_list,
+                       append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
@@ -81,12 +67,12 @@ class FileContentMutant(Mutant):
         fake_file_objs = []
         ext = fuzzer_config['fuzzed_files_extension']
 
-        for mutant_str in mutant_str_list:
-            if isinstance(mutant_str, basestring):
+        for payload_str in payload_list:
+            if isinstance(payload_str, basestring):
                 # I have to create the NamedStringIO with a "name".
                 # This is needed for MultipartPostHandler
                 fname = "%s.%s" % (rand_alpha(7), ext)
-                str_file = NamedStringIO(mutant_str, name=fname)
+                str_file = NamedStringIO(payload_str, name=fname)
                 fake_file_objs.append(str_file)
 
         res = Mutant._create_mutants_worker(freq, FileContentMutant,

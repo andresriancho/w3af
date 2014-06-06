@@ -20,51 +20,36 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.headers import Headers
 
 
 class HTTPQSRequest(FuzzableRequest):
     """
     This class represents a fuzzable request that sends all variables
-    in the querystring. This is tipically used for GET requests.
+    in the querystring. This is typically used for GET requests.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
-        super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
-
-    def set_uri(self, uri):
+    def get_dc(self):
         """
-        >>> r = HTTPQSRequest('http://www.w3af.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        TypeError: The "uri" parameter of a HTTPQSRequest must be of url.URL type.
-        >>> from w3af.core.data.parsers.url import URL
-        >>> r = HTTPQSRequest(URL('http://www.w3af.com/'))
-        >>> uri = URL('http://www.w3af.com/scan')
-        >>> r.set_uri(uri)
-        >>> r.get_uri() == uri
-        True
+        This is saying something important to the rest of the world:
+            "If you want to fuzz this request, please use the query string"
+
+        :return: A reference to the DataContainer object which will be used for
+                 fuzzing. Other sub-classes need to override this method in
+                 order to allow fuzzing of headers, cookies, post-data, etc.
         """
-        super(HTTPQSRequest, self).set_uri(uri)
-        self._dc = self._uri.querystring
+        return self._uri.querystring
 
-    def get_uri(self):
-        uri = self._url.copy()
-        if self._dc:
-            uri.querystring = self._dc
-        return uri
+    def set_dc(self, data_container):
+        """
+        :note: Its really important that get_dc and set_dc both modify the same
+               attribute. Each subclass of fuzzable request should modify a
+               different one, to provide fuzzing functionality to that section
+               of the HTTP response.
 
-    def set_data(self, d):
-        pass
-
-    def set_method(self, meth):
-        pass
-
-    def get_data(self):
-        # The postdata
-        return None
+        :see: self.get_dc documentation
+        """
+        self._uri.querystring = data_container
 
     def __repr__(self):
         return ('<QS fuzzable request | %s | %s>' %

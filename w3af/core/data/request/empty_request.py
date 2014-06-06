@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 
 
 class EmptyFuzzableRequest(FuzzableRequest):
@@ -27,6 +28,8 @@ class EmptyFuzzableRequest(FuzzableRequest):
     A FuzzableRequest which can be created without knowing the URI.
     """
     def __init__(self):
+        self._dc = NonRepeatKeyValueContainer()
+
         super(EmptyFuzzableRequest, self).__init__(None, method='GET',
                                                    headers=None, cookie=None,
                                                    post_data=None)
@@ -36,3 +39,9 @@ class EmptyFuzzableRequest(FuzzableRequest):
             return
 
         return super(EmptyFuzzableRequest, self).set_uri(uri)
+
+    def set_dc(self, data_container):
+        self._dc = data_container
+
+    def get_dc(self):
+        return self._dc

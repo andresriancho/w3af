@@ -30,7 +30,8 @@ class QSMutant(Mutant):
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'query string'
 
     def print_mod_value(self):
@@ -38,7 +39,7 @@ class QSMutant(Mutant):
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config):
+                       append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.

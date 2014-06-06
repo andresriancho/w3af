@@ -19,32 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
-from w3af.core.data.parsers.xmlrpc import parse_xmlrpc, build_xmlrpc
-from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class XMLRPCRequest(HTTPPostDataRequest):
+class XMLRPCRequest(FuzzableRequest):
     """
     This class represents a fuzzable request for a http request
     that contains XMLRPC postdata.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    def set_dc(self, data_container):
+        self._post_data = data_container
 
-    def __init__(self, xml, uri, method='POST', headers=Headers()):
-        """
-        :param xml: The original XML string that represents
-                    the call to the RPC.
-        """
-        HTTPPostDataRequest.__init__(self, uri)
-        self._xml = xml
-
-    def get_data(self):
-        """
-        :return: A string that represents the XMLRPC data saved in the dc.
-        """
-        return build_xmlrpc(self._xml, self._dc)
+    def get_dc(self):
+        return self._post_data
 
     def __str__(self):
         """
@@ -54,12 +43,10 @@ class XMLRPCRequest(HTTPPostDataRequest):
         res += self._url
         res += ' | Method: ' + self._method
         res += ' | XMLRPC: ('
-        res += ','.join([i[1] for i in parse_xmlrpc(self._xml).all_parameters])
+        res += ','.join(self.get_dc().get_param_names())
         res += ')'
         return res
 
-    def set_dc(self, data_container):
-        self._dc = data_container
-
     def __repr__(self):
-        return '<XMLRPC fuzzable request | ' + self.get_method() + ' | ' + self.get_uri() + ' >'
+        return '<XMLRPC fuzzable request | %s | %s >' % (self.get_method(),
+                                                         self.get_uri())

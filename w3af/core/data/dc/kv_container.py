@@ -33,7 +33,7 @@ from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
 
 
-ERR_MSG = 'Not supported init_val, expected format is [(u"b", [u"2", u"3"])]'
+ERR_MSG = 'Unsupported init_val "%s", expected format is [(u"b", [u"2", u"3"])]'
 
 
 class KeyValueContainer(DataContainer, OrderedDict):
@@ -57,17 +57,17 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 try:
                     key, val = item
                 except TypeError:
-                    raise TypeError(ERR_MSG)
+                    raise TypeError(ERR_MSG % init_val)
 
                 if key in self:
-                    raise TypeError(ERR_MSG)
+                    raise TypeError(ERR_MSG % init_val)
 
                 if not isinstance(val, (list, tuple)):
-                    raise TypeError(ERR_MSG)
+                    raise TypeError(ERR_MSG % init_val)
 
                 for sub_val in val:
                     if not isinstance(sub_val, (basestring, DataToken)):
-                        raise TypeError(ERR_MSG)
+                        raise TypeError(ERR_MSG % init_val)
 
                 self[key] = val
 
@@ -111,7 +111,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
                 dcc = copy.deepcopy(self)
                 dcc[k][idx] = token
-                dcc.set_token(token)
+                dcc.token = token
 
                 yield dcc, token
 
@@ -125,6 +125,30 @@ class KeyValueContainer(DataContainer, OrderedDict):
         for k, v in self.items():
             for idx, ele in enumerate(v):
                 yield k, ele, partial(v.__setitem__, idx)
+
+    def set_token(self, key_name, index_num):
+        """
+        Sets the token in the DataContainer to point to the variable specified
+        in *args. Usually args will be one of:
+            * ('id',) - When the data container doesn't support repeated params
+            * ('id', 3) - When it does
+
+        :raises: An exception when the DataContainer does NOT contain the
+                 specified path in *args to find the variable
+        :return: The token if we were able to set it in the DataContainer
+        """
+        for k, v in self.items():
+            for idx, ele in enumerate(v):
+
+                if key_name == k and idx == index_num:
+                    token = DataToken(k, ele)
+
+                    self[k][idx] = token
+                    self.token = token
+
+                    return token
+
+        raise RuntimeError('Invalid token path %s/%s' % (key_name, index_num))
 
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """

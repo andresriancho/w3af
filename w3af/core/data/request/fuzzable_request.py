@@ -30,9 +30,9 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
+from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.kv_container import KeyValueContainer
-from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
@@ -49,25 +49,36 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     This class represents a fuzzable request. Fuzzable requests were created
     to allow w3af plugins to be much simpler and don't really care if the
     vulnerability is in the postdata, querystring, header, cookie or any other
-    variable.
+    injection point.
 
     Other classes should inherit from this one and change the behaviour of
-    get_uri() and get_data(). For example: the class HTTPQSRequest should return
-    the _dc in the querystring (get_uri) and HTTPPostDataRequest should return
-    the _dc in the POSTDATA (get_data()).
+    get_dc() and set_dc(), which returns which of postdata, querystring, etc.
+    is the one where we'll inject.
+
+    This class shouldn't be used directly, please use the sub-classes:
+        * HTTPQsRequest
+        * HTTPPostDataRequest
+        * ...
+
+    Methods like get_uri() and get_data() shouldn't be overridden by subclasses
+    (with a couple of exceptions).
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self, uri, method='GET', headers=None, cookie=None, dc=None):
+    def __init__(self, uri, method='GET', headers=None, cookie=None,
+                 post_data=None):
         super(FuzzableRequest, self).__init__()
         
         # Internal variables
-        self._dc = dc if dc is not None else KeyValueContainer()
         self._method = method
-        self._headers = Headers(headers or ())
-        self._cookie = cookie or Cookie()
-        self._data = None
+        self._headers = Headers() if headers is None else headers
+        self._cookie = Cookie() if cookie is None else cookie
+        self._post_data = KeyValueContainer() if post_data is None else post_data
+
+        # Set the URL
+        self._uri = None
+        self._url = None
         self.set_uri(uri)
 
         # Set the internal variables
@@ -75,8 +86,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def export(self):
         """
-        Generic version of how they are exported:
-            METHOD,URL,DC
+        Generic version of how fuzzable requests are exported:
+            METHOD,URL,POST_DATA
 
         Example:
             GET,http://localhost/index.php?abc=123&def=789,
@@ -85,22 +96,14 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :return: a csv str representation of the request
         """
         #
-        # FIXME: What if a comma is inside the URL or DC?
         # TODO: Why don't we export headers and cookies?
         #
-        meth = self._method
-        str_res = [meth, ',', str(self._url)]
+        output = []
 
-        if meth == 'GET':
-            if self._dc:
-                str_res.extend(('?', str(self._dc)))
-            str_res.append(',')
-        else:
-            str_res.append(',')
-            if self._dc:
-                str_res.append(str(self._dc))
+        for data in (self._method, self.get_uri(), self._post_data):
+            output.append('"%s"' % data)
 
-        return ''.join(str_res)
+        return ','.join(output)
 
     def sent(self, smth_instng):
         """
@@ -118,18 +121,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         TODO: This function is called MANY times, and under some circumstances
         it's performance REALLY matters. We need to review this function.
 
-        >>> f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
-        >>> f.sent('d%5C%27z%5C%220')
-        True
-
-        >>> f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
-        >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
-        True
-
-        >>> f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
-        >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
-        True
-
         :param smth_instng: The string
         :return: True if something similar was sent
         """
@@ -140,7 +131,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             return string.translate(heterogen_string.encode('utf-8'),
                                     TRANS_TABLE, deletions=DELETE_CHARS)
 
-        data = self._data or ''
+        data = self.get_data()
         # This is the easy part. If it was exactly like this in the request
         if data and smth_instng in data or \
         smth_instng in self.get_uri() or \
@@ -151,9 +142,11 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         # Ok, it's not in it but maybe something similar
         # Let's set up something we can compare
         if self._sent_info_comp is None:
-            dc = self._dc
-            dec_dc = unquote(str(dc)).decode(dc.encoding)
-            data = '%s%s%s' % (unicode(self._uri), data, dec_dc)
+            data_encoding = self._post_data.encoding
+            post_data = str(self.get_data())
+            dec_post_data = unquote(post_data).decode(data_encoding)
+
+            data = u'%s%s%s' % (unicode(self.get_uri()), data, dec_post_data)
 
             self._sent_info_comp = make_comp(data + unquote(data))
 
@@ -172,36 +165,24 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         return False
 
     def __hash__(self):
-        return hash(str(self._uri))
+        return hash(str(self.get_uri()))
 
     def __str__(self):
         """
         :return: A string representation of this fuzzable request.
         """
-        strelems = [unicode(self._url)]
-        strelems.append(u' | Method: ' + self._method)
+        strelems = [unicode(self.get_url()), u' | Method: ' + self._method]
 
-        if self._dc:
+        if self.get_dc():
             strelems.append(u' | Parameters: (')
-
-            # Mangle the value for printing
-            for pname, values in self._dc.items():
-                # Because of repeated parameter names, we need to add this:
-                for the_value in values:
-                    # the_value is always a string
-                    if len(the_value) > 10:
-                        the_value = the_value[:10] + '...'
-                    the_value = '"' + the_value + '"'
-                    strelems.append(pname + '=' + the_value + ', ')
-
-            strelems[-1] = strelems[-1][:-2]
+            strelems.append(u'%s' % self.get_dc().get_short_printable_repr())
             strelems.append(u')')
 
         return u''.join(strelems).encode(DEFAULT_ENCODING)
 
     def __repr__(self):
-        return '<fuzzable request | %s | %s>' % \
-            (self.get_method(), self.get_uri())
+        return '<fuzzable request | %s | %s>' % (self.get_method(),
+                                                 self.get_uri())
 
     def __eq__(self, other):
         """
@@ -216,12 +197,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if isinstance(other, FuzzableRequest):
             return (self._method == other._method and
                     self._uri == other._uri and
-                    self._dc == other._dc)
+                    self._post_data == other._post_data and
+                    self._headers == other._headers)
         else:
-            return NotImplemented
+            raise NotImplemented
 
     def get_eq_attrs(self):
-        return ['_method', '_uri', '_dc']
+        return ['_method', '_uri', '_post_data', '_headers']
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -236,21 +218,22 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         :return: True if self and other are variants.
         """
-        dc = self._dc
-        odc = other._dc
+        dc = self.get_dc()
+        odc = other.get_dc()
 
         if (self._method == other._method and
-            self._url == other._url and
-                dc.keys() == odc.keys()):
-            for vself, vother in izip_longest(
+            self._url == other._url and dc.keys() == odc.keys()):
+
+            for vself, voth in izip_longest(
                 chain(*dc.values()),
                 chain(*odc.values()),
-                fillvalue=None
-            ):
-                if None in (vself, vother) or \
-                        vself.isdigit() != vother.isdigit():
+                fillvalue=None):
+
+                if None in (vself, voth) or vself.isdigit() != voth.isdigit():
                     return False
+
             return True
+
         return False
 
     def set_url(self, url):
@@ -270,12 +253,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def set_method(self, method):
         self._method = method
-
-    def set_dc(self, data_container):
-        if not isinstance(data_container, DataContainer):
-            raise TypeError('Invalid call to fuzzable_request.set_dc(), the '
-                            'argument must be a DataContainer instance.')
-        self._dc = data_container
 
     def set_headers(self, headers):
         self._headers = Headers(headers)
@@ -306,26 +283,46 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def get_uri(self):
         return self._uri
 
-    def set_data(self, d):
+    def set_data(self, post_data):
         """
-        The data is the string representation of the DataContainer, in most
-        cases it wont be set.
+        Set the DataContainer which we'll use for post-data
         """
-        self._data = d
+        if not isinstance(post_data, DataContainer):
+            raise TypeError('The "post_data" parameter of a %s must be of '
+                            'DataContainer type.' % type(self).__name__)
+        self._post_data = post_data
 
     def get_data(self):
         """
-        The data is the string representation of the DataContainer, in most
-        cases it will be used as the POSTDATA for requests. Sometimes it is
-        also used as the query string data.
+        The data is the string representation of the post data, in most
+        cases it will be used as the POSTDATA for requests.
         """
-        return self._data
+        return str(self._post_data)
 
     def get_method(self):
         return self._method
 
     def get_dc(self):
-        return self._dc
+        """
+        This is saying something important to the rest of the world:
+            "If you want to fuzz this request, please use the query string"
+
+        :return: A reference to the DataContainer object which will be used for
+                 fuzzing. Other sub-classes need to override this method in
+                 order to allow fuzzing of headers, cookies, post-data, etc.
+        """
+        raise NotImplementedError
+
+    def set_dc(self, data_container):
+        """
+        :note: Its really important that get_dc and set_dc both modify the same
+               attribute. Each subclass of fuzzable request should modify a
+               different one, to provide fuzzing functionality to that section
+               of the HTTP response.
+
+        :see: self.get_dc documentation
+        """
+        raise NotImplementedError
 
     def get_headers(self):
         return self._headers

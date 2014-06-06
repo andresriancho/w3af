@@ -41,8 +41,18 @@ class DataContainer(DiskItem):
     def get_token(self):
         return self.token
 
-    def set_token(self, new_token):
-        self.token = new_token
+    def set_token(self, *args):
+        """
+        Sets the token in the DataContainer to point to the variable specified
+        in *args. Usually args will be one of:
+            * ('id',) - When the data container doesn't support repeated params
+            * ('id', 3) - When it does
+
+        :raises: An exception when the DataContainer does NOT contain the
+                 specified path in *args to find the variable
+        :return: The token if we were able to set it in the DataContainer
+        """
+        raise NotImplementedError
 
     def get_short_printable_repr(self):
         """

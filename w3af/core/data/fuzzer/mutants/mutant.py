@@ -92,25 +92,19 @@ class Mutant(DiskItem):
         """
         Return a string representing WHAT was fuzzed. This string
         is used like this:
-            - v.set_desc('SQL injection in a '+ v['db'] +
-                        ' was found at: ' + mutant.found_at())
+            - v.set_desc('SQL injection was found at: ' + mutant.found_at())
         """
-        res = ['"%s", using HTTP method %s. The sent data was: "'
-               % (self.get_url(), self.get_method())]
-
-        # Depending on the data container, print different things:
         dc = self.get_dc()
-        token = self.get_token()
+        dc_short = dc.get_short_printable_repr()
+        token = dc.get_token()
 
-        if len(str(dc)) > 65:
-            res.append('...%s=%s..."' % (token.get_name(), self.get_value()))
-        else:
-            res.append('%s".' % dc)
+        msg = '"%s", using HTTP method %s. The sent data was: "%s"'
+        msg = msg % (self.get_url(), self.get_method(), dc_short)
 
-            if len(dc) > 1:
-                res.append(' The modified parameter was "%s".' % token.get_name())
+        if token is not None:
+            msg += ' The modified parameter was "%s".' % token.get_name()
 
-        return ''.join(res)
+        return msg
 
     @staticmethod
     def get_mutant_type():
