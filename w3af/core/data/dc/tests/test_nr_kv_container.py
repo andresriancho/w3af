@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-test_kv_container.py
+test_nr_kv_container.py
 
-Copyright 2012 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -22,105 +22,97 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 
 
-class TestKeyValueContainer(unittest.TestCase):
-    
+class TestNoRepeatKeyValueContainer(unittest.TestCase):
+
     def test_basic(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
-        
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+
         self.assertIn('a', dc)
         self.assertIn('b', dc)
-        
-        self.assertEqual(dc['a'], ['1'])
-        self.assertEqual(dc['b'], ['2', '3'])
-    
+
+        self.assertEqual(dc['a'], '1')
+        self.assertEqual(dc['b'], '2')
+
     def test_str(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2','3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
         str_dc = str(dc)
-        self.assertEqual(str_dc, 'a=1&b=2&b=3')
-        self.assertIsInstance(str_dc, str) 
-        
-        dc = KeyValueContainer([(u'aaa', [''])])
-        self.assertEqual(str(dc), 'aaa=')
-        
-        dc = KeyValueContainer([(u'aaa', ('', ''))])
-        self.assertEqual(str(dc), 'aaa=&aaa=')
-    
+        self.assertEqual(str_dc, 'a=1&b=2')
+        self.assertIsInstance(str_dc, str)
+
+        dc = NonRepeatKeyValueContainer([(u'a', u'')])
+        self.assertEqual(str(dc), 'a=')
+
     def test_str_special_chars(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'u', [u'Ú-ú-Ü-ü'])], 'latin1')
+        dc = NonRepeatKeyValueContainer([(u'a', u'Ú-ú-Ü-ü')], 'latin-1')
         decoded_str = urllib.unquote(str(dc)).decode('latin-1')
-        self.assertEquals(u'a=1&u=Ú-ú-Ü-ü', decoded_str)
-        
+        self.assertEquals(u'a=Ú-ú-Ü-ü', decoded_str)
+
     def test_unicode(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', u'3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
         udc = unicode(dc)
-        
-        self.assertEqual(udc, u'a=1&b=2&b=3')
+
+        self.assertEqual(udc, u'a=1&b=2')
         self.assertIsInstance(udc, unicode)
 
     def test_iter_tokens(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
         tokens = [t for t in dc.iter_tokens()]
 
-        EXPECTED_TOKENS = [('a', '1'), ('b', '2'), ('b', '3')]
+        EXPECTED_TOKENS = [('a', '1'), ('b', '2')]
         token_data = [(t.get_name(), t.get_value()) for t in tokens]
         self.assertEqual(EXPECTED_TOKENS, token_data)
 
     def test_iter_bound_tokens(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
         dcc_tokens = [(dcc, t) for dcc, t in dc.iter_bound_tokens()]
 
-        EXPECTED_TOKENS = [('a', '1'), ('b', '2'), ('b', '3')]
+        EXPECTED_TOKENS = [('a', '1'), ('b', '2')]
         token_data = [(t.get_name(), t.get_value()) for dcc, t in dcc_tokens]
         self.assertEqual(EXPECTED_TOKENS, token_data)
 
         for dcc, _ in dcc_tokens:
-            self.assertIsInstance(dcc, KeyValueContainer)
+            self.assertIsInstance(dcc, NonRepeatKeyValueContainer)
             self.assertEquals(dcc, dc)
 
-        self.assertEqual(str(dcc), 'a=1&b=2&b=3')
+        self.assertEqual(str(dcc), 'a=1&b=2')
 
         only_dcc = [dcc for dcc, t in dcc_tokens]
         dcc = only_dcc[0]
         token = dcc.get_token()
         token.set_value('5')
-        self.assertEqual(str(dcc), 'a=5&b=2&b=3')
+        self.assertEqual(str(dcc), 'a=5&b=2')
 
         dcc = only_dcc[1]
         token = dcc.get_token()
         token.set_value('5')
-        self.assertEqual(str(dcc), 'a=1&b=5&b=3')
-
-        dcc = only_dcc[2]
-        token = dcc.get_token()
-        token.set_value('5')
-        self.assertEqual(str(dcc), 'a=1&b=2&b=5')
+        self.assertEqual(str(dcc), 'a=1&b=5')
 
     def test_iter_setters(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
         kv_setter = [(key, value, setter) for key, value, setter in dc.iter_setters()]
 
-        EXPECTED_KEY_VALUES = [('a', '1'), ('b', '2'), ('b', '3')]
+        EXPECTED_KEY_VALUES = [('a', '1'), ('b', '2')]
         self.assertEqual(EXPECTED_KEY_VALUES,
                          [(key, value) for (key, value, _) in kv_setter])
 
         for idx, (key, value, setter) in enumerate(kv_setter):
-            if idx == 2:
+            if idx == 1:
                 setter('w')
 
-        self.assertEqual(str(dc), 'a=1&b=2&b=w')
+        self.assertEqual(str(dc), 'a=1&b=w')
 
-        SET_VALUES = ['x', 'y', 'z']
+        SET_VALUES = ['x', 'y']
         for idx, (key, value, setter) in enumerate(kv_setter):
             setter(SET_VALUES[idx])
 
-        self.assertEqual(str(dc), 'a=x&b=y&b=z')
+        self.assertEqual(str(dc), 'a=x&b=y')
 
     def test_set_token(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
 
-        token = dc.set_token('a', 0)
-        self.assertEqual(token.get_name(), 'a')
-        self.assertEqual(token, dc['a'][0])
+        token = dc.set_token('b')
+        self.assertEqual(token.get_name(), 'b')
+        self.assertEqual(token, dc['b'])
