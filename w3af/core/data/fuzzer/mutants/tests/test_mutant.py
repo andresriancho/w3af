@@ -175,25 +175,31 @@ class TestMutant(unittest.TestCase):
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
 
-        expected_dc_lst = [DataContainer([('a', ['abc', '2']), ('b', ['3'])]),
-                           DataContainer([('a', ['def', '2']), ('b', ['3'])]),
-                           DataContainer([('a', ['1', 'abc']), ('b', ['3'])]),
-                           DataContainer([('a', ['1', 'def']), ('b', ['3'])]),
-                           DataContainer([('a', ['1', '2']), ('b', ['abc'])]),
-                           DataContainer([('a', ['1', '2']), ('b', ['def'])])]
+        expected_dcs = ['a=abc&a=2&b=3',
+                        'a=1&a=abc&b=3',
+                        'a=1&a=2&b=abc',
+                        'a=def&a=2&b=3',
+                        'a=1&a=def&b=3',
+                        'a=1&a=2&b=def']
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        self.assertEquals(expected_dcs, created_dcs)
 
-        self.assertEqual(created_mutants[0].get_var(), 'a')
-        self.assertEqual(created_mutants[0].get_var_index(), 0)
-        self.assertEqual(created_mutants[0].get_original_value(), '1')
-        self.assertEqual(created_mutants[2].get_var(), 'a')
-        self.assertEqual(created_mutants[2].get_var_index(), 1)
-        self.assertEqual(created_mutants[2].get_original_value(), '2')
+        token_0 = created_mutants[0].get_token()
+        self.assertIsInstance(token_0, DataToken)
+        self.assertEqual(token_0.get_name(), 'a')
+        self.assertEqual(token_0.get_original_value(), '1')
+        self.assertEqual(token_0.get_value(), 'abc')
+
+        token_1 = created_mutants[1].get_token()
+        self.assertIsInstance(token_1, DataToken)
+        self.assertEqual(token_1.get_name(), 'a')
+        self.assertEqual(token_1.get_original_value(), '2')
+        self.assertEqual(token_1.get_value(), 'abc')
 
     def test_mutant_creation_qs_and_postdata(self):
+        self.maxDiff = None
         original_form = Form()
         original_form.add_input([("name", "username"), ("value", "")])
         original_form.add_input([("name", "password"), ("value", "")])
@@ -204,49 +210,50 @@ class TestMutant(unittest.TestCase):
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        expected_dc_lst = [Form(
-            [('username', ['abc']), ('password', ['FrAmE30.'])]),
-            Form([('username', [
-                   'def']), ('password', ['FrAmE30.'])]),
-            Form([('username', [
-                   'John8212']), ('password', ['abc'])]),
-            Form([('username', ['John8212']), ('password', ['def'])]), ]
+        expected_dcs = ['username=abc&password=FrAmE30.',
+                        'username=John8212&password=abc',
+                        'username=def&password=FrAmE30.',
+                        'username=John8212&password=def']
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
-        created_urls = [i.get_uri() for i in created_mutants]
+        self.assertEqual(created_dcs, expected_dcs)
 
-        self.assertEqual(created_urls, [url, ] * 4)
-        self.assertEqual(created_dc_lst, expected_dc_lst)
+        for m in created_mutants:
+            self.assertEqual(m.get_uri(), url)
 
     def test_mutant_smart_fill_simple(self):
-        original_form = Form()
-        original_form.add_input([("name", "username"), ("value", "")])
-        original_form.add_input([("name", "address"), ("value", "")])
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, dc=original_form)
+        freq = HTTPPostDataRequest(self.url, dc=form)
 
-        filled_form = mutant_smart_fill(freq, original_form, 'username',
-                                        0, self.fuzzer_config)
+        filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 
-        self.assertEqual(id(original_form), id(filled_form))
+        self.assertEqual(id(form), id(filled_form))
         self.assertEqual(filled_form['username'], ['', ])
         self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(filled_form['username'][0], DataToken)
+        self.assertIs(filled_form['username'][0], token)
 
     def test_mutant_smart_fill_with_file(self):
-        original_form = Form()
-        original_form.add_input([("name", "username"), ("value", "")])
-        original_form.add_input([("name", "address"), ("value", "")])
-        original_form.add_file_input([("name", "file"), ("type", "file")])
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
+        form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, dc=original_form)
+        freq = HTTPPostDataRequest(self.url, dc=form)
 
-        filled_form = mutant_smart_fill(freq, original_form, 'username',
-                                        0, self.fuzzer_config)
+        filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 
-        self.assertEqual(id(original_form), id(filled_form))
+        self.assertEqual(id(form), id(filled_form))
         self.assertEqual(filled_form['username'], ['', ])
         self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(filled_form['username'][0], DataToken)
+        self.assertIs(filled_form['username'][0], token)
 
         str_file = filled_form['file'][0]
         self.assertEqual(str_file.name[-4:], '.gif')
