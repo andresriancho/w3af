@@ -25,6 +25,8 @@ from w3af.core.data.constants.encodings import UTF8
 
 
 class DataContainer(DiskItem):
+    MAX_PRINTABLE = 65
+
     def __init__(self, encoding=UTF8):
         super(DataContainer, self).__init__()
         self.encoding = encoding
@@ -42,12 +44,16 @@ class DataContainer(DiskItem):
     def set_token(self, new_token):
         self.token = new_token
 
+    def get_short_printable_repr(self):
+        """
+        :return: A string with a short printable representation of self which is
+                 shorter in length than MAX_PRINTABLE
+        """
+        raise NotImplementedError
+
     @property
     def all_items(self):
         return str(self)
 
     def get_eq_attrs(self):
         return ['all_items']
-
-    def __eq__(self, other):
-        return self.get_token() == other.get_token() and str(self) == str(other)

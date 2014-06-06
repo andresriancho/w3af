@@ -135,3 +135,21 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         Return unicode representation
         """
         return self._to_str_with_separators(u'=', u'&')
+
+    def get_short_printable_repr(self):
+        """
+        :return: A string with a short printable representation of self
+        """
+        if len(str(self)) <= self.MAX_PRINTABLE:
+            return str(self)
+
+        if self.get_token() is not None:
+            # I want to show the token variable and value in the output
+            for k, v in self.items():
+                if isinstance(v, DataToken):
+                    dt_str = '%s=%s' % (v.get_name(), v.get_value())
+                    return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+        else:
+            # I'll simply show the first N parameter and values until the
+            # MAX_PRINTABLE is achieved
+            return str(self)[:self.MAX_PRINTABLE]

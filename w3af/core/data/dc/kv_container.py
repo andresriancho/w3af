@@ -75,7 +75,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         Return string representation.
 
-        :return: string representation of the DataContainer Object.
+        :return: string representation of the KeyValueContainer instance.
         """
         return urlencode(self, encoding=self.encoding)
 
@@ -140,3 +140,22 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 lst.append(to_app)
 
         return pair_sep.join(lst)
+
+    def get_short_printable_repr(self):
+        """
+        :return: A string with a short printable representation of self
+        """
+        if len(str(self)) <= self.MAX_PRINTABLE:
+            return str(self)
+
+        if self.get_token() is not None:
+            # I want to show the token variable and value in the output
+            for k, v in self.items():
+                for ele in v:
+                    if isinstance(ele, DataToken):
+                        dt_str = '%s=%s' % (ele.get_name(), ele.get_value())
+                        return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+        else:
+            # I'll simply show the first N parameter and values until the
+            # MAX_PRINTABLE is achieved
+            return str(self)[:self.MAX_PRINTABLE]
