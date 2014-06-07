@@ -26,7 +26,7 @@ from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.token import DataToken
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.form import Form
 
 
@@ -40,8 +40,9 @@ class TestMutant(unittest.TestCase):
         self.fuzzer_config = {'fuzz_form_files': 'gif'}
 
     def test_mutant_creation(self):
-        dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString(self.SIMPLE_KV)
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -68,13 +69,27 @@ class TestMutant(unittest.TestCase):
         self.assertTrue(all(isinstance(m, Mutant) for m in created_mutants))
         self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
 
+    def test_alternative_mutant_creation(self):
+        freq = HTTPQSRequest(URL('http://moth/?a=1&b=2'))
+
+        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
+                                                False, self.fuzzer_config)
+
+        expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
+                        'a=def&b=2', 'a=1&b=def',]
+
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
+
+        self.assertEquals(expected_dcs, created_dcs)
+
     def test_get_mutant_class(self):
         m = Mutant(None)
         self.assertEqual(m.get_mutant_class(), 'Mutant')
-        
+
     def test_mutant_generic_methods(self):
-        dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString(self.SIMPLE_KV)
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -82,9 +97,9 @@ class TestMutant(unittest.TestCase):
         mutant = created_mutants[0]
 
         self.assertEqual(repr(mutant),
-                         '<mutant-generic | GET | http://moth/ >')
+                         '<mutant-generic | GET | http://moth/?a=abc&b=2 >')
         self.assertEqual(mutant.print_token_value(),
-                         'The data that was sent is: "None".')
+                         'The data that was sent is: "".')
         self.assertNotEqual(id(mutant.copy()), id(mutant))
 
         self.assertRaises(ValueError, mutant.get_original_response_body)
@@ -94,8 +109,9 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(mutant.get_original_response_body(), body)
 
     def test_mutant_creation_ignore_params(self):
-        dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString(self.SIMPLE_KV)
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
                                                 False, self.fuzzer_config)
@@ -106,8 +122,9 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(expected_dcs, created_dcs)
 
     def test_mutant_creation_empty_dc(self):
-        dc = KeyValueContainer(init_val=())
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString()
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -155,8 +172,9 @@ class TestMutant(unittest.TestCase):
                             str_file in generated_file_values))
 
     def test_mutant_creation_append(self):
-        dc = KeyValueContainer(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString(self.SIMPLE_KV)
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 True, self.fuzzer_config)
@@ -169,8 +187,9 @@ class TestMutant(unittest.TestCase):
         self.assertEquals(expected_dcs, created_dcs)
 
     def test_mutant_creation_repeated_params(self):
-        dc = KeyValueContainer([('a', ['1', '2']), ('b', ['3'])])
-        freq = HTTPQSRequest(self.url, post_data=dc)
+        qs = QueryString([('a', ['1', '2']), ('b', ['3'])])
+        freq = HTTPQSRequest(self.url)
+        freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
