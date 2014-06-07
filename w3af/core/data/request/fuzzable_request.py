@@ -69,7 +69,21 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
         super(FuzzableRequest, self).__init__()
-        
+
+        msg = 'FuzzableRequest __init__ parameter %s needs to be of %s type'
+
+        if not isinstance(uri, URL):
+            raise TypeError(msg % ('uri', 'URL'))
+
+        if headers is not None and not isinstance(headers, Headers):
+            raise TypeError(msg % ('headers', 'Headers'))
+
+        if cookie is not None and not isinstance(cookie, Cookie):
+            raise TypeError(msg % ('cookie', 'Cookie'))
+
+        if post_data is not None and not isinstance(post_data, DataContainer):
+            raise TypeError(msg % ('post_data', 'DataContainer'))
+
         # Internal variables
         self._method = method
         self._headers = Headers() if headers is None else headers

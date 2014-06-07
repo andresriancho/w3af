@@ -29,6 +29,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.data.dc.form import Form
 
 
 @attr('smoke')
@@ -39,40 +40,40 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative
-        fr = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
-        fr_other = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
+        fr = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
+        fr_other = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
         self.assertTrue(fr.is_variant_of(fr_other))
         self.assertTrue(fr_other.is_variant_of(fr))
 
     def test_variants_false_diff_meths(self):
         # Different methods
-        fr_get = FuzzableRequest(self.url, method='GET', dc={'a': ['1']})
-        fr_post = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
+        fr_get = FuzzableRequest(self.url, method='GET', post_data={'a': ['1']})
+        fr_post = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
         self.assertFalse(fr_get.is_variant_of(fr_post))
 
     def test_variants_false_diff_params_type(self):
         fr = FuzzableRequest(
-            self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
+            self.url, method='GET', post_data={'a': ['1'], 'b': ['1']})
         fr_other = FuzzableRequest(
-            self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+            self.url, method='GET', post_data={'a': ['2'], 'b': ['cc']})
         self.assertFalse(fr.is_variant_of(fr_other))
 
     def test_variants_false_nonetype_in_params(self):
-        fr = FuzzableRequest(self.url, method='GET', dc={'a': [None]})
-        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['s']})
+        fr = FuzzableRequest(self.url, method='GET', post_data={'a': [None]})
+        fr_other = FuzzableRequest(self.url, method='GET', post_data={'a': ['s']})
         self.assertFalse(fr.is_variant_of(fr_other))
 
     def test_variants_true_similar_params(self):
         # change the url by adding a querystring. shouldn't affect anything.
         url = self.url.url_join('?a=z')
-        fr = FuzzableRequest(url, method='GET', dc={'a': ['1'], 'b': ['bb']})
+        fr = FuzzableRequest(url, method='GET', post_data={'a': ['1'], 'b': ['bb']})
         fr_other = FuzzableRequest(
-            self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+            self.url, method='GET', post_data={'a': ['2'], 'b': ['cc']})
         self.assertTrue(fr.is_variant_of(fr_other))
 
     def test_variants_true_similar_params_two(self):
-        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']})
-        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['']})
+        fr = FuzzableRequest(self.url, method='GET', post_data={'a': ['b']})
+        fr_other = FuzzableRequest(self.url, method='GET', post_data={'a': ['']})
         self.assertTrue(fr.is_variant_of(fr_other))
 
     def test_dump_case01(self):
@@ -84,7 +85,7 @@ class TestFuzzableRequest(unittest.TestCase):
 
         #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
         # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']},
+        fr = FuzzableRequest(self.url, method='GET', post_data={'a': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
 
@@ -97,7 +98,7 @@ class TestFuzzableRequest(unittest.TestCase):
         
         #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
         # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', dc={u'á': ['b']},
+        fr = FuzzableRequest(self.url, method='GET', post_data={u'á': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected.encode('utf-8'))
 
@@ -113,7 +114,7 @@ class TestFuzzableRequest(unittest.TestCase):
         
         #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
         # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', dc={u'a': ['b']},
+        fr = FuzzableRequest(self.url, method='GET', post_data={u'a': ['b']},
                              headers=headers)
         self.assertEqual(fr.dump(), expected)
 
@@ -138,17 +139,15 @@ class TestFuzzableRequest(unittest.TestCase):
         
         self.assertEqual(fr.dump(), expected)
 
-    def test_export_without_dc(self):
+    def test_export_without_post_data(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        self.assertEqual(fr.export(),
-                         'GET,http://www.w3af.com/,')
+        self.assertEqual(fr.export(), '"GET","http://www.w3af.com/",""')
     
-    def test_export_with_dc(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        d = KeyValueContainer(init_val=[('a', ['1',])])
-        fr.set_dc(d)
-        self.assertEqual(fr.export(),
-                         'GET,http://www.w3af.com/?a=1,')
+    def test_export_with_post_data(self):
+        dc = KeyValueContainer(init_val=[('a', ['1'])])
+        fr = FuzzableRequest(URL("http://www.w3af.com/"), post_data=dc)
+
+        self.assertEqual(fr.export(), '"GET","http://www.w3af.com/","a=1"')
         
     def test_equal(self):
         u = URL("""http://www.w3af.com/""")
@@ -181,12 +180,20 @@ class TestFuzzableRequest(unittest.TestCase):
         fr.set_method('TRACE')
         self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: TRACE')
 
-    def test_sent(self):
+    def test_sent_url(self):
         f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
         self.assertTrue(f.sent('d%5C%27z%5C%220'))
 
-        f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
+        f = FuzzableRequest(URL('http://example.com/a?p=<SCrIPT>alert("bsMs")</SCrIPT>'))
         self.assertTrue(f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>'))
 
         f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
         self.assertTrue(f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>'))
+
+    def test_sent_post_data(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", """d'z"0""")])
+        form.add_input([("name", "address"), ("value", "")])
+
+        f = FuzzableRequest(URL('http://example.com/'), post_data=form)
+        self.assertTrue(f.sent('d%5C%27z%5C%220'))
