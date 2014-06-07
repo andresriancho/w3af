@@ -1,5 +1,5 @@
 """
-JSONRequest.py
+json_request.py
 
 Copyright 2006 Andres Riancho
 

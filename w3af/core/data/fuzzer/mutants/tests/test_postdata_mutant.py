@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.form import Form
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
 
 
 class TestPostDataMutant(unittest.TestCase):

@@ -1,5 +1,5 @@
 """
-HTTPQsRequest.py
+querystring_request.py
 
 Copyright 2006 Andres Riancho
 

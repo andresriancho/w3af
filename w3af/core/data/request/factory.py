@@ -29,10 +29,10 @@ import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
-from w3af.core.data.request.JSONRequest import JSONPostDataRequest
-from w3af.core.data.request.XMLRPCRequest import XMLRPCRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.json_request import JSONPostDataRequest
+from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.headers import Headers

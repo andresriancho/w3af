@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
 from w3af.core.data.dc.data_container import NonRepeatDataContainer
 

@@ -27,8 +27,8 @@ from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.data.db.disk_set import DiskSet
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.db.dbms import get_default_temp_db_instance
 

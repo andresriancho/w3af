@@ -23,7 +23,7 @@ import unittest
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.dc.headers import Headers
 

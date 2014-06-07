@@ -31,7 +31,7 @@ from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 

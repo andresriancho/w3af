@@ -41,7 +41,7 @@ from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, REGEX
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
 
 
 class web_spider(CrawlPlugin):

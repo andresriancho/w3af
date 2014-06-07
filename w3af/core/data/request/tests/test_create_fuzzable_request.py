@@ -28,10 +28,10 @@ from w3af.core.data.request.factory import (create_fuzzable_request_from_parts,
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.url import URL
 
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
-from w3af.core.data.request.JSONRequest import JSONPostDataRequest
-from w3af.core.data.request.XMLRPCRequest import XMLRPCRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.json_request import JSONPostDataRequest
+from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.url.handlers.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
 

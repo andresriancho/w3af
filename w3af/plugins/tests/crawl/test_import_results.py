@@ -25,8 +25,8 @@ from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.import_results import import_results
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.controllers.ci.moth import get_moth_http
 
 

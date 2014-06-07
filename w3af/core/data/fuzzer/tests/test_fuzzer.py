@@ -25,8 +25,8 @@ from w3af.core.data.kb.config import Config
 from w3af.core.data.kb.config import cf as cf_singleton
 
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant

@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 

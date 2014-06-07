@@ -23,7 +23,7 @@ import urllib
 import copy
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 
 

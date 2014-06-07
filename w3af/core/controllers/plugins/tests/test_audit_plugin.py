@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.data.kb.knowledge_base import kb
-from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
+from w3af.core.data.request.querystring_request import HTTPQSRequest
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.controllers.ci.moth import get_moth_http

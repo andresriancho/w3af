@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import HTTPPostDataRequest
 
 
 class PostDataMutant(Mutant):
