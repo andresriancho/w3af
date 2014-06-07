@@ -39,29 +39,29 @@ class TestFuzzableRequest(unittest.TestCase):
         self.url = URL('http://w3af.com/a/b/c.php')
 
     def test_dump_case01(self):
-        expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
-                                'Hello: World',
-                                '',
-                                ''])
-        headers = Headers([('Hello', 'World')])
+        expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                                 u'Hello: World',
+                                 u'',
+                                 u'a=b'])
 
-        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
-        # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', post_data={'a': ['b']},
+        headers = Headers([(u'Hello', u'World')])
+        post_data = KeyValueContainer(init_val=[('a', ['b'])])
+        fr = FuzzableRequest(self.url, method='GET', post_data=post_data,
                              headers=headers)
+
         self.assertEqual(fr.dump(), expected)
 
     def test_dump_case02(self):
         expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
                                  u'Hola: Múndo',
                                  u'',
-                                 u''])
+                                 u'a=b'])
+
         headers = Headers([(u'Hola', u'Múndo')])
-        
-        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
-        # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', post_data={u'á': ['b']},
+        post_data = KeyValueContainer(init_val=[('a', ['b'])])
+        fr = FuzzableRequest(self.url, method='GET', post_data=post_data,
                              headers=headers)
+
         self.assertEqual(fr.dump(), expected.encode('utf-8'))
 
     def test_dump_case03(self):
@@ -70,19 +70,18 @@ class TestFuzzableRequest(unittest.TestCase):
         expected = u'\r\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
                                  u'Hola: %s' % smart_unicode(header_value),
                                  u'',
-                                 u''])
+                                 u'a=b'])
 
         headers = Headers([(u'Hola', header_value)])
-        
-        #TODO: Note that I'm passing a dc to the FuzzableRequest and it's not
-        # appearing in the dump. It might be a bug...
-        fr = FuzzableRequest(self.url, method='GET', post_data={u'a': ['b']},
+        post_data = KeyValueContainer(init_val=[('a', ['b'])])
+        fr = FuzzableRequest(self.url, method='GET', post_data=post_data,
                              headers=headers)
+
         self.assertEqual(fr.dump(), expected)
 
     def test_dump_mangle(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"),\
-                             headers=Headers([('Host','www.w3af.com'),]))
+                             headers=Headers([('Host', 'www.w3af.com')]))
 
         expected = u'\r\n'.join([u'GET http://www.w3af.com/ HTTP/1.1',
                                  u'Host: www.w3af.com',
@@ -92,7 +91,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.dump(), expected)
         
         fr.set_method('POST')
-        fr.set_data('data=23')
+        fr.set_data(KeyValueContainer(init_val=[('data', ['23'])]))
         
         expected = u'\r\n'.join([u'POST http://www.w3af.com/ HTTP/1.1',
                                  u'Host: www.w3af.com',
@@ -133,14 +132,16 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(r.get_url(), url)
 
     def test_str(self):
+        # FuzzableRequest objects which are not configured (with a dc) are
+        # almost useless, you should always use a sub-class
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: GET')
+        self.assertRaises(NotImplementedError, fr.__str__)
 
-        self.assertEqual(repr(fr),
-                         '<fuzzable request | GET | http://www.w3af.com/>')
+    def test_repr(self):
+        url = "http://www.w3af.com/"
+        fr = FuzzableRequest(URL(url))
 
-        fr.set_method('TRACE')
-        self.assertEqual(str(fr), 'http://www.w3af.com/ | Method: TRACE')
+        self.assertEqual(repr(fr), '<fuzzable request | GET | %s>' % url)
 
     def test_sent_url(self):
         f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
