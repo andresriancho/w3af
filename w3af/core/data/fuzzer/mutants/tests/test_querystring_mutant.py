@@ -38,7 +38,7 @@ class TestQSMutant(unittest.TestCase):
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'))
         m = QSMutant(freq)
 
-        expected = 'The sent URI was http://www.w3af.com/?id=3 .'
+        expected = 'The sent URI was "http://www.w3af.com/?id=3" .'
         self.assertEqual(m.print_token_value(), expected)
 
     def test_mutant_creation(self):
