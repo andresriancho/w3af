@@ -72,7 +72,7 @@ class Mutant(DiskItem):
 
     def print_token_value(self):
         fmt = 'The data that was sent is: "%s".'
-        return fmt % self.get_token().get_value()
+        return fmt % self.get_data()
 
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
@@ -205,8 +205,18 @@ class Mutant(DiskItem):
                 if isinstance(dc_copy, Form):
                     dc_copy = mutant_smart_fill(freq, dc_copy, fuzzer_config)
 
-                original_value = token.get_original_value() if append else ''
-                token.set_value('%s%s' % (original_value, payload))
+                if append:
+                    if not isinstance(payload, basestring):
+                        # This prevents me from flattening the special type to
+                        # a string in a couple of lines below where I apply the
+                        # string formatting
+                        msg = 'Incorrect payload type %s'
+                        raise RuntimeError(msg % type(payload))
+
+                    original_value = token.get_original_value()
+                    token.set_value('%s%s' % (original_value, payload))
+                else:
+                    token.set_value(payload)
 
                 # Create the mutant
                 freq_copy = freq.copy()
