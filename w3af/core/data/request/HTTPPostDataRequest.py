@@ -33,7 +33,7 @@ class HTTPPostDataRequest(FuzzableRequest):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, uri, method='GET', headers=None, cookie=None,
+    def __init__(self, uri, method='POST', headers=None, cookie=None,
                  post_data=None):
 
         if post_data is not None and not isinstance(post_data, Form):
