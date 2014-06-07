@@ -24,8 +24,8 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
-from w3af.core.data.dc.data_container import DataContainer
 from w3af.core.data.dc.form import Form
+from w3af.core.controllers.misc.io import NamedStringIO
 
 
 class TestFileContentMutant(unittest.TestCase):
@@ -42,10 +42,10 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = HTTPPostDataRequest(self.url, dc=form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
         m = FileContentMutant(freq)
-        m.set_var('file', 0)
+        m.get_dc().set_token('file', 0)
         m.set_token_value('abc')
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 
@@ -55,8 +55,8 @@ class TestFileContentMutant(unittest.TestCase):
         self.assertEqual(generated_mod_value, expected_mod_value)
 
         expected_found_at = u'"http://moth/", using HTTP method POST. The'\
-            ' sent post-data was: "username=&file=abc&address="'\
-            ' which modifies the uploaded file content.'
+            u' sent post-data was: "username=&file=abc&address="'\
+            u' which modified the uploaded file content.'
         generated_found_at = m.found_at()
 
         self.assertEqual(generated_found_at, expected_found_at)
@@ -80,7 +80,7 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = HTTPPostDataRequest(self.url, dc=form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
         generated_mutants = FileContentMutant.create_mutants(
             freq, self.payloads, [],
@@ -93,21 +93,23 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = HTTPPostDataRequest(self.url, dc=form)
+        freq = HTTPPostDataRequest(self.url, post_data=form)
 
-        generated_mutants = FileContentMutant.create_mutants(
-            freq, self.payloads, [],
-            False, self.fuzzer_config)
+        generated_mutants = FileContentMutant.create_mutants(freq,
+                                                             self.payloads, [],
+                                                             False,
+                                                             self.fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 2, generated_mutants)
 
         expected_data = [Form([('username', ['John8212']), ('file', ['abc'])]),
-                         Form([('username', ['John8212']), ('file', ['def'])]), ]
+                         Form([('username', ['John8212']), ('file', ['def'])]),]
 
-        generated_data = [m.get_data() for m in generated_mutants]
+        generated_data = [m.get_dc() for m in generated_mutants]
 
         self.assertEqual(expected_data, generated_data)
 
-        str_file = generated_data[0]['file'][0]
+        str_file = generated_data[0]['file'][0].get_value()
+        self.assertIsInstance(str_file, NamedStringIO)
         self.assertEqual(str_file.name[-4:], '.gif')
         self.assertIn('abc', str_file)

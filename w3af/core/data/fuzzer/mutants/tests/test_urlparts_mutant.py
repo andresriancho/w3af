@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.HTTPQsRequest import HTTPQSRequest
 from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsContainer
 
 
 class TestURLPartsMutant(unittest.TestCase):
@@ -34,15 +34,11 @@ class TestURLPartsMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
 
     def test_basics(self):
-        divided_path = DataContainer()
-        divided_path['start'] = '/'
-        divided_path['modified_part'] = 'ping!'
-        divided_path['end'] = '/bar'
+        divided_path = URLPartsContainer('/', 'ping!', '/bar')
 
         freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
         m = URLPartsMutant(freq)
-        m.set_mutant_dc(divided_path)
-        m.set_var('modified_part')
+        m.set_dc(divided_path)
         self.assertEqual(m.get_url().url_string,
                          u'http://www.w3af.com/ping%21/bar')
 
