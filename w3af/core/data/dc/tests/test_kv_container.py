@@ -124,3 +124,27 @@ class TestKeyValueContainer(unittest.TestCase):
         token = dc.set_token('a', 0)
         self.assertEqual(token.get_name(), 'a')
         self.assertEqual(token, dc['a'][0])
+
+    def test_is_variant_of_eq_keys_eq_value_types(self):
+        dc1 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc2 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        self.assertTrue(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_neq_keys_eq_value_types(self):
+        dc1 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc2 = KeyValueContainer([(u'a', ['1']), (u'c', ['2', '3'])])
+
+        self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_neq_num_keys_eq_values(self):
+        dc1 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc2 = KeyValueContainer([(u'a', ['1'])])
+
+        self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_eq_keys_neq_value_types(self):
+        dc1 = KeyValueContainer([(u'a', ['1']), (u'b', ['c', '3'])])
+        dc2 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        self.assertFalse(dc1.is_variant_of(dc2))

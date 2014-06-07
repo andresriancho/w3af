@@ -20,6 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from itertools import chain, izip_longest
+
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.encodings import UTF8
 
@@ -98,6 +100,38 @@ class DataContainer(DiskItem):
                  shorter in length than MAX_PRINTABLE
         """
         raise NotImplementedError
+
+    def is_variant_of(self, other):
+        """
+        :return: True if self and other are both of the same DataContainer type,
+                 have the same token names, and for each token the type (int or
+                 string) is the same.
+        """
+        for tself, tother in izip_longest(chain(self.iter_tokens()),
+                                          chain(other.iter_tokens()),
+                                          fillvalue=None):
+            if None in (tself, tother):
+                # One data container has more parameters than the other one
+                return False
+
+            if tself.get_name() != tother.get_name():
+                # The names of the parameters need to be the same (and in the
+                # same order too)
+                return False
+
+            try:
+                digit_self = tself.get_value().isdigit()
+                digit_other = tother.get_value().isdigit()
+            except AttributeError:
+                # In some cases the value is not a string, so it doesn't have
+                # the isdigit method, we don't know how to compare these, so
+                # we just return False
+                return False
+
+            if digit_other != digit_self:
+                return False
+
+        return True
 
     @property
     def all_items(self):

@@ -116,3 +116,27 @@ class TestNoRepeatKeyValueContainer(unittest.TestCase):
         token = dc.set_token('b')
         self.assertEqual(token.get_name(), 'b')
         self.assertEqual(token, dc['b'])
+
+    def test_is_variant_of_eq_keys_eq_value_types(self):
+        dc1 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+        dc2 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+
+        self.assertTrue(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_neq_keys_eq_value_types(self):
+        dc1 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+        dc2 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'c', u'2')])
+
+        self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_neq_num_keys_eq_values(self):
+        dc1 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+        dc2 = NonRepeatKeyValueContainer([(u'a', u'1')])
+
+        self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_is_variant_of_eq_keys_neq_value_types(self):
+        dc1 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
+        dc2 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'cc')])
+
+        self.assertFalse(dc1.is_variant_of(dc2))

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 import string
 
-from itertools import chain, izip_longest
 from urllib import unquote
 
 import w3af.core.controllers.output_manager as om
@@ -232,23 +231,16 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         :return: True if self and other are variants.
         """
-        dc = self.get_dc()
-        odc = other.get_dc()
+        if self.get_method() != other.get_method():
+            return False
 
-        if (self._method == other._method and
-            self._url == other._url and dc.keys() == odc.keys()):
+        if self.get_url() != other.get_url():
+            return False
 
-            for vself, voth in izip_longest(
-                chain(*dc.values()),
-                chain(*odc.values()),
-                fillvalue=None):
+        if not self.get_dc().is_variant_of(other.get_dc()):
+            return False
 
-                if None in (vself, voth) or vself.isdigit() != voth.isdigit():
-                    return False
-
-            return True
-
-        return False
+        return True
 
     def set_url(self, url):
         if not isinstance(url, URL):

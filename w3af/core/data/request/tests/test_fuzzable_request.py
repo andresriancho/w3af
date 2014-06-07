@@ -38,44 +38,6 @@ class TestFuzzableRequest(unittest.TestCase):
     def setUp(self):
         self.url = URL('http://w3af.com/a/b/c.php')
 
-    def test_variants_commutative(self):
-        # 'is_variant_of' is commutative
-        fr = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
-        fr_other = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
-        self.assertTrue(fr.is_variant_of(fr_other))
-        self.assertTrue(fr_other.is_variant_of(fr))
-
-    def test_variants_false_diff_meths(self):
-        # Different methods
-        fr_get = FuzzableRequest(self.url, method='GET', post_data={'a': ['1']})
-        fr_post = FuzzableRequest(self.url, method='POST', post_data={'a': ['1']})
-        self.assertFalse(fr_get.is_variant_of(fr_post))
-
-    def test_variants_false_diff_params_type(self):
-        fr = FuzzableRequest(
-            self.url, method='GET', post_data={'a': ['1'], 'b': ['1']})
-        fr_other = FuzzableRequest(
-            self.url, method='GET', post_data={'a': ['2'], 'b': ['cc']})
-        self.assertFalse(fr.is_variant_of(fr_other))
-
-    def test_variants_false_nonetype_in_params(self):
-        fr = FuzzableRequest(self.url, method='GET', post_data={'a': [None]})
-        fr_other = FuzzableRequest(self.url, method='GET', post_data={'a': ['s']})
-        self.assertFalse(fr.is_variant_of(fr_other))
-
-    def test_variants_true_similar_params(self):
-        # change the url by adding a querystring. shouldn't affect anything.
-        url = self.url.url_join('?a=z')
-        fr = FuzzableRequest(url, method='GET', post_data={'a': ['1'], 'b': ['bb']})
-        fr_other = FuzzableRequest(
-            self.url, method='GET', post_data={'a': ['2'], 'b': ['cc']})
-        self.assertTrue(fr.is_variant_of(fr_other))
-
-    def test_variants_true_similar_params_two(self):
-        fr = FuzzableRequest(self.url, method='GET', post_data={'a': ['b']})
-        fr_other = FuzzableRequest(self.url, method='GET', post_data={'a': ['']})
-        self.assertTrue(fr.is_variant_of(fr_other))
-
     def test_dump_case01(self):
         expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
                                 'Hello: World',
