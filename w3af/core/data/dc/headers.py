@@ -88,6 +88,13 @@ class Headers(NonRepeatKeyValueContainer):
 
         return default, None
 
+    def idel(self, header_name):
+        """
+        :raises: KeyError when the header_name is not found in self.
+        """
+        _, sensitive_header_name = self.iget(header_name)
+        del self[sensitive_header_name]
+
     def __setitem__(self, k, v):
         if isinstance(k, basestring):
             if not isinstance(k, unicode):

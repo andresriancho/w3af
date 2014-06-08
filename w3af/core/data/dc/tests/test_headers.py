@@ -120,3 +120,17 @@ class TestHeaders(unittest.TestCase):
     def test_from_invalid_string(self):
         self.assertRaises(ValueError, Headers.from_string, 'ab')
 
+    def test_headers_iget(self):
+        upper_headers = Headers([('Abc', 'b')])
+
+        value, real_header = upper_headers.iget('abc')
+
+        self.assertEqual(value, 'b')
+        self.assertEqual(real_header, 'Abc')
+
+    def test_headers_idel(self):
+        upper_headers = Headers([('Abc', 'b')])
+
+        upper_headers.idel('abc')
+        
+        self.assertNotIn('Abc', upper_headers)
