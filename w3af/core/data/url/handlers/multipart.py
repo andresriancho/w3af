@@ -11,31 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 #
-"""
-Enables the use of multipart/form-data for posting forms
-"""
-
-"""
-Inspirations:
-  Upload files in python:
-    http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
-  urllib2_file:
-    Fabien Seisen: <fabien@seisen.org>
-
-Example:
-  import MultipartPostHandler, urllib2, cookielib
-
-  cookies = cookielib.CookieJar()
-  opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies),
-                                MultipartPostHandler.MultipartPostHandler)
-  params = { "username" : "bob", "password" : "riviera",
-             "file" : open("filename", "rb") }
-  opener.open("http://wwww.bobsite.com/upload/", params)
-
-Further Example:
-  The main function of this file is a sample which downloads a page and
-  then uploads it to the W3C validator.
-"""
 import sys
 import urllib
 import urllib2
@@ -53,11 +28,34 @@ doseq = 1
 
 
 class MultipartPostHandler(urllib2.BaseHandler):
+    """
+    Enables the use of multipart/form-data for posting forms using urllib2
+
+    Inspirations:
+      Upload files in python:
+        http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
+      urllib2_file:
+        Fabien Seisen: <fabien@seisen.org>
+
+    Example:
+      import MultipartPostHandler, urllib2, cookielib
+
+      cookies = cookielib.CookieJar()
+      opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies),
+                                    MultipartPostHandler.MultipartPostHandler)
+      params = { "username" : "bob", "password" : "riviera",
+                 "file" : open("filename", "rb") }
+      opener.open("http://wwww.bobsite.com/upload/", params)
+
+    Further Example:
+      The main function of this file is a sample which downloads a page and
+      then uploads it to the W3C validator.
+    """
     # needs to run first
     handler_order = urllib2.HTTPHandler.handler_order - 10
 
     def http_request(self, request):
-        # Please note that get_data() in HTTPPostDataRequest is the only one that
+        # Please note that get_data() in PostDataRequest is the only one that
         # in some cases will return something that is NOT a basestring.
         data = request.get_data()
 
@@ -82,8 +80,8 @@ class MultipartPostHandler(urllib2.BaseHandler):
 
     def _send_as_multipart(self, request, data):
         """
-        Based on the request it decides if we should send the request as multipart
-        or not.
+        Based on the request it decides if we should send the request as
+        multipart or not.
 
         :return: (Boolean that indicates if multipart should be used,
                   List with string variables,
@@ -130,14 +128,11 @@ class MultipartPostHandler(urllib2.BaseHandler):
                         elem = to_str(elem)
                         v_vars.append((enc_pname, elem))
         except TypeError:
-            try:
-                tb = sys.exc_info()[2]
-                # pylint: disable=E0702
-                # http://www.logilab.org/ticket/113023
-                raise (TypeError, "not a valid non-string sequence or "
-                       "mapping object", tb)
-            finally:
-                del tb
+            tb = sys.exc_info()[2]
+            # pylint: disable=E0702
+            # http://www.logilab.org/ticket/113023
+            msg = "not a valid non-string sequence or mapping object"
+            raise (TypeError, msg, tb)
 
         return multipart, v_vars, v_files
 
