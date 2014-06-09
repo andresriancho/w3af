@@ -58,13 +58,14 @@ class Cookie(KeyValueContainer):
 
         :return: string representation of the cookie object.
         """
-        res = ''
-        for parameter_name in self:
-            for element_index in xrange(len(self[parameter_name])):
-                ks = self._sanitize(parameter_name)
-                vs = self._sanitize(self[parameter_name][element_index])
-                res += ks + '=' + vs + '; '
-        return res[:-1]
+        cookie_pairs = []
+
+        for token in self.iter_tokens():
+            ks = self._sanitize(str(token.get_name()))
+            vs = self._sanitize(str(token.get_value()))
+            cookie_pairs.append('%s=%s' % (ks, vs))
+
+        return '; '.join(cookie_pairs)
 
     def __reduce__(self):
         r = list(super(Cookie, self).__reduce__())

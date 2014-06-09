@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
-from w3af.core.data.dc.data_container import NonRepeatDataContainer
+from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsContainer
 
 
 class TestFileNameMutant(unittest.TestCase):
@@ -34,15 +34,12 @@ class TestFileNameMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
 
     def test_basics(self):
-        divided_path = NonRepeatDataContainer()
-        divided_path['start'] = ''
-        divided_path['modified_part'] = 'ping!'
-        divided_path['end'] = '.htm'
+        parts = URLPartsContainer('', 'ping!', '.htm')
 
         freq = QsRequest(URL('http://www.w3af.com/foo/bar.htm'))
         m = FileNameMutant(freq)
-        m.set_mutant_dc(divided_path)
-        m.set_var('modified_part')
+        m.set_dc(parts)
+
         self.assertEqual(m.get_url().url_string,
                          u'http://www.w3af.com/foo/ping%21.htm')
 
@@ -62,9 +59,9 @@ class TestFileNameMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_url_filenames': False}
         freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
-        generated_mutants = FileNameMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = FileNameMutant.create_mutants(freq, self.payloads,
+                                                          [], False,
+                                                          fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
@@ -72,9 +69,9 @@ class TestFileNameMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_url_filenames': True}
         freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
-        generated_mutants = FileNameMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = FileNameMutant.create_mutants(freq, self.payloads,
+                                                          [], False,
+                                                          fuzzer_config)
 
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
@@ -118,5 +115,5 @@ class TestFileNameMutant(unittest.TestCase):
                          'http://www.w3af.com/bar.http%3A//127.0.0.1%3A8015/test/']
 
         generated_urls = [m.get_url().url_string for m in generated_mutants]
-
+        
         self.assertEqual(set(expected_urls), set(generated_urls))

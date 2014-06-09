@@ -22,9 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib
 import re
 
-from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
-from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.fuzzer.mutants.urlparts_mutant import (URLPartsContainer,
+                                                           URLPartsMutant,
+                                                           TOKEN)
+
 
 CHUNK_RE = re.compile(r'([a-zA-Z0-9]+)')
 CHUNK_RE_2 = re.compile(r'[a-zA-Z0-9]')
@@ -34,11 +36,8 @@ class FileNameMutant(URLPartsMutant):
     """
     This class is a filename mutant.
     """
-
-    def __init__(self, freq):
-        URLPartsMutant.__init__(self, freq)
-
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'url filename'
 
     def get_url(self):
@@ -49,35 +48,17 @@ class FileNameMutant(URLPartsMutant):
 
         # Please note that this double encoding is needed if we want to work
         # with mod_rewrite
-        encoded = urllib.quote_plus(self._mutant_dc['modified_part'],
+        encoded = urllib.quote_plus(self._url_parts_dc[TOKEN].get_value(),
                                     self._safe_encode_chars)
         if self._double_encoding:
             encoded = urllib.quote_plus(encoded, safe=self._safe_encode_chars)
 
-        domain_path.set_file_name(self._mutant_dc['start'] + encoded +
-                                  self._mutant_dc['end'])
+        domain_path.set_file_name('%s%s%s' % (self._url_parts_dc.url_start,
+                                              encoded,
+                                              self._url_parts_dc.url_end))
         return domain_path
 
     get_uri = get_url
-
-    def get_data(self):
-        return None
-
-    def print_token_value(self):
-        fmt = 'The sent %s is: "%s%s%s".'
-        return fmt % (self.get_mutant_type(), self._mutant_dc['start'],
-                      self._mutant_dc['modified_part'], self._mutant_dc['end'])
-
-    def set_token_value(self, val):
-        self._mutant_dc['modified_part'] = val
-
-    def get_token_value(self):
-        return self._mutant_dc['modified_part']
-
-    def set_url(self, u):
-        msg = 'You can\'t change the value of the URL in a FileNameMutant'\
-              ' instance.'
-        raise ValueError(msg)
 
     def found_at(self):
         """
@@ -118,32 +99,27 @@ class FileNameMutant(URLPartsMutant):
             for mutant_str in mutant_str_list:
 
                 if CHUNK_RE_2.match(fn_chunk):
-                    divided_fname = NonRepeatKeyValueContainer()
-                    divided_fname['start'] = ''.join(fname_chunks[:idx])
-                    divided_fname['end'] = ''.join(fname_chunks[idx + 1:])
-                    divided_fname['modified_part'] = \
-                        (fn_chunk if append else '') + \
-                        urllib.quote_plus(mutant_str)
+                    fname_token = (fn_chunk if append else '') + mutant_str
+                    fname_start = ''.join(fname_chunks[:idx])
+                    fname_end = ''.join(fname_chunks[idx + 1:])
+
+                    url_parts_container = URLPartsContainer(fname_start,
+                                                            fname_token,
+                                                            fname_end)
 
                     freq_copy = freq.copy()
-                    freq_copy.set_url(freq.get_url())
-
-                    # Create the mutant
                     m = FileNameMutant(freq_copy)
-                    m.set_original_value(fn_chunk)
-                    m.set_var('modified_part')
-                    m.set_mutant_dc(divided_fname)
-                    m.set_token_value(mutant_str)
-                    # Special for filename fuzzing and some configurations
-                    # of mod_rewrite
-                    m.set_double_encoding(False)
+                    m.set_dc(url_parts_container)
                     res.append(m)
 
-                    # The same but with a different type of encoding!
-                    # (mod_rewrite)
-                    m2 = m.copy()
+                    # Same URLs but with different types of encoding!
+                    freq_copy = freq.copy()
+                    m2 = FileNameMutant(freq_copy)
+                    m2.set_dc(url_parts_container)
+                    #m2.set_double_encoding(True)
                     m2.set_safe_encode_chars('/')
 
                     if m2.get_url() != m.get_url():
                         res.append(m2)
+
         return res

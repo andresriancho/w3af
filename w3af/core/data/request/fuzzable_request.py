@@ -25,6 +25,7 @@ import string
 from urllib import unquote
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -41,6 +42,9 @@ ALL_CHARS = ''.join(chr(i) for i in xrange(256))
 TRANS_TABLE = string.maketrans(ALL_CHARS, ALL_CHARS)
 DELETE_CHARS = ''.join(['\\', "'", '"', '+', ' ', chr(0), chr(int("0D", 16)),
                        chr(int("0A", 16))])
+
+
+TYPE_ERROR = 'FuzzableRequest __init__ parameter %s needs to be of %s type'
 
 
 class FuzzableRequest(RequestMixIn, DiskItem):
@@ -71,20 +75,18 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Note: Do not check for the URI type here, since I'm doing it in
         # set_uri() already.
-        msg = 'FuzzableRequest __init__ parameter %s needs to be of %s type'
-
         if headers is not None and not isinstance(headers, Headers):
-            raise TypeError(msg % ('headers', 'Headers'))
+            raise TypeError(TYPE_ERROR % ('headers', 'Headers'))
 
         if cookie is not None and not isinstance(cookie, Cookie):
-            raise TypeError(msg % ('cookie', 'Cookie'))
+            raise TypeError(TYPE_ERROR % ('cookie', 'Cookie'))
 
         if post_data is not None and not isinstance(post_data, DataContainer):
-            raise TypeError(msg % ('post_data', 'DataContainer'))
+            raise TypeError(TYPE_ERROR % ('post_data', 'DataContainer'))
 
         # Internal variables
         self._method = method
-        self._headers = Headers() if headers is None else headers
+        self._headers = self.get_initial_headers(headers)
         self._cookie = Cookie() if cookie is None else cookie
         self._post_data = KeyValueContainer() if post_data is None else post_data
 
@@ -95,6 +97,36 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
+
+    def get_initial_headers(self, specific_headers):
+        """
+        :return: Calls get_default_headers to get the default framework headers,
+        overwrites any overlap with specific_headers and returns a Headers
+        instance
+        """
+        if specific_headers is None:
+            return self.get_default_headers()
+
+        headers = self.get_default_headers()
+        headers.update(specific_headers)
+        return headers
+
+    def get_default_headers(self):
+        """
+        :return: The headers we want to use framework-wide for fuzzing. By
+                 default we set the fuzzable_headers to [], which makes this
+                 method return an empty Headers instance.
+
+                 When the user sets a fuzzable_headers it will create a Headers
+                 instance with empty values.
+
+                 We then append the specific headers supplied for this
+                 FuzzableRequest instance to the default headers. Any specific
+                 headers override the default (empty) ones.
+        """
+        fuzzable_headers = cf.cf.get('fuzzable_headers') or []
+        req_headers = [(h, '') for h in fuzzable_headers]
+        return Headers(req_headers)
 
     @classmethod
     def from_parts(cls, url, method, post_data, headers):

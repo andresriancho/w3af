@@ -53,14 +53,12 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     """
     res = []
 
-    # Headers for all fuzzable requests created here:
-    # And add the fuzzable headers to the dict
-    req_headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
-    req_headers.update(request and request.get_headers() or {})
-    req_headers = Headers(req_headers.items())
-
     # Get the cookie!
     cookie_obj = _create_cookie(resp)
+
+    # Get the request headers, this is very useful for setting headers which
+    # were sent in a previous HTTP request
+    req_headers = Headers() if request is None else request.get_headers()
 
     # Create the fuzzable request that represents the request object
     # passed as parameter
@@ -107,19 +105,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         for form in form_list:
             for variant in form.get_variants(mode):
                 if form.get_method().upper() == 'POST':
-                    r = PostDataRequest(
-                        variant.get_action(),
-                        variant.get_method(),
-                        req_headers,
-                        cookie_obj,
-                        variant)
+                    r = PostDataRequest(variant.get_action(),
+                                        variant.get_method(),
+                                        req_headers, cookie_obj, variant)
                 else:
                     # The default is a GET request
-                    r = QsRequest(
-                        variant.get_action(),
-                        headers=req_headers,
-                        cookie=cookie_obj
-                    )
+                    r = QsRequest(variant.get_action(),
+                                  headers=req_headers,
+                                  cookie=cookie_obj)
                     r.set_dc(variant)
 
                 res.append(r)

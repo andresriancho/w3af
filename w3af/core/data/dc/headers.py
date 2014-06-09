@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.data.dc.token import DataToken
 
 
 class Headers(NonRepeatKeyValueContainer):
@@ -97,14 +98,15 @@ class Headers(NonRepeatKeyValueContainer):
 
     def __setitem__(self, k, v):
         if isinstance(k, basestring):
-            if not isinstance(k, unicode):
-                k = k.encode(self.encoding, 'replace')
+            k = smart_unicode(k, encoding=self.encoding)
         else:
             raise ValueError('Header name must be a string.')
 
         if isinstance(v, basestring):
-            if not isinstance(k, unicode):
-                v = v.encode(self.encoding, 'replace')
+            v = smart_unicode(v, encoding=self.encoding)
+        elif isinstance(v, DataToken):
+            encoded_str = smart_unicode(v.get_value(), encoding=self.encoding)
+            v.set_value(encoded_str)
         else:
             raise ValueError('Header value must be a string.')
 
