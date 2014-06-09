@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import json
-
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.json_container import JSONContainer
 
@@ -34,7 +32,7 @@ class JSONPostDataRequest(FuzzableRequest):
     """
     @staticmethod
     def is_json(headers, post_data):
-        content_type, _ = headers.iget('content-type')
+        content_type, _ = headers.iget('content-type', '')
         json_header = 'json' in content_type.lower()
 
         return json_header and JSONContainer.is_json(post_data)
@@ -61,13 +59,9 @@ class JSONPostDataRequest(FuzzableRequest):
         """
         Return a str representation of this fuzzable request.
         """
-        str_res = '[[JSON]] '
-        str_res += self._url
-        str_res += ' | Method: ' + self._method
-        str_res += ' | JSON: ('
-        str_res += ','.join(self.get_dc().get_param_names())
-        str_res += ')'
-        return str_res
+        fmt = '[JSON] %s | Method: %s | JSON: (%s)'
+        return fmt % (self.get_url(), self.get_method(),
+                      ','.join(self.get_dc().get_param_names()))
 
     def __repr__(self):
         return '<JSON fuzzable request | %s | %s >' % (self.get_method(),

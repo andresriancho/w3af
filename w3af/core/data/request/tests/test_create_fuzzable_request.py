@@ -32,6 +32,7 @@ from w3af.core.data.request.multipart_request import MultipartRequest
 from w3af.core.data.request.urlencoded_post_request import URLEncPostRequest
 from w3af.core.data.url.handlers.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.kv_container import KeyValueContainer
 from w3af.core.data.request.factory import (create_fuzzable_request_from_parts,
                                             create_fuzzable_request_from_request)
 
@@ -83,7 +84,8 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
     def test_json_post(self):
         post_data = '{"1":"2"}'
-        hdr = Headers([('content-length', str(len(post_data)))])
+        hdr = Headers([('content-length', str(len(post_data))),
+                       ('content-type', 'application/json')])
 
         fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr,
                                                 post_data=post_data,
@@ -93,6 +95,17 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIsInstance(fr, JSONPostDataRequest)
+
+    def test_json_creation_missing_header(self):
+        post_data = '{"1":"2"}'
+        # Missing the content-type header for json
+        hdr = Headers([('content-length', str(len(post_data)))])
+
+        fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr,
+                                                post_data=post_data,
+                                                method='POST')
+
+        self.assertIs(fr, None)
 
     def test_xmlrpc_post(self):
         post_data = """<methodCall>
@@ -130,7 +143,8 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), expected_headers)
         self.assertIn('multipart/form-data', fr.get_headers()['content-type'])
         self.assertEqual(fr.get_method(), 'POST')
-        self.assertEqual(fr.get_dc(), {'a': ['bcd', ]})
+        self.assertEqual(fr.get_dc(),
+                         KeyValueContainer(init_val=[('a', ['bcd'])]))
 
     def test_invalid_multipart_post(self):
         _, post_data = multipart_encode([('a', 'bcd'), ], [])

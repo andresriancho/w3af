@@ -27,7 +27,7 @@ from w3af.core.data.dc.headers import Headers
 class TestHeaders(unittest.TestCase):
 
     def test_empty(self):
-        self.assertEquals(Headers([]), {})
+        self.assertEquals(Headers([]), Headers([]))
 
     def test_simple(self):
         headers = Headers([('a', 'b')])

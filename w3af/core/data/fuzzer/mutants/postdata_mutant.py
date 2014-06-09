@@ -52,7 +52,7 @@ class PostDataMutant(Mutant):
 
         return res
 
-    @classmethod
+    @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
         """

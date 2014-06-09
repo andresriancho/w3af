@@ -85,18 +85,6 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         return self._to_str_with_separators(u'=', u'&')
 
-    def iter_tokens(self):
-        """
-        DataToken instances unbound to any data container are (mostly)
-        useless. Most likely you should use iter_bound_tokens
-
-        :yield: DataToken instances to help in the fuzzing process of this
-                DataContainer.
-        """
-        for k, v in self.items():
-            for ele in v:
-                yield DataToken(k, ele)
-
     def iter_bound_tokens(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/580

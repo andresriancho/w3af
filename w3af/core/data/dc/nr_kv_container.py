@@ -94,17 +94,6 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         for k, v in self.items():
              yield k, v, partial(self.__setitem__, k)
 
-    def iter_tokens(self):
-        """
-        DataToken instances unbound to any data container are (almost always)
-        useless. Most likely you should use iter_bound_tokens
-
-        :yield: DataToken instances to help in the fuzzing process of this
-                DataContainer.
-        """
-        for k, v in self.items():
-            yield DataToken(k, v)
-
     def iter_bound_tokens(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/580

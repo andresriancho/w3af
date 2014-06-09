@@ -19,93 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import json
-import copy
-
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.request.json_request import JSONPostDataRequest
-
-
-# We define a function that creates the mutants...
-def _make_json_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, parsed_json_inst):
-    res = []
-
-    for fuzzed_json, original_value in _fuzz_json(mutant_str_list,
-                                                  parsed_json_inst, append):
-        freq_copy = freq.copy()
-        m = JSONMutant(freq_copy)
-        m.set_original_value(original_value)
-        m.set_var('<JSON data>')
-        m.set_dc(fuzzed_json)
-
-        res.append(m)
-
-    return res
-
-
-# Now we define a function that does the work...
-def _fuzz_json(mutant_str_list, parsed_json_inst, append):
-    """
-    :return: A list with tuples containing (fuzzed list/dict/string/int that
-             represents a JSON object, original value)
-    """
-    res = []
-
-    if isinstance(parsed_json_inst, int):
-        for mutant_str in mutant_str_list:
-            if mutant_str.isdigit():
-                # This (a mutant str that really is an integer) will happend
-                # once every 100000 years, but I wanted to be sure to cover all
-                # cases. This will look something like:
-                #
-                # 1
-                #
-                # In the postdata.
-                if append:
-                    fuzzed = int('%s%s' % (parsed_json_inst, mutant_str))
-                    res.append((fuzzed, parsed_json_inst))
-                else:
-                    fuzzed = int(mutant_str)
-                    res.append((fuzzed, parsed_json_inst))
-
-    elif isinstance(parsed_json_inst, basestring):
-        # This will look something like:
-        #
-        # "abc"
-        #
-        # In the postdata.
-        for mutant_str in mutant_str_list:
-            if append:
-                fuzzed = parsed_json_inst + mutant_str
-                res.append((fuzzed, parsed_json_inst))
-            else:
-                res.append((mutant_str, parsed_json_inst))
-
-    elif isinstance(parsed_json_inst, list):
-        # This will look something like:
-        #
-        # ["abc", "def"]
-        #
-        # In the postdata.
-        for item, i in zip(parsed_json_inst, xrange(len(parsed_json_inst))):
-            fuzzed_item_list = _fuzz_json(
-                mutant_str_list, parsed_json_inst[i], append)
-            for fuzzed_item, original_value in fuzzed_item_list:
-                json_postdata_copy = copy.deepcopy(parsed_json_inst)
-                json_postdata_copy[i] = fuzzed_item
-                res.append((json_postdata_copy, original_value))
-
-    elif isinstance(parsed_json_inst, dict):
-        for key in parsed_json_inst:
-            fuzzed_item_list = _fuzz_json(
-                mutant_str_list, parsed_json_inst[key], append)
-            for fuzzed_item, original_value in fuzzed_item_list:
-                json_postdata_copy = copy.deepcopy(parsed_json_inst)
-                json_postdata_copy[key] = fuzzed_item
-                res.append((json_postdata_copy, original_value))
-
-    return res
 
 
 class JSONMutant(PostDataMutant):
@@ -131,16 +46,12 @@ class JSONMutant(PostDataMutant):
 
         :return: A string representing WHAT was fuzzed.
         """
-        res = ''
-        res += '"' + self.get_url() + '", using HTTP method '
-        res += self.get_method() + '. The sent JSON-data was: "'
-        res += str(self.get_dc())
-        res += '"'
-        return res
+        fmt = '"%s", using HTTP method %s. The sent JSON-data was: "%s"'
+        return fmt % (self.get_url(), self.get_method(), self.get_dc())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config):
+                       append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
@@ -148,9 +59,7 @@ class JSONMutant(PostDataMutant):
         if not isinstance(freq, JSONPostDataRequest):
             return []
 
-        # Now, fuzz the parsed JSON data...
-        post_data = freq.get_data()
-        parsed_json_inst = json.loads(post_data)
-        return _make_json_mutants(freq, mutant_str_list,
-                                  fuzzable_param_list,
-                                  append, parsed_json_inst)
+        return JSONMutant._create_mutants_worker(freq, JSONMutant,
+                                                 mutant_str_list,
+                                                 fuzzable_param_list,
+                                                 append, fuzzer_config)

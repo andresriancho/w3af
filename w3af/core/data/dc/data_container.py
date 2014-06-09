@@ -24,6 +24,7 @@ from itertools import chain, izip_longest
 
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.encodings import UTF8
+from w3af.core.data.dc.token import DataToken
 
 
 class DataContainer(DiskItem):
@@ -64,7 +65,8 @@ class DataContainer(DiskItem):
         :yield: DataToken instances to help in the fuzzing process of this
                 DataContainer.
         """
-        raise NotImplementedError
+        for k, v, _ in self.iter_setters():
+            yield DataToken(k, v)
 
     def iter_bound_tokens(self):
         """
@@ -139,3 +141,6 @@ class DataContainer(DiskItem):
 
     def get_eq_attrs(self):
         return ['all_items']
+
+    def __eq__(self, other):
+        return str(self) == str(other)
