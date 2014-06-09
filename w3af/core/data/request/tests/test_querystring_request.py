@@ -24,23 +24,23 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.query_string import QueryString
 
 
 @attr('smoke')
-class TestHTTPQSRequest(unittest.TestCase):
+class TestQsRequest(unittest.TestCase):
 
     def get_url(self):
         return URL('http://w3af.com/a/b/c.php')
 
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative
-        fr1 = HTTPQSRequest(self.get_url(), method='GET')
+        fr1 = QsRequest(self.get_url(), method='GET')
         fr1.set_dc(QueryString([('a', ['1', 'xx'])]))
 
-        fr2 = HTTPQSRequest(self.get_url(), method='GET')
+        fr2 = QsRequest(self.get_url(), method='GET')
         fr2.set_dc(QueryString([('a', ['2', 'yy'])]))
 
         self.assertTrue(fr1.is_variant_of(fr2))
@@ -48,40 +48,40 @@ class TestHTTPQSRequest(unittest.TestCase):
 
     def test_variants_false_diff_meths(self):
         # Different methods
-        fr1 = HTTPQSRequest(self.get_url(), method='POST')
+        fr1 = QsRequest(self.get_url(), method='POST')
         fr1.set_dc(QueryString([('a', ['1'])]))
 
-        fr2 = HTTPQSRequest(self.get_url(), method='GET')
+        fr2 = QsRequest(self.get_url(), method='GET')
         fr2.set_dc(QueryString([('a', ['1'])]))
 
         self.assertFalse(fr1.is_variant_of(fr2))
         self.assertFalse(fr2.is_variant_of(fr1))
 
     def test_variants_false_diff_params_type(self):
-        fr1 = HTTPQSRequest(self.get_url())
+        fr1 = QsRequest(self.get_url())
         fr1.set_dc(QueryString([('a', ['1'])]))
 
-        fr2 = HTTPQSRequest(self.get_url())
+        fr2 = QsRequest(self.get_url())
         fr2.set_dc(QueryString([('a', ['cc'])]))
 
         self.assertFalse(fr1.is_variant_of(fr2))
         self.assertFalse(fr2.is_variant_of(fr1))
 
     def test_variants_false_different_url(self):
-        fr1 = HTTPQSRequest(URL('http://w3af.com/a/b/c.php'))
+        fr1 = QsRequest(URL('http://w3af.com/a/b/c.php'))
         fr1.set_dc(QueryString([('a', ['1'])]))
 
-        fr2 = HTTPQSRequest(URL('http://w3af.com/x/y/z.php'))
+        fr2 = QsRequest(URL('http://w3af.com/x/y/z.php'))
         fr2.set_dc(QueryString([('a', [''])]))
 
         self.assertFalse(fr1.is_variant_of(fr2))
         self.assertFalse(fr2.is_variant_of(fr1))
 
     def test_variants_true_similar_params_two(self):
-        fr1 = HTTPQSRequest(self.get_url())
+        fr1 = QsRequest(self.get_url())
         fr1.set_dc(QueryString([('a', ['b'])]))
 
-        fr2 = HTTPQSRequest(self.get_url())
+        fr2 = QsRequest(self.get_url())
         fr2.set_dc(QueryString([('a', [''])]))
 
         self.assertTrue(fr1.is_variant_of(fr2))

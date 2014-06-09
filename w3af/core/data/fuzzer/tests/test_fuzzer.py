@@ -25,8 +25,9 @@ from w3af.core.data.kb.config import Config
 from w3af.core.data.kb.config import cf as cf_singleton
 
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.request.querystring_request import HTTPQSRequest
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
@@ -35,6 +36,7 @@ from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 
+from w3af.core.data.parsers.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.form import Form
@@ -58,7 +60,7 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = ['http://moth/?id=abc',
@@ -80,7 +82,7 @@ class TestFuzzer(unittest.TestCase):
         url = URL('http://moth/?id=1')
         # No headers in the original request
         #headers = Headers([('Referer', 'http://moth/foo/bar/')])
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = ['http://moth/?id=abc',
@@ -115,7 +117,7 @@ class TestFuzzer(unittest.TestCase):
         # With headers
         headers = Headers([('Referer', 'http://moth/foo/bar/'),
                            ('Foo', 'Bar')])
-        freq = HTTPQSRequest(url, headers=headers)
+        freq = QsRequest(url, headers=headers)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = ['http://moth/?id=abc',
@@ -147,7 +149,7 @@ class TestFuzzer(unittest.TestCase):
 
         url = URL('http://moth/?id=1')
         # But there is no cookie
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = ['http://moth/?id=abc',
@@ -168,7 +170,7 @@ class TestFuzzer(unittest.TestCase):
         url = URL('http://moth/?id=1')
         # And now there is a cookie
         cookie = Cookie('foo=bar')
-        freq = HTTPQSRequest(url, cookie=cookie)
+        freq = QsRequest(url, cookie=cookie)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = [u'http://moth/?id=abc',
@@ -201,7 +203,7 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         self.assertEqual(generated_mutants, [])
@@ -215,7 +217,7 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/foo.htm?id=1')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         expected_urls = [u'http://moth/foo.htm?id=abc',
@@ -242,10 +244,19 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/foo.htm')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         self.assertEqual(generated_mutants, [])
+
+    def test_xmlrpc_mutant(self):
+        url = URL('http://moth/?id=1')
+        post_data = XML_WITH_FUZZABLE
+        headers = Headers()
+        freq = XMLRPCRequest.from_parts(url, 'POST', post_data, headers)
+        generated_mutants = create_mutants(freq, self.payloads)
+
+        self.assertNotEqual([], generated_mutants)
 
     def test_form_file_post_no_files(self):
         cf_singleton.save('fuzzable_headers', [])
@@ -259,7 +270,7 @@ class TestFuzzer(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
 
-        freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
+        freq = PostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
 
         generated_mutants = create_mutants(freq, self.payloads)
@@ -295,7 +306,7 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', True)  # This one changed
 
         url = URL('http://moth/')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         self.assertEqual(generated_mutants, [])
@@ -309,7 +320,7 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', True)  # This one changed
 
         url = URL('http://moth/foo/bar.htm?id=1')
-        freq = HTTPQSRequest(url)
+        freq = QsRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
         generated_uris = [m.get_uri().url_string for m in generated_mutants]

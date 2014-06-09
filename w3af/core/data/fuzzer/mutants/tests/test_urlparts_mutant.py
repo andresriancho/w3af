@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
 from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsContainer
 
@@ -36,7 +36,7 @@ class TestURLPartsMutant(unittest.TestCase):
     def test_basics(self):
         divided_path = URLPartsContainer('/', 'ping!', '/bar')
 
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
         m = URLPartsMutant(freq)
         m.set_dc(divided_path)
         self.assertEqual(m.get_url().url_string,
@@ -56,7 +56,7 @@ class TestURLPartsMutant(unittest.TestCase):
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_url_parts': False}
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = URLPartsMutant.create_mutants(
             freq, self.payloads, [],
@@ -66,7 +66,7 @@ class TestURLPartsMutant(unittest.TestCase):
 
     def test_config_true(self):
         fuzzer_config = {'fuzz_url_parts': True}
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = URLPartsMutant.create_mutants(
             freq, self.payloads, [],
@@ -75,7 +75,7 @@ class TestURLPartsMutant(unittest.TestCase):
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_valid_results(self):
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = URLPartsMutant.create_mutants(
             freq, self.payloads, [],
@@ -101,7 +101,7 @@ class TestURLPartsMutant(unittest.TestCase):
         """
         payloads = ['ls - la', 'ping 127.0.0.1 -c 5',
                     'http://127.0.0.1:8015/test/']
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = URLPartsMutant.create_mutants(freq, payloads, [],
                                                           False,

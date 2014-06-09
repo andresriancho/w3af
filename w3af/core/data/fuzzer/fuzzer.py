@@ -30,6 +30,7 @@ from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.fuzzer.mutants.json_mutant import JSONMutant
 from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
+from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 
 
 def create_mutants(freq, mutant_str_list, append=False,
@@ -47,7 +48,8 @@ def create_mutants(freq, mutant_str_list, append=False,
     fuzzer_config = _get_fuzzer_config(freq)
 
     mutant_tuple = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
-                    HeadersMutant, JSONMutant, CookieMutant, FileContentMutant)
+                    HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
+                    XmlRpcMutant)
 
     for mutant_kls in mutant_tuple:
         new_mutants = mutant_kls.create_mutants(freq, mutant_str_list,

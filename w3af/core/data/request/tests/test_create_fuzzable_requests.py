@@ -119,8 +119,8 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body, headers, self.url, self.url)
 
-        post_request_lst = create_fuzzable_requests(
-            http_response, add_self=False)
+        post_request_lst = create_fuzzable_requests(http_response,
+                                                    add_self=False)
         self.assertEqual(len(post_request_lst), 1)
 
         post_request = post_request_lst[0]

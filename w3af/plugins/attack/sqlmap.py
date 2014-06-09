@@ -31,7 +31,7 @@ from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -104,7 +104,7 @@ class sqlmap(AttackPlugin):
             dc[vuln_obj.get_var()][m.get_var_index()] = pvalue
 
             post_data = None
-            if isinstance(fuzzable_request, HTTPQSRequest):
+            if isinstance(fuzzable_request, QsRequest):
                 uri.set_querystring(dc)
             else:
                 post_data = str(dc) or None

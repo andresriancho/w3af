@@ -20,34 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import urlparse
 import copy
 
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
-
-
-def is_json(postdata):
-    # Only do the JSON stuff if this is really a JSON request...
-    try:
-        urlparse.parse_qs(postdata, keep_blank_values=True,
-                          strict_parsing=True)
-    except Exception:
-        # We have something that's not URL encoded in the postdata, it could
-        # be something like JSON, XML, or multipart encoding. Let's try with
-        # JSON
-        try:
-            json.loads(postdata)
-        except:
-            # It's not json, maybe XML or multipart, I don't really care
-            # (at least not in this section of the code)
-            return False
-        else:
-            # Now, fuzz the parsed JSON data...
-            return True
-    else:
-        # No need to do any JSON stuff, the postdata is urlencoded
-        return False
+from w3af.core.data.request.json_request import JSONPostDataRequest
 
 
 # We define a function that creates the mutants...
@@ -169,10 +145,7 @@ class JSONMutant(PostDataMutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, HTTPPostDataRequest):
-            return []
-
-        if not is_json(freq.get_data()):
+        if not isinstance(freq, JSONPostDataRequest):
             return []
 
         # Now, fuzz the parsed JSON data...

@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.HTTPRequestParser import (HTTPRequestParser,
                                                       check_version_syntax,
@@ -35,13 +35,13 @@ class TestHTTPRequestParser(unittest.TestCase):
     def test_head_post_data(self):
         fuzzable_request = HTTPRequestParser(
             'POST http://www.w3af.com/ HTTP/1.0', 'foo=bar')
-        self.assertIsInstance(fuzzable_request, HTTPPostDataRequest)
+        self.assertIsInstance(fuzzable_request, PostDataRequest)
         self.assertEqual(fuzzable_request.get_method(), 'POST')
 
     def test_qs(self):
         fuzzable_request = HTTPRequestParser(
             'GET http://www.w3af.com/ HTTP/1.0', '')
-        self.assertIsInstance(fuzzable_request, HTTPQSRequest)
+        self.assertIsInstance(fuzzable_request, QsRequest)
         self.assertEqual(fuzzable_request.get_method(), 'GET')
 
     def test_invalid_url(self):

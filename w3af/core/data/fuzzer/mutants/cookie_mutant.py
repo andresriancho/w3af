@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 
 
 class CookieMutant(Mutant):
@@ -62,7 +62,7 @@ class CookieMutant(Mutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, HTTPQSRequest):
+        if not isinstance(freq, QsRequest):
             return []
 
         if not fuzzer_config['fuzz_cookies']:

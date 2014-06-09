@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 
 
 class PostDataMutant(Mutant):
@@ -52,14 +52,14 @@ class PostDataMutant(Mutant):
 
         return res
 
-    @staticmethod
+    @classmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, HTTPPostDataRequest):
+        if not isinstance(freq, PostDataRequest):
             return []
 
         return Mutant._create_mutants_worker(freq, PostDataMutant,

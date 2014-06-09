@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.request.post_data_request as HTTPPostDataRequest
+import w3af.core.data.request.post_data_request as PostDataRequest
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -117,7 +117,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             return vulnCopy
 
         else:
-            pdr = HTTPPostDataRequest.HTTPPostDataRequest(
+            pdr = PostDataRequest.PostDataRequest(
                 mutant.get_url(),
                 headers=mutant.get_headers(),
                 cookie=mutant.get_cookie(),

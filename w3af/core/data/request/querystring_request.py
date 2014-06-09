@@ -22,13 +22,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class HTTPQSRequest(FuzzableRequest):
+class QsRequest(FuzzableRequest):
     """
     This class represents a fuzzable request that sends all variables
     in the querystring. This is typically used for GET requests.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    @classmethod
+    def from_parts(cls, url, method, post_data, headers):
+        # Just a query string request! No postdata
+        if post_data:
+            raise ValueError('Failed to create QsRequest.')
+
+        return cls(url, method=method, headers=headers, post_data=None)
+
     def get_dc(self):
         """
         This is saying something important to the rest of the world:

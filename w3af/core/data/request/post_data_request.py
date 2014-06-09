@@ -26,7 +26,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.form import Form
 
 
-class HTTPPostDataRequest(FuzzableRequest):
+class PostDataRequest(FuzzableRequest):
     """
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.
@@ -37,7 +37,7 @@ class HTTPPostDataRequest(FuzzableRequest):
                  post_data=None):
 
         if post_data is not None and not isinstance(post_data, Form):
-            msg = 'The post_data parameter for HTTPPostDataRequest needs to'\
+            msg = 'The post_data parameter for PostDataRequest needs to'\
                   'be a Form instance got %s instead.' % type(post_data)
             TypeError(msg)
 
@@ -56,7 +56,6 @@ class HTTPPostDataRequest(FuzzableRequest):
         we return the data container as it is. This is needed by the multipart
         post handler.
         """
-
         # TODO: This is a hack I'm not comfortable with. There should
         # be a fancier way to do this.
         # If it contains a file then we are not interested in returning
@@ -82,5 +81,5 @@ class HTTPPostDataRequest(FuzzableRequest):
             return []
 
     def __repr__(self):
-        return '<postdata fuzzable request | %s | %s>' % \
-            (self.get_method(), self.get_uri())
+        return '<postdata fuzzable request | %s | %s>' % (self.get_method(),
+                                                          self.get_uri())

@@ -41,7 +41,7 @@ from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, REGEX
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 
 
 class web_spider(CrawlPlugin):
@@ -83,7 +83,7 @@ class web_spider(CrawlPlugin):
         # If it is a form, then smart_fill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
-        if isinstance(fuzzable_req, HTTPPostDataRequest):
+        if isinstance(fuzzable_req, PostDataRequest):
 
             if fuzzable_req.get_url() in self._already_filled_form:
                 return

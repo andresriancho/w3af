@@ -23,7 +23,7 @@ import unittest
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.dc.headers import Headers
 
@@ -62,7 +62,7 @@ class TestHeadersMutant(unittest.TestCase):
     def test_mutant_creation(self):
         url = URL('http://moth/?a=1&b=2')
         headers = Headers([('Referer', 'http://moth/')])
-        freq = HTTPQSRequest(url, headers=headers)
+        freq = QsRequest(url, headers=headers)
 
         created_mutants = HeadersMutant.create_mutants(freq, self.payloads, [],
                                                        False, self.fuzzer_config)

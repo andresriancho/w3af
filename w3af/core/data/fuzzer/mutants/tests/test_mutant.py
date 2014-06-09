@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant, mutant_smart_fill
-from w3af.core.data.request.querystring_request import HTTPQSRequest
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
@@ -41,7 +41,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
@@ -70,7 +70,7 @@ class TestMutant(unittest.TestCase):
         self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
 
     def test_alternative_mutant_creation(self):
-        freq = HTTPQSRequest(URL('http://moth/?a=1&b=2'))
+        freq = QsRequest(URL('http://moth/?a=1&b=2'))
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -88,7 +88,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_generic_methods(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
@@ -110,7 +110,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_ignore_params(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
@@ -123,7 +123,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_empty_dc(self):
         qs = QueryString()
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
@@ -140,7 +140,7 @@ class TestMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = HTTPPostDataRequest(self.url, post_data=form)
+        freq = PostDataRequest(self.url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -173,7 +173,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_append(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
@@ -188,7 +188,7 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_repeated_params(self):
         qs = QueryString([('a', ['1', '2']), ('b', ['3'])])
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
         freq.set_dc(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
@@ -224,7 +224,7 @@ class TestMutant(unittest.TestCase):
 
         url = URL('http://moth/foo.bar?action=login')
 
-        freq = HTTPPostDataRequest(url, post_data=form)
+        freq = PostDataRequest(url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -246,7 +246,7 @@ class TestMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, post_data=form)
+        freq = PostDataRequest(self.url, post_data=form)
 
         filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 
@@ -263,7 +263,7 @@ class TestMutant(unittest.TestCase):
         form.add_file_input([("name", "file"), ("type", "file")])
         form['username'][0] = token = DataToken('username', '')
 
-        freq = HTTPPostDataRequest(self.url, post_data=form)
+        freq = PostDataRequest(self.url, post_data=form)
 
         filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
 

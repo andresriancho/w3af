@@ -23,17 +23,17 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from w3af.core.data.request.factory import (create_fuzzable_request_from_parts,
-                                       create_fuzzable_request_from_request)
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.url import URL
-
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.request.json_request import JSONPostDataRequest
 from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
+from w3af.core.data.request.multipart_request import MultipartRequest
+from w3af.core.data.request.urlencoded_post_request import URLEncPostRequest
 from w3af.core.data.url.handlers.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.factory import (create_fuzzable_request_from_parts,
+                                            create_fuzzable_request_from_request)
 
 
 @attr('smoke')
@@ -68,7 +68,8 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
     def test_simple_post(self):
         post_data = 'a=b&d=3'
-        hdr = Headers([('content-length', str(len(post_data)))])
+        hdr = Headers([('content-length', str(len(post_data))),
+                       ('content-type', URLEncPostRequest.ENCODING)])
 
         fr = create_fuzzable_request_from_parts(self.url, add_headers=hdr,
                                                 post_data=post_data,
@@ -77,8 +78,8 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'POST')
-        self.assertFalse('content-type' in fr.get_headers())
-        self.assertIsInstance(fr, HTTPPostDataRequest)
+        self.assertIn('content-type', fr.get_headers())
+        self.assertIsInstance(fr, URLEncPostRequest)
 
     def test_json_post(self):
         post_data = '{"1":"2"}'
@@ -112,20 +113,24 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
     def test_multipart_post(self):
         boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
+        multipart_boundary = 'multipart/form-data; boundary=%s'
 
         headers = Headers([('content-length', str(len(post_data))),
-                           ('content-type', 'multipart/form-data; boundary=%s' % boundary)])
+                           ('content-type', multipart_boundary % boundary)])
 
         fr = create_fuzzable_request_from_parts(self.url, add_headers=headers,
-                                                post_data=post_data, method='POST')
+                                                post_data=post_data,
+                                                method='POST')
 
+        expected_headers = Headers([('content-type',
+                                     multipart_boundary % boundary)])
+
+        self.assertIsInstance(fr, MultipartRequest)
         self.assertEqual(fr.get_url(), self.url)
-        self.assertEqual(fr.get_headers(), headers)
-        self.assertTrue(
-            'multipart/form-data' in fr.get_headers()['content-type'])
+        self.assertEqual(fr.get_headers(), expected_headers)
+        self.assertIn('multipart/form-data', fr.get_headers()['content-type'])
         self.assertEqual(fr.get_method(), 'POST')
         self.assertEqual(fr.get_dc(), {'a': ['bcd', ]})
-        self.assertIsInstance(fr, HTTPPostDataRequest)
 
     def test_invalid_multipart_post(self):
         _, post_data = multipart_encode([('a', 'bcd'), ], [])
@@ -139,15 +144,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
                                                 post_data=post_data,
                                                 method='POST')
 
-        self.assertEqual(fr.get_url(), self.url)
-        self.assertEqual(fr.get_headers(), headers)
-        self.assertEqual(fr.get_method(), 'POST')
-
-        # And this is how it affects the result:
-        self.assertEqual(fr.get_data(), '')
-        self.assertEqual(fr.get_dc(), {})
-
-        self.assertIsInstance(fr, HTTPPostDataRequest)
+        self.assertIsNone(fr)
 
 @attr('smoke')
 class TestCreateFuzzableRequestRequest(unittest.TestCase):
@@ -170,4 +167,4 @@ class TestCreateFuzzableRequestRequest(unittest.TestCase):
         self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'GET')
-        self.assertIsInstance(fr, HTTPQSRequest)
+        self.assertIsInstance(fr, QsRequest)

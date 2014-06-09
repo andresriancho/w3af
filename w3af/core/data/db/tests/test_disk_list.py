@@ -29,7 +29,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.db.dbms import get_default_temp_db_instance
 
@@ -104,15 +104,15 @@ class TestDiskList(unittest.TestCase):
         dl = DiskList()
 
         uri = URL('http://w3af.org/?id=2')
-        qsr1 = HTTPQSRequest(uri, method='GET', headers=Headers(
+        qsr1 = QsRequest(uri, method='GET', headers=Headers(
             [('Referer', 'http://w3af.org/')]))
 
         uri = URL('http://w3af.org/?id=3')
-        qsr2 = HTTPQSRequest(uri, method='OPTIONS', headers=Headers(
+        qsr2 = QsRequest(uri, method='OPTIONS', headers=Headers(
             [('Referer', 'http://w3af.org/')]))
 
         uri = URL('http://w3af.org/?id=7')
-        qsr3 = HTTPQSRequest(uri, method='FOO', headers=Headers(
+        qsr3 = QsRequest(uri, method='FOO', headers=Headers(
             [('Referer', 'http://w3af.org/')]))
 
         dl.append(qsr1)

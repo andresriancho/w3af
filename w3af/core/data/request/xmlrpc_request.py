@@ -20,6 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.xmlrpc import XmlRpcContainer
+
+XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
+                '</methodcall>', '</methodname>', '</params>')
 
 
 class XMLRPCRequest(FuzzableRequest):
@@ -29,6 +33,23 @@ class XMLRPCRequest(FuzzableRequest):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    @staticmethod
+    def is_xmlrpc(post_data):
+        return all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS))
+
+    @classmethod
+    def from_parts(cls, url, method, post_data, headers):
+        if not XMLRPCRequest.is_xmlrpc(post_data):
+            raise ValueError('Failed to create XMLRPCRequest.')
+
+        try:
+            container = XmlRpcContainer.from_postdata(post_data)
+        except:
+            raise ValueError('Failed to create XMLRPCRequest.')
+        else:
+            return cls(url, method=method, headers=headers,
+                       post_data=container)
+
     def set_dc(self, data_container):
         self._post_data = data_container
 

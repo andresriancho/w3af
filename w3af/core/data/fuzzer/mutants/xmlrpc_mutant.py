@@ -1,5 +1,5 @@
 """
-MutantXMLRPC.py
+XmlRpcMutant.py
 
 Copyright 2009 Andres Riancho
 
@@ -20,25 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 
 
-class MutantXMLRPC(PostDataMutant):
+class XmlRpcMutant(PostDataMutant):
     """
-    This class is a XMLRPC mutant.
-
-    *** IMPORTANT ***
-    Not in use in any section of the code!
-    *** IMPORTANT ***
+    This class is an XMLRPC mutant.
     """
-    def __init__(self, freq):
-        PostDataMutant.__init__(self, freq)
-
     def get_mutant_type(self):
         return 'XMLRPC data'
 
     def get_headers(self):
         headers = self._headers
-        # TODO: Verify this, I had no internet while adding the next line
         headers['Content-Type'] = 'application/xml'
         return headers
 
@@ -52,7 +45,22 @@ class MutantXMLRPC(PostDataMutant):
         """
         res = ''
         res += '"' + self.get_url() + '", using HTTP method '
-        res += self.get_method() + '. The sent JSON-data was: "'
+        res += self.get_method() + '. The sent XML-RPC was: "'
         res += str(self.get_dc())
         res += '"'
         return res
+
+    @staticmethod
+    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+                       append, fuzzer_config, data_container=None):
+        """
+        This is a very important method which is called in order to create
+        mutants. Usually called from fuzzer.py module.
+        """
+        if not isinstance(freq, XMLRPCRequest):
+            return []
+
+        return XmlRpcMutant._create_mutants_worker(freq, XmlRpcMutant,
+                                                   mutant_str_list,
+                                                   fuzzable_param_list,
+                                                   append, fuzzer_config)

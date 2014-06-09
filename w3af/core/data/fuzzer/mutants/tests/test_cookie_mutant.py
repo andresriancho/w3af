@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
-from w3af.core.data.request.querystring_request import HTTPQSRequest
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.cookie import Cookie
 
@@ -37,7 +37,7 @@ class TestCookieMutant(unittest.TestCase):
 
     def test_basics(self):
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = HTTPQSRequest(self.url, cookie=cookie)
+        freq = QsRequest(self.url, cookie=cookie)
 
         m = CookieMutant(freq)
         m.set_var('foo', 0)
@@ -61,7 +61,7 @@ class TestCookieMutant(unittest.TestCase):
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_cookies': False}
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = CookieMutant.create_mutants(
             freq, self.payloads, [],
@@ -71,7 +71,7 @@ class TestCookieMutant(unittest.TestCase):
 
     def test_not_qs_request(self):
         fuzzer_config = {'fuzz_cookies': True}
-        freq = HTTPPostDataRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = PostDataRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = CookieMutant.create_mutants(
             freq, self.payloads, [],
@@ -83,7 +83,7 @@ class TestCookieMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_cookies': True}
 
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = HTTPQSRequest(self.url, cookie=cookie)
+        freq = QsRequest(self.url, cookie=cookie)
 
         generated_mutants = CookieMutant.create_mutants(
             freq, self.payloads, [],
@@ -92,7 +92,7 @@ class TestCookieMutant(unittest.TestCase):
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_no_cookie(self):
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
 
         generated_mutants = CookieMutant.create_mutants(
             freq, self.payloads, [],
@@ -102,7 +102,7 @@ class TestCookieMutant(unittest.TestCase):
 
     def test_valid_results(self):
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = HTTPQSRequest(self.url, cookie=cookie)
+        freq = QsRequest(self.url, cookie=cookie)
 
         generated_mutants = CookieMutant.create_mutants(
             freq, self.payloads, [],

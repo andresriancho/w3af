@@ -23,7 +23,7 @@ import unittest
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.dc.token import DataToken
 
@@ -43,7 +43,7 @@ class TestQSMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         self.url = URL('http://moth/?a=1&b=2')
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
 
         created_mutants = QSMutant.create_mutants(freq, self.payloads, [],
                                                   False, self.fuzzer_config)
@@ -71,7 +71,7 @@ class TestQSMutant(unittest.TestCase):
 
     def test_mutant_creation_repeated_parameter_names(self):
         self.url = URL('http://moth/?id=1&id=2')
-        freq = HTTPQSRequest(self.url)
+        freq = QsRequest(self.url)
 
         created_mutants = QSMutant.create_mutants(freq, self.payloads, [],
                                                   False, self.fuzzer_config)

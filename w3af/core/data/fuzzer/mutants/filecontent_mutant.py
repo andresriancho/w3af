@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.controllers.misc.io import NamedStringIO
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.fuzzer.utils import rand_alpha
 
 
@@ -55,7 +55,7 @@ class FileContentMutant(Mutant):
         if not 'fuzz_form_files' in fuzzer_config:
             return []
 
-        if not isinstance(freq, HTTPPostDataRequest):
+        if not isinstance(freq, PostDataRequest):
             return []
 
         file_vars = freq.get_file_vars()

@@ -19,59 +19,66 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
 import unittest
 import xml.sax
+import cgi
 
-from w3af.core.data.parsers.xmlrpc import xmlrpc_read_handler, xmlrpc_write_handler
+from w3af.core.data.parsers.xmlrpc import XmlRpcReadHandler, XmlRpcWriteHandler
+
+XML_WITH_FUZZABLE = """\
+<methodCall>
+   <methodName>sample.sum</methodName>
+   <params>
+       <param>
+           <array>
+              <data>
+                 <value><i4>1404</i4></value>
+                 <value><string>Foo bar</string></value>
+                 <value><i4>1</i4></value>
+                 <value><base64>U3BhbSBlZ2dz</base64></value>
+              </data>
+           </array>
+       </param>
+   </params>
+</methodCall>"""
+
+XML_WITHOUT_FUZZABLE = """\
+<methodCall>
+   <methodName>sample.sum</methodName>
+   <params>
+       <param>
+           <array>
+               <data>
+                   <value><i4>1404</i4></value>
+                   <value><i4>1</i4></value>
+               </data>
+           </array>
+       </param>
+   </params>
+</methodCall>"""
 
 
 class TestXMLRPC(unittest.TestCase):
 
     def test_reader(self):
-        handler = xmlrpc_read_handler()
+        handler = XmlRpcReadHandler()
+        xml.sax.parseString(XML_WITH_FUZZABLE, handler)
 
-        s = """
-         <array>
-           <data>
-             <value><i4>1404</i4></value>
-             <value><string>Foo bar</string></value>
-             <value><i4>1</i4></value>
-             <value><string>Spam eggs</string></value>
-           </data>
-         </array>"""
+        EXPECTED = [(u'string', [u'Foo bar']), (u'base64', [u'Spam eggs'])]
 
-        xml.sax.parseString(s, handler)
-
-        EXPECTED = [[u'string', u'Foo bar'], [u'string', u'Spam eggs']]
-
-        self.assertEqual(handler.fuzzable_parameters, EXPECTED)
+        self.assertEqual(handler.get_data_container().items(), EXPECTED)
 
     def test_writer(self):
-        fuzzable_parameters = [[u'string', u'Foo bar'], [u'string',
-                                                         u'Spam eggs']]
-        fuzzable_parameters = copy.deepcopy(fuzzable_parameters)
-        fuzzable_parameters[0][1] = '<script>alert(1)</script>'
+        handler = XmlRpcReadHandler()
+        xml.sax.parseString(XML_WITH_FUZZABLE, handler)
 
-        handler = xmlrpc_write_handler(fuzzable_parameters)
+        data_container = handler.get_data_container()
+        payload = '<script>alert(1)</script>'
+        data_container['string'][0] = payload
 
-        original = """<array>
-           <data>
-             <value a="ab"><i4>1404</i4></value>
-             <value><string>Foo bar</string></value>
-             <value><i4>1</i4></value>
-             <value><string>Spam eggs</string></value>
-           </data>
-         </array>"""
+        handler = XmlRpcWriteHandler(data_container)
 
-        fuzzed = """<array>
-           <data>
-             <value a="ab"><i4>1404</i4></value>
-             <value><string>&lt;script&gt;alert(1)&lt;/script&gt;</string></value>
-             <value><i4>1</i4></value>
-             <value><string>Spam eggs</string></value>
-           </data>
-         </array>"""
+        fuzzed = XML_WITH_FUZZABLE.replace('Foo bar', cgi.escape(payload))
 
-        xml.sax.parseString(original, handler)
+        xml.sax.parseString(XML_WITH_FUZZABLE, handler)
         self.assertEqual(handler.fuzzed_xml_string, fuzzed)

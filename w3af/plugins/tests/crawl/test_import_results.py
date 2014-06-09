@@ -25,8 +25,8 @@ from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.import_results import import_results
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.controllers.ci.moth import get_moth_http
 
 
@@ -73,7 +73,7 @@ class TestImportResults(PluginTest):
 
         qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/', ''))
 
-        self.assertIsInstance(qsr, HTTPQSRequest)
+        self.assertIsInstance(qsr, QsRequest)
         self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
         self.assertEqual(qsr.get_url().get_path(), '/')
         self.assertEqual(qsr.get_method(), 'GET')
@@ -82,7 +82,7 @@ class TestImportResults(PluginTest):
         irp = import_results()
         qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/?id=1', ''))
 
-        self.assertIsInstance(qsr, HTTPQSRequest)
+        self.assertIsInstance(qsr, QsRequest)
         self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
         self.assertEqual(qsr.get_url().get_path(), '/')
         self.assertEqual(qsr.get_method(), 'GET')
@@ -92,7 +92,7 @@ class TestImportResults(PluginTest):
         irp = import_results()
         pdr = irp._obj_from_csv(('GET', 'http://www.w3af.com/xyz', 'id=1'))
 
-        self.assertIsInstance(pdr, HTTPPostDataRequest)
+        self.assertIsInstance(pdr, PostDataRequest)
         self.assertEqual(pdr.get_url().get_domain(), 'www.w3af.com')
         self.assertEqual(pdr.get_url().get_path(), '/xyz')
         self.assertEqual(pdr.get_method(), 'GET')
@@ -111,7 +111,7 @@ class TestImportResults(PluginTest):
 
         fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
+        post_fr = [fr for fr in fr_list if isinstance(fr, PostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         expected_post_url = 'http://127.0.0.1:8000/audit/xss/simple_xss_form.py'
@@ -120,7 +120,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(post_fr.get_data(), 'text=abc')
 
         urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, HTTPPostDataRequest)]
+            fr, PostDataRequest)]
 
         EXPECTED_URLS = {u'http://127.0.0.1:8000/',
                          u'http://127.0.0.1:8000/audit/',
@@ -136,7 +136,7 @@ class TestImportResults(PluginTest):
 
         fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
+        post_fr = [fr for fr in fr_list if isinstance(fr, PostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         self.assertEqual(post_fr.get_url(
@@ -146,7 +146,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
 
         urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, HTTPPostDataRequest)]
+            fr, PostDataRequest)]
 
         EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
 
@@ -160,7 +160,7 @@ class TestImportResults(PluginTest):
 
         fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
+        post_fr = [fr for fr in fr_list if isinstance(fr, PostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
         self.assertEqual(post_fr.get_url(
@@ -170,7 +170,7 @@ class TestImportResults(PluginTest):
         self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
 
         urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, HTTPPostDataRequest)]
+            fr, PostDataRequest)]
 
         EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
 

@@ -23,7 +23,7 @@ import urllib
 import copy
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
 
 
@@ -122,7 +122,7 @@ class URLPartsMutant(Mutant):
         if not fuzzer_config['fuzz_url_parts']:
             return []
 
-        if not isinstance(freq, HTTPQSRequest):
+        if not isinstance(freq, QsRequest):
             return []
 
         res = []

@@ -19,7 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import json
+
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.json_container import JSONContainer
 
 
 class JSONPostDataRequest(FuzzableRequest):
@@ -29,6 +32,25 @@ class JSONPostDataRequest(FuzzableRequest):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    @staticmethod
+    def is_json(headers, post_data):
+        content_type, _ = headers.iget('content-type')
+        json_header = 'json' in content_type.lower()
+
+        return json_header and JSONContainer.is_json(post_data)
+
+    @classmethod
+    def from_parts(cls, url, method, post_data, headers):
+        if not JSONPostDataRequest.is_json(headers, post_data):
+            raise ValueError('Failed to create JSONPostDataRequest.')
+
+        try:
+            data = JSONContainer.from_postdata(post_data)
+        except:
+            raise ValueError('Failed to create JSONPostDataRequest.')
+        else:
+            return cls(url, method=method, headers=headers, post_data=data)
+
     def set_dc(self, data_container):
         self._post_data = data_container
 

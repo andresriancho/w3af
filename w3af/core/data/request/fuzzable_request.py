@@ -56,7 +56,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     This class shouldn't be used directly, please use the sub-classes:
         * HTTPQsRequest
-        * HTTPPostDataRequest
+        * PostDataRequest
         * ...
 
     Methods like get_uri() and get_data() shouldn't be overridden by subclasses
@@ -69,10 +69,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                  post_data=None):
         super(FuzzableRequest, self).__init__()
 
+        # Note: Do not check for the URI type here, since I'm doing it in
+        # set_uri() already.
         msg = 'FuzzableRequest __init__ parameter %s needs to be of %s type'
-
-        if not isinstance(uri, URL):
-            raise TypeError(msg % ('uri', 'URL'))
 
         if headers is not None and not isinstance(headers, Headers):
             raise TypeError(msg % ('headers', 'Headers'))
@@ -96,6 +95,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
+
+    @classmethod
+    def from_parts(cls, url, method, post_data, headers):
+        """
+        :return: An instance of this object from the provided parameters.
+        """
+        raise NotImplementedError
 
     def export(self):
         """

@@ -132,5 +132,5 @@ class TestHeaders(unittest.TestCase):
         upper_headers = Headers([('Abc', 'b')])
 
         upper_headers.idel('abc')
-        
+
         self.assertNotIn('Abc', upper_headers)

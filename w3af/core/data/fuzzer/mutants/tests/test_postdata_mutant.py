@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.form import Form
-from w3af.core.data.request.post_data_request import HTTPPostDataRequest
+from w3af.core.data.request.post_data_request import PostDataRequest
 
 
 class TestPostDataMutant(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
 
-        freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
+        freq = PostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
         m = PostDataMutant(freq)
         m.set_var('username')
@@ -53,7 +53,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
 
-        freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
+        freq = PostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
 
         created_mutants = PostDataMutant.create_mutants(
@@ -90,7 +90,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "id"), ("value", "")])
         form.add_input([("name", "id"), ("value", "")])
 
-        freq = HTTPPostDataRequest(URL('http://w3af.com/?foo=3'),
+        freq = PostDataRequest(URL('http://w3af.com/?foo=3'),
                                    dc=form,
                                    method='GET')
 
@@ -125,7 +125,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "default")])
         form.add_file_input([("name", "file_upload")])
 
-        freq = HTTPPostDataRequest(URL('http://www.w3af.com/upload'), dc=form,
+        freq = PostDataRequest(URL('http://www.w3af.com/upload'), dc=form,
                                    method='POST')
 
         payloads = [file(__file__),]

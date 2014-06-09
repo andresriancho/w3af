@@ -23,8 +23,8 @@ import urllib
 import re
 
 from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
-from w3af.core.data.dc.data_container import NonRepeatDataContainer
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
+from w3af.core.data.request.querystring_request import QsRequest
 
 CHUNK_RE = re.compile(r'([a-zA-Z0-9]+)')
 CHUNK_RE_2 = re.compile(r'[a-zA-Z0-9]')
@@ -103,7 +103,7 @@ class FileNameMutant(URLPartsMutant):
         if not fuzzer_config['fuzz_url_filenames']:
             return []
 
-        if not isinstance(freq, HTTPQSRequest):
+        if not isinstance(freq, QsRequest):
             return []
 
         res = []
@@ -118,7 +118,7 @@ class FileNameMutant(URLPartsMutant):
             for mutant_str in mutant_str_list:
 
                 if CHUNK_RE_2.match(fn_chunk):
-                    divided_fname = NonRepeatDataContainer()
+                    divided_fname = NonRepeatKeyValueContainer()
                     divided_fname['start'] = ''.join(fname_chunks[:idx])
                     divided_fname['end'] = ''.join(fname_chunks[idx + 1:])
                     divided_fname['modified_part'] = \

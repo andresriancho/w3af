@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.querystring_request import HTTPQSRequest
+from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
 from w3af.core.data.dc.data_container import NonRepeatDataContainer
 
@@ -39,7 +39,7 @@ class TestFileNameMutant(unittest.TestCase):
         divided_path['modified_part'] = 'ping!'
         divided_path['end'] = '.htm'
 
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar.htm'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar.htm'))
         m = FileNameMutant(freq)
         m.set_mutant_dc(divided_path)
         m.set_var('modified_part')
@@ -60,7 +60,7 @@ class TestFileNameMutant(unittest.TestCase):
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_url_filenames': False}
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = FileNameMutant.create_mutants(
             freq, self.payloads, [],
@@ -70,7 +70,7 @@ class TestFileNameMutant(unittest.TestCase):
 
     def test_config_true(self):
         fuzzer_config = {'fuzz_url_filenames': True}
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = FileNameMutant.create_mutants(
             freq, self.payloads, [],
@@ -79,7 +79,7 @@ class TestFileNameMutant(unittest.TestCase):
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_valid_results(self):
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar.htm'))
+        freq = QsRequest(URL('http://www.w3af.com/foo/bar.htm'))
 
         generated_mutants = FileNameMutant.create_mutants(freq, self.payloads,
                                                           [], False,
@@ -104,7 +104,7 @@ class TestFileNameMutant(unittest.TestCase):
         the same, the number of generated mutants was 4.
         """
         payloads = ['ls - la', 'http://127.0.0.1:8015/test/']
-        freq = HTTPQSRequest(URL('http://www.w3af.com/bar.htm'))
+        freq = QsRequest(URL('http://www.w3af.com/bar.htm'))
 
         generated_mutants = FileNameMutant.create_mutants(freq, payloads, [],
                                                           False,
