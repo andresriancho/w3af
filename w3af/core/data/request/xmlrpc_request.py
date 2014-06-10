@@ -50,6 +50,11 @@ class XMLRPCRequest(FuzzableRequest):
             return cls(url, method=method, headers=headers,
                        post_data=container)
 
+    def get_headers(self):
+        headers = super(XMLRPCRequest, self).get_headers()
+        headers['Content-Type'] = 'application/xml'
+        return headers
+
     def set_dc(self, data_container):
         self._post_data = data_container
 

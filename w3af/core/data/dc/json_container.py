@@ -107,6 +107,7 @@ class JSONContainer(DataContainer):
             token = DataToken(k, v)
 
             dcc = copy.deepcopy(self)
+
             dcc.set_token(k, token=token)
             dcc.token = token
 
@@ -142,21 +143,17 @@ class JSONContainer(DataContainer):
 
                 return token
 
-        raise RuntimeError('Invalid token path %s' % key_name)
+        raise RuntimeError('Invalid token path "%s"' % key_name)
 
     def get_short_printable_repr(self):
         """
         :return: A string with a short printable representation of self
         """
-        if len(str(self)) <= self.MAX_PRINTABLE:
-            return str(self)
-
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
-            for k, v, _ in self.iter_setters():
-                if isinstance(v, DataToken):
-                    dt_str = '%s=%s' % (v.get_name(), v.get_value())
-                    return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+            token = self.get_token()
+            dt_str = '%s=%s' % (token.get_name(), token.get_value())
+            return '...%s...' % dt_str[:self.MAX_PRINTABLE-6]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved

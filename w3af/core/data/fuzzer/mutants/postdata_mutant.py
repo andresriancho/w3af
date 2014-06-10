@@ -37,20 +37,12 @@ class PostDataMutant(Mutant):
         """
         :return: A string representing WHAT was fuzzed.
         """
-        res = '"' + self.get_uri() + '", using HTTP method '
-        res += self.get_method() + '. The sent post-data was: "'
+        fmt = '"%s", using HTTP method %s. The sent post-data was: "%s"'
+        fmt += ' which modifies the "%s" parameter.'
 
-        # Depending on the data container, print different things:
-        dc_length = len(str(self.get_dc()))
-
-        if dc_length > 65:
-            res += '...' + self.get_var() + '=' + self.get_token_value() + '...'
-        else:
-            res += str(self.get_dc())
-
-        res += '" which modifies the "%s" parameter.' % self.get_var()
-
-        return res
+        return fmt % (self.get_uri(), self.get_method(),
+                      self.get_dc().get_short_printable_repr(),
+                      self.get_token().get_name())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,

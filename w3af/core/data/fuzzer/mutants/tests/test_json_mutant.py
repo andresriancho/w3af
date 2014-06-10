@@ -23,106 +23,60 @@ import unittest
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.json_request import JSONPostDataRequest
-from w3af.core.data.fuzzer.mutants.json_mutant import (JSONMutant, is_json,
-                                                  _fuzz_json, _make_json_mutants)
+from w3af.core.data.fuzzer.mutants.json_mutant import JSONMutant
+from w3af.core.data.dc.json_container import JSONContainer
+from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT, ARRAY
 
 
 class TestJSONMutant(unittest.TestCase):
 
     def setUp(self):
         self.fuzzer_config = {}
-        self.payloads = ['abc', '53']
+        self.payloads = ['xyz', 'www']
+        self.url = URL('http://www.w3af.com/?id=3')
 
-    def test_is_json_int(self):
-        self.assertTrue(is_json('1'))
+    def test_found_at(self):
+        dc = JSONContainer(COMPLEX_OBJECT)
+        freq = JSONPostDataRequest(self.url, post_data=dc, method='PUT')
 
-    def test_is_json_str(self):
-        self.assertTrue(is_json('"a"'))
+        m = JSONMutant(freq)
+        m.get_dc().set_token('object-second_key-list-0-string')
 
-    def test_is_json_lst(self):
-        self.assertTrue(is_json('["a", "b"]'))
+        expected = '"http://www.w3af.com/", using HTTP method PUT.'\
+                   ' The sent JSON-data was: "...object-second_key-list-'\
+                   '0-string=abc..."'
+        self.assertEqual(m.found_at(), expected)
 
-    def test_is_json_dict(self):
-        self.assertTrue(is_json('{"a": "b"}'))
+    def test_create_mutants_array(self):
+        dc = JSONContainer(ARRAY)
+        freq = JSONPostDataRequest(self.url, post_data=dc, method='POST')
 
-    def test_is_json_not(self):
-        self.assertFalse(is_json('a=b'))
+        created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
-    def test_is_json_not_2(self):
-        self.assertFalse(is_json('a=b&d=3'))
+        expected_dcs = ['["abc", 3, 2.1]',
+                        '["abc", 3, 2.1]',
+                        '["abc", 3, 2.1]',
+                        '["abc", 3, 2.1]',
+                        '["abc", 3, 2.1]',
+                        '["abc", 3, 2.1]']
 
-    def test_fuzz_json_int(self):
-        expected = [(53, 1)]
-        generated = _fuzz_json(self.payloads, 1, False)
-        self.assertEqual(generated, expected)
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
+        created_post_datas = [i.get_data() for i in created_mutants]
 
-    def test_fuzz_json_str(self):
-        expected = [('abc', 'str'), ('53', 'str')]
-        generated = _fuzz_json(self.payloads, 'str', False)
-        self.assertEqual(generated, expected)
+        self.assertEqual(set(created_dcs), set(expected_dcs))
+        self.assertEqual(set(created_dcs), set(created_post_datas))
 
-    def test_fuzz_json_dict(self):
-        expected = [({'a': 'abc', 'c': 'd'}, 'b'),
-                    ({'a': '53', 'c': 'd'}, 'b'),
-                    ({'a': 'b', 'c': 'abc'}, 'd'),
-                    ({'a': 'b', 'c': '53'}, 'd')]
-        generated = _fuzz_json(self.payloads, {"a": "b", "c": "d"}, False)
-        self.assertEqual(generated, expected)
+        token = created_mutants[0].get_token()
+        self.assertEqual(token.get_name(), 'id')
+        self.assertEqual(token.get_original_value(), '')
 
-    def test_fuzz_json_list(self):
-        expected = [(['abc', 'b'], 'a'),
-                    (['53', 'b'], 'a'),
-                    (['a', 'abc'], 'b'),
-                    (['a', '53'], 'b')]
-        generated = _fuzz_json(self.payloads, ['a', 'b'], False)
-        self.assertEqual(generated, expected)
+        token = created_mutants[2].get_token()
+        self.assertEqual(token.get_name(), 'id')
+        self.assertEqual(token.get_original_value(), '')
 
-    def test_make_json_mutants(self):
-        freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
+        for m in created_mutants:
+            self.assertIsInstance(m, JSONMutant)
 
-        generated_mutants = _make_json_mutants(freq, self.payloads, [],
-                                               False, {"a": "b", "c": "d"})
-
-        self.assertEqual(len(generated_mutants), 4, generated_mutants)
-
-        m0 = generated_mutants[0]
-        self.assertEqual(m0.get_data(), '{"a": "abc", "c": "d"}')
-
-        m1 = generated_mutants[1]
-        self.assertEqual(m1.get_data(), '{"a": "53", "c": "d"}')
-
-        m2 = generated_mutants[2]
-        self.assertEqual(m2.get_data(), '{"a": "b", "c": "abc"}')
-
-        m3 = generated_mutants[3]
-        self.assertEqual(m3.get_data(), '{"a": "b", "c": "53"}')
-
-    def test_json_mutant_create_mutants(self):
-        freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
-        freq.set_dc({"a": "b", "c": "d"})
-
-        generated_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
-                                                      False, self.fuzzer_config)
-
-        self.assertEqual(len(generated_mutants), 4, generated_mutants)
-
-        m0 = generated_mutants[0]
-        self.assertEqual(m0.get_data(), '{"a": "abc", "c": "d"}')
-
-        m1 = generated_mutants[1]
-        self.assertEqual(m1.get_data(), '{"a": "53", "c": "d"}')
-
-        m2 = generated_mutants[2]
-        self.assertEqual(m2.get_data(), '{"a": "b", "c": "abc"}')
-
-        m3 = generated_mutants[3]
-        self.assertEqual(m3.get_data(), '{"a": "b", "c": "53"}')
-
-    def test_json_mutant_create_mutants_not(self):
-        freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
-        freq.set_dc('a=1&b=foo')
-
-        generated_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
-                                                      False, self.fuzzer_config)
-
-        self.assertEqual(len(generated_mutants), 0, generated_mutants)
+        for m in created_mutants:
+            self.assertEqual(m.get_method(), 'POST')

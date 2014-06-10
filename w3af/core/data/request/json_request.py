@@ -55,6 +55,11 @@ class JSONPostDataRequest(FuzzableRequest):
     def get_dc(self):
         return self._post_data
 
+    def get_headers(self):
+        headers = super(JSONPostDataRequest, self).get_headers()
+        headers['Content-Type'] = 'application/json'
+        return headers
+
     def __str__(self):
         """
         Return a str representation of this fuzzable request.

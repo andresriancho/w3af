@@ -43,7 +43,7 @@ class HeadersMutant(Mutant):
         fmt = '"%s", using HTTP method %s. The modified header was: "%s"'\
               ' and it\'s value was: "%s".'
 
-        return fmt % (self.get_url(), self.get_method(), self.get_var(),
+        return fmt % (self.get_url(), self.get_method(), self.get_token_name(),
                       self.get_token_value())
 
     @staticmethod
@@ -64,5 +64,4 @@ class HeadersMutant(Mutant):
         return Mutant._create_mutants_worker(freq, HeadersMutant,
                                              mutant_str_list,
                                              fuzzable_param_list,
-                                             append, fuzzer_config,
-                                             data_container=freq.get_headers())
+                                             append, fuzzer_config)

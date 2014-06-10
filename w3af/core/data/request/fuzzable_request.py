@@ -73,11 +73,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                  post_data=None):
         super(FuzzableRequest, self).__init__()
 
-        # Note: Do not check for the URI type here, since I'm doing it in
-        # set_uri() already.
-        if headers is not None and not isinstance(headers, Headers):
-            raise TypeError(TYPE_ERROR % ('headers', 'Headers'))
-
+        # Note: Do not check for the URI/Headers type here, since I'm doing it
+        # in set_uri() and set_headers() already.
         if cookie is not None and not isinstance(cookie, Cookie):
             raise TypeError(TYPE_ERROR % ('cookie', 'Cookie'))
 
@@ -86,9 +83,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Internal variables
         self._method = method
-        self._headers = self.get_initial_headers(headers)
         self._cookie = Cookie() if cookie is None else cookie
         self._post_data = KeyValueContainer() if post_data is None else post_data
+
+        # Set the headers
+        self._headers = None
+        pheaders = Headers() if headers is None else headers
+        self.set_headers(pheaders)
 
         # Set the URL
         self._uri = None
@@ -97,19 +98,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
-
-    def get_initial_headers(self, specific_headers):
-        """
-        :return: Calls get_default_headers to get the default framework headers,
-        overwrites any overlap with specific_headers and returns a Headers
-        instance
-        """
-        if specific_headers is None:
-            return self.get_default_headers()
-
-        headers = self.get_default_headers()
-        headers.update(specific_headers)
-        return headers
 
     def get_default_headers(self):
         """
@@ -246,10 +234,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :return: True if the requests are equal.
         """
         if isinstance(other, FuzzableRequest):
-            return (self._method == other._method and
-                    self._uri == other._uri and
-                    self._post_data == other._post_data and
-                    self._headers == other._headers)
+            return (self.get_method() == other.get_method() and
+                    self.get_uri() == other.get_uri() and
+                    self.get_data() == other.get_data() and
+                    self.get_headers() == other.get_headers())
         else:
             raise NotImplemented
 
@@ -299,7 +287,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         self._method = method
 
     def set_headers(self, headers):
-        self._headers = Headers(headers)
+        if headers is not None and not isinstance(headers, Headers):
+            raise TypeError(TYPE_ERROR % ('headers', 'Headers'))
+
+        self._headers = headers
 
     def set_referer(self, referer):
         self._headers['Referer'] = str(referer)
@@ -369,10 +360,24 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         raise NotImplementedError
 
     def get_headers(self):
+        """
+        :return: Calls get_default_headers to get the default framework headers,
+        overwrites any overlap with specific_headers and returns a Headers
+        instance
+        """
+        for k, v in self.get_default_headers():
+            # Ignore any keys which are already defined in the user-specified
+            # headers
+            kvalue, kreal = self._headers.iget(k, None)
+            if kvalue is not None:
+                continue
+
+            self._headers[k] = v
+
         return self._headers
 
     def get_referer(self):
-        return self._headers.get('Referer', None)
+        return self.get_headers().get('Referer', None)
 
     def get_cookie(self):
         return self._cookie

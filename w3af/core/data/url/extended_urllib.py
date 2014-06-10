@@ -715,12 +715,10 @@ class ExtendedUrllib(object):
 
             # Create a fuzzable request based on the urllib2 request object
             headers_inst = Headers(request.headers.items())
-            fr = create_fuzzable_request_from_parts(
-                                                    url_instance,
+            fr = create_fuzzable_request_from_parts(url_instance,
                                                     request.get_method(),
                                                     request.get_data(),
-                                                    headers_inst
-                                                    )
+                                                    headers_inst)
 
             self._grep_queue_put((fr, response))
 

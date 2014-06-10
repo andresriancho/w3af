@@ -143,4 +143,4 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(len(redir_fr_cookie), 1)
 
         redir_fr_cookie = redir_fr_cookie[0]
-        self.assertEqual(str(redir_fr_cookie.get_cookie()), 'abc=def;')
+        self.assertEqual(str(redir_fr_cookie.get_cookie()), 'abc=def')

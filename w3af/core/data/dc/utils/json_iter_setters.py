@@ -36,6 +36,7 @@ TO_WRAP_OBJS = (int, float, basestring)
 
 def json_iter_setters(arbitrary_python_obj):
     marbitrary_python_obj = to_mutable(arbitrary_python_obj)
+
     for k, v, s in _json_iter_setters(marbitrary_python_obj):
         yield k, v, s
 
@@ -111,6 +112,16 @@ def _json_iter_setters(marbitrary_python_obj, key_names=[]):
         elif isinstance(value, (int, float)):
             key_names = key_names[:]
             key_names.append(KEY_NUMBER)
+            yield '-'.join(key_names), value, marbitrary_python_obj.set_value
+
+        elif isinstance(value, bool):
+            key_names = key_names[:]
+            key_names.append(KEY_BOOLEAN)
+            yield '-'.join(key_names), value, marbitrary_python_obj.set_value
+
+        elif value is None:
+            key_names = key_names[:]
+            key_names.append(KEY_NULL)
             yield '-'.join(key_names), value, marbitrary_python_obj.set_value
 
         else:

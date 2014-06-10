@@ -30,6 +30,7 @@ from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.request.json_request import JSONPostDataRequest
 from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.header_request import HeaderRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.url import URL
@@ -65,6 +66,18 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     if add_self:
         qsr = QsRequest(resp.get_uri(), headers=req_headers, cookie=cookie_obj)
         res.append(qsr)
+
+        greq = create_fuzzable_request_from_request(request)
+        res.append(greq)
+
+    fuzzable_headers = cf.cf.save('fuzzable_headers', [])
+    if fuzzable_headers:
+        try:
+            hreq = HeaderRequest.from_parts(resp.get_uri(), 'GET', '',
+                                            req_headers)
+            res.append(hreq)
+        except ValueError:
+            pass
 
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request.
@@ -106,11 +119,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
             for variant in form.get_variants(mode):
                 if form.get_method().upper() == 'POST':
                     r = PostDataRequest(variant.get_action(),
-                                        variant.get_method(),
-                                        req_headers, cookie_obj, variant)
+                                        method=variant.get_method(),
+                                        headers=req_headers,
+                                        cookie=cookie_obj,
+                                        post_data=variant)
                 else:
                     # The default is a GET request
                     r = QsRequest(variant.get_action(),
+                                  method=variant.get_method(),
                                   headers=req_headers,
                                   cookie=cookie_obj)
                     r.set_dc(variant)
@@ -149,9 +165,9 @@ def create_fuzzable_request_from_parts(url, method='GET', post_data='',
     :param req_url: A URL object
     :param method: A string that represents the method ('GET', 'POST', etc)
     :param post_data: A string that represents the postdata.
-    :param add_headers: A Headers object that holds the headers. If `req_url` is a
-                        request then this dict will be merged with the request's
-                        headers.
+    :param add_headers: A Headers object that holds the headers. If `req_url` is
+                        a request then this dict will be merged with the
+                        request's headers.
     """
     if add_headers is not None and not isinstance(add_headers, Headers):
         raise ValueError('create_fuzzable_request requires Headers object.')

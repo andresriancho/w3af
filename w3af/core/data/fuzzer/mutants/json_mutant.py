@@ -33,11 +33,6 @@ class JSONMutant(PostDataMutant):
     def get_mutant_type(self):
         return 'JSON data'
 
-    def get_headers(self):
-        headers = self._headers
-        headers['Content-Type'] = 'application/json'
-        return headers
-
     def found_at(self):
         """
         I had to implement this again here instead of just inheriting from
@@ -47,7 +42,8 @@ class JSONMutant(PostDataMutant):
         :return: A string representing WHAT was fuzzed.
         """
         fmt = '"%s", using HTTP method %s. The sent JSON-data was: "%s"'
-        return fmt % (self.get_url(), self.get_method(), self.get_dc())
+        return fmt % (self.get_url(), self.get_method(),
+                      self.get_dc().get_short_printable_repr())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,

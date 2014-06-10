@@ -110,14 +110,14 @@ class TestCookieMutant(unittest.TestCase):
 
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
 
-        expected_cookies = ['foo=abc; spam=eggs;',
-                            'foo=def; spam=eggs;',
-                            'foo=bar; spam=abc;',
-                            'foo=bar; spam=def;'
-                            ]
+        expected_cookies = ['foo=bar; spam=abc',
+                            'foo=def; spam=eggs',
+                            'foo=abc; spam=eggs',
+                            'foo=bar; spam=def']
+
 
         generated_cookies = [str(m.get_cookie()) for m in generated_mutants]
-        self.assertEqual(expected_cookies, generated_cookies)
+        self.assertEqual(set(expected_cookies), set(generated_cookies))
 
         generated_cookies = [str(m.get_dc()) for m in generated_mutants]
-        self.assertEqual(expected_cookies, generated_cookies)
+        self.assertEqual(set(expected_cookies), set(generated_cookies))
