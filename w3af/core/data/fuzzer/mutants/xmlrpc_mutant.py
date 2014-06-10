@@ -27,7 +27,8 @@ class XmlRpcMutant(PostDataMutant):
     """
     This class is an XMLRPC mutant.
     """
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'XMLRPC data'
 
     def found_at(self):
@@ -38,12 +39,9 @@ class XmlRpcMutant(PostDataMutant):
 
         :return: A string representing WHAT was fuzzed.
         """
-        res = ''
-        res += '"' + self.get_url() + '", using HTTP method '
-        res += self.get_method() + '. The sent XML-RPC was: "'
-        res += str(self.get_dc())
-        res += '"'
-        return res
+        fmt = '"%s", using HTTP method %s. The sent XML-RPC was: "%s".'
+        return fmt % (self.get_url(), self.get_method(),
+                      self.get_dc().get_short_printable_repr())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
