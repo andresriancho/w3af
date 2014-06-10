@@ -124,8 +124,11 @@ def _json_iter_setters(marbitrary_python_obj, key_names=[]):
             key_names.append(KEY_NULL)
             yield '-'.join(key_names), value, marbitrary_python_obj.set_value
 
+        elif isinstance(value, DataToken):
+            for k, v, s in _json_iter_setters(value, key_names=key_names):
+                yield k, v, s
         else:
-            for k, v, s in _json_iter_setters(value):
+            for k, v, s in _json_iter_setters(value, key_names=key_names):
                 yield k, v, s
 
     elif isinstance(marbitrary_python_obj, list):

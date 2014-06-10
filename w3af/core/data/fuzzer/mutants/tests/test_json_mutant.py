@@ -54,12 +54,8 @@ class TestJSONMutant(unittest.TestCase):
         created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
                                                     False, self.fuzzer_config)
 
-        expected_dcs = ['["abc", 3, 2.1]',
-                        '["abc", 3, 2.1]',
-                        '["abc", 3, 2.1]',
-                        '["abc", 3, 2.1]',
-                        '["abc", 3, 2.1]',
-                        '["abc", 3, 2.1]']
+        expected_dcs = ['["xyz", 3, 2.1]',
+                        '["www", 3, 2.1]']
 
         created_dcs = [str(i.get_dc()) for i in created_mutants]
         created_post_datas = [i.get_data() for i in created_mutants]
@@ -68,12 +64,12 @@ class TestJSONMutant(unittest.TestCase):
         self.assertEqual(set(created_dcs), set(created_post_datas))
 
         token = created_mutants[0].get_token()
-        self.assertEqual(token.get_name(), 'id')
-        self.assertEqual(token.get_original_value(), '')
+        self.assertEqual(token.get_name(), 'list-0-string')
+        self.assertEqual(token.get_original_value(), 'abc')
 
-        token = created_mutants[2].get_token()
-        self.assertEqual(token.get_name(), 'id')
-        self.assertEqual(token.get_original_value(), '')
+        token = created_mutants[1].get_token()
+        self.assertEqual(token.get_name(), 'list-0-string')
+        self.assertEqual(token.get_original_value(), 'abc')
 
         for m in created_mutants:
             self.assertIsInstance(m, JSONMutant)

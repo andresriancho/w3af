@@ -42,13 +42,46 @@ class TestJSONContainer(unittest.TestCase):
         for dcc, token in dcc_tokens:
             self.assertIsInstance(dcc, JSONContainer)
             self.assertIsInstance(token, DataToken)
+            self.assertIs(token, dcc.token)
 
         EXPECTED_TOKENS = [('object-second_key-list-0-string', 'abc'),
-                           ('object-second_key-list-1-number', 3),
-                           ('object-second_key-list-2-number', 2.1),
                            ('object-key-string', 'value')]
         token_data = [(t.get_name(), t.get_value()) for dcc, t in dcc_tokens]
         self.assertEqual(EXPECTED_TOKENS, token_data)
+
+    def test_iter_bound_tokens_array(self):
+        jcont = JSONContainer(ARRAY)
+        dcc_tokens = [(dcc, token) for dcc, token in jcont.iter_bound_tokens()]
+
+        for dcc, token in dcc_tokens:
+            self.assertIsInstance(dcc, JSONContainer)
+            self.assertIsInstance(token, DataToken)
+            self.assertIs(token, dcc.token)
+
+        EXPECTED_TOKENS = [('list-0-string', 'abc')]
+        token_data = [(t.get_name(), t.get_value()) for dcc, t in dcc_tokens]
+        self.assertEqual(EXPECTED_TOKENS, token_data)
+
+    def test_iter_bound_tokens_modify_during_iter(self):
+        jcont = JSONContainer(ARRAY)
+        idx = None
+        tokens = []
+
+        for idx, (dcc, token) in enumerate(jcont.iter_bound_tokens()):
+            self.assertIsInstance(dcc, JSONContainer)
+            self.assertIsInstance(token, DataToken)
+            self.assertIs(token, dcc.token)
+
+            token.set_value('xyz')
+            tokens.append(token)
+
+        self.assertEqual(idx, 0)
+
+        EXPECTED_TOKENS = [('list-0-string', 'xyz')]
+        token_data = [(t.get_name(), t.get_value()) for t in tokens]
+
+        self.assertEqual(EXPECTED_TOKENS, token_data)
+        self.assertEqual(str(dcc), ARRAY.replace('abc', 'xyz'))
 
     def test_is_json_true(self):
         self.assertTrue(JSONContainer.is_json('1'))
