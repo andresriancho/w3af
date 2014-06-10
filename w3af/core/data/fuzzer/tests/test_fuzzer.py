@@ -28,6 +28,7 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
+from w3af.core.data.request.header_request import HeaderRequest
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
@@ -71,7 +72,7 @@ class TestFuzzer(unittest.TestCase):
         self.assertTrue(
             all(isinstance(m, QSMutant) for m in generated_mutants))
 
-    def test_fuzz_headers_no_headers(self):
+    def test_fuzz_headers_no_headers_in_request(self):
         cf_singleton.save('fuzzable_headers', ['Referer'])  # This one changed
         cf_singleton.save('fuzz_cookies', False)
         cf_singleton.save('fuzz_url_filenames', False)
@@ -81,29 +82,23 @@ class TestFuzzer(unittest.TestCase):
 
         url = URL('http://moth/?id=1')
         # No headers in the original request
-        #headers = Headers([('Referer', 'http://moth/foo/bar/')])
-        freq = QsRequest(url)
+        #headers = Headers([('Referer', 'http://moths/')])
+        freq = HeaderRequest(url)
         mutants = create_mutants(freq, self.payloads)
 
-        expected_urls = ['http://moth/?id=abc',
-                         'http://moth/?id=def',
-                         'http://moth/?id=1',
+        expected_urls = ['http://moth/?id=1',
                          'http://moth/?id=1', ]
         generated_urls = [m.get_uri().url_string for m in mutants]
 
         self.assertEqual(generated_urls, expected_urls)
 
-        expected_headers = [Headers([('Referer', '')]),
-                            Headers([('Referer', '')]),
-                            Headers([('Referer', 'abc')]),
+        expected_headers = [Headers([('Referer', 'abc')]),
                             Headers([('Referer', 'def')]), ]
 
         generated_headers = [m.get_headers() for m in mutants]
 
         self.assertEqual(expected_headers, generated_headers)
-
-        self.assertTrue(all(isinstance(m, QSMutant) for m in mutants[:2]))
-        self.assertTrue(all(isinstance(m, HeadersMutant) for m in mutants[2:]))
+        self.assertTrue(all(isinstance(m, HeadersMutant) for m in mutants))
 
     def test_fuzz_headers(self):
         cf_singleton.save('fuzzable_headers', ['Referer'])  # This one changed
@@ -115,24 +110,20 @@ class TestFuzzer(unittest.TestCase):
 
         url = URL('http://moth/?id=1')
         # With headers
-        headers = Headers([('Referer', 'http://moth/foo/bar/'),
+        headers = Headers([('Referer', 'http://moths/'),
                            ('Foo', 'Bar')])
-        freq = QsRequest(url, headers=headers)
+        freq = HeaderRequest(url, headers=headers)
         generated_mutants = create_mutants(freq, self.payloads)
 
-        expected_urls = ['http://moth/?id=abc',
-                         'http://moth/?id=def',
-                         'http://moth/?id=1',
+        expected_urls = ['http://moth/?id=1',
                          'http://moth/?id=1', ]
         generated_urls = [m.get_uri().url_string for m in generated_mutants]
         self.assertEqual(generated_urls, expected_urls)
 
-        expected_headers = [Headers(
-            [('Referer', 'http://moth/foo/bar/'), ('Foo', 'Bar')]),
-            Headers([('Referer',
-                      'http://moth/foo/bar/'), ('Foo', 'Bar')]),
+        expected_headers = [
             Headers([('Referer', 'abc'), ('Foo', 'Bar')]),
-            Headers([('Referer', 'def'), ('Foo', 'Bar')]), ]
+            Headers([('Referer', 'def'), ('Foo', 'Bar')]),]
+
         generated_headers = [m.get_headers() for m in generated_mutants]
         self.assertEqual(expected_headers, generated_headers)
 
@@ -159,7 +150,13 @@ class TestFuzzer(unittest.TestCase):
         self.assertEqual(generated_urls, expected_urls)
         self.assertTrue(all(isinstance(m, QSMutant) for m in generated_mutants))
 
-    def test_qs_and_cookie(self):
+    def test_qs_no_cookie(self):
+        """
+        Even when fuzz_cookies is True, we won't create HeaderMutants based
+        on a QsRequest. This is one of the ugly things related with
+
+            https://github.com/andresriancho/w3af/issues/3149
+        """
         cf_singleton.save('fuzzable_headers', [])
         cf_singleton.save('fuzz_cookies', True)  # This one changed
         cf_singleton.save('fuzz_url_filenames', False)
@@ -174,25 +171,12 @@ class TestFuzzer(unittest.TestCase):
         mutants = create_mutants(freq, self.payloads)
 
         expected_urls = [u'http://moth/?id=abc',
-                         u'http://moth/?id=def',
-                         u'http://moth/?id=1',
-                         u'http://moth/?id=1']
+                         u'http://moth/?id=def']
 
         generated_urls = [m.get_uri().url_string for m in mutants]
 
         self.assertEqual(generated_urls, expected_urls)
-
-        expected_cookies = ['foo=bar',
-                            'foo=bar',
-                            'foo=abc',
-                            'foo=def']
-
-        generated_cookies = [str(m.get_cookie()) for m in mutants]
-
-        self.assertEqual(expected_cookies, generated_cookies)
-
         self.assertTrue(all(isinstance(m, QSMutant) for m in mutants[:2]))
-        self.assertTrue(all(isinstance(m, CookieMutant) for m in mutants[2:]))
 
     def test_filename_only_dir_path(self):
         cf_singleton.save('fuzzable_headers', [])

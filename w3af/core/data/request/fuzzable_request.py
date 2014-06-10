@@ -114,7 +114,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         fuzzable_headers = cf.cf.get('fuzzable_headers') or []
         req_headers = [(h, '') for h in fuzzable_headers]
-        return Headers(req_headers)
+        return Headers(init_val=req_headers)
 
     @classmethod
     def from_parts(cls, url, method, post_data, headers):
@@ -365,7 +365,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         overwrites any overlap with specific_headers and returns a Headers
         instance
         """
-        for k, v in self.get_default_headers():
+        for k, v in self.get_default_headers().items():
             # Ignore any keys which are already defined in the user-specified
             # headers
             kvalue, kreal = self._headers.iget(k, None)
