@@ -23,6 +23,9 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
+    # Install libmproxy dependencies
+    - w3af/core/controllers/ci/install_scripts/install_libmproxy_dependencies.sh
+
     # Install and run wivet in the background
     - w3af/core/controllers/ci/install_scripts/install_wivet.sh
     - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
