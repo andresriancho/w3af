@@ -25,7 +25,7 @@ import pango
 
 from w3af.core.ui.gui.httpeditor import HttpEditor
 from w3af.core.ui.gui.entries import RememberingVPaned
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 CR = '\r'
 LF = '\n'
@@ -195,6 +195,6 @@ class HttpHeadersView(RememberingVPaned):
         for header in self._headersStore:
             head += header[0] + ':' + header[1] + CRLF
         if self.is_request:
-            return HTTPRequestParser(head, self._raw.get_text())
+            return http_request_parser(head, self._raw.get_text())
         else:
             raise Exception('HttpResponseParser is not implemented')

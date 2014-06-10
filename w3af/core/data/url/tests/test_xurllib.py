@@ -33,7 +33,7 @@ from mock import Mock
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.ci.moth import get_moth_http

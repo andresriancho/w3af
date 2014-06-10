@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 
 
 KEY_STRING = 'string'

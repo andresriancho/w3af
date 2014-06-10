@@ -36,7 +36,7 @@ from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.factory import create_fuzzable_request_from_parts
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 
 class import_results(CrawlPlugin):
@@ -176,7 +176,7 @@ class import_results(CrawlPlugin):
                         request_text = base64.b64decode(request_text_b64)
                         head, postdata = request_text.split('\r\n\r\n', 1)
 
-                    fuzzable_request = HTTPRequestParser(head, postdata)
+                    fuzzable_request = http_request_parser(head, postdata)
                     self.requests.append(fuzzable_request)
 
             def end(self, tag):

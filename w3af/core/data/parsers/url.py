@@ -35,7 +35,7 @@ from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from w3af.core.data.misc.encoding import is_known_encoding
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.disk_item import DiskItem
 

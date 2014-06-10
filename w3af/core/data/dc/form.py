@@ -27,9 +27,9 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.url import parse_qs, URL
 
 
 class Form(KeyValueContainer):
@@ -52,6 +52,8 @@ class Form(KeyValueContainer):
     INPUT_TYPE_SUBMIT = 'submit'
     INPUT_TYPE_SELECT = 'select'
 
+    ENCODING = 'application/x-www-form-urlencoded'
+
     AVOID_STR_DUPLICATES = (INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT)
 
@@ -68,6 +70,28 @@ class Form(KeyValueContainer):
         self._files = []
         self._selects = {}
         self._submit_map = {}
+
+    @staticmethod
+    def is_urlencoded(headers):
+        conttype, header_name = headers.iget('content-type', '')
+        return Form.ENCODING in conttype.lower()
+
+    @staticmethod
+    def can_parse(headers, post_data):
+        try:
+            data = parse_qs(post_data)
+        except:
+            return False
+        else:
+            return True
+
+    @classmethod
+    def from_postdata(cls, headers, post_data):
+        if not Form.can_parse(headers, post_data):
+            raise ValueError('Failed to parse post_data as Form.')
+
+        data = parse_qs(post_data)
+        return cls(init_val=data.items())
 
     def get_action(self):
         """

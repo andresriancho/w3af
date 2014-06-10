@@ -19,12 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.xmlrpc import parse_xmlrpc, build_xmlrpc
 
 
 ERR_MSG = 'Unsupported xml_data "%s" for xmlrpc container.'
+XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
+                '</methodcall>', '</methodname>', '</params>')
 
 
 class XmlRpcContainer(KeyValueContainer):
@@ -65,8 +67,15 @@ class XmlRpcContainer(KeyValueContainer):
             for k, v in read_handler.get_data_container().items():
                 self[k] = v
 
+    @staticmethod
+    def is_xmlrpc(post_data):
+        return all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS))
+
     @classmethod
-    def from_postdata(cls, post_data):
+    def from_postdata(cls, headers, post_data):
+        if not XmlRpcContainer.is_xmlrpc(post_data):
+            raise ValueError('Failed to identify post_data as XML-RPC.')
+
         return cls(post_data)
 
     def __str__(self):

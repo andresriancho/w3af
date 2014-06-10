@@ -23,7 +23,7 @@ import tempfile
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.sca.sca import PhpSCA
 from w3af.core.ui.console.tables import table

@@ -24,7 +24,7 @@ from itertools import chain, izip_longest
 
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 
 
 class DataContainer(DiskItem):

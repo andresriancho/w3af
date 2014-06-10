@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 from w3af.core.ui.gui.httpeditor import HttpEditor
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
@@ -48,7 +48,7 @@ class HttpRawView(HttpEditor):
         """Return object (request or response)."""
         head, body = self.get_text(splitted=True)
         if self.is_request:
-            return HTTPRequestParser(head, body)
+            return http_request_parser(head, body)
         else:
             raise Exception('HttpResponseParser is not implemented!')
 

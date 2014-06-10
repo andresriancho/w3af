@@ -32,7 +32,7 @@ from w3af.core.data.request.multipart_request import MultipartRequest
 from w3af.core.data.request.urlencoded_post_request import URLEncPostRequest
 from w3af.core.data.url.handlers.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.request.factory import (create_fuzzable_request_from_parts,
                                             create_fuzzable_request_from_request)
 

@@ -20,9 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.constants.encodings import UTF8
-from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 
 
 class Headers(NonRepeatKeyValueContainer):

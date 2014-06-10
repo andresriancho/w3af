@@ -30,7 +30,7 @@ import w3af.core.controllers.output_manager as om
 from w3af import ROOT_PATH
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
@@ -116,7 +116,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         The user may have changed the postdata of the request, and not the
         content-length header; so we are going to fix that problem.
         """
-        fuzzable_request = HTTPRequestParser(head, postdata)
+        fuzzable_request = http_request_parser(head, postdata)
         
         if fuzzable_request.get_data() is None:
             # Nothing to do here

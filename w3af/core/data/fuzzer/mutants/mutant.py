@@ -24,7 +24,7 @@ import copy
 from w3af.core.controllers.misc.io import NamedStringIO
 
 from w3af.core.data.dc.form import Form
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
 from w3af.core.data.constants.file_templates.file_templates import get_file_from_template

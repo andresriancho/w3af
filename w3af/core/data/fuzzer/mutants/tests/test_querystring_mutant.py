@@ -25,7 +25,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 
 
 class TestQSMutant(unittest.TestCase):

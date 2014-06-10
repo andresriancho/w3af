@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import cgi
 
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 
 def html_export(request_string):
@@ -34,7 +34,7 @@ def html_export(request_string):
     request_lines = request_string.split('\n\n')
     header = request_lines[0]
     body = '\n\n'.join(request_lines[1:])
-    http_request = HTTPRequestParser(header, body)
+    http_request = http_request_parser(header, body)
     res = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
     <html>
     <head>

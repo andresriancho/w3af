@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
 class EmptyFuzzableRequest(FuzzableRequest):

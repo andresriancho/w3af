@@ -27,12 +27,12 @@ from urllib import unquote
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
-from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
+from w3af.core.data.dc.factory import dc_factory
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
@@ -54,17 +54,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     vulnerability is in the postdata, querystring, header, cookie or any other
     injection point.
 
-    Other classes should inherit from this one and change the behaviour of
-    get_dc() and set_dc(), which returns which of postdata, querystring, etc.
-    is the one where we'll inject.
-
-    This class shouldn't be used directly, please use the sub-classes:
-        * HTTPQsRequest
-        * PostDataRequest
-        * ...
-
-    Methods like get_uri() and get_data() shouldn't be overridden by subclasses
-    (with a couple of exceptions).
+    FuzzableRequest classes are just an easy to use representation of an HTTP
+    Request, which will (during the audit phase) be wrapped into a Mutant
+    and have its values modified.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -117,11 +109,17 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         return Headers(init_val=req_headers)
 
     @classmethod
-    def from_parts(cls, url, method, post_data, headers):
+    def from_parts(cls, url, method='GET', post_data=None, headers=None):
         """
         :return: An instance of this object from the provided parameters.
         """
-        raise NotImplementedError
+        if isinstance(url, basestring):
+            url = URL(url)
+
+        if isinstance(post_data, basestring):
+            dc = dc_factory(headers, post_data)
+
+        return cls(url, method=method, headers=headers, post_data=dc)
 
     def export(self):
         """
@@ -210,14 +208,14 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         :return: A string representation of this fuzzable request.
         """
-        strelems = [unicode(self.get_url()), u' | Method: ' + self._method]
+        fmt = '%s | Method: %s | Parameters: (%s)'
 
-        if self.get_dc():
-            strelems.append(u' | Parameters: (')
-            strelems.append(u'%s' % self.get_dc().get_short_printable_repr())
-            strelems.append(u')')
+        if self.get_raw_data():
+            parameters = self.get_raw_data().get_param_names()
+        else:
+            parameters = self.get_uri().querystring.get_param_names()
 
-        return u''.join(strelems).encode(DEFAULT_ENCODING)
+        return fmt % (self.get_url(), self.get_method(), ','.join(parameters))
 
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % (self.get_method(),
@@ -334,30 +332,11 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         return str(self._post_data)
 
+    def get_raw_data(self):
+        return self._post_data
+
     def get_method(self):
         return self._method
-
-    def get_dc(self):
-        """
-        This is saying something important to the rest of the world:
-            "If you want to fuzz this request, please use the query string"
-
-        :return: A reference to the DataContainer object which will be used for
-                 fuzzing. Other sub-classes need to override this method in
-                 order to allow fuzzing of headers, cookies, post-data, etc.
-        """
-        raise NotImplementedError
-
-    def set_dc(self, data_container):
-        """
-        :note: Its really important that get_dc and set_dc both modify the same
-               attribute. Each subclass of fuzzable request should modify a
-               different one, to provide fuzzing functionality to that section
-               of the HTTP response.
-
-        :see: self.get_dc documentation
-        """
-        raise NotImplementedError
 
     def get_headers(self):
         """
@@ -383,7 +362,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         return self._cookie
 
     def get_file_vars(self):
-        return []
+        """
+        :return: A list of postdata parameters that contain a file
+        """
+        try:
+            return self._post_data.get_file_vars()
+        except AttributeError:
+            return []
 
     def copy(self):
         return copy.deepcopy(self)

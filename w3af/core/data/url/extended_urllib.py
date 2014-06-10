@@ -43,7 +43,7 @@ from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest,
                                               ScanMustStopOnUrlError)
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.factory import create_fuzzable_request_from_parts
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
@@ -181,7 +181,7 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         # Parse the two strings
-        fuzz_req = HTTPRequestParser(head, postdata)
+        fuzz_req = http_request_parser(head, postdata)
 
         # Fix the content length
         if fix_content_len:

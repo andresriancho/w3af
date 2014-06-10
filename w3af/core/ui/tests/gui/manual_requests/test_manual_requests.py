@@ -24,7 +24,7 @@ from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 # TODO: Code duplication
 #
@@ -118,7 +118,7 @@ class TestManualRequests(XpresserUnittest):
         request = requests[0]
 
         head, postdata = MANUAL_REQUEST_EXAMPLE, ''
-        http_request = HTTPRequestParser(head, postdata)
+        http_request = http_request_parser(head, postdata)
         
         self.assertEqual(http_request.get_url().get_path(), request.path)
         self.assertEqual(http_request.get_method(), request.command)
@@ -170,7 +170,7 @@ class TestManualRequests(XpresserUnittest):
         request = requests[0]
 
         head, postdata = MANUAL_REQUEST_EXAMPLE, ''
-        http_request = HTTPRequestParser(head, postdata)
+        http_request = http_request_parser(head, postdata)
         
         self.assertEqual(http_request.get_url().get_path(), request.path)
         self.assertEqual('POST', request.command)

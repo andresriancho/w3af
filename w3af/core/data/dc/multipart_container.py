@@ -1,5 +1,5 @@
 """
-multipart_request.py
+multipart_container.py
 
 Copyright 2014 Andres Riancho
 
@@ -23,13 +23,11 @@ import cgi
 import StringIO
 
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.request.post_data_request import PostDataRequest
 
 
-class MultipartRequest(PostDataRequest):
+class MultipartContainer(KeyValueContainer):
     """
-    This class represents a fuzzable request that sends all variables in the
-    POSTDATA using multipart post encoding.
+    This class represents a data container for multipart/post
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -39,16 +37,11 @@ class MultipartRequest(PostDataRequest):
         return conttype.lower().startswith('multipart/form-data')
 
     @classmethod
-    def from_parts(cls, url, method, post_data, headers):
-        if not MultipartRequest.is_multipart(headers):
+    def from_postdata(cls, headers, post_data):
+        if not MultipartContainer.is_multipart(headers):
             raise ValueError('Failed to create MultipartRequest.')
 
         conttype, _ = headers.iget('content-type')
-
-        # Remove some headers which I won't need
-        headers = headers.copy()
-        for header_name in ('content-type', 'content-length'):
-            headers.idel(header_name)
 
         try:
             pdict = cgi.parse_header(conttype)[1]
@@ -56,13 +49,8 @@ class MultipartRequest(PostDataRequest):
         except ValueError:
             raise ValueError('Failed to create MultipartRequest.')
         else:
-            data = KeyValueContainer()
-            data.update(dc)
-
             # Please note that the KeyValueContainer is just a container for
             # the information. When the PostDataRequest is sent it should
             # be serialized into multipart again by the MultipartPostHandler
             # because the headers contain the multipart/form-data header
-            headers['content-type'] = conttype
-
-            return cls(url, method=method, headers=headers, post_data=data)
+            return cls(init_val=dc.items())

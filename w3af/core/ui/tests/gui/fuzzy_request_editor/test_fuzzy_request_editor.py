@@ -23,7 +23,7 @@ import os
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 # TODO: Code duplication
 #
@@ -119,7 +119,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
         self.assertEqual(len(requests), 10)
         
         head, postdata = FUZZY_REQUEST_EXAMPLE, ''
-        parsed_request = HTTPRequestParser(head, postdata)
+        parsed_request = http_request_parser(head, postdata)
         
         for i, daemon_request in enumerate(self.http_daemon.requests):
 
@@ -172,7 +172,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
         self.assertEqual(len(requests), 10)
         
         head, postdata = FUZZY_REQUEST_EXAMPLE, ''
-        parsed_request = HTTPRequestParser(head, postdata)
+        parsed_request = http_request_parser(head, postdata)
         
         for i, daemon_request in enumerate(self.http_daemon.requests):
 

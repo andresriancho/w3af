@@ -25,7 +25,7 @@ import base64
 
 from xml.sax.handler import ContentHandler
 
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 
 

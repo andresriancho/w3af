@@ -23,7 +23,7 @@ import urllib
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.request.querystring_request import QsRequest
-from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
 TOKEN = 'token'

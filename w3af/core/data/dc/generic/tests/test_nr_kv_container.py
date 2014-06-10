@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
-from w3af.core.data.dc.nr_kv_container import NonRepeatKeyValueContainer
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
 class TestNoRepeatKeyValueContainer(unittest.TestCase):

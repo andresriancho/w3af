@@ -32,7 +32,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.constants import severity
-from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
+from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.data.visualization.string_representation import StringRepresentation
 
 from w3af.core.ui.gui.entries import RememberingVPaned
@@ -409,7 +409,7 @@ class requestPart(requestResponsePart):
         return head, data
 
     def show_raw(self, head, body):
-        self._obj = HTTPRequestParser(head, body)
+        self._obj = http_request_parser(head, body)
         self.synchronize()
 
 

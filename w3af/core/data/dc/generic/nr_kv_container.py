@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-kv_container.py
+nr_kv_container.py
 
 Copyright 2014 Andres Riancho
 
@@ -26,20 +26,23 @@ from functools import partial
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
 
+ERR_MSG_NO_REP = 'Unsupported init_val "%s", expected format is [("b", "2")]'
 
-ERR_MSG = 'Unsupported init_val "%s", expected format is [(u"b", [u"2", u"3"])]'
 
-
-class KeyValueContainer(DataContainer, OrderedDict):
+class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
     """
-    This class represents a data container. It's basically the way
-    query-string and post-data are stored when using url-encoding.
+    This class represents a data container for data which doesn't allow
+    repeated parameter names.
+
+    The DataContainer supports things like a=1&a=2 for query strings, but for
+    example HTTP headers can't be repeated (by RFC) and thus we don't
+    need any repeated parameter names.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -47,7 +50,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         DataContainer.__init__(self, encoding=encoding)
         OrderedDict.__init__(self)
 
-        if isinstance(init_val, KeyValueContainer):
+        if isinstance(init_val, NonRepeatKeyValueContainer):
             self.update(init_val)
         elif isinstance(init_val, dict):
             # we lose compatibility with other ordered dict types this way
@@ -57,33 +60,39 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 try:
                     key, val = item
                 except TypeError:
-                    raise TypeError(ERR_MSG % init_val)
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 if key in self:
-                    raise TypeError(ERR_MSG % init_val)
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
-                if not isinstance(val, (list, tuple)):
-                    raise TypeError(ERR_MSG % init_val)
-
-                for sub_val in val:
-                    if not isinstance(sub_val, (basestring, DataToken)):
-                        raise TypeError(ERR_MSG % init_val)
+                if not isinstance(val, (basestring, DataToken)):
+                    raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 self[key] = val
 
-    def __str__(self):
+    def _to_str_with_separators(self, key_val_sep, pair_sep):
         """
-        Return string representation.
+        :return: Join all the values stored in this data container using the
+                 specified separators.
+        """
+        lst = []
 
-        :return: string representation of the KeyValueContainer instance.
-        """
-        return urlencode(self, encoding=self.encoding)
+        for k, v in self.items():
+            to_app = u'%s%s%s' % (k, key_val_sep,
+                                  smart_unicode(v, encoding=UTF8))
+            lst.append(to_app)
 
-    def __unicode__(self):
+        return pair_sep.join(lst)
+
+    def iter_setters(self):
         """
-        Return unicode representation
+        :yield: Tuples containing:
+                    * The key as a string
+                    * The value as a string
+                    * The setter to modify the value
         """
-        return self._to_str_with_separators(u'=', u'&')
+        for k, v in self.items():
+             yield k, v, partial(self.__setitem__, k)
 
     def iter_bound_tokens(self):
         """
@@ -94,27 +103,15 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     - A token set to the right location in the copy of self
         """
         for k, v in self.items():
-            for idx, ele in enumerate(v):
-                token = DataToken(k, ele)
+            token = DataToken(k, v)
 
-                dcc = copy.deepcopy(self)
-                dcc[k][idx] = token
-                dcc.token = token
+            dcc = copy.deepcopy(self)
+            dcc[k] = token
+            dcc.token = token
 
-                yield dcc, token
+            yield dcc, token
 
-    def iter_setters(self):
-        """
-        :yield: Tuples containing:
-                    * The key as a string
-                    * The value as a string
-                    * The setter to modify the value
-        """
-        for k, v in self.items():
-            for idx, ele in enumerate(v):
-                yield k, ele, partial(v.__setitem__, idx)
-
-    def set_token(self, key_name, index_num):
+    def set_token(self, key_name):
         """
         Sets the token in the DataContainer to point to the variable specified
         in *args. Usually args will be one of:
@@ -126,32 +123,29 @@ class KeyValueContainer(DataContainer, OrderedDict):
         :return: The token if we were able to set it in the DataContainer
         """
         for k, v in self.items():
-            for idx, ele in enumerate(v):
+            if key_name == k:
+                token = DataToken(k, v)
 
-                if key_name == k and idx == index_num:
-                    token = DataToken(k, ele)
+                self[k] = token
+                self.token = token
 
-                    self[k][idx] = token
-                    self.token = token
+                return token
 
-                    return token
+        raise RuntimeError('Invalid token path "%s"' % key_name)
 
-        raise RuntimeError('Invalid token path %s/%s' % (key_name, index_num))
-
-    def _to_str_with_separators(self, key_val_sep, pair_sep):
+    def __str__(self):
         """
-        :return: Join all the values stored in this data container using the
-                 specified separators.
+        Return string representation.
+
+        :return: string representation of the DataContainer Object.
         """
-        lst = []
+        return urlencode(self, encoding=self.encoding)
 
-        for k, v in self.items():
-            for ele in v:
-                to_app = u'%s%s%s' % (k, key_val_sep,
-                                      smart_unicode(ele, encoding=UTF8))
-                lst.append(to_app)
-
-        return pair_sep.join(lst)
+    def __unicode__(self):
+        """
+        Return unicode representation
+        """
+        return self._to_str_with_separators(u'=', u'&')
 
     def get_short_printable_repr(self):
         """
@@ -163,10 +157,9 @@ class KeyValueContainer(DataContainer, OrderedDict):
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             for k, v in self.items():
-                for ele in v:
-                    if isinstance(ele, DataToken):
-                        dt_str = '%s=%s' % (ele.get_name(), ele.get_value())
-                        return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+                if isinstance(v, DataToken):
+                    dt_str = '%s=%s' % (v.get_name(), v.get_value())
+                    return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved

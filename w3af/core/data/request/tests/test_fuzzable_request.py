@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.kv_container import KeyValueContainer
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.dc.form import Form
 
@@ -131,11 +131,26 @@ class TestFuzzableRequest(unittest.TestCase):
         r = FuzzableRequest(url)
         self.assertEqual(r.get_url(), url)
 
-    def test_str(self):
-        # FuzzableRequest objects which are not configured (with a dc) are
-        # almost useless, you should always use a sub-class
+    def test_str_no_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        self.assertRaises(NotImplementedError, fr.__str__)
+        expected = 'http://www.w3af.com/ | Method: GET | Parameters: ()'
+        self.assertEqual(str(fr), expected)
+
+    def test_str_qs(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/?id=3"))
+        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (id)'
+        self.assertEqual(str(fr), expected)
+
+    def test_str_with_postdata(self):
+        fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1')
+        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (a)'
+        self.assertEqual(str(fr), expected)
+
+    def test_str_with_qs_and_postdata(self):
+        fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
+                                        post_data='a=1&b=3&a=2')
+        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (a,a,b)'
+        self.assertEqual(str(fr), expected)
 
     def test_repr(self):
         url = "http://www.w3af.com/"

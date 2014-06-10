@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 import copy
 
-from w3af.core.data.dc.token import DataToken
-from w3af.core.data.dc.data_container import DataContainer
+from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.utils.json_iter_setters import (json_iter_setters,
                                                        json_complex_str,
@@ -59,6 +59,11 @@ class JSONContainer(DataContainer):
         return self.__class__, (self._raw_json,), {}
 
     @staticmethod
+    def is_json_content_type(headers):
+        content_type, _ = headers.iget('content-type', '')
+        return 'json' in content_type.lower()
+
+    @staticmethod
     def is_json(post_data):
         try:
             json.loads(post_data)
@@ -86,7 +91,10 @@ class JSONContainer(DataContainer):
             raise ValueError(ERR_MSG % json_post_data[:50])
 
     @classmethod
-    def from_postdata(cls, post_data):
+    def from_postdata(cls, headers, post_data):
+        if not JSONContainer.is_json_content_type(headers):
+            raise ValueError('Missing json content type.')
+
         return cls(post_data)
 
     def __str__(self):

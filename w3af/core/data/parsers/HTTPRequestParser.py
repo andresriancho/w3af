@@ -1,5 +1,5 @@
 """
-HTTPRequestParser.py
+http_request_parser.py
 
 Copyright 2008 Andres Riancho
 
@@ -75,7 +75,7 @@ def check_uri_syntax(uri, host=None):
     return res
 
 
-def HTTPRequestParser(head, postdata):
+def http_request_parser(head, postdata):
     """
     This function parses HTTP Requests from a string to a FuzzableRequest.
 
@@ -142,5 +142,5 @@ def HTTPRequestParser(head, postdata):
     except ValueError, ve:
         raise BaseFrameworkException(str(ve))
 
-    return create_fuzzable_request_from_parts(uri, method, postdata,
+        return create_fuzzable_request_from_parts(uri, method, postdata,
                                               headers_inst)

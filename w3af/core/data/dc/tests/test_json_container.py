@@ -23,7 +23,7 @@ import unittest
 import copy
 
 from w3af.core.data.dc.json_container import JSONContainer
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 
 STRING = '"abc"'
 NUMBER = '1'

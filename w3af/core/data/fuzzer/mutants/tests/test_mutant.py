@@ -25,7 +25,7 @@ from w3af.core.data.fuzzer.mutants.mutant import Mutant, mutant_smart_fill
 from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.dc.token import DataToken
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.form import Form
 
