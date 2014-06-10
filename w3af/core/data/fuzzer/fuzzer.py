@@ -45,7 +45,7 @@ def create_mutants(freq, mutant_str_list, append=False,
     :return: A Mutant object List.
     """
     result = []
-    fuzzer_config = _get_fuzzer_config(freq)
+    fuzzer_config = _get_fuzzer_config()
 
     mutant_tuple = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
                     HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
@@ -96,7 +96,7 @@ def create_mutants(freq, mutant_str_list, append=False,
     return result
 
 
-def _get_fuzzer_config(freq):
+def _get_fuzzer_config():
     """
     :return: This function verifies the configuration, and creates a map of
              things that can be fuzzed.

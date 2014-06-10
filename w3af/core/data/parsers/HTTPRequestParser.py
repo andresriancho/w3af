@@ -102,10 +102,12 @@ def HTTPRequestParser(head, postdata):
         # Ok, we have something like "GET /foo HTTP/1.0". This is the best case
         # for us!
         method, uri, version = first_line
+
     elif len(first_line) < 3:
         msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
         msg += method_uri_version + '".'
         raise BaseFrameworkException(msg)
+
     elif len(first_line) > 3:
         # GET /hello world.html HTTP/1.0
         # Mostly because we are permissive... we are going to try to parse

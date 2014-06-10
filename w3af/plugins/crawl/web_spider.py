@@ -50,8 +50,7 @@ class web_spider(CrawlPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    NOT_404 = set([http_constants.UNAUTHORIZED,
-                   http_constants.FORBIDDEN])
+    NOT_404 = {http_constants.UNAUTHORIZED, http_constants.FORBIDDEN}
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -94,14 +93,13 @@ class web_spider(CrawlPlugin):
         resp = self._uri_opener.send_mutant(fuzzable_req)
 
         # Nothing to do here...
-        if resp.get_code() == 401:
+        if resp.get_code() == http_constants.UNAUTHORIZED:
             return
 
-        fuzz_req_list = self._create_fuzzable_requests(
-            resp,
-            request=fuzzable_req,
-            add_self=False
-        )
+        # Here we extract the HTML forms
+        fuzz_req_list = self._create_fuzzable_requests(resp,
+                                                       request=fuzzable_req,
+                                                       add_self=False)
         
         for fr in fuzz_req_list:
             self.output_queue.put(fr)
