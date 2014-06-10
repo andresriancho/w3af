@@ -33,6 +33,11 @@ class JSONMutant(PostDataMutant):
     def get_mutant_type(self):
         return 'JSON data'
 
+    def get_headers(self):
+        headers = super(JSONMutant, self).get_headers()
+        headers['Content-Type'] = 'application/json'
+        return headers
+
     def found_at(self):
         """
         I had to implement this again here instead of just inheriting from

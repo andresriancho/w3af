@@ -31,6 +31,11 @@ class XmlRpcMutant(PostDataMutant):
     def get_mutant_type():
         return 'XMLRPC data'
 
+    def get_headers(self):
+        headers = super(XmlRpcMutant, self).get_headers()
+        headers['Content-Type'] = 'application/xml'
+        return headers
+
     def found_at(self):
         """
         I had to implement this again here instead of just inheriting from
