@@ -11,8 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 #
-import sys
-import urllib
 import urllib2
 import mimetools
 import mimetypes
@@ -20,6 +18,7 @@ import os
 import hashlib
 
 from w3af.core.controllers.misc.io import is_file_like
+from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 # Controls how sequences are uncoded. If true, elements may be given multiple
@@ -55,21 +54,17 @@ class MultipartPostHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPHandler.handler_order - 10
 
     def http_request(self, request):
-        # Please note that get_data() in PostDataRequest is the only one that
-        # in some cases will return something that is NOT a basestring.
-        data = request.get_data()
+        data = request.get_raw_data()
 
-        if data and not isinstance(data, basestring):
+        if self._should_send_as_multipart(request):
 
-            multipart, v_vars, v_files = self._send_as_multipart(request, data)
+            v_vars, v_files = self._split_vars_files(data)
 
-            if not multipart:
-                data = urllib.urlencode(v_vars, doseq)
-            else:
-                boundary, data = multipart_encode(v_vars, v_files)
-                contenttype = 'multipart/form-data; boundary=%s' % boundary
-                # Note that this replaces any old content-type
-                request.add_unredirected_header('Content-Type', contenttype)
+            boundary, data = multipart_encode(v_vars, v_files)
+
+            # Note that this replaces any old content-type
+            contenttype = 'multipart/form-data; boundary=%s' % boundary
+            request.add_unredirected_header('Content-Type', contenttype)
 
             request.add_data(data)
 
@@ -78,63 +73,59 @@ class MultipartPostHandler(urllib2.BaseHandler):
     # I also want this to work with HTTPS!
     https_request = http_request
 
-    def _send_as_multipart(self, request, data):
+    def _should_send_as_multipart(self, request):
+        content_type, _ = request.get_headers().iget('content-type', '')
+        has_multipart_header = 'multipart' in content_type
+
+        return self._has_files(request.get_raw_data()) or has_multipart_header
+
+    def _has_files(self, post_data):
+        """
+        :return: True if the data_container passed as parameter contains files
+        """
+        for token in post_data.iter_tokens():
+
+            value = token.get_value()
+
+            if isinstance(value, basestring):
+                continue
+
+            elif is_file_like(value):
+                return True
+
+        return False
+
+    def _split_vars_files(self, data):
         """
         Based on the request it decides if we should send the request as
         multipart or not.
 
-        :return: (Boolean that indicates if multipart should be used,
-                  List with string variables,
+        :return: (List with string variables,
                   List with file variables)
         """
-        multipart = False
         v_vars = []
         v_files = []
 
-        to_str = lambda _str: _str.encode(DEFAULT_ENCODING) if \
-            isinstance(_str, unicode) else _str
+        for token in data.iter_tokens():
 
-        header_items = request.header_items()
-        for name, value in header_items:
-            if name.lower() == 'content-type' and 'multipart/form-data' in value:
-                multipart = True
+            pname = token.get_name()
+            value = token.get_value()
 
-        try:
-            for pname, val in data.items():
-                # Added to support repeated parameter names
-                enc_pname = to_str(pname)
+            enc_pname = smart_str(pname, encoding=DEFAULT_ENCODING)
 
-                if isinstance(val, basestring):
-                    val = [val]
+            if is_file_like(value):
+                if not value.closed:
+                    v_files.append((enc_pname, value))
                 else:
-                    try:
-                        # is this a sufficient test for sequence-ness?
-                        len(val)
-                    except:
-                        val = [val]
+                    v_vars.append((enc_pname, ''))
+            elif hasattr(value, 'isFile'):
+                v_files.append((enc_pname, value))
+            else:
+                # Ensuring we actually send a string
+                value = smart_str(value, encoding=DEFAULT_ENCODING)
+                v_vars.append((enc_pname, value))
 
-                for elem in val:
-                    if is_file_like(elem):
-                        if not elem.closed:
-                            v_files.append((enc_pname, elem))
-                            multipart = True
-                        else:
-                            v_vars.append((enc_pname, ''))
-                    elif hasattr(elem, 'isFile'):
-                        v_files.append((enc_pname, elem))
-                        multipart = True
-                    else:
-                        # Ensuring we actually send a string
-                        elem = to_str(elem)
-                        v_vars.append((enc_pname, elem))
-        except TypeError:
-            tb = sys.exc_info()[2]
-            # pylint: disable=E0702
-            # http://www.logilab.org/ticket/113023
-            msg = "not a valid non-string sequence or mapping object"
-            raise (TypeError, msg, tb)
-
-        return multipart, v_vars, v_files
+        return v_vars, v_files
 
 
 def multipart_encode(_vars, files, boundary=None, _buffer=None):
