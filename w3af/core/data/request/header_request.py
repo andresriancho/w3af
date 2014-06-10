@@ -63,5 +63,5 @@ class HeaderRequest(FuzzableRequest):
         self.set_headers(data_container)
 
     def __repr__(self):
-        return ('<QS fuzzable request | %s | %s>' %
+        return ('<Headers request | %s | %s>' %
                 (self.get_method(), self.get_uri()))

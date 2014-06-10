@@ -65,13 +65,9 @@ class XMLRPCRequest(FuzzableRequest):
         """
         Return a str representation of this fuzzable request.
         """
-        res = '[[XMLRPC]] '
-        res += self._url
-        res += ' | Method: ' + self._method
-        res += ' | XMLRPC: ('
-        res += ','.join(self.get_dc().get_param_names())
-        res += ')'
-        return res
+        fmt = '[XMLRPC] %s | Method: %s | XMLRPC: (%s)'
+        return fmt % (self.get_url(), self.get_method(),
+                      ','.join(self.get_dc().get_param_names()))
 
     def __repr__(self):
         return '<XMLRPC fuzzable request | %s | %s >' % (self.get_method(),

@@ -40,11 +40,11 @@ class TestCookieMutant(unittest.TestCase):
         freq = QsRequest(self.url, cookie=cookie)
 
         m = CookieMutant(freq)
-        m.set_var('foo', 0)
+        m.get_dc().set_token('foo', 0)
         m.set_token_value('abc')
 
         self.assertEqual(m.get_url().url_string, 'http://moth/')
-        self.assertEqual(str(m.get_cookie()), 'foo=abc; spam=eggs;')
+        self.assertEqual(str(m.get_cookie()), 'foo=abc; spam=eggs')
 
         expected_mod_value = 'The cookie data that was sent is: "foo=abc;'\
                              ' spam=eggs;".'

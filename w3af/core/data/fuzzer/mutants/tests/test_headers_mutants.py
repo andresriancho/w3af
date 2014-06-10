@@ -71,7 +71,7 @@ class TestHeadersMutant(unittest.TestCase):
         expected_strs = {'Referer: abc\r\n',
                          'Referer: def\r\n'}
         expected_dcs = [Headers([('Referer', 'abc')]),
-                           Headers([('Referer', 'def')])]
+                        Headers([('Referer', 'def')])]
 
         created_dcs = [i.get_dc() for i in created_mutants]
         created_strs = set([str(i.get_dc()) for i in created_mutants])
