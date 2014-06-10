@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
-from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.cookie_request import CookieRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.cookie import Cookie
@@ -37,7 +37,7 @@ class TestCookieMutant(unittest.TestCase):
 
     def test_basics(self):
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = QsRequest(self.url, cookie=cookie)
+        freq = CookieRequest(self.url, cookie=cookie)
 
         m = CookieMutant(freq)
         m.get_dc().set_token('foo', 0)
@@ -47,25 +47,24 @@ class TestCookieMutant(unittest.TestCase):
         self.assertEqual(str(m.get_cookie()), 'foo=abc; spam=eggs')
 
         expected_mod_value = 'The cookie data that was sent is: "foo=abc;'\
-                             ' spam=eggs;".'
+                             ' spam=eggs".'
         generated_mod_value = m.print_token_value()
 
         self.assertEqual(generated_mod_value, expected_mod_value)
 
         expected_found_at = '"http://moth/", using HTTP method GET. The modified'\
                             ' parameter was the session cookie with value: '\
-                            '"foo=abc; spam=eggs;".'
+                            '"foo=abc; spam=eggs".'
         generated_found_at = m.found_at()
 
         self.assertEqual(generated_found_at, expected_found_at)
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_cookies': False}
-        freq = QsRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = CookieRequest(URL('http://www.w3af.com/foo/bar'))
 
-        generated_mutants = CookieMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = CookieMutant.create_mutants(freq, self.payloads, [],
+                                                        False, fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
@@ -73,9 +72,8 @@ class TestCookieMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_cookies': True}
         freq = PostDataRequest(URL('http://www.w3af.com/foo/bar'))
 
-        generated_mutants = CookieMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = CookieMutant.create_mutants(freq, self.payloads, [],
+                                                        False, fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
@@ -83,30 +81,29 @@ class TestCookieMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_cookies': True}
 
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = QsRequest(self.url, cookie=cookie)
+        freq = CookieRequest(self.url, cookie=cookie)
 
-        generated_mutants = CookieMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = CookieMutant.create_mutants(freq, self.payloads, [],
+                                                        False, fuzzer_config)
 
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_no_cookie(self):
-        freq = QsRequest(self.url)
+        freq = CookieRequest(self.url)
 
-        generated_mutants = CookieMutant.create_mutants(
-            freq, self.payloads, [],
-            False, self.fuzzer_config)
+        generated_mutants = CookieMutant.create_mutants(freq, self.payloads, [],
+                                                        False,
+                                                        self.fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_valid_results(self):
         cookie = Cookie('foo=bar; spam=eggs')
-        freq = QsRequest(self.url, cookie=cookie)
+        freq = CookieRequest(self.url, cookie=cookie)
 
-        generated_mutants = CookieMutant.create_mutants(
-            freq, self.payloads, [],
-            False, self.fuzzer_config)
+        generated_mutants = CookieMutant.create_mutants(freq, self.payloads, [],
+                                                        False,
+                                                        self.fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
 

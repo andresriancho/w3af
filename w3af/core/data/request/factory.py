@@ -31,6 +31,7 @@ from w3af.core.data.request.json_request import JSONPostDataRequest
 from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.request.header_request import HeaderRequest
+from w3af.core.data.request.cookie_request import CookieRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.url import URL
@@ -70,10 +71,17 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         greq = create_fuzzable_request_from_request(request)
         res.append(greq)
 
-    fuzzable_headers = cf.cf.save('fuzzable_headers', [])
-    if fuzzable_headers:
+    if cf.cf.get('fuzzable_headers'):
         try:
             hreq = HeaderRequest.from_parts(resp.get_uri(), 'GET', '',
+                                            req_headers)
+            res.append(hreq)
+        except ValueError:
+            pass
+
+    if cf.cf.get('fuzz_cookies'):
+        try:
+            hreq = CookieRequest.from_parts(resp.get_uri(), 'GET', '',
                                             req_headers)
             res.append(hreq)
         except ValueError:
