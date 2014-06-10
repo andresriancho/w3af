@@ -24,17 +24,13 @@ import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.request.urlencoded_post_request import URLEncPostRequest
-from w3af.core.data.request.multipart_request import MultipartRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.request.querystring_request import QsRequest
-from w3af.core.data.request.json_request import JSONPostDataRequest
-from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
 from w3af.core.data.request.header_request import HeaderRequest
 from w3af.core.data.request.cookie_request import CookieRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.misc.encoding import smart_unicode
 
@@ -150,45 +146,13 @@ def create_fuzzable_request_from_request(request, add_headers=None):
     url = request.url_object
     post_data = str(request.get_data() or '')
     method = request.get_method()
+
     headers = Headers(request.headers.items())
     headers.update(request.unredirected_hdrs.items())
     headers.update(add_headers or Headers())
 
-    return create_fuzzable_request_from_parts(url, method=method,
-                                              post_data=post_data,
-                                              add_headers=headers)
-
-ALL_FUZZABLE_REQUESTS = [QsRequest, MultipartRequest, JSONPostDataRequest,
-                         XMLRPCRequest, URLEncPostRequest]
-
-
-def create_fuzzable_request_from_parts(url, method='GET', post_data='',
-                                       add_headers=None):
-    """
-    Creates a fuzzable request based on the input parameters.
-
-    :param req_url: A URL object
-    :param method: A string that represents the method ('GET', 'POST', etc)
-    :param post_data: A string that represents the postdata.
-    :param add_headers: A Headers object that holds the headers. If `req_url` is
-                        a request then this dict will be merged with the
-                        request's headers.
-    """
-    if add_headers is not None and not isinstance(add_headers, Headers):
-        raise ValueError('create_fuzzable_request requires Headers object.')
-    
-    if not isinstance(url, URL):
-        raise TypeError('Requires URL to create FuzzableRequest.')
-
-    headers = add_headers or Headers()
-
-    for fr_klass in ALL_FUZZABLE_REQUESTS:
-        try:
-            return fr_klass.from_parts(url, method, post_data, headers)
-        except ValueError:
-            continue
-
-    return None
+    return FuzzableRequest.from_parts(url, method=method, post_data=post_data,
+                                      headers=headers)
 
 
 def _create_cookie(http_response):

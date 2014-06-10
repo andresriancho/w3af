@@ -133,23 +133,23 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_str_no_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        expected = 'http://www.w3af.com/ | Method: GET | Parameters: ()'
+        expected = 'http://www.w3af.com/ | Method: GET | Query string parameters: ()'
         self.assertEqual(str(fr), expected)
 
     def test_str_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/?id=3"))
-        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (id)'
+        expected = 'http://www.w3af.com/ | Method: GET | Query string parameters: (id)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_postdata(self):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1')
-        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (a)'
+        expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_qs_and_postdata(self):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
                                         post_data='a=1&b=3&a=2')
-        expected = 'http://www.w3af.com/ | Method: GET | Parameters: (a,a,b)'
+        expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a,a,b)'
         self.assertEqual(str(fr), expected)
 
     def test_repr(self):

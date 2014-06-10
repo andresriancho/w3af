@@ -20,6 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.dc.form import Form
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
@@ -48,6 +50,10 @@ def dc_factory(headers, post_data):
             return pdc_klass.from_postdata(headers, post_data)
         except (ValueError, TypeError) as e:
             pass
+    else:
+        content_type, _ = headers.iget('content-type', 'missing')
+        om.out.debug('Unknown post-data. Content-type: %s' % content_type)
 
-    content_type, _ = headers.iget('content-type', 'missing')
-    raise ValueError('Unknown post-data. Content-type: %s' % content_type)
+        # We just return None, saying that we don't really know how to parse
+        # this post-data
+        return None

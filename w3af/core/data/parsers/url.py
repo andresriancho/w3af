@@ -152,10 +152,8 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
                 raise BaseFrameworkException('Error while parsing "%r"' % (qstr,))
         else:
             def decode(item):
-                return (
-                    item[0].decode(encoding, 'ignore'),
-                    [e.decode(encoding, 'ignore') for e in item[1]]
-                )
+                return (item[0].decode(encoding, 'ignore'),
+                        [e.decode(encoding, 'ignore') for e in item[1]])
             qs.update((decode(item) for item in odict.items()))
     return qs
 

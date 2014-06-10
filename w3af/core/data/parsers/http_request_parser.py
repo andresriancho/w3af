@@ -23,8 +23,11 @@ import urlparse
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.request.factory import create_fuzzable_request_from_parts
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.exceptions import BaseFrameworkException
+
+
+SUPPORTED_VERSIONS = {'1.0', '1.1'}
 
 
 def check_version_syntax(version):
@@ -32,21 +35,23 @@ def check_version_syntax(version):
     :return: True if the syntax of the version section of HTTP is valid; else
              raise an exception.
     """
-    supportedVersions = ['1.0', '1.1']
-    splittedVersion = version.split('/')
+    splitted_version = version.split('/')
 
-    if len(splittedVersion) != 2:
-        msg = 'The HTTP request has an invalid version token: "' + \
-            version + '"'
-        raise BaseFrameworkException(msg)
-    elif len(splittedVersion) == 2:
-        if splittedVersion[0].lower() != 'http':
-            msg = 'The HTTP request has an invalid HTTP token in the version specification: "'
-            msg += version + '"'
-            raise BaseFrameworkException(msg)
-        if splittedVersion[1] not in supportedVersions:
-            raise BaseFrameworkException(
-                'HTTP request version "' + version + '" is unsupported')
+    if len(splitted_version) != 2:
+        msg = 'The HTTP request has an invalid version token: "%s"'
+        raise BaseFrameworkException(msg % version)
+
+    elif len(splitted_version) == 2:
+
+        if splitted_version[0].lower() != 'http':
+            msg = 'The HTTP request has an invalid HTTP token in the version'\
+                  ' specification: "%s"'
+            raise BaseFrameworkException(msg % version)
+
+        if splitted_version[1] not in SUPPORTED_VERSIONS:
+            fmt = 'HTTP request version "%s" is unsupported'
+            raise BaseFrameworkException(fmt % version)
+
     return True
 
 
@@ -104,9 +109,8 @@ def http_request_parser(head, postdata):
         method, uri, version = first_line
 
     elif len(first_line) < 3:
-        msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
-        msg += method_uri_version + '".'
-        raise BaseFrameworkException(msg)
+        msg = 'The HTTP request has an invalid <method> <uri> <version>: "%s"'
+        raise BaseFrameworkException(msg % method_uri_version)
 
     elif len(first_line) > 3:
         # GET /hello world.html HTTP/1.0
@@ -142,5 +146,4 @@ def http_request_parser(head, postdata):
     except ValueError, ve:
         raise BaseFrameworkException(str(ve))
 
-        return create_fuzzable_request_from_parts(uri, method, postdata,
-                                              headers_inst)
+    return FuzzableRequest.from_parts(uri, method, postdata, headers_inst)

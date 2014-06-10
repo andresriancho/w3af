@@ -77,7 +77,7 @@ class Form(KeyValueContainer):
         return Form.ENCODING in conttype.lower()
 
     @staticmethod
-    def can_parse(headers, post_data):
+    def can_parse(post_data):
         try:
             data = parse_qs(post_data)
         except:
@@ -87,7 +87,10 @@ class Form(KeyValueContainer):
 
     @classmethod
     def from_postdata(cls, headers, post_data):
-        if not Form.can_parse(headers, post_data):
+        if not Form.is_urlencoded(headers):
+            raise ValueError('Request is not %s.' % Form.ENCODING)
+
+        if not Form.can_parse(post_data):
             raise ValueError('Failed to parse post_data as Form.')
 
         data = parse_qs(post_data)

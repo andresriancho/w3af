@@ -60,6 +60,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # In most cases we don't care about these headers, even if provided by the
+    # user, since they will be calculated based on the attributes we are
+    # going to store and these won't be updated.
+    REMOVE_HEADERS = ('content-length',)
 
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
@@ -117,9 +121,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             url = URL(url)
 
         if isinstance(post_data, basestring):
-            dc = dc_factory(headers, post_data)
+            post_data = dc_factory(headers, post_data)
 
-        return cls(url, method=method, headers=headers, post_data=dc)
+        return cls(url, method=method, headers=headers, post_data=post_data)
 
     def export(self):
         """
@@ -290,6 +294,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def set_headers(self, headers):
         if headers is not None and not isinstance(headers, Headers):
             raise TypeError(TYPE_ERROR % ('headers', 'Headers'))
+
+        for header_name in self.REMOVE_HEADERS:
+            try:
+                headers.idel(header_name)
+            except KeyError:
+                # We don't care if they don't exist
+                pass
 
         self._headers = headers
 

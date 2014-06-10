@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.request.factory import create_fuzzable_request_from_parts
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.plugins.mangle_plugin import ManglePlugin
@@ -66,11 +66,8 @@ class sed(ManglePlugin):
         
         headers_inst = Headers.from_string(header_string)
 
-        return create_fuzzable_request_from_parts(
-                                                  request.get_uri(),
-                                                  request.get_method(),
-                                                  data, headers_inst
-                                                  )
+        return FuzzableRequest(request.get_uri(), request.get_method(), data,
+                               headers_inst)
 
     def mangle_response(self, response):
         """

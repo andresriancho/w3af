@@ -45,11 +45,11 @@ from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopOnUrlError)
 from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.factory import create_fuzzable_request_from_parts
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 MAX_ERROR_COUNT = 10
@@ -715,10 +715,10 @@ class ExtendedUrllib(object):
 
             # Create a fuzzable request based on the urllib2 request object
             headers_inst = Headers(request.headers.items())
-            fr = create_fuzzable_request_from_parts(url_instance,
-                                                    request.get_method(),
-                                                    request.get_data(),
-                                                    headers_inst)
+            fr = FuzzableRequest.from_parts(url_instance,
+                                            request.get_method(),
+                                            request.get_data(),
+                                            headers_inst)
 
             self._grep_queue_put((fr, response))
 
