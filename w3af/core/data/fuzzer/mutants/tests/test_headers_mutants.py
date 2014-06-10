@@ -61,7 +61,8 @@ class TestHeadersMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         url = URL('http://moth/?a=1&b=2')
-        headers = Headers([('Referer', 'http://moth/')])
+        original_referer = 'http://moths/'
+        headers = Headers([('Referer', original_referer)])
         freq = HeaderRequest(url, headers=headers)
 
         created_mutants = HeadersMutant.create_mutants(freq, self.payloads, [],
@@ -81,12 +82,12 @@ class TestHeadersMutant(unittest.TestCase):
 
         token = created_mutants[0].get_token()
         self.assertEqual(token.get_name(), 'Referer')
-        self.assertEqual(token.get_original_value(), '')
+        self.assertEqual(token.get_original_value(), original_referer)
         self.assertEqual(token.get_value(), 'abc')
 
         token = created_mutants[1].get_token()
         self.assertEqual(token.get_name(), 'Referer')
-        self.assertEqual(token.get_original_value(), '')
+        self.assertEqual(token.get_original_value(), original_referer)
         self.assertEqual(token.get_value(), 'def')
 
         for m in created_mutants:
