@@ -208,14 +208,17 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         :return: A string representation of this fuzzable request.
         """
-        fmt = '%s | Method: %s | Parameters: (%s)'
+        fmt = '%s | Method: %s | %s parameters: (%s)'
 
         if self.get_raw_data():
             parameters = self.get_raw_data().get_param_names()
+            dc_type = self.get_raw_data().get_type()
         else:
             parameters = self.get_uri().querystring.get_param_names()
+            dc_type = self.get_uri().querystring.get_type()
 
-        return fmt % (self.get_url(), self.get_method(), ','.join(parameters))
+        return fmt % (self.get_url(), self.get_method(), dc_type,
+                      ','.join(parameters))
 
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % (self.get_method(),

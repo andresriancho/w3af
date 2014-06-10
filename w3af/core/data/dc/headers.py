@@ -35,6 +35,9 @@ class Headers(NonRepeatKeyValueContainer):
         cleaned_vals = self.clean_values(init_val)
         super(Headers, self).__init__(cleaned_vals, encoding)
 
+    def get_type(self):
+        return 'Headers'
+
     @classmethod
     def from_string(cls, headers_str):
         """

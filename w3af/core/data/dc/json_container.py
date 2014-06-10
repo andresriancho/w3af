@@ -58,6 +58,9 @@ class JSONContainer(DataContainer):
     def __reduce__(self):
         return self.__class__, (self._raw_json,), {}
 
+    def get_type(self):
+        return 'JSON'
+
     @staticmethod
     def is_json_content_type(headers):
         content_type, _ = headers.iget('content-type', '')

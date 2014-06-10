@@ -237,7 +237,10 @@ class Form(KeyValueContainer):
         #
         return name, value
 
-    def get_type(self, name):
+    def get_type(self):
+        return 'Form'
+
+    def get_parameter_type(self, name):
         return self._types[name]
 
     def add_check_box(self, attrs):

@@ -31,6 +31,9 @@ class MultipartContainer(KeyValueContainer):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    def get_type(self):
+        return 'Multipart/post'
+
     @staticmethod
     def is_multipart(headers):
         conttype, header_name = headers.iget('content-type', '')

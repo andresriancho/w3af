@@ -44,6 +44,9 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.post_data_request import PostDataRequest
 
 
+STATIC_FORM_FIELDS = ('checkbox', 'file', 'radio', 'select')
+
+
 class web_spider(CrawlPlugin):
     """
     Crawl the web application.
@@ -220,8 +223,7 @@ class web_spider(CrawlPlugin):
 
             # I do not want to mess with the "static" fields
             if isinstance(to_send, form.Form):
-                if to_send.get_type(param_name) in ('checkbox', 'file',
-                                                    'radio', 'select'):
+                if to_send.get_parameter_type(param_name) in STATIC_FORM_FIELDS:
                     continue
 
             # Set all the other fields, except from the ones that have a

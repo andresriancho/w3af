@@ -34,6 +34,9 @@ class QueryString(KeyValueContainer):
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(QueryString, self).__init__(init_val, encoding)
 
+    def get_type(self):
+        return 'Query string'
+
     def __str__(self):
         """
         :return: string representation of the QueryString object.

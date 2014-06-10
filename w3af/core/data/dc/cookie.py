@@ -52,6 +52,9 @@ class Cookie(KeyValueContainer):
         value = value.replace('\r', '%0d')
         return value
 
+    def get_type(self):
+        return 'Cookie'
+
     def __str__(self):
         """
         This method returns a string representation of the cookie Object.

@@ -50,6 +50,9 @@ class XmlRpcContainer(KeyValueContainer):
     def __reduce__(self):
         return self.__class__, (self._xml_post_data,), {}
 
+    def get_type(self):
+        return 'XML-RPC'
+
     def parse_xml_data(self, xml_post_data):
         """
         Parses the XML post data and stores all the information required to

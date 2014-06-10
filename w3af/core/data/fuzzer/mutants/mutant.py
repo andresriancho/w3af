@@ -246,7 +246,7 @@ def mutant_smart_fill(freq, dc_copy, fuzzer_config):
              the data container location which contains the DataToken instance
     """
     for var_name, value, setter in dc_copy.iter_setters():
-        if dc_copy.get_type(var_name) in AVOID_FILLING_FORM_TYPES:
+        if dc_copy.get_parameter_type(var_name) in AVOID_FILLING_FORM_TYPES:
             continue
 
         if isinstance(value, DataToken):

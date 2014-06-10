@@ -35,6 +35,9 @@ class DataContainer(DiskItem):
         self.encoding = encoding
         self.token = None
 
+    def get_type(self):
+        return 'Generic data container'
+
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """
         :warning: The subclass needs to implement it

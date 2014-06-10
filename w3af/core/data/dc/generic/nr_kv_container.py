@@ -70,6 +70,9 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
 
                 self[key] = val
 
+    def get_type(self):
+        return 'Generic non-repeat key value container'
+
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """
         :return: Join all the values stored in this data container using the

@@ -191,9 +191,11 @@ class form_auth(BruteforcePlugin):
 
             for parameter_name in data_container:
 
-                if data_container.get_type(parameter_name).lower() == 'password':
+                ptype = data_container.get_parameter_type(parameter_name).lower()
+
+                if ptype == 'password':
                     passwd += 1
-                elif data_container.get_type(parameter_name).lower() == 'text':
+                elif ptype == 'text':
                     text += 1
                 else:
                     other += 1
@@ -231,10 +233,11 @@ class form_auth(BruteforcePlugin):
 
         for parameter_name in data_container:
 
-            if data_container.get_type(parameter_name).lower() == 'password':
+            ptype = data_container.get_type(parameter_name).lower()
+            if ptype == 'password':
                 passwd_parameter = parameter_name
 
-            elif data_container.get_type(parameter_name).lower() == 'text':
+            elif ptype == 'text':
                 user_parameter = parameter_name
 
         return user_parameter, passwd_parameter

@@ -71,6 +71,9 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
                 self[key] = val
 
+    def get_type(self):
+        return 'Generic key value container'
+
     def __str__(self):
         """
         Return string representation.
