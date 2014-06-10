@@ -30,7 +30,8 @@ class PostDataMutant(Mutant):
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'post data'
 
     def found_at(self):
