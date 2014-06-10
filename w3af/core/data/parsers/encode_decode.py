@@ -147,7 +147,7 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
                     ele = ele.encode(encoding)
                 else:
                     ele = str(ele)
-                    
+
                 toapp = k + '=' + urllib.quote(ele, safe)
                 
             l.append(toapp)

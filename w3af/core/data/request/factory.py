@@ -68,9 +68,6 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         qsr = QsRequest(resp.get_uri(), headers=req_headers, cookie=cookie_obj)
         res.append(qsr)
 
-        greq = create_fuzzable_request_from_request(request)
-        res.append(greq)
-
     if cf.cf.get('fuzzable_headers'):
         try:
             hreq = HeaderRequest.from_parts(resp.get_uri(), 'GET', '',

@@ -40,7 +40,7 @@ class DataToken(object):
         self.value = new_value
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
     def __unicode__(self):
         return unicode(self.value)
