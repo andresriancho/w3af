@@ -44,6 +44,7 @@ from w3af.core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class pykto(CrawlPlugin):
@@ -68,11 +69,12 @@ class pykto(CrawlPlugin):
         self._admin_dirs = ['/admin/', '/adm/']
 
         self._users = ['adm', 'bin', 'daemon', 'ftp', 'guest', 'listen', 'lp',
-                       'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp', 'operator',
-                       'root', 'smmsp', 'smtp', 'sshd', 'sys', 'test', 'unknown']
+                       'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp',
+                       'operator', 'root', 'smmsp', 'smtp', 'sshd', 'sys',
+                       'test', 'unknown']
 
-        self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/', '/phpBB/',
-                      '/forum/']
+        self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/',
+                      '/phpBB/', '/forum/']
 
         self._mutate_tests = False
 
@@ -101,8 +103,8 @@ class pykto(CrawlPlugin):
                 # Tests need to be mutated
                 url = fuzzable_request.get_url().get_domain_path()
                 if url not in self._already_analyzed:
-                    # Save the directories I already have tested in order to avoid
-                    # testing them more than once...
+                    # Save the directories I already have tested in order to
+                    # avoid testing them more than once...
                     self._already_analyzed.add(url)
                     self._run(url)
 
@@ -170,10 +172,8 @@ class pykto(CrawlPlugin):
             kb.kb.append(self, 'vuln', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
-            fr_list = self._create_fuzzable_requests(http_response)
-            [fr.get_uri().normalize_url() for fr in fr_list]
-            for fr in fr_list:
-                self.output_queue.put(fr)
+            fr = FuzzableRequest.from_http_response(http_response)
+            self.output_queue.put(fr)
 
     def get_options(self):
         """

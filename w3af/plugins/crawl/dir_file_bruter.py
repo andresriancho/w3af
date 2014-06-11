@@ -36,6 +36,7 @@ from w3af.core.data.options.option_types import INPUT_FILE, BOOL
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.db.disk_set import DiskSet
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class dir_file_bruter(CrawlPlugin):
@@ -151,8 +152,8 @@ class dir_file_bruter(CrawlPlugin):
                 #    Good, the directory_name + rand_alnum(5) return a
                 #    404, the original directory_name is not a false positive.
                 #
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
+                fr = FuzzableRequest.from_http_response(http_response)
+                self.output_queue.put(fr)
 
                 msg = 'dir_file_brute plugin found "%s" with HTTP response ' \
                       'code %s and Content-Length: %s.' \

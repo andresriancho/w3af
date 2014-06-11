@@ -32,6 +32,7 @@ from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class frontpage_version(InfrastructurePlugin):
@@ -59,27 +60,28 @@ class frontpage_version(InfrastructurePlugin):
         """
         for domain_path in fuzzable_request.get_url().get_directories():
 
-            if domain_path not in self._analyzed_dirs:
+            if domain_path in self._analyzed_dirs:
+                continue
 
-                # Save the domain_path so I know I'm not working in vane
-                self._analyzed_dirs.add(domain_path)
+            # Save the domain_path so I know I'm not working in vane
+            self._analyzed_dirs.add(domain_path)
 
-                # Request the file
-                frontpage_info_url = domain_path.url_join("_vti_inf.html")
-                try:
-                    response = self._uri_opener.GET(frontpage_info_url,
-                                                    cache=True)
-                except BaseFrameworkException, w3:
-                    msg = 'Failed to GET Frontpage Server _vti_inf.html file: "'
-                    msg += frontpage_info_url + \
-                        '". Exception: "' + str(w3) + '".'
-                    om.out.debug(msg)
-                else:
-                    # Check if it's a Frontpage Info file
-                    if not is_404(response):
-                        for fr in self._create_fuzzable_requests(response):
-                            self.output_queue.put(fr)
-                        self._analyze_response(response)
+            # Request the file
+            frontpage_info_url = domain_path.url_join("_vti_inf.html")
+            try:
+                response = self._uri_opener.GET(frontpage_info_url,
+                                                cache=True)
+            except BaseFrameworkException, w3:
+                fmt = 'Failed to GET Frontpage Server _vti_inf.html file: "%s"'\
+                      '. Exception: "%s".'
+                om.out.debug(fmt % (frontpage_info_url, w3))
+            else:
+                # Check if it's a Frontpage Info file
+                if not is_404(response):
+                    fr = FuzzableRequest(response.get_uri())
+                    self.output_queue.put(fr)
+
+                    self._analyze_response(response)
 
     def _analyze_response(self, response):
         """

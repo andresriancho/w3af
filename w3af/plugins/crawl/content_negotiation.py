@@ -29,12 +29,14 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af import ROOT_PATH
+from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class content_negotiation(CrawlPlugin):
@@ -67,7 +69,7 @@ class content_negotiation(CrawlPlugin):
         3- Perform bruteforce for each new directory
 
         :param fuzzable_request: A fuzzable_request instance that contains
-                                                    (among other things) the URL to test.
+                                (among other things) the URL to test.
         """
         if self._content_negotiation_enabled is not None \
         and self._content_negotiation_enabled == False:
@@ -79,15 +81,16 @@ class content_negotiation(CrawlPlugin):
 
             if con_neg_result is None:
                 # I can't say if it's vulnerable or not (yet), save the current
-                # directory to be included in the bruteforcing process, and return.
+                # directory to be included in the bruteforcing process, and
+                # return.
                 self._to_bruteforce.put(fuzzable_request.get_url())
                 return
 
-            elif con_neg_result == False:
+            elif not con_neg_result:
                 # Not vulnerable, nothing else to do.
                 return
 
-            elif con_neg_result == True:
+            elif con_neg_result:
                 # Happy, happy, joy!
                 # Now we can test if we find new resources!
                 self._find_new_resources(fuzzable_request)
@@ -98,9 +101,9 @@ class content_negotiation(CrawlPlugin):
 
     def _find_new_resources(self, fuzzable_request):
         """
-        Based on a request like http://host.tld/backup.php , this method will find
-        files like backup.zip , backup.old, etc. Using the content negotiation
-        technique.
+        Based on a request like http://host.tld/backup.php , this method will
+        find files like backup.zip , backup.old, etc. Using the content
+        negotiation technique.
 
         :return: A list of new fuzzable requests.
         """
@@ -130,9 +133,8 @@ class content_negotiation(CrawlPlugin):
                     original_headers)
 
                 # And create the new fuzzable requests
-                for fr in self._create_new_fuzzable_requests(
-                    fuzzable_request.get_url(),
-                        alternates):
+                url = fuzzable_request.get_url()
+                for fr in self._create_new_fuzzable_requests(url, alternates):
                     self.output_queue.put(fr)
 
     def _bruteforce(self):
@@ -144,11 +146,12 @@ class content_negotiation(CrawlPlugin):
         """
         wl_url_generator = self._wordlist_url_generator()
         args_generator = izip(wl_url_generator, repeat(Headers()))
+
         # Send the requests using threads:
         for base_url, alternates in self.worker_pool.map_multi_args(
             self._request_and_get_alternates,
-            args_generator,
-                chunksize=10):
+            args_generator, chunksize=10):
+
             for fr in self._create_new_fuzzable_requests(base_url, alternates):
                 self.output_queue.put(fr)
 
@@ -194,9 +197,9 @@ class content_negotiation(CrawlPlugin):
 
             # An alternates header looks like this:
             # alternates: {"backup.php.bak" 1 {type application/x-trash} {length 0}},
-            #                   {"backup.php.old" 1 {type application/x-trash} {length 0}},
-            #                   {"backup.tgz" 1 {type application/x-gzip} {length 0}},
-            #                   {"backup.zip" 1 {type application/zip} {length 0}}
+            #             {"backup.php.old" 1 {type application/x-trash} {length 0}},
+            #             {"backup.tgz" 1 {type application/x-gzip} {length 0}},
+            #             {"backup.zip" 1 {type application/zip} {length 0}}
             #
             # All in the same line.
             return alternate_resource, re.findall('"(.*?)"', alternates)
@@ -214,15 +217,13 @@ class content_negotiation(CrawlPlugin):
 
         :return: A list of fuzzable requests.
         """
-        result = []
         for alternate in alternates:
             # Get the new resource
             full_url = base_url.url_join(alternate)
             response = self._uri_opener.GET(full_url)
 
-            result.extend(self._create_fuzzable_requests(response))
-
-        return result
+            if not is_404(response):
+                yield FuzzableRequest(full_url)
 
     def _verify_content_neg_enabled(self, fuzzable_request):
         """
@@ -237,8 +238,8 @@ class content_negotiation(CrawlPlugin):
             return self._content_negotiation_enabled
 
         else:
-            # We perform the test, for this we need a URL that has a filename, URL's
-            # that don't have a filename can't be used for this.
+            # We perform the test, for this we need a URL that has a filename,
+            # URLs that don't have a filename can't be used for this.
             filename = fuzzable_request.get_url().get_file_name()
             if filename == '':
                 return None
@@ -249,8 +250,7 @@ class content_negotiation(CrawlPlugin):
             alternate_resource = fuzzable_request.get_url().url_join(filename)
             headers = fuzzable_request.get_headers()
             headers['Accept'] = 'w3af/bar'
-            response = self._uri_opener.GET(
-                alternate_resource, headers=headers)
+            response = self._uri_opener.GET(alternate_resource, headers=headers)
 
             if 'alternates' in response.get_lower_case_headers():
                 # Even if there is only one file, with an unique mime type,
@@ -275,8 +275,8 @@ class content_negotiation(CrawlPlugin):
                 om.out.information(
                     'The remote Web server has Content Negotiation disabled.')
 
-                # I want to perform this test a couple of times... so I only return False
-                # if that "couple of times" is empty
+                # I want to perform this test a couple of times... so I only
+                # return False if that "couple of times" is empty
                 self._tries_left -= 1
                 if self._tries_left == 0:
                     # Save the FALSE result internally
@@ -300,8 +300,8 @@ class content_negotiation(CrawlPlugin):
 
     def set_options(self, options_list):
         """
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
 
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.

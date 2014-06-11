@@ -34,6 +34,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class archive_dot_org(CrawlPlugin):
@@ -96,24 +97,25 @@ class archive_dot_org(CrawlPlugin):
         :return: A list of query string objects for the URLs that are in
                  the cache AND are in the target web site.
         """
-        real_URLs = []
+        real_urls = []
 
         # Translate archive.org URL's to normal URL's
         for url in references:
             url = url.url_string[url.url_string.index('http', 1):]
-            real_URLs.append(URL(url))
-        real_URLs = list(set(real_URLs))
+            real_urls.append(URL(url))
 
-        if len(real_URLs):
+        real_urls = list(set(real_urls))
+
+        if len(real_urls):
             om.out.debug('Archive.org cached the following pages:')
-            for u in real_URLs:
+            for u in real_urls:
                 om.out.debug('- %s' % u)
         else:
             om.out.debug('Archive.org did not find any pages.')
 
         # Verify if they exist in the target site and add them to
         # the result if they do. Send the requests using threads:
-        self.worker_pool.map(self._exists_in_target, real_URLs)
+        self.worker_pool.map(self._exists_in_target, real_urls)
 
     def _spider_archive(self, url_list, max_depth, domain):
         """
@@ -155,7 +157,6 @@ class archive_dot_org(CrawlPlugin):
                 om.out.debug(msg)
                 return new_urls
 
-        url_list, max_depth, domain
         args = izip(url_list, repeat(max_depth), repeat(domain))
         self.worker_pool.map_multi_args(spider_worker, args)
 
@@ -176,15 +177,16 @@ class archive_dot_org(CrawlPlugin):
         response = self._uri_opener.GET(url, cache=True)
 
         if not is_404(response):
-            msg = 'The URL: "' + url + '" was found at archive.org and is'
-            msg += ' STILL AVAILABLE in the target site.'
-            om.out.debug(msg)
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            msg = 'The URL: "%s" was found at archive.org and is'\
+                  ' STILL AVAILABLE in the target site.'
+            om.out.debug(msg % url)
+
+            fr = FuzzableRequest(response.get_uri())
+            self.output_queue.put(fr)
         else:
-            msg = 'The URL: "' + url + '" was found at archive.org and was'
-            msg += ' DELETED from the target site.'
-            om.out.debug(msg)
+            msg = 'The URL: "%s" was found at archive.org and was'\
+                  ' DELETED from the target site.'
+            om.out.debug(msg % url)
 
     def get_options(self):
         """
@@ -193,8 +195,8 @@ class archive_dot_org(CrawlPlugin):
         ol = OptionList()
 
         d = 'Maximum recursion depth for spidering process'
-        h = 'The plugin will spider the archive.org site related to the target'
-        h += ' site with the maximum depth specified in this parameter.'
+        h = 'The plugin will spider the archive.org site related to the target'\
+            ' site with the maximum depth specified in this parameter.'
         o = opt_factory('max_depth', self._max_depth, d, 'integer', help=h)
         ol.add(o)
 

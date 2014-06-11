@@ -28,6 +28,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class sitemap_xml(CrawlPlugin):
@@ -52,14 +53,10 @@ class sitemap_xml(CrawlPlugin):
         sitemap_url = base_url.url_join('sitemap.xml')
         response = self._uri_opener.GET(sitemap_url, cache=True)
 
-        # Remember that HTTPResponse objects have a faster "__in__" than
-        # the one in strings; so string in response.get_body() is slower than
-        # string in response
         if '</urlset>' in response and not is_404(response):
-            om.out.debug('Analyzing sitemap.xml file.')
-
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            # Send response to core
+            fr = FuzzableRequest.from_http_response(response)
+            self.output_queue.put(fr)
 
             om.out.debug('Parsing xml file with xml.dom.minidom.')
             try:
@@ -74,8 +71,8 @@ class sitemap_xml(CrawlPlugin):
                         url = url.childNodes[0].data
                         url = URL(url)
                     except ValueError, ve:
-                        om.out.debug(
-                            'Sitemap file had an invalid URL: "%s"' % ve)
+                        msg = 'Sitemap file had an invalid URL: "%s"'
+                        om.out.debug(msg % ve)
                     except:
                         om.out.debug('Sitemap file had an invalid format')
                     else:

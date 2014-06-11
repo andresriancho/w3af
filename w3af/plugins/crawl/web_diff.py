@@ -34,6 +34,7 @@ from w3af.core.data.options.option_types import BOOL, STRING, LIST
 from w3af.core.data.options.option_types import URL as URL_OPTION_TYPE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class web_diff(CrawlPlugin):
@@ -165,10 +166,11 @@ class web_diff(CrawlPlugin):
 
                 if not is_404(response):
                     if response.is_text_or_html():
-                        for fr in self._create_fuzzable_requests(response):
-                            self.output_queue.put(fr)
-                    self._check_content(
-                        response, directory + os.path.sep + fname)
+                        fr = FuzzableRequest(response.get_url())
+                        self.output_queue.put(fr)
+
+                    path = '%s%s%s' % (directory, os.path.sep, fname)
+                    self._check_content(response, path)
                     self._exist_remote.append(url)
                 else:
                     self._not_exist_remote.append(url)

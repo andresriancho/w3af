@@ -32,6 +32,7 @@ from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class server_status(InfrastructurePlugin):
@@ -67,8 +68,8 @@ class server_status(InfrastructurePlugin):
                 om.out.information(msg)
 
                 self._extract_server_version(fuzzable_request, response)
-
-                return self._extract_urls(fuzzable_request, response)
+                self._extract_urls(fuzzable_request, response)
+                self._report_shared_hosting(fuzzable_request, response)
 
     def _extract_server_version(self, fuzzable_request, response):
         """
@@ -81,7 +82,7 @@ class server_status(InfrastructurePlugin):
             desc = 'The web server has the apache server status module'\
                    ' enabled which discloses the following remote server'\
                    ' version: "%s".'
-            desc = desc % version
+            desc %= version
             
             i = Info('Apache Server version', desc, response.id, self.get_name())
             i.set_url(response.get_url())
@@ -91,10 +92,10 @@ class server_status(InfrastructurePlugin):
 
     def _extract_urls(self, fuzzable_request, response):
         """
-        Extract information from the server-status page and return fuzzable
-        requests to the caller.
+        Extract information from the server-status page and send FuzzableRequest
+        instances to the core.
         """
-        res = self._create_fuzzable_requests(response)
+        self.output_queue.put(FuzzableRequest(response.get_url()))
 
         # Now really parse the file and create custom made fuzzable requests
         regex = '<td>.*?<td nowrap>(.*?)</td><td nowrap>.*? (.*?) HTTP/1'
@@ -113,11 +114,12 @@ class server_status(InfrastructurePlugin):
                 # requests
                 tmp_res = self._uri_opener.GET(found_url, cache=True)
                 if not is_404(tmp_res):
-                    res.extend(self._create_fuzzable_requests(tmp_res))
+                    self.output_queue.put(FuzzableRequest(found_url))
             else:
                 # This is a shared hosting server
                 self._shared_hosting_hosts.append(domain)
 
+    def _report_shared_hosting(self, fuzzable_request, response):
         # Now that we are outsite the for loop, we can report the possible vulns
         if len(self._shared_hosting_hosts):
             desc = 'The web application under test seems to be in a shared'\
@@ -133,11 +135,9 @@ class server_status(InfrastructurePlugin):
 
             msg = 'This list of domains, and the domain of the web application'\
                   ' under test, all point to the same server:'
-            om.out.vulnerability(msg, severity=severity.MEDIUM)
+            om.out.vulnerability(msg, severity=v.get_severity())
             for url in self._shared_hosting_hosts:
                 om.out.vulnerability('- ' + url, severity=severity.MEDIUM)
-
-        return res
 
     def get_long_desc(self):
         """
@@ -146,5 +146,5 @@ class server_status(InfrastructurePlugin):
         return """
         This plugin fetches the server-status file used by Apache, and parses it.
         After parsing, new URLs are found, and in some cases, the plugin can deduce
-        the existance of other domains hosted on the same server.
+        the existence of other domains hosted on the same server.
         """

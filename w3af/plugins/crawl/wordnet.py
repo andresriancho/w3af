@@ -31,6 +31,7 @@ from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.nltk_wrapper.nltk_wrapper import wn
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class wordnet(CrawlPlugin):
@@ -80,8 +81,8 @@ class wordnet(CrawlPlugin):
             
             if fuzzy_not_equal(response.body, rand_response.body, 0.85):
                 
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
+                fr = FuzzableRequest(response.get_uri())
+                self.output_queue.put(fr)
 
     def _generate_mutants(self, fuzzable_request):
         """

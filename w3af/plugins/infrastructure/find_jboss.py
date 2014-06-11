@@ -31,6 +31,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.threads.threadpool import one_to_many
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class find_jboss(InfrastructurePlugin):
@@ -101,8 +102,7 @@ class find_jboss(InfrastructurePlugin):
             o.set_url(vuln_url)
             kb.kb.append(self, 'find_jboss', o)
 
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            self.output_queue.put(FuzzableRequest(response.get_uri()))
 
     def send_request(self, base_url, vuln_db_instance):
         vuln_url = base_url.url_join(vuln_db_instance['url'])
@@ -110,7 +110,7 @@ class find_jboss(InfrastructurePlugin):
         return vuln_db_instance, response
 
     def handle_url_error(self, url_error):
-        return (True, None)
+        return True, None
 
     def get_long_desc(self):
         """

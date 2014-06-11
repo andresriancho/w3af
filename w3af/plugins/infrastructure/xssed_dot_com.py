@@ -31,6 +31,7 @@ from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class xssed_dot_com(InfrastructurePlugin):
@@ -58,10 +59,10 @@ class xssed_dot_com(InfrastructurePlugin):
                                     (among other things) the URL to test.
         """
         target_domain = fuzzable_request.get_url().get_root_domain()
+        target_path = "/search?key=.%s" % target_domain
+        check_url = self._xssed_url.url_join(target_path)
 
         try:
-            check_url = self._xssed_url.url_join(
-                "/search?key=." + target_domain)
             response = self._uri_opener.GET(check_url)
         except BaseFrameworkException, e:
             msg = 'An exception was raised while running xssed_dot_com'\
@@ -74,7 +75,6 @@ class xssed_dot_com(InfrastructurePlugin):
             try:
                 self._parse_xssed_result(response)
             except BaseFrameworkException, e:
-                self._exec = True
                 msg = 'An exception was raised while running xssed_dot_com'\
                       ' plugin. Exception: "%s".' % e
                 om.out.debug(msg)
@@ -104,50 +104,53 @@ class xssed_dot_com(InfrastructurePlugin):
         """
         html_body = response.get_body()
 
-        if "<b>XSS:</b>" in html_body:
-            #
-            #   Work!
-            #
-            regex_many_vulns = re.findall(
-                "<a href='(/mirror/\d*/)' target='_blank'>", html_body)
-            for mirror_relative_link in regex_many_vulns:
-
-                mirror_url = self._xssed_url.url_join(mirror_relative_link)
-                xss_report_response = self._uri_opener.GET(mirror_url)
-                matches = re.findall("URL:.+", xss_report_response.get_body())
-
-                dxss = self._decode_xssed_url
-
-                if self._fixed in xss_report_response.get_body():
-                    vuln_severity = severity.LOW
-                    desc = 'This script contained a XSS vulnerability: "%s".'
-                    desc = desc % dxss(dxss(matches[0]))
-                else:
-                    vuln_severity = severity.HIGH
-                    desc = 'According to xssed.com, this script contains a'\
-                           ' XSS vulnerability: "%s".'
-                    desc = desc % dxss(dxss(matches[0]))
-                    
-                v = Vuln('Potential XSS vulnerability', desc,
-                         vuln_severity, response.id, self.get_name())
-
-                v.set_url(mirror_url)
-
-                kb.kb.append(self, 'xss', v)
-                om.out.information(v.get_desc())
-
-                #
-                #   Add the fuzzable request, this is useful if I have the
-                #   XSS plugin enabled because it will re-test this and
-                #   possibly confirm the vulnerability
-                #
-                fuzzable_request_list = self._create_fuzzable_requests(
-                    xss_report_response)
-                return fuzzable_request_list
-        else:
+        if "<b>XSS:</b>" not in html_body:
             #   Nothing to see here...
             om.out.debug('xssed_dot_com did not find any previously reported'
                          ' XSS vulnerabilities.')
+            return
+
+        #
+        #   Work!
+        #
+        regex_many_vulns = re.findall("<a href='(/mirror/\d*/)' target='_blank'>",
+                                      html_body)
+
+        for mirror_relative_link in regex_many_vulns:
+
+            mirror_url = self._xssed_url.url_join(mirror_relative_link)
+            xss_report_response = self._uri_opener.GET(mirror_url)
+            matches = re.findall("URL:.+", xss_report_response.get_body())
+
+            dxss = self._decode_xssed_url
+            xss_url = dxss(dxss(matches[0]))
+
+            if self._fixed in xss_report_response.get_body():
+                vuln_severity = severity.LOW
+                desc = 'According to xssed.com, this URL contained a XSS'\
+                       ' vulnerability: "%s".'
+                desc = desc % xss_url
+            else:
+                vuln_severity = severity.HIGH
+                desc = 'According to xssed.com, this URL contains a'\
+                       ' XSS vulnerability: "%s".'
+                desc = desc % xss_url
+
+            v = Vuln('Potential XSS vulnerability', desc,
+                     vuln_severity, response.id, self.get_name())
+
+            v.set_url(mirror_url)
+
+            kb.kb.append(self, 'xss', v)
+            om.out.information(v.get_desc())
+
+            #
+            #   Add the fuzzable request, this is useful if I have the
+            #   XSS plugin enabled because it will re-test this and
+            #   possibly confirm the vulnerability
+            #
+            fr = FuzzableRequest(xss_url)
+            self.output_queue.put(fr)
 
     def get_long_desc(self):
         return """

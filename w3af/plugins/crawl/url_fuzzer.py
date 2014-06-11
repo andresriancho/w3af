@@ -35,6 +35,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class url_fuzzer(CrawlPlugin):
@@ -113,9 +114,10 @@ class url_fuzzer(CrawlPlugin):
         if not (is_404(response) or
         response.get_code() in (403, 401) or
         self._return_without_eval(mutant)):
-            
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+
+            # Create the fuzzable request and send it to the core
+            fr = FuzzableRequest.from_http_response(response)
+            self.output_queue.put(fr)
             
             #
             #   Save it to the kb (if new)!

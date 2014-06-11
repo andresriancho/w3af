@@ -34,6 +34,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class phpinfo(CrawlPlugin):
@@ -41,13 +42,12 @@ class phpinfo(CrawlPlugin):
     Search PHP Info file and if it finds it will determine the version of PHP.
     :author: Viktor Gazdag ( woodspeed@gmail.com )
     """
-
-    """
-    CHANGELOG:
-        Feb/17/2009- Added PHP Settings Audit Checks by Aung Khant (aungkhant[at]yehg.net)
-    """
-
     def __init__(self):
+        """
+        CHANGELOG:
+            Feb/17/2009- Added PHP Settings Audit Checks by Aung Khant
+            (aungkhant[at]yehg.net)
+        """
         CrawlPlugin.__init__(self)
 
         # Internal variables
@@ -101,9 +101,9 @@ class phpinfo(CrawlPlugin):
             # Check if it's a phpinfo file
             if not is_404(response):
 
-                # Create the fuzzable request
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
+                # Create the fuzzable request and send it to the core
+                fr = FuzzableRequest.from_http_response(response)
+                self.output_queue.put(fr)
 
                 """
                 |Modified|

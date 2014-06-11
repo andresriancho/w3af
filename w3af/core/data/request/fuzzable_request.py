@@ -115,7 +115,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     @classmethod
     def from_parts(cls, url, method='GET', post_data=None, headers=None):
         """
-        :return: An instance of this object from the provided parameters.
+        :return: An instance of FuzzableRequest from the provided parameters.
         """
         if isinstance(url, basestring):
             url = URL(url)
@@ -124,6 +124,16 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             post_data = dc_factory(headers, post_data)
 
         return cls(url, method=method, headers=headers, post_data=post_data)
+
+    @classmethod
+    def from_http_response(cls, http_response):
+        """
+        :return: An instance of FuzzableRequest using the URL and cookie from
+                 the http_response. The method used is "GET", and no post_data
+                 is set.
+        """
+        cookie = Cookie.from_http_response(http_response)
+        return cls(http_response.get_uri(), method='GET', cookie=cookie)
 
     def export(self):
         """

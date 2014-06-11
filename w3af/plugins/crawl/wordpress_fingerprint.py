@@ -36,6 +36,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class wordpress_fingerprint(CrawlPlugin):
@@ -84,9 +85,9 @@ class wordpress_fingerprint(CrawlPlugin):
             self._fingerprint_wordpress(domain_path, wp_unique_url,
                                         response)
 
-            # Extract the links
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            # Send link to core
+            fr = FuzzableRequest(response.get_uri())
+            self.output_queue.put(fr)
 
     def _fingerprint_wordpress(self, domain_path, wp_unique_url, response):
         """
