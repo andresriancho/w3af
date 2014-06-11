@@ -22,14 +22,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import operator
 import random
+import copy
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
 
+from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.parsers.url import parse_qs, URL
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
 
 
 class Form(KeyValueContainer):
@@ -54,8 +60,9 @@ class Form(KeyValueContainer):
 
     ENCODING = 'application/x-www-form-urlencoded'
 
-    AVOID_STR_DUPLICATES = (INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
-                            INPUT_TYPE_SELECT)
+    AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT}
 
     # This is used for processing checkboxes
     SECRET_VALUE = "3_!21#47w@"
@@ -242,6 +249,49 @@ class Form(KeyValueContainer):
 
     def get_type(self):
         return 'Form'
+
+    def smart_fill(self):
+        """
+        :return: A copy of self, where all the empty parameters (which should be
+                 filled) have been filled using the smart_fill function.
+        """
+        dc_copy = copy.deepcopy(self)
+
+        for var_name, value, setter in dc_copy.iter_setters():
+            if dc_copy.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
+                continue
+
+            if isinstance(value, DataToken):
+                # This is the value which is being fuzzed (the payload)
+                continue
+
+            # Please see the comment in mutant._create_mutants_worker (search
+            # for __HERE__) for an explanation of what we are doing here:
+            if var_name in self.get_file_vars():
+                # Try to upload a valid file
+                extension = cf.cf.get('fuzz_form_files', 'gif')
+                success, file_content, file_name = get_file_from_template(extension)
+
+                # I have to create the NamedStringIO with a "name",
+                # required for MultipartPostHandler
+                str_file = NamedStringIO(file_content, name=file_name)
+
+                setter(str_file)
+
+            #   Fill only if the parameter does NOT have a value set.
+            #
+            #   The reason of having this already set would be that the form
+            #   has something like this:
+            #
+            #   <input type="text" name="p" value="foobar">
+            #
+            elif value == '':
+                #
+                #   Fill it smartly
+                #
+                setter(smart_fill(var_name))
+
+        return dc_copy
 
     def get_parameter_type(self, name):
         return self._types[name]

@@ -21,9 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.fuzzer.mutants.mutant import Mutant, mutant_smart_fill
-from w3af.core.data.request.querystring_request import QsRequest
-from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
@@ -41,8 +40,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -70,7 +69,7 @@ class TestMutant(unittest.TestCase):
         self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
 
     def test_alternative_mutant_creation(self):
-        freq = QsRequest(URL('http://moth/?a=1&b=2'))
+        freq = FuzzableRequest(URL('http://moth/?a=1&b=2'))
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -88,8 +87,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_generic_methods(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -110,8 +109,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_ignore_params(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
                                                 False, self.fuzzer_config)
@@ -123,8 +122,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_empty_dc(self):
         qs = QueryString()
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -140,7 +139,7 @@ class TestMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = PostDataRequest(self.url, post_data=form)
+        freq = FuzzableRequest(self.url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -173,8 +172,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_append(self):
         qs = QueryString(self.SIMPLE_KV)
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 True, self.fuzzer_config)
@@ -188,8 +187,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_repeated_params(self):
         qs = QueryString([('a', ['1', '2']), ('b', ['3'])])
-        freq = QsRequest(self.url)
-        freq.set_dc(qs)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -224,7 +223,7 @@ class TestMutant(unittest.TestCase):
 
         url = URL('http://moth/foo.bar?action=login')
 
-        freq = PostDataRequest(url, post_data=form)
+        freq = FuzzableRequest(url, post_data=form)
 
         created_mutants = Mutant.create_mutants(freq, self.payloads, [],
                                                 False, self.fuzzer_config)
@@ -240,39 +239,3 @@ class TestMutant(unittest.TestCase):
         for m in created_mutants:
             self.assertEqual(m.get_uri(), url)
 
-    def test_mutant_smart_fill_simple(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form['username'][0] = token = DataToken('username', '')
-
-        freq = PostDataRequest(self.url, post_data=form)
-
-        filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
-
-        self.assertEqual(id(form), id(filled_form))
-        self.assertEqual(filled_form['username'], ['', ])
-        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(filled_form['username'][0], DataToken)
-        self.assertIs(filled_form['username'][0], token)
-
-    def test_mutant_smart_fill_with_file(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
-        form['username'][0] = token = DataToken('username', '')
-
-        freq = PostDataRequest(self.url, post_data=form)
-
-        filled_form = mutant_smart_fill(freq, form, self.fuzzer_config)
-
-        self.assertEqual(id(form), id(filled_form))
-        self.assertEqual(filled_form['username'], ['', ])
-        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(filled_form['username'][0], DataToken)
-        self.assertIs(filled_form['username'][0], token)
-
-        str_file = filled_form['file'][0]
-        self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertIn('GIF', str_file)

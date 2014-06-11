@@ -113,15 +113,12 @@ class URLPartsMutant(Mutant):
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
+                       append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
         if not fuzzer_config['fuzz_url_parts']:
-            return []
-
-        if not isinstance(freq, QsRequest):
             return []
 
         res = []

@@ -27,8 +27,6 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.request.post_data_request import PostDataRequest
-from w3af.core.data.request.header_request import HeaderRequest
-from w3af.core.data.request.cookie_request import CookieRequest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPRequest import HTTPRequest
@@ -63,22 +61,6 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     if add_self:
         qsr = QsRequest(resp.get_uri(), headers=req_headers, cookie=cookie_obj)
         res.append(qsr)
-
-    if cf.cf.get('fuzzable_headers'):
-        try:
-            hreq = HeaderRequest.from_parts(resp.get_uri(), 'GET', '',
-                                            req_headers)
-            res.append(hreq)
-        except ValueError:
-            pass
-
-    if cf.cf.get('fuzz_cookies'):
-        try:
-            hreq = CookieRequest.from_parts(resp.get_uri(), 'GET', '',
-                                            req_headers)
-            res.append(hreq)
-        except ValueError:
-            pass
 
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request.

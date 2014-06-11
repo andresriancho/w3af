@@ -288,6 +288,12 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         self._uri = uri
         self._url = uri.uri2url()
 
+    def get_querystring(self):
+        return self.get_uri().querystring
+
+    def set_querystring(self, new_qs):
+        self.get_uri().querystring = new_qs
+
     def set_method(self, method):
         self._method = method
 

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 from w3af.core.data.dc.form import Form
 from w3af.core.controllers.misc.io import NamedStringIO
@@ -42,7 +42,7 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = PostDataRequest(self.url, post_data=form)
+        freq = FuzzableRequest(self.url, post_data=form)
 
         m = FileContentMutant(freq)
         m.get_dc().set_token('file', 0)
@@ -63,7 +63,7 @@ class TestFileContentMutant(unittest.TestCase):
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_form_files': False}
-        freq = PostDataRequest(URL('http://www.w3af.com/foo/bar'))
+        freq = FuzzableRequest(URL('http://www.w3af.com/foo/bar'))
 
         generated_mutants = FileContentMutant.create_mutants(
             freq, self.payloads, [],
@@ -80,7 +80,7 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = PostDataRequest(self.url, post_data=form)
+        freq = FuzzableRequest(self.url, post_data=form)
 
         generated_mutants = FileContentMutant.create_mutants(
             freq, self.payloads, [],
@@ -93,7 +93,7 @@ class TestFileContentMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = PostDataRequest(self.url, post_data=form)
+        freq = FuzzableRequest(self.url, post_data=form)
 
         generated_mutants = FileContentMutant.create_mutants(freq,
                                                              self.payloads, [],

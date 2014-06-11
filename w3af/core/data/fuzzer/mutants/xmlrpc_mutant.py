@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
+from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 
 
 class XmlRpcMutant(PostDataMutant):
@@ -55,7 +55,7 @@ class XmlRpcMutant(PostDataMutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, XMLRPCRequest):
+        if not isinstance(freq.get_raw_data(), XmlRpcContainer):
             return []
 
         return XmlRpcMutant._create_mutants_worker(freq, XmlRpcMutant,

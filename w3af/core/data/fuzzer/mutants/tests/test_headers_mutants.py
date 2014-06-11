@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.header_request import HeaderRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.dc.headers import Headers
 
@@ -37,8 +37,8 @@ class TestHeadersMutant(unittest.TestCase):
         referer_1 = 'http://w3af.org/'
         referer_2 = 'http://spam.w3af.org/'
 
-        freq = HeaderRequest(URL('http://www.w3af.com/'),
-                             headers=Headers([('Referer', referer_1)]))
+        freq = FuzzableRequest(URL('http://www.w3af.com/'),
+                               headers=Headers([('Referer', referer_1)]))
         self.assertEqual(freq.get_referer(), referer_1)
 
         m = HeadersMutant(freq)
@@ -49,8 +49,8 @@ class TestHeadersMutant(unittest.TestCase):
 
     def test_found_at(self):
         headers = Headers([('Referer', 'http://moth/')])
-        freq = HeaderRequest(URL('http://www.w3af.com/?id=3'),
-                             headers=headers)
+        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'),
+                               headers=headers)
         m = HeadersMutant(freq)
         m.get_dc().set_token('Referer')
         m.set_token_value('foo')
@@ -63,7 +63,7 @@ class TestHeadersMutant(unittest.TestCase):
         url = URL('http://moth/?a=1&b=2')
         original_referer = 'http://moths/'
         headers = Headers([('Referer', original_referer)])
-        freq = HeaderRequest(url, headers=headers)
+        freq = FuzzableRequest(url, headers=headers)
 
         created_mutants = HeadersMutant.create_mutants(freq, self.payloads, [],
                                                        False,

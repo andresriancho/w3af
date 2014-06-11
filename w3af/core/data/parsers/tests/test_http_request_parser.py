@@ -22,72 +22,84 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.request.post_data_request import PostDataRequest
-from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.http_request_parser import (http_request_parser,
-                                                      check_version_syntax,
-                                                      check_uri_syntax)
+                                                        check_version_syntax,
+                                                        check_uri_syntax)
 
 
-class Testhttp_request_parser(unittest.TestCase):
+class TestHttpRequestParser(unittest.TestCase):
 
     def test_head_post_data(self):
-        fuzzable_request = http_request_parser(
-            'POST http://www.w3af.com/ HTTP/1.0', 'foo=bar')
-        self.assertIsInstance(fuzzable_request, PostDataRequest)
-        self.assertEqual(fuzzable_request.get_method(), 'POST')
+        request_head = 'POST http://www.w3af.org/ HTTP/1.1\n' \
+                       'Host: www.w3af.org\n' \
+                       'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n'
+        post_data = 'foo=bar'
+        fr = http_request_parser(request_head, post_data)
+
+        self.assertIsInstance(fr, FuzzableRequest)
+        self.assertEqual(fr.get_method(), 'POST')
+        self.assertEqual(fr.get_data(), post_data)
 
     def test_qs(self):
-        fuzzable_request = http_request_parser(
-            'GET http://www.w3af.com/ HTTP/1.0', '')
-        self.assertIsInstance(fuzzable_request, QsRequest)
-        self.assertEqual(fuzzable_request.get_method(), 'GET')
+        fr = http_request_parser('GET http://www.w3af.com/ HTTP/1.0', '')
+
+        self.assertIsInstance(fr, FuzzableRequest)
+        self.assertEqual(fr.get_method(), 'GET')
+        self.assertEqual(fr.get_data(), '')
 
     def test_invalid_url(self):
-        self.assertRaises(
-            BaseFrameworkException, http_request_parser, 'GET / HTTP/1.0', '')
+        self.assertRaises(BaseFrameworkException,
+                          http_request_parser, 'GET / HTTP/1.0', '')
 
     def test_invalid_protocol(self):
-        self.assertRaises(BaseFrameworkException, http_request_parser, 'ABCDEF', '')
+        self.assertRaises(BaseFrameworkException, http_request_parser,
+                          'ABCDEF', '')
 
     def test_simple_GET(self):
         http_request = 'GET http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Foo: bar\n'
 
-        fuzzable_request = http_request_parser(http_request, '')
+        fr = http_request_parser(http_request, '')
         exp_headers = Headers([('Host', 'www.w3af.org'), ('Foo', 'bar')])
 
-        self.assertEquals(fuzzable_request.get_headers(), exp_headers)
-        self.assertEqual(fuzzable_request.get_url().get_domain(), 'www.w3af.org')
+        self.assertEquals(fr.get_headers(), exp_headers)
+        self.assertEqual(fr.get_url().get_domain(), 'www.w3af.org')
+        self.assertEqual(fr.get_data(), '')
 
     def test_simple_GET_relative(self):
         http_request = 'GET / HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Foo: bar\n'
 
-        fuzzable_request = http_request_parser(http_request, '')
+        fr = http_request_parser(http_request, '')
         exp_headers = Headers([('Host', 'www.w3af.org'), ('Foo', 'bar')])
 
-        self.assertEquals(fuzzable_request.get_headers(), exp_headers)
-        self.assertEqual(fuzzable_request.get_url().get_domain(), 'www.w3af.org')
+        self.assertEquals(fr.get_headers(), exp_headers)
+        self.assertEqual(fr.get_url().get_domain(), 'www.w3af.org')
+        self.assertEqual(fr.get_data(), '')
 
     def test_POST_repeated(self):
         request_head = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: spam\n' \
                        'Foo: eggs\n'
-
         post_data = 'a=1&a=2'
-        fuzzable_request = http_request_parser(request_head, post_data)
-        exp_headers = Headers(
-            [('Host', 'www.w3af.org'), ('Foo', 'spam, eggs')])
-        self.assertEqual(fuzzable_request.get_headers(), exp_headers)
-        self.assertEquals(fuzzable_request.get_data(), 'a=1&a=2')
-        self.assertEquals(fuzzable_request.get_dc(), {'a': ['1', '2']})
-    
+        fr = http_request_parser(request_head, post_data)
+
+        exp_headers = Headers([('Host', 'www.w3af.org'),
+                               ('Content-Type',
+                                'application/x-www-form-urlencoded'),
+                               ('Foo', 'spam, eggs'),])
+
+        self.assertEqual(fr.get_headers(), exp_headers)
+        self.assertEquals(fr.get_data(), post_data)
+
     def test_check_version_syntax(self):
         self.assertTrue(check_version_syntax('HTTP/1.0'))
 

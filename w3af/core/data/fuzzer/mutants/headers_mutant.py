@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.header_request import HeaderRequest
 
 
 class HeadersMutant(Mutant):
@@ -57,9 +56,6 @@ class HeadersMutant(Mutant):
         fuzzable_headers = fuzzer_config['fuzzable_headers']
 
         if not fuzzable_headers:
-            return []
-
-        if not isinstance(freq, HeaderRequest):
             return []
 
         # Generate a list with the headers we'll fuzz

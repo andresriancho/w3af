@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.cookie_request import CookieRequest
 
 
 class CookieMutant(Mutant):
@@ -57,21 +56,15 @@ class CookieMutant(Mutant):
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
+                       append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, CookieRequest):
-            return []
-
         if not fuzzer_config['fuzz_cookies']:
             return []
-
-        orig_cookie = freq.get_cookie()
 
         return Mutant._create_mutants_worker(freq, CookieMutant,
                                              mutant_str_list,
                                              fuzzable_param_list,
-                                             append, fuzzer_config,
-                                             data_container=orig_cookie)
+                                             append, fuzzer_config)

@@ -22,13 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.request.post_data_request as PostDataRequest
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 
 
 class AttackPlugin(Plugin, CommonAttackMethods):
@@ -101,30 +102,33 @@ class AttackPlugin(Plugin, CommonAttackMethods):
 
     def GET2POST(self, vuln):
         """
-        This method changes a vulnerability mutant, so all the data that was sent
-        in the query string, is now sent in the postData; of course, the HTTP
-        method is also changed from GET to POST.
+        This method changes a vulnerability mutant, so all the data that was
+        sent in the query string, is now sent in the postData; of course, the
+        HTTP method is also changed from GET to POST.
         """
-        vulnCopy = copy.deepcopy(vuln)
-        mutant = vulnCopy.get_mutant()
+        vuln_copy = copy.deepcopy(vuln)
+        mutant = vuln_copy.get_mutant()
 
         #    Sometimes there is no mutant (php_sca).
         if mutant is None:
-            return vulnCopy
+            return vuln_copy
 
         if mutant.get_method() == 'POST':
             # No need to work !
-            return vulnCopy
+            return vuln_copy
 
         else:
-            pdr = PostDataRequest.PostDataRequest(
-                mutant.get_url(),
-                headers=mutant.get_headers(),
-                cookie=mutant.get_cookie(),
-                dc=mutant.get_dc()
-            )
-            mutant.set_fuzzable_req(pdr)
-            return vulnCopy
+            # Need to create a new PostDataMutant, to be able to easily change
+            # the values which we want to send in the HTTP post-data
+            fre = FuzzableRequest(mutant.get_url(),
+                                  headers=mutant.get_headers(),
+                                  method='POST',
+                                  cookie=mutant.get_cookie(),
+                                  post_data=mutant.get_uri().querystring)
+            pdm = PostDataMutant(fre)
+            vuln_copy.set_mutant(pdm)
+
+            return vuln_copy
 
     def get_root_probability(self):
         """

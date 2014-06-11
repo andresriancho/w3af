@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.json_request import JSONPostDataRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.json_mutant import JSONMutant
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT, ARRAY
@@ -37,7 +37,7 @@ class TestJSONMutant(unittest.TestCase):
 
     def test_found_at(self):
         dc = JSONContainer(COMPLEX_OBJECT)
-        freq = JSONPostDataRequest(self.url, post_data=dc, method='PUT')
+        freq = FuzzableRequest(self.url, post_data=dc, method='PUT')
 
         m = JSONMutant(freq)
         m.get_dc().set_token('object-second_key-list-0-string')
@@ -49,7 +49,7 @@ class TestJSONMutant(unittest.TestCase):
 
     def test_create_mutants_array(self):
         dc = JSONContainer(ARRAY)
-        freq = JSONPostDataRequest(self.url, post_data=dc, method='POST')
+        freq = FuzzableRequest(self.url, post_data=dc, method='POST')
 
         created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
                                                     False, self.fuzzer_config)

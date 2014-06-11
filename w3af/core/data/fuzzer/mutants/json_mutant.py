@@ -20,17 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.request.json_request import JSONPostDataRequest
+from w3af.core.data.dc.json_container import JSONContainer
 
 
 class JSONMutant(PostDataMutant):
     """
     This class is a JSON mutant.
     """
-    def __init__(self, freq):
-        PostDataMutant.__init__(self, freq)
-
-    def get_mutant_type(self):
+    @staticmethod
+    def get_mutant_type():
         return 'JSON data'
 
     def get_headers(self):
@@ -52,12 +50,12 @@ class JSONMutant(PostDataMutant):
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
+                       append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not isinstance(freq, JSONPostDataRequest):
+        if not isinstance(freq.get_raw_data(), JSONContainer):
             return []
 
         return JSONMutant._create_mutants_worker(freq, JSONMutant,

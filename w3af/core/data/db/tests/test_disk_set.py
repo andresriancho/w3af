@@ -27,8 +27,7 @@ from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.data.db.disk_set import DiskSet
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.querystring_request import QsRequest
-from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.db.dbms import get_default_temp_db_instance
 
@@ -69,13 +68,13 @@ class test_DiskSet(unittest.TestCase):
         uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
 
-        qsr1 = QsRequest(uri, method='GET', headers=hdr)
+        qsr1 = FuzzableRequest(uri, method='GET', headers=hdr)
 
         uri = URL('http://w3af.org/?id=3')
-        qsr2 = QsRequest(uri, method='GET', headers=hdr)
+        qsr2 = FuzzableRequest(uri, method='GET', headers=hdr)
 
         uri = URL('http://w3af.org/?id=7')
-        qsr3 = QsRequest(uri, method='FOO', headers=hdr)
+        qsr3 = FuzzableRequest(uri, method='FOO', headers=hdr)
 
         ds.add(qsr1)
         ds.add(qsr2)
@@ -90,37 +89,7 @@ class test_DiskSet(unittest.TestCase):
 
         # This forces an internal change in the URL object
         qsr2.get_url().url_string
-        self.assertTrue(qsr2 in ds)
-
-    @attr('smoke')
-    def test_add_PostDataRequest(self):
-        ds = DiskSet()
-
-        uri = URL('http://w3af.org/?id=2')
-        hdr = Headers([('Referer', 'http://w3af.org/')])
-
-        pdr1 = PostDataRequest(uri, method='GET', headers=hdr)
-
-        uri = URL('http://w3af.org/?id=3')
-        pdr2 = PostDataRequest(uri, method='GET', headers=hdr)
-
-        uri = URL('http://w3af.org/?id=7')
-        pdr3 = PostDataRequest(uri, method='FOO', headers=hdr)
-
-        ds.add(pdr1)
-        ds.add(pdr2)
-        ds.add(pdr2)
-        ds.add(pdr1)
-
-        self.assertEqual(ds[0], pdr1)
-        self.assertEqual(ds[1], pdr2)
-        self.assertFalse(pdr3 in ds)
-        self.assertTrue(pdr2 in ds)
-        self.assertEqual(len(ds), 2)
-
-        # This forces an internal change in the URL object
-        pdr2.get_url().url_string
-        self.assertTrue(pdr2 in ds)
+        self.assertIn(qsr2, ds)
 
     def test_update(self):
         ds = DiskSet()

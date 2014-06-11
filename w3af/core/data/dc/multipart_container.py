@@ -42,7 +42,7 @@ class MultipartContainer(KeyValueContainer):
     @classmethod
     def from_postdata(cls, headers, post_data):
         if not MultipartContainer.is_multipart(headers):
-            raise ValueError('Failed to create MultipartRequest.')
+            raise ValueError('Failed to create MultipartContainer.')
 
         conttype, _ = headers.iget('content-type')
 
@@ -50,10 +50,10 @@ class MultipartContainer(KeyValueContainer):
             pdict = cgi.parse_header(conttype)[1]
             dc = cgi.parse_multipart(StringIO.StringIO(post_data), pdict)
         except ValueError:
-            raise ValueError('Failed to create MultipartRequest.')
+            raise ValueError('Failed to create MultipartContainer.')
         else:
             # Please note that the KeyValueContainer is just a container for
-            # the information. When the PostDataRequest is sent it should
+            # the information. When the FuzzableRequest is sent it should
             # be serialized into multipart again by the MultipartPostHandler
             # because the headers contain the multipart/form-data header
             return cls(init_val=dc.items())

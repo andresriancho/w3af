@@ -24,10 +24,7 @@ import copy
 from w3af.core.controllers.misc.io import NamedStringIO
 
 from w3af.core.data.dc.form import Form
-from w3af.core.data.dc.utils.token import DataToken
-from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
-from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
 from w3af.core.data.db.disk_item import DiskItem
 
 
@@ -53,8 +50,14 @@ class Mutant(DiskItem):
     def set_fuzzable_req(self, freq):
         self._freq = freq
 
+    def set_dc(self, data_container):
+        raise NotImplementedError('Mutant sub-classes need to implement set_dc')
+
+    def get_dc(self):
+        raise NotImplementedError('Mutant sub-classes need to implement get_dc')
+
     def get_token(self):
-        return self._freq.get_dc().get_token()
+        return self.get_dc().get_token()
 
     def get_token_value(self):
         """
@@ -137,20 +140,19 @@ class Mutant(DiskItem):
 
     @staticmethod
     def create_mutants(freq, payload_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
+                       append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
         return Mutant._create_mutants_worker(freq, Mutant, payload_list,
                                              fuzzable_param_list,
-                                             append, fuzzer_config,
-                                             data_container)
+                                             append, fuzzer_config)
 
     @staticmethod
     def _create_mutants_worker(freq, mutant_cls, payload_list,
                                fuzzable_param_list, append,
-                               fuzzer_config, data_container=None):
+                               fuzzer_config):
         """
         An auxiliary function to create_mutants.
 
@@ -163,17 +165,27 @@ class Mutant(DiskItem):
 
         result = []
 
-        if data_container is None:
-            data_container = freq.get_dc()
+        # This line has a lot of magic in it!
+        #
+        # The basic idea is that we're wrapping the FuzzableRequest instance in
+        # a Mutant sub-class, then the sub-class implements a way to get one of
+        # the FuzzableRequest attributes and return it as a DataContainer, so we
+        # can fuzz it!
+        data_container = mutant_cls(freq).get_dc()
 
         for payload in payload_list:
-
             for dc_copy, token in data_container.iter_bound_tokens():
                 #
                 # Ignore the banned parameter names
                 #
                 if token.get_name() in IGNORED_PARAMETERS:
                     continue
+
+                # Only fuzz the specified parameters (if any)
+                # or fuzz all of them (the fuzzable_param_list == [] case)
+                if not fuzzable_param_list == []:
+                    if not token.get_name() in fuzzable_param_list:
+                        continue
 
                 # Exclude the file parameters, those are fuzzed in
                 # FileContentMutant (depending on framework config)
@@ -185,20 +197,14 @@ class Mutant(DiskItem):
                 # that we are fuzzing (that's not the file content one)
                 # will be ignored too
                 #
-                # The "keeping the multipart form alive" thing is done some
-                # lines below, search for the "__HERE__" string!
+                # The "keeping the multipart form alive" thing is done in
+                # Form.smart_fill (search for __HERE__)
                 #
                 # The exclusion is done here:
                 if token.get_name() in freq.get_file_vars() \
                 and not isinstance(payload, NamedStringIO) \
                 and not isinstance(payload, file):
                     continue
-
-                # Only fuzz the specified parameters (if any)
-                # or fuzz all of them (the fuzzable_param_list == [] case)
-                if not fuzzable_param_list == []:
-                    if not token.get_name() in fuzzable_param_list:
-                        continue
 
                 # Ok, now we have a data container with the mutant string,
                 # but it's possible that all the other fields of the data
@@ -210,7 +216,7 @@ class Mutant(DiskItem):
                 # But I only perform this task in HTML forms, everything
                 # else is left as it is:
                 if isinstance(dc_copy, Form):
-                    dc_copy = mutant_smart_fill(freq, dc_copy, fuzzer_config)
+                    dc_copy = dc_copy.smart_fill()
 
                 if append:
                     if not isinstance(payload, basestring):
@@ -234,49 +240,3 @@ class Mutant(DiskItem):
                 result.append(m)
 
         return result
-
-AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-
-
-def mutant_smart_fill(freq, dc_copy, fuzzer_config):
-    """
-    :param freq: The fuzzable request (original request instance) we're fuzzing
-
-    :return: A data container that has been filled using smart_fill, not filling
-             the data container location which contains the DataToken instance
-    """
-    for var_name, value, setter in dc_copy.iter_setters():
-        if dc_copy.get_parameter_type(var_name) in AVOID_FILLING_FORM_TYPES:
-            continue
-
-        if isinstance(value, DataToken):
-            # This is the value which is being fuzzed (the payload)
-            continue
-
-        # Please see the comment above (search for __HERE__) for an explanation
-        # of what we are doing here:
-        if var_name in freq.get_file_vars():
-            # Try to upload a valid file
-            extension = fuzzer_config.get('fuzz_form_files') or 'gif'
-            success, file_content, file_name = get_file_from_template(extension)
-
-            # I have to create the NamedStringIO with a "name",
-            # required for MultipartPostHandler
-            str_file = NamedStringIO(file_content, name=file_name)
-
-            setter(str_file)
-
-        #   Fill only if the parameter does NOT have a value set.
-        #
-        #   The reason of having this already set would be that the form
-        #   has something like this:
-        #
-        #   <input type="text" name="p" value="foobar">
-        #
-        elif value == '':
-            #
-            #   Fill it smartly
-            #
-            setter(smart_fill(var_name))
-
-    return dc_copy

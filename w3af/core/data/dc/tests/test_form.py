@@ -23,7 +23,8 @@ import urllib
 
 from nose.plugins.attrib import attr
 
-from w3af.core.data.dc import form
+from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.utils.token import DataToken
 
 form_with_radio = [
     {'tagname': 'input', 'name': 'sex', 'type': 'radio', 'value': 'male'},
@@ -136,7 +137,7 @@ class test_form(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = form.Form()
+        f = Form()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(i, expected)
 
@@ -190,7 +191,7 @@ class test_form(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = form.Form()
+        f = Form()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(i, expected)
 
@@ -216,7 +217,7 @@ class test_form(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = form.Form()
+        f = Form()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(expected, i)
 
@@ -251,7 +252,7 @@ class test_form(unittest.TestCase):
         # 250 > dc.Form.TOP_VARIANTS = 150
         new_form = create_form_helper(form_with_radio + form_select_cars +
                                       form_select_misc)
-        self.assertEquals(form.Form.TOP_VARIANTS,
+        self.assertEquals(Form.TOP_VARIANTS,
                           len([fv for fv in new_form.get_variants(mode="all")]) - 1)
 
     def test_same_variants_generation(self):
@@ -361,6 +362,37 @@ class test_form(unittest.TestCase):
 
         self.assertIsNot(form, copy)
 
+    def test_mutant_smart_fill_simple(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form['username'][0] = token = DataToken('username', '')
+
+        filled_form = form.smart_fill()
+
+        self.assertNotEqual(id(form), id(filled_form))
+        self.assertEqual(filled_form['username'], ['', ])
+        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(filled_form['username'][0], DataToken)
+
+    def test_mutant_smart_fill_with_file(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
+        form['username'][0] = token = DataToken('username', '')
+
+        filled_form = form.smart_fill()
+
+        self.assertNotEqual(id(form), id(filled_form))
+        self.assertEqual(filled_form['username'], ['', ])
+        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(filled_form['username'][0], DataToken)
+
+        str_file = filled_form['file'][0]
+        self.assertEqual(str_file.name[-4:], '.gif')
+        self.assertIn('GIF', str_file)
+
 
 def get_gruped_data(form_data):
     """
@@ -385,7 +417,7 @@ def create_form_helper(form_data):
         internal structure
     :return: A dc.Form object from `form_data`
     """
-    new_form = form.Form()
+    new_form = Form()
 
     for elem_data in form_data:
         elem_type = elem_data['tagname']

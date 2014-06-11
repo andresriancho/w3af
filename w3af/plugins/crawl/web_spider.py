@@ -30,21 +30,21 @@ import w3af.core.data.constants.response_codes as http_constants
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopOnUrlError
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopOnUrlError)
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.fuzzer.form_filler import smart_fill
+from w3af.core.data.dc.form import Form
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, REGEX
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.request.post_data_request import PostDataRequest
 
 
-STATIC_FORM_FIELDS = ('checkbox', 'file', 'radio', 'select')
+STATIC_FORM_FIELDS = {'checkbox', 'file', 'radio', 'select'}
 
 
 class web_spider(CrawlPlugin):
@@ -85,12 +85,16 @@ class web_spider(CrawlPlugin):
         # If it is a form, then smart_fill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
-        if isinstance(fuzzable_req, PostDataRequest):
+        data_container = fuzzable_req.get_raw_data()
+        if isinstance(data_container, Form):
 
             if fuzzable_req.get_url() in self._already_filled_form:
                 return
 
-            fuzzable_req = self._fill_form(fuzzable_req)
+            self._already_filled_form.add(fuzzable_req.get_url())
+
+            dc_copy = data_container.smart_fill()
+            fuzzable_req.set_data(dc_copy)
 
         # Send the HTTP request,
         resp = self._uri_opener.send_mutant(fuzzable_req)
@@ -209,36 +213,6 @@ class web_spider(CrawlPlugin):
             self._verify_reference,
             self._urls_to_verify_generator(resp, fuzzable_req)
         )
-
-    def _fill_form(self, fuzzable_req):
-        """
-        Fill the HTTP request form that is passed as fuzzable_req.
-        :return: A filled form
-        """
-        self._already_filled_form.add(fuzzable_req.get_url())
-
-        to_send = fuzzable_req.get_dc().copy()
-
-        for param_name in to_send:
-
-            # I do not want to mess with the "static" fields
-            if isinstance(to_send, form.Form):
-                if to_send.get_parameter_type(param_name) in STATIC_FORM_FIELDS:
-                    continue
-
-            # Set all the other fields, except from the ones that have a
-            # value set (example: hidden fields like __VIEWSTATE).
-            for elem_index in xrange(len(to_send[param_name])):
-
-                # TODO: Should I ignore it because it already has a value?
-                if to_send[param_name][elem_index] != '':
-                    continue
-
-                # SmartFill it!
-                to_send[param_name][elem_index] = smart_fill(param_name)
-
-        fuzzable_req.set_dc(to_send)
-        return fuzzable_req
 
     def _need_more_variants(self, new_reference):
         """

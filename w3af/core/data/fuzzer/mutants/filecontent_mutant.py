@@ -21,13 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.controllers.misc.io import NamedStringIO
-from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.dc.form import Form
 from w3af.core.data.fuzzer.utils import rand_alpha
 
 
 class FileContentMutant(Mutant):
     """
-    This class is a filename mutant.
+    This class is a file content mutant, this means that the payload is sent
+    in the content of a file which is uploaded over multipart/post
     """
     @staticmethod
     def get_mutant_type():
@@ -47,7 +48,7 @@ class FileContentMutant(Mutant):
 
     @staticmethod
     def create_mutants(freq, payload_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
+                       append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
@@ -55,7 +56,7 @@ class FileContentMutant(Mutant):
         if not 'fuzz_form_files' in fuzzer_config:
             return []
 
-        if not isinstance(freq, PostDataRequest):
+        if not isinstance(freq.get_raw_data(), Form):
             return []
 
         file_vars = freq.get_file_vars()
