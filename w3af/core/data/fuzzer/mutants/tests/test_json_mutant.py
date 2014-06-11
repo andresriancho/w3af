@@ -47,6 +47,10 @@ class TestJSONMutant(unittest.TestCase):
                    '0-string=abc..."'
         self.assertEqual(m.found_at(), expected)
 
+        headers = m.get_headers()
+        self.assertIn('Content-Type', headers)
+        self.assertEqual(headers['Content-Type'], 'application/json')
+
     def test_create_mutants_array(self):
         dc = JSONContainer(ARRAY)
         freq = FuzzableRequest(self.url, post_data=dc, method='POST')

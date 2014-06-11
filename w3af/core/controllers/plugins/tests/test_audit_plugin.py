@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.data.kb.knowledge_base import kb
-from w3af.core.data.request.querystring_request import QsRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -47,7 +47,7 @@ class TestAuditPlugin(unittest.TestCase):
         
         target_url = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
         uri = URL(target_url + '?uname=pablo')
-        freq = QsRequest(uri)
+        freq = FuzzableRequest(uri)
         
         vulns = plugin_inst.audit_return_vulns(freq)
         

@@ -32,7 +32,9 @@ class XmlRpcMutant(PostDataMutant):
         return 'XMLRPC data'
 
     def get_headers(self):
-        headers = super(XmlRpcMutant, self).get_headers()
+        # TODO: Not working?
+        #headers = super(XmlRpcMutant, self).get_headers()
+        headers = self.get_fuzzable_req().get_headers()
         headers['Content-Type'] = 'application/xml'
         return headers
 

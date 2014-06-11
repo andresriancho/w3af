@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.querystring_request import QsRequest
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 

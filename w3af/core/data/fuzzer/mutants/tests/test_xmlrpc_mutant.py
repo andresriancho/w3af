@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-test_xmlrpc_request.py
+test_xmlrpc_mutant.py
 
 Copyright 2014 Andres Riancho
 
@@ -22,27 +22,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.request.xmlrpc_request import XMLRPCRequest
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.tests.test_xmlrpc import (XML_WITH_FUZZABLE,
                                                       XML_WITHOUT_FUZZABLE)
 
 
-class TestXMLRPCRequest(unittest.TestCase):
+class TestXMLRPCMutant(unittest.TestCase):
 
     def get_url(self):
         return URL('http://w3af.com/a/b/c.php')
 
-    def test_from_parts_with_params(self):
-        xreq = XMLRPCRequest.from_parts(self.get_url(), 'POST',
-                                        XML_WITH_FUZZABLE, Headers())
+    def test_from_freq(self):
+        freq = FuzzableRequest.from_parts(self.get_url(), 'POST',
+                                          XML_WITH_FUZZABLE, Headers())
+        m = XmlRpcMutant(freq)
 
-        self.assertIsInstance(xreq, XMLRPCRequest)
-        self.assertIsInstance(xreq.get_dc(), XmlRpcContainer)
+        self.assertIsInstance(m.get_dc(), XmlRpcContainer)
 
-        dc = xreq.get_dc()
+        dc = m.get_dc()
         self.assertIn('string', dc)
         self.assertIn('base64', dc)
 
@@ -52,13 +53,13 @@ class TestXMLRPCRequest(unittest.TestCase):
         self.assertEqual(dc['string'][0], 'Foo bar')
         self.assertEqual(dc['base64'][0], 'Spam eggs')
 
-        self.assertEqual(str(xreq.get_dc()), str(xreq.get_data()))
+        self.assertEqual(str(m.get_dc()), str(m.get_data()))
 
-    def test_from_parts_without_params(self):
-        xreq = XMLRPCRequest.from_parts(self.get_url(), 'POST',
-                                        XML_WITHOUT_FUZZABLE, Headers())
+        found_at = '"http://w3af.com/a/b/c.php", using HTTP method POST. ' \
+                   'The sent XML-RPC was: "<methodCall>\n   <methodName>' \
+                   'sample.sum</methodName>\n   <params>\n ".'
+        self.assertEqual(m.found_at(), found_at)
 
-        self.assertIsInstance(xreq, XMLRPCRequest)
-        self.assertIsInstance(xreq.get_dc(), XmlRpcContainer)
-
-        self.assertEqual(len(xreq.get_dc()), 0)
+        headers = m.get_headers()
+        self.assertIn('Content-Type', headers)
+        self.assertEqual(headers['Content-Type'], 'application/xml')
