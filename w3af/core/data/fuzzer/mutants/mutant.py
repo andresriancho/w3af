@@ -59,6 +59,14 @@ class Mutant(DiskItem):
     def get_token(self):
         return self.get_dc().get_token()
 
+    def set_token(self, *args):
+        """
+        Shortcut!
+        :return: For the current data-container, point the token to a specific
+                 location specified by *args.
+        """
+        return self.get_dc().set_token(*args)
+
     def get_token_value(self):
         """
         Shortcut!
@@ -216,7 +224,7 @@ class Mutant(DiskItem):
                 # But I only perform this task in HTML forms, everything
                 # else is left as it is:
                 if isinstance(dc_copy, Form):
-                    dc_copy = dc_copy.smart_fill()
+                    dc_copy.smart_fill()
 
                 if append:
                     if not isinstance(payload, basestring):

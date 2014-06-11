@@ -28,6 +28,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -78,8 +79,8 @@ class basic_auth(BruteforcePlugin):
         # threadpool. If the worker finds something, it has to let the rest know
         # and the way we do that is by setting self._found.
         #
-        # If one thread sees that we already bruteforced the access, the rest will
-        # simply no-op
+        # If one thread sees that we already bruteforced the access, the rest
+        # will simply no-op
         if not self._found or not self._stop_on_first:
             user, passwd = combination
 
@@ -87,9 +88,11 @@ class basic_auth(BruteforcePlugin):
             auth = 'Basic %s' % base64.b64encode(raw_values).strip()
             headers = Headers([('Authorization', auth)])
 
+            fr = FuzzableRequest(url, headers=headers, method='GET')
+
             try:
-                response = self._uri_opener.GET(url, cache=False, grep=False,
-                                                headers=headers)
+                response = self._uri_opener.send_mutant(fr, cache=False,
+                                                        grep=False)
             except BaseFrameworkException, w3:
                 msg = 'Exception while brute-forcing basic authentication,'\
                       ' error message: "%s".'
@@ -109,6 +112,7 @@ class basic_auth(BruteforcePlugin):
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response
+                    v['request'] = fr
 
                     kb.kb.append(self, 'auth', v)
                     om.out.vulnerability(v.get_desc(),

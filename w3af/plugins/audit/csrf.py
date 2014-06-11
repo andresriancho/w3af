@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from math import log, floor
+from itertools import chain
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
@@ -134,7 +135,7 @@ class csrf(AuditPlugin):
         # By checking like this we're loosing the opportunity to find CSRF vulns
         # in applications that use mod_rewrite. Example: A CSRF in this URL:
         # http://host.tld/users/remove/id/123
-        if not freq.get_uri().has_query_string() and not freq.get_dc():
+        if not freq.get_uri().has_query_string() and not freq.get_raw_data():
             return False
 
         om.out.debug('%s is suitable for CSRF attack' % freq.get_url())
@@ -146,10 +147,13 @@ class csrf(AuditPlugin):
                  processing the HTTP request.
         """
         fake_ref = 'http://www.w3af.org/'
+
         mutant = HeadersMutant(freq.copy())
-        mutant.set_var('Referer')
-        mutant.set_original_value(freq.get_referer())
+        headers = mutant.get_dc()
+        headers['Referer'] = freq.get_referer()
+        mutant.set_token('Referer')
         mutant.set_token_value(fake_ref)
+
         mutant_response = self._uri_opener.send_mutant(mutant)
         
         if not self._is_resp_equal(orig_response, mutant_response):
@@ -162,21 +166,21 @@ class csrf(AuditPlugin):
         :return: A dict with the first identified token
         """
         result = {}
-        dc = freq.get_dc()
+        post_data = freq.get_raw_data()
+        querystring = freq.get_querystring()
         
-        for param_name in dc:
-            for element_index, element_value in enumerate(dc[param_name]):
+        for token in chain(post_data.iter_tokens(), querystring.iter_tokens()):
             
-                if self.is_csrf_token(param_name, element_value):
-                    
-                    result[param_name] = element_value
-                    
-                    msg = 'Found CSRF token %s in parameter %s for URL %s.'
-                    om.out.debug(msg % (element_value,
-                                        param_name,
-                                        freq.get_url()))
-                    
-                    return result
+            if self.is_csrf_token(token.get_name(), token.get_value()):
+
+                result[token.get_name()] = token.get_value()
+
+                msg = 'Found CSRF token %s in parameter %s for URL %s.'
+                om.out.debug(msg % (token.get_value(),
+                                    token.get_name(),
+                                    freq.get_url()))
+
+                return result
         
         return result
 

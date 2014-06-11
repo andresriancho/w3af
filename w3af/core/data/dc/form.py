@@ -252,13 +252,11 @@ class Form(KeyValueContainer):
 
     def smart_fill(self):
         """
-        :return: A copy of self, where all the empty parameters (which should be
-                 filled) have been filled using the smart_fill function.
+        :return: Fills all the empty parameters (which should be filled)
+                 using the smart_fill function.
         """
-        dc_copy = copy.deepcopy(self)
-
-        for var_name, value, setter in dc_copy.iter_setters():
-            if dc_copy.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
+        for var_name, value, setter in self.iter_setters():
+            if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
 
             if isinstance(value, DataToken):
@@ -290,8 +288,6 @@ class Form(KeyValueContainer):
                 #   Fill it smartly
                 #
                 setter(smart_fill(var_name))
-
-        return dc_copy
 
     def get_parameter_type(self, name):
         return self._types[name]

@@ -328,6 +328,7 @@ class form_auth(BruteforcePlugin):
                     v['user'] = user
                     v['pass'] = pwd
                     v['response'] = resp
+                    v['request'] = freq
 
                     kb.kb.append(self, 'auth', v)
 

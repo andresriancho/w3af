@@ -28,8 +28,8 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
-                                                     password_bruteforcer)
-from w3af.core.data.request.factory import create_fuzzable_requests
+                                                          password_bruteforcer)
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, STRING, INPUT_FILE, INT
 from w3af.core.data.options.option_list import OptionList
@@ -99,13 +99,21 @@ class BruteforcePlugin(AuditPlugin):
         raise NotImplementedError(msg)
 
     def bruteforce_wrapper(self, fuzzable_request):
+        """
+        :param fuzzable_request: The FuzzableRequest instance to analyze
+        :return: A list with FuzzableRequests (if we were able to bruteforce
+                 any forms/basic auth present in fuzzable_request).
+        """
         self.audit(fuzzable_request.copy())
 
         res = []
+
         for v in kb.kb.get(self.get_name(), 'auth'):
+
             if v.get_url() not in self._already_reported:
                 self._already_reported.append(v.get_url())
-                res.extend(create_fuzzable_requests(v['response']))
+                res.append(v['request'])
+
         return res
 
     def _bruteforce(self, url, combinations):
@@ -114,8 +122,9 @@ class BruteforcePlugin(AuditPlugin):
         :param combinations: A generator with tuples that contain (user,pass)
         """
         args_iter = izip(repeat(url), combinations)
-        self.worker_pool.map_multi_args(
-            self._brute_worker, args_iter, chunksize=100)
+
+        self.worker_pool.map_multi_args(self._brute_worker, args_iter,
+                                        chunksize=100)
 
     def end(self):
         raise NotImplementedError('Bruteforce plugins MUST override the'

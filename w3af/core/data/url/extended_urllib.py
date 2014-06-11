@@ -163,7 +163,7 @@ class ExtendedUrllib(object):
 
     def get_cookies(self):
         """
-        :return: The cookies that this uri opener has collected during this scan.
+        :return: The cookies that this uri opener has collected during this scan
         """
         return self.settings.get_cookies()
 

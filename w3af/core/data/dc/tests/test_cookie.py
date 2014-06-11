@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.dc.cookie import Cookie
+from w3af.core.data.parsers.url import URL
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class TestCookieDc(unittest.TestCase):
@@ -43,4 +46,13 @@ class TestCookieDc(unittest.TestCase):
         self.assertIn('path', cookie_obj)
         
         self.assertEqual(cookie_obj['test'], ['123', 'abc def'])
+
+    def test_create_cookie(self):
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html'), ('Cookie', 'abc=def')])
+        response = HTTPResponse(200, '', headers, url, url)
+
+        cookie = Cookie.from_http_response(response)
+
+        self.assertEqual(cookie, Cookie('abc=def'))
 

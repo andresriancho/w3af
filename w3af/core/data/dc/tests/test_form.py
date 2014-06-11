@@ -368,12 +368,11 @@ class test_form(unittest.TestCase):
         form.add_input([("name", "address"), ("value", "")])
         form['username'][0] = token = DataToken('username', '')
 
-        filled_form = form.smart_fill()
+        form.smart_fill()
 
-        self.assertNotEqual(id(form), id(filled_form))
-        self.assertEqual(filled_form['username'], ['', ])
-        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(filled_form['username'][0], DataToken)
+        self.assertEqual(form['username'], ['', ])
+        self.assertEqual(form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(form['username'][0], DataToken)
 
     def test_mutant_smart_fill_with_file(self):
         form = Form()
@@ -382,14 +381,13 @@ class test_form(unittest.TestCase):
         form.add_file_input([("name", "file"), ("type", "file")])
         form['username'][0] = token = DataToken('username', '')
 
-        filled_form = form.smart_fill()
+        form.smart_fill()
 
-        self.assertNotEqual(id(form), id(filled_form))
-        self.assertEqual(filled_form['username'], ['', ])
-        self.assertEqual(filled_form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(filled_form['username'][0], DataToken)
+        self.assertEqual(form['username'], ['', ])
+        self.assertEqual(form['address'], ['Bonsai Street 123', ])
+        self.assertIsInstance(form['username'][0], DataToken)
 
-        str_file = filled_form['file'][0]
+        str_file = form['file'][0]
         self.assertEqual(str_file.name[-4:], '.gif')
         self.assertIn('GIF', str_file)
 

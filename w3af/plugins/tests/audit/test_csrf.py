@@ -27,8 +27,8 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.request.factory import create_fuzzable_requests
 from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.parsers.url import parse_qs
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
@@ -128,9 +128,9 @@ class TestCSRF(PluginTest):
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertFalse(suitable)
 
-        # False, no items in dc
+        # False, no items in post-data
         url = URL('http://moth/')
-        req = FuzzableRequest(url, method='POST', dc=Form())
+        req = FuzzableRequest(url, method='POST', post_data=Form())
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertFalse(suitable)
 
@@ -138,7 +138,7 @@ class TestCSRF(PluginTest):
         url = URL('http://moth/')
         form = Form()
         form.add_input([('name', 'test'), ('type', 'text')])
-        req = FuzzableRequest(url, method='POST', dc=form)
+        req = FuzzableRequest(url, method='POST', post_data=form)
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertTrue(suitable)
         
@@ -222,7 +222,8 @@ class TestCSRF(PluginTest):
     def test_find_csrf_token_true_simple(self):
         url = URL('http://moth/w3af/audit/csrf/')
         query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3')
-        freq = FuzzableRequest(url, method='GET', dc=query_string)
+        freq = FuzzableRequest(url, method='GET')
+        freq.set_querystring(query_string)
         
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertIn('secret', token)
@@ -231,15 +232,17 @@ class TestCSRF(PluginTest):
         url = URL('http://moth/w3af/audit/csrf/')
         query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3'
                                 '&secret=not a token')
-        freq = FuzzableRequest(url, method='GET', dc=query_string)
-        
+        freq = FuzzableRequest(url, method='GET')
+        freq.set_querystring(query_string)
+
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertIn('secret', token)
 
     def test_find_csrf_token_false(self):
         url = URL('http://moth/w3af/audit/csrf/')
         query_string = parse_qs('secret=not a token')
-        freq = FuzzableRequest(url, method='GET', dc=query_string)
+        freq = FuzzableRequest(url, method='GET')
+        freq.set_querystring(query_string)
         
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertNotIn('secret', token)
@@ -250,10 +253,8 @@ class TestCSRF(PluginTest):
         http_response = self.uri_opener.GET(generator)
         
         # Please note that this freq holds a fresh/valid CSRF token
-        freq_lst = create_fuzzable_requests(http_response, add_self=False)
-        self.assertEqual(len(freq_lst), 1)
-        
-        freq = freq_lst[0]
+        cookie = Cookie.from_http_response(http_response)
+        freq = FuzzableRequest(generator, cookie=cookie)
 
         # FIXME:
         # And I use this token here to get the original response, and if the
@@ -262,7 +263,8 @@ class TestCSRF(PluginTest):
         original_response = self.uri_opener.send_mutant(freq)
         
         token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
-        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
+        checked = self.csrf_plugin._is_token_checked(freq, token,
+                                                     original_response)
         self.assertTrue(checked)
     
     @attr('ci_fails')
@@ -275,10 +277,9 @@ class TestCSRF(PluginTest):
         http_response = self.uri_opener.GET(generator)
         
         # Please note that this freq holds a fresh/valid CSRF token
-        freq_lst = create_fuzzable_requests(http_response, add_self=False)
-        self.assertEqual(len(freq_lst), 1)
-        
-        freq = freq_lst[0]
+        cookie = Cookie.from_http_response(http_response)
+        freq = FuzzableRequest(generator, cookie=cookie)
+
         # FIXME:
         # And I use this token here to get the original response, and if the
         # application is properly developed, that token will be invalidated

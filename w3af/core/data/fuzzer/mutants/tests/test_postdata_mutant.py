@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.form import Form
-from w3af.core.data.request.post_data_request import PostDataRequest
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class TestPostDataMutant(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
 
-        freq = PostDataRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
+        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
                                method='PUT')
         m = PostDataMutant(freq)
         m.get_dc().set_token('username', 0)
@@ -53,8 +53,8 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
 
-        freq = PostDataRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
-                                   method='PUT')
+        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
+                               method='PUT')
 
         created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
                                                         False,
@@ -100,9 +100,8 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "id"), ("value", "")])
         form.add_input([("name", "id"), ("value", "")])
 
-        freq = PostDataRequest(URL('http://w3af.com/?foo=3'),
-                                   post_data=form,
-                                   method='GET')
+        freq = FuzzableRequest(URL('http://w3af.com/?foo=3'), post_data=form,
+                               method='GET')
 
         created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
                                                         False,
@@ -136,7 +135,7 @@ class TestPostDataMutant(unittest.TestCase):
         form.add_input([("name", "username"), ("value", "default")])
         form.add_file_input([("name", "file_upload")])
 
-        freq = PostDataRequest(URL('http://www.w3af.com/upload'),
+        freq = FuzzableRequest(URL('http://www.w3af.com/upload'),
                                post_data=form, method='POST')
 
         payloads = [file(__file__)]

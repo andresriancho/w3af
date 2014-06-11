@@ -74,3 +74,31 @@ class Cookie(KeyValueContainer):
         r = list(super(Cookie, self).__reduce__())
         r[1] = (str(self),)
         return tuple(r)
+
+    @classmethod
+    def from_http_response(cls, http_response):
+        """
+        Create a cookie object from an HTTP response.
+        """
+        cookies = []
+
+        # Get data from RESPONSE
+        response_headers = http_response.get_headers()
+
+        for hname, hvalue in response_headers.iteritems():
+            if 'cookie' in hname.lower():
+                cookies.append(hvalue)
+
+        cookie_inst = cls(''.join(cookies))
+
+        #
+        # delete everything that the browsers usually keep to themselves, since
+        # this cookie object is the one we're going to send to the wire
+        #
+        for key in ['path', 'expires', 'domain', 'max-age']:
+            try:
+                del cookie_inst[key]
+            except:
+                pass
+
+        return cookie_inst

@@ -25,10 +25,13 @@ import re
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
+from w3af.plugins.crawl.web_spider import web_spider
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class TestWebSpider(PluginTest):
@@ -81,6 +84,38 @@ class TestWebSpider(PluginTest):
 
         self.generic_scan(config, self.follow_links_url,
                           start_url, expected_files)
+
+    def test_redirect_location(self):
+        ws = web_spider()
+        body = ''
+        url = URL('http://www.w3af.org')
+        redir_url = 'http://www.w3af.org/redir'
+        headers = Headers([('content-type', 'text/html'),
+                           ('location', redir_url)])
+        resp = HTTPResponse(200, body, headers, url, url)
+
+        gen = ws._headers_url_generator(resp, None)
+
+        extracted_data = [i for i in gen]
+        expected_data = [(URL(redir_url), None, resp, False)]
+
+        self.assertEqual(extracted_data, expected_data)
+
+    def test_redirect_uri_relative(self):
+        ws = web_spider()
+        body = ''
+        url = URL('http://www.w3af.org')
+        redir_url = '/redir'
+        headers = Headers([('content-type', 'text/html'),
+                           ('uri', redir_url)])
+        resp = HTTPResponse(200, body, headers, url, url)
+
+        gen = ws._headers_url_generator(resp, None)
+
+        extracted_data = [i for i in gen]
+        expected_data = [(url.url_join(redir_url), None, resp, False)]
+
+        self.assertEqual(extracted_data, expected_data)
 
     def test_utf8_urls(self):
         config = self._run_configs['basic']
