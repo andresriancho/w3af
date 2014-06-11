@@ -106,6 +106,26 @@ class TestHeaders(unittest.TestCase):
 
         self.assertNotEqual(upper_headers, lower_headers)
 
+    def test_headers_update(self):
+        abc_headers = Headers([('Abc', 'b')])
+        def_headers = Headers([('def', '1')])
+
+        abc_headers.update(def_headers)
+
+        expected_headers = Headers([('Abc', 'b'), ('def', '1')])
+
+        self.assertEqual(expected_headers, abc_headers)
+
+    def test_headers_update_overlap(self):
+        abc_headers = Headers([('Abc', 'b'), ('def', '2')])
+        def_headers = Headers([('def', '1')])
+
+        abc_headers.update(def_headers)
+
+        expected_headers = Headers([('Abc', 'b'), ('def', '1')])
+
+        self.assertEqual(expected_headers, abc_headers)
+
     def test_from_string(self):
         headers_from_str = Headers.from_string('a: b\r\n')
         headers_from_obj = Headers([('a', 'b')])

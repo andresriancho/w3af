@@ -243,8 +243,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                     self.get_uri() == other.get_uri() and
                     self.get_data() == other.get_data() and
                     self.get_headers() == other.get_headers())
-        else:
-            raise NotImplementedError
+
+        return False
 
     def get_eq_attrs(self):
         return ['_method', '_uri', '_post_data', '_headers']

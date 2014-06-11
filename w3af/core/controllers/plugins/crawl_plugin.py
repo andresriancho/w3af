@@ -64,7 +64,7 @@ class CrawlPlugin(Plugin):
     def get_type(self):
         return 'crawl'
     
-    def http_get_and_parse(self, url):
+    def http_get_and_parse(self, url, *args, **kwargs):
         """
         Perform an HTTP GET to url, and if the response is not a 404 then put()
         a FuzzableRequest with the url in the output queue, so it can be
@@ -81,5 +81,9 @@ class CrawlPlugin(Plugin):
         else:
             if not is_404(http_response):
                 self.output_queue.put(fr)
+
+                on_success = kwargs.get('on_success', None)
+                if on_success is not None:
+                    on_success(http_response, url, *args)
             
             return http_response

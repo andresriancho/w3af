@@ -39,19 +39,8 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
     
     If the user/plugin needs to follow a redirect he needs to do it manually.
     In cases such as the web_spider.py this is not an issue since it will
-    perform an HTTP request and then create the fuzzable requests:
-    
-        resp = self._uri_opener.send_mutant(fuzzable_req)
-
-        fuzz_req_list = self._create_fuzzable_requests(
-            resp,
-            request=fuzzable_req,
-            add_self=False
-        )
-    
-    If the "resp" object in that code is a 302, the _create_fuzzable_requests
-    will take care of parsing the "Location" header and returning a fuzzable
-    request (in fuzz_req_list) for it.
+    perform an HTTP request and then create the fuzzable requests in
+    _headers_url_generator
     """
     def http_error_default(self, req, resp, code, msg, hdrs):
         

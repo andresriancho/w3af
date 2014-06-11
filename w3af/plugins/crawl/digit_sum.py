@@ -51,25 +51,31 @@ class digit_sum(CrawlPlugin):
 
     def crawl(self, fuzzable_request):
         """
-        Searches for new URLs by adding and substracting numbers to the file
+        Searches for new URLs by adding and subtracting numbers to the file
         and the parameters.
 
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         """
-        url = fuzzable_request.get_url()
-        headers = Headers([('Referer', url.url_string)])
+        # If the fuzzable request sends post-data in any way, we don't want to
+        # start fuzzing the URL, it simply doesn't make any sense.
+        if fuzzable_request.get_data():
+            return
 
-        original_response = self._uri_opener.GET(fuzzable_request.get_uri(),
-                                                 cache=True, headers=headers)
+        url = fuzzable_request.get_url()
+
+        headers = Headers([('Referer', url.url_string)])
+        fuzzable_request.get_headers().update(headers)
+
+        original_response = self._uri_opener.send_mutant(fuzzable_request,
+                                                         cache=True)
 
         if original_response.is_text_or_html() or self._fuzz_images:
 
             fr_generator = self._mangle_digits(fuzzable_request)
             response_repeater = repeat(original_response)
-            header_repeater = repeat(headers)
 
-            args = izip(fr_generator, response_repeater, header_repeater)
+            args = izip(fr_generator, response_repeater)
 
             self.worker_pool.map_multi_args(self._do_request, args)
 
@@ -77,7 +83,7 @@ class digit_sum(CrawlPlugin):
             # Example: index1.html ---> index2.html --!!--> index1.html
             self._already_visited.add(fuzzable_request.get_uri())
 
-    def _do_request(self, fuzzable_request, original_resp, headers):
+    def _do_request(self, fuzzable_request, original_resp):
         """
         Send the request.
 
@@ -85,9 +91,7 @@ class digit_sum(CrawlPlugin):
         :param original_resp: The response for the original request that was
                               sent.
         """
-        response = self._uri_opener.GET(fuzzable_request.get_uri(),
-                                        cache=True,
-                                        headers=headers)
+        response = self._uri_opener.send_mutant(fuzzable_request, cache=True)
 
         add = False
 
@@ -122,8 +126,7 @@ class digit_sum(CrawlPlugin):
                 add = True
 
         if add:
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            self.output_queue.put(fuzzable_request)
 
     def _mangle_digits(self, fuzzable_request):
         """
@@ -132,7 +135,7 @@ class digit_sum(CrawlPlugin):
         :param fuzzable_request: The original FuzzableRequest
         :return: A generator which returns mangled fuzzable requests
         """
-        # First i'll mangle the digits in the URL file
+        # First i'll mangle the digits in the URL filename
         filename = fuzzable_request.get_url().get_file_name()
         domain_path = fuzzable_request.get_url().get_domain_path()
         for fname in self._do_combinations(filename):
@@ -146,23 +149,19 @@ class digit_sum(CrawlPlugin):
 
         # Now i'll mangle the query string variables
         if fuzzable_request.get_method() == 'GET':
-            for parameter in fuzzable_request.get_dc():
 
-                # to support repeater parameter names...
-                for element_index in xrange(len(fuzzable_request.get_dc()[parameter])):
+            data_container = fuzzable_request.get_querystring()
 
-                    combinations = self._do_combinations(fuzzable_request.get_dc()
-                                                         [parameter][element_index])
-                    for modified_value in combinations:
+            for dc_copy, token in data_container.iter_bound_tokens():
+                for modified_value in self._do_combinations(token.get_value()):
 
-                        fr_copy = fuzzable_request.copy()
-                        new_dc = fr_copy.get_dc()
-                        new_dc[parameter][element_index] = modified_value
-                        fr_copy.set_dc(new_dc)
+                    fr_copy = fuzzable_request.copy()
+                    fr_copy.set_querystring(dc_copy)
+                    token.set_value(modified_value)
 
-                        if fr_copy.get_uri() not in self._already_visited:
-                            self._already_visited.add(fr_copy.get_uri())
-                            yield fr_copy
+                    if fr_copy.get_uri() not in self._already_visited:
+                        self._already_visited.add(fr_copy.get_uri())
+                        yield fr_copy
 
     def _do_combinations(self, a_string):
         """

@@ -35,6 +35,7 @@ from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.search_engines.google import google as google
@@ -103,8 +104,8 @@ class ghdb(CrawlPlugin):
             response = self._uri_opener.GET(result.URL, cache=True)
             if not is_404(response):
                 desc = 'ghdb plugin found a vulnerability at URL: "%s".' \
-                      ' According to GHDB the vulnerability description'\
-                      ' is "%s".'
+                       ' According to GHDB the vulnerability description'\
+                       ' is "%s".'
                 desc = desc % (response.get_url(), gh.desc)
                 
                 v = Vuln('Google hack database match', desc,
@@ -116,8 +117,8 @@ class ghdb(CrawlPlugin):
                 om.out.vulnerability(v.get_desc(), severity=severity.LOW)
 
                 # Create the fuzzable requests
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
+                fr = FuzzableRequest(response.get_url())
+                self.output_queue.put(fr)
 
     def _read_ghdb(self):
         """
@@ -141,8 +142,8 @@ class ghdb(CrawlPlugin):
         for signature in dom.getElementsByTagName("signature"):
             if len(signature.childNodes) != 6:
                 msg = 'There is a corrupt signature in the GHDB. The error was'\
-                      ' found in the following XML code: "%s".' % signature.toxml()
-                om.out.debug(msg)
+                      ' found in the following XML code: "%s".'
+                om.out.debug(msg % signature.toxml())
                 continue
 
             try:
@@ -197,11 +198,11 @@ class ghdb(CrawlPlugin):
             - result_limit
 
         Using the google hack database released by Exploit-DB.com, this
-	    plugin searches Google for possible vulnerabilities in the target
-	    domain.
+        plugin searches Google for possible vulnerabilities in the target
+        domain.
 
-	    Special thanks go to the guys at http://www.exploit-db.com/ for
-	    maintaining the GHDB and letting us use this information.
+        Special thanks go to the guys at http://www.exploit-db.com/ for
+        maintaining the GHDB and letting us use this information.
         """
 
 

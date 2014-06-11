@@ -324,6 +324,7 @@ class w3af_core_strategy(object):
                     # Not a real error, the user stopped the scan
                     raise
                 except Exception:
+                    raise
                     raise ScanMustStopException(msg)
                 else:
                     sent_requests += 1

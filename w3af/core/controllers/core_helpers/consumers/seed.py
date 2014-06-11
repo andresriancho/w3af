@@ -83,7 +83,8 @@ class seed(Process):
                 #    in a list and use them as our bootstrap URLs
                 #
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
-            except (ScanMustStopOnUrlError, BaseFrameworkException, ScanMustStopException), w3:
+            except (ScanMustStopOnUrlError, BaseFrameworkException,
+                    ScanMustStopException), w3:
                 om.out.error('The target URL: %s is unreachable.' % url)
                 om.out.error('Error description: %s' % w3)
             except Exception, e:

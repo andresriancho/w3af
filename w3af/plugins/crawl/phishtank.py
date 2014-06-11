@@ -32,6 +32,7 @@ import w3af.core.data.constants.severity as severity
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
@@ -62,9 +63,8 @@ class phishtank(CrawlPlugin):
         # I found some URLs, create fuzzable requests
         phishtank_matches = self._is_in_phishtank(to_check)
         for ptm in phishtank_matches:
-            response = self._uri_opener.GET(ptm.url)
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            fr = FuzzableRequest(ptm.url)
+            self.output_queue.put(fr)
 
         # Only create the vuln object once
         if phishtank_matches:
@@ -122,7 +122,7 @@ class phishtank(CrawlPlugin):
             # <?xml version="1.0" encoding="utf-8"?>
             phishtank_db_fd = file(self.PHISHTANK_DB, 'r')
         except Exception, e:
-            msg = 'Failed to open phishtank database file: "%s", exception: "%s".'
+            msg = 'Failed to open phishtank database: "%s", exception: "%s".'
             raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 
         parser = make_parser()

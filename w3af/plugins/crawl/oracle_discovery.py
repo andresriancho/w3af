@@ -29,6 +29,7 @@ from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class oracle_discovery(CrawlPlugin):
@@ -67,35 +68,30 @@ class oracle_discovery(CrawlPlugin):
 
         for url, re_obj in self.ORACLE_DATA:
 
-            oracle_discovery_URL = base_url.url_join(url)
-            response = self._uri_opener.GET(oracle_discovery_URL, cache=True)
+            od_url = base_url.url_join(url)
+            self.http_get_and_parse(od_url, re_obj, on_success=self.on_success)
 
-            if not is_404(response):
+    def on_success(self, response, url, re_obj):
+        # pylint: disable=E1101
+        # E1101: Instance of 'str' has no 'search' member
+        mo = re_obj.search(response.get_body(), re.DOTALL)
 
-                # Extract the links and send to core
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
-                
-                # pylint: disable=E1101
-                # E1101: Instance of 'str' has no 'search' member
-                mo = re_obj.search(response.get_body(), re.DOTALL)
+        if mo:
+            desc = '"%s" version "%s" was detected at "%s".'
+            desc = desc % (mo.group(1).title(), mo.group(2).title(),
+                           response.get_url())
+            i = Info('Oracle Application Server', desc, response.id,
+                     self.get_name())
+            i.set_url(response.get_url())
 
-                if mo:
-                    desc = '"%s" version "%s" was detected at "%s".'
-                    desc = desc % (mo.group(1).title(), mo.group(2).title(),
-                                   response.get_url())
-                    i = Info('Oracle Application Server', desc, response.id,
-                             self.get_name())
-                    i.set_url(response.get_url())
-                    
-                    kb.kb.append(self, 'oracle_discovery', i)
-                    om.out.information(i.get_desc())
-                else:
-                    msg = 'oracle_discovery found the URL: "%s" but failed to'\
-                          ' parse it as an Oracle page. The first 50 bytes of'\
-                          ' the response body is: "%s".'
-                    body_start = response.get_body()[:50]
-                    om.out.debug(msg % (response.get_url(), body_start))
+            kb.kb.append(self, 'oracle_discovery', i)
+            om.out.information(i.get_desc())
+        else:
+            msg = 'oracle_discovery found the URL: "%s" but failed to'\
+                  ' parse it as an Oracle page. The first 50 bytes of'\
+                  ' the response body is: "%s".'
+            body_start = response.get_body()[:50]
+            om.out.debug(msg % (response.get_url(), body_start))
 
     def get_long_desc(self):
         """

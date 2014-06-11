@@ -54,10 +54,10 @@ class MultipartPostHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPHandler.handler_order - 10
 
     def http_request(self, request):
-        data = request.get_raw_data()
 
         if self._should_send_as_multipart(request):
 
+            data = request.get_data()
             v_vars, v_files = self._split_vars_files(data)
 
             boundary, data = multipart_encode(v_vars, v_files)
@@ -77,12 +77,15 @@ class MultipartPostHandler(urllib2.BaseHandler):
         content_type, _ = request.get_headers().iget('content-type', '')
         has_multipart_header = 'multipart' in content_type
 
-        return self._has_files(request.get_raw_data()) or has_multipart_header
+        return self._has_files(request.get_data()) or has_multipart_header
 
     def _has_files(self, post_data):
         """
         :return: True if the data_container passed as parameter contains files
         """
+        if post_data is None:
+            return False
+
         for token in post_data.iter_tokens():
 
             value = token.get_value()

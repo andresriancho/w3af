@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import itertools
 import re
 
+from functools import partial
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
@@ -56,7 +58,7 @@ class web_spider(CrawlPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    NOT_404 = {http_constants.UNAUTHORIZED, http_constants.FORBIDDEN}
+    UNAUTH_FORBID = {http_constants.UNAUTHORIZED, http_constants.FORBIDDEN}
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -99,11 +101,15 @@ class web_spider(CrawlPlugin):
             self._already_filled_form.add(fuzzable_req.get_url())
             data_container.smart_fill()
 
-        # Send the HTTP request,
+        # Send the HTTP request
         resp = self._uri_opener.send_mutant(fuzzable_req)
 
         # Nothing to do here...
         if resp.get_code() == http_constants.UNAUTHORIZED:
+            return
+
+        # And we don't trust what comes from the core, check if 404
+        if is_404(resp):
             return
 
         self._extract_html_forms(resp, fuzzable_req)
@@ -230,43 +236,38 @@ class web_spider(CrawlPlugin):
         #
         # Note: I WANT to follow links that are in the 404 page.
         #
+        try:
+            doc_parser = parser_cache.dpc.get_document_parser_for(resp)
+        except BaseFrameworkException, w3:
+            om.out.debug('Failed to find a suitable document parser. '
+                         'Exception "%s"' % w3)
+        else:
+            # Note:
+            # - With parsed_refs I'm 100% that it's really
+            # something in the HTML that the developer intended to add.
+            #
+            # - The re_refs are the result of regular expressions,
+            # which in some cases are just false positives.
 
-        # Modified when I added the PDFParser
-        # I had to add this x OR y stuff, just because I don't want
-        # the SGML parser to analyze a image file, its useless and
-        # consumes CPU power.
-        if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
-            try:
-                doc_parser = parser_cache.dpc.get_document_parser_for(resp)
-            except BaseFrameworkException, w3:
-                om.out.debug('Failed to find a suitable document parser. '
-                             'Exception "%s"' % w3)
-            else:
-                # Note:
-                # - With parsed_refs I'm 100% that it's really
-                # something in the HTML that the developer intended to add.
-                #
-                # - The re_refs are the result of regular expressions,
-                # which in some cases are just false positives.
+            parsed_refs, re_refs = doc_parser.get_references()
 
-                parsed_refs, re_refs = doc_parser.get_references()
+            # I also want to analyze all directories, if the URL I just
+            # fetched is:
+            # http://localhost/a/b/c/f00.php I want to GET:
+            # http://localhost/a/b/c/
+            # http://localhost/a/b/
+            # http://localhost/a/
+            # http://localhost/
+            # And analyze the responses...
+            dirs = resp.get_url().get_directories()
+            only_re_refs = set(re_refs) - set(dirs + parsed_refs)
 
-                # I also want to analyze all directories, if the URL I just
-                # fetched is:
-                # http://localhost/a/b/c/f00.php I want to GET:
-                # http://localhost/a/b/c/
-                # http://localhost/a/b/
-                # http://localhost/a/
-                # http://localhost/
-                # And analyze the responses...
-                dirs = resp.get_url().get_directories()
-                only_re_refs = set(re_refs) - set(dirs + parsed_refs)
+            all_refs = itertools.chain(dirs, parsed_refs, re_refs)
+            resp_is_404 = is_404(resp)
 
-                all_refs = itertools.chain(dirs, parsed_refs, re_refs)
-
-                for ref in unique_justseen(sorted(all_refs)):
-                    possibly_broken = ref in only_re_refs
-                    yield ref, fuzzable_req, resp, possibly_broken
+            for ref in unique_justseen(sorted(all_refs)):
+                possibly_broken = resp_is_404 or (ref in only_re_refs)
+                yield ref, fuzzable_req, resp, possibly_broken
 
     def _should_output_extracted_url(self, ref, resp):
         """
@@ -344,7 +345,8 @@ class web_spider(CrawlPlugin):
             return False
 
     def _verify_reference(self, reference, original_request,
-                          original_response, possibly_broken):
+                          original_response, possibly_broken,
+                          be_recursive=True):
         """
         The parameters are:
             * Newly found URL
@@ -360,7 +362,7 @@ class web_spider(CrawlPlugin):
         # Remember that this "breaks" the cache=True in most cases!
         #     headers = { 'Referer': original_url }
         #
-        # But this does not, and it is friendlier that simply ignoring the
+        # But this does not, and it is friendlier than simply ignoring the
         # referer
         #
         referer = original_response.get_url().base_url().url_string
@@ -372,45 +374,54 @@ class web_spider(CrawlPlugin):
         except ScanMustStopOnUrlError:
             return
 
-        fuzz_req_list = []
-
         if is_404(resp):
             # Note: I WANT to follow links that are in the 404 page, but
-            # if the page I fetched is a 404 then it should be ignored.
+            # DO NOT return the 404 itself to the core.
             #
-            # add_self will be True when the response code is 401 or 403
-            # which is something needed for other plugins to keep poking
-            # at that URL
+            # This will parse the 404 response and add the 404-links in the
+            # output queue, so that the core can get them
             #
-            # add_self will be False in all the other cases, for example
-            # in the case where the response code is a 404, because we don't
-            # want to return a 404 to the core.
-            add_self = resp.get_code() in self.NOT_404
-            fuzz_req_list = self._create_fuzzable_requests(resp,
-                                                           request=original_request,
-                                                           add_self=add_self)
-            if not possibly_broken and not add_self:
+            if be_recursive:
+                #
+                # Only follow one level of links in 404 pages, this limits the
+                # potential issue when this is found:
+                #
+                #   http://foo.com/abc/ => 404
+                #   Body: <a href="def/">link</a>
+                #
+                # Which would lead to this function to perform requests to:
+                #   * http://foo.com/abc/
+                #   * http://foo.com/abc/def/
+                #   * http://foo.com/abc/def/def/
+                #   * http://foo.com/abc/def/def/def/
+                #   * ...
+                #
+                non_recursive_verify_ref = partial(self._verify_reference,
+                                                   be_recursive=False)
+                self.worker_pool.map_multi_args(
+                    non_recursive_verify_ref,
+                    self._urls_to_verify_generator(resp, original_request))
+
+            # Store the broken links
+            if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:
                 t = (resp.get_url(), original_request.get_uri())
                 self._broken_links.add(t)
         else:
-            om.out.debug('Adding relative reference "%s" '
-                         'to the result.' % reference)
-            frlist = self._create_fuzzable_requests(resp,
-                                                    request=original_request)
-            fuzz_req_list.extend(frlist)
+            msg = 'Adding reference "%s" to the result.'
+            om.out.debug(msg % reference)
 
+            fuzz_req = FuzzableRequest(reference, headers=headers)
 
-        cookie = Cookie.from_http_response(original_response)
-
-        # This for loop seems simple, but actually allows me to set the referer
-        # and cookie for the FuzzableRequest instances I'm sending to the core,
-        # which will then allow the fuzzer to create CookieMutant and
-        # HeadersMutant instances.
-        #
-        # Without setting the Cookie, the CookieMutant would never have any
-        # data to modify; remember that cookies are actually set by the urllib2
-        # cookie handler when the request already exited the framework.
-        for fuzz_req in fuzz_req_list:
+            # These next steps are simple, but actually allows me to set the
+            # referer and cookie for the FuzzableRequest instances I'm sending
+            # to the core, which will then allow the fuzzer to create
+            # CookieMutant and HeadersMutant instances.
+            #
+            # Without setting the Cookie, the CookieMutant would never have any
+            # data to modify; remember that cookies are actually set by the
+            # urllib2 cookie handler when the request already exited the
+            # framework.
+            cookie = Cookie.from_http_response(original_response)
 
             fuzz_req.set_referer(referer)
             fuzz_req.set_cookie(cookie)
