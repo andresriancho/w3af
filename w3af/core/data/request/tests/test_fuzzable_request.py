@@ -142,13 +142,15 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(str(fr), expected)
 
     def test_str_with_postdata(self):
-        fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1')
+        fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1',
+                                        headers=Headers([('content-type', Form.ENCODING)]))
         expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_qs_and_postdata(self):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
-                                        post_data='a=1&b=3&a=2')
+                                        post_data='a=1&b=3&a=2',
+                                        headers=Headers([('content-type', Form.ENCODING)]))
         expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a,a,b)'
         self.assertEqual(str(fr), expected)
 
