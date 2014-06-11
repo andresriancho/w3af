@@ -85,15 +85,10 @@ class TestDCFactory(unittest.TestCase):
         headers = self.get_headers('foo/bar')
         dc = dc_factory(headers, 'a=3&b=2')
 
-        self.assertIsInstance(dc, Form)
-        self.assertIn('a', dc)
-        self.assertIn('b', dc)
-        self.assertEqual('a=3&b=2', str(dc))
+        self.assertIs(dc, None)
 
     def test_unknown_default_form_no_urlencoded(self):
         headers = self.get_headers('foo/bar')
         dc = dc_factory(headers, 'a')
 
-        self.assertIsInstance(dc, Form)
-        self.assertIn('a', dc)
-        self.assertEqual('a=', str(dc))
+        self.assertIs(dc, None)
