@@ -26,7 +26,6 @@ from functools import partial
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
@@ -65,7 +64,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                 if key in self:
                     raise TypeError(ERR_MSG_NO_REP % init_val)
 
-                if not isinstance(val, (basestring, DataToken)):
+                if not isinstance(val, (basestring, self.DATA_TOKEN_KLASS)):
                     raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 self[key] = val
@@ -95,7 +94,8 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     * The setter to modify the value
         """
         for k, v in self.items():
-             yield k, v, partial(self.__setitem__, k)
+            if self.token_filter(k, v):
+                yield k, v, partial(self.__setitem__, k)
 
     def iter_bound_tokens(self):
         """
@@ -106,13 +106,14 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     - A token set to the right location in the copy of self
         """
         for k, v in self.items():
-            token = DataToken(k, v)
+            if self.token_filter(k, v):
+                token = self.DATA_TOKEN_KLASS(k, v)
 
-            dcc = copy.deepcopy(self)
-            dcc[k] = token
-            dcc.token = token
+                dcc = copy.deepcopy(self)
+                dcc[k] = token
+                dcc.token = token
 
-            yield dcc, token
+                yield dcc, token
 
     def set_token(self, key_name):
         """
@@ -126,8 +127,11 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         :return: The token if we were able to set it in the DataContainer
         """
         for k, v in self.items():
+            if not self.token_filter(k, v):
+                continue
+
             if key_name == k:
-                token = DataToken(k, v)
+                token = self.DATA_TOKEN_KLASS(k, v)
 
                 self[k] = token
                 self.token = token
@@ -160,7 +164,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             for k, v in self.items():
-                if isinstance(v, DataToken):
+                if isinstance(v, self.DATA_TOKEN_KLASS):
                     dt_str = '%s=%s' % (v.get_name(), v.get_value())
                     return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:

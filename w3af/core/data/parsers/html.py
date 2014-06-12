@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.dc.form as form
 
+from w3af.core.data.dc.form import Form
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
@@ -160,7 +160,7 @@ class HTMLParser(SGMLParser):
                 action = self._source_url
 
         # Create the form object and store everything for later use
-        form_obj = form.Form(encoding=self._encoding)
+        form_obj = Form(encoding=self._encoding)
         form_obj.set_method(method)
         form_obj.set_action(action)
         self._forms.append(form_obj)
@@ -188,12 +188,14 @@ class HTMLParser(SGMLParser):
 
         if _type == 'file':
             # Let the form know, that this is a file input
-            form_obj.hasFileInput = True
             form_obj.add_file_input(items)
+
         elif _type == 'radio':
             form_obj.add_radio(items)
+
         elif _type == 'checkbox':
             form_obj.add_check_box(items)
+
         else:
             # Simply add all the other input types
             form_obj.add_input(items)

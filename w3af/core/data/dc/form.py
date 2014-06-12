@@ -29,7 +29,6 @@ import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.fuzzer.form_filler import smart_fill
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -71,10 +70,12 @@ class Form(KeyValueContainer):
         super(Form, self).__init__(init_val, encoding)
 
         # Internal variables
-        self._method = None
+        # Form method defaults to GET if not found
+        self._method = 'GET'
         self._action = None
         self._types = {}
-        self._files = []
+        self._file_vars = []
+        self._file_names = {}
         self._selects = {}
         self._submit_map = {}
 
@@ -137,7 +138,28 @@ class Form(KeyValueContainer):
         self._method = method.upper()
 
     def get_file_vars(self):
-        return self._files
+        return self._file_vars
+
+    def get_file_name(self, pname, default=None):
+        """
+        When the form is created by parsing an HTTP request which contains a
+        multipart/form, it is possible to know the name of the file which is
+        being uploaded.
+
+        This method returns the name of the file being uploaded given the
+        parameter name (pname) where it was sent.
+        """
+        return self._file_names.get(pname, default)
+
+    def set_file_name(self, pname, fname):
+        self._file_names[pname] = fname
+
+    def get_value_by_key(self, attrs, *args):
+        for search_attr_key in args:
+            for attr in attrs:
+                if attr[0] == search_attr_key:
+                    return attr[1]
+        return None
 
     def setdefault_var(self, name, value):
         """
@@ -151,21 +173,10 @@ class Form(KeyValueContainer):
         Adds a file input to the Form
         :param attrs: attrs=[("class", "screen")]
         """
-        name = ''
-
-        for attr in attrs:
-            if attr[0] == 'name':
-                name = attr[1]
-                break
-
-        if not name:
-            for attr in attrs:
-                if attr[0] == 'id':
-                    name = attr[1]
-                    break
+        name = self.get_value_by_key(attrs, 'name', 'id')
 
         if name:
-            self._files.append(name)
+            self._file_vars.append(name)
             self.setdefault_var(name, '')
             # TODO: This does not work if there are different parameters in a
             # form with the same name, and different types
@@ -211,27 +222,14 @@ class Form(KeyValueContainer):
         attr_type = self.INPUT_TYPE_TEXT
         name = value = ''
 
-        # Try to get the name:
-        for attr in attrs:
-            if attr[0] == 'name':
-                name = attr[1]
-        if not name:
-            for attr in attrs:
-                if attr[0] == 'id':
-                    name = attr[1]
+        name = self.get_value_by_key(attrs, 'name', 'id')
 
         if not name:
-            return (name, value)
+            return '', ''
 
-        # Find the attr_type
-        for attr in attrs:
-            if attr[0] == 'type':
-                attr_type = attr[1].lower()
-
-        # Find the default value
-        for attr in attrs:
-            if attr[0] == 'value':
-                value = attr[1]
+        # Find the attr type and value
+        attr_type = self.get_value_by_key(attrs, 'type')
+        value = self.get_value_by_key(attrs, 'value')
 
         if attr_type == self.INPUT_TYPE_SUBMIT:
             self.add_submit(name, value)
@@ -240,11 +238,6 @@ class Form(KeyValueContainer):
 
         # Save the attr_type
         self._types[name] = attr_type
-
-        #
-        # TODO May be create special internal method instead of using
-        # add_input()?
-        #
         return name, value
 
     def get_type(self):
@@ -259,7 +252,7 @@ class Form(KeyValueContainer):
             if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
 
-            if isinstance(value, DataToken):
+            if isinstance(value, self.DATA_TOKEN_KLASS):
                 # This is the value which is being fuzzed (the payload)
                 continue
 
@@ -267,7 +260,7 @@ class Form(KeyValueContainer):
             # for __HERE__) for an explanation of what we are doing here:
             if var_name in self.get_file_vars():
                 # Try to upload a valid file
-                extension = cf.cf.get('fuzz_form_files', 'gif')
+                extension = cf.cf.get('fuzzed_files_extension', 'gif')
                 success, file_content, file_name = get_file_from_template(extension)
 
                 # I have to create the NamedStringIO with a "name",
@@ -536,7 +529,7 @@ class Form(KeyValueContainer):
         copy._method = self._method
         copy._action = self._action
         copy._types = self._types
-        copy._files = self._files
+        copy._files = self._file_vars
         copy._selects = self._selects
         copy._submit_map = self._submit_map
 

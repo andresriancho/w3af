@@ -1,5 +1,5 @@
 """
-FileContentMutant.py
+filecontent_mutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,13 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.data.dc.form import Form
-from w3af.core.data.fuzzer.utils import rand_alpha
+from w3af.core.data.dc.utils.file_token import FileDataToken
+from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.multipart_container import MultipartContainer
 
 
-class FileContentMutant(Mutant):
+class FileContentMutant(PostDataMutant):
     """
     This class is a file content mutant, this means that the payload is sent
     in the content of a file which is uploaded over multipart/post
@@ -56,26 +58,50 @@ class FileContentMutant(Mutant):
         if not 'fuzz_form_files' in fuzzer_config:
             return []
 
+        if not freq.get_file_vars():
+            return []
+
         if not isinstance(freq.get_raw_data(), Form):
             return []
 
-        file_vars = freq.get_file_vars()
-        if not file_vars:
-            return []
-
-        fake_file_objs = []
-        ext = fuzzer_config['fuzzed_files_extension']
-
-        for payload_str in payload_list:
-            if isinstance(payload_str, basestring):
-                # I have to create the NamedStringIO with a "name".
-                # This is needed for MultipartPostHandler
-                fname = "%s.%s" % (rand_alpha(7), ext)
-                str_file = NamedStringIO(payload_str, name=fname)
-                fake_file_objs.append(str_file)
+        form = freq.get_raw_data()
+        multipart_container = OnlyTokenFilesMultipartContainer.from_form(form)
+        freq.set_data(multipart_container)
 
         res = Mutant._create_mutants_worker(freq, FileContentMutant,
-                                            fake_file_objs,
-                                            file_vars,
+                                            payload_list,
+                                            freq.get_file_vars(),
                                             append, fuzzer_config)
         return res
+
+
+class OnlyTokenFilesMultipartContainer(MultipartContainer):
+    """
+    A MultipartContainer which only allows me to tokenize (and then modify) the
+    parameters which are going to be later send as files by multipart/encoding.
+
+    Also, when fuzzing I'll be creating my tokens using FileDataToken: a great
+    way to abstract the fact that payloads are sent in the content of a file.
+    """
+    DATA_TOKEN_KLASS = FileDataToken
+
+    def set_token(self, key_name, index_num):
+        """
+        Modified to pass the filename to the FileDataToken
+        """
+        for k, v in self.items():
+            for idx, ele in enumerate(v):
+                if not self.token_filter(k, idx, ele):
+                    continue
+
+                if key_name == k and idx == index_num:
+
+                    if hasattr(ele, 'filename') and k in self.get_file_vars():
+                        token = FileDataToken(k, ele, ele.filename)
+                    else:
+                        token = DataToken(k, ele)
+
+                    self[k][idx] = token
+                    self.token = token
+
+                    return token

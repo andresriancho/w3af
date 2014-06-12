@@ -26,7 +26,6 @@ from functools import partial
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
@@ -66,7 +65,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     raise TypeError(ERR_MSG % init_val)
 
                 for sub_val in val:
-                    if not isinstance(sub_val, (basestring, DataToken)):
+                    if not isinstance(sub_val, (basestring, self.DATA_TOKEN_KLASS)):
                         raise TypeError(ERR_MSG % init_val)
 
                 self[key] = val
@@ -98,13 +97,12 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                token = DataToken(k, ele)
+                if self.token_filter(k, idx, ele):
 
-                dcc = copy.deepcopy(self)
-                dcc[k][idx] = token
-                dcc.token = token
+                    dcc = copy.deepcopy(self)
+                    token = dcc.set_token(k, idx)
 
-                yield dcc, token
+                    yield dcc, token
 
     def iter_setters(self):
         """
@@ -115,7 +113,8 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                yield k, ele, partial(v.__setitem__, idx)
+                if self.token_filter(k, idx, ele):
+                    yield k, ele, partial(v.__setitem__, idx)
 
     def set_token(self, key_name, index_num):
         """
@@ -130,9 +129,11 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
+                if not self.token_filter(k, idx, ele):
+                    continue
 
                 if key_name == k and idx == index_num:
-                    token = DataToken(k, ele)
+                    token = self.DATA_TOKEN_KLASS(k, ele)
 
                     self[k][idx] = token
                     self.token = token
@@ -167,7 +168,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
             # I want to show the token variable and value in the output
             for k, v in self.items():
                 for ele in v:
-                    if isinstance(ele, DataToken):
+                    if isinstance(ele, self.DATA_TOKEN_KLASS):
                         dt_str = '%s=%s' % (ele.get_name(), ele.get_value())
                         return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:

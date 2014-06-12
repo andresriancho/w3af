@@ -137,19 +137,10 @@ class web_spider(CrawlPlugin):
             if not same_domain(form):
                 continue
 
-            for variant in form.get_variants(mode):
-                if form.get_method().upper() == 'POST':
-                    r = FuzzableRequest(variant.get_action(),
-                                        method=variant.get_method(),
-                                        headers=fuzzable_req.get_headers(),
-                                        post_data=variant)
-                else:
-                    # The default is a GET request
-                    r = FuzzableRequest(variant.get_action(),
-                                        method=variant.get_method(),
-                                        headers=fuzzable_req.get_headers())
-                    r.set_querystring(variant)
+            headers = fuzzable_req.get_headers()
 
+            for variant in form.get_variants(mode):
+                r = FuzzableRequest.from_form(variant, headers=headers)
                 self.output_queue.put(r)
 
     def _handle_first_run(self):

@@ -29,6 +29,7 @@ from w3af.core.data.dc.utils.token import DataToken
 
 class DataContainer(DiskItem):
     MAX_PRINTABLE = 65
+    DATA_TOKEN_KLASS = DataToken
 
     def __init__(self, encoding=UTF8):
         super(DataContainer, self).__init__()
@@ -43,6 +44,21 @@ class DataContainer(DiskItem):
         :warning: The subclass needs to implement it
         """
         raise NotImplementedError
+
+    def token_filter(self, *args):
+        """
+        This function is called when iterating over tokens, only tokens which
+        match the filter (return True) are going to be included in the result.
+
+        By default all tokens are included.
+
+        These methods should incorporate the filter:
+            * set_token
+            * iter_tokens
+            * iter_bound_tokens
+            * iter_setters
+        """
+        return True
 
     def get_token(self):
         return self.token
@@ -69,7 +85,8 @@ class DataContainer(DiskItem):
                 DataContainer.
         """
         for k, v, _ in self.iter_setters():
-            yield DataToken(k, v)
+            if self.token_filter(k, v):
+                yield self.DATA_TOKEN_KLASS(k, v)
 
     def iter_bound_tokens(self):
         """

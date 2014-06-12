@@ -1,5 +1,5 @@
 """
-FuzzableRequest.py
+fuzzable_request.py
 
 Copyright 2006 Andres Riancho
 
@@ -134,6 +134,22 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         cookie = Cookie.from_http_response(http_response)
         return cls(http_response.get_uri(), method='GET', cookie=cookie)
+
+    @classmethod
+    def from_form(cls, form, headers=None):
+        if form.get_method().upper() == 'POST':
+            r = cls(form.get_action(),
+                    method=form.get_method(),
+                    headers=headers,
+                    post_data=form)
+        else:
+            # The default is a GET request
+            r = cls(form.get_action(),
+                    method=form.get_method(),
+                    headers=headers)
+            r.set_querystring(form)
+
+        return r
 
     def export(self):
         """

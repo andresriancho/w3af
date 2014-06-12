@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
@@ -38,11 +39,13 @@ class TestFileContentMutant(unittest.TestCase):
 
     def test_basics(self):
         form = Form()
+        form.set_method('POST')
+        form.set_action(self.url)
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = FuzzableRequest(self.url, post_data=form)
+        freq = FuzzableRequest.from_form(form)
 
         m = FileContentMutant(freq)
         m.get_dc().set_token('file', 0)
@@ -65,40 +68,30 @@ class TestFileContentMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_form_files': False}
         freq = FuzzableRequest(URL('http://www.w3af.com/foo/bar'))
 
-        generated_mutants = FileContentMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
+        generated_mutants = FileContentMutant.create_mutants(freq,
+                                                             self.payloads, [],
+                                                             False,
+                                                             fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
-    def test_config_true(self):
+    def test_generate_all(self):
         fuzzer_config = {'fuzz_form_files': True,
                          'fuzzed_files_extension': 'gif'}
 
         form = Form()
+        form.set_method('POST')
+        form.set_action(self.url)
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
         form.add_file_input([("name", "file"), ("type", "file")])
 
-        freq = FuzzableRequest(self.url, post_data=form)
-
-        generated_mutants = FileContentMutant.create_mutants(
-            freq, self.payloads, [],
-            False, fuzzer_config)
-
-        self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
-
-    def test_valid_results(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
-
-        freq = FuzzableRequest(self.url, post_data=form)
+        freq = FuzzableRequest.from_form(form)
 
         generated_mutants = FileContentMutant.create_mutants(freq,
                                                              self.payloads, [],
                                                              False,
-                                                             self.fuzzer_config)
+                                                             fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 2, generated_mutants)
 
@@ -112,4 +105,9 @@ class TestFileContentMutant(unittest.TestCase):
         str_file = generated_data[0]['file'][0].get_value()
         self.assertIsInstance(str_file, NamedStringIO)
         self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertIn('abc', str_file)
+        self.assertEqual(get_template_with_payload('gif', 'abc'), str_file)
+
+        str_file = generated_data[1]['file'][0].get_value()
+        self.assertIsInstance(str_file, NamedStringIO)
+        self.assertEqual(str_file.name[-4:], '.gif')
+        self.assertEqual(get_template_with_payload('gif', 'def'), str_file)

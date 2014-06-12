@@ -22,15 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import cgi
 import StringIO
 
-from w3af.core.data.dc.generic.kv_container import KeyValueContainer
+from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.utils.file_token import FileDataToken
 
 
-class MultipartContainer(KeyValueContainer):
+class MultipartContainer(Form):
     """
     This class represents a data container for multipart/post
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    DATA_TOKEN_KLASS = FileDataToken
+
     def get_type(self):
         return 'Multipart/post'
 
@@ -42,13 +45,13 @@ class MultipartContainer(KeyValueContainer):
     @classmethod
     def from_postdata(cls, headers, post_data):
         if not MultipartContainer.is_multipart(headers):
-            raise ValueError('Failed to create MultipartContainer.')
+            raise ValueError('No multipart content-type header.')
 
-        conttype, _ = headers.iget('content-type')
+        environ = {'REQUEST_METHOD': 'POST'}
 
         try:
-            pdict = cgi.parse_header(conttype)[1]
-            dc = cgi.parse_multipart(StringIO.StringIO(post_data), pdict)
+            fs = cgi.FieldStorage(fp=StringIO.StringIO(post_data),
+                                  headers=headers, environ=environ)
         except ValueError:
             raise ValueError('Failed to create MultipartContainer.')
         else:
@@ -56,4 +59,20 @@ class MultipartContainer(KeyValueContainer):
             # the information. When the FuzzableRequest is sent it should
             # be serialized into multipart again by the MultipartPostHandler
             # because the headers contain the multipart/form-data header
-            return cls(init_val=dc.items())
+            mc = cls()
+
+            for key in fs.list:
+                if key.filename is None:
+                    mc.add_input([('name', key.name), ('type', 'text'),
+                                  ('value', key.file.read())])
+                else:
+                    mc.set_file_name(key.name, key.filename)
+                    mc.add_file_input([('name', key.name)])
+
+            return mc
+
+    @classmethod
+    def from_form(cls, form):
+        mc = cls(init_val=form.items())
+        mc.__dict__.update(form.__dict__)
+        return mc

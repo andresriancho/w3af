@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-tokens.py
+token.py
 
 Copyright 2014 Andres Riancho
 

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
-from w3af.core.data.dc.utils.token import DataToken
 
 
 class Headers(NonRepeatKeyValueContainer):
@@ -107,7 +106,7 @@ class Headers(NonRepeatKeyValueContainer):
 
         if isinstance(v, basestring):
             v = smart_unicode(v, encoding=self.encoding)
-        elif isinstance(v, DataToken):
+        elif isinstance(v, self.DATA_TOKEN_KLASS):
             encoded_str = smart_unicode(v.get_value(), encoding=self.encoding)
             v.set_value(encoded_str)
         else:

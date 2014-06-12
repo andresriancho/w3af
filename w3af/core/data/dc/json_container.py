@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 import copy
 
-from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.utils.json_iter_setters import (json_iter_setters,
@@ -120,12 +119,18 @@ class JSONContainer(DataContainer):
                 was a number with a string like "abc", it will simply break the
                 server-side framework parsing and don't return anything useful.
         """
-        for k, v, setter in self.iter_setters():
-
+        for k, v, _ in self.iter_setters():
             dcc = copy.deepcopy(self)
             token = dcc.set_token(k)
 
             yield dcc, token
+
+    def token_filter(self, name, value):
+        # Only return tokens for strings
+        if isinstance(value, basestring):
+            return True
+
+        return False
 
     def iter_setters(self):
         """
@@ -140,12 +145,8 @@ class JSONContainer(DataContainer):
                 server-side framework parsing and don't return anything useful.
         """
         for k, v, setter in json_iter_setters(self._json):
-
-            # Only return tokens for strings
-            if not isinstance(v, basestring):
-                continue
-
-            yield k, v, setter
+            if self.token_filter(k, v):
+                yield k, v, setter
 
     def set_token(self, key_name):
         """
@@ -160,7 +161,7 @@ class JSONContainer(DataContainer):
         for k, v, setter in self.iter_setters():
             if key_name == k:
 
-                token = DataToken(k, v)
+                token = self.DATA_TOKEN_KLASS(k, v)
 
                 setter(token)
                 self.token = token

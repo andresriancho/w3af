@@ -24,6 +24,7 @@ import copy
 from w3af.core.controllers.misc.io import NamedStringIO
 
 from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.utils.file_token import FileDataToken
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
 from w3af.core.data.db.disk_item import DiskItem
 
@@ -34,7 +35,7 @@ class Mutant(DiskItem):
     """
     def __init__(self, freq):
         super(Mutant, self).__init__()
-        
+
         self._freq = freq
         self._original_response_body = None
 
@@ -144,7 +145,7 @@ class Mutant(DiskItem):
 
     @classmethod
     def get_mutant_class(cls):
-        return cls.__name__        
+        return cls.__name__
 
     @staticmethod
     def create_mutants(freq, payload_list, fuzzable_param_list,
@@ -209,10 +210,13 @@ class Mutant(DiskItem):
                 # Form.smart_fill (search for __HERE__)
                 #
                 # The exclusion is done here:
-                if token.get_name() in freq.get_file_vars() \
-                and not isinstance(payload, NamedStringIO) \
-                and not isinstance(payload, file):
-                    continue
+                if token.get_name() in freq.get_file_vars():
+                    if not isinstance(token, FileDataToken):
+                        continue
+
+                    if not isinstance(payload, NamedStringIO) \
+                    and not isinstance(payload, file):
+                        continue
 
                 # Ok, now we have a data container with the mutant string,
                 # but it's possible that all the other fields of the data
