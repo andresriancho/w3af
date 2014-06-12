@@ -54,6 +54,8 @@ class TestFormAuth(PluginTest):
                                          PluginConfig.BOOL),
                                         ),
                            ),
+            'crawl': (PluginConfig('web_spider',
+                                  ('only_forward', True, PluginConfig.BOOL),),),
         }
     }
 

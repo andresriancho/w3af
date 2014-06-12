@@ -23,6 +23,7 @@ import copy
 import string
 
 from urllib import unquote
+from itertools import chain
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -294,7 +295,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if self.get_url() != other.get_url():
             return False
 
-        if not self.get_dc().is_variant_of(other.get_dc()):
+        self_qs = self.get_uri().querystring
+        other_qs = other.get_uri().querystring
+
+        if not self_qs.is_variant_of(other_qs):
             return False
 
         return True
@@ -384,13 +388,31 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def get_method(self):
         return self._method
 
+    def get_post_data_headers(self):
+        """
+        :return: A Headers object with the headers required to send the
+                 self._post_data to the wire. For example, if the data is
+                 url-encoded:
+                    a=3&b=2
+
+                 This method returns:
+                    Content-Length: 7
+                    Content-Type: application/x-www-form-urlencoded
+
+                 When someone queries this object for the headers using
+                 get_headers(), we'll include these. Hopefully this means that
+                 the required headers will make it to the wire.
+        """
+        return Headers(init_val=self.get_raw_data().get_headers())
+
     def get_headers(self):
         """
         :return: Calls get_default_headers to get the default framework headers,
         overwrites any overlap with specific_headers and returns a Headers
         instance
         """
-        for k, v in self.get_default_headers().items():
+        for k, v in chain(self.get_post_data_headers().items(),
+                          self.get_default_headers().items()):
             # Ignore any keys which are already defined in the user-specified
             # headers
             kvalue, kreal = self._headers.iget(k, None)

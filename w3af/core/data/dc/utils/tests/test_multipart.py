@@ -1,7 +1,7 @@
 """
-test_multipartposthandler.py
+test_multipartpost.py
 
-Copyright 2010 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,52 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os
-import tempfile
 import unittest
-import urllib2
 
-from nose.plugins.attrib import attr
-
-from w3af.core.data.url.handlers.multipart import MultipartPostHandler, multipart_encode
+from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.controllers.misc.io import NamedStringIO
-from w3af.core.controllers.ci.moth import get_moth_http
 
 
-@attr('moth')
-class TestMultipartPostHandler(unittest.TestCase):
-
-    MOTH_FILE_UP_URL = get_moth_http('/core/file_upload/upload.py')
-
-    def setUp(self):
-        self.opener = urllib2.build_opener(MultipartPostHandler)
-
-    def test_file_upload(self):
-        temp = tempfile.mkstemp(suffix=".tmp")
-        os.write(temp[0], '!--file content--')
-        data = {"MAX_FILE_SIZE": "10000",
-                "uploadedfile": open(temp[1], "rb")}
-        resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
-        self.assertIn('was successfully uploaded', resp)
-
-    def test_file_upload2(self):
-        # Basically the same test but with list as values
-        temp = tempfile.mkstemp(suffix=".tmp")
-        os.write(temp[0], '!--file content--')
-        data = {"MAX_FILE_SIZE": ["10000"],
-                "uploadedfile": [open(temp[1], "rb")]}
-        resp = self.opener.open(self.MOTH_FILE_UP_URL, data).read()
-        self.assertIn('was successfully uploaded', resp)
-
-    def test_file_stringio_upload(self):
-        data = {"MAX_FILE_SIZE": "10000",
-                "uploadedfile": NamedStringIO('file content', name='test.txt')}
-        resp = self.opener.open(self.MOTH_FILE_UP_URL, data)
-        self.assertTrue('was successfully uploaded' in resp.read())
+class TestMultipartEncode(unittest.TestCase):
 
     def test_encode_vars(self):
-        _, encoded = multipart_encode(
-            [('a', 'b')], {}, boundary='fakeboundary')
+        _, encoded = multipart_encode([('a', 'b')], {}, boundary='fakeboundary')
         EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"'\
                    '\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)

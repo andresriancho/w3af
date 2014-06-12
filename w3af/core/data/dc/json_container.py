@@ -38,6 +38,9 @@ class JSONContainer(DataContainer):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    JSON_CONTENT_TYPE = 'application/json'
+
     def __init__(self, json_post_data, encoding=UTF8):
         """
         :param json_post_data: The XMLRPC call as string
@@ -184,3 +187,6 @@ class JSONContainer(DataContainer):
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved
             return str(self)[:self.MAX_PRINTABLE]
+
+    def get_headers(self):
+        return [('Content-Type', self.JSON_CONTENT_TYPE)]

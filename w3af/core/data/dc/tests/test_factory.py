@@ -29,7 +29,7 @@ from w3af.core.data.dc.form import Form
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
-from w3af.core.data.url.handlers.multipart import multipart_encode
+from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT
 

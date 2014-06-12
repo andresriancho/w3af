@@ -186,7 +186,7 @@ def smart_fill_file(var_name, file_name):
     _, file_content, file_name = get_file_from_template(extension)
 
     # I have to create the NamedStringIO with a "name",
-    # required for MultipartPostHandler
+    # required for MultipartContainer to properly encode this as multipart/post
     return NamedStringIO(file_content, name=file_name)
 
 

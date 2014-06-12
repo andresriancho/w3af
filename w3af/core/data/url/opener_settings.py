@@ -45,7 +45,6 @@ from w3af.core.data.url.handlers.url_parameter import URLParameterHandler
 from w3af.core.data.url.handlers.cache import CacheHandler
 from w3af.core.data.url.handlers.blacklist import BlacklistHandler 
 from w3af.core.data.url.handlers.mangle import MangleHandler
-from w3af.core.data.url.handlers.multipart import MultipartPostHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler
 
@@ -359,9 +358,8 @@ class OpenerSettings(Configurable):
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookie_handler,
-                        MultipartPostHandler, NormalizeHandler,
-                        self._kAHTTP, self._kAHTTPS, OutputManagerHandler,
-                        HTTP30XHandler, BlacklistHandler,
+                        NormalizeHandler, self._kAHTTP, self._kAHTTPS,
+                        OutputManagerHandler, HTTP30XHandler, BlacklistHandler,
                         MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
                         self._cache_hdler, ErrorHandler]:

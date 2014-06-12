@@ -35,6 +35,9 @@ class XmlRpcContainer(KeyValueContainer):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    XMLRPC_CONTENT_TYPE = 'text/xml'
+
     def __init__(self, xml_post_data, encoding=UTF8):
         """
         :param xml_post_data: The XMLRPC call as string
@@ -86,3 +89,6 @@ class XmlRpcContainer(KeyValueContainer):
         :return: string representation by writing back to XML string
         """
         return build_xmlrpc(self._xml_post_data, self)
+
+    def get_headers(self):
+        return [('Content-Type', self.XMLRPC_CONTENT_TYPE)]

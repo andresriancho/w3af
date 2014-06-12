@@ -26,6 +26,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.utils.multipart import encode_as_multipart, get_boundary
 from w3af.core.controllers.misc.io import NamedStringIO
 
 
@@ -105,9 +106,13 @@ class TestFileContentMutant(unittest.TestCase):
                                 ('address', ['Bonsai Street 123']),
                                 ('image', [file_payload_def])])]
 
-        expected_data = set(str(f) for f in expected_forms)
+        boundary = get_boundary()
+        noop = '1' * len(boundary)
+        expected_data = [encode_as_multipart(f, boundary) for f in expected_forms]
+        expected_data = set([s.replace(boundary, noop) for s in expected_data])
+
         generated_forms = [m.get_dc() for m in generated_mutants]
-        generated_data = [str(f) for f in generated_forms]
+        generated_data = [str(f).replace(f.boundary, noop) for f in generated_forms]
 
         self.assertEqual(expected_data, set(generated_data))
 

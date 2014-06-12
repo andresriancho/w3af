@@ -23,6 +23,8 @@ import cgi
 import StringIO
 
 from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.utils.multipart import get_boundary, encode_as_multipart
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
 class MultipartContainer(Form):
@@ -31,6 +33,14 @@ class MultipartContainer(Form):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    MULTIPART_HEADER = 'multipart/form-data; boundary=%s'
+
+    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+        super(MultipartContainer, self).__init__(init_val=init_val,
+                                                 encoding=encoding)
+
+        self.boundary = get_boundary()
+
     def get_type(self):
         return 'Multipart/post'
 
@@ -53,9 +63,15 @@ class MultipartContainer(Form):
             raise ValueError('Failed to create MultipartContainer.')
         else:
             # Please note that the KeyValueContainer is just a container for
-            # the information. When the FuzzableRequest is sent it should
-            # be serialized into multipart again by the MultipartPostHandler
-            # because the headers contain the multipart/form-data header
+            # the information.
+            #
+            # When the FuzzableRequest is sent the framework calls get_data()
+            # which returns a string version of this object, properly encoded
+            # using multipart/form-data
+            #
+            # To make sure the web application properly decodes the request, we
+            # also include the headers in get_headers() which include the
+            # boundary
             mc = cls()
 
             for key in fs.list:
@@ -73,3 +89,37 @@ class MultipartContainer(Form):
         mc = cls(init_val=form.items())
         mc.__dict__.update(form.__dict__)
         return mc
+
+    def get_headers(self):
+        """
+        Here we return the Content-Type set to multipart/post, including the
+        boundary.
+
+        :return: A tuple list with the headers required to send the
+                 self._post_data to the wire. For example, if the data is
+                 url-encoded:
+                    a=3&b=2
+
+                 This method returns:
+                    Content-Length: 7
+                    Content-Type: application/x-www-form-urlencoded
+
+                 When someone queries this object for the headers using
+                 get_headers(), we'll include these. Hopefully this means that
+                 the required headers will make it to the wire.
+        """
+        return [('Content-Type', self.MULTIPART_HEADER % self.boundary)]
+
+    def __str__(self):
+        return encode_as_multipart(self, self.boundary)
+
+    def __eq__(self, other):
+        """
+        Boundaries in different instances make a trivial string comparison
+        between two MultipartContainer impossible, in other words, this:
+
+                str(self) == str(other)
+
+        Is not going to work.
+        """
+        return self.items() == other.items()

@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.io import NamedStringIO
-from w3af.core.data.url.handlers.multipart import multipart_encode
+from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.form import Form
 from w3af.core.data.dc.multipart_container import MultipartContainer

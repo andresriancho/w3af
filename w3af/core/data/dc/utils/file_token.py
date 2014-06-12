@@ -49,8 +49,9 @@ class FileDataToken(DataToken):
             _, file_content, fname = get_template_with_payload(self.extension,
                                                                value)
 
-            # I have to create the NamedStringIO with a "name".
-            # This is needed for MultipartPostHandler
+            # I have to create the NamedStringIO with a "name",
+            # required for MultipartContainer to properly encode this as
+            # multipart/post
             return NamedStringIO(file_content, name=fname)
 
         return value

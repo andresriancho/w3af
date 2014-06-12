@@ -79,7 +79,7 @@ class Info(dict):
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
 
-        mutant = Mutant(freq)
+        mutant = EmptyMutant(freq)
 
         return Info.from_mutant(name, desc, response_ids, plugin_name, mutant)
 

@@ -154,6 +154,25 @@ class DataContainer(DiskItem):
 
         return True
 
+    def get_headers(self):
+        """
+        Override in sub-classes with care.
+
+        :return: A tuple list with the headers required to send the
+                 self._post_data to the wire. For example, if the data is
+                 url-encoded:
+                    a=3&b=2
+
+                 This method returns:
+                    Content-Length: 7
+                    Content-Type: application/x-www-form-urlencoded
+
+                 When someone queries this object for the headers using
+                 get_headers(), we'll include these. Hopefully this means that
+                 the required headers will make it to the wire.
+        """
+        return []
+
     @property
     def all_items(self):
         return str(self)

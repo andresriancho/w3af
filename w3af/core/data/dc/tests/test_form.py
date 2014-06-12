@@ -405,12 +405,12 @@ class test_form(unittest.TestCase):
         user_token, pass_token = form.get_login_tokens()
         self.assertEqual(user_token.get_name(), 'username')
         self.assertEqual(pass_token.get_name(), 'pwd')
-        self.assertEqual(user_token.get_value(), None)
-        self.assertEqual(pass_token.get_value(), None)
+        self.assertEqual(user_token.get_value(), '')
+        self.assertEqual(pass_token.get_value(), '')
 
         form.set_login_username('andres')
         self.assertEqual(form['username'][0], 'andres')
-        self.assertEqual(form['pwd'][0], None)
+        self.assertEqual(form['pwd'][0], '')
 
         form.set_login_username('pablo')
         form.set_login_password('long-complex')

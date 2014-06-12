@@ -23,6 +23,7 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.constants.severity import INFORMATION, LOW, MEDIUM, HIGH
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 
 
 class Vuln(Info):
@@ -78,7 +79,7 @@ class Vuln(Info):
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
         
-        mutant = Mutant(freq)
+        mutant = EmptyMutant(freq)
             
         return Vuln.from_mutant(name, desc, severity, response_ids, plugin_name,
                                 mutant)
