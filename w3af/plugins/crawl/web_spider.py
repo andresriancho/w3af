@@ -48,7 +48,6 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-STATIC_FORM_FIELDS = {'checkbox', 'file', 'radio', 'select'}
 URL_HEADERS = {'location', 'uri', 'content-location'}
 
 
