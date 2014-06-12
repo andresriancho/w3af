@@ -392,6 +392,30 @@ class test_form(unittest.TestCase):
         self.assertEqual(str_file.name[-4:], '.gif')
         self.assertIn('GIF', str_file)
 
+    def test_login_form_utils(self):
+        form = Form()
+        form.add_input([("name", "username"), ("type", "text")])
+        form.add_input([("name", "pwd"), ("type", "password")])
+
+        self.assertTrue(form.is_login_form())
+        self.assertFalse(form.is_registration_form())
+        self.assertFalse(form.is_password_change_form())
+        self.assertEqual(form.get_parameter_type_count(), (1, 1, 0))
+
+        user_token, pass_token = form.get_login_tokens()
+        self.assertEqual(user_token.get_name(), 'username')
+        self.assertEqual(pass_token.get_name(), 'pwd')
+        self.assertEqual(user_token.get_value(), None)
+        self.assertEqual(pass_token.get_value(), None)
+
+        form.set_login_username('andres')
+        self.assertEqual(form['username'][0], 'andres')
+        self.assertEqual(form['pwd'][0], None)
+
+        form.set_login_username('pablo')
+        form.set_login_password('long-complex')
+        self.assertEqual(form['username'][0], 'pablo')
+        self.assertEqual(form['pwd'][0], 'long-complex')
 
 def get_gruped_data(form_data):
     """

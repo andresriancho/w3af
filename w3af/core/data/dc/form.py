@@ -54,6 +54,7 @@ class Form(KeyValueContainer):
     INPUT_TYPE_HIDDEN = 'hidden'
     INPUT_TYPE_SUBMIT = 'submit'
     INPUT_TYPE_SELECT = 'select'
+    INPUT_TYPE_PASSWD = 'password'
 
     ENCODING = 'application/x-www-form-urlencoded'
 
@@ -526,6 +527,110 @@ class Form(KeyValueContainer):
 
         return copy
 
+    def get_parameter_type_count(self):
+        passwd = text = other = 0
+
+        #
+        # Count the parameter types
+        #
+        for token in self.iter_tokens():
+
+            ptype = self.get_parameter_type(token.get_name()).lower()
+
+            if ptype == Form.INPUT_TYPE_PASSWD:
+                passwd += 1
+            elif ptype == Form.INPUT_TYPE_TEXT:
+                text += 1
+            else:
+                other += 1
+
+        return text, passwd, other
+
+    def get_login_tokens(self):
+        """
+        :return: Tokens associated with the login (username and password)
+        """
+        assert self.is_login_form(), 'Login form is required'
+
+        user_token = None
+        pass_token = None
+
+        #
+        # Count the parameter types
+        #
+        for token in self.iter_tokens():
+
+            ptype = self.get_parameter_type(token.get_name()).lower()
+
+            if ptype == Form.INPUT_TYPE_PASSWD:
+                pass_token = token
+            elif ptype == Form.INPUT_TYPE_TEXT:
+                user_token = token
+
+        return user_token, pass_token
+
+    def is_login_form(self):
+        """
+        :return: True if this is a login form.
+        """
+        text, passwd, other = self.get_parameter_type_count()
+
+        # Classic login form
+        if text == 1 and passwd == 1:
+            return True
+
+        # Password-only login form
+        elif text == 0 and passwd == 1:
+            return True
+
+        return False
+
+    def is_registration_form(self):
+        """
+        :return: True if this is a registration form, a text input (user) and
+                 two password fields (passwd and confirmation)
+        """
+        text, passwd, other = self.get_parameter_type_count()
+        if passwd == 2 and text >= 1:
+            return True
+
+        return False
+
+    def is_password_change_form(self):
+        """
+        :return: True if this is a password change form containing:
+                    * Old password
+                    * New password
+                    * Confirm
+        """
+        text, passwd, other = self.get_parameter_type_count()
+        if passwd == 3:
+            return True
+
+        return False
+
+    def set_login_username(self, username):
+        """
+        Sets the username field to the desired value. This requires a login form
+        """
+        assert self.is_login_form(), 'Login form is required'
+
+        text, passwd, other = self.get_parameter_type_count()
+        assert text == 1, 'Login form with username is required'
+
+        for k, v, setter in self.iter_setters():
+            if self.get_parameter_type(k).lower() == Form.INPUT_TYPE_TEXT:
+                setter(username)
+
+    def set_login_password(self, password):
+        """
+        Sets the password field to the desired value. This requires a login form
+        """
+        assert self.is_login_form(), 'Login form is required'
+
+        for k, v, setter in self.iter_setters():
+            if self.get_parameter_type(k).lower() == Form.INPUT_TYPE_PASSWD:
+                setter(password)
 
 def deepish_copy(org):
     """
