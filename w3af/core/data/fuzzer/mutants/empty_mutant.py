@@ -1,5 +1,5 @@
 """
-empty_request.py
+empty_mutant.py
 
 Copyright 2014 Andres Riancho
 
@@ -19,20 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.request.empty_request import EmptyFuzzableRequest
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
-class EmptyFuzzableRequest(FuzzableRequest):
+class EmptyMutant(Mutant):
     """
-    A FuzzableRequest which can be created without knowing the URI.
+    A Mutant which points its set_dc and get_dc to an internal container, not
+    related with a FuzzableRequest
     """
     def __init__(self):
-        super(EmptyFuzzableRequest, self).__init__(None, method='GET',
-                                                   headers=None, cookie=None,
-                                                   post_data=None)
+        self._dc = NonRepeatKeyValueContainer()
 
-    def set_uri(self, uri):
-        if uri is None:
-            return
+        super(EmptyMutant, self).__init__(EmptyFuzzableRequest())
 
-        return super(EmptyFuzzableRequest, self).set_uri(uri)
+    def set_dc(self, data_container):
+        self._dc = data_container
+
+    def get_dc(self):
+        return self._dc

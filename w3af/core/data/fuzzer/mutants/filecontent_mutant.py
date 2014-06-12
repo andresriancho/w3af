@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.dc.form import Form
 from w3af.core.data.dc.utils.file_token import FileDataToken
 from w3af.core.data.dc.utils.token import DataToken
@@ -82,8 +81,6 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
     Also, when fuzzing I'll be creating my tokens using FileDataToken: a great
     way to abstract the fact that payloads are sent in the content of a file.
     """
-    DATA_TOKEN_KLASS = FileDataToken
-
     def set_token(self, key_name, index_num):
         """
         Modified to pass the filename to the FileDataToken

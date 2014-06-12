@@ -20,8 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import urllib
 
+from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.utils.token import DataToken
@@ -158,34 +161,38 @@ class TestMutant(unittest.TestCase):
 
         freq = FuzzableRequest(self.url, post_data=form)
 
-        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
-                                                    False, self.fuzzer_config)
-
-        self.assertEqual(len(created_mutants), 4, created_mutants)
-
-        pay = self.payloads
+        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
+                                                        False,
+                                                        self.fuzzer_config)
+        _abc = self.payloads[0]
+        _def = self.payloads[1]
         name = 'John8212'
-        address = 'Bonsai Street 123'
+        address = urllib.quote('Bonsai Street 123')
 
-        expected_username_values = [pay[0], name, pay[1], name]
-        expected_address_values = [address, pay[0], address, pay[1]]
+        _, gif_file, _ = get_file_from_template('gif')
+        gif_file = urllib.quote(gif_file)
 
-        created_dc_lst = [i.get_dc() for i in created_mutants]
-        generated_username_values = [str(dc['username'][0])
-                                     for dc in created_dc_lst]
-        generated_address_values = [str(dc['address'][0])
-                                    for dc in created_dc_lst]
-        generated_file_values = [dc['file'][0] for dc in created_dc_lst]
+        fmt = 'username=%s&file=%s&address=%s'
 
-        self.assertEqual(expected_username_values, generated_username_values)
-        self.assertEqual(expected_address_values, generated_address_values)
+        # TODO: There are some useless mutants being generated here, which send
+        # "abc" and "def" as the file content: and don't even use a
+        # NamedStringIO to do it -so it will be sent as a common var not a file-
+        # and on top of that, it doesn't even look like a file content.
+        #
+        # The good thing is that this will only happen for forms with files
+        # (not so common) and it might even trigger a traceback ;)
+        expected_dcs = [
+                        fmt % (_abc, gif_file, address),
+                        fmt % (name, gif_file, _abc),
+                        fmt % (name, _abc, address), # useless
+                        fmt % (_def, gif_file, address),
+                        fmt % (name, gif_file, _def),
+                        fmt % (name, _def, address), # useless
+                        ]
 
-        for index, gen_file_value in enumerate(generated_file_values):
-            startswith = gen_file_value.startswith('GIF89a')
-            self.assertTrue(startswith, gen_file_value)
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
 
-        self.assertTrue(all(str_file.name[-4:].startswith('.gif') for
-                            str_file in generated_file_values))
+        self.assertEquals(expected_dcs, created_dcs)
 
     def test_mutant_creation_append(self):
         qs = QueryString(self.SIMPLE_KV)
@@ -242,8 +249,9 @@ class TestMutant(unittest.TestCase):
 
         freq = FuzzableRequest(url, post_data=form)
 
-        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
-                                                    False, self.fuzzer_config)
+        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
+                                                        False,
+                                                        self.fuzzer_config)
         created_dcs = [str(i.get_dc()) for i in created_mutants]
 
         expected_dcs = ['username=abc&password=FrAmE30.',

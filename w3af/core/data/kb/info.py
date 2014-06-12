@@ -21,9 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.request.empty_request import EmptyFuzzableRequest
 
 
 class Info(dict):
@@ -43,7 +42,7 @@ class Info(dict):
         """
         # Default values
         self._string_matches = set()
-        self._mutant = QSMutant(EmptyFuzzableRequest())
+        self._mutant = EmptyMutant()
 
         # We set these to None just for PyCharm's code analyzer to be happy
         self._name = None

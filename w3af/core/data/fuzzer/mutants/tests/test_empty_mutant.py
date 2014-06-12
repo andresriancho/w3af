@@ -1,5 +1,5 @@
 """
-empty_request.py
+test_empty_mutant.py
 
 Copyright 2014 Andres Riancho
 
@@ -19,20 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
+import unittest
+
+from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
+from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
-class EmptyFuzzableRequest(FuzzableRequest):
-    """
-    A FuzzableRequest which can be created without knowing the URI.
-    """
-    def __init__(self):
-        super(EmptyFuzzableRequest, self).__init__(None, method='GET',
-                                                   headers=None, cookie=None,
-                                                   post_data=None)
+class TestEmptyMutant(unittest.TestCase):
+    def test_create_instance(self):
+        emu = EmptyMutant()
 
-    def set_uri(self, uri):
-        if uri is None:
-            return
-
-        return super(EmptyFuzzableRequest, self).set_uri(uri)
+        self.assertIsInstance(emu.get_dc(), NonRepeatKeyValueContainer)

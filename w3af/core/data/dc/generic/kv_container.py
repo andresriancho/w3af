@@ -30,6 +30,7 @@ from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
+from w3af.core.data.dc.utils.token import DataToken
 
 
 ERR_MSG = 'Unsupported init_val "%s", expected format is [(u"b", [u"2", u"3"])]'
@@ -65,7 +66,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     raise TypeError(ERR_MSG % init_val)
 
                 for sub_val in val:
-                    if not isinstance(sub_val, (basestring, self.DATA_TOKEN_KLASS)):
+                    if not isinstance(sub_val, (basestring, DataToken)):
                         raise TypeError(ERR_MSG % init_val)
 
                 self[key] = val
@@ -133,7 +134,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     continue
 
                 if key_name == k and idx == index_num:
-                    token = self.DATA_TOKEN_KLASS(k, ele)
+                    token = DataToken(k, ele)
 
                     self[k][idx] = token
                     self.token = token
@@ -168,7 +169,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
             # I want to show the token variable and value in the output
             for k, v in self.items():
                 for ele in v:
-                    if isinstance(ele, self.DATA_TOKEN_KLASS):
+                    if isinstance(ele, DataToken):
                         dt_str = '%s=%s' % (ele.get_name(), ele.get_value())
                         return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:

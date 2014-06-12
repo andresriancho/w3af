@@ -23,7 +23,6 @@ import cgi
 import StringIO
 
 from w3af.core.data.dc.form import Form
-from w3af.core.data.dc.utils.file_token import FileDataToken
 
 
 class MultipartContainer(Form):
@@ -32,8 +31,6 @@ class MultipartContainer(Form):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    DATA_TOKEN_KLASS = FileDataToken
-
     def get_type(self):
         return 'Multipart/post'
 

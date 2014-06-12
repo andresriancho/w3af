@@ -29,7 +29,6 @@ from w3af.core.data.dc.utils.token import DataToken
 
 class DataContainer(DiskItem):
     MAX_PRINTABLE = 65
-    DATA_TOKEN_KLASS = DataToken
 
     def __init__(self, encoding=UTF8):
         super(DataContainer, self).__init__()
@@ -86,7 +85,7 @@ class DataContainer(DiskItem):
         """
         for k, v, _ in self.iter_setters():
             if self.token_filter(k, v):
-                yield self.DATA_TOKEN_KLASS(k, v)
+                yield DataToken(k, v)
 
     def iter_bound_tokens(self):
         """

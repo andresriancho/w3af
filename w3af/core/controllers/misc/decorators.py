@@ -129,16 +129,16 @@ class memoized(object):
 
     def __call__(self, *args, **kwargs):
         if not isinstance(args, collections.Hashable) or\
-        not isinstance(kwargs, collections.Hashable):
+        not isinstance(tuple(kwargs.items()), collections.Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func(*args, **kwargs)
 
         try:
-            return self.cache[(args, kwargs)]
+            return self.cache[(args, tuple(kwargs.items()))]
         except KeyError:
             value = self.func(*args, **kwargs)
-            self.cache[args] = value
+            self.cache[(args, tuple(kwargs.items()))] = value
             return value
 
     def __repr__(self):

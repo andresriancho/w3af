@@ -23,6 +23,7 @@ import json
 import copy
 
 from w3af.core.data.dc.generic.data_container import DataContainer
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.utils.json_iter_setters import (json_iter_setters,
                                                        json_complex_str,
@@ -161,7 +162,7 @@ class JSONContainer(DataContainer):
         for k, v, setter in self.iter_setters():
             if key_name == k:
 
-                token = self.DATA_TOKEN_KLASS(k, v)
+                token = DataToken(k, v)
 
                 setter(token)
                 self.token = token

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import operator
 import random
-import copy
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -33,6 +32,7 @@ from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.parsers.url import parse_qs, URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.dc.utils.token import DataToken
 
 
 class Form(KeyValueContainer):
@@ -250,7 +250,7 @@ class Form(KeyValueContainer):
             if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
 
-            if isinstance(value, self.DATA_TOKEN_KLASS):
+            if isinstance(value, DataToken):
                 # This is the value which is being fuzzed (the payload) and
                 # I don't want to change/fill it
                 continue

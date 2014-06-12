@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
@@ -74,8 +74,8 @@ class TestVuln(unittest.TestCase):
         freq = FuzzableRequest(url)
         fuzzer_config = {}
         
-        created_mutants = Mutant.create_mutants(freq, payloads, [], False,
-                                                fuzzer_config)
+        created_mutants = QSMutant.create_mutants(freq, payloads, [], False,
+                                                  fuzzer_config)
                 
         mutant = created_mutants[0]
         

@@ -28,7 +28,7 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.query_string import QueryString
-from w3af.core.data.fuzzer.mutants.mutant import Mutant
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
@@ -139,8 +139,8 @@ class TestInfo(unittest.TestCase):
         freq = FuzzableRequest(url)
         fuzzer_config = {}
         
-        created_mutants = Mutant.create_mutants(freq, payloads, [], False,
-                                                fuzzer_config)
+        created_mutants = QSMutant.create_mutants(freq, payloads, [], False,
+                                                  fuzzer_config)
                 
         mutant = created_mutants[0]
         

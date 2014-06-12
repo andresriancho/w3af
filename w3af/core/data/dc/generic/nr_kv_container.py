@@ -30,6 +30,8 @@ from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
+from w3af.core.data.dc.utils.token import DataToken
+
 
 ERR_MSG_NO_REP = 'Unsupported init_val "%s", expected format is [("b", "2")]'
 
@@ -64,7 +66,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                 if key in self:
                     raise TypeError(ERR_MSG_NO_REP % init_val)
 
-                if not isinstance(val, (basestring, self.DATA_TOKEN_KLASS)):
+                if not isinstance(val, (basestring, DataToken)):
                     raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 self[key] = val
@@ -107,7 +109,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             if self.token_filter(k, v):
-                token = self.DATA_TOKEN_KLASS(k, v)
+                token = DataToken(k, v)
 
                 dcc = copy.deepcopy(self)
                 dcc[k] = token
@@ -131,7 +133,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                 continue
 
             if key_name == k:
-                token = self.DATA_TOKEN_KLASS(k, v)
+                token = DataToken(k, v)
 
                 self[k] = token
                 self.token = token
@@ -164,7 +166,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             for k, v in self.items():
-                if isinstance(v, self.DATA_TOKEN_KLASS):
+                if isinstance(v, DataToken):
                     dt_str = '%s=%s' % (v.get_name(), v.get_value())
                     return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:

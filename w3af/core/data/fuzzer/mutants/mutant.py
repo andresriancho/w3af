@@ -21,10 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
-from w3af.core.controllers.misc.io import NamedStringIO
-
-from w3af.core.data.dc.form import Form
-from w3af.core.data.dc.utils.file_token import FileDataToken
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
 from w3af.core.data.db.disk_item import DiskItem
 

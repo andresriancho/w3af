@@ -126,7 +126,6 @@ def get_match_rate(variable_name, variable_name_db):
     return match_rate
 
 
-@memoized
 def smart_fill(variable_name, db=PARAM_NAME_KNOWLEDGE, default='56'):
     """
     This method returns a "smart" option for a variable name inside a form. For
