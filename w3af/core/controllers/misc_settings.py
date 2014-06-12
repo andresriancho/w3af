@@ -95,7 +95,7 @@ class MiscSettings(Configurable):
             'will fill those file inputs with pseudo-files containing the' \
             'payloads required to identify vulnerabilities.'
         opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), d,
-                          help=h, 'boolean', tabid='Fuzzer parameters')
+                          'boolean', tabid='Fuzzer parameters', help=h)
         ol.add(opt)
 
         d = 'Indicates if w3af plugins will send fuzzed filenames in order to'\
