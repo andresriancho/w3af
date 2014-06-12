@@ -228,7 +228,7 @@ class Form(KeyValueContainer):
 
         # Find the attr type and value
         attr_type = self.get_value_by_key(attrs, 'type')
-        value = self.get_value_by_key(attrs, 'value')
+        value = self.get_value_by_key(attrs, 'value') or ''
 
         if attr_type == self.INPUT_TYPE_SUBMIT:
             self.add_submit(name, value)
