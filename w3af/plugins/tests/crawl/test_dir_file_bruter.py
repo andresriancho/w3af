@@ -102,7 +102,7 @@ class TestDirFileBruter(PluginTest):
                    self._run_directories['plugins'])
         urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('crawl/', '')
+        expected_urls = ('crawl/', 'portal/')
 
         self.assertEquals(
             set(str(u) for u in urls),

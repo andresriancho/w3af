@@ -1,3 +1,13 @@
+(12 Jun 2014)    Version 1.6.0.3
+================================
+Github tag: https://github.com/andresriancho/w3af/tree/1.6.0.3
+Github milestone: https://github.com/andresriancho/w3af/issues?milestone=10
+
+* Fixed HTML plugin #2880
+* Improved dependency checks #2766 #2703
+* Fixed bug in user_dir plugin #2445
+* Improved dependency check help for installation in CentOS 6.5 #2067
+
 (05 May 2014)    Version 1.6.0.2
 ================================
 Github tag: https://github.com/andresriancho/w3af/tree/1.6.0.2
