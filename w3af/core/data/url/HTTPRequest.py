@@ -37,11 +37,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
 
-        :param method: None means "choose the method in the default way":
-                            if self.has_data():
-                                return "POST"
-                            else:
-                                return "GET"
+        :param method: None means choose the default (POST if data is not None)
+        :param data: The post_data as a string
         """
         #
         # Save some information for later access in an easier way
@@ -67,7 +64,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                self.get_uri() == other.get_uri() and\
                self.get_headers() == other.get_headers() and\
                self.get_data() == other.get_data()
-    
+
     def get_method(self):
         return self.method
 
@@ -86,8 +83,10 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         serializable_dict = {}
         sdict = serializable_dict
         
-        sdict['method'], sdict['uri'] = self.get_method(), self.get_uri().url_string
-        sdict['headers'], sdict['data'] = dict(self.get_headers()), self.get_data()
+        sdict['method'] = self.get_method()
+        sdict['uri'] = self.get_uri().url_string
+        sdict['headers'] = dict(self.get_headers())
+        sdict['data'] = self.get_data()
         sdict['cookies'] = self.cookies
         sdict['cache'] = self.get_from_cache
             
