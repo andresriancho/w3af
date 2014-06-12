@@ -95,9 +95,9 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
                     continue
 
                 if key_name == k and idx == index_num:
-
-                    if hasattr(ele, 'filename') and k in self.get_file_vars():
-                        token = FileDataToken(k, ele, ele.filename)
+                    if k in self.get_file_vars():
+                        fname = ele.filename if hasattr(ele, 'filename') else None
+                        token = FileDataToken(k, ele, fname)
                     else:
                         token = DataToken(k, ele)
 

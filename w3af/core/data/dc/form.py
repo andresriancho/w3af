@@ -27,14 +27,12 @@ import copy
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
-from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.data.fuzzer.form_filler import smart_fill
+from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.parsers.url import parse_qs, URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
 
 
 class Form(KeyValueContainer):
@@ -253,21 +251,16 @@ class Form(KeyValueContainer):
                 continue
 
             if isinstance(value, self.DATA_TOKEN_KLASS):
-                # This is the value which is being fuzzed (the payload)
+                # This is the value which is being fuzzed (the payload) and
+                # I don't want to change/fill it
                 continue
 
-            # Please see the comment in mutant._create_mutants_worker (search
-            # for __HERE__) for an explanation of what we are doing here:
+            # The basic idea here is that if the form has files in it, we'll
+            # need to fill that input with a file (gif, txt, html) in order
+            # to go through the form validations
             if var_name in self.get_file_vars():
-                # Try to upload a valid file
-                extension = cf.cf.get('fuzzed_files_extension', 'gif')
-                success, file_content, file_name = get_file_from_template(extension)
-
-                # I have to create the NamedStringIO with a "name",
-                # required for MultipartPostHandler
-                str_file = NamedStringIO(file_content, name=file_name)
-
-                setter(str_file)
+                file_name = self.get_file_name(var_name, None)
+                setter(smart_fill_file(var_name, file_name))
 
             #   Fill only if the parameter does NOT have a value set.
             #
@@ -277,9 +270,6 @@ class Form(KeyValueContainer):
             #   <input type="text" name="p" value="foobar">
             #
             elif value == '':
-                #
-                #   Fill it smartly
-                #
                 setter(smart_fill(var_name))
 
     def get_parameter_type(self, name):

@@ -84,7 +84,7 @@ class TestFileContentMutant(unittest.TestCase):
         form.set_action(self.url)
         form.add_input([("name", "username"), ("value", "")])
         form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
+        form.add_file_input([("name", "image"), ("type", "file")])
 
         freq = FuzzableRequest.from_form(form)
 
@@ -95,19 +95,28 @@ class TestFileContentMutant(unittest.TestCase):
 
         self.assertEqual(len(generated_mutants), 2, generated_mutants)
 
-        expected_data = [Form([('username', ['John8212']), ('file', ['abc'])]),
-                         Form([('username', ['John8212']), ('file', ['def'])]),]
+        _, file_payload_abc, _ = get_template_with_payload('gif', 'abc')
+        _, file_payload_def, _ = get_template_with_payload('gif', 'def')
 
-        generated_data = [m.get_dc() for m in generated_mutants]
+        expected_forms = [Form([('username', ['John8212']),
+                                ('address', ['Bonsai Street 123']),
+                                ('image', [file_payload_abc])]),
+                          Form([('username', ['John8212']),
+                                ('address', ['Bonsai Street 123']),
+                                ('image', [file_payload_def])])]
 
-        self.assertEqual(expected_data, generated_data)
+        expected_data = set(str(f) for f in expected_forms)
+        generated_forms = [m.get_dc() for m in generated_mutants]
+        generated_data = [str(f) for f in generated_forms]
 
-        str_file = generated_data[0]['file'][0].get_value()
+        self.assertEqual(expected_data, set(generated_data))
+
+        str_file = generated_forms[0]['image'][0].get_value()
         self.assertIsInstance(str_file, NamedStringIO)
         self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertEqual(get_template_with_payload('gif', 'abc'), str_file)
+        self.assertEqual(file_payload_abc, str_file)
 
-        str_file = generated_data[1]['file'][0].get_value()
+        str_file = generated_forms[1]['image'][0].get_value()
         self.assertIsInstance(str_file, NamedStringIO)
         self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertEqual(get_template_with_payload('gif', 'def'), str_file)
+        self.assertEqual(file_payload_def, str_file)

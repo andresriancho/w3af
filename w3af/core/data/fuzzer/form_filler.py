@@ -20,9 +20,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
+import os
 
+import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
+
+from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
 
 
 PARAM_NAME_KNOWLEDGE = {
@@ -87,6 +92,16 @@ PARAM_NAME_KNOWLEDGE = {
     'www.w3af.org': ['domain', 'dominio']
 }
 
+FILE_NAME_KNOWLEDGE = {
+    'gif': ['img', 'image', 'imagen', 'gif', 'picture', 'art', 'logo', 'brand',
+            'avatar'],
+    'bmp': ['bitmap', 'bmp'],
+    'jpg': ['jpeg', 'jpg'],
+    'png': ['png'],
+    'txt': ['text', 'ascii', 'texto', 'csv', 'note', 'nota'],
+    'html': ['html', 'page', 'info', 'htm', 'design'],
+}
+
 
 def sortfunc(x_obj, y_obj):
     """
@@ -112,11 +127,12 @@ def get_match_rate(variable_name, variable_name_db):
 
 
 @memoized
-def smart_fill(variable_name):
+def smart_fill(variable_name, db=PARAM_NAME_KNOWLEDGE, default='56'):
     """
     This method returns a "smart" option for a variable name inside a form. For
     example, if the variable_name is "username" a smart_fill response would be
-    "john1309", not "0800-111-2233". This helps A LOT with server side validation.
+    "john1309", not "0800-111-2233". This helps A LOT with server side
+    validation.
 
     :return: The "most likely to be validated as a good value" string, OR '5672'
     if no match is found.
@@ -125,7 +141,7 @@ def smart_fill(variable_name):
 
     possible_results = []
 
-    for filled_value, variable_name_list in PARAM_NAME_KNOWLEDGE.items():
+    for filled_value, variable_name_list in db.items():
 
         for variable_name_db in variable_name_list:
 
@@ -153,8 +169,43 @@ def smart_fill(variable_name):
         return possible_results[0][0]
 
     else:
-        msg = '[smart_fill] Failed to find a value for parameter with name "'
-        msg += variable_name + '".'
-        om.out.debug(msg)
+        msg = '[smart_fill] Failed to find a value for parameter with name "%s"'
+        om.out.debug(msg % variable_name)
 
-        return '56'
+        return default
+
+
+@memoized
+def smart_fill_file(var_name, file_name):
+    """
+    This function will return a NamedStringIO, ready to use in multipart forms.
+
+    The contents of the file and its extension are carefully chosen to try to
+    go through any form filters the web application might be implementing.
+    """
+    extension = guess_extension(var_name, file_name)
+    _, file_content, file_name = get_file_from_template(extension)
+
+    # I have to create the NamedStringIO with a "name",
+    # required for MultipartPostHandler
+    return NamedStringIO(file_content, name=file_name)
+
+
+def guess_extension(var_name, file_name):
+    """
+    Guess the extension based on the var_name and file_name.
+    """
+    if file_name is not None:
+        _, extension = os.path.splitext(file_name)
+
+        if extension:
+            return extension
+
+    guessed_extension = smart_fill(var_name, db=FILE_NAME_KNOWLEDGE,
+                                   default=None)
+    if guessed_extension is not None:
+        return guessed_extension
+
+    # Oops!
+    return cf.cf.get('fuzzed_files_extension', 'gif')
+

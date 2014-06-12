@@ -196,28 +196,6 @@ class Mutant(DiskItem):
                     if not token.get_name() in fuzzable_param_list:
                         continue
 
-                # Exclude the file parameters, those are fuzzed in
-                # FileContentMutant (depending on framework config)
-                #
-                # But if we have a form with files, then we have a multipart
-                # form, and we have to keep it that way. If we don't send
-                # the multipart form as multipart, the remote programming
-                # language may ignore all the request, and the parameter
-                # that we are fuzzing (that's not the file content one)
-                # will be ignored too
-                #
-                # The "keeping the multipart form alive" thing is done in
-                # Form.smart_fill (search for __HERE__)
-                #
-                # The exclusion is done here:
-                if token.get_name() in freq.get_file_vars():
-                    if not isinstance(token, FileDataToken):
-                        continue
-
-                    if not isinstance(payload, NamedStringIO) \
-                    and not isinstance(payload, file):
-                        continue
-
                 # Ok, now we have a data container with the mutant string,
                 # but it's possible that all the other fields of the data
                 # container are empty (think about a form). We need to fill
@@ -227,7 +205,7 @@ class Mutant(DiskItem):
 
                 # But I only perform this task in HTML forms, everything
                 # else is left as it is:
-                if isinstance(dc_copy, Form):
+                if hasattr(dc_copy, 'smart_fill'):
                     dc_copy.smart_fill()
 
                 if append:
