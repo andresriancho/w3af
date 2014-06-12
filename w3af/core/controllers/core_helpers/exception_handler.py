@@ -23,6 +23,7 @@ import hashlib
 import random
 import threading
 import traceback
+import os
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -34,6 +35,8 @@ from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_
 from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByUserRequest,
                                               ScanMustStopByUnknownReasonExc)
+
+DEBUG = os.environ.get('DEBUG', '0') == '1'
 
 
 class ExceptionHandler(object):
@@ -47,6 +50,11 @@ class ExceptionHandler(object):
     MAX_EXCEPTIONS_PER_PLUGIN = 3
     NO_HANDLING = (MemoryError, ScanMustStopByUnknownReasonExc,
                    ScanMustStopException, ScanMustStopByUserRequest)
+
+    if DEBUG:
+        NO_HANDLING = list(NO_HANDLING)
+        NO_HANDLING.append(Exception)
+        NO_HANDLING = tuple(NO_HANDLING)
 
     def __init__(self):
         # TODO: Maybe this should be a DiskList just to make sure we don't
