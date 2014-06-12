@@ -184,7 +184,9 @@ class PluginTest(unittest.TestCase):
                                                          unit_test_options)
 
         # Enable text output plugin for debugging
-        if debug: self._configure_debug()
+        environ_debug = os.environ.get('DEBUG', '0') == '1'
+        if debug or environ_debug:
+            self._configure_debug()
 
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
