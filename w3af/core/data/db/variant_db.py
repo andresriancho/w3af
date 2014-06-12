@@ -67,13 +67,11 @@ class VariantDB(object):
             res += '?'
             qs = reference.querystring.copy()
 
-            for key in qs:
-                value_list = qs[key]
-                for i, value in enumerate(value_list):
-                    if value.isdigit():
-                        qs[key][i] = 'number'
-                    else:
-                        qs[key][i] = 'string'
+            for key, value, setter in qs.iter_setters():
+                if value.isdigit():
+                    setter('number')
+                else:
+                    setter('string')
 
             res += str(qs)
 
