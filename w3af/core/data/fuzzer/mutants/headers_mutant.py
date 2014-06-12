@@ -46,8 +46,8 @@ class HeadersMutant(Mutant):
         return fmt % (self.get_url(), self.get_method(), self.get_token_name(),
                       self.get_token_value())
 
-    @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
         """
         This is a very important method which is called in order to create
@@ -61,7 +61,6 @@ class HeadersMutant(Mutant):
         # Generate a list with the headers we'll fuzz
         fuzzable_param_list = fuzzable_param_list + fuzzable_headers
 
-        return Mutant._create_mutants_worker(freq, HeadersMutant,
-                                             mutant_str_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config)
+        return cls._create_mutants_worker(freq, cls, mutant_str_list,
+                                          fuzzable_param_list,
+                                          append, fuzzer_config)

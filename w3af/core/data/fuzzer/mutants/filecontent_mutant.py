@@ -48,8 +48,8 @@ class FileContentMutant(PostDataMutant):
 
         return msg % (self.get_url(), self.get_method(), dc_short)
 
-    @staticmethod
-    def create_mutants(freq, payload_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, payload_list, fuzzable_param_list,
                        append, fuzzer_config):
         """
         This is a very important method which is called in order to create
@@ -68,10 +68,9 @@ class FileContentMutant(PostDataMutant):
         multipart_container = OnlyTokenFilesMultipartContainer.from_form(form)
         freq.set_data(multipart_container)
 
-        res = Mutant._create_mutants_worker(freq, FileContentMutant,
-                                            payload_list,
-                                            freq.get_file_vars(),
-                                            append, fuzzer_config)
+        res = cls._create_mutants_worker(freq, cls, payload_list,
+                                         freq.get_file_vars(),
+                                         append, fuzzer_config)
         return res
 
 

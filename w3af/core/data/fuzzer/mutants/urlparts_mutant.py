@@ -110,8 +110,8 @@ class URLPartsMutant(Mutant):
 
         return fmt % (self.get_url(), self.get_method(), self.get_token_value())
 
-    @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
         """
         This is a very important method which is called in order to create
@@ -138,13 +138,13 @@ class URLPartsMutant(Mutant):
                                                         url_end)
 
                 freq_copy = freq.copy()
-                m = URLPartsMutant(freq_copy)
+                m = cls(freq_copy)
                 m.set_dc(url_parts_container)
                 res.append(m)
 
                 # Same URLs but with different types of encoding!
                 freq_copy = freq.copy()
-                m2 = URLPartsMutant(freq_copy)
+                m2 = cls(freq_copy)
                 m2.set_dc(url_parts_container)
                 m2.set_double_encoding(True)
 

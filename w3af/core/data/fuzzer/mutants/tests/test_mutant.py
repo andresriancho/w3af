@@ -29,6 +29,18 @@ from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.form import Form
 
 
+class FakeMutant(Mutant):
+    """
+    In order to test the Mutant base class methods, I had to create this "fake"
+    mutant, which helps with the implementation of required methods.
+    """
+    def get_dc(self):
+        return self.get_fuzzable_req().get_uri().querystring
+
+    def set_dc(self, new_qs):
+        self.get_fuzzable_req().get_uri().querystring = new_qs
+
+
 class TestMutant(unittest.TestCase):
 
     SIMPLE_KV = [('a', ['1']), ('b', ['2'])]
@@ -38,13 +50,18 @@ class TestMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
         self.fuzzer_config = {'fuzz_form_files': 'gif'}
 
+    def test_required_methods(self):
+        m = Mutant(FuzzableRequest(self.url))
+        self.assertRaises(NotImplementedError, m.get_dc)
+        self.assertRaises(NotImplementedError, m.set_dc, None)
+
     def test_mutant_creation(self):
         qs = QueryString(self.SIMPLE_KV)
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
                         'a=def&b=2', 'a=1&b=def',]
@@ -66,13 +83,13 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(token_2.get_value(), 'abc')
 
         self.assertTrue(all(isinstance(m, Mutant) for m in created_mutants))
-        self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
+        self.assertTrue(all(m.get_mutant_class() == 'FakeMutant' for m in created_mutants))
 
     def test_alternative_mutant_creation(self):
         freq = FuzzableRequest(URL('http://moth/?a=1&b=2'))
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
                         'a=def&b=2', 'a=1&b=def',]
@@ -90,8 +107,8 @@ class TestMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         mutant = created_mutants[0]
 
@@ -112,8 +129,8 @@ class TestMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, ['a', ],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, ['a'],
+                                                    False, self.fuzzer_config)
 
         expected_dcs = ['a=abc&b=2', 'a=def&b=2']
         created_dcs = [str(i.get_dc()) for i in created_mutants]
@@ -125,8 +142,8 @@ class TestMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         expected_dc_lst = []
         created_dc_lst = [i.get_dc() for i in created_mutants]
@@ -141,8 +158,8 @@ class TestMutant(unittest.TestCase):
 
         freq = FuzzableRequest(self.url, post_data=form)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         self.assertEqual(len(created_mutants), 4, created_mutants)
 
@@ -175,8 +192,8 @@ class TestMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                True, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    True, self.fuzzer_config)
 
         expected_dcs = ['a=1abc&b=2', 'a=1&b=2abc',
                         'a=1def&b=2', 'a=1&b=2def',]
@@ -190,8 +207,8 @@ class TestMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url)
         freq.set_querystring(qs)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
 
         expected_dcs = ['a=abc&a=2&b=3',
                         'a=1&a=abc&b=3',
@@ -225,8 +242,8 @@ class TestMutant(unittest.TestCase):
 
         freq = FuzzableRequest(url, post_data=form)
 
-        created_mutants = Mutant.create_mutants(freq, self.payloads, [],
-                                                False, self.fuzzer_config)
+        created_mutants = FakeMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
         created_dcs = [str(i.get_dc()) for i in created_mutants]
 
         expected_dcs = ['username=abc&password=FrAmE30.',

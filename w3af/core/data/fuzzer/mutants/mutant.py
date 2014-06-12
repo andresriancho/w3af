@@ -52,10 +52,12 @@ class Mutant(DiskItem):
         self._freq = freq
 
     def set_dc(self, data_container):
-        raise NotImplementedError('Mutant sub-classes need to implement set_dc')
+        msg = 'Mutant sub-class "%s" needs to implement set_dc'
+        raise NotImplementedError(msg % self.__class__.__name__)
 
     def get_dc(self):
-        raise NotImplementedError('Mutant sub-classes need to implement get_dc')
+        msg = 'Mutant sub-class "%s" needs to implement get_dc'
+        raise NotImplementedError(msg % self.__class__.__name__)
 
     def get_token(self):
         return self.get_dc().get_token()
@@ -147,16 +149,16 @@ class Mutant(DiskItem):
     def get_mutant_class(cls):
         return cls.__name__
 
-    @staticmethod
-    def create_mutants(freq, payload_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, payload_list, fuzzable_param_list,
                        append, fuzzer_config):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        return Mutant._create_mutants_worker(freq, Mutant, payload_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config)
+        return cls._create_mutants_worker(freq, cls, payload_list,
+                                          fuzzable_param_list,
+                                          append, fuzzer_config)
 
     @staticmethod
     def _create_mutants_worker(freq, mutant_cls, payload_list,

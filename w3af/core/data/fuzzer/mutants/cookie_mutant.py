@@ -54,8 +54,8 @@ class CookieMutant(Mutant):
         fmt = 'The cookie data that was sent is: "%s".'
         return fmt % self.get_dc()
 
-    @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
         """
         This is a very important method which is called in order to create
@@ -64,7 +64,6 @@ class CookieMutant(Mutant):
         if not fuzzer_config['fuzz_cookies']:
             return []
 
-        return Mutant._create_mutants_worker(freq, CookieMutant,
-                                             mutant_str_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config)
+        return cls._create_mutants_worker(freq, cls, mutant_str_list,
+                                          fuzzable_param_list, append,
+                                          fuzzer_config)

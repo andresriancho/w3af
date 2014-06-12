@@ -42,13 +42,3 @@ class QSMutant(Mutant):
     def print_token_value(self):
         return 'The sent URI was "%s" .' % self.get_uri()
 
-    @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
-                       append, fuzzer_config, data_container=None):
-        """
-        This is a very important method which is called in order to create
-        mutants. Usually called from fuzzer.py module.
-        """
-        return Mutant._create_mutants_worker(freq, QSMutant, mutant_str_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config)

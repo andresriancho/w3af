@@ -50,8 +50,8 @@ class JSONMutant(PostDataMutant):
         return fmt % (self.get_url(), self.get_method(),
                       self.get_dc().get_short_printable_repr())
 
-    @staticmethod
-    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+    @classmethod
+    def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
         """
         This is a very important method which is called in order to create
@@ -60,7 +60,6 @@ class JSONMutant(PostDataMutant):
         if not isinstance(freq.get_raw_data(), JSONContainer):
             return []
 
-        return JSONMutant._create_mutants_worker(freq, JSONMutant,
-                                                 mutant_str_list,
-                                                 fuzzable_param_list,
-                                                 append, fuzzer_config)
+        return cls._create_mutants_worker(freq, cls, mutant_str_list,
+                                          fuzzable_param_list,
+                                          append, fuzzer_config)
