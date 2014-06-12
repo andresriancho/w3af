@@ -356,7 +356,8 @@ class test_form(unittest.TestCase):
         self.assertEqual(form._method, copy._method)
         self.assertEqual(form._action, copy._action)
         self.assertEqual(form._types, copy._types)
-        self.assertEqual(form._files, copy._files)
+        self.assertEqual(form._file_vars, copy._file_vars)
+        self.assertEqual(form._file_names, copy._file_names)
         self.assertEqual(form._selects, copy._selects)
         self.assertEqual(form._submit_map, copy._submit_map)
 

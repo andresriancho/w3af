@@ -529,7 +529,8 @@ class Form(KeyValueContainer):
         copy._method = self._method
         copy._action = self._action
         copy._types = self._types
-        copy._files = self._file_vars
+        copy._file_vars = self._file_vars
+        copy._file_names = self._file_names
         copy._selects = self._selects
         copy._submit_map = self._submit_map
 
