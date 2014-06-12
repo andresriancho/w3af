@@ -95,20 +95,26 @@ class sqlmap(AttackPlugin):
         m = vuln_obj.get_mutant()
         orig_value = m.get_original_value()
 
-        dc[vuln_obj.get_var()][m.get_var_index()] = orig_value
+        # When the original value of the parameter was empty, mostly when it
+        # was an HTML form, sqlmap can't find the vulnerability (and w3af does)
+        # so we're adding a '1' here just in case.
+        parameter_values = {orig_value, '1'}
 
-        post_data = None
-        if isinstance(fuzzable_request, HTTPQSRequest):
-            uri.set_querystring(dc)
-        else:
-            post_data = str(dc) or None
-        
-        target = Target(uri, post_data)
-        
-        sqlmap = SQLMapWrapper(target, self._uri_opener)
-        if sqlmap.is_vulnerable():
-            self._sqlmap = sqlmap
-            return True
+        for pvalue in parameter_values:
+            dc[vuln_obj.get_var()][m.get_var_index()] = pvalue
+
+            post_data = None
+            if isinstance(fuzzable_request, HTTPQSRequest):
+                uri.set_querystring(dc)
+            else:
+                post_data = str(dc) or None
+
+            target = Target(uri, post_data)
+
+            sqlmap = SQLMapWrapper(target, self._uri_opener)
+            if sqlmap.is_vulnerable():
+                self._sqlmap = sqlmap
+                return True
         
         return False
 

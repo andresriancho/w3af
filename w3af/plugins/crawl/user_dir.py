@@ -19,44 +19,35 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os
-import csv
-
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
-from w3af import ROOT_PATH
-
-from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
-
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
+from w3af.plugins.crawl.user_db.user_db import (OS, APPLICATION,
+                                                get_users_from_csv)
 
 
 class user_dir(CrawlPlugin):
     """
-    Try to find user directories like "http://test/~user/" and identify the remote OS based on them.
+    Identify user directories like "http://test/~user/" and infer the remote OS.
     
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    DB_PATH = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'user_dir')
+    EMAIL_TAG = 'email'
+    COMMON_TAG = 'common'
+    EMAIL_USER_DESC = 'username extracted from email'
+    COMMON_USER_DESC = 'common operating system username'
+    COMMON_USERS = ['www-data', 'www', 'nobody', 'root', 'admin', 'test', 'ftp',
+                    'backup']
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-
-        # User configured variables
-        self._identify_OS = True
-        self._identify_applications = True
-
-        # For testing
-        self._do_fast_search = False
 
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
@@ -67,245 +58,154 @@ class user_dir(CrawlPlugin):
                                     (among other things) the URL to test.
         """
         base_url = fuzzable_request.get_url().base_url()
-        self._headers = Headers([('Referer', base_url.url_string)])
+        non_existent = self._create_non_existent_signature(base_url)
+
+        # Send all the HTTP requests to identify the potential home directories
+        test_generator = self._create_tests(base_url, non_existent)
+        self.worker_pool.map_multi_args(self._check_user_dir, test_generator)
+
+    def _create_non_existent_signature(self, base_url):
+        """
+        :param base_url: Something like http://target.com/
+        :return: An HTTPResponse for GET http://target.com/~_w_3_a_f_/
+        """
+        headers = Headers([('Referer', base_url.url_string)])
 
         # Create a response body to compare with the others
         non_existent_user = '~_w_3_a_f_/'
         test_URL = base_url.url_join(non_existent_user)
         try:
             response = self._uri_opener.GET(test_URL, cache=True,
-                                            headers=self._headers)
+                                            headers=headers)
         except:
             msg = 'user_dir failed to create a non existent signature.'
             raise BaseFrameworkException(msg)
 
         response_body = response.get_body()
-        self._non_existent = response_body.replace(non_existent_user, '')
 
-        # Check the users to see if they exist
-        url_user_list = self._create_dirs(base_url)
-        #   Send the requests using threads:
-        self.worker_pool.map_multi_args(self._do_request, url_user_list)
+        return response_body.replace(non_existent_user, '')
 
-        # Only do this if I already know that users can be identified.
-        if kb.kb.get('user_dir', 'users'):
-            if self._identify_OS:
-                self._advanced_identification(base_url, 'os')
-
-            if self._identify_applications:
-                self._advanced_identification(base_url, 'applications')
-
-            # Report findings of remote OS, applications, users, etc.
-            self._report_findings()
-
-    def _do_request(self, mutated_url, user):
+    def _check_user_dir(self, mutated_url, user, user_desc, user_tag,
+                        non_existent):
         """
-        Perform the request and compare.
+        Perform the request and compare with non_existent
 
+        :see _create_tests: For parameter description
         :return: The HTTP response id if the mutated_url is a web user
                  directory, None otherwise.
         """
-        response = self._uri_opener.GET(mutated_url, cache=True,
-                                        headers=self._headers)
+        resp = self.http_get_and_parse(mutated_url)
         
         path = mutated_url.get_path()
-        response_body = response.get_body().replace(path, '')
+        response_body = resp.get_body().replace(path, '')
 
-        if fuzzy_not_equal(response_body, self._non_existent, 0.7):
+        if fuzzy_not_equal(response_body, non_existent, 0.7):
 
             # Avoid duplicates
-            if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
-                desc = 'A user directory was found at: %s'
-                desc = desc % response.get_url()
-                
-                i = Info('Web user home directory', desc, response.id,
-                         self.get_name())
-                i.set_url(response.get_url())
-                i['user'] = user
+            known_users = [u['user'] for u in kb.kb.get('user_dir', 'users')]
+            if user in known_users:
+                return
 
-                kb.kb.append(self, 'users', i)
+            # Save the finding to the KB
+            desc = 'An operating system user directory was found at: "%s"'
+            desc = desc % resp.get_url()
 
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
+            i = Info('Web user home directory', desc, resp.id, self.get_name())
+            i.set_url(resp.get_url())
+            i['user'] = user
+            i['user_desc'] = user_desc
+            i['user_tag'] = user_tag
 
-            return response.id
+            self.kb_append_uniq(self, 'users', i)
 
-        return None
+            # Analyze if we can get more information from this finding
+            self._analyze_finding(i)
 
-    def _get_users_from_csv(self, ident):
+    def _analyze_finding(self, user_info):
         """
-        :return: A list of users from the user dir database.
+        If required, save a Info to the KB with the extra information we can
+        get from user_info.
+
+        :param user_info: A Info object as created by _check_user_dir
+        :return: None, info is stored in KB
         """
-        assert ident in ('applications', 'os'), 'Invalid identification'
+        tag = user_info['user_tag']
+        user = user_info['user']
+        user_desc = user_info['user_desc']
+        name = None
+        desc = None
 
-        csv_db = os.path.join(self.DB_PATH, '%s.csv' % ident)
-        file_handler = file(csv_db, 'rb')
-        reader = csv.reader(file_handler)
+        if tag == OS:
+            desc = 'The remote OS can be identified as "%s" based'\
+                   ' on the remote user "%s" information that is'\
+                   ' exposed by the web server.'
+            desc = desc % (user_desc, user)
 
-        while True:
-            try:
-                csv_row = reader.next()
-                desc, user = csv_row
-            except StopIteration:
-                break
-            except csv.Error:
-                # line contains NULL byte, and other similar things.
-                # https://github.com/andresriancho/w3af/issues/1490
-                msg = 'user_dir: Ignoring data with CSV error at line "%s"'
-                om.out.debug(msg % reader.line_num)
-            except ValueError:
-                om.out.debug('Invalid user_dir input: "%r"' % csv_row)
-            else:
-                yield desc, user
+            name = 'Fingerprinted operating system'
 
-    def _advanced_identification(self, url, ident):
+        elif tag == APPLICATION:
+            desc = 'The remote server has "%s" installed, w3af'\
+                   ' found this information based on the remote'\
+                   ' user "%s".'
+            desc = desc % (user_desc, user)
+
+            name = 'Identified installed application'
+
+        if name is not None and desc is not None:
+            i = Info(name, desc, user_info.get_id(), self.get_name())
+            i.set_url(user_info.get_url())
+
+            kb.kb.append(self, 'users', i)
+            om.out.report_finding(i)
+
+    def _create_tests(self, base_url, non_existent):
         """
-        :return: None, This method will save the results to the kb and print and
-                 informational message to the user.
+        :param base_url: The base URL we want to mutate
+        :param non_existent: HTTP response body for non-existent response
+        :yield: Tests for all the user directories, tuples containing:
+                    - URL with the user path
+                    - User
+                    - User description
+                    - User tag, one of: OS, APPLICATION, EMAIL_TAG, COMMON_TAG
+                    - HTTP response body for non-existent response
         """
-        for data_related_to_user, user in self._get_users_from_csv(ident):
-            url_user_list = self._create_dirs(url, user_list=[user, ])
-            for user_dir, user in url_user_list:
-                
-                http_response_id = self._do_request(user_dir, user)
-                
-                if http_response_id is not None:
+        for user_desc, user, user_tag in self._get_users():
+            for mutated_url in self._create_urls(base_url, user):
+                yield mutated_url, user, user_desc, user_tag, non_existent
 
-                    if ident == 'os':
-                        desc = 'The remote OS can be identified as "%s" based'\
-                               ' on the remote user "%s" information that is'\
-                               ' exposed by the web server.'
-                        desc = desc % (data_related_to_user, user)
-                        
-                        name = 'Fingerprinted operating system'
-                    else:
-                        desc = 'The remote server has "%s" installed, w3af'\
-                               ' found this information based on the remote'\
-                               ' user "%s".'
-                        desc = desc % (data_related_to_user, user)
-                        
-                        name = 'Identified installed application'
-                    
-                    i = Info(name, desc, http_response_id, self.get_name())
-                    i[ident] = data_related_to_user
-                    kb.kb.append(self, ident, i)
-
-    def _report_findings(self):
-        """
-        Print all the findings to the output manager.
-        :return : None
-        """
-        apps = 'applications'
-
-        user_list = [u['user'] for u in kb.kb.get('user_dir', 'users')]
-        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
-        app_list = [u[apps] for u in kb.kb.get('user_dir', apps)]
-
-        def print_bullet_list(item_list):
-            item_list = list(set(item_list))
-            for i in item_list:
-                om.out.information('- ' + i)
-
-        if user_list:
-            om.out.information('The following users were found on the remote'\
-                               ' operating system:')
-            print_bullet_list(user_list)
-
-        if OS_list:
-            om.out.information('The remote operating system was identified as:')
-            print_bullet_list(OS_list)
-        elif self._identify_OS:
-            msg = 'Failed to identify the remote OS based on the users'\
-                  ' available in the user_dir plugin database.'
-            om.out.information(msg)
-
-        if app_list:
-            om.out.information('The remote server has the following'
-                               ' applications installed:')
-            print_bullet_list(app_list)
-        elif self._identify_applications:
-            msg = 'Failed to identify any installed applications based on the'\
-                  ' users available in the user_dir plugin database.'
-            om.out.information(msg)
-
-    def _create_dirs(self, url, user_list=None):
+    def _create_urls(self, base_url, user):
         """
         Append the users to the URL.
 
         :param url: The original url
+        :param user: The username for which we want to generate the URLs
         :return: A list of URL objects with the username appended.
         """
-        res = []
-
-        if user_list is None:
-            user_list = self._get_users()
-
-        for user in user_list:
-            res.append((url.url_join('/' + user + '/'), user))
-            res.append((url.url_join('/~' + user + '/'), user))
-
-        return res
+        for _format in {'/%s/', '/~%s/'}:
+            yield base_url.url_join(_format % user)
 
     def _get_users(self):
         """
-        :return: All usernames collected by other plugins.
+        :return: All usernames collected by other plugins and from DBs
         """
-        res = []
+        for tag in {OS, APPLICATION}:
+            for user_desc, user in get_users_from_csv(tag):
+                yield user_desc, user, tag
 
-        infoList = kb.kb.get('emails', 'emails')
+        for user in self.COMMON_USERS:
+            yield self.COMMON_USER_DESC, user, self.COMMON_TAG
 
-        for i in infoList:
-            res.append(i['user'])
-
-        # Add some common users:
-        res.extend(['www-data', 'www', 'nobody', 'root', 'admin',
-                   'test', 'ftp', 'backup'])
-
-        return res
-
-    def get_options(self):
-        """
-        :return: A list of option objects for this plugin.
-        """
-        ol = OptionList()
-        
-        d = 'Try to identify the remote operating system based on the'\
-            ' remote users'
-        o = opt_factory('identify_os', self._identify_OS, d, 'boolean')
-        ol.add(o)
-        
-        d = 'Try to identify applications installed remotely using the'\
-             ' available users'
-        o = opt_factory('identify_apps', self._identify_applications, d,
-                        'boolean')
-        ol.add(o)
-        
-        return ol
-
-    def set_options(self, options_list):
-        """
-        This method sets all the options that are configured using the user
-        interface generated by the framework using the result of get_options().
-
-        :param options_list: An OptionList with the options for the plugin.
-        :return: No value is returned.
-        """
-        self._identify_OS = options_list['identify_os'].get_value()
-        self._identify_applications = options_list['identify_apps'].get_value()
+        for email_kb in kb.kb.get('emails', 'emails'):
+            yield self.EMAIL_USER_DESC, email_kb['user'], self.EMAIL_TAG
 
     def get_plugin_deps(self):
         """
         :return: A list with the names of the plugins that should be run before
                  the current one.
         """
-        if self._do_fast_search:
-            # This was left here for fast testing of the plugin.
-            return []
-        else:
-            # This is the correct return value for this method.
-            return ['infrastructure.finger_bing',
-                    'infrastructure.finger_google',
-                    'infrastructure.finger_pks']
+        return ['infrastructure.finger_bing',
+                'infrastructure.finger_google',
+                'infrastructure.finger_pks']
 
     def get_long_desc(self):
         """

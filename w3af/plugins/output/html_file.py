@@ -120,8 +120,8 @@ class html_file(OutputPlugin):
                 msg = 'An exception was raised while trying to write to the'\
                       ' output file "%s" in the html_file plugin: "%s".'\
                       ' Disabling output to this file.'
-                om.out.error(msg  % (self._output_file_name, e),
-                             ignore_plugins=set([self.get_name()]))
+                om.out.error(msg % (self._output_file_name, e),
+                             ignore_plugins={self.get_name()})
 
     def debug(self, message, new_line=True):
         """
@@ -336,7 +336,7 @@ class html_file(OutputPlugin):
         if self._file is not None:
             self._file.close()
         
-        self._aditional_info.cleanup()
+        self._aditional_info.clear()
 
     def get_long_desc(self):
         """

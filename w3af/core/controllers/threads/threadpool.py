@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+import time
 
 from functools import partial
 
@@ -63,7 +64,8 @@ class DaemonProcess(Process):
 
 class Pool(ThreadPool):
 
-    def __init__(self, processes=None, initializer=None, initargs=(), worker_names=None):
+    def __init__(self, processes=None, initializer=None, initargs=(),
+                 worker_names=None):
         self.Process = partial(DaemonProcess, name=worker_names)
         ThreadPool.__init__(self, processes, initializer, initargs)
     
@@ -75,7 +77,7 @@ class Pool(ThreadPool):
         
     def map_multi_args(self, func, iterable, chunksize=None):
         """
-        Block until all results are done (please note the .get())
+        Blocks until all results are done (please note the .get())
         """
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()
@@ -89,3 +91,30 @@ class Pool(ThreadPool):
     def terminate_join(self):
         self.terminate()
         self.join()
+
+    def finish(self, timeout=120):
+        """
+        Wait until all tasks in the self._inqueue have been processed (the queue
+        has size == 0) and then call terminate on the Pool.
+
+        I know this is not the best way of doing it, but had some dead-lock
+        issues with:
+
+            self.close()
+            self.join()
+
+        :param timeout: Wait up to timeout seconds for the queues to be empty
+        """
+        delay = 0.1
+
+        for _ in xrange(int(timeout / delay)):
+            if (self._inqueue.qsize() == 0 and
+                self._outqueue.qsize() == 0 and
+                self._taskqueue.qsize() == 0):
+                break
+            else:
+                time.sleep(delay)
+
+        self.terminate()
+        self.join()
+

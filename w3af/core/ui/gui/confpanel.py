@@ -182,7 +182,7 @@ class OnlyOptions(gtk.VBox):
         Handles the boldness of the option label and then propagates
         the change.
         """
-        (labl, orig, chng) = self.widgets_status[widg]
+        labl, orig, chng = self.widgets_status[widg]
         if like_initial:
             labl.set_text(orig)
         else:

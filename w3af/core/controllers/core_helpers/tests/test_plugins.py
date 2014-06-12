@@ -22,34 +22,51 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import itertools
+import os
 
+from os import listdir as orig_listdir
 from nose.plugins.attrib import attr
+from mock import patch
 
 from w3af.core.controllers.w3afCore import w3afCore
 
+TEST_PLUGIN_NAME = 'failing_spider'
+
 
 @attr('smoke')
-class Test_w3afCore_plugins(unittest.TestCase):
+class TestW3afCorePlugins(unittest.TestCase):
+
+    def setUp(self):
+        super(TestW3afCorePlugins, self).setUp()
+
+        self.listdir_patch = patch('os.listdir')
+        self.listdir_mock = self.listdir_patch.start()
+        self.listdir_mock.side_effect = listdir_remove_fs
+
+    def tearDown(self):
+        super(TestW3afCorePlugins, self).tearDown()
+
+        self.listdir_patch.stop()
 
     def test_get_plugin_types(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.get_plugin_types()
-        expected = set(['grep', 'output', 'mangle', 'audit', 'crawl',
-                        'evasion', 'bruteforce', 'auth', 'infrastructure'])
+        expected = {'grep', 'output', 'mangle', 'audit', 'crawl', 'evasion',
+                    'bruteforce', 'auth', 'infrastructure'}
         self.assertEquals(set(plugin_types), expected)
 
     def test_get_plugin_listAudit(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('audit')
 
-        expected = set(['sqli', 'xss', 'eval'])
+        expected = {'sqli', 'xss', 'eval'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_listCrawl(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.get_plugin_list('crawl')
 
-        expected = set(['web_spider', 'spider_man'])
+        expected = {'web_spider', 'spider_man'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_inst(self):
@@ -134,8 +151,8 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
                           set(w3af_core.plugins.get_plugin_list('crawl')))
 
-        self.assertEquals(len(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          len(w3af_core.plugins.get_plugin_list('crawl')))
+        self.assertEquals(len(set(w3af_core.plugins.get_enabled_plugins('crawl'))),
+                          len(set(w3af_core.plugins.get_plugin_list('crawl'))))
 
     def test_enable_all_but_web_spider(self):
         w3af_core = w3afCore()
@@ -223,8 +240,10 @@ class Test_w3afCore_plugins(unittest.TestCase):
 
     def test_enable_all_all(self):
         w3af_core = w3afCore()
+
         for plugin_type in w3af_core.plugins.get_plugin_types():
             w3af_core.plugins.set_plugins(['all', ], plugin_type)
+
         w3af_core.plugins.init_plugins()
 
         for plugin_type in w3af_core.plugins.get_plugin_types():
@@ -233,3 +252,29 @@ class Test_w3afCore_plugins(unittest.TestCase):
             all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
             self.assertEqual(set(enabled_plugins), set(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
+
+
+def listdir_remove_fs(query_dir):
+    """
+    Many builds, such as [0], fail because we're running multiple tests at the
+    same time; and some of those tests write new/test plugins to disk. I've
+    tried to modify those tests to avoid writing the file... but it was almost
+    impossible and too hacky solution.
+
+    This simple function replaces the "os.listdir" command, returning a list of
+    the files in the the query_dir, removing 'failing_spider' plugin name from
+    the list.
+
+    [0] https://circleci.com/gh/andresriancho/w3af/801
+
+    :param query_dir: The directory to query
+    :return: A list without 'failing_spider'
+    """
+    original = orig_listdir(query_dir)
+    result = []
+
+    for fname in original:
+        if TEST_PLUGIN_NAME not in fname:
+            result.append(fname)
+
+    return result

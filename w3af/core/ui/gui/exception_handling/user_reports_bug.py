@@ -22,18 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 from w3af.core.ui.gui.exception_handling.common_windows import (
-    simple_base_window, github_bug_report)
+    SimpleBaseWindow, GithubBugReport)
 
 
-class user_reports_bug(simple_base_window, github_bug_report):
+class user_reports_bug(SimpleBaseWindow, GithubBugReport):
     """
-    This window covers the STRANGE case in which a user goes to the Help menu and
-    clicks on "Report Bug".
+    This window covers the STRANGE case in which a user goes to the Help menu
+    and clicks on "Report Bug".
     """
 
     def __init__(self):
-        simple_base_window.__init__(self)
-        github_bug_report.__init__(
+        SimpleBaseWindow.__init__(self)
+        GithubBugReport.__init__(
             self, 'No traceback available on user bug report.')
 
         # We got here because of the user going to the Help menu and
@@ -93,4 +93,4 @@ class user_reports_bug(simple_base_window, github_bug_report):
         self.butt_send.set_sensitive(False)
 
         # Report the bug
-        github_bug_report.report_bug(self)
+        GithubBugReport.report_bug(self)

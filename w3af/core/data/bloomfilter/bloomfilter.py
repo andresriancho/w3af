@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.bloomfilter.wrappers import GenericBloomFilter
-from w3af.core.controllers.dependency_check.os_detection import is_mac
+from w3af.core.controllers.dependency_check.platforms.mac import MacOSX
 
 # This import can't fail, it is pure-python love ;)
 from w3af.core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter\
     as FileSeekFilter
 
-if is_mac():
+if MacOSX.is_current_platform():
     # Awful workaround for Mac OS X:
     # https://github.com/andresriancho/w3af/issues/485
     WrappedBloomFilter = FileSeekFilter

@@ -61,7 +61,10 @@ def create_home_dir():
     default_profiles_paths = [os.path.join(W3AF_LOCAL_PATH, 'profiles'),
                               os.path.join(ROOT_PATH, 'profiles'),
                               os.path.join(sys.prefix, 'profiles'),
-                              os.path.join(sys.exec_prefix, 'profiles'),]
+                              os.path.join(sys.exec_prefix, 'profiles'),
+                              # https://github.com/andresriancho/w3af-module/issues/4
+                              os.path.join(sys.prefix, 'local', 'profiles'),
+                              os.path.join(sys.exec_prefix, 'local', 'profiles'),]
 
     if not os.path.exists(home_profiles):
         for default_profile_path in default_profiles_paths:

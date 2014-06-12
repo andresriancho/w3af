@@ -226,8 +226,8 @@ class TestContext(unittest.TestCase):
     def test_payload_script_single_quote2(self):
         html = """
         <html>
-<script type="text/javascript">//<!--
-  init({login:'',foo:'PAYLOAD'})
+            <script type="text/javascript">//<!--
+                init({login:'',foo:'PAYLOAD'})
             </script>
         </html>
         """
@@ -312,7 +312,7 @@ class TestContext(unittest.TestCase):
     def test_payload_js2doublequote(self):
         html = """
         <html>
-        <input type="button" value="ClickMe" onClick="PAYLOAD">
+            <input type="button" value="ClickMe" onClick="PAYLOAD">
         </html>
         """
         self.assertIsInstance(get_context(html, 'PAYLOAD')[1], ScriptText)
@@ -324,6 +324,36 @@ class TestContext(unittest.TestCase):
     def test_payload_only_payload(self):
         html = 'PAYLOAD'
         self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlText)
+
+    def test_payload_with_space_equal_src_executable(self):
+        """
+        Related with:
+            https://github.com/andresriancho/w3af/issues/1557
+            https://github.com/andresriancho/w3af/issues/2919
+        """
+        html = """
+        <html>
+            <frame src="5vrws =">
+        </html>
+        """
+        self.assertEqual(get_context(html, '5vrws%20%3D'), [])
+
+        context = get_context(html, '5vrws =')[0]
+        self.assertTrue(context.is_executable())
+
+    def test_payload_with_space_equal_not_executable_attr(self):
+        """
+        Related with:
+            https://github.com/andresriancho/w3af/issues/1557
+            https://github.com/andresriancho/w3af/issues/2919
+        """
+        html = """
+        <html>
+            <frame bar="PAYLOAD">
+        </html>
+        """
+        context = get_context(html, 'PAYLOAD')[0]
+        self.assertFalse(context.is_executable())
 
     def test_django_500_sample(self):
         html = file(os.path.join(self.SAMPLES_DIR, 'django-500.html')).read()

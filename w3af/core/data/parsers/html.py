@@ -34,6 +34,13 @@ class HTMLParser(SGMLParser):
               Javier Andalia (jandalia =AT= GMAIL.COM)
     """
 
+    # http://www.freeformatter.com/mime-types-list.html
+    IGNORE_CONTENT_TYPES = ('application', 'video', 'audio', 'image',
+                            'chemical', 'model')
+    WILD_ACCEPT_CONTENT_TYPES = ('text', 'message')
+    SPECIFIC_ACCEPT_CONTENT_TYPES = ('text/html', 'application/hta',
+                                     'application/xhtml+xml', 'application/xml')
+
     def __init__(self, http_resp):
         # An internal list to be used to save input tags found
         # outside of the scope of a form tag.
@@ -61,10 +68,38 @@ class HTMLParser(SGMLParser):
                           type HTML / PDF / WML / etc.
 
         :return: True if the document parameter is a string that contains an
-                 HTML document.
+                 HTML document. Since we're trying to extract as many links as
+                 possible, and the internet is an ugly place (where content
+                 type headers are not mandatory) we'll be very forgiving and
+                 return True when we're unsure about the content-type.
         """
-        if 'html' in http_resp.content_type.lower():
+        content_type = http_resp.content_type.lower()
+
+        if content_type == '':
+            # We get here when the remote server doesn't send a content-type
+            # and the HTTPResponse parser will set it to an empty string
+            #
+            # Lets parse it...
             return True
+
+        if content_type in HTMLParser.SPECIFIC_ACCEPT_CONTENT_TYPES:
+            return True
+
+        try:
+            ct_type, ct_subtype = content_type.split('/')
+        except ValueError:
+            # The content type doesn't have the expected format type/subtype
+            # won't parse something that's completely broken
+            return False
+
+        if ct_subtype.startswith('vnd.'):
+            return False
+
+        if ct_type in HTMLParser.WILD_ACCEPT_CONTENT_TYPES:
+            return True
+
+        if ct_type in HTMLParser.IGNORE_CONTENT_TYPES:
+            return False
 
         return False
 

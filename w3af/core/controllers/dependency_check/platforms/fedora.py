@@ -20,40 +20,48 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import subprocess
+import platform
 
-SYSTEM_NAME = 'fedora'
-
-PKG_MANAGER_CMD = 'sudo yum install'
-
-SYSTEM_PACKAGES = {
-                   'PIP': ['python-pip'],
-                   'C_BUILD': ['python-devel', 'python-setuptools',
-                               'libsqlite3x-devel'],
-                   'GIT': ['git'],
-                   'XML': ['libxml2-devel', 'libxslt-devel']
-                  }
-PIP_CMD = 'python-pip'
+from .base_platform import Platform
+from ..requirements import CORE, GUI
 
 
-def os_package_is_installed(package_name):
-    not_installed = 'is not installed'
-    installed = 'Status: install ok installed'
-    
-    try:
-        p = subprocess.Popen(['rpm', '-q', package_name], stdout=subprocess.PIPE,
-                                                           stderr=subprocess.PIPE)
-    except OSError:
-        # We're not on a debian based system
-        return None
-    else:
-        dpkg_output, _ = p.communicate()
+class Fedora(Platform):
+    SYSTEM_NAME = 'fedora'
+    PKG_MANAGER_CMD = 'sudo yum install'
+    PIP_CMD = 'python-pip'
 
-        if not_installed in dpkg_output:
-            return False
-        elif package_name in dpkg_output:
-            return True
-        else:
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
+                            'libsqlite3x-devel', 'git', 'libxml2-devel',
+                            'libxslt-devel']
+
+    GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
+    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'pygtksourceview', 'pygtk2'])
+
+    SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
+                       GUI: GUI_SYSTEM_PACKAGES}
+
+    @staticmethod
+    def os_package_is_installed(package_name):
+        not_installed = 'is not installed'
+        installed = 'Status: install ok installed'
+
+        try:
+            p = subprocess.Popen(['rpm', '-q', package_name],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except OSError:
+            # We're not on a fedora based system
             return None
+        else:
+            dpkg_output, _ = p.communicate()
 
-def after_hook():
-    pass
+            if not_installed in dpkg_output:
+                return False
+            elif package_name in dpkg_output:
+                return True
+            else:
+                return None
+
+    @staticmethod
+    def is_current_platform():
+        return 'fedora' in platform.dist()

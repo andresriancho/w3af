@@ -48,7 +48,6 @@ class TestDisclaimer(XpresserUnittest):
         startup_cfg.accepted_disclaimer = True
         startup_cfg.save()
 
-        
     def test_disclaimer_shown_accept(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = False

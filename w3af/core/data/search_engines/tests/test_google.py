@@ -28,11 +28,12 @@ from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.search_engines.google import (google, GAjaxSearch,
-                                             GStandardSearch, GMobileSearch,
-                                             FINISHED_OK, IS_NEW)
+                                                  GStandardSearch,
+                                                  GMobileSearch,
+                                                  FINISHED_OK, IS_NEW)
 
-URL_REGEX = re.compile(
-    '((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
+URL_REGEX = re.compile('((http|ftp|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)',
+                       re.U)
 
 
 @attr('internet')
@@ -129,7 +130,8 @@ class BaseGoogleAPISearch(unittest.TestCase):
         self.assertGreaterEqual(len(searcher.links), self.COUNT, msg)
 
         for link in searcher.links:
-            self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
+            self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None,
+                            link.URL.url_string)
 
         for page in searcher.pages:
             self.assertTrue(isinstance(page, HTTPResponse))

@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib2
+import threading
 
 from nose.plugins.attrib import attr
 
-import w3af.core.controllers.daemons.webserver as webserver
-
+from w3af.core.controllers.daemons.webserver import w3afHTTPServer
 from w3af.plugins.audit.rfi import RFIWebHandler
-from w3af.core.data.constants.ports import REMOTEFILEINCLUDE
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -126,13 +125,20 @@ class TestRFI(PluginTest):
 
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
-        webserver.start_webserver(
-            '127.0.0.1', REMOTEFILEINCLUDE, '.', RFIWebHandler)
+        ws = w3afHTTPServer(('127.0.0.1', 0), '.', RFIWebHandler)
+        ws.wait_for_start()
+        port = ws.get_port()
 
-        response_foobar = urllib2.urlopen(
-            'http://localhost:44449/foobar').read()
-        response_spameggs = urllib2.urlopen(
-            'http://localhost:44449/spameggs').read()
+        server_thread = threading.Thread(target=ws.serve_forever)
+        server_thread.name = 'WebServer'
+        server_thread.daemon = True
+        server_thread.start()
+
+        foobar_url = 'http://localhost:%s/foobar' % port
+        spameggs_url = 'http://localhost:%s/spameggs' % port
+
+        response_foobar = urllib2.urlopen(foobar_url).read()
+        response_spameggs = urllib2.urlopen(spameggs_url).read()
 
         self.assertEqual(response_foobar, response_spameggs)
         self.assertEqual(response_foobar, RFIWebHandler.RESPONSE_BODY)

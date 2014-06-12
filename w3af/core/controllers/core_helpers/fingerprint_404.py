@@ -52,9 +52,9 @@ def lru_404_cache(wrapped_method):
     def inner(self, http_response):
         path = http_response.get_uri()
 
-        if path in self.is_404_LRU:
+        try:
             return self.is_404_LRU[path]
-        else:
+        except KeyError:
             result = wrapped_method(self, http_response)
             self.is_404_LRU[path] = result
             return result

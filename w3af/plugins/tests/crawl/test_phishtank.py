@@ -70,7 +70,7 @@ class TestPhishtank(PluginTest):
 
         self.assertEqual(vuln.get_name(), 'Phishing scam')
         self.assertEqual(vuln.get_severity(), MEDIUM)
-        self.assertEqual(vuln.get_url(), vuln_url)
+        self.assertEqual(vuln.get_url().get_domain(), vuln_url.get_domain())
 
     def test_xml_parsing(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',

@@ -25,6 +25,7 @@ from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.data import mergedOptions
 from lib.core.data import paths
+from lib.core.datatype import InjectionDict
 from lib.core.dicts import DBMS_DICT
 from lib.core.dump import dumper
 from lib.core.enums import HASHDB_KEYS
@@ -50,13 +51,13 @@ from lib.core.settings import PROBLEMATIC_CUSTOM_INJECTION_PATTERNS
 from lib.core.settings import REFERER_ALIASES
 from lib.core.settings import RESTORE_MERGED_OPTIONS
 from lib.core.settings import RESULTS_FILE_FORMAT
-from lib.core.settings import SOAP_RECOGNITION_REGEX
 from lib.core.settings import SUPPORTED_DBMS
 from lib.core.settings import UNENCODED_ORIGINAL_VALUE
 from lib.core.settings import UNICODE_ENCODING
 from lib.core.settings import UNKNOWN_DBMS_VERSION
 from lib.core.settings import URI_INJECTABLE_REGEX
 from lib.core.settings import USER_AGENT_ALIASES
+from lib.core.settings import XML_RECOGNITION_REGEX
 from lib.utils.hashdb import HashDB
 from lib.core.xmldump import dumper as xmldumper
 from thirdparty.odict.odict import OrderedDict
@@ -138,7 +139,7 @@ def _setRequestParams():
                     conf.data = re.sub(r"('(?P<name>[^']+)'\s*:\s*)(-?\d[\d\.]*\b)", functools.partial(process, repl=r"\g<0>%s" % CUSTOM_INJECTION_MARK_CHAR), conf.data)
                     kb.postHint = POST_HINT.JSON_LIKE
 
-            elif re.search(SOAP_RECOGNITION_REGEX, conf.data):
+            elif re.search(XML_RECOGNITION_REGEX, conf.data):
                 message = "SOAP/XML data found in %s data. " % conf.method
                 message += "Do you want to process it? [Y/n/q] "
                 test = readInput(message, default="Y")
@@ -345,7 +346,7 @@ def _resumeHashDBValues():
     conf.tmpPath = conf.tmpPath or hashDBRetrieve(HASHDB_KEYS.CONF_TMP_PATH)
 
     for injection in hashDBRetrieve(HASHDB_KEYS.KB_INJECTIONS, True) or []:
-        if injection.place in conf.paramDict and \
+        if isinstance(injection, InjectionDict) and injection.place in conf.paramDict and \
             injection.parameter in conf.paramDict[injection.place]:
 
             if not conf.tech or intersect(conf.tech, injection.data.keys()):
@@ -462,7 +463,16 @@ def _createFilesDir():
     conf.filePath = paths.SQLMAP_FILES_PATH % conf.hostname
 
     if not os.path.isdir(conf.filePath):
-        os.makedirs(conf.filePath, 0755)
+        try:
+            os.makedirs(conf.filePath, 0755)
+        except OSError, ex:
+            tempDir = tempfile.mkdtemp(prefix="sqlmapfiles")
+            warnMsg = "unable to create files directory "
+            warnMsg += "'%s' (%s). " % (conf.filePath, ex)
+            warnMsg += "Using temporary directory '%s' instead" % tempDir
+            logger.warn(warnMsg)
+
+            conf.filePath = tempDir
 
 def _createDumpDir():
     """

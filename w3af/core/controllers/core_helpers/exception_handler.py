@@ -131,6 +131,25 @@ class ExceptionHandler(object):
     def get_all_exceptions(self):
         return self._exception_data
 
+    def get_unique_exceptions(self):
+        """
+        Filters the found exceptions to only show unique "bugs". We filter based
+        on the lineno and filename of each ExceptionData stored in
+        self._exception_data
+
+        :return: A filtered exception list
+        """
+        filtered_exceptions = []
+
+        for edata in self.get_all_exceptions():
+            for unique in filtered_exceptions:
+                if edata.lineno == unique.lineno and edata.filename == edata.filename:
+                    break
+            else:
+                filtered_exceptions.append(edata)
+
+        return filtered_exceptions
+
     def generate_summary_str(self):
         """
         :return: A string with a summary of the exceptions found during the

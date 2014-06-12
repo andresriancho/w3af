@@ -25,6 +25,8 @@ import functools
 
 from functools import wraps
 
+from w3af.core.controllers.misc.lru import LRU
+
 
 def runonce(exc_class=Exception):
     """
@@ -121,9 +123,9 @@ class memoized(object):
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     """
-    def __init__(self, func):
+    def __init__(self, func, lru_size=100):
         self.func = func
-        self.cache = {}
+        self.cache = LRU(lru_size)
 
     def __call__(self, *args):
         if not isinstance(args, collections.Hashable):

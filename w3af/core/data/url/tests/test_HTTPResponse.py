@@ -183,6 +183,18 @@ class TestHTTPResponse(unittest.TestCase):
         resp = self.create_resp(headers, html)
         self.assertEquals(clear_text, resp.get_clear_text_body())
 
+    def test_get_clear_text_body_memoized(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        clear_text = 'header ABC-DEF-XYZ footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        resp = self.create_resp(headers, html)
+
+        calculated_clear_text = resp.get_clear_text_body()
+        calculated_clear_text_2 = resp.get_clear_text_body()
+
+        self.assertEquals(clear_text, calculated_clear_text)
+        self.assertIs(calculated_clear_text_2, calculated_clear_text)
+
     def test_get_lower_case_headers(self):
         headers = Headers([('Content-Type', 'text/html')])
         lcase_headers = Headers([('content-type', 'text/html')])

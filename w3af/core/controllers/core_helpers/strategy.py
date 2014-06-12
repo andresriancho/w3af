@@ -39,7 +39,7 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 
 from w3af.core.controllers.exceptions import (ScanMustStopException,
-                                         ScanMustStopByUserRequest)
+                                              ScanMustStopByUserRequest)
 
 
 class w3af_core_strategy(object):
@@ -98,6 +98,10 @@ class w3af_core_strategy(object):
             self._fuzzable_request_router()
 
             self.join_all_consumers()
+
+            # While the consumers might have finished, they certainly queue
+            # tasks in the core's worker_pool, which need to be processed too
+            self._w3af_core.worker_pool.finish()
 
         except Exception, e:
             self.terminate()

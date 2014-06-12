@@ -362,7 +362,8 @@ class w3af_core_plugins(object):
 
     def _set_evasion_plugins(self, evasion_plugins):
         """
-        :param evasion_plugins: A list with the names of Evasion Plugins that will be used.
+        :param evasion_plugins: A list with the names of Evasion Plugins that
+                                will be used.
         :return: No value is returned.
         """
         self._plugins_names_dict['evasion'] = evasion_plugins
