@@ -317,9 +317,12 @@ class ExtendedUrllib(object):
         #    since we *never* want to return cached responses for POST
         #    requests.
         #
+        data = str(data)
+
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           ignore_errors=ignore_errors, method='POST')
         req = self._add_headers(req, headers)
+
         return self._send(req, grep=grep)
 
     def get_remote_file_size(self, req, cache=True):

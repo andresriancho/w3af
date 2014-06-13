@@ -33,15 +33,15 @@ from mock import Mock
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.dc.generic.data_container import DataContainer
+from w3af.core.data.dc.form import Form
 from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
-                                         ScanMustStopOnUrlError,
-                                         ScanMustStopException,
-                                         ScanMustStopByUnknownReasonExc)
+                                              ScanMustStopOnUrlError,
+                                              ScanMustStopException,
+                                              ScanMustStopByUnknownReasonExc)
 
 
 @attr('moth')
@@ -85,14 +85,14 @@ class TestXUrllib(unittest.TestCase):
 
     def test_POST(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
-        data = DataContainer([('text', '123456abc'),])
+        data = Form([('text', ['123456abc'])])
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
     def test_POST_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
-        data = DataContainer([('text', test_data),])
+        data = Form([('text', [test_data])])
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 
