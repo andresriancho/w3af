@@ -177,3 +177,46 @@ class TestFuzzableRequest(unittest.TestCase):
 
         f = FuzzableRequest(URL('http://example.com/'), post_data=form)
         self.assertTrue(f.sent('d%5C%27z%5C%220'))
+
+    def test_from_form_POST(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "abc")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.set_action(URL('http://example.com/'))
+        form.set_method('post')
+
+        fr = FuzzableRequest.from_form(form)
+
+        self.assertIs(fr.get_uri(), form.get_action())
+        self.assertIs(fr.get_form(), form)
+
+    def test_from_form_GET(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "abc")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.set_action(URL('http://example.com/'))
+        form.set_method('GET')
+
+        fr = FuzzableRequest.from_form(form)
+
+        expected_url = 'http://example.com/?username=abc&address='
+        self.assertEqual(fr.get_uri().url_string, expected_url)
+        self.assertEqual(fr.get_uri().querystring, 'username=abc&address=')
+        self.assertIsInstance(fr.get_uri().querystring, Form)
+        self.assertIs(fr.get_form(), form)
+
+    def test_from_form_default(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "abc")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.set_action(URL('http://example.com/'))
+        # Without a method
+        #form.set_method('GET')
+
+        fr = FuzzableRequest.from_form(form)
+
+        expected_url = 'http://example.com/?username=abc&address='
+        self.assertEqual(fr.get_uri().url_string, expected_url)
+        self.assertEqual(fr.get_uri().querystring, 'username=abc&address=')
+        self.assertIsInstance(fr.get_uri().querystring, Form)
+        self.assertIs(fr.get_form(), form)
