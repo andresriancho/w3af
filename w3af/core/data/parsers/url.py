@@ -307,14 +307,13 @@ class URL(DiskItem):
         """
         if isinstance(qs, DataContainer):
             self._querystr = qs
-        elif isinstance(qs, dict):
-            self._querystr = QueryString(qs.items())
         elif isinstance(qs, basestring):
             self._querystr = parse_qs(qs, ignore_exc=True,
                                       encoding=self.encoding)
         else:
-            msg = "Invalid type '%r'; must be DataContainer, dict or string"
-            raise TypeError(msg % type(qs))
+            # This might fail because of the type-check performed in QueryString
+            # __init__, but that's ok.
+            self._querystr = QueryString(qs)
 
     querystring = property(get_querystring, set_querystring)
 
