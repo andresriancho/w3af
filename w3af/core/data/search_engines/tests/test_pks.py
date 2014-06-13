@@ -29,7 +29,7 @@ from w3af.core.controllers.misc.temp_dir import create_temp_dir
 
 
 @attr('internet')
-class test_pks(unittest.TestCase):
+class TestPKS(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
@@ -39,6 +39,6 @@ class test_pks(unittest.TestCase):
         result = self.pks_se.search('bonsai-sec.com')
         self.assertEqual(len(result), 2)
 
-        expected = set(['lucas'])
+        expected = {'lucas'}
         self.assertTrue(
             set([r.username for r in result]).issuperset(expected), result)
