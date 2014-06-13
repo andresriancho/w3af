@@ -182,3 +182,13 @@ class DataContainer(DiskItem):
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+    def __str__(self):
+        """
+        DataContainer sub-classes need to implement the __str__ method to be
+        able to serialize themselves to be sent to the wire.
+
+        __str__ will need to work together with get_headers() to create
+        something that makes sense on the other side.
+        """
+        raise NotImplementedError
