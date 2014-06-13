@@ -333,7 +333,7 @@ class Info(dict):
         """
         return self._id
 
-    def set_token_name(self, *args):
+    def set_token(self, *args):
         """
         Sets the token in the DataContainer to point to the variable specified
         in *args. Usually args will be one of:

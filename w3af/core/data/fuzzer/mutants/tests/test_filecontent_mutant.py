@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from mock import patch
+
 from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -89,25 +91,33 @@ class TestFileContentMutant(unittest.TestCase):
 
         freq = FuzzableRequest.from_form(form)
 
-        generated_mutants = FileContentMutant.create_mutants(freq,
-                                                             self.payloads, [],
-                                                             False,
-                                                             fuzzer_config)
+        ph = 'w3af.core.data.constants.file_templates.file_templates.rand_alpha'
+
+        with patch(ph) as mock_rand_alpha:
+            mock_rand_alpha.return_value = 'upload'
+            generated_mutants = FileContentMutant.create_mutants(freq,
+                                                                 self.payloads,
+                                                                 [], False,
+                                                                 fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 2, generated_mutants)
 
         _, file_payload_abc, _ = get_template_with_payload('gif', 'abc')
         _, file_payload_def, _ = get_template_with_payload('gif', 'def')
 
+        file_abc = NamedStringIO(file_payload_abc, 'upload.gif')
+        file_def = NamedStringIO(file_payload_def, 'upload.gif')
+
         expected_forms = [Form([('username', ['John8212']),
                                 ('address', ['Bonsai Street 123']),
-                                ('image', [file_payload_abc])]),
+                                ('image', [file_abc])]),
                           Form([('username', ['John8212']),
                                 ('address', ['Bonsai Street 123']),
-                                ('image', [file_payload_def])])]
+                                ('image', [file_def])])]
 
         boundary = get_boundary()
         noop = '1' * len(boundary)
+
         expected_data = [encode_as_multipart(f, boundary) for f in expected_forms]
         expected_data = set([s.replace(boundary, noop) for s in expected_data])
 
@@ -125,3 +135,5 @@ class TestFileContentMutant(unittest.TestCase):
         self.assertIsInstance(str_file, NamedStringIO)
         self.assertEqual(str_file.name[-4:], '.gif')
         self.assertEqual(file_payload_def, str_file)
+
+        self.assertIn('name="image"; filename="upload.gif"', generated_data[0])

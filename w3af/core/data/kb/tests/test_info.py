@@ -109,7 +109,7 @@ class TestInfo(unittest.TestCase):
         info = MockInfo()
 
         self.assertIsInstance(info.get_dc(), NonRepeatKeyValueContainer)
-        self.assertIsNone(info.get_var())
+        self.assertIsNone(info.get_token_name())
 
     def test_from_info(self):
         url = URL('http://moth/')

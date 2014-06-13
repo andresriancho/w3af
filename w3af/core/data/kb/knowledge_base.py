@@ -101,7 +101,7 @@ class BasicKnowledgeBase(object):
         """
         for saved_vuln in self.get(location_a, location_b):
             
-            if saved_vuln.get_var() == info_inst.get_var() and\
+            if saved_vuln.get_token_name() == info_inst.get_token_name() and\
             saved_vuln.get_url() == info_inst.get_url():
             
                 if saved_vuln.get_dc() is None and\

@@ -65,7 +65,7 @@ class TestVuln(unittest.TestCase):
 
         # Since inst1 was created using a EmptyFuzzableRequest, this is fine:
         self.assertIsInstance(inst1.get_dc(), NonRepeatKeyValueContainer)
-        self.assertIsNone(inst1.get_var())
+        self.assertIsNone(inst1.get_token_name())
 
     def test_from_mutant(self):
         url = URL('http://moth/?a=1&b=2')
@@ -88,4 +88,4 @@ class TestVuln(unittest.TestCase):
         self.assertEqual(inst.get_url(), mutant.get_url())
         self.assertEqual(inst.get_method(), mutant.get_method())
         self.assertEqual(inst.get_dc(), mutant.get_dc())
-        self.assertEqual(inst.get_var(), mutant.get_token().get_name())
+        self.assertEqual(inst.get_token_name(), mutant.get_token().get_name())

@@ -24,26 +24,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 class DataToken(object):
     def __init__(self, name, value):
-        self.name = name
-        self.value = self.original_value = value
+        self._name = name
+        self._value = self._original_value = value
 
     def get_name(self):
-        return self.name
+        return self._name
 
     def get_value(self):
-        return self.value
+        return self._value
 
     def get_original_value(self):
-        return self.original_value
+        return self._original_value
 
     def set_value(self, new_value):
-        self.value = new_value
+        self._value = new_value
 
     def __str__(self):
-        return str(self.value)
+        return str(self._value)
 
     def __unicode__(self):
-        return unicode(self.value)
+        return unicode(self._value)
 
     def __eq__(self, other):
         if isinstance(other, DataToken):
@@ -59,7 +59,7 @@ class DataToken(object):
             raise RuntimeError('Can not compare %s with DataToken.' % other)
 
     def __reduce__(self):
-        return self.__class__, (self.name, self.value), {}
+        return self.__class__, (self._name, self._value), {}
 
     def __getattr__(self, attr):
         # see if this object has attr
@@ -69,4 +69,4 @@ class DataToken(object):
             return getattr(self, attr)
 
         # proxy to the wrapped object
-        return getattr(self.value, attr)
+        return getattr(self._value, attr)

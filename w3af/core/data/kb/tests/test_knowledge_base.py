@@ -90,12 +90,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/abc.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
@@ -105,12 +105,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/abc.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1, filter_by='VAR')
         kb.append_uniq('a', 'b', i2, filter_by='VAR')
@@ -120,12 +120,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/abc.html?id=1'))
         i2.set_dc(QueryString([('id', ['1'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
@@ -135,12 +135,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/def.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
@@ -150,12 +150,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/abc.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1, filter_by='URL')
         kb.append_uniq('a', 'b', i2, filter_by='URL')
@@ -165,12 +165,12 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
-        i1.set_var('id', 0)
+        i1.set_token('id', 0)
 
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/def.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
-        i2.set_var('id', 0)
+        i2.set_token('id', 0)
 
         kb.append_uniq('a', 'b', i1, filter_by='URL')
         kb.append_uniq('a', 'b', i2, filter_by='URL')

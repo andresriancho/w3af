@@ -39,14 +39,14 @@ class FileDataToken(DataToken):
             extension = filename.rsplit('.', 1)[-1]
             extension = extension or default_extension
 
-        self.extension = extension
-        self.filename = filename
-        self.original_value = self.value = self.build_file(value)
+        self._extension = extension
+        self._filename = filename
+        self._original_value = self._value = self.build_file(value)
 
     def build_file(self, value):
 
         if isinstance(value, basestring):
-            _, file_content, fname = get_template_with_payload(self.extension,
+            _, file_content, fname = get_template_with_payload(self._extension,
                                                                value)
 
             # I have to create the NamedStringIO with a "name",
@@ -57,4 +57,4 @@ class FileDataToken(DataToken):
         return value
 
     def set_value(self, new_value):
-        self.value = self.build_file(new_value)
+        self._value = self.build_file(new_value)

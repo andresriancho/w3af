@@ -141,7 +141,7 @@ class BaseTemplate(Configurable):
         v.set_name(self.name)
         v.set_url(self.url)
         v.set_dc(self.data)
-        v.set_token_name(self.vulnerable_parameter)
+        v.set_token(self.vulnerable_parameter)
 
         return v
 

@@ -228,4 +228,3 @@ class TestFuzzableRequest(unittest.TestCase):
 
         f = FuzzableRequest(URL('http://example.com/'), post_data=form)
         self.assertIs(f.get_form(), form)
-        
