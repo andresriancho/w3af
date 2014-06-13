@@ -25,6 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.search_engines.search_engine import SearchEngine
+from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
 
 
@@ -59,14 +60,14 @@ class pks(SearchEngine):
         """
         Query a Public Key Server.
 
-        This method is based from the pks.py file from the massive enumeration toolset,
-        coded by pdp and released under GPL v2.
+        This method is based from the pks.py file from the massive enumeration
+        toolset, coded by pdp and released under GPL v2.
         """
         url = URL(u'http://pgp.mit.edu:11371/pks/lookup')
-        url.querystring = {u'op': u'index', u'search': query}
+        url.querystring = [(u'op', [u'index']), (u'search', [query])]
 
-        response = self._uri_opener.GET(url, headers=self._headers,
-                                        cache=True, grep=False)
+        response = self._uri_opener.GET(url, headers=self._headers, cache=True,
+                                        grep=False)
         content = response.get_body()
 
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)
@@ -84,9 +85,7 @@ class pks(SearchEngine):
                 email = tokens[-1]
                 name = ' '.join(tokens[3:-1])
 
-                # Copy+paste from baseparser.py
-                email_regex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
-                if re.match(email_regex, email, re.IGNORECASE):
+                if SGMLParser.EMAIL_RE.match(email):
 
                     account = email.split('@')[0]
                     domain = email.split('@')[1]
