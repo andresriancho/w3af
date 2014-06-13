@@ -90,11 +90,8 @@ class sqlmap(AttackPlugin):
         :return : True if vuln can be exploited.
         """
         uri = vuln_obj.get_uri()
-        dc = vuln_obj.get_dc()
-        fuzzable_request = vuln_obj.get_mutant().get_fuzzable_req()
-
-        m = vuln_obj.get_mutant()
-        orig_value = m.get_original_value()
+        mutant = vuln_obj.get_mutant()
+        orig_value = mutant.get_token().get_original_value()
 
         # When the original value of the parameter was empty, mostly when it
         # was an HTML form, sqlmap can't find the vulnerability (and w3af does)
@@ -102,11 +99,10 @@ class sqlmap(AttackPlugin):
         parameter_values = {orig_value, '1'}
 
         for pvalue in parameter_values:
-            dc_copy = copy.deepcopy(dc)
-            dc_copy.get_token().set_value(pvalue)
+            mutant = copy.deepcopy(mutant)
+            mutant.set_token_value(pvalue)
 
-            uri = fuzzable_request.get_uri()
-            post_data = fuzzable_request.get_data() or None
+            post_data = mutant.get_data() or None
 
             target = Target(uri, post_data)
 

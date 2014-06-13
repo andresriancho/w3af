@@ -110,7 +110,7 @@ class SQLMapWrapper(object):
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = ['python', 'sqlmap.py'] + final_params + target_params
-
+        
         if self.debug:
             all_params += self.DEBUG_ARGS
 
