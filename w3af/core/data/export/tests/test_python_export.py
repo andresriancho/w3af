@@ -44,7 +44,8 @@ EXPECTED_POST = """import urllib2
 url = "http://www.w3af.org/"
 data = "a=1"
 headers = {
-    "Host" : "www.w3af.org"
+    "Host" : "www.w3af.org",
+    "Content-Type" : "application/x-www-form-urlencoded"
 }
 
 request = urllib2.Request(url, data, headers)
@@ -59,7 +60,8 @@ url = "http://www.w3af.org/"
 data = "a=1&a=2"
 headers = {
     "Host" : "www.w3af.org",
-    "Foo" : "spam, eggs"
+    "Foo" : "spam, eggs",
+    "Content-Type" : "application/x-www-form-urlencoded"
 }
 
 request = urllib2.Request(url, data, headers)
@@ -85,6 +87,7 @@ class TestPythonExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 3\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        '\n' \
                        'a=1'
         python_code = python_export(http_request)
@@ -96,6 +99,7 @@ class TestPythonExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: spam\n' \
                        'Foo: eggs\n' \
                        '\n' \
@@ -109,6 +113,7 @@ class TestPythonExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: sp"am\n' \
                        'Foo: eggs\n' \
                        '\n' \
