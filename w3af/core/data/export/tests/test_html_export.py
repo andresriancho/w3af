@@ -62,6 +62,7 @@ class TestHTMLExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 3\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        '\n' \
                        'a=1'
         html_code = html_export(http_request)
@@ -71,6 +72,7 @@ class TestHTMLExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: spam\n' \
                        'Foo: eggs\n' \
                        '\n' \
@@ -82,6 +84,7 @@ class TestHTMLExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: spam\n' \
                        'Foo: eggs\n' \
                        '\n' \

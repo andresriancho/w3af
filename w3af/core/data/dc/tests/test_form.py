@@ -324,20 +324,42 @@ class test_form(unittest.TestCase):
         self.assertEqual(str(new_form), 'eggs=&foo=bar%2Bspam')
 
     def test_form_str_simple(self):
-        form_data = [{'tagname': 'input', 'type':'text', 'name':
-                      'abc', 'value':'123'}]
+        form_data = [{'tagname': 'input',
+                      'type': 'text',
+                      'name': 'abc',
+                      'value': '123'}]
         new_form = create_form_helper(form_data)
         self.assertEqual(str(new_form), 'abc=123')
 
     def test_form_str_simple_2(self):
-        form_data = [{'tagname': 'input', 'type':'text', 'name':'abc', 'value':'123'},
-                     {'tagname': 'input', 'type':'hidden', 'name':'def', 'value':'000'}]
+        form_data = [{'tagname': 'input',
+                      'type': 'text',
+                      'name': 'abc',
+                      'value': '123'},
+                     {'tagname': 'input',
+                      'type': 'hidden',
+                      'name': 'def',
+                      'value': '000'}]
         new_form = create_form_helper(form_data)
         self.assertEqual(str(new_form), 'abc=123&def=000')
 
-    def test_form_str_special_chars(self):
-        form_data = [{'tagname': 'input', 'type':'text', 'name':'v', 'value':'áéíóú'},
-                     {'tagname': 'input', 'type':'hidden', 'name':'c', 'value':'ñçÑÇ'}]
+    def test_form_str_special_chars_1(self):
+        form_data = [{'tagname': 'input',
+                      'type': 'text',
+                      'name': 'abc',
+                      'value': '1"2'}]
+        new_form = create_form_helper(form_data)
+        self.assertEqual(str(new_form), 'abc=1%222')
+
+    def test_form_str_special_chars_2(self):
+        form_data = [{'tagname': 'input',
+                      'type': 'text',
+                      'name': 'v',
+                      'value': 'áéíóú'},
+                     {'tagname': 'input',
+                      'type': 'hidden',
+                      'name': 'c',
+                      'value': 'ñçÑÇ'}]
         new_form = create_form_helper(form_data)
         new_form.add_submit('address', 'bsas')
         self.assertEqual(urllib.unquote(str(new_form)).decode('utf-8'),

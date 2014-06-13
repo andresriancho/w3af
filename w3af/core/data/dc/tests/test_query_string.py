@@ -30,11 +30,16 @@ class TestQueryString(unittest.TestCase):
         self.assertEquals(str(QueryString([])), '')
 
     def test_str_with_equal(self):
-        t1 = str(QueryString([('a', ['>']), ('b', ['a==1 && z >= 2','3>2'])]))
+        t1 = str(QueryString([('a', ['>']), ('b', ['a==1 && z >= 2', '3>2'])]))
         e1 = 'a=%3E&b=a%3D%3D1%20%26%26%20z%20%3E%3D%202&b=3%3E2'
         self.assertEqual(t1, e1)
 
         t2 = str(QueryString([('a', ['x=/etc/passwd'])]))
         e2 = 'a=x%3D%2Fetc%2Fpasswd'
         self.assertEqual(t2, e2)
+
+    def test_str_with_double_quote(self):
+        qs = str(QueryString([('a', ['1"2'])]))
+        expected = 'a=1%222'
+        self.assertEqual(qs, expected)
 

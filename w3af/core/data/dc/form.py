@@ -200,7 +200,7 @@ class Form(KeyValueContainer):
             if key_type in self.AVOID_STR_DUPLICATES:
                 d[key] = d[key][:1]
 
-        return urlencode(d, encoding=self.encoding)
+        return urlencode(d, encoding=self.encoding, safe='')
 
     def add_submit(self, name, value):
         """

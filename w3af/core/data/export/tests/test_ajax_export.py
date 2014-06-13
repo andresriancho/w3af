@@ -69,7 +69,7 @@ xmlhttp.onreadystatechange = function() {
 }
 
 
-/* Add headers to the request and send it, please note taht custom headers
+/* Add headers to the request and send it, please note that custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
 xmlhttp.setRequestHeaders("Host", "www.w3af.org");
@@ -123,10 +123,11 @@ xmlhttp.onreadystatechange = function() {
 }
 
 
-/* Add headers to the request and send it, please note taht custom headers
+/* Add headers to the request and send it, please note that custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
 xmlhttp.setRequestHeaders("Host", "www.w3af.org");
+xmlhttp.setRequestHeaders("Content-Type", "application/x-www-form-urlencoded");
 var post_data = (<r><![CDATA[a=1]]></r>).toString();
 xmlhttp.send(post_data);
 """
@@ -140,15 +141,16 @@ class TestAjaxExport(unittest.TestCase):
                        'Foo: bar\n' \
                        '\n'
         ajax_code = ajax_export(http_request)
-        file('/tmp/get.txt', 'w').write(ajax_code)
+
         self.assertEqual(ajax_code, EXPECTED_SIMPLE)
 
     def test_export_POST(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 3\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        '\n' \
                        'a=1'
         ajax_code = ajax_export(http_request)
-        file('/tmp/post.txt', 'w').write(ajax_code)
+
         self.assertEquals(ajax_code, EXPECTED_POST)

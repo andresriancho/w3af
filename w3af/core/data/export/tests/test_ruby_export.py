@@ -44,7 +44,8 @@ EXPECTED_POST = """require 'net/https'
 url = URI.parse("http://www.w3af.org/")
 data = "a=1"
 headers = {
-    "Host" => "www.w3af.org"
+    "Host" => "www.w3af.org",
+    "Content-Type" => "application/x-www-form-urlencoded"
 }
 res = Net::HTTP.start(url.host, url.port) do |http|
     http.use_ssl = false
@@ -60,7 +61,8 @@ url = URI.parse("http://www.w3af.org/")
 data = "a=1&a=2"
 headers = {
     "Host" => "www.w3af.org",
-    "Foo" => "spam, eggs"
+    "Foo" => "spam, eggs",
+    "Content-Type" => "application/x-www-form-urlencoded"
 }
 res = Net::HTTP.start(url.host, url.port) do |http|
     http.use_ssl = false
@@ -85,6 +87,7 @@ class TestRubyExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 3\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        '\n' \
                        'a=1'
         ruby_code = ruby_export(http_request)
@@ -94,6 +97,7 @@ class TestRubyExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: spam\n' \
                        'Foo: eggs\n' \
                        '\n' \
@@ -105,6 +109,7 @@ class TestRubyExport(unittest.TestCase):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
                        'Content-Length: 7\n' \
+                       'Content-Type: application/x-www-form-urlencoded\n' \
                        'Foo: sp"am\n' \
                        'Foo: eggs\n' \
                        '\n' \

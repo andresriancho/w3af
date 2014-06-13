@@ -96,7 +96,7 @@ xmlhttp.onreadystatechange = function() {
 }
 
 
-/* Add headers to the request and send it, please note taht custom headers
+/* Add headers to the request and send it, please note that custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
 """
