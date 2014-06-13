@@ -105,14 +105,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             path = self.path
 
-        fuzzable_request = FuzzableRequest(URL(path), self.command,
-                                           Headers(self.headers.dict.items()))
-
+        headers = Headers(self.headers.dict.items())
         post_data = self._get_post_data()
-        if post_data:
-            fuzzable_request.set_data(post_data)
 
-        return fuzzable_request
+        return FuzzableRequest.from_parts(path, method=self.command,
+                                          post_data=post_data, headers=headers)
 
     def do_ALL(self):
         """
