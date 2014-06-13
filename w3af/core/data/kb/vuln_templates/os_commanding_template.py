@@ -63,10 +63,10 @@ class OSCommandingTemplate(BaseTemplate):
         
     def get_kb_location(self):
         """
-        :return: A tuple with the location where the vulnerability will be saved,
-                 example return value would be: ('eval', 'eval')
+        :return: A tuple with the location where the vulnerability will be
+                 saved, example return value would be: ('eval', 'eval')
         """
-        return ('os_commanding', 'os_commanding')
+        return 'os_commanding', 'os_commanding'
 
     def get_vulnerability_name(self):
         """

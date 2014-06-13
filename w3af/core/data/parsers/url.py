@@ -311,8 +311,8 @@ class URL(DiskItem):
             self._querystr = parse_qs(qs, ignore_exc=True,
                                       encoding=self.encoding)
         else:
-            raise TypeError, ("Invalid type '%r'; must be DataContainer, "
-                              "dict or string" % type(qs))
+            msg = "Invalid type '%r'; must be DataContainer, dict or string"
+            raise TypeError(msg % type(qs))
 
     querystring = property(get_querystring, set_querystring)
 

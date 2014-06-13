@@ -212,7 +212,7 @@ class xpath(AttackPlugin):
                                                      req_x.get_body()).ratio()
 
         except BaseFrameworkException, e:
-            om.out.debug('Error "%s"' % (e))
+            om.out.debug('Error "%s"' % e)
         else:
             use_difflib = (diff_ratio / count) < THRESHOLD
             # FIXME: I'm not using difflib since it doesn't work well in my
@@ -438,7 +438,8 @@ class XPathReader(Shell):
         self._rSystem = 'XPath'
         self._rUser = 'xml-file'
         self._rSystemName = 'unknown'
-        
+
+
 class IsErrorResponse(object):
     def __init__(self, vuln_obj, url_opener, use_difflib):
         self.vuln_obj = vuln_obj
