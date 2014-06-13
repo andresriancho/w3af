@@ -56,7 +56,7 @@ back
 
 back
 target
-set target %s/active/RXSS-Detection-Evaluation-GET/index.jsp
+set target %s/active/RXSS-Detection-Evaluation-GET/
 back
 
 start
