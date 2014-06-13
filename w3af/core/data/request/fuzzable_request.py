@@ -202,6 +202,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :return: The form (from querystring or post-data), None if this instance
                  is not related with a Form object.
         """
+        if self._form is None and isinstance(self._post_data, Form):
+            return self._post_data
+
         return self._form
 
     def export(self):

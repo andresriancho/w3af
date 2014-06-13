@@ -220,3 +220,12 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.get_uri().querystring, 'username=abc&address=')
         self.assertIsInstance(fr.get_uri().querystring, Form)
         self.assertIs(fr.get_form(), form)
+
+    def test_get_form_without_from_form(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", """d'z"0""")])
+        form.add_input([("name", "address"), ("value", "")])
+
+        f = FuzzableRequest(URL('http://example.com/'), post_data=form)
+        self.assertIs(f.get_form(), form)
+        
