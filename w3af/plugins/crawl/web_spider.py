@@ -147,11 +147,13 @@ class web_spider(CrawlPlugin):
             # I have to set some variables, in order to be able to code
             # the "only_forward" feature
             self._first_run = False
-            self._target_urls = [i.get_domain_path() for i in cf.cf.get('targets')]
+            self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
 
-            #    The following line triggered lots of bugs when the "stop" button
-            #    was pressed and the core did this: "cf.cf.save('targets', [])"
+            # The following line triggered lots of bugs when the "stop" button
+            # was pressed and the core did this: "cf.cf.save('targets', [])"
+            #
             #self._target_domain = cf.cf.get('targets')[0].get_domain()
+            #
             #    Changing it to something awful but bug-free.
             targets = cf.cf.get('targets')
             if not targets:

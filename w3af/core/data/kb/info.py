@@ -40,6 +40,8 @@ class Info(dict):
         :param response_ids: A list of response ids associated with this vuln
         :param plugin_name: The name of the plugin which identified the vuln
         """
+        super(Info, self).__init__()
+
         # Default values
         self._string_matches = set()
         self._mutant = EmptyMutant()
@@ -260,7 +262,7 @@ class Info(dict):
         """
         concat_all = ''
         
-        for functor in (self.get_uri, self.get_method, self.get_var,
+        for functor in (self.get_uri, self.get_method, self.get_token_name,
                         self.get_dc, self.get_id, self.get_name, self.get_desc,
                         self.get_plugin_name):
             data = functor()
@@ -273,7 +275,7 @@ class Info(dict):
     def __eq__(self, other):
         return self.get_uri() == other.get_uri() and\
                self.get_method() == other.get_method() and\
-               self.get_var() == other.get_var() and\
+               self.get_token_name() == other.get_token_name() and\
                self.get_dc() == other.get_dc() and\
                self.get_id() == other.get_id() and\
                self.get_name() == other.get_name() and\
@@ -331,7 +333,7 @@ class Info(dict):
         """
         return self._id
 
-    def set_var(self, *args):
+    def set_token_name(self, *args):
         """
         Sets the token in the DataContainer to point to the variable specified
         in *args. Usually args will be one of:
@@ -344,12 +346,20 @@ class Info(dict):
         """
         return self._mutant.get_dc().set_token(*args)
 
-    def get_var(self):
+    def get_token_name(self):
         """
         :return: The name of the variable where the vulnerability was found
         """
         try:
             return self._mutant.get_dc().get_token().get_name()
+        except AttributeError:
+            # get_token() -> None
+            # None.get_name() -> raise AttributeError
+            return None
+
+    def get_token(self):
+        try:
+            return self._mutant.get_dc().get_token()
         except AttributeError:
             # get_token() -> None
             # None.get_name() -> raise AttributeError

@@ -140,12 +140,12 @@ class AuditPlugin(Plugin):
     def _has_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         return not self._has_no_bug(fuzz_req, varname, pname, kb_varname)
 
-    def _has_no_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
+    def _has_no_bug(self, mutant, varname='', pname='', kb_varname=''):
         """
         Test if the current combination of `fuzz_req`, `varname` hasn't
         already been reported to the knowledge base.
 
-        :param fuzz_req: A FuzzableRequest like object.
+        :param mutant: A Mutant sub-class.
         :param varname: Typically the name of the injection parameter.
         :param pname: The name of the plugin that presumably reported
             the vulnerability. Defaults to self.name.
@@ -153,20 +153,18 @@ class AuditPlugin(Plugin):
             the vulnerability was saved. Defaults to self.name.
         """
         with self._plugin_lock:
-            if not varname:
-                if hasattr(fuzz_req, 'get_var'):
-                    varname = fuzz_req.get_var()
-                else:
-                    raise ValueError("Invalid arg 'varname': %s" % varname)
-
             pname = pname or self.get_name()
             kb_varname = kb_varname or pname
+
+            if not varname:
+                varname = mutant.get_token_name()
+
             vulns = kb.kb.get(pname, kb_varname)
 
             for vuln in vulns:
-                if vuln.get_var() == varname and\
-                fuzz_req.get_dc().keys() == vuln.get_dc().keys() and\
-                are_variants(vuln.get_uri(), fuzz_req.get_uri()):
+                if vuln.get_token_name() == varname and\
+                mutant.get_dc().keys() == vuln.get_dc().keys() and\
+                are_variants(vuln.get_uri(), mutant.get_uri()):
                     return False
                 
             return True

@@ -24,13 +24,10 @@ import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.fuzzer.utils import rand_alpha
-
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
-
 from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
-
 
 
 class ExploitStrategy(object):
@@ -44,14 +41,9 @@ class ExploitStrategy(object):
         self.vuln = vuln
     
     def send(self, cmd, opener):
-        # Lets define the result header and footer.
-        func_ref = getattr(opener, self.vuln.get_method())
-        
-        exploit_dc = self.vuln.get_dc().copy()
-        exploit_dc[self.vuln.get_var()] = cmd
-        
-        response = func_ref(self.vuln.get_url(), str(exploit_dc))
-        return response
+        mutant = self.vuln.get_mutant().copy()
+        mutant.set_token_value(cmd)
+        return opener.send_mutant(mutant)
                 
     def can_exploit(self, opener):
         raise NotImplementedError

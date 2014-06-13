@@ -1,5 +1,5 @@
 """
-PostDataMutant.py
+postdata_mutant.py
 
 Copyright 2006 Andres Riancho
 
