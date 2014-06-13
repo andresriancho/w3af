@@ -45,6 +45,8 @@ class TestFormAuth(PluginTest):
     positive_test = {
         'target': None,
         'plugins': {
+            'crawl': (PluginConfig('web_spider',
+                                  ('only_forward', True, PluginConfig.BOOL),),),
             'bruteforce': (PluginConfig('form_auth',
                                         ('usersFile', small_users_positive,
                                          PluginConfig.STR),
@@ -54,14 +56,14 @@ class TestFormAuth(PluginTest):
                                          PluginConfig.BOOL),
                                         ),
                            ),
-            'crawl': (PluginConfig('web_spider',
-                                  ('only_forward', True, PluginConfig.BOOL),),),
         }
     }
 
     negative_test = {
         'target': None,
         'plugins': {
+            'crawl': (PluginConfig('web_spider',
+                                  ('only_forward', True, PluginConfig.BOOL),),),
             'bruteforce': (PluginConfig('form_auth',
                                         ('usersFile', small_users_negative,
                                          PluginConfig.STR),

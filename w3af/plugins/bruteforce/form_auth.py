@@ -27,7 +27,6 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
-from w3af.core.data.dc.form import Form
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
@@ -61,7 +60,7 @@ class form_auth(BruteforcePlugin):
 
         self._already_tested.append(freq.get_url())
 
-        user_token, pass_token = freq.get_raw_data().get_login_tokens()
+        user_token, pass_token = freq.get_form().get_login_tokens()
 
         try:
             login_failed_bodies = self._id_failed_login_page(freq)
@@ -112,7 +111,7 @@ class form_auth(BruteforcePlugin):
         # The result is going to be stored here
         login_failed_result_list = []
 
-        form = freq.get_raw_data()
+        form = freq.get_form()
         self._true_extra_fields(form)
 
         user_token, pass_token = form.get_login_tokens()
@@ -176,12 +175,12 @@ class form_auth(BruteforcePlugin):
         """
         :return: True if this FuzzableRequest is a login form.
         """
-        data_container = freq.get_raw_data()
+        form = freq.get_form()
 
-        if not isinstance(data_container, Form):
+        if form is None:
             return False
 
-        return data_container.is_login_form()
+        return form.is_login_form()
 
     def _true_extra_fields(self, form):
         """
@@ -232,7 +231,7 @@ class form_auth(BruteforcePlugin):
             return
 
         freq = freq.copy()
-        form = freq.get_raw_data()
+        form = freq.get_form()
         self._true_extra_fields(form)
 
         user_token, pass_token = form.get_login_tokens()
