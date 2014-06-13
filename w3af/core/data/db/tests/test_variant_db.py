@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.db.variant_db import VariantDB
+from w3af.core.data.db.variant_db import VariantDB, DEFAULT_MAX_VARIANTS
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 
 
@@ -34,58 +34,53 @@ class TestVariantDB(unittest.TestCase):
 
     def test_db_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s'
-        _max = 5
 
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % i)
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
 
-        self.assertFalse(
-            self.vdb.need_more_variants(URL(url_fmt % (_max + 1,))))
+        extra_url = URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
 
     def test_db_int_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=1'
-        _max = 5
 
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % i)
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
 
         self.assertFalse(
-            self.vdb.need_more_variants(URL(url_fmt % (_max + 1,))))
+            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1,))))
 
     def test_db_int_int_var(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
-        _max = 5
 
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % (i, i))
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
 
         self.assertFalse(
-            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1, DEFAULT_MAX_VARIANTS + 1))))
 
     def test_db_int_str(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
-        _max = 5
 
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % (i, 'abc' * i))
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
 
         self.assertFalse(self.vdb.need_more_variants(
-            URL(url_fmt % (_max + 1, 'abc' * (_max + 1)))))
+            URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1, 'abc' * (DEFAULT_MAX_VARIANTS + 1)))))
 
     def test_db_int_str_then_int_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
-        _max = 5
 
         # Add (int, str)
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % (i, 'abc' * i))
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
@@ -93,16 +88,16 @@ class TestVariantDB(unittest.TestCase):
         # Please note that in this case I'm asking for (int, int) and I added
         # (int, str) before
         self.assertTrue(
-            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1, DEFAULT_MAX_VARIANTS + 1))))
 
         # Add (int, int)
-        for i in xrange(_max):
+        for i in xrange(DEFAULT_MAX_VARIANTS):
             url = URL(url_fmt % (i, i))
             self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
 
         self.assertFalse(
-            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1, DEFAULT_MAX_VARIANTS + 1))))
 
     def test_clean_reference_simple(self):
         self.assertEqual(self.vdb._clean_reference(URL('http://w3af.org/')),
