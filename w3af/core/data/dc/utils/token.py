@@ -57,3 +57,16 @@ class DataToken(object):
             return False
         else:
             raise RuntimeError('Can not compare %s with DataToken.' % other)
+
+    def __reduce__(self):
+        return self.__class__, (self.name, self.value), {}
+
+    def __getattr__(self, attr):
+        # see if this object has attr
+        # NOTE do not use hasattr, it goes into infinite recursion
+        if attr in self.__dict__:
+            # this object has it
+            return getattr(self, attr)
+
+        # proxy to the wrapped object
+        return getattr(self.value, attr)
