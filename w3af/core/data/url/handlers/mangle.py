@@ -40,51 +40,15 @@ class MangleHandler(urllib2.BaseHandler):
     def __init__(self, plugin_list):
         self._plugin_list = plugin_list
 
-    def _urllib_request_to_fr(self, request):
-        """
-        Convert a urllib2 request object to a FuzzableRequest.
-        Used in http_request.
-
-        :param request: A urllib2 request obj.
-        :return: A FuzzableRequest.
-        """
-        headers = request.headers
-        headers.update(request.unredirected_hdrs)
-        headers = Headers(headers.items())
-        fr = FuzzableRequest(request.url_object,
-                             request.get_method(),
-                             headers)
-        fr.set_data(request.get_data() or '')
-        return fr
-
-    def _fr_to_urllib_request(self, fuzzable_request, orig_req):
-        """
-        Convert a FuzzableRequest to a urllib2 request object.
-        Used in http_request.
-
-        :param fuzzable_request: A FuzzableRequest.
-        :return: A urllib2 request obj.
-        """
-        host = fuzzable_request.get_url().get_domain()
-
-        if fuzzable_request.get_method().upper() == 'GET':
-            data = None
-        else:
-            data = fuzzable_request.get_data()
-
-        req = HTTPRequest(fuzzable_request.get_uri(), data=data,
-                          headers=fuzzable_request.get_headers(),
-                          origin_req_host=host)
-        return req
-
     def http_request(self, request):
         if self._plugin_list:
-            fr = self._urllib_request_to_fr(request)
+            fr = FuzzableRequest.from_urllib2_request(request)
 
             for plugin in self._plugin_list:
                 fr = plugin.mangle_request(fr)
 
-            request = self._fr_to_urllib_request(fr, request)
+            request = HTTPRequest.from_fuzzable_request(fr)
+
         return request
 
     def http_response(self, request, response):
@@ -116,8 +80,9 @@ class MangleHandler(urllib2.BaseHandler):
         :param HTTPResponse: HTTPResponse.HTTPResponse object
         :return: httplib.httpresponse subclass
         """
-        ka_resp = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
-                                 strict=0, method=None)
+        ka_resp = kaHTTPResponse(originalResponse._connection.sock,
+                                 debuglevel=0, strict=0, method=None)
+
         ka_resp.set_body(mangled_response.get_body())
         ka_resp.headers = mangled_response.get_headers()
         ka_resp.code = mangled_response.get_code()

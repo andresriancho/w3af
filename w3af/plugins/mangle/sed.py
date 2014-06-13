@@ -66,8 +66,9 @@ class sed(ManglePlugin):
         
         headers_inst = Headers.from_string(header_string)
 
-        return FuzzableRequest(request.get_uri(), request.get_method(), data,
-                               headers_inst)
+        return FuzzableRequest.from_parts(request.get_uri(),
+                                          method=request.get_method(),
+                                          post_data=data, headers=headers_inst)
 
     def mangle_response(self, response):
         """
