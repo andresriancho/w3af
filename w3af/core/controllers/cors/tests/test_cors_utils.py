@@ -29,9 +29,9 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
 
-from w3af.core.controllers.cors.utils import (
-    build_cors_request, retrieve_cors_header,
-    provides_cors_features)
+from w3af.core.controllers.cors.utils import (build_cors_request,
+                                              retrieve_cors_header,
+                                              provides_cors_features)
 
 
 class TestUtils(unittest.TestCase):
@@ -80,8 +80,8 @@ class TestUtils(unittest.TestCase):
         cors_headers = Headers(hrds)
         http_response = HTTPResponse(200, '', cors_headers, url, url)
 
-        value = retrieve_cors_header(
-            http_response, 'Access-Control-Allow-Origin')
+        value = retrieve_cors_header(http_response,
+                                     'Access-Control-Allow-Origin')
 
         self.assertEqual(value, w3af_url)
 
@@ -91,8 +91,8 @@ class TestUtils(unittest.TestCase):
         cors_headers = Headers({'Access-Control': 'Allow-Origin'}.items())
         http_response = HTTPResponse(200, '', cors_headers, url, url)
 
-        value = retrieve_cors_header(
-            http_response, 'Access-Control-Allow-Origin')
+        value = retrieve_cors_header(http_response,
+                                     'Access-Control-Allow-Origin')
 
         self.assertEqual(value, None)
 
@@ -103,7 +103,8 @@ class TestUtils(unittest.TestCase):
 
         self.assertEquals(fr.get_url(), url)
         self.assertEquals(fr.get_method(), 'GET')
-        self.assertEquals(fr.get_headers(), {'Origin': 'http://foo.com/'})
+        self.assertEquals(fr.get_headers(),
+                          Headers({'Origin': 'http://foo.com/'}.items()))
 
     def test_build_cors_request_false(self):
         url = URL('http://moth/')
@@ -112,4 +113,4 @@ class TestUtils(unittest.TestCase):
 
         self.assertEquals(fr.get_url(), url)
         self.assertEquals(fr.get_method(), 'GET')
-        self.assertEquals(fr.get_headers(), {})
+        self.assertEquals(fr.get_headers(), Headers())
