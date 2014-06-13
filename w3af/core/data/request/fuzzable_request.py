@@ -139,6 +139,22 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         return cls(http_response.get_uri(), method='GET', cookie=cookie)
 
     @classmethod
+    def from_urllib2_request(cls, request):
+        """
+        :param request: The instance we'll use as base
+        :return: An instance of FuzzableRequest based on a urllib2 HTTP request
+                 instance.
+        """
+        headers = request.headers
+        headers.update(request.unredirected_hdrs)
+        headers = Headers(headers.items())
+
+        post_data = request.get_data() or ''
+
+        return cls.from_parts(request.url_object, method=request.get_method(),
+                              headers=headers, post_data=post_data)
+
+    @classmethod
     def from_form(cls, form, headers=None):
         if form.get_method().upper() == 'POST':
             r = cls(form.get_action(),

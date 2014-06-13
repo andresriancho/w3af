@@ -91,7 +91,21 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['cache'] = self.get_from_cache
             
         return serializable_dict
-    
+
+    @classmethod
+    def from_fuzzable_request(cls, fuzzable_request):
+        """
+        :param request: The FuzzableRequest
+        :return: An instance of HTTPRequest with all the information contained
+                 in the FuzzableRequest passed as parameter
+        """
+        host = fuzzable_request.get_url().get_domain()
+        data = fuzzable_request.get_data()
+
+        return cls(fuzzable_request.get_uri(), data=data,
+                   headers=fuzzable_request.get_headers(),
+                   origin_req_host=host)
+
     @classmethod    
     def from_dict(cls, unserialized_dict):
         """
