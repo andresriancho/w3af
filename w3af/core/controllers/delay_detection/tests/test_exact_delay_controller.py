@@ -122,7 +122,7 @@ class TestExactDelay(unittest.TestCase):
             req = FuzzableRequest(url)
             mutant = QSMutant(req)
             mutant.set_dc(url.querystring)
-            mutant.set_var('id', 0)
+            mutant.set_token('id', 0)
             
             ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()
@@ -130,7 +130,6 @@ class TestExactDelay(unittest.TestCase):
     
     def test_delay_controlled_random(self):
         for expected_result, delays in self.TEST_SUITE:
-            print delays
             mock_uri_opener = Mock()
             side_effect = generate_delays(delays, rand_range=(0,2))
             mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
@@ -140,7 +139,7 @@ class TestExactDelay(unittest.TestCase):
             req = FuzzableRequest(url)
             mutant = QSMutant(req)
             mutant.set_dc(url.querystring)
-            mutant.set_var('id', 0)
+            mutant.set_token('id', 0)
             
             ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()
@@ -150,6 +149,6 @@ class TestExactDelay(unittest.TestCase):
             if expected_result == True:
                 expected_result = [True, False]
             else:
-                expected_result = [False,]
+                expected_result = [False]
                 
             self.assertIn(controlled, expected_result, delays)

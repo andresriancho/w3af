@@ -62,7 +62,7 @@ class ExactDelayController(DelayMixIn):
             raise TypeError('ExactDelayController requires ExactDelay as input')
         
         self.mutant = mutant
-        self.mutant.set_token_value(self.mutant.get_original_value())
+        self.mutant.set_token_value(mutant.get_token().get_original_value())
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
@@ -109,8 +109,8 @@ class ExactDelayController(DelayMixIn):
         self._log_generic(msg, delay, response)
 
     def _log_generic(self, msg, delay, response):
-        args = (id(self), self.mutant.get_url(), self.mutant.get_var(), delay,
-                self.delay_obj, response.get_wait_time())
+        args = (id(self), self.mutant.get_url(), self.mutant.get_token_name(),
+                delay, self.delay_obj, response.get_wait_time())
         out.debug(msg % args)
 
     def delay_for(self, delay, original_wait_time):

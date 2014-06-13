@@ -39,7 +39,8 @@ def generate_delays(wanted_delays, rand_range=(0,0)):
         mock_response.get_wait_time = Mock(return_value=delay_secs)
         
         yield mock_response
-    
+
+
 class TestAproxDelayController(unittest.TestCase):
     
     TEST_SUITE = [
@@ -74,9 +75,9 @@ class TestAproxDelayController(unittest.TestCase):
             req = FuzzableRequest(url)
             mutant = QSMutant(req)
             mutant.set_dc(url.querystring)
-            mutant.set_var('id', 0)
+            mutant.set_token('id', 0)
             
             ed = AproxDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()
             self.assertEqual(expected_result, controlled, delays)
-    
+

@@ -27,10 +27,10 @@ EXPONENTIALLY = 2
 
 class AproxDelayController(DelayMixIn):
     """
-    Given that more than one vulnerability can be detected using time delays which
-    are not 100% exact, just to name a couple: blind SQL injections using the
-    MySQL's BENCHMARK and REDoS, I decided to create a generic class that will
-    help me detect those vulnerabilities in an accurate and generic manner.
+    Given that more than one vulnerability can be detected using time delays
+    which are not 100% exact, just to name a couple: blind SQL injections using
+    the MySQL's BENCHMARK and REDoS, I decided to create a generic class that
+    will help me detect those vulnerabilities in an accurate and generic manner.
 
     This class works for approximated time delays, this means that we DO NOT
     NEED to control how many seconds the remote server will "sleep" before
@@ -58,8 +58,7 @@ class AproxDelayController(DelayMixIn):
     DELTA = 0.5
 
     DELAY_SETTINGS = {LINEARLY: [1, 10, 100, 500],
-                      EXPONENTIALLY: [1, 2, 3, 4],
-                      }
+                      EXPONENTIALLY: [1, 2, 3, 4],}
 
     def __init__(self, mutant, delay_obj, uri_opener, delay_setting=LINEARLY):
         """
@@ -78,7 +77,7 @@ class AproxDelayController(DelayMixIn):
                             ' or EXPONENTIALLY')
 
         self.mutant = mutant
-        self.mutant.set_token_value(self.mutant.get_original_value())
+        self.mutant.set_token_value(mutant.get_token().get_original_value())
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
