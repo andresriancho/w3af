@@ -176,7 +176,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :see: Comment on get_form()
         """
         if not isinstance(form, Form):
-            raise TypeError('Expected Form instance.')
+            raise TypeError('Expected Form instance in set_form().')
 
         if form is not self.get_raw_data():
             # We're in the case where the form action is GET (see from_form)
@@ -184,9 +184,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             # has an action with a querystring; and the method is GET, the
             # browser will ignore the action query-string and overwrite it
             # with the form parameters (this was tested with Chrome).
-            self.set_uri(self.get_url())
-
-            # The rest of this story continues in get_uri()
+            form_uri = self.get_url()
+            form_uri.querystring = form
+            self.set_uri(form_uri)
 
         self._form = form
 
@@ -439,21 +439,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :see: Comment in get_form()
         :return: The URI to send in the HTTP request
         """
-        if self._form is None:
-            # This is the most common case, where the FuzzableRequest wasn't
-            # created using .from_form()
-            return self._uri
-
-        if self._post_data:
-            # This is the case where the instance was created using .from_form()
-            # but it is a POST form
-            return self._uri
-
-        # This is the case where the instance was created using .from_form() and
-        # we need to append the form information into the URI
-        uri = self._uri.copy()
-        uri.querystring = self._form
-        return uri
+        return self._uri
 
     def set_data(self, post_data):
         """
