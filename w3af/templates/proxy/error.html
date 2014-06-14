@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{%  block title %}w3af proxy error{% endblock %}
+
+{% block content %}
+    <h1>w3af proxy error</h1>
+
+    <div>{{ exceptionObj }}</div>
+
+    {% if trace %}
+        <div><pre>{{ trace }}</pre></div>
+    {% endif %}
+{%  endblock %}
