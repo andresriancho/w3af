@@ -31,111 +31,184 @@ from libmproxy.protocol import http
 
 from w3af import ROOT_PATH
 from w3af.core.controllers import output_manager as om
-from w3af.core.controllers.exceptions import ProxyException, BaseFrameworkException
+from w3af.core.controllers.exceptions import (ProxyException,
+                                              BaseFrameworkException)
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.url.HTTPRequest import HTTPRequest
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers import templates
 
 
-# There is a problem with libmproxy Master implementation. It depends on "should_exit" global variable.
-# So, right now we can't create multiple master implementations and Proxy.
-# The solution is to make pull request to libmproxy with master without global variable dependency.
-class Master(controller.Master):
-    """
-    All communications with HTTP handler passes through messages.
+class w3afProxy2Handler(object):
+    def __init__(self, master):
+        super(w3afProxy2Handler, self).__init__()
+        self._master = master
 
-    Available handlers:
+    @property
+    def uri_opener(self):
+        return self._master.uri_opener
 
-    ask - wait for reply
-    tell - send and forget
+    def shutdown(self):
+        self._master.shutdown()
 
-    tell handle_serverconnect(server_connection libmproxy.proxy.server.ConnectionHandler) - is called right before
-    server connection established
-    tell handle_serverdisconnect(server_connection libmproxy.proxy.server.ConnectionHandler) - is called right before
-
-
-    tell handle_clientconnect(client_connection libmproxy.proxy.server.ConnectionHandler) - is called before handle_request
-    tell handle_clientdisconnect(client_connection libmproxy.proxy.server.ConnectionHandler)
-
-    tell handle_log(log libmproxy.proxy.primitives.Log)
-    ask  handle_error(err libmproxy.proxy.primitives.Error)
-
-    // for http requests:
-    ask  handle_request(request libmproxy.http.HTTPRequest) - if we return HTTPResponse here then proxy just response to client
-    aks  handle_response(response libmproxy.http.HTTPResponse) - is called before sending response to client
-    """
-
-    def __init__(self, server, uri_opener):
-        controller.Master.__init__(self, server)
-        self.uri_opener = uri_opener
-
-    def handle_request(self, request):
-        """
-        This method handles EVERY request that was send by the browser.
-
-        :param request:
-        """
-        res = None
-        try:
-            # Send the request to the remote webserver
-            res = self._send_to_server(request)
-        except Exception, e:
-            res = self._send_error(request, e, trace=str(traceback.format_exc()))
-        finally:
-            request.reply(res)
-
-    def _send_to_server(self, request, grep=False):
+    def send_to_server(self, request, grep=False):
         """
         Send a request that arrived from the browser to the remote web server.
 
+        :param request: w3af.core.data.url.HTTPRequest.HTTPRequest
+        :param grep: bool
+        :rtype : w3af.core.data.url.HTTPResponse.HTTPResponse
+
         Important variables and methods used here:
-            - request.headers : Stores the headers for the request
-            - request.content : A file like object that stores the post_data
-            - request.get_url() : Stores the URL that was requested by the browser
+            - request.get_headers(): Stores the headers for the request
+            - request.data: A file like object that stores the post_data
+            - request.get_full_url(): Stores the URL that was requested
+                                 by the browser
         """
-        request.headers['Connection'] = 'close'
 
-        path = request.get_url()
-
-        uri_instance = URL(path)
-
-        #
-        # Do the request to the remote server
-        #
+        uri_instance = URL(request.get_full_url())
         post_data = None
-        if 'content-length' in request.headers:
+        headers = request.get_headers()
+        if 'content-length' in headers:
             # most likely a POST request
-            post_data = request.content
+            post_data = request.data
 
         try:
             http_method = getattr(self.uri_opener, request.method)
             res = http_method(uri_instance, data=post_data,
-                              headers=Headers(request.headers.items()),
-                              grep=grep)
+                              headers=headers, grep=grep)
         except BaseFrameworkException, w:
             om.out.error('The proxy request failed, error: ' + str(w))
             raise w
         except Exception, e:
             raise e
         else:
-            response = http.HTTPResponse(request.httpversion, res.get_code(), res.get_msg(),
-                                         http.ODictCaseless(res.headers.items()), res.body)
-            return response
+            return res
 
-    def _send_error(self, request, exceptionObj, trace=None):
+    def send_error(self, request, exceptionObj, trace=None):
         """
         Send an error to the browser.
 
         """
-        headers = http.ODictCaseless((
+        headers = Headers((
             ('Connection', 'close'),
             ('Content-type', 'text/html'),
         ))
-        content = 'w3af proxy error: ' + str(exceptionObj) + '<br/><br/>'
+        ctx = {"exceptionObj": str(exceptionObj)}
         if trace:
-            content += '\nTraceback for this error: <br/><br/>' + trace.replace('\n', '<br/>')
-        response = http.HTTPResponse(request.httpversion, 400, BaseHTTPRequestHandler.responses[400][0],
-                                     headers, content)
-        return response
+            ctx["trace"] = ('\nTraceback for this error: <br/><br/>'
+                            + trace.replace('\n', '<br/>'))
+        content = templates.render("proxy/error.html", )
+        res = HTTPResponse(400, content, headers, request.get_full_url(),
+                           request.get_full_url(),
+                           msg=BaseHTTPRequestHandler.responses[400][0])
+        return res
+
+    def handle_request(self, request):
+        """
+        Handle request from browser, if method returns None then request
+        will be proxied through proxy server directly else response will
+        be returned to browser
+
+        :rtype : w3af.core.data.url.HTTPResponse.HTTPResponse
+        :param request: w3af.core.data.url.HTTPRequest.HTTPRequest
+        """
+        res = None
+        try:
+            # Send the request to the remote webserver
+            res = self.send_to_server(request)
+        except Exception, e:
+            res = self.send_error(request, e, trace=str(traceback.format_exc()))
+        finally:
+            return res
+
+
+# There is a problem with libmproxy Master implementation.
+# It depends on "should_exit" global variable.
+# So, right now we can't create multiple master implementations and Proxy.
+# The solution is to make pull request to libmproxy with master without
+# global variable dependency.
+class Master(controller.Master):
+    """
+    All communications with HTTP handler passes through messages.
+
+    Available handlers:
+
+    ask  - wait for reply from handler through arg.reply method
+    tell - proxy send and forget about these handlers
+
+    tell handle_serverconnect(server_connection
+         libmproxy.proxy.server.ConnectionHandler) - is called right before
+         server connection established
+    tell handle_serverdisconnect(server_connection
+         libmproxy.proxy.server.ConnectionHandler) - is called right before
+         server disconnect
+
+
+    tell handle_clientconnect(client_connection
+         libmproxy.proxy.server.ConnectionHandler) - is called before
+         handle_request
+    tell handle_clientdisconnect(client_connection
+         libmproxy.proxy.server.ConnectionHandler)
+
+    tell handle_log(log libmproxy.proxy.primitives.Log)
+    ask  handle_error(err libmproxy.proxy.primitives.Error)
+
+    // these are for http requests:
+    ask  handle_request(request libmproxy.http.HTTPRequest) - if we return
+         HTTPResponse here then proxy just response to client
+    ask  handle_response(response libmproxy.http.HTTPResponse) - is called
+         before sending response to client
+    """
+
+    def __init__(self, server, uri_opener, handler=w3afProxy2Handler):
+        controller.Master.__init__(self, server)
+        self.uri_opener = uri_opener
+        self.handler_class = handler
+
+    def _convert_request(self, request):
+        """Convert limproxy.http.HTTPRequest to
+        w3af.core.data.url.HTTPRequest.HTTPRequest
+        """
+        return HTTPRequest(request.get_url(), request.content,
+                           request.headers.items(), request.get_host(),
+                           method=request.method)
+
+    def _convert_response(self, res, request):
+        """Convert w3af.core.data.url.HTTPResponse.HTTPResponse  to
+        limproxy.http.HTTPResponse
+        """
+        return http.HTTPResponse(request.httpversion, res.get_code(),
+                                 res.get_msg(),
+                                 http.ODictCaseless(res.headers.items()),
+                                 res.body)
+
+    def handle_request(self, request):
+        """
+        This method handles EVERY request that was send by the browser.
+
+        :param request: libmproxy.http.HTTPRequest
+        """
+        response = None
+        try:
+            if self.handler_class:
+                handler = self.handler_class(self)
+                # Send the request to the remote webserver
+                req = self._convert_request(request)
+                try:
+                    res = handler.handle_request(req)
+                    if res:
+                        response = self._convert_response(res, request)
+                except Exception, e:
+                    res = handler.send_error(req, e,
+                                             trace=str(traceback.format_exc()))
+                    if res:
+                        response = self._convert_response(res, request)
+        except Exception, w:
+            om.out.error('The proxy request failed, error: ' + str(w))
+        finally:
+            request.reply(response)
 
 
 class ProxyServer(server.ProxyServer):
@@ -146,6 +219,7 @@ class Proxy(Process):
     SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
 
     def __init__(self, ip, port, uri_opener, master_class=Master,
+                 handler_class=w3afProxy2Handler,
                  proxy_cert=SSL_CERT):
         """
         :param ip: IP address to bind
@@ -183,7 +257,8 @@ class Proxy(Process):
             # available/free port, which we don't know until the server really
             # starts
             self._port = self._server.address.port
-        self._master = master_class(self._server, self._uri_opener)
+        self._master = master_class(self._server, self._uri_opener,
+                                    handler=handler_class)
 
     def get_bind_ip(self):
         """
@@ -225,10 +300,6 @@ class Proxy(Process):
         self._running = True
         self._master.run()
         self._running = False
-
-        # I have to do this to actually KILL the HTTPServer, and free the
-        # TCP port
-        del self._server
 
     def stop(self):
         """
