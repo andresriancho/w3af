@@ -65,12 +65,12 @@ class xss(AuditPlugin):
         
         :param freq: A FuzzableRequest
         """
-        fake_mutants = create_mutants(freq, ['',])
-        
+        fake_mutants = create_mutants(freq, [''])
+
         # Run this in the worker pool in order to get different
         # parameters tested at the same time.
         self.worker_pool.map(self._check_xss_in_parameter, fake_mutants)
-        
+
     def _check_xss_in_parameter(self, mutant):
         """
         Tries to identify (persistent) XSS in one parameter.
@@ -136,9 +136,11 @@ class xss(AuditPlugin):
             was echoed back or not
         """
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
+        fuzzable_params = [mutant.get_token_name()]
+
         mutant_list = create_mutants(mutant.get_fuzzable_req(),
                                      xss_strings,
-                                     fuzzable_param_list=[mutant.get_var()])
+                                     fuzzable_param_list=fuzzable_params)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutant_list,
