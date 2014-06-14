@@ -39,6 +39,10 @@ class DataToken(object):
     def set_value(self, new_value):
         self._value = new_value
 
+    def __repr__(self):
+        return '<DataToken for "%s": "%s">' % (self.get_name(),
+                                               self.get_value())
+
     def __str__(self):
         return str(self._value)
 

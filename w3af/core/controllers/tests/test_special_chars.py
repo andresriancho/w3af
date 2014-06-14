@@ -50,8 +50,7 @@ class TestSpecialChars(PluginTest):
                 'audit': (PluginConfig('xss'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('only_forward', True, PluginConfig.BOOL),
-                                 ),
+                                 ('only_forward', True, PluginConfig.BOOL),),
                 ),
             }
         }
