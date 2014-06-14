@@ -632,6 +632,7 @@ class Form(KeyValueContainer):
             if self.get_parameter_type(k).lower() == Form.INPUT_TYPE_PASSWD:
                 setter(password)
 
+
 def deepish_copy(org):
     """
     Much, much faster than deepcopy, for a dict of the simple python types.

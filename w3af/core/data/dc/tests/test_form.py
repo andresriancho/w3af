@@ -82,7 +82,7 @@ ALL_FORMS = (form_with_radio, form_with_checkbox, form_select_cars)
 
 
 @attr('smoke')
-class test_form(unittest.TestCase):
+class TestForm(unittest.TestCase):
 
     def test_new_form(self):
         # Create new forms and test internal structure
@@ -147,7 +147,10 @@ class test_form(unittest.TestCase):
     def test_tmb_variants_large(self):
         """
         Note that this test has several changes from test_tmb_variants:
-            * It uses form_select_misc_large, which exceeds the form's TOP_VARIANTS = 15
+
+            * It uses form_select_misc_large, which exceeds the form's
+              TOP_VARIANTS = 15
+
             * Doesn't use filter_tmb since variants are based on a "random pick"
         """
         bigform_data = form_with_radio + form_select_cars + \
@@ -157,7 +160,8 @@ class test_form(unittest.TestCase):
         total_variants = 2 * 3 * 3 * 3
         variants_set = set()
 
-        # Please note that this depends completely in form.SEED AND form.TOP_VARIANTS
+        # Please note that this depends completely in form.SEED AND
+        # form.TOP_VARIANTS
         RANDOM_PICKS = {1: ('volvo', 'black', 'd', 'female'),
                         2: ('volvo', 'blue', 'i', 'male'),
                         3: ('volvo', 'blue', 'f', 'female'),
@@ -438,6 +442,7 @@ class test_form(unittest.TestCase):
         form.set_login_password('long-complex')
         self.assertEqual(form['username'][0], 'pablo')
         self.assertEqual(form['pwd'][0], 'long-complex')
+
 
 def get_gruped_data(form_data):
     """
