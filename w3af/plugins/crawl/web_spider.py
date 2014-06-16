@@ -41,6 +41,7 @@ from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
+from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, REGEX
