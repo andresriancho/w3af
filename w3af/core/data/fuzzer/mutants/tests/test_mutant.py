@@ -119,8 +119,6 @@ class TestMutant(unittest.TestCase):
 
         self.assertEqual(repr(mutant),
                          '<mutant-generic | GET | http://moth/?a=abc&b=2 >')
-        self.assertEqual(mutant.print_token_value(),
-                         'The data that was sent is: "".')
         self.assertNotEqual(id(mutant.copy()), id(mutant))
 
         self.assertRaises(ValueError, mutant.get_original_response_body)

@@ -87,10 +87,6 @@ class Mutant(DiskItem):
         """
         return self.get_token().set_value(value)
 
-    def print_token_value(self):
-        fmt = 'The data that was sent is: "%s".'
-        return fmt % self.get_data()
-
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
         return fmt % (self.get_mutant_type(), self.get_method(), self.get_uri())

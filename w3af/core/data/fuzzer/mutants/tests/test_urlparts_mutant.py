@@ -42,11 +42,6 @@ class TestURLPartsMutant(unittest.TestCase):
         self.assertEqual(m.get_url().url_string,
                          u'http://www.w3af.com/ping%21/bar')
 
-        expected_mod_value = 'The sent urlparts is: "/ping!/bar".'
-        generated_mod_value = m.print_token_value()
-
-        self.assertEqual(generated_mod_value, expected_mod_value)
-
         expected_found_at = '"http://www.w3af.com/ping%21/bar", using HTTP method'\
                             ' GET. The modified parameter was the URL path, with'\
                             ' value: "ping!".'

@@ -92,11 +92,6 @@ class URLPartsMutant(Mutant):
 
     get_uri = get_url
 
-    def print_token_value(self):
-        fmt = 'The sent %s is: "%s%s%s".'
-        return fmt % (self.get_mutant_type(), self._url_parts_dc.url_start,
-                      self._url_parts_dc[TOKEN], self._url_parts_dc.url_end)
-
     def set_url(self, u):
         msg = "You can't change the value of the URL in a URLPartsMutant"\
               " instance."

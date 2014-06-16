@@ -50,10 +50,6 @@ class CookieMutant(Mutant):
 
         return msg % (self.get_url(), self.get_method(), dc_short)
 
-    def print_token_value(self):
-        fmt = 'The cookie data that was sent is: "%s".'
-        return fmt % self.get_dc()
-
     @classmethod
     def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
