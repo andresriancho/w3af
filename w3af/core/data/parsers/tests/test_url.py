@@ -326,15 +326,18 @@ class TestURLParser(unittest.TestCase):
     def test_parse_qs_case04(self):
         self.assertEqual(parse_qs('id=3&ff=4&id=5'),
                          QueryString([(u'id', [u'3', u'5']),
-                                       (u'ff', [u'4'])] ))
+                                      (u'ff', [u'4'])]))
     
     def test_parse_qs_case05(self):
         self.assertEqual(parse_qs('pname'),
                          QueryString([(u'pname', [u'']),] ))
     
     def test_parse_qs_case06(self):
+        expected_parsed_url = QueryString([(u'\u9834\u82f1',
+                                            [u'\u75ab\u76ca'])],
+                                          encoding='euc-jp')
         self.assertEqual(parse_qs(u'%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp'),
-                         QueryString( [(u'\u9834\u82f1', [u'\u75ab\u76ca']),] ))
+                         expected_parsed_url)
     
     def test_parse_qs_case07(self):
         self.assertRaises(TypeError, parse_qs, QueryString())
