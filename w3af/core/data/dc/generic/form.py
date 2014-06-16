@@ -24,7 +24,6 @@ from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.token import DataToken
-from w3af.core.data.constants.encodings import UTF8
 
 
 class Form(KeyValueContainer):
@@ -34,8 +33,6 @@ class Form(KeyValueContainer):
     :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
     """
-    ENCODING = 'application/x-www-form-urlencoded'
-
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
     AVOID_STR_DUPLICATES = {FormParameters.INPUT_TYPE_CHECKBOX,
                             FormParameters.INPUT_TYPE_RADIO,
@@ -76,6 +73,12 @@ class Form(KeyValueContainer):
 
     def is_login_form(self):
         return self.form_params.is_login_form()
+
+    def is_registration_form(self):
+        return self.form_params.is_registration_form()
+
+    def is_password_change_form(self):
+        return self.form_params.is_password_change_form()
 
     def get_parameter_type_count(self):
         return self.form_params.get_parameter_type_count()

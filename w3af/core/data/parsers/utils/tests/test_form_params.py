@@ -100,7 +100,7 @@ class TestFormParams(unittest.TestCase):
     def test_new_form(self):
         # Create new forms and test internal structure
         for form_data in ALL_FORMS:
-            new_form = create_form_helper(form_data)
+            new_form = create_form_params_helper(form_data)
             for elem in form_data:
                 ename = elem['name']
 
@@ -114,7 +114,7 @@ class TestFormParams(unittest.TestCase):
 
     def test_variants_dont_modify_original(self):
         bigform_data = form_with_radio + form_select_misc
-        form = create_form_helper(bigform_data)
+        form = create_form_params_helper(bigform_data)
         orig_items = form.items()
 
         # Generate the variants
@@ -131,7 +131,7 @@ class TestFormParams(unittest.TestCase):
 
         bigform_data = form_with_radio + form_select_misc
         clean_data = get_gruped_data(bigform_data)
-        new_bigform = create_form_helper(bigform_data)
+        new_bigform = create_form_params_helper(bigform_data)
         total_variants = 2 * 2 * 3
         variants_set = set()
 
@@ -169,7 +169,7 @@ class TestFormParams(unittest.TestCase):
         bigform_data = form_with_radio + form_select_cars + \
             form_select_misc_large
         clean_data = get_gruped_data(bigform_data)
-        new_bigform = create_form_helper(bigform_data)
+        new_bigform = create_form_params_helper(bigform_data)
         total_variants = 2 * 3 * 3 * 3
         variants_set = set()
 
@@ -219,7 +219,7 @@ class TestFormParams(unittest.TestCase):
         # 'all' mode variants
         bigform_data = form_with_radio + form_select_misc
         clean_data = get_gruped_data(bigform_data)
-        new_bigform = create_form_helper(bigform_data)
+        new_bigform = create_form_params_helper(bigform_data)
         total_variants = 2 * 5 * 10
         variants_set = set()
 
@@ -245,7 +245,7 @@ class TestFormParams(unittest.TestCase):
         # 'top' and 'bottom' variants
         bigform_data = form_with_radio + form_select_cars + form_select_misc
         clean_data = get_gruped_data(bigform_data)
-        new_bigform = create_form_helper(bigform_data)
+        new_bigform = create_form_params_helper(bigform_data)
         total_variants = 1
 
         # 'top' mode variants
@@ -267,7 +267,7 @@ class TestFormParams(unittest.TestCase):
     def test_max_variants(self):
         # Combinatoric explosion (mode="all"): total_variants = 2*5*5*5 =
         # 250 > dc.Form.TOP_VARIANTS = 150
-        new_form = create_form_helper(form_with_radio + form_select_cars +
+        new_form = create_form_params_helper(form_with_radio + form_select_cars +
                                       form_select_misc)
         self.assertEquals(FormParameters.TOP_VARIANTS,
                           len([fv for fv in new_form.get_variants(mode="all")]) - 1)
@@ -276,7 +276,7 @@ class TestFormParams(unittest.TestCase):
         # Combinatoric explosion (mode="all"): total_variants = 250 > 150
         # Therefore will be used random variants generation. We should get the
         #  same every time we call `form.get_variants`
-        new_form = create_form_helper(form_with_radio + form_select_cars +
+        new_form = create_form_params_helper(form_with_radio + form_select_cars +
                                       form_select_misc)
         get_all_variants = lambda: set(repr(fv) for fv in
                                        new_form.get_variants(mode="all"))
@@ -293,7 +293,7 @@ class TestFormParams(unittest.TestCase):
 
         In this case I'm going to call get_variants with mode="all"
         """
-        new_form = create_form_helper(form_with_radio + form_select_cars +
+        new_form = create_form_params_helper(form_with_radio + form_select_cars +
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="all")]
 
@@ -308,12 +308,12 @@ class TestFormParams(unittest.TestCase):
 
         This is the case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
         """
-        new_form = create_form_helper(form_with_radio + form_select_cars +
+        new_form = create_form_params_helper(form_with_radio + form_select_cars +
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="tb")]
 
     def test_form_copy(self):
-        form = create_form_helper(form_with_radio + form_with_checkbox)
+        form = create_form_params_helper(form_with_radio + form_with_checkbox)
         copy = form.copy()
 
         self.assertEqual(form.items(), copy.items())
@@ -353,7 +353,7 @@ def get_gruped_data(form_data):
     return res
 
 
-def create_form_helper(form_data):
+def create_form_params_helper(form_data):
     """
     Creates a dc.Form object from a dict container
 
@@ -361,7 +361,7 @@ def create_form_helper(form_data):
         internal structure
     :return: A dc.Form object from `form_data`
     """
-    new_form = FormParameters()
+    new_form_params = FormParameters()
 
     for elem_data in form_data:
         elem_type = elem_data['tagname']
@@ -371,13 +371,13 @@ def create_form_helper(form_data):
             _type = elem_data['type']
 
             if _type == 'radio':
-                new_form.add_radio(attrs)
+                new_form_params.add_radio(attrs)
             elif _type == 'checkbox':
-                new_form.add_check_box(attrs)
+                new_form_params.add_check_box(attrs)
             elif _type in ('text', 'hidden'):
-                new_form.add_input(attrs)
+                new_form_params.add_input(attrs)
 
         elif elem_type == 'select':
-            new_form.add_select(elem_data['name'], elem_data['options'])
+            new_form_params.add_select(elem_data['name'], elem_data['options'])
 
-    return new_form
+    return new_form_params

@@ -57,7 +57,7 @@ class URLEncodedForm(Form):
     @classmethod
     def from_postdata(cls, headers, post_data):
         if not URLEncodedForm.is_urlencoded(headers):
-            raise ValueError('Request is not %s.' % Form.ENCODING)
+            raise ValueError('Request is not %s.' % URLEncodedForm.ENCODING)
 
         if not URLEncodedForm.can_parse(post_data):
             raise ValueError('Failed to parse post_data as Form.')

@@ -24,11 +24,49 @@ import urllib
 from nose.plugins.attrib import attr
 
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
-from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.tests.test_form_params import (form_with_radio,
+                                                                 form_with_checkbox,
+                                                                 form_select_cars,
+                                                                 create_form_params_helper)
 
 
 @attr('smoke')
-class TestForm(unittest.TestCase):
+class TestURLEncodedForm(unittest.TestCase):
+
+    def test_from_postdata_no_encoding(self):
+        headers = Headers()
+        post_data = 'a=2&c=3'
+        self.assertRaises(ValueError, URLEncodedForm.from_postdata, headers,
+                          post_data)
+
+    def test_from_postdata_no_post_data(self):
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
+        post_data = ''
+
+        form = URLEncodedForm.from_postdata(headers, post_data)
+
+        self.assertEqual(len(form), 0)
+
+    def test_from_postdata_ok(self):
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
+        post_data = 'a=2&c=3'
+
+        form = URLEncodedForm.from_postdata(headers, post_data)
+
+        self.assertEqual(form['a'], ['2'])
+        self.assertEqual(form['c'], ['3'])
+
+        self.assertFalse(form.is_login_form())
+        self.assertFalse(form.is_password_change_form())
+        self.assertFalse(form.is_registration_form())
+
+        self.assertEqual(form.get_parameter_type('a'),
+                         FormParameters.INPUT_TYPE_TEXT)
+
+        self.assertEqual(form.get_parameter_type('b'),
+                         FormParameters.INPUT_TYPE_TEXT)
 
     def test_form_with_plus_value(self):
         """
@@ -50,21 +88,20 @@ class TestForm(unittest.TestCase):
         going on in w3af than just creating a form and encoding it. A functional
         test for this issue can be found at test_special_chars.py
         """
-        form_with_plus = [
-            {'tagname': 'input', 'name': 'foo', 'type':
-                'hidden', 'value': 'bar+spam'},
-            {'tagname': 'input', 'name': 'eggs', 'type': 'text'}]
+        form_with_plus = [{'tagname': 'input', 'name': 'foo', 'type':
+                           'hidden', 'value': 'bar+spam'},
+                          {'tagname': 'input', 'name': 'eggs', 'type': 'text'}]
 
-        new_form = create_form_helper(form_with_plus)
-        self.assertEqual(str(new_form), 'eggs=&foo=bar%2Bspam')
+        form = URLEncodedForm(create_form_params_helper(form_with_plus))
+        self.assertEqual(str(form), 'eggs=&foo=bar%2Bspam')
 
     def test_form_str_simple(self):
         form_data = [{'tagname': 'input',
                       'type': 'text',
                       'name': 'abc',
                       'value': '123'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=123')
+        form = URLEncodedForm(create_form_params_helper(form_data))
+        self.assertEqual(str(form), 'abc=123')
 
     def test_form_str_simple_2(self):
         form_data = [{'tagname': 'input',
@@ -75,16 +112,16 @@ class TestForm(unittest.TestCase):
                       'type': 'hidden',
                       'name': 'def',
                       'value': '000'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=123&def=000')
+        form = URLEncodedForm(create_form_params_helper(form_data))
+        self.assertEqual(str(form), 'abc=123&def=000')
 
     def test_form_str_special_chars_1(self):
         form_data = [{'tagname': 'input',
                       'type': 'text',
                       'name': 'abc',
                       'value': '1"2'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=1%222')
+        form = URLEncodedForm(create_form_params_helper(form_data))
+        self.assertEqual(str(form), 'abc=1%222')
 
     def test_form_str_special_chars_2(self):
         form_data = [{'tagname': 'input',
@@ -95,69 +132,20 @@ class TestForm(unittest.TestCase):
                       'type': 'hidden',
                       'name': 'c',
                       'value': 'ñçÑÇ'}]
-        new_form = create_form_helper(form_data)
-        new_form.add_submit('address', 'bsas')
-        self.assertEqual(urllib.unquote(str(new_form)).decode('utf-8'),
+
+        form_params = create_form_params_helper(form_data)
+        form_params.add_submit('address', 'bsas')
+
+        form = URLEncodedForm(form_params)
+
+        self.assertEqual(urllib.unquote(str(form)).decode('utf-8'),
                          u'c=ñçÑÇ&address=bsas&v=áéíóú')
 
     def test_form_str_radio_select(self):
-        new_form = create_form_helper(form_with_radio + form_with_checkbox +
-                                      form_select_cars)
-        self.assertEqual(str(new_form), 'cars=fiat&sex=male&vehicle=Bike')
+        form_dict = form_with_radio + form_with_checkbox + form_select_cars
+        form = URLEncodedForm(create_form_params_helper(form_dict))
+        self.assertEqual(str(form), 'cars=fiat&sex=male&vehicle=Bike')
 
-    def test_mutant_smart_fill_simple(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form['username'][0] = token = DataToken('username', '')
-
-        form.smart_fill()
-
-        self.assertEqual(form['username'], ['', ])
-        self.assertEqual(form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(form['username'][0], DataToken)
-
-    def test_mutant_smart_fill_with_file(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
-        form['username'][0] = token = DataToken('username', '')
-
-        form.smart_fill()
-
-        self.assertEqual(form['username'], ['', ])
-        self.assertEqual(form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(form['username'][0], DataToken)
-
-        str_file = form['file'][0]
-        self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertIn('GIF', str_file)
-
-    def test_login_form_utils(self):
-        form = Form()
-        form.add_input([("name", "username"), ("type", "text")])
-        form.add_input([("name", "pwd"), ("type", "password")])
-
-        self.assertTrue(form.is_login_form())
-        self.assertFalse(form.is_registration_form())
-        self.assertFalse(form.is_password_change_form())
-        self.assertEqual(form.get_parameter_type_count(), (1, 1, 0))
-
-        user_token, pass_token = form.get_login_tokens()
-        self.assertEqual(user_token.get_name(), 'username')
-        self.assertEqual(pass_token.get_name(), 'pwd')
-        self.assertEqual(user_token.get_value(), '')
-        self.assertEqual(pass_token.get_value(), '')
-
-        form.set_login_username('andres')
-        self.assertEqual(form['username'][0], 'andres')
-        self.assertEqual(form['pwd'][0], '')
-
-        form.set_login_username('pablo')
-        form.set_login_password('long-complex')
-        self.assertEqual(form['username'][0], 'pablo')
-        self.assertEqual(form['pwd'][0], 'long-complex')
 
 
 
