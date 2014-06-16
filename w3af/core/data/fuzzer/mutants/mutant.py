@@ -41,10 +41,10 @@ class Mutant(DiskItem):
     def copy(self):
         return copy.deepcopy(self)
 
-    def get_fuzzable_req(self):
+    def get_fuzzable_request(self):
         return self._freq
 
-    def set_fuzzable_req(self, freq):
+    def set_fuzzable_request(self, freq):
         self._freq = freq
 
     def set_dc(self, data_container):

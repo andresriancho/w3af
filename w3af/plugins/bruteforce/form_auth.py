@@ -29,6 +29,9 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
@@ -56,52 +59,54 @@ class form_auth(BruteforcePlugin):
         if freq.get_url() in self._already_tested:
             return
 
-        if not self._is_login_form(freq):
+        mutant = form_pointer_factory(freq)
+        if not self._is_login_form(mutant):
             return
 
-        self._already_tested.append(freq.get_url())
-
-        user_token, pass_token = freq.get_form().get_login_tokens()
+        self._already_tested.append(mutant.get_url())
 
         try:
-            login_failed_bodies = self._id_failed_login_page(freq)
+            login_failed_bodies = self._id_failed_login_page(mutant)
         except BaseFrameworkException, bfe:
             msg = 'Unexpected response during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
             return
 
         # Let the user know what we are doing
+        user_token, pass_token = mutant.get_dc().get_login_tokens()
         om.out.information('Found a form login. The action of the '
-                           'form is: "%s".' % freq.get_url())
+                           'form is: "%s".' % mutant.get_url())
+
         if user_token is not None:
             om.out.information('The username field to be used is: "%s".'
                                % user_token.get_name())
+
         om.out.information('The password field to be used is: "%s".'
                            % pass_token.get_name())
         om.out.information('Starting form authentication bruteforce on URL: "%s".'
-                           % freq.get_url())
+                           % mutant.get_url())
 
         if user_token is not None:
-            generator = self._create_user_pass_generator(freq.get_url())
+            generator = self._create_user_pass_generator(mutant.get_url())
         else:
-            generator = self._create_pass_generator(freq.get_url())
+            generator = self._create_pass_generator(mutant.get_url())
 
-        self._bruteforce_test(freq, login_failed_bodies, generator)
+        self._bruteforce_test(mutant, login_failed_bodies, generator)
 
         # Report that we've finished.
-        msg = 'Finished bruteforcing "%s".' % freq.get_url()
+        msg = 'Finished bruteforcing "%s".' % mutant.get_url()
         om.out.information(msg)
 
-    def _bruteforce_pool(self, freq, login_failed_res, generator):
-        args_iter = izip(repeat(freq), repeat(login_failed_res), generator)
+    def _bruteforce_pool(self, mutant, login_failed_res, generator):
+        args_iter = izip(repeat(mutant), repeat(login_failed_res), generator)
         self.worker_pool.map_multi_args(self._brute_worker, args_iter,
                                         chunksize=100)
 
-    def _bruteforce_test(self, freq, login_failed_res, generator):
+    def _bruteforce_test(self, mutant, login_failed_res, generator):
         for combination in generator:
-            self._brute_worker(freq, login_failed_res, combination)
+            self._brute_worker(mutant, login_failed_res, combination)
 
-    def _id_failed_login_page(self, freq):
+    def _id_failed_login_page(self, mutant):
         """
         Generate TWO different response bodies that are the result of failed
         logins.
@@ -112,7 +117,7 @@ class form_auth(BruteforcePlugin):
         # The result is going to be stored here
         login_failed_result_list = []
 
-        form = freq.get_form()
+        form = mutant.get_dc()
         self._true_extra_fields(form)
 
         user_token, pass_token = form.get_login_tokens()
@@ -130,7 +135,7 @@ class form_auth(BruteforcePlugin):
 
             form.set_login_password(passwd)
 
-            response = self._uri_opener.send_mutant(freq, grep=False)
+            response = self._uri_opener.send_mutant(mutant, grep=False)
 
             # Save it
             body = self.clean_body(response, user, passwd)
@@ -150,7 +155,7 @@ class form_auth(BruteforcePlugin):
 
             form.set_login_password(passwd)
 
-            response = self._uri_opener.send_mutant(freq, grep=False)
+            response = self._uri_opener.send_mutant(mutant, grep=False)
             body = self.clean_body(response, user, passwd)
 
             if not self._matches_failed_login(body, login_failed_result_list):
@@ -172,16 +177,16 @@ class form_auth(BruteforcePlugin):
             # I'm happy! The response_body *IS NOT* a failed login page.
             return False
 
-    def _is_login_form(self, freq):
+    def _is_login_form(self, mutant):
         """
         :return: True if this FuzzableRequest is a login form.
         """
-        form = freq.get_form()
+        form = mutant.get_dc()
 
-        if form is None:
-            return False
+        if isinstance(form, Form):
+            return form.is_login_form()
 
-        return form.is_login_form()
+        return False
 
     def _true_extra_fields(self, form):
         """
@@ -222,17 +227,18 @@ class form_auth(BruteforcePlugin):
 
         return body
 
-    def _brute_worker(self, freq, login_failed_result_list, combination):
+    def _brute_worker(self, mutant, login_failed_result_list, combination):
         """
-        :param freq: A FuzzableRequest
+        :param mutant: A Mutant holding a QsMutant of PostDataMutant, created
+                       using form_pointer_factory
         :param combination: A tuple with (user, pass) or a pass if this is a
                                 password only form.
         """
-        if freq.get_url() in self._found and self._stop_on_first:
+        if mutant.get_url() in self._found and self._stop_on_first:
             return
 
-        freq = deepcopy(freq)
-        form = freq.get_form()
+        mutant = deepcopy(mutant)
+        form = mutant.get_dc()
         self._true_extra_fields(form)
 
         user_token, pass_token = form.get_login_tokens()
@@ -248,7 +254,9 @@ class form_auth(BruteforcePlugin):
             form.set_login_password(pwd)
 
         try:
-            resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
+            resp = self._uri_opener.send_mutant(mutant,
+                                                cookies=False,
+                                                grep=False)
         except ScanMustStopOnUrlError:
             return
 
@@ -262,14 +270,14 @@ class form_auth(BruteforcePlugin):
         # previous possible found credentials are valid
         form.set_login_password(rand_alnum(8))
 
-        verif_resp = self._uri_opener.send_mutant(freq,
+        verif_resp = self._uri_opener.send_mutant(mutant,
                                                   cookies=False,
                                                   grep=False)
 
         body = self.clean_body(verif_resp, user, pwd)
 
         if self._matches_failed_login(body, login_failed_result_list):
-            freq_url = freq.get_url()
+            freq_url = mutant.get_url()
             self._found.add(freq_url)
 
             if user_token is not None:
@@ -282,12 +290,12 @@ class form_auth(BruteforcePlugin):
                         ' password is: "%s".')
                 desc %= (freq_url, pwd)
 
-            v = Vuln.from_fr('Guessable credentials', desc, severity.HIGH,
-                             resp.id, self.get_name(), freq)
+            v = Vuln.from_mutant('Guessable credentials', desc, severity.HIGH,
+                                 resp.id, self.get_name(), mutant)
             v['user'] = user
             v['pass'] = pwd
             v['response'] = resp
-            v['request'] = freq
+            v['request'] = mutant.get_fuzzable_request()
 
             kb.kb.append(self, 'auth', v)
 
@@ -295,3 +303,11 @@ class form_auth(BruteforcePlugin):
 
     def end(self):
         pass
+
+
+def form_pointer_factory(freq):
+
+    if isinstance(freq.get_uri().querystring, Form):
+        return QSMutant(freq)
+
+    return PostDataMutant(freq)

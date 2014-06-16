@@ -138,7 +138,7 @@ class xss(AuditPlugin):
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
         fuzzable_params = [mutant.get_token_name()]
 
-        mutant_list = create_mutants(mutant.get_fuzzable_req(),
+        mutant_list = create_mutants(mutant.get_fuzzable_request(),
                                      xss_strings,
                                      fuzzable_param_list=fuzzable_params)
 

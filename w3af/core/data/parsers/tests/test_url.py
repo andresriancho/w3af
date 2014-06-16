@@ -29,6 +29,7 @@ from nose.plugins.skip import SkipTest
 
 from w3af.core.data.parsers.url import URL, parse_qs
 from w3af.core.data.dc.query_string import QueryString
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 
 
 class TestURLParser(unittest.TestCase):
@@ -381,8 +382,7 @@ class TestURLParser(unittest.TestCase):
     def normalize_url_case01(self):
         u = URL('http://host.tld:80/foo/bar')
         u.normalize_url()
-        self.assertEqual(u.url_string,
-                         u'http://host.tld/foo/bar')
+        self.assertEqual(u.url_string, u'http://host.tld/foo/bar')
 
     def normalize_url_case02(self):
         u = URL('https://host.tld:443/foo/bar')
@@ -456,6 +456,13 @@ class TestURLParser(unittest.TestCase):
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://fe80:0:0:0:202:b3ff:fe1e:8329/')
+
+    def normalize_url_case13(self):
+        u = URL('http://host.tld:80/foo/bar')
+        orig_id = id(u.querystring)
+        u.normalize_url()
+
+        self.assertEqual(orig_id, id(u.querystring))
 
     #
     #    __str__
@@ -627,6 +634,15 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.get_domain(), 'w3af.com')
         self.assertEqual(u.get_protocol(), 'http')
 
+    def test_from_url_keep_form(self):
+        o = URL('http://w3af.com/foo/bar.txt')
+        o.querystring = URLEncodedForm()
+
+        u = URL.from_URL(o)
+        self.assertIsInstance(u.querystring, URLEncodedForm)
+        self.assertIsNot(u.querystring, o.querystring)
+        self.assertEqual(u.querystring, o.querystring)
+
     #
     #    url_string
     #
@@ -675,12 +691,14 @@ class TestURLParser(unittest.TestCase):
 
     def test_remove_fragment(self):
         u = URL('http://w3af.com/foo/bar.txt?id=3#foobar')
-        self.assertEqual(u.remove_fragment().url_string,
-                         u'http://w3af.com/foo/bar.txt?id=3')
+        u.remove_fragment()
+        self.assertEqual(u.url_string, u'http://w3af.com/foo/bar.txt?id=3')
         
         u = URL('http://w3af.com/foo/bar.txt#foobar')
-        self.assertEqual(u.remove_fragment().url_string,
-                         u'http://w3af.com/foo/bar.txt')
+        orig_qs_id = id(u.querystring)
+        u.remove_fragment()
+        self.assertEqual(u.url_string, u'http://w3af.com/foo/bar.txt')
+        self.assertEqual(id(u.querystring), orig_qs_id)
     
     def test_get_port(self):
         self.assertEqual(URL('http://w3af.com/f00.b4r').get_port(), 80)

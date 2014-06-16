@@ -253,15 +253,18 @@ class URL(DiskItem):
         netloc = src_url_obj.get_domain() or u''
         path = src_url_obj.get_path() or u''
         params = src_url_obj.get_params() or u''
-        qs = unicode(copy.deepcopy(src_url_obj.querystring))
         fragment = src_url_obj.get_fragment() or u''
         
         encoding = src_url_obj.encoding
+        qs = copy.deepcopy(src_url_obj.querystring)
 
-        data = (scheme, netloc, path, params, qs, fragment)
+        data = (scheme, netloc, path, params, '', fragment)
         url_str = urlparse.urlunparse(data)
-        
-        return cls(url_str, encoding)
+
+        new_url = cls(url_str, encoding)
+        new_url.querystring = qs
+
+        return new_url
 
     @property
     def url_string(self):
@@ -333,12 +336,9 @@ class URL(DiskItem):
 
     def remove_fragment(self):
         """
-        :return: A URL containing the URL without the fragment.
+        :return: Removes the URL #fragment (if any)
         """
-        params = (self.scheme, self.netloc, self.path,
-                  self.params, unicode(self.querystring),
-                  None)
-        return URL.from_parts(*params, encoding=self._encoding)
+        self.fragment = u''
 
     def base_url(self):
         """
@@ -438,13 +438,11 @@ class URL(DiskItem):
         #       https://github.com/andresriancho/w3af/issues/475
         #
         fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
-                                         self.params, str(self.querystring),
-                                         self.fragment))
+                                         self.params, '', self.fragment))
 
         # "re-init" the object
         (self.scheme, self.netloc, self.path,
-         self.params, self.querystring, self.fragment) = \
-            urlparse.urlparse(fixed_url)
+         self.params, _, self.fragment) = urlparse.urlparse(fixed_url)
 
     def get_port(self):
         """

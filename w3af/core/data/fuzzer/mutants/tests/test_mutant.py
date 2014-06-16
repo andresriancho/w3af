@@ -43,10 +43,10 @@ class FakeMutant(Mutant):
     mutant, which helps with the implementation of required methods.
     """
     def get_dc(self):
-        return self.get_fuzzable_req().get_uri().querystring
+        return self.get_fuzzable_request().get_uri().querystring
 
     def set_dc(self, new_qs):
-        self.get_fuzzable_req().get_uri().querystring = new_qs
+        self.get_fuzzable_request().get_uri().querystring = new_qs
 
 
 class TestMutant(unittest.TestCase):

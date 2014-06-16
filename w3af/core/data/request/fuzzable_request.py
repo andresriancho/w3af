@@ -95,7 +95,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         self.set_uri(uri)
 
         # Set the internal variables
-        self._form = None
         self._sent_info_comp = None
 
     def get_default_headers(self):
@@ -163,65 +162,14 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                     post_data=form)
         else:
             # The default is a GET request
-            r = cls(form.get_action(),
+            form_action = form.get_action()
+            form_action.querystring = form
+
+            r = cls(form_action,
                     method=form.get_method(),
                     headers=headers)
 
-        r.set_form(form)
-
         return r
-
-    def set_form(self, form):
-        """
-        :see: Comment on get_form()
-        """
-        if not isinstance(form, Form):
-            raise TypeError('Expected Form instance in set_form().')
-
-        if form is not self.get_raw_data():
-            # We're in the case where the form action is GET (see from_form)
-            # Something interesting to notice is that in cases where the form
-            # has an action with a querystring; and the method is GET, the
-            # browser will ignore the action query-string and overwrite it
-            # with the form parameters (this was tested with Chrome).
-            form_uri = self.get_url()
-            form_uri.querystring = form
-            self.set_uri(form_uri)
-
-        self._form = form
-
-    def get_form(self):
-        """
-        FuzzableRequests represent an HTTP request, sometimes that HTTP request
-        is associated with an HTML form. When the FuzzableRequest represents
-        a form which is sent over GET the parameters are sent in the query
-        string:
-
-            http://w3af.com/?id=2
-
-        And it is retrieved by performing fr.get_url().querystring
-
-        On the other hand, when it represents a form which is sent over POST,
-        the data is sent in the post-data:
-
-            POST / HTTP/1.1
-
-            id=2
-
-        And is retrieved by performing fr.get_raw_data().
-
-        To avoid duplicated code, where I get the URL's querystring and the
-        self._post_data attributes trying to find the Form instance, I'm adding
-        this convenience function which retrieves the form, no matter where it
-        lives.
-
-        :return: The form (from querystring or post-data), None if this instance
-                 is not related with a Form object.
-        """
-        if self._form is None and isinstance(self._post_data, Form):
-            return self._post_data
-
-        return self._form
 
     def export(self):
         """
@@ -376,16 +324,17 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def set_url(self, url):
         if not isinstance(url, URL):
-            raise TypeError('The "url" parameter of a %s must be of '
-                            'url.URL type.' % type(self).__name__)
+            msg = 'The "uri" parameter of a %s must be of url.URL type.'
+            raise TypeError(msg % type(self).__name__)
 
         self._url = URL(url.url_string.replace(' ', '%20'))
         self._uri = self._url
 
     def set_uri(self, uri):
         if not isinstance(uri, URL):
-            raise TypeError('The "uri" parameter of a %s must be of '
-                            'url.URL type.' % type(self).__name__)
+            msg = 'The "uri" parameter of a %s must be of url.URL type.'
+            raise TypeError(msg % type(self).__name__)
+
         self._uri = uri
         self._url = uri.uri2url()
 
@@ -436,7 +385,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def get_uri(self):
         """
-        :see: Comment in get_form()
         :return: The URI to send in the HTTP request
         """
         return self._uri

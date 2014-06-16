@@ -142,7 +142,9 @@ class archive_dot_org(CrawlPlugin):
             # Filter the ones we need
             url_regex_str = self.INTERESTING_URLS_RE % domain
             matched_urls = re.findall(url_regex_str, http_response.body)
-            new_urls = set([URL(u).remove_fragment() for u in matched_urls])
+            new_urls = [URL(u) for u in matched_urls]
+            new_urls = [u.remove_fragment() for u in new_urls]
+            new_urls = set(new_urls)
 
             # Go recursive
             if max_depth - 1 > 0:

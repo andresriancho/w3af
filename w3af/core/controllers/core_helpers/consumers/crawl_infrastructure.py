@@ -304,7 +304,7 @@ class crawl_infrastructure(BaseConsumer):
         
         # No need to care about fragments
         # (http://a.com/foo.php#frag). Remove them
-        fuzzable_request.set_uri(fr_uri.remove_fragment())
+        fr_uri.remove_fragment()
 
         # Is the "new" fuzzable request domain in the configured targets?
         if fr_uri.base_url() not in base_urls_cf:
