@@ -27,7 +27,7 @@ from w3af.core.data.constants.file_templates.file_templates import get_template_
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
-from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.multipart import encode_as_multipart, get_boundary
 from w3af.core.controllers.misc.io import NamedStringIO
@@ -42,13 +42,14 @@ class TestFileContentMutant(unittest.TestCase):
         self.url = URL('http://moth/')
 
     def test_basics(self):
-        form = FormParameters()
-        form.set_method('POST')
-        form.set_action(self.url)
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
+        form_params = FormParameters()
+        form_params.set_method('POST')
+        form_params.set_action(self.url)
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_file_input([("name", "file"), ("type", "file")])
 
+        form = MultipartContainer(form_params)
         freq = FuzzableRequest.from_form(form)
 
         m = FileContentMutant(freq)
@@ -83,13 +84,14 @@ class TestFileContentMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_form_files': True,
                          'fuzzed_files_extension': 'gif'}
 
-        form = FormParameters()
-        form.set_method('POST')
-        form.set_action(self.url)
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "image"), ("type", "file")])
+        form_params = FormParameters()
+        form_params.set_method('POST')
+        form_params.set_action(self.url)
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_file_input([("name", "image"), ("type", "file")])
 
+        form = MultipartContainer(form_params)
         freq = FuzzableRequest.from_form(form)
 
         ph = 'w3af.core.data.constants.file_templates.file_templates.rand_alpha'

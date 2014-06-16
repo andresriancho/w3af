@@ -512,6 +512,3 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             return self._post_data.get_file_vars()
         except AttributeError:
             return []
-
-    def copy(self):
-        return copy.deepcopy(self)

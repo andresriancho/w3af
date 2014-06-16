@@ -220,7 +220,7 @@ class Mutant(DiskItem):
                     token.set_value(payload)
 
                 # Create the mutant
-                freq_copy = freq.copy()
+                freq_copy = copy.deepcopy(freq)
                 m = mutant_cls(freq_copy)
                 m.set_dc(dc_copy)
 

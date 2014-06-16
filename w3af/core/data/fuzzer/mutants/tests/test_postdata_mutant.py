@@ -24,7 +24,9 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
 class TestPostDataMutant(unittest.TestCase):
@@ -34,10 +36,11 @@ class TestPostDataMutant(unittest.TestCase):
         self.fuzzer_config = {}
 
     def test_found_at(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
 
+        form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
                                method='PUT')
         m = PostDataMutant(freq)
@@ -49,10 +52,11 @@ class TestPostDataMutant(unittest.TestCase):
         self.assertEqual(m.found_at(), expected)
 
     def test_mutant_creation(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
 
+        form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
                                method='PUT')
 
@@ -96,10 +100,11 @@ class TestPostDataMutant(unittest.TestCase):
             self.assertEqual(m.get_method(), 'PUT')
 
     def test_mutant_creation_repeated_parameter_name(self):
-        form = Form()
-        form.add_input([("name", "id"), ("value", "")])
-        form.add_input([("name", "id"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "id"), ("value", "")])
+        form_params.add_input([("name", "id"), ("value", "")])
 
+        form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://w3af.com/?foo=3'), post_data=form,
                                method='GET')
 
@@ -131,10 +136,11 @@ class TestPostDataMutant(unittest.TestCase):
             self.assertEqual(m.get_method(), 'GET')
 
     def test_mutant_creation_file(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "default")])
-        form.add_file_input([("name", "file_upload")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "default")])
+        form_params.add_file_input([("name", "file_upload")])
 
+        form = MultipartContainer(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/upload'),
                                post_data=form, method='POST')
 

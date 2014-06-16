@@ -35,6 +35,9 @@ class DataContainer(DiskItem):
         self.encoding = encoding
         self.token = None
 
+    def get_encoding(self):
+        return self.encoding
+
     def get_type(self):
         return 'Generic data container'
 

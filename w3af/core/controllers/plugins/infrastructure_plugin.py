@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
@@ -42,7 +44,7 @@ class InfrastructurePlugin(Plugin):
         # I copy the fuzzable request, to avoid cross plugin contamination
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
-        fuzzable_request_copy = fuzzable_request.copy()
+        fuzzable_request_copy = copy.deepcopy(fuzzable_request)
         return self.discover(fuzzable_request_copy)
 
     def discover(self, fuzzable_request):

@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
 from math import log, floor
 from itertools import chain
 
@@ -148,7 +150,7 @@ class csrf(AuditPlugin):
         """
         fake_ref = 'http://www.w3af.org/'
 
-        mutant = HeadersMutant(freq.copy())
+        mutant = HeadersMutant(copy.deepcopy(freq))
         headers = mutant.get_dc()
         headers['Referer'] = freq.get_referer()
         mutant.set_token('Referer')

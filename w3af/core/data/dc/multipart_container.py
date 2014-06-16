@@ -87,12 +87,6 @@ class MultipartContainer(Form):
     def get_file_name(self, var_name, default=None):
         return self.form_params.get_file_name(var_name, default=default)
 
-    @classmethod
-    def from_form(cls, form):
-        mc = cls(init_val=form.items())
-        mc.__dict__.update(form.__dict__)
-        return mc
-
     def get_headers(self):
         """
         Here we return the Content-Type set to multipart/post, including the

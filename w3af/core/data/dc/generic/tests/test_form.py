@@ -58,6 +58,21 @@ class TestForm(unittest.TestCase):
         self.assertIsInstance(form['username'][0], DataToken)
         self.assertIs(form.get_form_params(), form_params)
 
+    def test_mutant_iter_bound_tokens(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"),
+                               ("value", ""),
+                               ("type", "password")])
+        form_params.add_input([("name", "address"), ("value", "")])
+
+        form = Form(form_params)
+
+        for form_copy, _ in form.iter_bound_tokens():
+            self.assertIsInstance(form_copy, Form)
+            self.assertEquals(form_copy.items(), form.items())
+            self.assertEquals(form_copy.get_parameter_type('username'),
+                              FormParameters.INPUT_TYPE_PASSWD)
+
     def test_mutant_smart_fill_with_file(self):
         form_params = FormParameters()
         form_params.add_input([("name", "username"), ("value", "")])

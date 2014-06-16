@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
+import copy
 
+import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
@@ -60,11 +61,11 @@ class un_ssl(AuditPlugin):
             secure_uri = initial_uri.copy()
 
             insecure_uri.set_protocol('http')
-            insecure_fr = freq.copy()
+            insecure_fr = copy.deepcopy(freq)
             insecure_fr.set_url(insecure_uri)
 
             secure_uri.set_protocol('https')
-            secure_fr = freq.copy()
+            secure_fr = copy.deepcopy(freq)
             secure_fr.set_url(secure_uri)
 
             # Make sure that we ignore errors during this test

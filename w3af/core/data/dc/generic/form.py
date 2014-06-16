@@ -53,6 +53,9 @@ class Form(KeyValueContainer):
         super(Form, self).__init__(form_params.items(),
                                    form_params.get_encoding())
 
+    def __reduce__(self):
+        return self.__class__, (self.form_params,), {}
+
     def get_form_params(self):
         return self.form_params
 

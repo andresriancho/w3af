@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
@@ -312,9 +313,9 @@ class TestFormParams(unittest.TestCase):
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="tb")]
 
-    def test_form_copy(self):
+    def test_form_params_deepish_copy(self):
         form = create_form_params_helper(form_with_radio + form_with_checkbox)
-        copy = form.copy()
+        copy = form.deepish_copy()
 
         self.assertEqual(form.items(), copy.items())
         self.assertEqual(form._method, copy._method)
@@ -326,6 +327,25 @@ class TestFormParams(unittest.TestCase):
         self.assertEqual(form._submit_map, copy._submit_map)
 
         self.assertIsNot(form, copy)
+        self.assertEquals(copy.get_parameter_type('sex'),
+                          FormParameters.INPUT_TYPE_RADIO)
+
+    def test_form_params_deep_copy(self):
+        form = create_form_params_helper(form_with_radio + form_with_checkbox)
+        form_copy = copy.deepcopy(form)
+
+        self.assertEqual(form.items(), form_copy.items())
+        self.assertEqual(form._method, form_copy._method)
+        self.assertEqual(form._action, form_copy._action)
+        self.assertEqual(form._types, form_copy._types)
+        self.assertEqual(form._file_vars, form_copy._file_vars)
+        self.assertEqual(form._file_names, form_copy._file_names)
+        self.assertEqual(form._selects, form_copy._selects)
+        self.assertEqual(form._submit_map, form_copy._submit_map)
+
+        self.assertIsNot(form, copy)
+        self.assertEquals(form_copy.get_parameter_type('sex'),
+                          FormParameters.INPUT_TYPE_RADIO)
 
     def test_login_form_utils(self):
         form = FormParameters()

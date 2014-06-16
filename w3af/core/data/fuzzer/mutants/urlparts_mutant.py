@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import urllib
+import copy
 
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
@@ -137,13 +138,13 @@ class URLPartsMutant(Mutant):
                 url_parts_container = URLPartsContainer(url_start, url_token,
                                                         url_end)
 
-                freq_copy = freq.copy()
+                freq_copy = copy.deepcopy(freq)
                 m = cls(freq_copy)
                 m.set_dc(url_parts_container)
                 res.append(m)
 
                 # Same URLs but with different types of encoding!
-                freq_copy = freq.copy()
+                freq_copy = copy.deepcopy(freq)
                 m2 = cls(freq_copy)
                 m2.set_dc(url_parts_container)
                 m2.set_double_encoding(True)

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib
 import re
+import copy
 
 from w3af.core.data.fuzzer.mutants.urlparts_mutant import (URLPartsContainer,
                                                            URLPartsMutant,
@@ -103,13 +104,13 @@ class FileNameMutant(URLPartsMutant):
                                                             fname_token,
                                                             fname_end)
 
-                    freq_copy = freq.copy()
+                    freq_copy = copy.deepcopy(freq)
                     m = cls(freq_copy)
                     m.set_dc(url_parts_container)
                     res.append(m)
 
                     # Same URLs but with different types of encoding!
-                    freq_copy = freq.copy()
+                    freq_copy = copy.deepcopy(freq)
                     m2 = cls(freq_copy)
                     m2.set_dc(url_parts_container)
                     #m2.set_double_encoding(True)

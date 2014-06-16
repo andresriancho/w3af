@@ -27,9 +27,11 @@ from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.multipart_container import MultipartContainer
 
 
 class FakeMutant(Mutant):
@@ -154,11 +156,12 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(created_dc_lst, expected_dc_lst)
 
     def test_mutant_creation_post_data(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_file_input([("name", "file"), ("type", "file")])
 
+        form = MultipartContainer(form_params)
         freq = FuzzableRequest(self.url, post_data=form)
 
         created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
@@ -241,12 +244,13 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(token_1.get_value(), 'abc')
 
     def test_mutant_creation_qs_and_postdata(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "password"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "password"), ("value", "")])
 
         url = URL('http://moth/foo.bar?action=login')
 
+        form = URLEncodedForm(form_params)
         freq = FuzzableRequest(url, post_data=form)
 
         created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
+from copy import deepcopy
 from itertools import izip, repeat
 
 import w3af.core.controllers.output_manager as om
@@ -230,7 +231,7 @@ class form_auth(BruteforcePlugin):
         if freq.get_url() in self._found and self._stop_on_first:
             return
 
-        freq = freq.copy()
+        freq = deepcopy(freq)
         form = freq.get_form()
         self._true_extra_fields(form)
 

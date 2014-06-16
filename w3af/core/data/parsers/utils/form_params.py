@@ -61,8 +61,8 @@ class FormParameters(OrderedDict):
     # This is used for processing checkboxes
     SECRET_VALUE = "3_!21#47w@"
 
-    def __init__(self, encoding=DEFAULT_ENCODING):
-        super(FormParameters, self).__init__()
+    def __init__(self, init_vals=(), encoding=DEFAULT_ENCODING):
+        super(FormParameters, self).__init__(init_vals)
 
         # Internal variables
         # Form method defaults to GET if not found
@@ -282,8 +282,8 @@ class FormParameters(OrderedDict):
 
         # Build self variant based on `sample_path`
         for sample_path in self._get_sample_paths(mode, matrix):
-            # Clone self
-            self_variant = self.copy()
+            # Clone self, don't use copy.deepcopy b/c of perf
+            self_variant = self.deepish_copy()
 
             for row_index, col_index in enumerate(sample_path):
                 sel_name = sel_names[row_index]
@@ -429,7 +429,7 @@ class FormParameters(OrderedDict):
             len_fun = (lambda x: min(len(x), 3)) if mode == "tmb" else len
             return reduce(operator.mul, map(len_fun, matrix))
 
-    def copy(self):
+    def deepish_copy(self):
         """
         This method returns a deep copy of the Form instance. I'm NOT using
         copy.deepcopy(self) here because its very slow!
@@ -451,6 +451,15 @@ class FormParameters(OrderedDict):
         copy._form_encoding = self._form_encoding
 
         return copy
+
+    def __reduce__(self):
+        items = [[k, self[k]] for k in self]
+        inst_dict = vars(self).copy()
+        inst_dict.pop('_keys', None)
+
+        encoding = self.get_encoding()
+
+        return (self.__class__, (items, encoding), inst_dict)
 
     def get_parameter_type_count(self):
         passwd = text = other = 0

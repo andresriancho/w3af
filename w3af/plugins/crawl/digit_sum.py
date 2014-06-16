@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import copy
 
 from itertools import izip, repeat
 
@@ -139,7 +140,7 @@ class digit_sum(CrawlPlugin):
         filename = fuzzable_request.get_url().get_file_name()
         domain_path = fuzzable_request.get_url().get_domain_path()
         for fname in self._do_combinations(filename):
-            fr_copy = fuzzable_request.copy()
+            fr_copy = copy.deepcopy(fuzzable_request)
             fr_copy.set_url(domain_path.url_join(fname))
 
             if fr_copy.get_uri() not in self._already_visited:
@@ -155,7 +156,7 @@ class digit_sum(CrawlPlugin):
             for dc_copy, token in data_container.iter_bound_tokens():
                 for modified_value in self._do_combinations(token.get_value()):
 
-                    fr_copy = fuzzable_request.copy()
+                    fr_copy = copy.deepcopy(fuzzable_request)
                     fr_copy.set_querystring(dc_copy)
                     token.set_value(modified_value)
 

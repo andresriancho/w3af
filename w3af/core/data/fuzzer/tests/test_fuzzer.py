@@ -27,6 +27,7 @@ from w3af.core.data.kb.config import cf as cf_singleton
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
@@ -319,9 +320,11 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_form_files', True)  # This one changed
         cf_singleton.save('fuzz_url_parts', False)
 
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "")])
+        form_params.add_input([("name", "address"), ("value", "")])
+
+        form = URLEncodedForm(form_params)
 
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
                                method='PUT')

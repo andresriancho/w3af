@@ -64,7 +64,7 @@ class FileContentMutant(PostDataMutant):
             return []
 
         form = freq.get_raw_data()
-        multipart_container = OnlyTokenFilesMultipartContainer.from_form(form)
+        multipart_container = OnlyTokenFilesMultipartContainer(form)
         freq.set_data(multipart_container)
 
         res = cls._create_mutants_worker(freq, cls, payload_list,

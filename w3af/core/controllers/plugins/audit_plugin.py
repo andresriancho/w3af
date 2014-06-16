@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import inspect
+import copy
 import threading
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -123,7 +124,8 @@ class AuditPlugin(Plugin):
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         """
-        return self.audit(fuzzable_request.copy(), orig_resp)
+        fuzzable_request = copy.deepcopy(fuzzable_request)
+        return self.audit(fuzzable_request, orig_resp)
 
     def audit(self, freq, orig_resp):
         """
