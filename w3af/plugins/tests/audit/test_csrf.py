@@ -27,7 +27,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.parsers.url import parse_qs
 from w3af.core.data.url.extended_urllib import ExtendedUrllib

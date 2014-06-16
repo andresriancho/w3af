@@ -21,9 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.dc.form import Form
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
+from w3af.core.data.parsers.utils.form_params import (FormParameters,
+                                                      DEFAULT_FORM_ENCODING)
 
 
 class HTMLParser(SGMLParser):
@@ -147,6 +148,9 @@ class HTMLParser(SGMLParser):
         action = attrs.get('action', None)
         missing_action = action is None
 
+        # Get the encoding
+        form_encoding = attrs.get('enctype', DEFAULT_FORM_ENCODING)
+
         if missing_action:
             action = self._source_url
         else:
@@ -160,10 +164,12 @@ class HTMLParser(SGMLParser):
                 action = self._source_url
 
         # Create the form object and store everything for later use
-        form_obj = Form(encoding=self._encoding)
-        form_obj.set_method(method)
-        form_obj.set_action(action)
-        self._forms.append(form_obj)
+        form_params = FormParameters(encoding=self._encoding)
+        form_params.set_method(method)
+        form_params.set_action(action)
+        form_params.set_form_encoding(form_encoding)
+        self._forms.append(form_params)
+
 
         # Now I verify if there are any input tags that were found
         # outside the scope of a form tag
@@ -182,23 +188,23 @@ class HTMLParser(SGMLParser):
     def _handle_input_tag_inside_form(self, tag, attrs):
 
         # We are working with the last form
-        form_obj = self._forms[-1]
+        form_params = self._forms[-1]
         _type = attrs.get('type', '').lower()
         items = attrs.items()
 
         if _type == 'file':
             # Let the form know, that this is a file input
-            form_obj.add_file_input(items)
+            form_params.add_file_input(items)
 
         elif _type == 'radio':
-            form_obj.add_radio(items)
+            form_params.add_radio(items)
 
         elif _type == 'checkbox':
-            form_obj.add_check_box(items)
+            form_params.add_check_box(items)
 
         else:
             # Simply add all the other input types
-            form_obj.add_input(items)
+            form_params.add_input(items)
 
     def _handle_input_tag_outside_form(self, tag, attrs):
         # I'm going to use this ruleset:
@@ -246,8 +252,8 @@ class HTMLParser(SGMLParser):
         if not self._forms:
             self._saved_inputs.append(attrs)
         else:
-            form_obj = self._forms[-1]
-            form_obj.add_input(attrs.items())
+            form_params = self._forms[-1]
+            form_params.add_input(attrs.items())
 
     ## <select> handler methods
     _handle_select_tag_start = _form_elems_generic_handler
@@ -258,11 +264,11 @@ class HTMLParser(SGMLParser):
         """
         SGMLParser._handle_select_tag_end(self, tag)
         if self._forms:
-            form_obj = self._forms[-1]
+            form_params = self._forms[-1]
             for sel_name, optvalues in self._selects:
                 # First convert  to list of tuples before passing it as arg
                 optvalues = [tuple(attrs.items()) for attrs in optvalues]
-                form_obj.add_select(sel_name, optvalues)
+                form_params.add_select(sel_name, optvalues)
 
             # Reset selects container
             self._selects = []

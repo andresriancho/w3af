@@ -19,12 +19,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import urllib
 
-from nose.plugins.attrib import attr
-
-from w3af.core.data.dc.form import Form
-from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.parsers.utils.form_params import (FormParameters,
+                                                      DEFAULT_FORM_ENCODING)
+from w3af.core.data.parsers.url import URL
 
 form_with_radio = [
     {'tagname': 'input', 'name': 'sex', 'type': 'radio', 'value': 'male'},
@@ -81,8 +79,23 @@ form_select_empty = [
 ALL_FORMS = (form_with_radio, form_with_checkbox, form_select_cars)
 
 
-@attr('smoke')
-class TestForm(unittest.TestCase):
+class TestFormParams(unittest.TestCase):
+    def test_set_action_str(self):
+        f = FormParameters()
+        self.assertRaises(TypeError, f.set_action, 'http://www.google.com/')
+
+    def test_set_action_url(self):
+        f = FormParameters()
+        action = URL('http://www.google.com/')
+        f.set_action(action)
+
+        self.assertIs(f.get_action(), action)
+
+    def test_set_form_encoding(self):
+        f = FormParameters()
+        f.set_form_encoding(DEFAULT_FORM_ENCODING)
+
+        self.assertIs(f.get_form_encoding(), DEFAULT_FORM_ENCODING)
 
     def test_new_form(self):
         # Create new forms and test internal structure
@@ -137,7 +150,7 @@ class TestForm(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = Form()
+        f = FormParameters()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(i, expected)
 
@@ -195,7 +208,7 @@ class TestForm(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = Form()
+        f = FormParameters()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(i, expected)
 
@@ -221,7 +234,7 @@ class TestForm(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        f = Form()
+        f = FormParameters()
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(expected, i)
 
@@ -256,7 +269,7 @@ class TestForm(unittest.TestCase):
         # 250 > dc.Form.TOP_VARIANTS = 150
         new_form = create_form_helper(form_with_radio + form_select_cars +
                                       form_select_misc)
-        self.assertEquals(Form.TOP_VARIANTS,
+        self.assertEquals(FormParameters.TOP_VARIANTS,
                           len([fv for fv in new_form.get_variants(mode="all")]) - 1)
 
     def test_same_variants_generation(self):
@@ -299,81 +312,6 @@ class TestForm(unittest.TestCase):
                                       form_select_misc + form_select_empty)
         [i for i in new_form.get_variants(mode="tb")]
 
-    def test_form_with_plus_value(self):
-        """
-        This test verifies that a fix for the bug identified while scanning
-        demo.testfire.net is still working as expected. The issue was that the
-        site had a form that looked like:
-
-        <form action="/xyz">
-            <intput name="foo" value="bar+spam" type="hidden">
-            <intput name="eggs" type="text">
-            ...
-        </form>
-
-        And when trying to send a request to that form the "+" in the value
-        was sent as %20. The input was an .NET's EVENTVALIDATION thus it was
-        impossible to find any bugs in the "eggs" parameter.
-
-        Please note that this is just a partial test, since there is much more
-        going on in w3af than just creating a form and encoding it. A functional
-        test for this issue can be found at test_special_chars.py
-        """
-        form_with_plus = [
-            {'tagname': 'input', 'name': 'foo', 'type':
-                'hidden', 'value': 'bar+spam'},
-            {'tagname': 'input', 'name': 'eggs', 'type': 'text'}]
-
-        new_form = create_form_helper(form_with_plus)
-        self.assertEqual(str(new_form), 'eggs=&foo=bar%2Bspam')
-
-    def test_form_str_simple(self):
-        form_data = [{'tagname': 'input',
-                      'type': 'text',
-                      'name': 'abc',
-                      'value': '123'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=123')
-
-    def test_form_str_simple_2(self):
-        form_data = [{'tagname': 'input',
-                      'type': 'text',
-                      'name': 'abc',
-                      'value': '123'},
-                     {'tagname': 'input',
-                      'type': 'hidden',
-                      'name': 'def',
-                      'value': '000'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=123&def=000')
-
-    def test_form_str_special_chars_1(self):
-        form_data = [{'tagname': 'input',
-                      'type': 'text',
-                      'name': 'abc',
-                      'value': '1"2'}]
-        new_form = create_form_helper(form_data)
-        self.assertEqual(str(new_form), 'abc=1%222')
-
-    def test_form_str_special_chars_2(self):
-        form_data = [{'tagname': 'input',
-                      'type': 'text',
-                      'name': 'v',
-                      'value': 'áéíóú'},
-                     {'tagname': 'input',
-                      'type': 'hidden',
-                      'name': 'c',
-                      'value': 'ñçÑÇ'}]
-        new_form = create_form_helper(form_data)
-        new_form.add_submit('address', 'bsas')
-        self.assertEqual(urllib.unquote(str(new_form)).decode('utf-8'),
-                         u'c=ñçÑÇ&address=bsas&v=áéíóú')
-
-    def test_form_str_radio_select(self):
-        new_form = create_form_helper(form_with_radio + form_with_checkbox +
-                                      form_select_cars)
-        self.assertEqual(str(new_form), 'cars=fiat&sex=male&vehicle=Bike')
-
     def test_form_copy(self):
         form = create_form_helper(form_with_radio + form_with_checkbox)
         copy = form.copy()
@@ -389,37 +327,8 @@ class TestForm(unittest.TestCase):
 
         self.assertIsNot(form, copy)
 
-    def test_mutant_smart_fill_simple(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form['username'][0] = token = DataToken('username', '')
-
-        form.smart_fill()
-
-        self.assertEqual(form['username'], ['', ])
-        self.assertEqual(form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(form['username'][0], DataToken)
-
-    def test_mutant_smart_fill_with_file(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.add_file_input([("name", "file"), ("type", "file")])
-        form['username'][0] = token = DataToken('username', '')
-
-        form.smart_fill()
-
-        self.assertEqual(form['username'], ['', ])
-        self.assertEqual(form['address'], ['Bonsai Street 123', ])
-        self.assertIsInstance(form['username'][0], DataToken)
-
-        str_file = form['file'][0]
-        self.assertEqual(str_file.name[-4:], '.gif')
-        self.assertIn('GIF', str_file)
-
     def test_login_form_utils(self):
-        form = Form()
+        form = FormParameters()
         form.add_input([("name", "username"), ("type", "text")])
         form.add_input([("name", "pwd"), ("type", "password")])
 
@@ -427,21 +336,6 @@ class TestForm(unittest.TestCase):
         self.assertFalse(form.is_registration_form())
         self.assertFalse(form.is_password_change_form())
         self.assertEqual(form.get_parameter_type_count(), (1, 1, 0))
-
-        user_token, pass_token = form.get_login_tokens()
-        self.assertEqual(user_token.get_name(), 'username')
-        self.assertEqual(pass_token.get_name(), 'pwd')
-        self.assertEqual(user_token.get_value(), '')
-        self.assertEqual(pass_token.get_value(), '')
-
-        form.set_login_username('andres')
-        self.assertEqual(form['username'][0], 'andres')
-        self.assertEqual(form['pwd'][0], '')
-
-        form.set_login_username('pablo')
-        form.set_login_password('long-complex')
-        self.assertEqual(form['username'][0], 'pablo')
-        self.assertEqual(form['pwd'][0], 'long-complex')
 
 
 def get_gruped_data(form_data):
@@ -467,7 +361,7 @@ def create_form_helper(form_data):
         internal structure
     :return: A dc.Form object from `form_data`
     """
-    new_form = Form()
+    new_form = FormParameters()
 
     for elem_data in form_data:
         elem_type = elem_data['tagname']

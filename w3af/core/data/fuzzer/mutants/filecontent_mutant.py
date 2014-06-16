@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.utils.file_token import FileDataToken
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.multipart_container import MultipartContainer

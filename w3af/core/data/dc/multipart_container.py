@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import cgi
 import StringIO
 
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.utils.multipart import get_boundary, encode_as_multipart
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
@@ -40,6 +40,7 @@ class MultipartContainer(Form):
                                                  encoding=encoding)
 
         self.boundary = get_boundary()
+        self.file_names = {}
 
     def get_type(self):
         return 'Multipart/post'
@@ -89,6 +90,20 @@ class MultipartContainer(Form):
         mc = cls(init_val=form.items())
         mc.__dict__.update(form.__dict__)
         return mc
+
+    def get_file_name(self, pname, default=None):
+        """
+        When the form is created by parsing an HTTP request which contains a
+        multipart/form, it is possible to know the name of the file which is
+        being uploaded.
+
+        This method returns the name of the file being uploaded given the
+        parameter name (pname) where it was sent.
+        """
+        return self.file_names.get(pname, default)
+
+    def set_file_name(self, pname, fname):
+        self.file_names[pname] = fname
 
     def get_headers(self):
         """

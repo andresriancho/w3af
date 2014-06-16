@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.multipart_container import MultipartContainer
 
 
@@ -69,7 +69,7 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertEqual(mpc.get_file_name('b'), 'hello.txt')
 
     def test_multipart_from_form(self):
-        form = Form()
+        form = FormParameters()
 
         form.add_input([('name', 'a'), ('type', 'text'),
                       ('value', 'bcd')])

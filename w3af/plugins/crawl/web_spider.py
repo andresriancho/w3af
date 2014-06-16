@@ -40,7 +40,7 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, REGEX
@@ -131,15 +131,20 @@ class web_spider(CrawlPlugin):
 
         # Create one FuzzableRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')
-        for form in dp.get_forms():
+        for form_params in dp.get_forms():
 
-            if not same_domain(form):
+            if not same_domain(form_params):
                 continue
 
             headers = fuzzable_req.get_headers()
 
-            for variant in form.get_variants(mode):
-                r = FuzzableRequest.from_form(variant, headers=headers)
+            for form_params_variant in form_params.get_variants(mode):
+                data_container = dc_from_form_params(form_params_variant)
+
+                # Now data_container is one of Multipart of URLEncoded form
+                # instances, which is a DataContainer. Much better than the
+                # FormParameters instance we had before in form_params_variant
+                r = FuzzableRequest.from_form(data_container, headers=headers)
                 self.output_queue.put(r)
 
     def _handle_first_run(self):

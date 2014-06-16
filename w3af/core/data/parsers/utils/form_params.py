@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 """
-form.py
+form_params.py
 
-Copyright 2006 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -24,18 +24,16 @@ import operator
 import random
 
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.config as cf
 
-from w3af.core.controllers.misc.ordereddict import OrderedDict
-from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
-from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.parsers.encode_decode import urlencode
-from w3af.core.data.parsers.url import parse_qs, URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.controllers.misc.ordereddict import OrderedDict
+from w3af.core.data.parsers.url import URL
 
 
-class Form(KeyValueContainer):
+DEFAULT_FORM_ENCODING = 'application/x-www-form-urlencoded'
+
+
+class FormParameters(OrderedDict):
     """
     This class represents an HTML form.
 
@@ -56,8 +54,6 @@ class Form(KeyValueContainer):
     INPUT_TYPE_SELECT = 'select'
     INPUT_TYPE_PASSWD = 'password'
 
-    ENCODING = 'application/x-www-form-urlencoded'
-
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
     AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT}
@@ -65,8 +61,8 @@ class Form(KeyValueContainer):
     # This is used for processing checkboxes
     SECRET_VALUE = "3_!21#47w@"
 
-    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
-        super(Form, self).__init__(init_val, encoding)
+    def __init__(self, encoding=DEFAULT_ENCODING):
+        super(FormParameters, self).__init__()
 
         # Internal variables
         # Form method defaults to GET if not found
@@ -77,31 +73,22 @@ class Form(KeyValueContainer):
         self._file_names = {}
         self._selects = {}
         self._submit_map = {}
+        # Two completely different types of encoding, first the enctype for the
+        # form: multipart/urlencoded, then the charset encoding (UTF-8, etc.)
+        self._form_encoding = DEFAULT_FORM_ENCODING
+        self._encoding = encoding
 
-    @staticmethod
-    def is_urlencoded(headers):
-        conttype, header_name = headers.iget('content-type', '')
-        return Form.ENCODING in conttype.lower()
+    def get_form_encoding(self):
+        return self._form_encoding
 
-    @staticmethod
-    def can_parse(post_data):
-        try:
-            data = parse_qs(post_data)
-        except:
-            return False
-        else:
-            return True
+    def set_form_encoding(self, form_encoding):
+        self._form_encoding = form_encoding
 
-    @classmethod
-    def from_postdata(cls, headers, post_data):
-        if not Form.is_urlencoded(headers):
-            raise ValueError('Request is not %s.' % Form.ENCODING)
+    def get_encoding(self):
+        return self._encoding
 
-        if not Form.can_parse(post_data):
-            raise ValueError('Failed to parse post_data as Form.')
-
-        data = parse_qs(post_data)
-        return cls(init_val=data.items())
+    def set_encoding(self, new_encoding):
+        self._encoding = new_encoding
 
     def get_action(self):
         """
@@ -110,21 +97,9 @@ class Form(KeyValueContainer):
         return self._action
 
     def set_action(self, action):
-        """
-        >>> f = Form()
-        >>> f.set_action('http://www.google.com/')
-        Traceback (most recent call last):
-          ...
-        TypeError: The action of a Form must be of url.URL type.
-        >>> f = Form()
-        >>> action = URL('http://www.google.com/')
-        >>> f.set_action(action)
-        >>> f.get_action() == action
-        True
-        """
         if not isinstance(action, URL):
-            raise TypeError('The action of a Form must be of '
-                            'url.URL type.')
+            msg = 'The action of a Form must be of url.URL type.'
+            raise TypeError(msg)
         self._action = action
 
     def get_method(self):
@@ -138,20 +113,6 @@ class Form(KeyValueContainer):
 
     def get_file_vars(self):
         return self._file_vars
-
-    def get_file_name(self, pname, default=None):
-        """
-        When the form is created by parsing an HTTP request which contains a
-        multipart/form, it is possible to know the name of the file which is
-        being uploaded.
-
-        This method returns the name of the file being uploaded given the
-        parameter name (pname) where it was sent.
-        """
-        return self._file_names.get(pname, default)
-
-    def set_file_name(self, pname, fname):
-        self._file_names[pname] = fname
 
     def get_value_by_key(self, attrs, *args):
         for search_attr_key in args:
@@ -181,33 +142,15 @@ class Form(KeyValueContainer):
             # form with the same name, and different types
             self._types[name] = self.INPUT_TYPE_FILE
 
-    def __str__(self):
-        """
-        This method returns a string representation of the Form object.
-
-        Please note that if the form has radio/select/checkboxes the
-        first value will be put into the string representation and the
-        others will be lost.
-
-        :see: Unittest in test_form.py
-        :return: string representation of the Form object.
-        """
-        d = dict(self)
-        d.update(self._submit_map)
-
-        for key in d:
-            key_type = self._types.get(key, None)
-            if key_type in self.AVOID_STR_DUPLICATES:
-                d[key] = d[key][:1]
-
-        return urlencode(d, encoding=self.encoding, safe='')
-
     def add_submit(self, name, value):
         """
         This is something I hadn't thought about !
             <input type="submit" name="b0f" value="Submit Request">
         """
         self._submit_map[name] = value
+
+    def get_submit_map(self):
+        return self._submit_map
 
     def add_input(self, attrs):
         """
@@ -239,42 +182,8 @@ class Form(KeyValueContainer):
         self._types[name] = attr_type
         return name, value
 
-    def get_type(self):
-        return 'Form'
-
-    def smart_fill(self):
-        """
-        :return: Fills all the empty parameters (which should be filled)
-                 using the smart_fill function.
-        """
-        for var_name, value, setter in self.iter_setters():
-            if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
-                continue
-
-            if isinstance(value, DataToken):
-                # This is the value which is being fuzzed (the payload) and
-                # I don't want to change/fill it
-                continue
-
-            # The basic idea here is that if the form has files in it, we'll
-            # need to fill that input with a file (gif, txt, html) in order
-            # to go through the form validations
-            if var_name in self.get_file_vars():
-                file_name = self.get_file_name(var_name, None)
-                setter(smart_fill_file(var_name, file_name))
-
-            #   Fill only if the parameter does NOT have a value set.
-            #
-            #   The reason of having this already set would be that the form
-            #   has something like this:
-            #
-            #   <input type="text" name="p" value="foobar">
-            #
-            elif value == '':
-                setter(smart_fill(var_name))
-
-    def get_parameter_type(self, name):
-        return self._types[name]
+    def get_parameter_type(self, name, default=INPUT_TYPE_TEXT):
+        return self._types.get(name, default)
 
     def add_check_box(self, attrs):
         """
@@ -514,7 +423,8 @@ class Form(KeyValueContainer):
         :return: A copy of myself.
         """
         init_val = deepish_copy(self).items()
-        copy = Form(init_val=init_val, encoding=self.encoding)
+        copy = FormParameters()
+        copy.update(init_val)
 
         # Internal variables
         copy._method = self._method
@@ -524,6 +434,7 @@ class Form(KeyValueContainer):
         copy._file_names = self._file_names
         copy._selects = self._selects
         copy._submit_map = self._submit_map
+        copy._form_encoding = self._form_encoding
 
         return copy
 
@@ -533,41 +444,16 @@ class Form(KeyValueContainer):
         #
         # Count the parameter types
         #
-        for token in self.iter_tokens():
+        for _, ptype in self._types.items():
 
-            ptype = self.get_parameter_type(token.get_name()).lower()
-
-            if ptype == Form.INPUT_TYPE_PASSWD:
+            if ptype == self.INPUT_TYPE_PASSWD:
                 passwd += 1
-            elif ptype == Form.INPUT_TYPE_TEXT:
+            elif ptype == self.INPUT_TYPE_TEXT:
                 text += 1
             else:
                 other += 1
 
         return text, passwd, other
-
-    def get_login_tokens(self):
-        """
-        :return: Tokens associated with the login (username and password)
-        """
-        assert self.is_login_form(), 'Login form is required'
-
-        user_token = None
-        pass_token = None
-
-        #
-        # Count the parameter types
-        #
-        for token in self.iter_tokens():
-
-            ptype = self.get_parameter_type(token.get_name()).lower()
-
-            if ptype == Form.INPUT_TYPE_PASSWD:
-                pass_token = token
-            elif ptype == Form.INPUT_TYPE_TEXT:
-                user_token = token
-
-        return user_token, pass_token
 
     def is_login_form(self):
         """
@@ -608,29 +494,6 @@ class Form(KeyValueContainer):
             return True
 
         return False
-
-    def set_login_username(self, username):
-        """
-        Sets the username field to the desired value. This requires a login form
-        """
-        assert self.is_login_form(), 'Login form is required'
-
-        text, passwd, other = self.get_parameter_type_count()
-        assert text == 1, 'Login form with username is required'
-
-        for k, v, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == Form.INPUT_TYPE_TEXT:
-                setter(username)
-
-    def set_login_password(self, password):
-        """
-        Sets the password field to the desired value. This requires a login form
-        """
-        assert self.is_login_form(), 'Login form is required'
-
-        for k, v, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == Form.INPUT_TYPE_PASSWD:
-                setter(password)
 
 
 def deepish_copy(org):

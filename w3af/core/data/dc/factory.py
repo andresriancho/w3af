@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
@@ -31,10 +31,10 @@ from w3af.core.data.dc.headers import Headers
 # Form is at the end on purpose, since its the one which has a "wildcard match"
 # for catching almost everything we don't know how to properly parse
 POST_DATA_CONTAINERS = (MultipartContainer, JSONContainer, XmlRpcContainer,
-                        Form)
+                        URLEncodedForm)
 
 
-def dc_factory(headers, post_data):
+def dc_from_hdrs_post(headers, post_data):
     """
     :param headers: HTTP request headers, most importantly containing the
                     content-type info.
@@ -57,3 +57,24 @@ def dc_factory(headers, post_data):
         # We just return None, saying that we don't really know how to parse
         # this post-data
         return None
+
+
+def dc_from_form_params(form_parameters):
+    """
+    :param form_parameters: The form parameters is the result of parsing HTML,
+                            and contains information such as the parameter names
+                            and types.
+
+    :return: An instance of URLEncodedForm or MultipartContainer
+    """
+    if form_parameters.get_file_vars():
+        # If it has files, I don't care if the form encoding wasn't specified
+        # we must send it as multipart.
+        return MultipartContainer(form_parameters)
+
+    if 'multipart' in form_parameters.get_form_encoding().lower():
+        # If there are no files but the web developer specified the multipart
+        # form encoding, then we'll use multipart also
+        return MultipartContainer(form_parameters)
+
+    return URLEncodedForm(form_parameters)

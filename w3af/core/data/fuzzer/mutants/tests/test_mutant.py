@@ -29,7 +29,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 
 
 class FakeMutant(Mutant):

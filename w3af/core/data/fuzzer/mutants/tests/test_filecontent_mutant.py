@@ -27,7 +27,8 @@ from w3af.core.data.constants.file_templates.file_templates import get_template_
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.multipart import encode_as_multipart, get_boundary
 from w3af.core.controllers.misc.io import NamedStringIO
 
@@ -41,7 +42,7 @@ class TestFileContentMutant(unittest.TestCase):
         self.url = URL('http://moth/')
 
     def test_basics(self):
-        form = Form()
+        form = FormParameters()
         form.set_method('POST')
         form.set_action(self.url)
         form.add_input([("name", "username"), ("value", "")])
@@ -82,7 +83,7 @@ class TestFileContentMutant(unittest.TestCase):
         fuzzer_config = {'fuzz_form_files': True,
                          'fuzzed_files_extension': 'gif'}
 
-        form = Form()
+        form = FormParameters()
         form.set_method('POST')
         form.set_action(self.url)
         form.add_input([("name", "username"), ("value", "")])

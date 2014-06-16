@@ -30,7 +30,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 
 
 @attr('smoke')

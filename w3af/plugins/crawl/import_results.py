@@ -36,7 +36,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.parsers.http_request_parser import http_request_parser
 

@@ -1,5 +1,5 @@
 """
-WMLParser.py
+wml_parser.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.data.dc.form as form
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
 WML_HEADER = '<!DOCTYPE wml PUBLIC'.lower()
@@ -70,7 +70,7 @@ class WMLParser(SGMLParser):
             action = URL(self._decode_url(action),
                          encoding=self._encoding)
             # Create the form
-            f = form.Form(encoding=self._encoding)
+            f = FormParameters(encoding=self._encoding)
             f.set_method(method)
             f.set_action(action)
             self._forms.append(f)

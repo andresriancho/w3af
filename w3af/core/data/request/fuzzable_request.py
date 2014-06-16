@@ -33,8 +33,8 @@ from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.dc.factory import dc_factory
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.factory import dc_from_hdrs_post
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
@@ -124,7 +124,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             url = URL(url)
 
         if isinstance(post_data, basestring):
-            post_data = dc_factory(headers, post_data)
+            post_data = dc_from_hdrs_post(headers, post_data)
 
         return cls(url, method=method, headers=headers, post_data=post_data)
 

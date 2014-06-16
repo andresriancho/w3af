@@ -24,7 +24,7 @@ import unittest
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 

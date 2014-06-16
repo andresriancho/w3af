@@ -38,7 +38,7 @@ from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 from w3af.core.data.parsers.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 
 
 class TestFuzzer(unittest.TestCase):

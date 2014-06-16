@@ -33,7 +33,7 @@ from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 HTML_DOC = u"""
 <html>
@@ -543,9 +543,9 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals(1, len(p.forms))
         form = p.forms[0]
 
-        self.assertIsInstance(form, Form)
-        self.assertEqual('sample_name=sample_value&sample_name=sample_value',
-                         str(form))
+        self.assertIsInstance(form, FormParameters)
+        self.assertEqual(form['sample_name'], ['sample_value',
+                                               'sample_value'])
 
     def test_a_link_absolute(self):
         headers = Headers([('content-type', 'text/html')])

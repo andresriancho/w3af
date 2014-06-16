@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import json
 
-from w3af.core.data.dc.factory import dc_factory
+from w3af.core.data.dc.factory import dc_from_hdrs_post
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.dc.form import Form
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
@@ -45,7 +45,7 @@ class TestDCFactory(unittest.TestCase):
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', multipart_boundary % boundary)])
 
-        dc = dc_factory(headers, post_data)
+        dc = dc_from_hdrs_post(headers, post_data)
 
         EXPECTED_PARAMS = [u'ax']
 
@@ -54,7 +54,7 @@ class TestDCFactory(unittest.TestCase):
 
     def test_json(self):
         headers = self.get_headers('application/json')
-        dc = dc_factory(headers, COMPLEX_OBJECT)
+        dc = dc_from_hdrs_post(headers, COMPLEX_OBJECT)
 
         EXPECTED_PARAMS = [u'object-second_key-list-0-string',
                            u'object-key-string']
@@ -65,7 +65,7 @@ class TestDCFactory(unittest.TestCase):
 
     def test_xmlrpc(self):
         headers = self.get_headers('text/xml')
-        dc = dc_factory(headers, XML_WITH_FUZZABLE)
+        dc = dc_from_hdrs_post(headers, XML_WITH_FUZZABLE)
 
         self.assertIsInstance(dc, XmlRpcContainer)
         self.assertIn('string', dc)
@@ -74,7 +74,7 @@ class TestDCFactory(unittest.TestCase):
 
     def test_form(self):
         headers = self.get_headers('application/x-www-form-urlencoded')
-        dc = dc_factory(headers, 'a=3&b=2')
+        dc = dc_from_hdrs_post(headers, 'a=3&b=2')
 
         self.assertIsInstance(dc, Form)
         self.assertIn('a', dc)
@@ -83,12 +83,18 @@ class TestDCFactory(unittest.TestCase):
 
     def test_unknown_default_form(self):
         headers = self.get_headers('foo/bar')
-        dc = dc_factory(headers, 'a=3&b=2')
+        dc = dc_from_hdrs_post(headers, 'a=3&b=2')
 
         self.assertIs(dc, None)
 
     def test_unknown_default_form_no_urlencoded(self):
         headers = self.get_headers('foo/bar')
-        dc = dc_factory(headers, 'a')
+        dc = dc_from_hdrs_post(headers, 'a')
 
         self.assertIs(dc, None)
+
+    def test_dc_from_form_params_with_files(self):
+        raise NotImplementedError
+
+    def test_dc_from_form_params_without_files(self):
+        raise NotImplementedError
