@@ -66,7 +66,7 @@ class export_requests(OutputPlugin):
             out_file.write('HTTP-METHOD,URI,POSTDATA\n')
 
             for fr in fuzzable_request_set:
-                out_file.write(fr.export() + '\n')
+                out_file.write(fr.to_csv() + '\n')
 
         except Exception, e:
             msg = 'An exception was raised while trying to export fuzzable'\

@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
+import csv
 import string
+import cStringIO
 
 from urllib import unquote
 from itertools import chain
@@ -34,7 +35,6 @@ from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.factory import dc_from_hdrs_post
-from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
@@ -171,7 +171,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         return r
 
-    def export(self):
+    def to_csv(self):
         """
         Generic version of how fuzzable requests are exported:
             METHOD,URL,POST_DATA
@@ -185,12 +185,21 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         #
         # TODO: Why don't we export headers and cookies?
         #
-        output = []
+        output = cStringIO.StringIO()
+        writer = csv.writer(output, quoting=csv.QUOTE_ALL)
+        writer.writerow((self.get_method(), self.get_uri(), self._post_data))
+        output.seek(0)
+        return str(output.read())[:-2]
 
-        for data in (self.get_method(), self.get_uri(), self._post_data):
-            output.append('"%s"' % data)
-
-        return ','.join(output)
+    @classmethod
+    def from_csv(cls, csv_line):
+        """
+        :param csv_line: A string representing a line in a CSV file
+        :return: A FuzzableRequest instance
+        """
+        row = csv.reader([csv_line], quoting=csv.QUOTE_ALL).next()
+        return FuzzableRequest.from_parts(row[1], method=row[0],
+                                          post_data=row[2])
 
     def sent(self, smth_instng):
         """

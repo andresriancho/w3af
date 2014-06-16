@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -103,16 +104,23 @@ class TestFuzzableRequest(unittest.TestCase):
         
         self.assertEqual(fr.dump(), expected)
 
-    def test_export_without_post_data(self):
+    def test_export_import_without_post_data(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        self.assertEqual(fr.export(), '"GET","http://www.w3af.com/",""')
+        self.assertEqual(fr.to_csv(), '"GET","http://www.w3af.com/",""')
+
+        imported_fr = fr.from_csv(fr.to_csv())
+        self.assertEqual(imported_fr, fr)
     
-    def test_export_with_post_data(self):
+    def test_export_import_with_post_data(self):
         dc = KeyValueContainer(init_val=[('a', ['1'])])
         fr = FuzzableRequest(URL("http://www.w3af.com/"), post_data=dc)
 
-        self.assertEqual(fr.export(), '"GET","http://www.w3af.com/","a=1"')
-        
+        self.assertEqual(fr.to_csv(), '"GET","http://www.w3af.com/","a=1"')
+
+        raise SkipTest('Failing because we do NOT export headers')
+        imported_fr = fr.from_csv(fr.to_csv())
+        self.assertEqual(imported_fr, fr)
+
     def test_equal(self):
         u = URL("""http://www.w3af.com/""")
         fr1 = FuzzableRequest(u)

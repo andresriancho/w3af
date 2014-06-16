@@ -85,14 +85,20 @@ class TestXUrllib(unittest.TestCase):
 
     def test_POST(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
-        data = Form([('text', ['123456abc'])])
+
+        data = URLEncodedForm()
+        data['text'] = ['123456abc']
+
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
     def test_POST_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
-        data = Form([('text', [test_data])])
+
+        data = URLEncodedForm()
+        data['text'] = [test_data]
+
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 

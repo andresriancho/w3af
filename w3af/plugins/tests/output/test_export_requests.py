@@ -25,6 +25,7 @@ import urllib
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class TestExportRequests(PluginTest):
@@ -64,16 +65,12 @@ class TestExportRequests(PluginTest):
 
     def _get_urls_from_file(self):
         # Get the contents of the output file
-        file_urls = []
         for line in file('output-fr.csv'):
             if 'http' not in line:
                 continue
             else:
-                url_str = line.split(',')[1]
-                url_str = urllib.unquote(url_str)
-                url = URL(url_str)
-                file_urls.append(url)
-        return file_urls
+                fr = FuzzableRequest.from_csv(line)
+                yield fr.get_uri()
 
     def tearDown(self):
         super(TestExportRequests, self).tearDown()
