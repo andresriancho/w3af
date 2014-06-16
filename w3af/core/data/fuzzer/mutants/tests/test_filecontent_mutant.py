@@ -57,11 +57,6 @@ class TestFileContentMutant(unittest.TestCase):
         m.set_token_value('abc')
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 
-        expected_mod_value = 'The data that was sent is: "username=&file=abc&address=".'
-        generated_mod_value = m.print_token_value()
-
-        self.assertEqual(generated_mod_value, expected_mod_value)
-
         expected_found_at = u'"http://moth/", using HTTP method POST. The'\
             u' sent post-data was: "username=&file=abc&address="'\
             u' which modified the uploaded file content.'
@@ -111,12 +106,13 @@ class TestFileContentMutant(unittest.TestCase):
         file_abc = NamedStringIO(file_payload_abc, 'upload.gif')
         file_def = NamedStringIO(file_payload_def, 'upload.gif')
 
-        expected_forms = [Form([('username', ['John8212']),
-                                ('address', ['Bonsai Street 123']),
-                                ('image', [file_abc])]),
-                          Form([('username', ['John8212']),
-                                ('address', ['Bonsai Street 123']),
-                                ('image', [file_def])])]
+        form_1 = MultipartContainer(form_params)
+        form_2 = MultipartContainer(form_params)
+
+        form_1['image'] = [file_abc]
+        form_2['image'] = [file_def]
+
+        expected_forms = [form_1, form_2]
 
         boundary = get_boundary()
         noop = '1' * len(boundary)
