@@ -26,7 +26,9 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
@@ -144,15 +146,19 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_str_with_postdata(self):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1',
-                                        headers=Headers([('content-type', Form.ENCODING)]))
-        expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a)'
+                                        headers=Headers([('content-type',
+                                                          URLEncodedForm.ENCODING)]))
+        expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
+                   'form parameters: (a)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_qs_and_postdata(self):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
                                         post_data='a=1&b=3&a=2',
-                                        headers=Headers([('content-type', Form.ENCODING)]))
-        expected = 'http://www.w3af.com/ | Method: GET | Form parameters: (a,a,b)'
+                                        headers=Headers([('content-type',
+                                                          URLEncodedForm.ENCODING)]))
+        expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
+                   'form parameters: (a,a,b)'
         self.assertEqual(str(fr), expected)
 
     def test_repr(self):
@@ -172,19 +178,23 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertTrue(f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>'))
 
     def test_sent_post_data(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", """d'z"0""")])
-        form.add_input([("name", "address"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", """d'z"0""")])
+        form_params.add_input([("name", "address"), ("value", "")])
+
+        form = dc_from_form_params(form_params)
 
         f = FuzzableRequest(URL('http://example.com/'), post_data=form)
         self.assertTrue(f.sent('d%5C%27z%5C%220'))
 
     def test_from_form_POST(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "abc")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.set_action(URL('http://example.com/?id=1'))
-        form.set_method('post')
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "abc")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.set_action(URL('http://example.com/?id=1'))
+        form_params.set_method('post')
+
+        form = dc_from_form_params(form_params)
 
         fr = FuzzableRequest.from_form(form)
 
@@ -195,12 +205,13 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.get_uri().querystring, QueryString([('id', ['1'])]))
 
     def test_from_form_GET(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "abc")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.set_action(URL('http://example.com/'))
-        form.set_method('GET')
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "abc")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.set_action(URL('http://example.com/'))
+        form_params.set_method('GET')
 
+        form = dc_from_form_params(form_params)
         fr = FuzzableRequest.from_form(form)
 
         expected_url = 'http://example.com/?username=abc&address='
@@ -208,7 +219,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.get_uri().querystring, 'username=abc&address=')
         self.assertEqual(fr.get_method(), 'GET')
         self.assertIsNot(fr.get_raw_data(), form)
-        self.assertIsInstance(fr.get_uri().querystring, Form)
+        self.assertIsInstance(fr.get_uri().querystring, URLEncodedForm)
         self.assertIs(fr.get_form(), form)
 
         uri_1 = fr.get_uri()
@@ -216,29 +227,32 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertIs(uri_1, uri_2)
 
     def test_from_form_default(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", "abc")])
-        form.add_input([("name", "address"), ("value", "")])
-        form.set_action(URL('http://example.com/'))
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "abc")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.set_action(URL('http://example.com/'))
         # Without a method
-        #form.set_method('GET')
+        #form_params.set_method('GET')
 
+        form = dc_from_form_params(form_params)
         fr = FuzzableRequest.from_form(form)
 
         expected_url = 'http://example.com/?username=abc&address='
         self.assertEqual(fr.get_uri().url_string, expected_url)
         self.assertEqual(fr.get_uri().querystring, 'username=abc&address=')
-        self.assertIsInstance(fr.get_uri().querystring, Form)
+        self.assertIsInstance(fr.get_uri().querystring, URLEncodedForm)
         self.assertIs(fr.get_form(), form)
         self.assertEqual(fr.get_method(), 'GET')
         self.assertIsNot(fr.get_raw_data(), form)
 
     def test_get_form_without_from_form(self):
-        form = Form()
-        form.add_input([("name", "username"), ("value", """d'z"0""")])
-        form.add_input([("name", "address"), ("value", "")])
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", """d'z"0""")])
+        form_params.add_input([("name", "address"), ("value", "")])
 
+        form = dc_from_form_params(form_params)
         fr = FuzzableRequest(URL('http://example.com/'), post_data=form)
+
         self.assertIs(fr.get_form(), form)
         self.assertIs(fr.get_raw_data(), form)
         self.assertEqual(fr.get_method(), 'GET')

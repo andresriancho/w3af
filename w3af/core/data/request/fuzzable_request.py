@@ -34,7 +34,7 @@ from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.factory import dc_from_hdrs_post
-from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn

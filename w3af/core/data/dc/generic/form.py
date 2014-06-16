@@ -83,6 +83,12 @@ class Form(KeyValueContainer):
     def get_parameter_type_count(self):
         return self.form_params.get_parameter_type_count()
 
+    def get_method(self):
+        return self.form_params.get_method()
+
+    def get_action(self):
+        return self.form_params.get_action()
+
     def __str__(self):
         """
         Each form subclass (URLEncoded and Multipart form) need to implement

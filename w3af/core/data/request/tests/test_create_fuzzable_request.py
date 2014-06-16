@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
@@ -34,6 +34,7 @@ from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.request.factory import create_fuzzable_request_from_request
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 @attr('smoke')
@@ -80,7 +81,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
     def test_simple_post(self):
         post_data = 'a=b&d=3'
         hdr = Headers([('content-length', str(len(post_data))),
-                       ('content-type', Form.ENCODING)])
+                       ('content-type', URLEncodedForm.ENCODING)])
 
         fr = FuzzableRequest.from_parts(self.url, headers=hdr,
                                         post_data=post_data, method='POST')
@@ -89,7 +90,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIn('content-type', fr.get_headers())
-        self.assertIsInstance(fr.get_raw_data(), Form)
+        self.assertIsInstance(fr.get_raw_data(), URLEncodedForm)
 
     def test_json_post(self):
         post_data = '{"1":"2"}'
@@ -147,7 +148,12 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
         fr = FuzzableRequest.from_parts(self.url, headers=headers,
                                         post_data=post_data, method='POST')
 
-        expected_container = MultipartContainer(init_val=[('a', ['bcd'])])
+        form_params = FormParameters()
+        form_params.add_input([('name', 'a'),
+                               ('type', 'text'),
+                               ('value', 'bcd')])
+
+        expected_container = MultipartContainer(form_params)
         expected_headers = Headers([('content-type',
                                      multipart_boundary % boundary)])
 
