@@ -24,7 +24,7 @@ import StringIO
 
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.utils.multipart import get_boundary, encode_as_multipart
-from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
 class MultipartContainer(Form):
@@ -35,12 +35,10 @@ class MultipartContainer(Form):
     """
     MULTIPART_HEADER = 'multipart/form-data; boundary=%s'
 
-    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
-        super(MultipartContainer, self).__init__(init_val=init_val,
-                                                 encoding=encoding)
+    def __init__(self, form_params=None):
+        super(MultipartContainer, self).__init__(form_params)
 
         self.boundary = get_boundary()
-        self.file_names = {}
 
     def get_type(self):
         return 'Multipart/post'
@@ -63,7 +61,7 @@ class MultipartContainer(Form):
         except ValueError:
             raise ValueError('Failed to create MultipartContainer.')
         else:
-            # Please note that the KeyValueContainer is just a container for
+            # Please note that the FormParameters is just a container for
             # the information.
             #
             # When the FuzzableRequest is sent the framework calls get_data()
@@ -73,37 +71,27 @@ class MultipartContainer(Form):
             # To make sure the web application properly decodes the request, we
             # also include the headers in get_headers() which include the
             # boundary
-            mc = cls()
+            form_params = FormParameters()
 
             for key in fs.list:
                 if key.filename is None:
-                    mc.add_input([('name', key.name), ('type', 'text'),
-                                  ('value', key.file.read())])
+                    form_params.add_input([('name', key.name),
+                                           ('type', 'text'),
+                                           ('value', key.file.read())])
                 else:
-                    mc.set_file_name(key.name, key.filename)
-                    mc.add_file_input([('name', key.name)])
+                    form_params.set_file_name(key.name, key.filename)
+                    form_params.add_file_input([('name', key.name)])
 
-            return mc
+            return cls(form_params)
+
+    def get_file_name(self, var_name, default=None):
+        return self.form_params.get_file_name(var_name, default=default)
 
     @classmethod
     def from_form(cls, form):
         mc = cls(init_val=form.items())
         mc.__dict__.update(form.__dict__)
         return mc
-
-    def get_file_name(self, pname, default=None):
-        """
-        When the form is created by parsing an HTTP request which contains a
-        multipart/form, it is possible to know the name of the file which is
-        being uploaded.
-
-        This method returns the name of the file being uploaded given the
-        parameter name (pname) where it was sent.
-        """
-        return self.file_names.get(pname, default)
-
-    def set_file_name(self, pname, fname):
-        self.file_names[pname] = fname
 
     def get_headers(self):
         """

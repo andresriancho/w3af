@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import json
 
-from w3af.core.data.dc.factory import dc_from_hdrs_post
+from w3af.core.data.dc.factory import dc_from_hdrs_post, dc_from_form_params
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
@@ -32,6 +32,7 @@ from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
 class TestDCFactory(unittest.TestCase):
@@ -76,7 +77,7 @@ class TestDCFactory(unittest.TestCase):
         headers = self.get_headers('application/x-www-form-urlencoded')
         dc = dc_from_hdrs_post(headers, 'a=3&b=2')
 
-        self.assertIsInstance(dc, Form)
+        self.assertIsInstance(dc, URLEncodedForm)
         self.assertIn('a', dc)
         self.assertIn('b', dc)
         self.assertEqual('a=3&b=2', str(dc))
@@ -94,7 +95,43 @@ class TestDCFactory(unittest.TestCase):
         self.assertIs(dc, None)
 
     def test_dc_from_form_params_with_files(self):
-        raise NotImplementedError
+        form_params = FormParameters()
 
-    def test_dc_from_form_params_without_files(self):
-        raise NotImplementedError
+        form_params.set_file_name('b', 'hello.txt')
+        form_params.add_file_input([('name', 'b')])
+        form_params.add_input([('name', 'a'),
+                               ('type', 'text'),
+                               ('value', 'bcd')])
+
+        mpdc = dc_from_form_params(form_params)
+
+        self.assertIsInstance(mpdc, MultipartContainer)
+        self.assertEqual(mpdc.get_file_vars(), ['b'])
+        self.assertEqual(mpdc['a'], ['bcd'])
+
+    def test_dc_from_form_params_without_files_with_multipart_enctype(self):
+        form_params = FormParameters()
+
+        form_params.set_form_encoding('multipart/form-data')
+        form_params.add_input([('name', 'a'),
+                               ('type', 'text'),
+                               ('value', 'bcd')])
+
+        mpdc = dc_from_form_params(form_params)
+
+        self.assertIsInstance(mpdc, MultipartContainer)
+        self.assertEqual(mpdc.get_file_vars(), [])
+        self.assertEqual(mpdc['a'], ['bcd'])
+
+    def test_dc_from_form_params_without_files_nor_enctype(self):
+        form_params = FormParameters()
+
+        form_params.add_input([('name', 'a'),
+                               ('type', 'text'),
+                               ('value', 'bcd')])
+
+        urlencode_dc = dc_from_form_params(form_params)
+
+        self.assertIsInstance(urlencode_dc, URLEncodedForm)
+        self.assertEqual(urlencode_dc.get_file_vars(), [])
+        self.assertEqual(urlencode_dc['a'], ['bcd'])

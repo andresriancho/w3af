@@ -102,6 +102,20 @@ class FormParameters(OrderedDict):
             raise TypeError(msg)
         self._action = action
 
+    def get_file_name(self, pname, default=None):
+        """
+        When the form is created by parsing an HTTP request which contains a
+        multipart/form, it is possible to know the name of the file which is
+        being uploaded.
+
+        This method returns the name of the file being uploaded given the
+        parameter name (pname) where it was sent.
+        """
+        return self._file_names.get(pname, default)
+
+    def set_file_name(self, pname, fname):
+        self._file_names[pname] = fname
+
     def get_method(self):
         """
         :return: The Form method.

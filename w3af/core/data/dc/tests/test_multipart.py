@@ -35,7 +35,7 @@ class TestMultipartContainer(unittest.TestCase):
 
     def test_multipart_post(self):
         boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
-        multipart_boundary = 'multipart/form-data; boundary=%s'
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
 
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', multipart_boundary % boundary)])
@@ -53,7 +53,7 @@ class TestMultipartContainer(unittest.TestCase):
         vars = [('a', 'bcd'), ]
         files = [('b', fake_file)]
         boundary, post_data = multipart_encode(vars, files)
-        multipart_boundary = 'multipart/form-data; boundary=%s'
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
 
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', multipart_boundary % boundary)])
@@ -68,15 +68,16 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertEqual(mpc.get_parameter_type('b'), 'file')
         self.assertEqual(mpc.get_file_name('b'), 'hello.txt')
 
-    def test_multipart_from_form(self):
-        form = FormParameters()
+    def test_multipart_from_form_params(self):
+        form_params = FormParameters()
 
-        form.add_input([('name', 'a'), ('type', 'text'),
-                      ('value', 'bcd')])
-        form.set_file_name('b', 'hello.txt')
-        form.add_file_input([('name', 'b')])
+        form_params.set_file_name('b', 'hello.txt')
+        form_params.add_file_input([('name', 'b')])
+        form_params.add_input([('name', 'a'),
+                               ('type', 'text'),
+                               ('value', 'bcd')])
 
-        mpc = MultipartContainer.from_form(form)
+        mpc = MultipartContainer(form_params)
 
         self.assertIsInstance(mpc, MultipartContainer)
         self.assertEqual(mpc['a'], ['bcd'])

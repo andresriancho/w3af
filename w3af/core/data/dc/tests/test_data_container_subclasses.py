@@ -29,7 +29,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 
 ALL_SUBCLASSES = {Cookie, KeyValueContainer, NonRepeatKeyValueContainer,
-                  Form, Headers, QueryString}
+                  URLEncodedForm, Headers, QueryString}
 
 
 class TestDataContainerSubClasses(unittest.TestCase):
