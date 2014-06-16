@@ -26,6 +26,7 @@ import random
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.dc.utils.multipart import is_file_like
 from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.parsers.url import URL
 
@@ -126,7 +127,23 @@ class FormParameters(OrderedDict):
         self._method = method.upper()
 
     def get_file_vars(self):
+        """
+        :return: The name of the variables which are of file type. Since these
+                 might have been change by a call to __setitem__ where the
+                 developer did not update self._file_vars, I'm also updating
+                 the self._file_vars attribute on each call.
+        """
+        file_keys = []
+
+        for k, v_lst in self.items():
+            for v in v_lst:
+                if is_file_like(v):
+                    file_keys.append(k)
+
+        self._file_vars.extend(file_keys)
+        self._file_vars = list(set(self._file_vars))
         return self._file_vars
+
 
     def get_value_by_key(self, attrs, *args):
         for search_attr_key in args:

@@ -58,7 +58,7 @@ class TestFileContentMutant(unittest.TestCase):
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 
         expected_found_at = u'"http://moth/", using HTTP method POST. The'\
-            u' sent post-data was: "username=&file=abc&address="'\
+            u' sent post-data was: "...file=abc..."'\
             u' which modified the uploaded file content.'
         generated_found_at = m.found_at()
 
@@ -110,7 +110,12 @@ class TestFileContentMutant(unittest.TestCase):
         form_2 = MultipartContainer(form_params)
 
         form_1['image'] = [file_abc]
+        form_1['username'] = ['John8212']
+        form_1['address'] = ['Bonsai Street 123']
+
         form_2['image'] = [file_def]
+        form_2['username'] = ['John8212']
+        form_2['address'] = ['Bonsai Street 123']
 
         expected_forms = [form_1, form_2]
 

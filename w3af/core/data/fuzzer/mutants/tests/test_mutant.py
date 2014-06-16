@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import urllib
 
-from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
+from mock import patch
+
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -32,6 +32,9 @@ from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.multipart_container import MultipartContainer
+from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
+from w3af.core.controllers.misc.io import NamedStringIO
+from w3af.core.data.dc.utils.multipart import encode_as_multipart, get_boundary
 
 
 class FakeMutant(Mutant):
@@ -157,43 +160,91 @@ class TestMutant(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_input([("name", "username"), ("value", "")])
         form_params.add_input([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "file"), ("type", "file")])
+        form_params.add_file_input([("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest(self.url, post_data=form)
 
-        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
-                                                        False,
-                                                        self.fuzzer_config)
-        _abc = self.payloads[0]
-        _def = self.payloads[1]
-        name = 'John8212'
-        address = urllib.quote('Bonsai Street 123')
+        ph = 'w3af.core.data.constants.file_templates.file_templates.rand_alpha'
 
-        _, gif_file, _ = get_file_from_template('gif')
-        gif_file = urllib.quote(gif_file)
+        with patch(ph) as mock_rand_alpha:
+            mock_rand_alpha.return_value = 'upload'
+            generated_mutants = PostDataMutant.create_mutants(freq,
+                                                              self.payloads, [],
+                                                              False,
+                                                              self.fuzzer_config)
 
-        fmt = 'username=%s&file=%s&address=%s'
+        self.assertEqual(len(generated_mutants), 6, generated_mutants)
 
-        # TODO: There are some useless mutants being generated here, which send
-        # "abc" and "def" as the file content: and don't even use a
-        # NamedStringIO to do it -so it will be sent as a common var not a file-
-        # and on top of that, it doesn't even look like a file content.
+        _, gif_file_content, _ = get_file_from_template('gif')
+        gif_named_stringio = NamedStringIO(gif_file_content, 'upload.gif')
+
+        expected_forms = []
+
+        form = MultipartContainer(form_params)
+        form['image'] = [gif_named_stringio]
+        form['username'] = ['def']
+        form['address'] = ['Bonsai Street 123']
+        expected_forms.append(form)
+
+        form = MultipartContainer(form_params)
+        form['image'] = [gif_named_stringio]
+        form['username'] = ['abc']
+        form['address'] = ['Bonsai Street 123']
+        expected_forms.append(form)
+
+        # TODO: Please note that these two multipart forms are a bug, since
+        #       they should never be created by PostDataMutant.create_mutants
+        #       (they are not setting the image as a file, just as a string)
+        form = MultipartContainer(form_params)
+        form['image'] = ['def']
+        form['username'] = ['John8212']
+        form['address'] = ['Bonsai Street 123']
+        expected_forms.append(form)
+
+        form = MultipartContainer(form_params)
+        form['image'] = ['abc']
+        form['username'] = ['John8212']
+        form['address'] = ['Bonsai Street 123']
+        expected_forms.append(form)
         #
-        # The good thing is that this will only happen for forms with files
-        # (not so common) and it might even trigger a traceback ;)
-        expected_dcs = [
-                        fmt % (_abc, gif_file, address),
-                        fmt % (name, gif_file, _abc),
-                        fmt % (name, _abc, address), # useless
-                        fmt % (_def, gif_file, address),
-                        fmt % (name, gif_file, _def),
-                        fmt % (name, _def, address), # useless
-                        ]
+        # TODO: /end
+        #
 
-        created_dcs = [str(i.get_dc()) for i in created_mutants]
+        form = MultipartContainer(form_params)
+        form['image'] = [gif_named_stringio]
+        form['username'] = ['John8212']
+        form['address'] = ['abc']
+        expected_forms.append(form)
 
-        self.assertEquals(expected_dcs, created_dcs)
+        form = MultipartContainer(form_params)
+        form['image'] = [gif_named_stringio]
+        form['username'] = ['John8212']
+        form['address'] = ['def']
+        expected_forms.append(form)
+
+        boundary = get_boundary()
+        noop = '1' * len(boundary)
+
+        expected_data = [encode_as_multipart(f, boundary) for f in expected_forms]
+        expected_data = set([s.replace(boundary, noop) for s in expected_data])
+
+        generated_forms = [m.get_dc() for m in generated_mutants]
+        generated_data = [str(f).replace(f.boundary, noop) for f in generated_forms]
+
+        self.assertEqual(expected_data, set(generated_data))
+
+        str_file = generated_forms[0]['image'][0]
+        self.assertIsInstance(str_file, NamedStringIO)
+        self.assertEqual(str_file.name[-4:], '.gif')
+        self.assertEqual(gif_file_content, str_file)
+
+        str_file = generated_forms[1]['image'][0]
+        self.assertIsInstance(str_file, NamedStringIO)
+        self.assertEqual(str_file.name[-4:], '.gif')
+        self.assertEqual(gif_file_content, str_file)
+
+        self.assertIn('name="image"; filename="upload.gif"', generated_data[0])
 
     def test_mutant_creation_append(self):
         qs = QueryString(self.SIMPLE_KV)
