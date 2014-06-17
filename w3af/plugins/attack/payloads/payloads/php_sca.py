@@ -54,7 +54,7 @@ class php_sca(Payload):
                 
                 v = Vuln(name, desc, vuln_sev, 1, 'PHP Static Code Analyzer')
                 v.set_uri(url)
-                v.set_var(f.vulnsources[0])
+                v.set_token((f.vulnsources[0], 0))
 
                 args = list(vulndata['kb_key']) + [v]
 
