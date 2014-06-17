@@ -71,11 +71,10 @@ class phishtank(CrawlPlugin):
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
             desc = desc % (ptm.url, ptm.more_info_URL)
-            
-            v = Vuln('Phishing scam', desc, severity.MEDIUM, response.id,
-                     self.get_name())
+
+            v = Vuln('Phishing scam', desc, severity.MEDIUM, [], self.get_name())
             v.set_url(ptm.url)
-            
+
             kb.kb.append(self, 'phishtank', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
