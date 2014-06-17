@@ -75,7 +75,7 @@ class TestXSS(PluginTest):
             - Vulnerable parameter
             - All parameters that were sent
         """
-        kb_data = [(str(m.get_url()), m.get_var(), tuple(sorted(m.get_dc().keys())))
+        kb_data = [(str(m.get_url()), m.get_token_name(), tuple(sorted(m.get_dc().keys())))
                    for m in (xv.get_mutant() for xv in xss_vulns)]
         return kb_data
 
@@ -156,6 +156,14 @@ class TestXSS(PluginTest):
         expected = [
             # Trivial
             ('simple_xss.py', 'text', ['text']),
+
+            # Form with GET method
+            # https://github.com/andresriancho/w3af/issues/3149
+            ('simple_xss_GET_form.py', 'text', ['text']),
+
+            # Form with multipart enctype
+            # https://github.com/andresriancho/w3af/issues/3149
+            ('xss_multipart_form.py', 'text', ['text']),
 
             # Simple filters
             ('script_insensitive_blacklist_xss.py', 'text', ['text']),
