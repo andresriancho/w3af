@@ -32,7 +32,7 @@ class TestOracleDiscovery(PluginTest):
     }
 
     def test_oracle_discovery(self):
-        self._scan(self._run_config['target'], self._run_config['plugins'], debug=True)
+        self._scan(self._run_config['target'], self._run_config['plugins'])
 
         infos = self.kb.get('oracle_discovery', 'oracle_discovery')
         self.assertEqual(len(infos), 1, infos)
