@@ -79,7 +79,8 @@ class URLEncodedForm(Form):
         :see: Unittest in test_form.py
         :return: string representation of the Form object.
         """
-        d = dict(self)
+        d = dict()
+        d.update(self.items())
         d.update(self.get_form_params().get_submit_map())
 
         for key in d:

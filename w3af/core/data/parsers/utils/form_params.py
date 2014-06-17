@@ -476,7 +476,7 @@ class FormParameters(OrderedDict):
 
         encoding = self.get_encoding()
 
-        return (self.__class__, (items, encoding), inst_dict)
+        return self.__class__, (items, encoding), inst_dict
 
     def get_parameter_type_count(self):
         passwd = text = other = 0

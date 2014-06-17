@@ -50,11 +50,12 @@ class Form(KeyValueContainer):
         form_params = FormParameters() if form_params is None else form_params
         self.form_params = form_params
 
-        super(Form, self).__init__(form_params.items(),
-                                   form_params.get_encoding())
-
-    def __reduce__(self):
-        return self.__class__, (self.form_params,), {}
+        # We don't send any value in init_val because we're forwarding almost
+        # all magic methods (__getitem__, __setitem__, etc.) to the
+        # self.form_params attribute, which helps keep the two (FormParameters
+        # and Form) instances in sync
+        super(Form, self).__init__(init_val=(),
+                                   encoding=form_params.get_encoding())
 
     def get_form_params(self):
         return self.form_params
@@ -98,6 +99,30 @@ class Form(KeyValueContainer):
         their own __str__.
         """
         raise NotImplementedError
+
+    def __setitem__(self, key, value):
+        self.form_params[key] = value
+
+    def __getitem__(self, item):
+        return self.form_params[item]
+
+    def __delitem__(self, key):
+        del self.form_params[key]
+
+    def __contains__(self, item):
+        return item in self.form_params
+
+    def __iter__(self):
+        return iter(self.form_params)
+
+    def __reversed__(self):
+        return reversed(self.form_params)
+
+    def __nonzero__(self):
+        return bool(self.form_params)
+
+    def __reduce__(self):
+        return self.__class__, (self.form_params,), {}
 
     def get_type(self):
         """

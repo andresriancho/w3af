@@ -38,11 +38,12 @@ class DiskSet(DiskList):
     
     def add(self, value):
         """
-        Append a value to the DiskSet (only if the value is not already contained
-        in this instance).
+        Append a value to the DiskSet (only if the value is not already
+        contained in this instance).
 
         :param value: The value to append.
-        :return: True if the value was added. False if it existed and was not added.
+        :return: True if the value was added. False if it existed and was not
+                 added.
         """
         with self.lock:
             if self.__contains__(value):

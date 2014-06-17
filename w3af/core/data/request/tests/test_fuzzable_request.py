@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import cPickle
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
@@ -249,3 +250,17 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertIsInstance(fr.get_uri().querystring, URLEncodedForm)
         self.assertEqual(fr.get_method(), 'GET')
         self.assertIsNot(fr.get_raw_data(), form)
+
+    def test_pickle(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "abc")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.set_action(URL('http://example.com/?id=1'))
+        form_params.set_method('post')
+
+        form = dc_from_form_params(form_params)
+
+        fr = FuzzableRequest.from_form(form)
+
+        unpickled_fr = cPickle.loads(cPickle.dumps(fr))
+        self.assertEqual(fr, unpickled_fr)

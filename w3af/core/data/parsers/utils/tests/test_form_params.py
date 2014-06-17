@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import copy
+import cPickle
 
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
@@ -356,6 +357,16 @@ class TestFormParams(unittest.TestCase):
         self.assertFalse(form.is_registration_form())
         self.assertFalse(form.is_password_change_form())
         self.assertEqual(form.get_parameter_type_count(), (1, 1, 0))
+
+    def test_pickle(self):
+        form = create_form_params_helper(form_with_radio + form_with_checkbox)
+
+        pickled_form_params = cPickle.loads(cPickle.dumps(form))
+
+        self.assertEqual(pickled_form_params.items(), form.items())
+        self.assertIsNot(form, copy)
+        self.assertEquals(pickled_form_params.get_parameter_type('sex'),
+                          FormParameters.INPUT_TYPE_RADIO)
 
 
 def get_gruped_data(form_data):

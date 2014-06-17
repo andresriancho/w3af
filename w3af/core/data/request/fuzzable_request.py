@@ -97,6 +97,11 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         # Set the internal variables
         self._sent_info_comp = None
 
+    def __reduce__(self):
+        return self.__class__, (self.get_uri(), self.get_method(),
+                                self.get_headers(), self.get_cookie(),
+                                self.get_raw_data()), {}
+
     def get_default_headers(self):
         """
         :return: The headers we want to use framework-wide for fuzzing. By

@@ -81,7 +81,7 @@ class import_results(CrawlPlugin):
             om.out.error(msg % (self._input_csv, e))
             return
 
-        reader = csv.reader(file_handler)
+        reader = csv.reader(file_handler, quoting=csv.QUOTE_ALL)
 
         while True:
             try:
@@ -141,7 +141,7 @@ class import_results(CrawlPlugin):
             # If there is postdata, force parsing using urlencoded form
             headers = None
             if postdata:
-                headers = Headers([('content-type', Form.ENCODING)])
+                headers = Headers([('content-type', URLEncodedForm.ENCODING)])
 
             return FuzzableRequest.from_parts(uri, method=method,
                                               post_data=postdata,
@@ -217,7 +217,7 @@ class import_results(CrawlPlugin):
 
         d = 'Define the CSV input file from which to create the fuzzable requests'
         h = 'The input file is comma separated and holds the following data:'
-        h += ' HTTP-METHOD,URI,POSTDATA'
+        h += ' "HTTP-METHOD","URI","POSTDATA"'
         o = opt_factory('input_csv', self._input_csv, d, INPUT_FILE, help=h)
         ol.add(o)
 

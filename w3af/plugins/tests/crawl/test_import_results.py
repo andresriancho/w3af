@@ -114,18 +114,16 @@ class TestImportResults(PluginTest):
 
         fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
+        post_fr = [fr for fr in fr_list if fr.get_raw_data()]
         self.assertEqual(len(post_fr), 1)
 
         post_fr = post_fr[0]
         expected_post_url = 'http://127.0.0.1:8000/audit/xss/simple_xss_form.py'
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
-        self.assertEqual(post_fr.get_dc(), {'text': ['abc']})
         self.assertEqual(post_fr.get_data(), 'text=abc')
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, FuzzableRequest)]
+        urls = [fr.get_uri().url_string for fr in fr_list if not fr.get_raw_data()]
 
         EXPECTED_URLS = {u'http://127.0.0.1:8000/',
                          u'http://127.0.0.1:8000/audit/',
@@ -144,11 +142,9 @@ class TestImportResults(PluginTest):
         post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
-        self.assertEqual(post_fr.get_url(
-        ).url_string, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(
-            post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
-        self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
+        post_uri = post_fr.get_url().url_string
+        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
+        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
 
         urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
             fr, FuzzableRequest)]
@@ -168,11 +164,9 @@ class TestImportResults(PluginTest):
         post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
-        self.assertEqual(post_fr.get_url(
-        ).url_string, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(
-            post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
-        self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
+        post_uri = post_fr.get_url().url_string
+        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
+        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
 
         urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
             fr, FuzzableRequest)]

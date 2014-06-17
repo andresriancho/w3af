@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import cPickle
 
 from nose.plugins.attrib import attr
 
@@ -121,3 +122,56 @@ class TestForm(unittest.TestCase):
         self.assertEqual(form['pwd'][0], 'long-complex')
 
         self.assertIs(form.get_form_params(), form_params)
+
+    def test_cpickle_simple(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("type", "text")])
+        form_params.add_input([("name", "pwd"), ("type", "password")])
+
+        form = Form(form_params)
+
+        pickled_form = cPickle.loads(cPickle.dumps(form))
+
+        self.assertEqual(pickled_form.items(), form.items())
+
+    def test_cpickle_unsync(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("type", "text")])
+        form_params.add_input([("name", "pwd"), ("type", "password")])
+
+        form = Form(form_params)
+        form['xyz'] = ['1', '2']
+
+        pickled_form = cPickle.loads(cPickle.dumps(form))
+
+        self.assertEqual(pickled_form.items(), form.items())
+
+    def test_keep_sync(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("type", "text")])
+        form_params.add_input([("name", "pwd"), ("type", "password")])
+
+        form = Form(form_params)
+
+        self.assertNotIn('address', form_params)
+        self.assertNotIn('address', form)
+
+        # Add to the form_params
+        form_params['address'] = ['']
+        self.assertIn('address', form_params)
+        self.assertIn('address', form)
+
+        # Add to the Form object
+        form['company'] = ['']
+        self.assertIn('company', form_params)
+        self.assertIn('company', form)
+
+        # Del from the Form object
+        del form['address']
+        self.assertNotIn('address', form)
+        self.assertNotIn('address', form_params)
+
+        # Del from the FormParams object
+        del form_params['company']
+        self.assertNotIn('company', form)
+        self.assertNotIn('company', form_params)
