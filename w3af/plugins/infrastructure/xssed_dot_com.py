@@ -149,7 +149,7 @@ class xssed_dot_com(InfrastructurePlugin):
             #   XSS plugin enabled because it will re-test this and
             #   possibly confirm the vulnerability
             #
-            fr = FuzzableRequest(xss_url)
+            fr = FuzzableRequest(URL(xss_url))
             self.output_queue.put(fr)
 
     def get_long_desc(self):
