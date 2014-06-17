@@ -109,7 +109,15 @@ class DataContainer(DiskItem):
 
                 return token
 
-        raise RuntimeError('Invalid token path "%s"' % (set_token_path,))
+        ppath = ', '.join([str(i) for i in token_path])
+        vpath = ' - '.join([p for _, _, p, _ in self.iter_setters()])
+
+        if vpath:
+            msg = 'Invalid token path "%s". Valid paths are: %s'
+            raise RuntimeError(msg % (ppath, vpath))
+        else:
+            msg = 'Invalid token path "%s". No valid paths for "%s"'
+            raise RuntimeError(msg % (ppath, self.get_type()))
 
     def iter_tokens(self):
         """
