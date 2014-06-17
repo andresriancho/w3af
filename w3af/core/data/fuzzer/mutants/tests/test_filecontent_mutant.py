@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 
 from mock import patch
 
@@ -106,8 +107,8 @@ class TestFileContentMutant(unittest.TestCase):
         file_abc = NamedStringIO(file_payload_abc, 'upload.gif')
         file_def = NamedStringIO(file_payload_def, 'upload.gif')
 
-        form_1 = MultipartContainer(form_params)
-        form_2 = MultipartContainer(form_params)
+        form_1 = MultipartContainer(copy.deepcopy(form_params))
+        form_2 = MultipartContainer(copy.deepcopy(form_params))
 
         form_1['image'] = [file_abc]
         form_1['username'] = ['John8212']

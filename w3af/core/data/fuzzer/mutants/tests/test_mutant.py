@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 
 from mock import patch
 
@@ -181,13 +182,13 @@ class TestMutant(unittest.TestCase):
 
         expected_forms = []
 
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = [gif_named_stringio]
         form['username'] = ['def']
         form['address'] = ['Bonsai Street 123']
         expected_forms.append(form)
 
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = [gif_named_stringio]
         form['username'] = ['abc']
         form['address'] = ['Bonsai Street 123']
@@ -196,13 +197,13 @@ class TestMutant(unittest.TestCase):
         # TODO: Please note that these two multipart forms are a bug, since
         #       they should never be created by PostDataMutant.create_mutants
         #       (they are not setting the image as a file, just as a string)
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = ['def']
         form['username'] = ['John8212']
         form['address'] = ['Bonsai Street 123']
         expected_forms.append(form)
 
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = ['abc']
         form['username'] = ['John8212']
         form['address'] = ['Bonsai Street 123']
@@ -211,13 +212,13 @@ class TestMutant(unittest.TestCase):
         # TODO: /end
         #
 
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = [gif_named_stringio]
         form['username'] = ['John8212']
         form['address'] = ['abc']
         expected_forms.append(form)
 
-        form = MultipartContainer(form_params)
+        form = MultipartContainer(copy.deepcopy(form_params))
         form['image'] = [gif_named_stringio]
         form['username'] = ['John8212']
         form['address'] = ['def']
