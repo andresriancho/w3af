@@ -107,10 +107,8 @@ class html_comments(GrepPlugin):
                        ' This could be interesting.'
                 desc = desc % (word, response.get_url())
 
-                i = Info('Interesting HTML comment', desc,
-                         response.id, self.get_name())
-                i.set_dc(request.get_dc())
-                i.set_uri(response.get_uri())
+                i = Info.from_fr('Interesting HTML comment', desc, response.id,
+                                 self.get_name(), request)
                 i.add_to_highlight(word)
                 
                 kb.kb.append(self, 'interesting_comments', i)
@@ -136,16 +134,15 @@ class html_comments(GrepPlugin):
                    ' This could be interesting.'
             desc = desc % (comment, response.get_url())
 
-            i = Info('HTML comment contains HTML code', desc,
-                     response.id, self.get_name())
-            i.set_dc(request.get_dc())
+            i = Info.from_fr('HTML comment contains HTML code', desc,
+                             response.id, self.get_name(), request)
             i.set_uri(response.get_uri())
             i.add_to_highlight(html_in_comment.group(0))
             
             kb.kb.append(self, 'html_comment_hides_html', i)
             om.out.information(i.get_desc())
-            self._already_reported_interesting.add(
-                (comment, response.get_url()))
+            self._already_reported_interesting.add((comment,
+                                                    response.get_url()))
 
     def _is_new(self, comment, response):
         """

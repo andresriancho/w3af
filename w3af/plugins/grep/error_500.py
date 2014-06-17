@@ -84,27 +84,31 @@ class error_500(GrepPlugin):
         one of the error_500 responses were not identified as a vuln by some
         of my audit plugins
         """
-        all_vulns = kb.kb.get_all_vulns()
-        all_vulns_tuples = [(v.get_uri(), v.get_dc()) for v in all_vulns]
+        all_vuln_ids = set()
+
+        for vuln in kb.kb.get_all_vulns():
+            for _id in vuln.get_id():
+                all_vuln_ids.add(_id)
 
         for request, error_500_response_id in self._error_500_responses:
-            if (request.get_uri(), request.get_dc()) not in all_vulns_tuples:
-                # Found a err 500 that wasnt identified !!!
+
+            if error_500_response_id not in all_vuln_ids:
+                # Found a error 500 that wasn't identified !
                 desc = 'An unidentified web application error (HTTP response'\
                        ' code 500) was found at: "%s". Enable all plugins and'\
-                       ' try again, if the vulnerability still is not identified'\
-                       ', please verify manually and report it to the w3af'\
-                       ' developers.'
+                       ' try again, if the vulnerability still is not'\
+                       ' identified, please verify manually and report it to'\
+                       ' the w3af developers.'
                 desc = desc % request.get_url()
-                
+
                 v = Vuln('Unhandled error in web application', desc,
                          severity.MEDIUM, error_500_response_id,
                          self.get_name())
-                
+
                 v.set_uri(request.get_uri())
-                
+
                 self.kb_append_uniq(self, 'error_500', v, 'VAR')
-        
+
         self._error_500_responses.cleanup()
 
     def get_long_desc(self):
