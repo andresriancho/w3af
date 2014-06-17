@@ -92,7 +92,7 @@ class TestCSVFile(PluginTest):
             v = Vuln(name, desc, 'High', json.loads(_id), 'TestCase')
             v.set_method(method)
             v.set_uri(URL(uri))
-            v.set_var(var)
+            v.set_token((var, 0))
             v.set_dc(dc)
 
             file_vulns.append(v)
