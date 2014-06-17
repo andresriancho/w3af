@@ -83,7 +83,7 @@ def create_mutants(freq, mutant_str_list, append=False,
     if orig_resp is not None:
 
         headers = orig_resp.get_headers()
-        etag = headers.iget('ETag', None)
+        etag, etag_header_name = headers.iget('ETag', None)
 
         for m in result:
             m.set_original_response_body(orig_resp.get_body())
