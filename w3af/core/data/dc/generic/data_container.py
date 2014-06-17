@@ -47,7 +47,7 @@ class DataContainer(DiskItem):
         """
         raise NotImplementedError
 
-    def token_filter(self, *args):
+    def token_filter(self, token_path, token_value):
         """
         This function is called when iterating over tokens, only tokens which
         match the filter (return True) are going to be included in the result.
@@ -59,6 +59,9 @@ class DataContainer(DiskItem):
             * iter_tokens
             * iter_bound_tokens
             * iter_setters
+
+        :param token_path: A tuple with the path to the token, ie. ('a', 0)
+        :param token_value: The value for this token, ie. 'foobar'
         """
         return True
 
@@ -87,7 +90,7 @@ class DataContainer(DiskItem):
                 DataContainer.
         """
         for k, v, _ in self.iter_setters():
-            if self.token_filter(k, v):
+            if self.token_filter((k,), v):
                 yield DataToken(k, v)
 
     def iter_bound_tokens(self):

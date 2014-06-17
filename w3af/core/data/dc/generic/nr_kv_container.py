@@ -96,7 +96,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     * The setter to modify the value
         """
         for k, v in self.items():
-            if self.token_filter(k, v):
+            if self.token_filter((k,), v):
                 yield k, v, partial(self.__setitem__, k)
 
     def iter_bound_tokens(self):
@@ -108,7 +108,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     - A token set to the right location in the copy of self
         """
         for k, v in self.items():
-            if self.token_filter(k, v):
+            if self.token_filter((k,), v):
                 token = DataToken(k, v)
 
                 dcc = copy.deepcopy(self)
@@ -129,7 +129,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         :return: The token if we were able to set it in the DataContainer
         """
         for k, v in self.items():
-            if not self.token_filter(k, v):
+            if not self.token_filter((k,), v):
                 continue
 
             if key_name == k:

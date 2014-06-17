@@ -87,7 +87,7 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                if not self.token_filter(k, idx, ele):
+                if not self.token_filter((k, idx), ele):
                     continue
 
                 if key_name == k and idx == index_num:

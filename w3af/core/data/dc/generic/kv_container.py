@@ -98,7 +98,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                if self.token_filter(k, idx, ele):
+                if self.token_filter((k, idx), ele):
 
                     dcc = copy.deepcopy(self)
                     token = dcc.set_token(k, idx)
@@ -114,7 +114,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                if self.token_filter(k, idx, ele):
+                if self.token_filter((k, idx), ele):
                     yield k, ele, partial(v.__setitem__, idx)
 
     def set_token(self, key_name, index_num):
@@ -130,7 +130,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                if not self.token_filter(k, idx, ele):
+                if not self.token_filter((k, idx), ele):
                     continue
 
                 if key_name == k and idx == index_num:

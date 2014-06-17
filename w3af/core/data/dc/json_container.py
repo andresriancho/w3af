@@ -129,9 +129,9 @@ class JSONContainer(DataContainer):
 
             yield dcc, token
 
-    def token_filter(self, name, value):
+    def token_filter(self, token_path, token_value):
         # Only return tokens for strings
-        if isinstance(value, basestring):
+        if isinstance(token_value, basestring):
             return True
 
         return False
@@ -149,7 +149,7 @@ class JSONContainer(DataContainer):
                 server-side framework parsing and don't return anything useful.
         """
         for k, v, setter in json_iter_setters(self._json):
-            if self.token_filter(k, v):
+            if self.token_filter((k,), v):
                 yield k, v, setter
 
     def set_token(self, key_name):
