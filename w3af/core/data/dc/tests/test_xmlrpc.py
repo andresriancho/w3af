@@ -56,7 +56,7 @@ class TestXMLRPC(unittest.TestCase):
     def test_simple_fuzzing(self):
         dc = XmlRpcContainer(XML_WITH_FUZZABLE)
 
-        dc.set_token('string', 0)
+        dc.set_token(('string', 0))
         token = dc.get_token()
 
         self.assertEqual(token.get_value(), 'Foo bar')

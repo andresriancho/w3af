@@ -44,7 +44,7 @@ class TestPostDataMutant(unittest.TestCase):
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
                                method='PUT')
         m = PostDataMutant(freq)
-        m.get_dc().set_token('username', 0)
+        m.get_dc().set_token(('username', 0))
 
         expected = '"http://www.w3af.com/?id=3", using HTTP method PUT. '\
                    'The sent post-data was: "username=&address=" '\

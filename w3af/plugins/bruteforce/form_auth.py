@@ -207,7 +207,7 @@ class form_auth(BruteforcePlugin):
         if user_token is not None:
             user_pass_fields.add(user_token.get_name())
 
-        for pname, value, value_setter in form.iter_setters():
+        for pname, value, path, value_setter in form.iter_setters():
             if pname not in user_pass_fields:
                 if not value:
                     value_setter('1')

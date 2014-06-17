@@ -40,7 +40,7 @@ class TestJSONMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url, post_data=dc, method='PUT')
 
         m = JSONMutant(freq)
-        m.get_dc().set_token('object-second_key-list-0-string')
+        m.get_dc().set_token(('object-second_key-list-0-string',))
 
         expected = '"http://www.w3af.com/", using HTTP method PUT.'\
                    ' The sent JSON-data was: "...object-second_key-list-'\

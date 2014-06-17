@@ -88,60 +88,21 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         return self._to_str_with_separators(u'=', u'&')
 
-    def iter_bound_tokens(self):
-        """
-        :see: https://github.com/andresriancho/w3af/issues/580
-        :see: Mostly used in Mutant._create_mutants_worker
-        :yield: Tuples with:
-                    - A copy of self
-                    - A token set to the right location in the copy of self
-        """
-        for k, v in self.items():
-            for idx, ele in enumerate(v):
-                if self.token_filter((k, idx), ele):
-
-                    dcc = copy.deepcopy(self)
-                    token = dcc.set_token(k, idx)
-
-                    yield dcc, token
-
     def iter_setters(self):
         """
         :yield: Tuples containing:
-                    * The key as a string
-                    * The value as a string
+                    * The name of this token as a string
+                    * The token value
+                    * The token path
                     * The setter to modify the value
         """
         for k, v in self.items():
             for idx, ele in enumerate(v):
-                if self.token_filter((k, idx), ele):
-                    yield k, ele, partial(v.__setitem__, idx)
 
-    def set_token(self, key_name, index_num):
-        """
-        Sets the token in the DataContainer to point to the variable specified
-        in *args. Usually args will be one of:
-            * ('id',) - When the data container doesn't support repeated params
-            * ('id', 3) - When it does
+                token_path = (k, idx)
 
-        :raises: An exception when the DataContainer does NOT contain the
-                 specified path in *args to find the variable
-        :return: The token if we were able to set it in the DataContainer
-        """
-        for k, v in self.items():
-            for idx, ele in enumerate(v):
-                if not self.token_filter((k, idx), ele):
-                    continue
-
-                if key_name == k and idx == index_num:
-                    token = DataToken(k, ele)
-
-                    self[k][idx] = token
-                    self.token = token
-
-                    return token
-
-        raise RuntimeError('Invalid token path %s/%s' % (key_name, index_num))
+                if self.token_filter(token_path, ele):
+                    yield k, ele, token_path, partial(v.__setitem__, idx)
 
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """

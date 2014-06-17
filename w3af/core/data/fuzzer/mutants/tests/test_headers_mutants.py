@@ -42,7 +42,7 @@ class TestHeadersMutant(unittest.TestCase):
         self.assertEqual(freq.get_referer(), referer_1)
 
         m = HeadersMutant(freq)
-        m.get_dc().set_token('Referer')
+        m.get_dc().set_token(('Referer',))
         m.set_token_value(referer_2)
 
         self.assertEqual(m.get_token_value(), referer_2)
@@ -52,7 +52,7 @@ class TestHeadersMutant(unittest.TestCase):
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'),
                                headers=headers)
         m = HeadersMutant(freq)
-        m.get_dc().set_token('Referer')
+        m.get_dc().set_token(('Referer',))
         m.set_token_value('foo')
 
         expected = '"http://www.w3af.com/", using HTTP method GET. The'\

@@ -109,26 +109,6 @@ class JSONContainer(DataContainer):
         """
         return json_complex_str(self._json)
 
-    def iter_bound_tokens(self):
-        """
-
-        :see: https://github.com/andresriancho/w3af/issues/580
-        :see: Mostly used in Mutant._create_mutants_worker
-        :yield: Tuples with:
-                    - A copy of self
-                    - A token set to the right location in the copy of self
-
-                Only for the tokens which have a value with type "string",
-                this is required, since we don't want to fuzz something which
-                was a number with a string like "abc", it will simply break the
-                server-side framework parsing and don't return anything useful.
-        """
-        for k, v, _ in self.iter_setters():
-            dcc = copy.deepcopy(self)
-            token = dcc.set_token(k)
-
-            yield dcc, token
-
     def token_filter(self, token_path, token_value):
         # Only return tokens for strings
         if isinstance(token_value, basestring):
@@ -148,31 +128,12 @@ class JSONContainer(DataContainer):
                 was a number with a string like "abc", it will simply break the
                 server-side framework parsing and don't return anything useful.
         """
-        for k, v, setter in json_iter_setters(self._json):
-            if self.token_filter((k,), v):
-                yield k, v, setter
+        for key, val, setter in json_iter_setters(self._json):
 
-    def set_token(self, key_name):
-        """
-        Sets the token in the DataContainer to point to the variable specified
-        in key_name. The key_name is a string which represents "the path" to
-        the location in the json.
+            path = (key,)
 
-        :raises: An exception when the DataContainer does NOT contain the
-                 specified path in *args to find the variable
-        :return: The token if we were able to set it in the DataContainer
-        """
-        for k, v, setter in self.iter_setters():
-            if key_name == k:
-
-                token = DataToken(k, v)
-
-                setter(token)
-                self.token = token
-
-                return token
-
-        raise RuntimeError('Invalid token path "%s"' % key_name)
+            if self.token_filter(path, val):
+                yield key, val, path, setter
 
     def get_short_printable_repr(self):
         """

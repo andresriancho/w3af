@@ -35,7 +35,7 @@ class URLPartsContainer(NonRepeatKeyValueContainer):
         self.url_start = url_start
         self.url_end = url_end
 
-        self.set_token(TOKEN)
+        self.set_token((TOKEN,))
 
 
 class URLPartsMutant(Mutant):

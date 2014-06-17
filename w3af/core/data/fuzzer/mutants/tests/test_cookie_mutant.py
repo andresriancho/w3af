@@ -39,7 +39,7 @@ class TestCookieMutant(unittest.TestCase):
         freq = FuzzableRequest(self.url, cookie=cookie)
 
         m = CookieMutant(freq)
-        m.get_dc().set_token('foo', 0)
+        m.get_dc().set_token(('foo', 0))
         m.set_token_value('abc')
 
         self.assertEqual(m.get_url().url_string, 'http://moth/')

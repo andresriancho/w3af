@@ -54,7 +54,7 @@ class TestFileContentMutant(unittest.TestCase):
         freq = FuzzableRequest.from_form(form)
 
         m = FileContentMutant(freq)
-        m.get_dc().set_token('file', 0)
+        m.get_dc().set_token(('file', 0))
         m.set_token_value('abc')
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 

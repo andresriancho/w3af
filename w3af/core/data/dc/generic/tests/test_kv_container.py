@@ -100,20 +100,22 @@ class TestKeyValueContainer(unittest.TestCase):
 
     def test_iter_setters(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
-        kv_setter = [(key, value, setter) for key, value, setter in dc.iter_setters()]
+        kv_setter = [(k, v, p, s) for (k, v, p, s) in dc.iter_setters()]
 
-        EXPECTED_KEY_VALUES = [('a', '1'), ('b', '2'), ('b', '3')]
-        self.assertEqual(EXPECTED_KEY_VALUES,
-                         [(key, value) for (key, value, _) in kv_setter])
+        EXPECTED_KEY_VALUES = [('a', '1', ('a', 0)),
+                               ('b', '2', ('b', 0)),
+                               ('b', '3', ('b', 1))]
+        kvp = [(key, value, path) for (key, value, path, _) in kv_setter]
+        self.assertEqual(EXPECTED_KEY_VALUES, kvp)
 
-        for idx, (key, value, setter) in enumerate(kv_setter):
+        for idx, (key, value, path, setter) in enumerate(kv_setter):
             if idx == 2:
                 setter('w')
 
         self.assertEqual(str(dc), 'a=1&b=2&b=w')
 
         SET_VALUES = ['x', 'y', 'z']
-        for idx, (key, value, setter) in enumerate(kv_setter):
+        for idx, (key, value, path, setter) in enumerate(kv_setter):
             setter(SET_VALUES[idx])
 
         self.assertEqual(str(dc), 'a=x&b=y&b=z')
@@ -121,7 +123,7 @@ class TestKeyValueContainer(unittest.TestCase):
     def test_set_token(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
 
-        token = dc.set_token('a', 0)
+        token = dc.set_token(('a', 0))
         self.assertEqual(token.get_name(), 'a')
         self.assertEqual(token, dc['a'][0])
 

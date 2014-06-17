@@ -84,7 +84,7 @@ class VariantDB(object):
             res += '?'
             qs = copy.deepcopy(reference.querystring)
 
-            for key, value, setter in qs.iter_setters():
+            for key, value, path, setter in qs.iter_setters():
 
                 if value.isdigit():
                     setter('number')

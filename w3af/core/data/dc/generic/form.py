@@ -136,7 +136,7 @@ class Form(KeyValueContainer):
         :return: Fills all the empty parameters (which should be filled)
                  using the smart_fill function.
         """
-        for var_name, value, setter in self.iter_setters():
+        for var_name, value, path, setter in self.iter_setters():
             if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
 
@@ -194,7 +194,7 @@ class Form(KeyValueContainer):
         text, passwd, other = self.get_parameter_type_count()
         assert text == 1, 'Login form with username is required'
 
-        for k, v, setter in self.iter_setters():
+        for k, v, path, setter in self.iter_setters():
             if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_TEXT:
                 setter(username)
 
@@ -204,6 +204,6 @@ class Form(KeyValueContainer):
         """
         assert self.is_login_form(), 'Login form is required'
 
-        for k, v, setter in self.iter_setters():
+        for k, v, path, setter in self.iter_setters():
             if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_PASSWD:
                 setter(password)

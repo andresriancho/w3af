@@ -91,56 +91,14 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
     def iter_setters(self):
         """
         :yield: Tuples containing:
-                    * The key as a string
-                    * The value as a string
+                    * The name of this token as a string
+                    * The token value
+                    * The token path
                     * The setter to modify the value
         """
         for k, v in self.items():
             if self.token_filter((k,), v):
-                yield k, v, partial(self.__setitem__, k)
-
-    def iter_bound_tokens(self):
-        """
-        :see: https://github.com/andresriancho/w3af/issues/580
-        :see: Mostly used in Mutant._create_mutants_worker
-        :yield: Tuples with:
-                    - A copy of self
-                    - A token set to the right location in the copy of self
-        """
-        for k, v in self.items():
-            if self.token_filter((k,), v):
-                token = DataToken(k, v)
-
-                dcc = copy.deepcopy(self)
-                dcc[k] = token
-                dcc.token = token
-
-                yield dcc, token
-
-    def set_token(self, key_name):
-        """
-        Sets the token in the DataContainer to point to the variable specified
-        in *args. Usually args will be one of:
-            * ('id',) - When the data container doesn't support repeated params
-            * ('id', 3) - When it does
-
-        :raises: An exception when the DataContainer does NOT contain the
-                 specified path in *args to find the variable
-        :return: The token if we were able to set it in the DataContainer
-        """
-        for k, v in self.items():
-            if not self.token_filter((k,), v):
-                continue
-
-            if key_name == k:
-                token = DataToken(k, v)
-
-                self[k] = token
-                self.token = token
-
-                return token
-
-        raise RuntimeError('Invalid token path "%s"' % key_name)
+                yield k, v, (k,), partial(self.__setitem__, k)
 
     def __str__(self):
         """

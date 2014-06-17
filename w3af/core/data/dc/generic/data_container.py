@@ -20,6 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
 from itertools import chain, izip_longest
 
 from w3af.core.data.db.disk_item import DiskItem
@@ -54,11 +56,9 @@ class DataContainer(DiskItem):
 
         By default all tokens are included.
 
-        These methods should incorporate the filter:
-            * set_token
-            * iter_tokens
-            * iter_bound_tokens
-            * iter_setters
+        iter_setters is the only method which should filter tokens based on
+        this method, all other token iterators use iter_setter internally, so
+        they are going to receive the benefits.
 
         :param token_path: A tuple with the path to the token, ie. ('a', 0)
         :param token_value: The value for this token, ie. 'foobar'
@@ -68,7 +68,7 @@ class DataContainer(DiskItem):
     def get_token(self):
         return self.token
 
-    def set_token(self, *args):
+    def set_token(self, set_token_path):
         """
         Sets the token in the DataContainer to point to the variable specified
         in *args. Usually args will be one of:
@@ -79,7 +79,16 @@ class DataContainer(DiskItem):
                  specified path in *args to find the variable
         :return: The token if we were able to set it in the DataContainer
         """
-        raise NotImplementedError
+        for key, val, i_token_path, setter in self.iter_setters():
+            if i_token_path == set_token_path:
+                token = DataToken(key, val)
+
+                setter(token)
+                self.token = token
+
+                return token
+
+        raise RuntimeError('Invalid token path %s' % (set_token_path,))
 
     def iter_tokens(self):
         """
@@ -89,9 +98,9 @@ class DataContainer(DiskItem):
         :yield: DataToken instances to help in the fuzzing process of this
                 DataContainer.
         """
-        for k, v, _ in self.iter_setters():
-            if self.token_filter((k,), v):
-                yield DataToken(k, v)
+        for key, val, token_path, setter in self.iter_setters():
+            if self.token_filter(token_path, val):
+                yield DataToken(key, val)
 
     def iter_bound_tokens(self):
         """
@@ -101,7 +110,11 @@ class DataContainer(DiskItem):
                     - A copy of self
                     - A token set to the right location in the copy of self
         """
-        raise NotImplementedError
+        for key, val, token_path, setter in self.iter_setters():
+            dcc = copy.deepcopy(self)
+            token = dcc.set_token(token_path)
+
+            yield dcc, token
 
     def iter_setters(self):
         """

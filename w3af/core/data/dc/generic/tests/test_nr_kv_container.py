@@ -92,20 +92,20 @@ class TestNoRepeatKeyValueContainer(unittest.TestCase):
 
     def test_iter_setters(self):
         dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
-        kv_setter = [(key, value, setter) for key, value, setter in dc.iter_setters()]
+        kv_setter = [(k, v, p, s) for (k, v, p, s) in dc.iter_setters()]
 
-        EXPECTED_KEY_VALUES = [('a', '1'), ('b', '2')]
-        self.assertEqual(EXPECTED_KEY_VALUES,
-                         [(key, value) for (key, value, _) in kv_setter])
+        EXPECTED_KEY_VALUES = [('a', '1', ('a',)), ('b', '2', ('b',))]
+        kvp = [(key, value, path) for (key, value, path, _) in kv_setter]
+        self.assertEqual(EXPECTED_KEY_VALUES, kvp)
 
-        for idx, (key, value, setter) in enumerate(kv_setter):
+        for idx, (key, value, path, setter) in enumerate(kv_setter):
             if idx == 1:
                 setter('w')
 
         self.assertEqual(str(dc), 'a=1&b=w')
 
         SET_VALUES = ['x', 'y']
-        for idx, (key, value, setter) in enumerate(kv_setter):
+        for idx, (key, value, path, setter) in enumerate(kv_setter):
             setter(SET_VALUES[idx])
 
         self.assertEqual(str(dc), 'a=x&b=y')
@@ -113,7 +113,7 @@ class TestNoRepeatKeyValueContainer(unittest.TestCase):
     def test_set_token(self):
         dc = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'2')])
 
-        token = dc.set_token('b')
+        token = dc.set_token(('b',))
         self.assertEqual(token.get_name(), 'b')
         self.assertEqual(token, dc['b'])
 

@@ -333,10 +333,10 @@ class Info(dict):
         """
         return self._id
 
-    def set_token(self, *args):
+    def set_token(self, token_path):
         """
         Sets the token in the DataContainer to point to the variable specified
-        in *args. Usually args will be one of:
+        in token_path. Usually args will be one of:
             * ('id',) - When the data container doesn't support repeated params
             * ('id', 3) - When it does
 
@@ -344,7 +344,7 @@ class Info(dict):
                  specified path in *args to find the variable
         :return: The token if we were able to set it in the DataContainer
         """
-        return self._mutant.get_dc().set_token(*args)
+        return self._mutant.get_dc().set_token(token_path)
 
     def get_token_name(self):
         """
