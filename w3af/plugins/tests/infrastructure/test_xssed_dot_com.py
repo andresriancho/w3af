@@ -40,7 +40,7 @@ class TestXssedDotCom(PluginTest):
 
         infos = self.kb.get('xssed_dot_com', 'xss')
 
-        self.assertEqual(len(infos), 1, infos)
+        self.assertEqual(len(infos), 2, infos)
 
         info = infos[0]
 
