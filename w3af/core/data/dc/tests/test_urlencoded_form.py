@@ -144,7 +144,7 @@ class TestURLEncodedForm(unittest.TestCase):
     def test_form_str_radio_select(self):
         form_dict = form_with_radio + form_with_checkbox + form_select_cars
         form = URLEncodedForm(create_form_params_helper(form_dict))
-        self.assertEqual(str(form), 'cars=fiat&sex=male&vehicle=Bike')
+        self.assertEqual(str(form), 'cars=fiat&vehicle=Bike&sex=male')
 
 
 
