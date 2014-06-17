@@ -88,11 +88,15 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
         for key, val, ipath, setter in self.iter_setters():
 
             if ipath == token_path:
-                if key in self.get_file_vars():
-                    fname = val.filename if hasattr(val, 'filename') else None
-                    token = FileDataToken(key, val, fname)
+                if isinstance(val, (DataToken, FileDataToken)):
+                    # Avoid double-wrapping
+                    token = val
                 else:
-                    token = DataToken(key, val)
+                    if key in self.get_file_vars():
+                        fname = val.filename if hasattr(val, 'filename') else None
+                        token = FileDataToken(key, val, fname)
+                    else:
+                        token = DataToken(key, val)
 
                 setter(token)
                 self.token = token

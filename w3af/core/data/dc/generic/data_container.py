@@ -81,7 +81,14 @@ class DataContainer(DiskItem):
         """
         for key, val, i_token_path, setter in self.iter_setters():
             if i_token_path == set_token_path:
-                token = DataToken(key, val)
+
+                if isinstance(val, DataToken):
+                    # We've already done a set_token(...) for this token path
+                    # in the past, and now we're doing it again. Don't double
+                    # wrap the pre-existing token!
+                    token = val
+                else:
+                    token = DataToken(key, val)
 
                 setter(token)
                 self.token = token

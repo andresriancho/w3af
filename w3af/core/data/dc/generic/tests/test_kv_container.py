@@ -23,6 +23,7 @@ import unittest
 import urllib
 
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
+from w3af.core.data.dc.utils.token import DataToken
 
 
 class TestKeyValueContainer(unittest.TestCase):
@@ -150,3 +151,18 @@ class TestKeyValueContainer(unittest.TestCase):
         dc2 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
 
         self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_double_data_token_wrap(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['c', '3'])])
+        dc.set_token(('b', 1))
+
+        for dcc, token in dc.iter_bound_tokens():
+            self.assertIsInstance(token, DataToken)
+            self.assertIsInstance(token.get_value(), basestring)
+
+    def test_double_data_token_wrap_set_set(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['c', '3'])])
+        token_1 = dc.set_token(('b', 1))
+        token_2 = dc.set_token(('b', 1))
+
+        self.assertIs(token_1, token_2)
