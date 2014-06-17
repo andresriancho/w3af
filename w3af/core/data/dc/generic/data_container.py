@@ -95,7 +95,7 @@ class DataContainer(DiskItem):
 
                 return token
 
-        raise RuntimeError('Invalid token path %s' % (set_token_path,))
+        raise RuntimeError('Invalid token path "%s"' % (set_token_path,))
 
     def iter_tokens(self):
         """

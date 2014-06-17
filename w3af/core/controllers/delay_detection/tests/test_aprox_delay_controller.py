@@ -31,7 +31,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-def generate_delays(wanted_delays, rand_range=(0,0)):
+def generate_delays(wanted_delays, rand_range=(0, 0)):
     for delay_secs in wanted_delays:
         delay_secs += random.randint(*rand_range) / 10.0
         
@@ -75,7 +75,7 @@ class TestAproxDelayController(unittest.TestCase):
             req = FuzzableRequest(url)
             mutant = QSMutant(req)
             mutant.set_dc(url.querystring)
-            mutant.set_token('id', 0)
+            mutant.set_token(('id', 0))
             
             ed = AproxDelayController(mutant, delay_obj, mock_uri_opener)
             controlled, responses = ed.delay_is_controlled()

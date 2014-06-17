@@ -48,7 +48,7 @@ class SQLiTemplate(BaseTemplate):
             MutantKlass = PostDataMutant
 
         mutant = MutantKlass(freq)
-        mutant.set_token(self.vulnerable_parameter, 0)
+        mutant.set_token((self.vulnerable_parameter, 0))
         mutant.set_dc(self.data)
 
         v.set_mutant(mutant)
