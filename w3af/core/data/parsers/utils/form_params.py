@@ -144,7 +144,6 @@ class FormParameters(OrderedDict):
         self._file_vars = list(set(self._file_vars))
         return self._file_vars
 
-
     def get_value_by_key(self, attrs, *args):
         for search_attr_key in args:
             for attr in attrs:
