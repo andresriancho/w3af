@@ -24,12 +24,12 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.audit.csrf import csrf
 
 from w3af.core.data.url.HTTPResponse import HTTPResponse
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.url import URL, parse_qs
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.cookie import Cookie
-from w3af.core.data.parsers.url import parse_qs
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
@@ -130,14 +130,15 @@ class TestCSRF(PluginTest):
 
         # False, no items in post-data
         url = URL('http://moth/')
-        req = FuzzableRequest(url, method='POST', post_data=Form())
+        req = FuzzableRequest(url, method='POST', post_data=URLEncodedForm())
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertFalse(suitable)
 
         # True, items in DC, POST (passes strict mode) and cookies
         url = URL('http://moth/')
-        form = Form()
-        form.add_input([('name', 'test'), ('type', 'text')])
+        form_params = FormParameters()
+        form_params.add_input([('name', 'test'), ('type', 'text')])
+        form = URLEncodedForm(form_params)
         req = FuzzableRequest(url, method='POST', post_data=form)
         suitable = self.csrf_plugin._is_suitable(req)
         self.assertTrue(suitable)
