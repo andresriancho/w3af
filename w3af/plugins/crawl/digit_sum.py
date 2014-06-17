@@ -34,6 +34,9 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.headers import Headers
 
 
+DIGIT_REGEX = re.compile(r'(\d+)')
+
+
 class digit_sum(CrawlPlugin):
     """
     Take an URL with a number (index2.asp) and try to find related files
@@ -175,17 +178,18 @@ class digit_sum(CrawlPlugin):
 
         """
         res = []
-        splitted = self._find_digits(a_string)
-        if len(splitted) <= 2 * self._max_digit_sections:
-            for i in xrange(len(splitted)):
-                if splitted[i].isdigit():
-                    splitted[i] = str(int(splitted[i]) + 1)
-                    res.append(''.join(splitted))
-                    splitted[i] = str(int(splitted[i]) - 2)
-                    res.append(''.join(splitted))
+        split = self._find_digits(a_string)
+
+        if len(split) <= 2 * self._max_digit_sections:
+            for i in xrange(len(split)):
+                if split[i].isdigit():
+                    split[i] = str(int(split[i]) + 1)
+                    res.append(''.join(split))
+                    split[i] = str(int(split[i]) - 2)
+                    res.append(''.join(split))
 
                     # restore the initial value for next loop
-                    splitted[i] = str(int(splitted[i]) + 1)
+                    split[i] = str(int(split[i]) + 1)
 
         return res
 
@@ -203,7 +207,7 @@ class digit_sum(CrawlPlugin):
         :return: A list of strings.
         """
         # regexes are soooooooooooooo cool !
-        return [x for x in re.split(r'(\d+)', a_string) if x != '']
+        return [x for x in DIGIT_REGEX.split(a_string) if x != '']
 
     def get_options(self):
         """
