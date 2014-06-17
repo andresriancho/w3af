@@ -161,10 +161,12 @@ class DiskList(object):
     def ordered_iter(self):
         assert self._state == OPEN
 
-        # TODO: How do I avoid loading all items in memory?
+        # TODO: How do I make the __iter__ thread safe?
+        # How do I avoid loading all items in memory?
         objects = []
+        results = self.db.select('SELECT pickle FROM %s' % self.table_name)
 
-        for r in self:
+        for r in results:
             obj = cPickle.loads(r[0])
             objects.append(obj)
         
