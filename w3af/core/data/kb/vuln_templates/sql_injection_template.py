@@ -20,9 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
-from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
-from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class SQLiTemplate(BaseTemplate):
@@ -37,19 +34,9 @@ class SQLiTemplate(BaseTemplate):
     def create_vuln(self):
         v = self.create_base_vuln()
 
-        url = self.url
-
-        if self.method.upper() == 'GET':
-            url.querystring = self.data
-            freq = FuzzableRequest(url, method=self.method)
-            MutantKlass = QSMutant
-        else:
-            freq = FuzzableRequest(url, method=self.method, post_data=self.data)
-            MutantKlass = PostDataMutant
-
-        mutant = MutantKlass(freq)
-        mutant.set_token((self.vulnerable_parameter, 0))
+        mutant = self.create_mutant_from_params()
         mutant.set_dc(self.data)
+        mutant.set_token((self.vulnerable_parameter, 0))
 
         v.set_mutant(mutant)
 

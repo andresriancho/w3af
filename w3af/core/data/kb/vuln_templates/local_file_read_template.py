@@ -55,29 +55,27 @@ class LocalFileReadTemplate(BaseTemplate):
         self.file_pattern = options_list['file_pattern'].get_value()
     
     def create_vuln(self):
-        self.data[self.vulnerable_parameter][0] = self.payload
-        
         v = super(LocalFileReadTemplate, self).create_vuln()
         
-        freq = FuzzableRequest(self.url, method=self.method, dc=self.data)
-        
-        mutant = Mutant(freq)
-        mutant.set_var(self.vulnerable_parameter)
+        mutant = self.create_mutant_from_params()
         mutant.set_dc(self.data)
+        mutant.set_token((self.vulnerable_parameter, 0))
         mutant.set_token_value(self.payload)
         
         v.set_mutant(mutant)
-        
+
+        # Set the name of the vulnerability
+        v.set_name(self.name)
+
         v['file_pattern'] = self.file_pattern
-        
         return v
     
     def get_kb_location(self):
         """
-        :return: A tuple with the location where the vulnerability will be saved,
-                 example return value would be: ('local_file_reader', 'local_file_reader')
+        :return: A tuple with the location where the vulnerability will be
+                 saved, example return value would be: ('lfi', 'lfi')
         """
-        return ('lfi', 'lfi')
+        return 'lfi', 'lfi'
 
     def get_vulnerability_name(self):
         """
