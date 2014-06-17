@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import cPickle
+import copy
 
 from nose.plugins.attrib import attr
 
@@ -175,3 +176,16 @@ class TestForm(unittest.TestCase):
         del form_params['company']
         self.assertNotIn('company', form)
         self.assertNotIn('company', form_params)
+
+    def test_form_copy(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("type", "text")])
+        form_params.add_input([("name", "pwd"), ("type", "password")])
+
+        form = Form(form_params)
+        form.set_token(('username', 0))
+
+        form_copy = copy.deepcopy(form)
+
+        self.assertEqual(form.get_token(), form_copy.get_token())
+        self.assertIsNot(None, form_copy.get_token())

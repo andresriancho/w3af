@@ -122,7 +122,7 @@ class Form(KeyValueContainer):
         return bool(self.form_params)
 
     def __reduce__(self):
-        return self.__class__, (self.form_params,), {}
+        return self.__class__, (self.form_params,), {'token': self.token}
 
     def get_type(self):
         """

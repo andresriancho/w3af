@@ -35,9 +35,6 @@ class Mutant(DiskItem):
         self._freq = freq
         self._original_response_body = None
 
-    def get_eq_attrs(self):
-        return ['_freq', '_original_response_body']
-
     def copy(self):
         return copy.deepcopy(self)
 
@@ -58,13 +55,13 @@ class Mutant(DiskItem):
     def get_token(self):
         return self.get_dc().get_token()
 
-    def set_token(self, *args):
+    def set_token(self, token_path):
         """
         Shortcut!
         :return: For the current data-container, point the token to a specific
                  location specified by *args.
         """
-        return self.get_dc().set_token(*args)
+        return self.get_dc().set_token(token_path)
 
     def get_token_value(self):
         """
@@ -114,6 +111,13 @@ class Mutant(DiskItem):
             raise AttributeError("%s instance has no attribute '%s'" %
                                 (self.__class__.__name__, name))
         return getattr(self._freq, name)
+
+    def get_eq_attrs(self):
+        return ['_freq', '_original_response_body']
+
+    def __eq__(self, other):
+        return (self.get_token() == other.get_token() and
+                self.get_fuzzable_request() == other.get_fuzzable_request())
 
     def found_at(self):
         """

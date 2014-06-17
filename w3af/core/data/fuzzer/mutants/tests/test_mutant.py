@@ -318,3 +318,16 @@ class TestMutant(unittest.TestCase):
         for m in created_mutants:
             self.assertEqual(m.get_uri(), url)
 
+    def test_mutant_copy(self):
+        qs = QueryString(self.SIMPLE_KV)
+        freq = FuzzableRequest(self.url)
+        freq.set_querystring(qs)
+
+        mutant = FakeMutant(freq)
+        mutant.set_token(('a', 0))
+
+        mutant_copy = mutant.copy()
+
+        self.assertEqual(mutant, mutant_copy)
+        self.assertEqual(mutant.get_token(), mutant_copy.get_token())
+        self.assertIsNot(None, mutant_copy.get_token())

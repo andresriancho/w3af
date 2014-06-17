@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import urllib
+import copy
 
 from nose.plugins.attrib import attr
 
@@ -145,6 +146,19 @@ class TestURLEncodedForm(unittest.TestCase):
         form_dict = form_with_radio + form_with_checkbox + form_select_cars
         form = URLEncodedForm(create_form_params_helper(form_dict))
         self.assertEqual(str(form), 'cars=fiat&vehicle=Bike&sex=male')
+
+    def test_form_copy(self):
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
+        post_data = 'a=2&c=3'
+
+        form = URLEncodedForm.from_postdata(headers, post_data)
+        form.set_token(('a', 0))
+
+        form_copy = copy.deepcopy(form)
+
+        self.assertEqual(form, form_copy)
+        self.assertEqual(form.get_token(), form_copy.get_token())
+        self.assertIsNot(None, form_copy.get_token())
 
 
 
