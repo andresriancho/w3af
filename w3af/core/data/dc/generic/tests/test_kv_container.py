@@ -128,6 +128,18 @@ class TestKeyValueContainer(unittest.TestCase):
         self.assertEqual(token.get_name(), 'a')
         self.assertEqual(token, dc['a'][0])
 
+    def test_set_token_using_data_token(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        token = DataToken('a', '1', ('a', 0))
+        set_token = dc.set_token(token)
+
+        self.assertEqual(dc.get_token().get_name(), 'a')
+        self.assertEqual(dc.get_token().get_value(), '1')
+        self.assertEqual(dc.get_token().get_path(), ('a', 0))
+        self.assertIs(dc.get_token(), token)
+        self.assertIs(set_token, token)
+
     def test_is_variant_of_eq_keys_eq_value_types(self):
         dc1 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
         dc2 = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])

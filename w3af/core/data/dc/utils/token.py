@@ -23,9 +23,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 class DataToken(object):
-    def __init__(self, name, value):
+    def __init__(self, name, value, path):
         self._name = name
         self._value = self._original_value = value
+        self._path = path
+
+    def get_path(self):
+        return self._path
+
+    def set_path(self, new_path):
+        self._path = new_path
 
     def get_name(self):
         return self._name
@@ -40,8 +47,8 @@ class DataToken(object):
         self._value = new_value
 
     def __repr__(self):
-        return '<DataToken for "%s": "%s">' % (self.get_name(),
-                                               self.get_value())
+        return '<DataToken for %s: "%s">' % (self.get_path(),
+                                             self.get_value())
 
     def __str__(self):
         return str(self._value)
@@ -52,7 +59,8 @@ class DataToken(object):
     def __eq__(self, other):
         if isinstance(other, DataToken):
             return self.get_name() == other.get_name() and\
-                   self.get_value() == other.get_value()
+                   self.get_value() == other.get_value() and\
+                   self.get_path() == other.get_path()
 
         elif isinstance(other, basestring):
             return self.get_value() == other
@@ -63,7 +71,7 @@ class DataToken(object):
             raise RuntimeError('Can not compare %s with DataToken.' % other)
 
     def __reduce__(self):
-        return self.__class__, (self._name, self._value), {}
+        return self.__class__, (self._name, self._value, self._path), {}
 
     def __getattr__(self, attr):
         # see if this object has attr

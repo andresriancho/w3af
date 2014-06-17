@@ -28,8 +28,8 @@ from w3af.core.controllers.misc.io import NamedStringIO
 
 
 class FileDataToken(DataToken):
-    def __init__(self, name, value, filename):
-        super(FileDataToken, self).__init__(name, value)
+    def __init__(self, name, value, filename, path):
+        super(FileDataToken, self).__init__(name, value, path)
 
         default_extension = cf.cf.get('fuzzed_files_extension', 'gif')
 

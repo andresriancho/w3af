@@ -49,7 +49,7 @@ class TestForm(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_input([("name", "username"), ("value", "")])
         form_params.add_input([("name", "address"), ("value", "")])
-        form_params['username'][0] = DataToken('username', '')
+        form_params['username'][0] = DataToken('username', '', ('username', 0))
 
         form = Form(form_params)
 
@@ -82,7 +82,7 @@ class TestForm(unittest.TestCase):
         form_params.add_file_input([("name", "file"), ("type", "file")])
 
         form = Form(form_params)
-        form['username'][0] = DataToken('username', '')
+        form['username'][0] = DataToken('username', '', ('username', 0))
         form.smart_fill()
 
         self.assertEqual(form['username'], ['', ])

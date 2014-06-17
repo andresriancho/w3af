@@ -94,9 +94,9 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
                 else:
                     if key in self.get_file_vars():
                         fname = val.filename if hasattr(val, 'filename') else None
-                        token = FileDataToken(key, val, fname)
+                        token = FileDataToken(key, val, fname, ipath)
                     else:
-                        token = DataToken(key, val)
+                        token = DataToken(key, val, ipath)
 
                 setter(token)
                 self.token = token

@@ -71,24 +71,38 @@ class DataContainer(DiskItem):
     def set_token(self, set_token_path):
         """
         Sets the token in the DataContainer to point to the variable specified
-        in *args. Usually args will be one of:
+        in set_token_path. Usually set_token_path will be one of:
             * ('id',) - When the data container doesn't support repeated params
             * ('id', 3) - When it does
+            * A DataToken instance which holds the path
 
         :raises: An exception when the DataContainer does NOT contain the
                  specified path in *args to find the variable
         :return: The token if we were able to set it in the DataContainer
         """
-        for key, val, i_token_path, setter in self.iter_setters():
-            if i_token_path == set_token_path:
+        override_token = False
+        try:
+            # Try to get the path from the parameter, if it is a DataToken
+            # instance this will succeed.
+            token_path = set_token_path.get_path()
+            override_token = True
+        except AttributeError:
+            token_path = set_token_path
 
-                if isinstance(val, DataToken):
+        for key, val, i_token_path, setter in self.iter_setters():
+            if i_token_path == token_path:
+
+                if override_token:
+                    # Use token provided in parameter
+                    token = set_token_path
+
+                elif isinstance(val, DataToken):
                     # We've already done a set_token(...) for this token path
                     # in the past, and now we're doing it again. Don't double
                     # wrap the pre-existing token!
                     token = val
                 else:
-                    token = DataToken(key, val)
+                    token = DataToken(key, val, i_token_path)
 
                 setter(token)
                 self.token = token
@@ -107,7 +121,7 @@ class DataContainer(DiskItem):
         """
         for key, val, token_path, setter in self.iter_setters():
             if self.token_filter(token_path, val):
-                yield DataToken(key, val)
+                yield DataToken(key, val, token_path)
 
     def iter_bound_tokens(self):
         """
