@@ -80,7 +80,7 @@ class TestWebSpider(PluginTest):
         config = self._run_configs['basic']
         expected_files = ['1.html', '2.html', '3.html', '4.html',
                           'd%20f/index.html', 'a%20b.html', 'd%20f/',]
-        start_url = self.follow_links_url + '1.html'
+        start_url = self.follow_links_url
 
         self.generic_scan(config, self.follow_links_url,
                           start_url, expected_files)
