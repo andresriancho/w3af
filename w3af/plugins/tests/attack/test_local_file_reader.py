@@ -71,4 +71,3 @@ class TestFileReadShell(ReadExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         
         self._exploit_vuln(vuln_to_exploit_id, 'local_file_reader')
-        
