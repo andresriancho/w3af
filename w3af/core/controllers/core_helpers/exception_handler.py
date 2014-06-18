@@ -265,6 +265,9 @@ class ExceptionData(object):
         self.fuzzable_request = current_status.get_current_fuzzable_request(self.phase)
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
 
+    def get_traceback_str(self):
+        return self.traceback_str
+
     def _get_last_call_info(self, tb):
         current = tb
         while getattr(current, 'tb_next', None) is not None:
