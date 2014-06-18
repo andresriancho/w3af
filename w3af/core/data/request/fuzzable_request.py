@@ -296,7 +296,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if isinstance(other, FuzzableRequest):
             return (self.get_method() == other.get_method() and
                     self.get_uri() == other.get_uri() and
-                    self.get_data() == other.get_data() and
+                    self.get_raw_data() == other.get_raw_data() and
                     self.get_headers() == other.get_headers())
 
         return False
