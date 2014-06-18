@@ -34,9 +34,9 @@ class EchoWindows(BasePayloadTransfer):
     """
 
     def __init__(self, exec_method, os):
+        super(EchoWindows, self).__init__(exec_method, os)
         self._exec_method_method = exec_method
         self._os = os
-
         self._exec_methodutedCanTransfer = False
         self._step = 24  # how many bytes per request
 

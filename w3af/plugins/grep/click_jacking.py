@@ -70,14 +70,14 @@ class click_jacking(GrepPlugin):
         # ONE vulnerability that says that.
         if self._total_count == self._vuln_count:
             desc = 'The whole target has no protection (X-Frame-Options'\
-                  ' header) against Click-Jacking attacks'
+                   ' header) against Click-Jacking attacks'
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected,
         # but x, y are not.
         if self._total_count > self._vuln_count:
             desc = 'Some URLs have no protection (X-Frame-Options header) '\
-                  'against Click-Jacking attacks. Among them:\n '\
-                  ' '.join([str(url) + '\n' for url in self._vulns])
+                   'against Click-Jacking attacks. Among them:\n '\
+                   ' '.join([str(url) + '\n' for url in self._vulns])
 
         v = Vuln('Click-Jacking vulnerability', desc,
                  severity.MEDIUM, response_ids, self.get_name())

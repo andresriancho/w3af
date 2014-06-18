@@ -107,7 +107,7 @@ class os_commanding(AuditPlugin):
 
             if file_pattern_match not in mutant.get_original_response_body():
                 # Search for the correct command and separator
-                sentOs, sentSeparator = self._get_os_separator(mutant)
+                sent_os, sent_separator = self._get_os_separator(mutant)
 
                 desc = 'OS Commanding was found at: %s' % mutant.found_at()
                 # Create the vuln obj
@@ -115,8 +115,8 @@ class os_commanding(AuditPlugin):
                                      severity.HIGH, response.id,
                                      self.get_name(), mutant)
 
-                v['os'] = sentOs
-                v['separator'] = sentSeparator
+                v['os'] = sent_os
+                v['separator'] = sent_separator
                 v.add_to_highlight(file_pattern_match)
 
                 self.kb_append_uniq(self, 'os_commanding', v)
@@ -128,6 +128,8 @@ class os_commanding(AuditPlugin):
         :return: A tuple with the OS and the command separator
         that was used to generate the mutant.
         """
+        os = separator = None
+
         # Retrieve the data I need to create the vuln and the info objects
         command_list = self._get_echo_commands()
 

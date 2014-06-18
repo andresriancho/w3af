@@ -156,6 +156,8 @@ class SGMLParser(BaseParser):
         # Start parsing!
         parser = etree.HTMLParser(target=self, recover=True)
         resp_body = http_resp.body
+        dom = None
+
         try:
             dom = etree.fromstring(resp_body, parser)
         except ValueError:

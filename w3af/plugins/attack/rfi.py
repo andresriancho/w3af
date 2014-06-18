@@ -90,6 +90,7 @@ class rfi(AttackPlugin):
         # Ok, I have the RFI vulnerability to exploit, but... is the
         # plugin configured in such a way that exploitation is possible?
         #
+        usable_xss = False
         if self._use_XSS_vuln:
             usable_xss = self._verify_xss_vuln()
 

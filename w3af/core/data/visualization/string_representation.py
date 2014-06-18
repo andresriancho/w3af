@@ -51,6 +51,7 @@ class StringRepresentation(object):
         for i, j in enumerate(xrange(0, length - extra, step)):
             accum = sumlinecounts(j, j + step)
             self.parsed_instr[i] = accum % height
+
         if extra:
             self.parsed_instr[i] = \
                 (accum + sumlinecounts(j + step, None)) % height

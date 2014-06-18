@@ -207,6 +207,5 @@ class TestVersionMgr(unittest.TestCase):
             git_client.pull()
 
     def test_no_cycle_refs(self):
-    	vmgr = VersionMgr(W3AF_LOCAL_PATH, MagicMock(return_value=None))
-    	self.assertEqual(len(gc.get_referrers(vmgr)), 1)
-    	
+        vmgr = VersionMgr(W3AF_LOCAL_PATH, MagicMock(return_value=None))
+        self.assertEqual(len(gc.get_referrers(vmgr)), 1)

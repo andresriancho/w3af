@@ -198,8 +198,9 @@ class cors_origin(AuditPlugin):
 
             if len(report_sensitive) > 0 or len(report_strange) > 0:
 
-                msg = 'The remote Web application, specifically "%s", returned' \
-                      ' an %s header with the value set to "%s" which is insecure'
+                msg = 'The remote Web application, specifically "%s", returned'\
+                      ' an %s header with the value set to "%s" which is ' \
+                      'insecure'
 
                 msg = msg % (url, ACCESS_CONTROL_ALLOW_METHODS, allow_methods)
 

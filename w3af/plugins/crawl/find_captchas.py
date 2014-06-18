@@ -84,8 +84,8 @@ class find_captchas(CrawlPlugin):
         # Re-GET the document, and fetch the images
         images_2 = self._get_images(fuzzable_request)
 
-        # If the number of images in each response is different, don't even bother
-        # to perform any analysis since our simplistic approach will fail.
+        # If the number of images in each response is different, don't even
+        # bother to perform any analysis since our simplistic approach will fail
         # TODO: Add something more advanced.
         if len(images_1) == len(images_2):
 
@@ -106,7 +106,8 @@ class find_captchas(CrawlPlugin):
             #       defeat and don't report anything?
             for img_src, _, http_responses in not_in_2:
 
-                CaptchaInfo = namedtuple('CaptchaInfo', ['img_src', 'http_responses'])
+                CaptchaInfo = namedtuple('CaptchaInfo', ['img_src',
+                                                         'http_responses'])
                 img_src = img_src.uri2url()
                 
                 if img_src not in self._captchas_found:
@@ -117,7 +118,6 @@ class find_captchas(CrawlPlugin):
                     
         return found_captcha, captchas
         
-
     def _get_images(self, fuzzable_request):
         """
         Get all img tags and retrieve the src.

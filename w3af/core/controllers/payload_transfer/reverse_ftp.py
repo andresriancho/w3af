@@ -32,6 +32,7 @@ class ReverseFTP(BasePayloadTransfer):
     """
 
     def __init__(self, exec_method, os, inboundPort):
+        super(ReverseFTP, self).__init__(exec_method, os)
         self._exec_method = exec_method
         self._os = os
         self._inbound_port = inboundPort

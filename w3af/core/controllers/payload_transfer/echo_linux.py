@@ -33,10 +33,9 @@ class EchoLinux(BasePayloadTransfer):
     """
 
     def __init__(self, exec_method, os):
+        super(EchoLinux, self).__init__(exec_method, os)
         self._exec_method = exec_method
         self._os = os
-
-        # internal configuration parameters
         self._step = 30
 
     def can_transfer(self):

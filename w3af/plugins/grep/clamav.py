@@ -152,6 +152,7 @@ class clamav(GrepPlugin):
                   ' configuration and try again. The exception was: "%s".'
             om.out.error(msg % (self._clamd_socket, e))
             self._properly_configured = False
+            result = None
         else:
             result = self._parse_scan_result(result_dict)
         

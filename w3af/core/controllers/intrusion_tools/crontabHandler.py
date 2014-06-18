@@ -35,7 +35,7 @@ class crontabHandler(delayedExecution):
     """
 
     def __init__(self, exec_method):
-        self._exec_method = exec_method
+        super(crontabHandler, self).__init__(exec_method)
         self._cronFile = get_remote_temp_file(self._exec_method)
 
     def can_delay(self):

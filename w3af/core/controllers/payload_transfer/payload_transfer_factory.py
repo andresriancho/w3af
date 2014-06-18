@@ -39,7 +39,8 @@ class payload_transfer_factory(object):
 
     Transfers methods inherit from transfer factory and can be found in this
     directory. If you want to add a new method, you should create the file and
-    add it to the to_test list that is defined in the first lines of this function.
+    add it to the to_test list that is defined in the first lines of this
+    function.
     """
     def __init__(self, exec_method):
         self._exec_method = exec_method
@@ -53,28 +54,30 @@ class payload_transfer_factory(object):
 
     def get_transfer_handler(self, inbound_port=None):
         """
-        Perform an extrusion scan and return a handler that will know how to upload
-        files to the remote end. If the caller sends an inbound_port, don't perform
-        an extrusion scan, just trust him and use that port.
+        Perform an extrusion scan and return a handler that will know how to
+        upload files to the remote end. If the caller sends an inbound_port,
+        don't perform an extrusion scan, just trust him and use that port.
 
         :param inbound_port: The port that we should use for reverse connections
-        :return: An object with a "transfer" method, which can be called by the user
-        in order to upload files.
+        :return: An object with a "transfer" method, which can be called by the
+                 user in order to upload files.
         """
         os = os_detection_exec(self._exec_method)
         if os == 'windows':
             echo_transfer = EchoWindows(self._exec_method, os)
         elif os == 'linux':
             echo_transfer = EchoLinux(self._exec_method, os)
+        else:
+            echo_transfer = EchoLinux(self._exec_method, os)
 
-        to_test = []
-        to_test.append(echo_transfer)
+        to_test = [echo_transfer]
         try:
             if not inbound_port:
                 inbound_port = self._es.get_inbound_port()
         except BaseFrameworkException, w3:
-            msg = 'The extrusion scan failed, no reverse connect transfer methods'
-            msg += ' can be used. Trying inband echo transfer method. Error: "%s"'
+            msg = 'The extrusion scan failed, no reverse connect transfer ' \
+                  'methods can be used. Trying inband echo transfer method.' \
+                  ' Error: "%s"'
             om.out.error(msg % w3)
         except Exception, e:
             om.out.error('Unhandled exception: ' + str(e))
@@ -84,8 +87,9 @@ class payload_transfer_factory(object):
                 # FIXME: Need to add something here!
                 pass
             elif os == 'linux':
-                to_test.append(ClientlessReverseHTTP(
-                    self._exec_method, os, inbound_port))
+                reverse = ClientlessReverseHTTP(self._exec_method, os,
+                                                inbound_port)
+                to_test.append(reverse)
 
             # Test the fastest first and return the fastest one...
             def sort_function(x, y):
@@ -94,11 +98,15 @@ class payload_transfer_factory(object):
 
         for method in to_test:
 
-            om.out.debug('Testing if "%s" is able to transfer a file to the compromised host.' % method)
+            om.out.debug('Testing if "%s" is able to transfer a file to the '
+                         'compromised host.' % method)
             if method.can_transfer():
-                om.out.debug('%s is able to transfer a file to the compromised host.' % method)
+                om.out.debug('%s is able to transfer a file to the compromised'
+                             ' host.' % method)
                 return method
             else:
-                om.out.debug('%s *FAILED* to transfer a file to the compromised host.' % method)
+                om.out.debug('%s *FAILED* to transfer a file to the'
+                             ' compromised host.' % method)
 
-        raise BaseFrameworkException('Failed to transfer a file to the remote host! ALL the transfer methods failed.')
+        raise BaseFrameworkException('Failed to transfer a file to the remote'
+                                     ' host! ALL the transfer methods failed.')

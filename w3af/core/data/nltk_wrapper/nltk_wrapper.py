@@ -35,6 +35,7 @@ from nltk.corpus.reader.api import CorpusReader
 
 class wordnet_loader(LazyCorpusLoader):
     def __init__(self, name, reader_cls, *args, **kwargs):
+        super(wordnet_loader, self).__init__(name, reader_cls, *args, **kwargs)
         assert issubclass(reader_cls, CorpusReader)
         self.__name = self.__name__ = name
         self.__reader_cls = reader_cls

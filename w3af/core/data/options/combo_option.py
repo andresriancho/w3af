@@ -44,10 +44,10 @@ class ComboOption(BaseOption):
                      of the ComboOption
         :param tabid: The tab id of the ComboOption
         """
+        super(ComboOption, self).__init__(name, default_value, desc)
         self._value = default_value[0]
         self._default_value = default_value[0]
         self._combo_options = default_value
-
         self._name = name
         self._desc = desc
         self._help = _help

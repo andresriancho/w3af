@@ -187,7 +187,7 @@ class w3afAgentManager(Process):
             interpreter = python
         else:
             # TODO: Implement this!
-            interpreter = ''
+            file_content = ''
             extension = 'py'
             interpreter = '/usr/bin/python'
 

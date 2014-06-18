@@ -70,7 +70,7 @@ class dot_listing(CrawlPlugin):
         try:
             response = self._uri_opener.GET(url, cache=True)
         except BaseFrameworkException, w3:
-            msg = ('Failed to GET .listing file: "%s". Exception: "%s".')
+            msg = 'Failed to GET .listing file: "%s". Exception: "%s".'
             om.out.debug(msg % (url, w3))
             return
 
@@ -115,7 +115,7 @@ class dot_listing(CrawlPlugin):
                    ' and the groups are %s. This information can be used' \
                    ' during a bruteforce attack to the Web application,' \
                    ' SSH or FTP services.'
-            desc = desc % (v.get_url(),
+            desc = desc % (response.get_url(),
                            ', '.join(real_users),
                            ', '.join(real_groups))
 
