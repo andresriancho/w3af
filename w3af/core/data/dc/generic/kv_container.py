@@ -29,6 +29,7 @@ from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.utils.filter_printable import filter_non_printable
 
 
 ERR_MSG = 'Unsupported init_val "%s", expected format is [(u"b", [u"2", u"3"])]'
@@ -121,17 +122,18 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         :return: A string with a short printable representation of self
         """
-        if len(str(self)) <= self.MAX_PRINTABLE:
-            return str(self)
+        if len(filter_non_printable(str(self))) <= self.MAX_PRINTABLE:
+            return filter_non_printable(str(self))
 
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             for k, v in self.items():
                 for ele in v:
                     if isinstance(ele, DataToken):
-                        dt_str = '%s=%s' % (ele.get_name(), ele.get_value())
+                        dt_str = '%s=%s' % (filter_non_printable(ele.get_name()),
+                                            filter_non_printable(ele.get_value()))
                         return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved
-            return str(self)[:self.MAX_PRINTABLE]
+            return filter_non_printable(str(self))[:self.MAX_PRINTABLE]

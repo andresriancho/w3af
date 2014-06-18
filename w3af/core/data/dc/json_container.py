@@ -20,10 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import copy
 
 from w3af.core.data.dc.generic.data_container import DataContainer
-from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.utils.filter_printable import filter_non_printable
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.utils.json_iter_setters import (json_iter_setters,
                                                        json_complex_str,
@@ -142,12 +141,13 @@ class JSONContainer(DataContainer):
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             token = self.get_token()
-            dt_str = '%s=%s' % (token.get_name(), token.get_value())
+            dt_str = '%s=%s' % (filter_non_printable(token.get_name()),
+                                filter_non_printable(token.get_value()))
             return '...%s...' % dt_str[:self.MAX_PRINTABLE-6]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved
-            return str(self)[:self.MAX_PRINTABLE]
+            return filter_non_printable(str(self))[:self.MAX_PRINTABLE]
 
     def get_headers(self):
         return [('Content-Type', self.JSON_CONTENT_TYPE)]

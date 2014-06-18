@@ -20,8 +20,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
-
 from functools import partial
 
 from w3af.core.data.misc.encoding import smart_unicode
@@ -31,6 +29,7 @@ from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.dc.utils.filter_printable import filter_non_printable
 
 
 ERR_MSG_NO_REP = 'Unsupported init_val "%s", expected format is [("b", "2")]'
@@ -118,16 +117,17 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         """
         :return: A string with a short printable representation of self
         """
-        if len(str(self)) <= self.MAX_PRINTABLE:
-            return str(self)
+        if len(filter_non_printable(str(self))) <= self.MAX_PRINTABLE:
+            return filter_non_printable(str(self))
 
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
             for k, v in self.items():
                 if isinstance(v, DataToken):
-                    dt_str = '%s=%s' % (v.get_name(), v.get_value())
+                    dt_str = '%s=%s' % (filter_non_printable(v.get_name()),
+                                        filter_non_printable(v.get_value()))
                     return '...%s...' % dt_str[:self.MAX_PRINTABLE]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved
-            return str(self)[:self.MAX_PRINTABLE]
+            return filter_non_printable(str(self))[:self.MAX_PRINTABLE]
