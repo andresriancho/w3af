@@ -33,6 +33,11 @@ class TestFileUpload(PluginTest):
         'basic': {
             'target': file_upload_url,
             'plugins': {
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward', True, PluginConfig.BOOL)),
+                ),
                 'audit': (
                     PluginConfig(
                         'file_upload', ('extensions',
