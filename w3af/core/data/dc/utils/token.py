@@ -57,6 +57,9 @@ class DataToken(object):
     def get_original_value(self):
         return self._original_value
 
+    def set_original_value(self, new_orig_val):
+        self._original_value = new_orig_val
+
     def set_value(self, new_value):
         self.set_payload(new_value)
         self._value = new_value

@@ -84,6 +84,13 @@ class Mutant(DiskItem):
         """
         return self.get_token().get_original_value()
 
+    def set_token_original_value(self, new_value):
+        """
+        Shortcut!
+        :return: The current token original value
+        """
+        return self.get_token().set_original_value(new_value)
+
     def get_token_name(self):
         """
         Shortcut!
