@@ -42,14 +42,12 @@ class xss(AuditPlugin):
     :author: Andres Riancho ( andres.riancho@gmail.com )
     :author: Taras ( oxdef@oxdef.info )
     """
-    PAYLOADS = [
-                'RANDOMIZE</->',
+    PAYLOADS = ['RANDOMIZE</->',
                 'RANDOMIZE/*',
                 'RANDOMIZE"RANDOMIZE',
                 "RANDOMIZE'RANDOMIZE",
                 "RANDOMIZE`",
-                "RANDOMIZE ="
-                ]
+                "RANDOMIZE ="]
         
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -112,7 +110,7 @@ class xss(AuditPlugin):
         :return: True in the case where a trivial XSS was identified.
         """
         payload = replace_randomize(''.join(self.PAYLOADS))
-        
+
         trivial_mutant = mutant.copy()
         trivial_mutant.set_token_value(payload)
         
