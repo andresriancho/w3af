@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.kb.vuln_templates.xpath_template import XPathTemplate
 
@@ -28,18 +29,22 @@ from w3af.core.data.kb.vuln_templates.xpath_template import XPathTemplate
 @attr('slow')
 class TestXPathShell(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/xpath/xpath-attr-single.php?input=1'
+    target_url = get_moth_http('/audit/xpath/xpath-attr-single.py')
 
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward', True, PluginConfig.BOOL)),
+                ),
                 'audit': (PluginConfig('xpath'),),
             }
         }
     }
 
-    @attr('ci_fails')
     def test_find_exploit_xpath(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -56,14 +61,14 @@ class TestXPathShell(PluginTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_xpath(vuln_to_exploit_id)
         
-    @attr('ci_fails')
     def test_from_template(self):
         xt = XPathTemplate()
         
         options = xt.get_options()
-        options['url'].set_value('http://moth/w3af/audit/xpath/xpath-attr-single.php')
-        options['data'].set_value('input=1')
-        options['vulnerable_parameter'].set_value('input')
+        options['url'].set_value(self.target_url)
+        options['data'].set_value('text=1')
+        options['method'].set_value('POST')
+        options['vulnerable_parameter'].set_value('text')
         xt.set_options(options)
 
         xt.store_in_kb()
@@ -102,4 +107,3 @@ class TestXPathShell(PluginTest):
         self.assertNotIn('lsp', _help)
         self.assertNotIn('upload', _help)
         self.assertIn('getxml', _help)
-        
