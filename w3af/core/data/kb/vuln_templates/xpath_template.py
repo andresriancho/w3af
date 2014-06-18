@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
-from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class XPathTemplate(BaseTemplate):
@@ -38,23 +36,21 @@ class XPathTemplate(BaseTemplate):
         
         original_value = self.data[self.vulnerable_parameter][0]
         
-        freq = FuzzableRequest(self.url, method=self.method, dc=self.data)
-        
-        mutant = Mutant(freq)
-        mutant.set_var(self.vulnerable_parameter)
+        mutant = self.create_mutant_from_params()
         mutant.set_dc(self.data)
-        mutant.set_original_value(original_value)
-        
+        mutant.set_token((self.vulnerable_parameter, 0))
+        mutant.set_token_original_value(original_value)
+
         v.set_mutant(mutant)
         
         return v
-    
+
     def get_kb_location(self):
         """
-        :return: A tuple with the location where the vulnerability will be saved,
-                 example return value would be: ('eval', 'eval')
+        :return: A tuple with the location where the vulnerability will be
+                 saved, example return value would be: ('eval', 'eval')
         """
-        return ('xpath', 'xpath')
+        return 'xpath', 'xpath'
 
     def get_vulnerability_name(self):
         """
