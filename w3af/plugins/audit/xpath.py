@@ -56,6 +56,8 @@ class xpath(AuditPlugin):
         'Incorrect Variable Binding',
         'libxml2 library function failed',
         'libxml2',
+        'Invalid predicate',
+        'Invalid expression',
         'xmlsec library function',
         'xmlsec',
         "error '80004005'",
@@ -71,9 +73,6 @@ class xpath(AuditPlugin):
         '4005 Notes error: Query is not understandable',
     )
     _multi_in = multi_in(XPATH_PATTERNS)
-
-    def __init__(self):
-        AuditPlugin.__init__(self)
 
     def audit(self, freq, orig_response):
         """
@@ -94,8 +93,7 @@ class xpath(AuditPlugin):
 
         :return: A list with all xpath strings to test.
         """
-        xpath_strings = []
-        xpath_strings.append("d'z\"0")
+        xpath_strings = ["d'z\"0"]
 
         # http://www.owasp.org/index.php/Testing_for_XML_Injection
         xpath_strings.append("<!--")
@@ -109,21 +107,22 @@ class xpath(AuditPlugin):
         #
         #   I will only report the vulnerability once.
         #
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            xpath_error_list = self._find_xpath_error(response)
-            for xpath_error in xpath_error_list:
-                if xpath_error not in mutant.get_original_response_body():
-                    
-                    desc = 'XPATH injection was found at: %s' % mutant.found_at()
-                    
-                    v = Vuln.from_mutant('XPATH injection vulnerability', desc,
-                                         severity.MEDIUM, response.id,
-                                         self.get_name(), mutant)
-                    
-                    v.add_to_highlight(xpath_error)
-                    self.kb_append_uniq(self, 'xpath', v)
-                    break
+        xpath_error_list = self._find_xpath_error(response)
+        for xpath_error in xpath_error_list:
+            if xpath_error not in mutant.get_original_response_body():
+
+                desc = 'XPATH injection was found at: %s' % mutant.found_at()
+
+                v = Vuln.from_mutant('XPATH injection vulnerability', desc,
+                                     severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
+
+                v.add_to_highlight(xpath_error)
+                self.kb_append_uniq(self, 'xpath', v)
+                break
 
     def _find_xpath_error(self, response):
         """
@@ -143,8 +142,8 @@ class xpath(AuditPlugin):
 
     def get_plugin_deps(self):
         """
-        :return: A list with the names of the plugins that should be run before the
-        current one.
+        :return: A list with the names of the plugins that should be run before
+                 the current one.
         """
         return ['grep.error_500']
 

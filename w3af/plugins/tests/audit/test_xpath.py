@@ -18,14 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.moth import get_moth_http
 
 
 class TestXPATH(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/xpath/'
+    target_url = get_moth_http('/audit/xpath/')
 
     _run_configs = {
         'cfg': {
@@ -41,7 +40,6 @@ class TestXPATH(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_xpath(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -57,16 +55,12 @@ class TestXPATH(PluginTest):
         self.assertTrue(all_titles, vulns)
 
         # Verify the specifics about the vulnerabilities
-        expected = [
-            ('xpath-tag.php', 'input'),
-            ('xpath-attr-single.php', 'input'),
-            ('xpath-attr-double.php', 'input'),
-            ('xpath-or.php', 'input')
-        ]
+        expected = [(u'xpath-attr-double.py', 'text'),
+                    (u'xpath-attr-tag.py', 'text'),
+                    (u'xpath-attr-or.py', 'text'),
+                    (u'xpath-attr-single.py', 'text')]
 
-        verified_vulns = 0
-        for vuln in vulns:
-            if (vuln.get_url().get_file_name(), vuln.get_mutant().get_var()) in expected:
-                verified_vulns += 1
+        found = [(v.get_url().get_file_name(),
+                  v.get_mutant().get_token_name()) for v in vulns]
 
-        self.assertEquals(expected_vuln_number, verified_vulns)
+        self.assertEquals(set(expected), set(found))
