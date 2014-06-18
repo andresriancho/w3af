@@ -27,7 +27,8 @@ from mock import patch
 from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
+from w3af.core.data.fuzzer.mutants.filecontent_mutant import (FileContentMutant,
+                                                              OnlyTokenFilesMultipartContainer)
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.multipart import encode_as_multipart, get_boundary
@@ -42,7 +43,7 @@ class TestFileContentMutant(unittest.TestCase):
         self.payloads = ['abc', 'def']
         self.url = URL('http://moth/')
 
-    def test_basics(self):
+    def create_simple_filecontent_mutant(self, container_klass):
         form_params = FormParameters()
         form_params.set_method('POST')
         form_params.set_action(self.url)
@@ -50,12 +51,17 @@ class TestFileContentMutant(unittest.TestCase):
         form_params.add_input([("name", "address"), ("value", "")])
         form_params.add_file_input([("name", "file"), ("type", "file")])
 
-        form = MultipartContainer(form_params)
+        form = container_klass(form_params)
         freq = FuzzableRequest.from_form(form)
 
         m = FileContentMutant(freq)
         m.get_dc().set_token(('file', 0))
         m.set_token_value('abc')
+
+        return m
+
+    def test_basics(self):
+        m = self.create_simple_filecontent_mutant(MultipartContainer)
         self.assertEqual(m.get_url().url_string, 'http://moth/')
 
         expected_found_at = u'"http://moth/", using HTTP method POST. The'\
@@ -64,6 +70,38 @@ class TestFileContentMutant(unittest.TestCase):
         generated_found_at = m.found_at()
 
         self.assertEqual(generated_found_at, expected_found_at)
+
+    def test_copy_filecontent_mutant(self):
+        m = self.create_simple_filecontent_mutant(MultipartContainer)
+
+        mcopy = m.copy()
+
+        self.assertEqual(m.get_token(), mcopy.get_token())
+        self.assertIsNot(m.get_token(), None)
+
+        ofr = m.get_fuzzable_request()
+        cfr = mcopy.get_fuzzable_request()
+
+        # Compare the fuzzable requests this way because the boundary "breaks"
+        # the regular comparison
+        self.assertEqual(ofr.get_method(), cfr.get_method())
+        self.assertEqual(ofr.get_uri(), cfr.get_uri())
+        self.assertEqual(ofr.get_raw_data(), cfr.get_raw_data())
+        self.assertEqual(ofr.get_headers().keys(), cfr.get_headers().keys())
+
+        # Not doing this because of the previous comment
+        #self.assertEqual(ofr, cfr)
+        #self.assertEqual(m, mcopy)
+
+    def test_copy_filecontent_mutant_only_file_token(self):
+        """
+        Most tests are actually performed in test_copy_filecontent_mutant, but
+        I want to make sure I can copy with OnlyTokenFilesMultipartContainer too
+        """
+        m = self.create_simple_filecontent_mutant(OnlyTokenFilesMultipartContainer)
+
+        mcopy = m.copy()
+        self.assertIsInstance(mcopy, FileContentMutant)
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_form_files': False}

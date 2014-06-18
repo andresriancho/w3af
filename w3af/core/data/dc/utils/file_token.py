@@ -58,3 +58,11 @@ class FileDataToken(DataToken):
 
     def set_value(self, new_value):
         self._value = self.build_file(new_value)
+
+    def __reduce__(self):
+        """
+        Need to specify this because there is also a __reduce__ in DataToken
+        and the FileDataToken implementation takes +1 parameter
+        """
+        args = (self._name, self._value, self._filename, self._path)
+        return self.__class__, args, {}
