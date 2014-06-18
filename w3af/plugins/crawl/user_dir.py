@@ -102,7 +102,8 @@ class user_dir(CrawlPlugin):
         if fuzzy_not_equal(response_body, non_existent, 0.7):
 
             # Avoid duplicates
-            known_users = [u['user'] for u in kb.kb.get('user_dir', 'users')]
+            user_infos = kb.kb.get('user_dir', 'users')
+            known_users = [u.get('user', None) for u in user_infos]
             if user in known_users:
                 return
 
