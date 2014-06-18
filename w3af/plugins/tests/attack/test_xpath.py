@@ -45,6 +45,7 @@ class TestXPathShell(PluginTest):
         }
     }
 
+    @attr('fails')
     def test_find_exploit_xpath(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -60,7 +61,8 @@ class TestXPathShell(PluginTest):
         
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_xpath(vuln_to_exploit_id)
-        
+
+    @attr('fails')
     def test_from_template(self):
         xt = XPathTemplate()
         
