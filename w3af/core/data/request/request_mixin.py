@@ -56,4 +56,4 @@ class RequestMixIn(object):
         """
         :return: A string representation of the headers.
         """
-        return unicode(self.get_headers())
+        return unicode(self.get_all_headers())

@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class DataToken(object):
     def __init__(self, name, value, path):
         self._name = name
-        self._value = self._original_value = value
+        self._value = self._original_value = self._payload = value
         self._path = path
 
     def get_path(self):
@@ -38,12 +38,27 @@ class DataToken(object):
         return self._name
 
     def get_value(self):
+        """
+        :return: The "serialized representation" of this object.
+        :see: FileDataToken, the implementation there makes more sense.
+        """
         return self._value
+
+    def get_payload(self):
+        """
+        :return: The payload which was used to create this object.
+        :see: FileDataToken, the implementation there makes more sense.
+        """
+        return self._payload
+
+    def set_payload(self, new_payload):
+        self._payload = new_payload
 
     def get_original_value(self):
         return self._original_value
 
     def set_value(self, new_value):
+        self.set_payload(new_value)
         self._value = new_value
 
     def __repr__(self):
@@ -71,7 +86,9 @@ class DataToken(object):
             raise RuntimeError('Can not compare %s with DataToken.' % other)
 
     def __reduce__(self):
-        return self.__class__, (self._name, self._value, self._path), {}
+        return (self.__class__,
+                (self._name, self._value, self._path),
+                {'_payload': self._payload})
 
     def __getattr__(self, attr):
         # see if this object has attr

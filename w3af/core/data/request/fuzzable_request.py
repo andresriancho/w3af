@@ -367,6 +367,15 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                 # We don't care if they don't exist
                 pass
 
+        for k, v in self.get_default_headers().items():
+            # Ignore any keys which are already defined in the user-specified
+            # headers
+            kvalue, kreal = headers.iget(k, None)
+            if kvalue is not None:
+                continue
+
+            headers[k] = v
+
         self._headers = headers
 
     def set_referer(self, referer):
@@ -439,21 +448,32 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def get_headers(self):
         """
-        :return: Calls get_default_headers to get the default framework headers,
-        overwrites any overlap with specific_headers and returns a Headers
-        instance
+        :return: The headers which can be changed by the user during fuzzing.
+        :see: get_all_headers
         """
-        for k, v in chain(self.get_post_data_headers().items(),
-                          self.get_default_headers().items()):
+        return self._headers
+
+    def get_all_headers(self):
+        """
+        :return: Calls get_default_headers to get the default framework headers,
+        get_post_data_headers to get the DataContainer headers, merges that info
+        with the user specified headers (which live in self._headers) and
+        returns a Headers instance which will be sent to the wire.
+        """
+        wire_headers = Headers()
+
+        for k, v in chain(self._headers.items(),
+                          self.get_post_data_headers().items()):
+
             # Ignore any keys which are already defined in the user-specified
             # headers
-            kvalue, kreal = self._headers.iget(k, None)
+            kvalue, kreal = wire_headers.iget(k, None)
             if kvalue is not None:
                 continue
 
-            self._headers[k] = v
+            wire_headers[k] = v
 
-        return self._headers
+        return wire_headers
 
     def get_referer(self):
         return self.get_headers().get('Referer', None)

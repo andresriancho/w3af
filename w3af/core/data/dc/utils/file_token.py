@@ -41,7 +41,15 @@ class FileDataToken(DataToken):
 
         self._extension = extension
         self._filename = filename
+        self._payload = value
         self._original_value = self._value = self.build_file(value)
+
+    def get_payload(self):
+        """
+        :return: The payload which was used to create this object.
+        :see: DataToken.get_value to understand the difference.
+        """
+        return self._payload
 
     def build_file(self, value):
 
@@ -57,6 +65,7 @@ class FileDataToken(DataToken):
         return value
 
     def set_value(self, new_value):
+        self.set_payload(new_value)
         self._value = self.build_file(new_value)
 
     def __reduce__(self):
@@ -65,4 +74,4 @@ class FileDataToken(DataToken):
         and the FileDataToken implementation takes +1 parameter
         """
         args = (self._name, self._value, self._filename, self._path)
-        return self.__class__, args, {}
+        return self.__class__, args, {'_payload': self._payload}

@@ -221,7 +221,7 @@ class ExtendedUrllib(object):
         data = mutant.get_data()
 
         # Also add the cookie header; this is needed by the CookieMutant
-        headers = mutant.get_headers()
+        headers = mutant.get_all_headers()
         cookie = mutant.get_cookie()
         if cookie:
             headers['Cookie'] = str(cookie)

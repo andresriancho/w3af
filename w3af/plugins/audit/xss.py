@@ -159,14 +159,14 @@ class xss(AuditPlugin):
             if self._has_bug(mutant):
                 return
             
-            mod_value = mutant.get_token_value()
+            sent_payload = mutant.get_token_payload()
 
             body_lower = response.get_body().lower()
-            mod_value_lower = mod_value.lower()
+            sent_payload_lower = sent_payload.lower()
 
-            for context in get_context_iter(body_lower, mod_value_lower):
-                if context.is_executable() or context.can_break(mod_value_lower):
-                    self._report_vuln(mutant, response, mod_value)
+            for context in get_context_iter(body_lower, sent_payload_lower):
+                if context.is_executable() or context.can_break(sent_payload_lower):
+                    self._report_vuln(mutant, response, sent_payload)
                     return
 
     def end(self):
@@ -204,17 +204,18 @@ class xss(AuditPlugin):
         
         :return: None, Vuln (if any) are saved to the kb.
         """
-        response_body = response.get_body()
+        body_lower = response.get_body().lower()
         
         for mutant, mutant_response_id in self._xss_mutants:
             
-            mod_value = mutant.get_token_value()
+            sent_payload = mutant.get_token_payload()
+            sent_payload_lower = sent_payload.lower()
             
-            for context in get_context_iter(response_body, mod_value):
-                if context.is_executable() or context.can_break(mod_value):
+            for context in get_context_iter(body_lower, sent_payload):
+                if context.is_executable() or context.can_break(sent_payload_lower):
                     self._report_persistent_vuln(mutant, response,
                                                  mutant_response_id,
-                                                 mod_value,
+                                                 sent_payload_lower,
                                                  fuzzable_request)
                     break
     
@@ -251,7 +252,7 @@ class xss(AuditPlugin):
         v['persistent'] = True
         v['write_payload'] = mutant
         v['read_payload'] = fuzzable_request
-        v.add_to_highlight(mutant.get_token_value())
+        v.add_to_highlight(mutant.get_token_payload())
 
         om.out.vulnerability(v.get_desc())
         self.kb_append_uniq(self, 'xss', v)
