@@ -56,4 +56,9 @@ class RequestMixIn(object):
         """
         :return: A string representation of the headers.
         """
-        return unicode(self.get_all_headers())
+        try:
+            # For FuzzableRequest
+            return unicode(self.get_all_headers())
+        except AttributeError:
+            # For HTTPRequest
+            return unicode(self.get_headers())
