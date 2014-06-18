@@ -33,13 +33,6 @@ def is_printable_chr(c):
     return c in string.printable
 
 
-def unique_justseen(iterable, key=None):
-    "List unique elements, preserving order. Remember only the element just seen."
-    # unique_justseen('AAAABBBCCDAABBB') --> A B C D A B
-    # unique_justseen('ABBCcAD', str.lower) --> A B C A D
-    return imap(next, imap(itemgetter(1), groupby(iterable, key)))
-
-
 def filter_non_printable(_str):
     chars = []
 
@@ -47,6 +40,7 @@ def filter_non_printable(_str):
         if is_printable_chr(c):
             chars.append(c)
         else:
-            chars.append(NON_PRINTABLE_REPLACE)
+            if chars[-1] != NON_PRINTABLE_REPLACE:
+                chars.append(NON_PRINTABLE_REPLACE)
 
-    return ''.join(unique_justseen(chars))
+    return ''.join(chars)
