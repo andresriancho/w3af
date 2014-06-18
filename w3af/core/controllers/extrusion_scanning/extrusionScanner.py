@@ -71,8 +71,8 @@ class extrusionScanner(object):
 
     def _getRemoteId(self):
         """
-        Runs some commands on the remote host, concatenates outputs and creates a hash
-        of the results. This will be an unique identifier for the host.
+        Runs some commands on the remote host, concatenates outputs and creates
+        a hash of the results. This will be an unique identifier for the host.
         """
         om.out.debug('Creating a remote server fingerprint.')
         r = self._exec('ipconfig /all')
@@ -116,12 +116,12 @@ class extrusionScanner(object):
             # Try to return the data from the kb !
             remoteId = self._getRemoteId()
             saved_results = kb.kb.raw_read('extrusionScanner', 'extrusions')
+
             if remoteId in saved_results:
-                om.out.information(
-                    'Reusing previous result from the knowledgeBase:')
-                msg = '- Selecting port "%s" for inbound connections from the'
-                msg += ' compromised server to w3af.' % saved_results[remoteId]
-                om.out.information(msg)
+                msg = 'Reusing previous result from the knowledge base:'\
+                      '- Selecting port "%s" for inbound connections from the'\
+                      ' compromised server to w3af.'
+                om.out.information(msg % saved_results[remoteId])
                 return saved_results[remoteId]
 
         om.out.information(
