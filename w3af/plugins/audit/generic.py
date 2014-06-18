@@ -124,27 +124,27 @@ class generic(AuditPlugin):
 
             if relative_distance(limit_response2.get_body(), limit_response.get_body()) > \
                     1 - self._diff_ratio:
-                # The two limits are "equal"; It's safe to suppose that we have found the
-                # limit here and that the error string really produced an error
+                # The two limits are "equal"; It's safe to suppose that we have
+                # found the limit here and that the error string really produced
+                # an error
                 self._potential_vulns.append((mutant.get_url(),
                                               mutant.get_var(),
                                               mutant, id_list))
 
-
     def _get_limit_response(self, m):
         """
         We request the limit (something that doesn't exist)
-            - If http://localhost/a.php?b=1 ; then I should request b=12938795
-                                                                 (random number)
-            - If http://localhost/a.php?b=abc ; then I should request b=hnv98yks
-                                                                    (random alnum)
+            - If http://localhost/a.php?b=1
+                then I should request b=12938795 (random number)
+            - If http://localhost/a.php?b=abc
+                then I should request b=hnv98yks (random alnum)
 
         :return: The limit response object
         """
         # Copy the dc, needed to make a good vuln report
         dc = copy.deepcopy(m.get_dc())
 
-        if m.get_original_value().isdigit():
+        if m.get_token_original_value().isdigit():
             m.set_token_value(rand_number(length=8))
         else:
             m.set_token_value(rand_alnum(length=8))
