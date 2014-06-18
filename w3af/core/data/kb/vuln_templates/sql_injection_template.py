@@ -47,8 +47,8 @@ class SQLiTemplate(BaseTemplate):
         
     def get_kb_location(self):
         """
-        :return: A tuple with the location where the vulnerability will be saved,
-                 example return value would be: ('eval', 'eval')
+        :return: A tuple with the location where the vulnerability will be
+                 saved, example return value would be: ('eval', 'eval')
         """
         return 'sqli', 'sqli'
 

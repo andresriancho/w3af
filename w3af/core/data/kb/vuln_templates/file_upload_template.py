@@ -19,6 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.parsers.url import URL
@@ -58,18 +62,37 @@ class FileUploadTemplate(BaseTemplate):
     def create_vuln(self):
         v = super(FileUploadTemplate, self).create_vuln()
 
-        # User configured
+        form_params = FormParameters()
+        for file_var in self.file_vars:
+            form_params.add_file_input([("name", file_var), ("type", "file")])
+
+        for token in self.data.iter_tokens():
+            if token.get_name() in self.file_vars:
+                continue
+
+            form_params.add_input([("name", token.get_value()),
+                                   ("type", "text")])
+
+        mpc = MultipartContainer(form_params)
+
+        freq = FuzzableRequest(self.url, method=self.method, post_data=mpc)
+
+        mutant = PostDataMutant(freq)
+        mutant.set_dc(mpc)
+        mutant.set_token((self.vulnerable_parameter, 0))
+
+        # User configured settings
         v['file_vars'] = self.file_vars
         v['file_dest'] = self.file_dest
-
+        v.set_mutant(mutant)
         return v
     
     def get_kb_location(self):
         """
-        :return: A tuple with the location where the vulnerability will be saved,
-                 example return value would be: ('eval', 'eval')
+        :return: A tuple with the location where the vulnerability will be
+                 saved, example return value would be: ('eval', 'eval')
         """
-        return ('file_upload', 'file_upload')
+        return 'file_upload', 'file_upload'
 
     def get_vulnerability_name(self):
         """
