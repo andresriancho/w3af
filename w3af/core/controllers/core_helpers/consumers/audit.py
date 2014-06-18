@@ -57,8 +57,7 @@ class audit(BaseConsumer):
     @retry(3)
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
-        return plugin._uri_opener.send_mutant(fuzzable_request, grep=False,
-                                              cache=False)
+        return plugin.get_original_response(fuzzable_request)
         
     def _consume(self, fuzzable_request):
         """

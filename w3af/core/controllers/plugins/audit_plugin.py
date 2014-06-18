@@ -50,6 +50,12 @@ class AuditPlugin(Plugin):
 
     @retry(3)
     def get_original_response(self, fuzzable_request):
+
+        data_container = fuzzable_request.get_raw_data()
+        if hasattr(data_container, 'smart_fill'):
+            fuzzable_request = copy.deepcopy(fuzzable_request)
+            data_container.smart_fill()
+
         return self._uri_opener.send_mutant(fuzzable_request, grep=False,
                                             cache=False)
 
