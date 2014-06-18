@@ -54,7 +54,7 @@ class FileContentMutant(PostDataMutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        if not 'fuzz_form_files' in fuzzer_config:
+        if not fuzzer_config['fuzz_form_files']:
             return []
 
         if not freq.get_file_vars():

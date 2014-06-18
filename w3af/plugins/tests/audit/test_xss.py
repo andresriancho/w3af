@@ -149,14 +149,24 @@ class TestXSS(PluginTest):
         
         self.assertEquals(0, len(xss_vulns), xss_vulns)
 
+    def scan_file_upload_fuzz_files(self):
+        cfg = self._run_configs['cfg']
+        target_path = get_php_moth_http('/audit/file_upload/echo_content/')
+        self._scan(target_path, cfg['plugins'])
+
     def test_user_configured_find_in_file_upload_content(self):
         """
         Do not send file content mutants unless the user configures it.
         https://github.com/andresriancho/w3af/issues/3149
         """
-        cfg = self._run_configs['cfg']
-        target_path = get_php_moth_http('/audit/file_upload/echo_content/')
-        self._scan(target_path, cfg['plugins'])
+        # Set the value to False (True is the default)
+        cf.save('fuzz_form_files', False)
+
+        try:
+            self.scan_file_upload_fuzz_files()
+        finally:
+            # Restore the default
+            cf.save('fuzz_form_files', True)
 
         xss_vulns = self.kb.get('xss', 'xss')
         self.assertEqual(len(xss_vulns), 0, xss_vulns)
@@ -166,13 +176,8 @@ class TestXSS(PluginTest):
         Find XSS in the content of an uploaded file
         https://github.com/andresriancho/w3af/issues/3149
         """
-        # Configure the framework to fuzz file content
-        cf.save('fuzz_form_files', True)
-
-        # And now scan
-        cfg = self._run_configs['cfg']
+        self.scan_file_upload_fuzz_files()
         target_path = get_php_moth_http('/audit/file_upload/echo_content/')
-        self._scan(target_path, cfg['plugins'])
 
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
@@ -184,9 +189,6 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
-
-        # Set the default again
-        cf.save('fuzz_form_files', False)
 
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
