@@ -96,11 +96,12 @@ class xml_file(OutputPlugin):
             self._file = open(self._file_name, "w")
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise BaseFrameworkException(msg % (os.path.abspath(self._file_name),
-                                       io.strerror))
+            args = (os.path.abspath(self._file_name), io.strerror)
+            raise BaseFrameworkException(msg % args)
         except Exception, e:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise BaseFrameworkException(msg % (os.path.abspath(self._file_name), e))
+            args = (os.path.abspath(self._file_name), e)
+            raise BaseFrameworkException(msg % args)
 
     def do_nothing(self, *args, **kwds):
         pass
@@ -108,9 +109,9 @@ class xml_file(OutputPlugin):
 
     def error(self, message, new_line=True):
         """
-        This method is called from the output object. The output object was called
-        from a plugin or from the framework. This method should take an action
-        for error messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for error messages.
         """
         messageNode = self._xmldoc.createElement("error")
         messageNode.setAttribute("caller", str(self.get_caller()))
@@ -191,8 +192,9 @@ class xml_file(OutputPlugin):
 
     def report_http_action(self, parentNode, action):
         """
-        Write out the request/response in a more parseable XML format will factor
-        anything with a content-type not prefixed with a text/ in a CDATA.
+        Write out the request/response in a more parseable XML format will
+        factor anything with a content-type not prefixed with a text/ in a
+        CDATA.
 
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
@@ -296,7 +298,7 @@ class xml_file(OutputPlugin):
             messageNode.setAttribute("severity", str(i.get_severity()))
             messageNode.setAttribute("method", str(i.get_method()))
             messageNode.setAttribute("url", str(i.get_url()))
-            messageNode.setAttribute("var", str(i.get_var()))
+            messageNode.setAttribute("var", str(i.get_token_name()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.get_plugin_name()))
             # Wrap description in a <description> element and put it above the
