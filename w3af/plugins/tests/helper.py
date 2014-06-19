@@ -94,6 +94,19 @@ class PluginTest(unittest.TestCase):
         if self.MOCK_RESPONSES:
             httpretty.disable()
 
+    def assertAllVulnNamesEqual(self, vuln_name, vulns):
+        for vuln in vulns:
+            self.assertEqual(vuln.get_name(), vuln_name)
+
+    def assertAllExpectedVulnsFound(self, expected, found_vulns):
+        found_tokens = [(v.get_url().get_file_name(),
+                         v.get_token_name()) for v in found_vulns]
+
+        self.assertEquals(
+            set(found_tokens),
+            set(expected)
+        )
+
     def request_callback(self, method, uri, headers):
         status = 404
         body = 'Not found'

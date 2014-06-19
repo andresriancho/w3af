@@ -47,8 +47,7 @@ class TestGlobalRedirect(PluginTest):
 
         vulns = self.kb.get('global_redirect', 'global_redirect')
 
-        self.assertEquals(all(['Insecure redirection' == vuln.get_name(
-        ) for vuln in vulns]), True)
+        self.assertAllVulnNamesEqual('Insecure redirection', vulns)
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
@@ -59,11 +58,4 @@ class TestGlobalRedirect(PluginTest):
             ('redirect-302-filtered.py', 'url')
         ]
 
-        found = [(str(v.get_url()), v.get_var()) for v in vulns]
-        expected = [((self.target_url + end), param) for (end,
-                    param) in EXPECTED]
-
-        self.assertEquals(
-            set(found),
-            set(expected)
-        )
+        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
