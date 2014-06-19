@@ -69,4 +69,4 @@ class TestDetailed(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(),
                           'Cross site scripting vulnerability')
-        self.assertEquals(vuln.get_var(), 'section')
+        self.assertEquals(vuln.get_token_name(), 'section')

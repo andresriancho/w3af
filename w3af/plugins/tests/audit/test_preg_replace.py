@@ -49,21 +49,11 @@ class TestPreg(PluginTest):
 
         # Assert the general results
         vulns = self.kb.get('preg_replace', 'preg_replace')
-        self.assertEquals(len(vulns), 2)
-
-        titles = all(['Unsafe preg_replace usage' == v.get_name() for v in vulns])
-        self.assertEquals(titles, True)
 
         expected_results = (
             ('preg_all_regex.php', 'regex'),
             ('preg_section_regex.php', 'search')
         )
 
-        found = [(str(v.get_url()), v.get_var()) for v in vulns]
-        expected = [((self.target_url + end), param) for (end,
-                    param) in expected_results]
-
-        self.assertEquals(
-            set(found),
-            set(expected)
-        )
+        self.assertAllVulnNamesEqual('Unsafe preg_replace usage', vulns)
+        self.assertAllExpectedVulnsFound(expected_results, vulns)

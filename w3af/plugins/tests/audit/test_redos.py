@@ -44,7 +44,7 @@ class TestREDoS(PluginTest):
         
         self.assertEquals(2, len(vulns), vulns)
         
-        expected_parameters = set(['username', 'password'])
-        vuln_parameters = set([v.get_var() for v in vulns])
+        expected_parameters = {'username', 'password'}
+        vuln_parameters = set([v.get_token_name() for v in vulns])
         
         self.assertEqual(expected_parameters, vuln_parameters)

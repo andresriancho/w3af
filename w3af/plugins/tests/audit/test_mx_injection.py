@@ -44,18 +44,11 @@ class TestMXInjection(PluginTest):
 
         # Assert the general results
         vulns = self.kb.get('mx_injection', 'mx_injection')
-        self.assertEquals(1, len(vulns))
-        self.assertEquals(all(["MX injection vulnerability" == vuln.get_name(
-        ) for vuln in vulns]), True)
 
         # Verify the specifics about the vulnerabilities
         expected = [
             ('mxi.php', 'i'),
         ]
 
-        verified_vulns = 0
-        for vuln in vulns:
-            if (vuln.get_url().get_file_name(), vuln.get_mutant().get_var()) in expected:
-                verified_vulns += 1
-
-        self.assertEquals(1, verified_vulns)
+        self.assertAllVulnNamesEqual("MX injection vulnerability", vulns)
+        self.assertAllExpectedVulnsFound(expected, vulns)
