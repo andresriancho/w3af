@@ -46,19 +46,14 @@ class TestLFI(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
+        # Assert the general results
+        vulns = self.kb.get('lfi', 'lfi')
+
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
             ('local_file_read.py', 'file'),
             ('local_file_read_full_path.py', 'file'),
         ]
 
-        # Assert the general results
-        vulns = self.kb.get('lfi', 'lfi')
-        self.assertEquals(len(EXPECTED), len(vulns), vulns)
-        self.assertEquals(
-            all(["Local file inclusion vulnerability" == v.get_name(
-            ) for v in vulns]),
-            True)
-
-        self.assertEqual(set(EXPECTED),
-                         set([(v.get_url().get_file_name(), v.get_mutant().get_var()) for v in vulns]))
+        self.assertAllVulnNamesEqual("Local file inclusion vulnerability", vulns)
+        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
