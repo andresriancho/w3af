@@ -46,7 +46,7 @@ class xss(AuditPlugin):
                 'RANDOMIZE/*',
                 'RANDOMIZE"RANDOMIZE',
                 "RANDOMIZE'RANDOMIZE",
-                "RANDOMIZE`",
+                "RANDOMIZE`RANDOMIZE",
                 "RANDOMIZE ="]
         
     def __init__(self):
