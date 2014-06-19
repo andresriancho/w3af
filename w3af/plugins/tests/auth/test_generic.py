@@ -94,14 +94,12 @@ class TestGeneric(PluginTest):
         self.assertEquals(len(vulns), 1, vulns)
 
         vuln = vulns[0]
-        self.assertEquals(vuln.get_name(),
-                          'Cross site scripting vulnerability')
-        self.assertEquals(vuln.get_var(), 'text')
+        self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
+        self.assertEquals(vuln.get_token_name(), 'text')
         self.assertEquals(vuln.get_url().get_path(),
                           '/auth/auth_1/post_auth_xss.py')
 
     @attr('internet')
-    @attr('ci_fails')
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else
