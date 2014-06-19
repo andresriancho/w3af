@@ -91,7 +91,8 @@ class response_splitting(AuditPlugin):
                     desc = 'The variable "%s" at URL "%s" modifies the HTTP'\
                            ' response headers, but this error was sent while'\
                            ' testing for response splitting: "%s".'
-                    desc = desc % (mutant.get_var(), mutant.get_url(), error)
+                    args = (mutant.get_token_name(), mutant.get_url(), error)
+                    desc = desc % args
                     i = Info.from_mutant('Parameter modifies response headers',
                                          desc, response.id, self.get_name(),
                                          mutant)
