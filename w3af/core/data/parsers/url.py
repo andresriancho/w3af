@@ -342,7 +342,7 @@ class URL(DiskItem):
 
     def base_url(self):
         """
-        :return: A string contaning the URL without the query string and
+        :return: A string containing the URL without the query string and
                  without any path.
         """
         params = (self.scheme, self.netloc, None, None, None, None)
