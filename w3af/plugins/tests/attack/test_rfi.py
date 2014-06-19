@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.core.data.kb.vuln_templates.rfi_template import RFITemplate
 
@@ -27,7 +28,7 @@ from w3af.core.data.kb.vuln_templates.rfi_template import RFITemplate
 @attr('smoke')
 class TestRFI(ExecExploitTest):
 
-    target_url = 'http://moth/w3af/audit/rfi/vulnerable.php'
+    target_url = get_php_moth_http('/audit/rfi/rfi-rce.php')
 
     _run_configs = {
         'cfg': {
@@ -38,10 +39,9 @@ class TestRFI(ExecExploitTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_exploit_rfi(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'] + '?file=section.php', cfg['plugins'])
+        self._scan(cfg['target'] + '?file=abc.txt', cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('rfi', 'rfi')
@@ -54,13 +54,12 @@ class TestRFI(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')
     
-    @attr('ci_fails')
     def test_from_template(self):
         rfit = RFITemplate()
         
         options = rfit.get_options()
-        options['url'].set_value('http://moth/w3af/audit/rfi/vulnerable.php')
-        options['data'].set_value('file=section.php')
+        options['url'].set_value(self.target_url)
+        options['data'].set_value('file=abc.txt')
         options['vulnerable_parameter'].set_value('file')
         rfit.set_options(options)
 
