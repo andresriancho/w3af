@@ -47,15 +47,15 @@ class csv_file(OutputPlugin):
         pass
 
     debug = log_http = vulnerability = do_nothing
-    information = error = console = debug = log_enabled_plugins = do_nothing
+    information = error = console = log_enabled_plugins = do_nothing
 
     def end(self):
         """
-        Exports the vulnerabilities and informations to the user configured
+        Exports the vulnerabilities and information to the user configured
         file.
         """
         all_vulns = kb.kb.get_all_vulns()
-        all_infos = kb.kb.get_all_infos()
+        all_info = kb.kb.get_all_infos()
 
         self.output_file = os.path.expanduser(self.output_file)
 
@@ -76,21 +76,22 @@ class csv_file(OutputPlugin):
             output_handler.close()
             return
 
-        for data in itertools.chain(all_vulns, all_infos):
+        for info in itertools.chain(all_vulns, all_info):
             try:
-                row = [data.get_name(),
-                       data.get_method(),
-                       data.get_uri(),
-                       data.get_token_name(),
-                       data.get_dc(),
-                       data.get_id(),
-                       data.get_desc()]
+                row = [info.get_name(),
+                       info.get_method(),
+                       info.get_uri(),
+                       info.get_token_name(),
+                       info.get_mutant().get_data(),
+                       info.get_id(),
+                       info.get_desc()]
                 csv_writer.writerow(row)
             except Exception, e:
                 msg = 'An exception was raised while trying to write the '\
                       ' vulnerabilities to the output file. Exception: "%s"'
                 om.out.error(msg % e)
                 output_handler.close()
+                print e
                 return
 
         output_handler.close()
@@ -124,7 +125,7 @@ class csv_file(OutputPlugin):
         """
         ol = OptionList()
 
-        d = 'The name of the output file where the vulnerabilities will be saved'
+        d = 'The name of the output file where the vulnerabilities are be saved'
         o = opt_factory('output_file', self.output_file, d, OUTPUT_FILE)
         ol.add(o)
 

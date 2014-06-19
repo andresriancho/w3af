@@ -23,16 +23,21 @@ import csv
 import json
 
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class TestCSVFile(PluginTest):
 
     OUTPUT_FILE = 'output-unittest.csv'
 
-    target_url = get_moth_http('/audit/xss/')
+    target_url = get_moth_http('/audit/xss/simple_xss.py?text=1')
 
     _run_configs = {
         'cfg': {
@@ -65,8 +70,6 @@ class TestCSVFile(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_csv_get_vulns()
 
-        self.assertGreaterEqual(len(xss_vulns), 2)
-
         self.assertEquals(
             set(sorted([v.get_url() for v in xss_vulns])),
             set(sorted([v.get_url() for v in file_vulns]))
@@ -84,17 +87,13 @@ class TestCSVFile(PluginTest):
 
     def _from_csv_get_vulns(self):
         file_vulns = []
-
         vuln_reader = csv.reader(open(self.OUTPUT_FILE, 'rb'), delimiter=',',
                                  quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        for name, method, uri, var, dc, _id, desc in vuln_reader:
-            v = Vuln(name, desc, 'High', json.loads(_id), 'TestCase')
-            v.set_method(method)
-            v.set_uri(URL(uri))
-            v.set_token((var, 0))
-            v.set_dc(dc)
-
+        for name, method, uri, var, post_data, _id, desc in vuln_reader:
+            mutant = create_mutant_from_params(method, uri, var, post_data)
+            v = Vuln.from_mutant(name, desc, 'High', json.loads(_id),
+                                 'TestCase', mutant)
             file_vulns.append(v)
 
         return file_vulns
@@ -104,3 +103,20 @@ class TestCSVFile(PluginTest):
             os.remove(self.OUTPUT_FILE)
         except:
             pass
+
+
+def create_mutant_from_params(method, uri, var, post_data):
+    uri = URL(uri)
+
+    if method.upper() == 'GET' and var in uri.querystring:
+        MutantKlass = QSMutant
+        headers = Headers()
+    else:
+        MutantKlass = PostDataMutant
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
+
+    freq = FuzzableRequest.from_parts(uri, method=method,
+                                      post_data=post_data, headers=headers)
+    mutant = MutantKlass(freq)
+    mutant.get_dc().set_token((var, 0))
+    return mutant
