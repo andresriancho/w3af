@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
-from w3af.core.data.fuzzer.mutants.mutant import Mutant
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.opt_factory import opt_factory
 
 
@@ -56,18 +54,10 @@ class LocalFileReadTemplate(BaseTemplate):
     
     def create_vuln(self):
         v = super(LocalFileReadTemplate, self).create_vuln()
-        
-        mutant = self.create_mutant_from_params()
-        mutant.set_dc(self.data)
-        mutant.set_token((self.vulnerable_parameter, 0))
-        mutant.set_token_value(self.payload)
-        
-        v.set_mutant(mutant)
 
-        # Set the name of the vulnerability
-        v.set_name(self.name)
-
+        v.get_mutant().set_token_value(self.payload)
         v['file_pattern'] = self.file_pattern
+
         return v
     
     def get_kb_location(self):

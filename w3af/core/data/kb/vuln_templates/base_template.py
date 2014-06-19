@@ -52,9 +52,9 @@ class BaseTemplate(Configurable):
 
     def get_options(self):
         """
-        In this case we provide a sample implementation since most vulnerabilities
-        will have this template. If the specific vulnerability needs other params
-        then it should override this implementation.
+        In this case we provide a sample implementation since most
+        vulnerabilities will have this template. If the specific vulnerability
+        needs other params then it should override this implementation.
         """
         ol = OptionList()
 
@@ -67,11 +67,11 @@ class BaseTemplate(Configurable):
         ol.add(o)
 
         d = 'Query string or postdata parameters in url-encoded form'
-        h = 'If the HTTP method is GET, the data will be sent in the query-string'\
-            ' otherwise it will be sent using the HTTP request\'s body. If the'\
-            ' vulnerability requires the request to be sent using multipart-'\
-            'forms, the exploit will convert this url-encoded data into that'\
-            ' format.\n\n'\
+        h = 'If the HTTP method is GET, the data will be sent in the ' \
+            'query-string otherwise it will be sent using the HTTP request\'s' \
+            ' body. If the vulnerability requires the request to be sent using'\
+            ' multipart-forms, the exploit will convert this url-encoded data' \
+            ' into that format.\n\n'\
             'Enter the original parameter value, not the one which triggers'\
             ' the vulnerability. Correct input looks like "id=2" not like'\
             ' "id=2;cat /etc/passwd".'
@@ -152,12 +152,14 @@ class BaseTemplate(Configurable):
         """
         v = self.create_base_vuln()
 
-        # User configured
-        v.set_method(self.method)
+        mutant = self.create_mutant_from_params()
+        mutant.set_dc(self.data)
+        mutant.set_token((self.vulnerable_parameter, 0))
+
+        v.set_mutant(mutant)
+
+        # Set the name of the vulnerability
         v.set_name(self.name)
-        v.set_url(self.url)
-        v.set_dc(self.data)
-        v.set_token((self.vulnerable_parameter, 0))
 
         return v
 

