@@ -110,19 +110,17 @@ class PluginTest(unittest.TestCase):
     def assertAllURLsFound(self, expected):
         frs = self.kb.get_all_known_fuzzable_requests()
 
-        # It is "implicit" that the user's expected files will be in the same
-        # directory as the found ones, so we only check the file names
         found = []
 
         for fr in frs:
             uri = fr.get_uri()
-            fname = uri.get_file_name()
+            path = uri.get_path()
             qs = str(uri.get_querystring())
 
             if qs:
-                data = fname + '?' + qs
+                data = path + '?' + qs
             else:
-                data = fname
+                data = path
 
             found.append(data)
 

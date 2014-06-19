@@ -41,8 +41,7 @@ class TestDirFileBruter(PluginTest):
         'plugins': {'crawl': (PluginConfig('dir_file_bruter',
                                            ('dir_wordlist',
                                             DIR_DB_PATH,
-                                            PluginConfig.INPUT_FILE),
-                                           ),)}
+                                            PluginConfig.INPUT_FILE),),)}
     }
 
     _run_files = {
@@ -100,46 +99,30 @@ class TestDirFileBruter(PluginTest):
     def test_directories(self):
         self._scan(self._run_directories['target'],
                    self._run_directories['plugins'])
-        urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('crawl/', 'portal/')
-
-        self.assertEquals(
-            set(str(u) for u in urls),
-            set((self.base_url + end) for end in expected_urls)
-        )
+        expected_urls = ('/crawl/', '/portal/', '/')
+        self.assertAllURLsFound(expected_urls)
 
     def test_files(self):
         self._scan(self._run_files['target'], self._run_files['plugins'])
-        urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('iamhidden.txt', '')
-
-        self.assertEquals(
-            set(str(u) for u in urls),
-            set((self.base_url + end) for end in expected_urls)
-        )
+        expected_urls = ('/iamhidden.txt', '/')
+        self.assertAllURLsFound(expected_urls)
     
     def test_directories_files(self):
         self._scan(self._run_directory_files['target'],
                    self._run_directory_files['plugins'])
-        urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('hidden-inside-dir.txt', 'spameggs/', '')
-
-        self.assertEquals(
-            set(str(u) for u in urls),
-            set((self.directory_url + end) for end in expected_urls)
-        )
+        expected_urls = (u'/crawl/dir_bruter/',
+                         u'/crawl/dir_bruter/hidden-inside-dir.txt',
+                         u'/crawl/dir_bruter/spameggs/')
+        self.assertAllURLsFound(expected_urls)
 
     def test_recursive(self):
         self._scan(self._run_recursive['target'],
                    self._run_recursive['plugins'])
-        urls = self.kb.get_all_known_urls()
 
-        expected_urls = ('spameggs/', 'spameggs/foobar/', '')
-
-        self.assertEquals(
-            set(str(u) for u in urls),
-            set((self.directory_url + end) for end in expected_urls)
-        )
+        expected_urls = (u'/crawl/dir_bruter/',
+                         u'/crawl/dir_bruter/spameggs/foobar/',
+                         u'/crawl/dir_bruter/spameggs/')
+        self.assertAllURLsFound(expected_urls)
