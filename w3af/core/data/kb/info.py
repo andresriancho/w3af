@@ -324,7 +324,8 @@ class Info(dict):
         elif isinstance(_id, int):
             self._id = [_id, ]
         else:
-            raise TypeError('IDs need to be lists of int or int not %s' % type(_id))
+            msg = 'IDs need to be lists of int or int not %s'
+            raise TypeError(msg % type(_id))
 
     def get_id(self):
         """
