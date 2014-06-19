@@ -35,15 +35,16 @@ class TestDigitSum(PluginTest):
         self._scan(self.target_url + 'index-3-1.html',
                    self._run_config['plugins'])
 
-        EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html')
+        EXPECTED_URLS = (u'/crawl/digit_sum/index-3-1.html',
+                         u'/crawl/digit_sum/index-2-1.html')
         self.assertAllURLsFound(EXPECTED_URLS)
 
     def test_found_qs(self):
         self._scan(self.target_url + 'index1.py?id=22',
                    self._run_config['plugins'])
 
-        EXPECTED_URLS = ('index1.py?id=22', 'index1.py?id=21',
-                         # These last two look very uninteresting, but please
-                         # take a look at the comment in digit_sum._do_request()
-                         'index1.py?id=23', 'index1.py?id=20')
+        EXPECTED_URLS = (u'/crawl/digit_sum/index1.py?id=20',
+                         u'/crawl/digit_sum/index1.py?id=21',
+                         u'/crawl/digit_sum/index1.py?id=22',
+                         u'/crawl/digit_sum/index1.py?id=23')
         self.assertAllURLsFound(EXPECTED_URLS)
