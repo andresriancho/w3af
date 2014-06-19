@@ -91,7 +91,8 @@ class DataToken(object):
     def __reduce__(self):
         return (self.__class__,
                 (self._name, self._value, self._path),
-                {'_payload': self._payload})
+                {'_payload': self._payload,
+                 '_original_value': self._original_value})
 
     def __getattr__(self, attr):
         # see if this object has attr

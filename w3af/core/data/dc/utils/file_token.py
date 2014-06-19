@@ -74,4 +74,5 @@ class FileDataToken(DataToken):
         and the FileDataToken implementation takes +1 parameter
         """
         args = (self._name, self._value, self._filename, self._path)
-        return self.__class__, args, {'_payload': self._payload}
+        return self.__class__, args, {'_payload': self._payload,
+                                      '_original_value': self._original_value}
