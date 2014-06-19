@@ -207,10 +207,10 @@ class xss(AuditPlugin):
         body_lower = response.get_body().lower()
         
         for mutant, mutant_response_id in self._xss_mutants:
-            
+
             sent_payload = mutant.get_token_payload()
             sent_payload_lower = sent_payload.lower()
-            
+
             for context in get_context_iter(body_lower, sent_payload):
                 if context.is_executable() or context.can_break(sent_payload_lower):
                     self._report_persistent_vuln(mutant, response,
@@ -232,7 +232,7 @@ class xss(AuditPlugin):
         desc = 'A persistent Cross Site Scripting vulnerability'\
                ' was found by sending "%s" to the "%s" parameter'\
                ' at %s, which is echoed when browsing to %s.'
-        desc = desc % (mod_value, mutant.get_var(), mutant.get_url(),
+        desc = desc % (mod_value, mutant.get_token_name(), mutant.get_url(),
                        response.get_url())
         
         csp_protects = site_protected_against_xss_by_csp(response)
