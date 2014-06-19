@@ -32,7 +32,6 @@ from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -89,7 +88,6 @@ class sqlmap(AttackPlugin):
 
         :return : True if vuln can be exploited.
         """
-        uri = vuln_obj.get_uri()
         mutant = vuln_obj.get_mutant()
         orig_value = mutant.get_token().get_original_value()
 
@@ -104,7 +102,7 @@ class sqlmap(AttackPlugin):
 
             post_data = mutant.get_data() or None
 
-            target = Target(uri, post_data)
+            target = Target(mutant.get_uri(), post_data)
 
             sqlmap = SQLMapWrapper(target, self._uri_opener)
             if sqlmap.is_vulnerable():
@@ -134,6 +132,7 @@ class sqlmap(AttackPlugin):
         
             http://sqlmap.org/
         """
+
 
 class RunFunctor(Process):
     def __init__(self, functor, params):

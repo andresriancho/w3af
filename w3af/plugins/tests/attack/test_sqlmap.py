@@ -42,6 +42,8 @@ class TestSQLMapShell(ReadExploitTest):
             'target': BSQLI,
             'plugins': {
                 'audit': (PluginConfig('blind_sqli'),),
+                'crawl': (PluginConfig('web_spider',
+                          ('only_forward', True, PluginConfig.BOOL)),)
             }
         }
         
@@ -55,17 +57,13 @@ class TestSQLMapShell(ReadExploitTest):
         # Assert the general results
         vulns = self.kb.get('sqli', 'sqli')
         self.assertEquals(1, len(vulns), vulns)
-        self.assertEquals(
-            all(["SQL injection" == v.get_name() for v in vulns]),
-            True)
+        self.assertTrue(all(["SQL injection" == v.get_name() for v in vulns]))
 
         # Verify the specifics about the vulnerabilities
-        EXPECTED = [
-            ('get_int.php', 'id'),
-        ]
+        EXPECTED = [('get_int.php', 'id')]
 
         found_vulns = [(v.get_url().get_file_name(),
-                        v.get_mutant().get_var()) for v in vulns]
+                        v.get_mutant().get_token_name()) for v in vulns]
 
         self.assertEquals(set(EXPECTED),
                           set(found_vulns))
@@ -85,9 +83,9 @@ class TestSQLMapShell(ReadExploitTest):
         
         self.assertEquals(1, len(vulns))
         vuln = vulns[0]
-        
+
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
-        self.assertEquals('id', vuln.get_mutant().get_var())
+        self.assertEquals('id', vuln.get_mutant().get_token_name())
         self.assertEquals('get_int_noerror.php', vuln.get_url().get_file_name())
         
         vuln_to_exploit_id = vuln.get_id()
@@ -125,7 +123,7 @@ class TestSQLMapShell(ReadExploitTest):
         vuln = vulns[0]
 
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
-        self.assertEquals('q', vuln.get_mutant().get_var())
+        self.assertEquals('q', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
 

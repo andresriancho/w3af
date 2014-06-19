@@ -56,7 +56,7 @@ class blind_sqli_response_diff(object):
 
     def is_injectable(self, mutant):
         """
-        Check if "parameter" of the fuzzable request object is injectable or not.
+        Check if "parameter" of the fuzzable request object is injectable or not
 
         @mutant: The mutant object that I have to inject to
         @param: A string with the parameter name to test
@@ -157,14 +157,15 @@ class blind_sqli_response_diff(object):
         mutant.set_token_value(second_false_stm)
         second_false_response, body_second_false_response = self.send_clean(mutant)
 
-        self.debug(
-            'Comparing body_second_true_response and body_true_response.')
+        self.debug('Comparing body_second_true_response and'
+                   ' body_true_response.')
         if not self.equal_with_limit(body_second_true_response,
                                      body_true_response,
                                      compare_diff):
             return None
         
-        self.debug('Comparing body_second_false_response and body_false_response.')
+        self.debug('Comparing body_second_false_response and'
+                   ' body_false_response.')
         if self.equal_with_limit(body_second_false_response,
                                  body_false_response,
                                  compare_diff):
@@ -176,7 +177,7 @@ class blind_sqli_response_diff(object):
                    ' HTTP method %s. The injectable parameter is: "%s"'
             desc = desc % (mutant.get_url(),
                            mutant.get_method(),
-                           mutant.get_var())
+                           mutant.get_token_name())
             
             v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
                                  severity.HIGH, response_ids, 'blind_sqli',
