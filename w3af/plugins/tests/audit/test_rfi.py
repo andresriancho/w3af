@@ -23,6 +23,7 @@ import threading
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.core.controllers.daemons.webserver import w3afHTTPServer
 from w3af.plugins.audit.rfi import RFIWebHandler
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -30,19 +31,19 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 class TestRFI(PluginTest):
 
-    target_rce = 'http://moth/w3af/audit/rfi/vulnerable.php'
-    target_read = 'https://moth/w3af/audit/local_file_read/local_file_read.php'
+    target_rce = get_php_moth_http('/audit/rfi/rfi-rce.php')
+    target_read = get_php_moth_http('/audit/rfi/rfi-read.php')
 
     _run_configs = {
         'remote_rce': {
-            'target': target_rce + '?file=section.php',
+            'target': target_rce + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi'),),
             }
         },
 
         'local_rce': {
-            'target': target_rce + '?file=section.php',
+            'target': target_rce + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
                                        (
@@ -51,7 +52,7 @@ class TestRFI(PluginTest):
         },
 
         'local_read': {
-            'target': target_read + '?file=section.txt',
+            'target': target_read + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
                                        (
@@ -60,7 +61,7 @@ class TestRFI(PluginTest):
         },
 
         'remote_read': {
-            'target': target_read + '?file=section.txt',
+            'target': target_read + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
                                        (
@@ -70,7 +71,6 @@ class TestRFI(PluginTest):
 
     }
 
-    @attr('ci_fails')
     def test_found_rfi_with_w3af_site(self):
         cfg = self._run_configs['remote_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -84,7 +84,6 @@ class TestRFI(PluginTest):
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
     @attr('smoke')
-    @attr('ci_fails')
     def test_found_rfi_with_local_server_rce(self):
         cfg = self._run_configs['local_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -97,7 +96,6 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote code execution", vuln.get_name())
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
-    @attr('ci_fails')
     def test_found_rfi_with_local_server_read(self):
         cfg = self._run_configs['local_read']
         self._scan(cfg['target'], cfg['plugins'])
@@ -110,7 +108,6 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote file inclusion", vuln.get_name())
         self.assertEquals(self.target_read, vuln.get_url().url_string)
 
-    @attr('ci_fails')
     def test_found_rfi_with_remote_server_read(self):
         cfg = self._run_configs['remote_read']
         self._scan(cfg['target'], cfg['plugins'])

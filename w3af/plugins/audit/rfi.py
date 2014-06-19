@@ -51,10 +51,10 @@ class rfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to use.' \
-                       ' Please set valid values for local address (eg. 10.5.2.5)' \
-                       ' and port (eg. 44449), or use the official w3af site as' \
-                       ' the target server for remote inclusions.'
+    CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to' \
+                       ' use. Please set valid values for local address (eg.' \
+                       ' 10.5.2.5) and port (eg. 44449), or use the official' \
+                       ' w3af site as the target server for remote inclusions.'
 
     RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
@@ -123,16 +123,18 @@ class rfi(AuditPlugin):
         sorted_vulns = {}
         
         for v in self._vulns:
-            if (v.get_url(), v.get_var()) in sorted_vulns:
-                sorted_vulns[(v.get_url(), v.get_var())].append(v)
+            data_tuple = (v.get_url(), v.get_token_name())
+
+            if data_tuple in sorted_vulns:
+                sorted_vulns[data_tuple].append(v)
             else:
-                sorted_vulns[(v.get_url(), v.get_var())] = [v,]
+                sorted_vulns[data_tuple] = [v]
         
-        #FIXME: This should be done somewhere else
+        # FIXME: This should be done somewhere else
         rank = {severity.INFORMATION: 0,
                 severity.LOW: 1,
                 severity.MEDIUM: 2,
-                severity.HIGH:3}
+                severity.HIGH: 3}
         
         # Get the one with the higher severity and report that one
         for _, vulns_for_url_var in sorted_vulns.iteritems():
@@ -141,13 +143,15 @@ class rfi(AuditPlugin):
             highest_severity_vuln = None
             
             for vuln in vulns_for_url_var:
+
                 this_vuln_severity = rank.get(vuln.get_severity())
                 if this_vuln_severity > highest_severity:
                     highest_severity_vuln = vuln
-                
+                    highest_severity = this_vuln_severity
+
                 # Don't keep the vulnerability in memory
                 self._vulns.remove(vuln)
-                
+
             self.kb_append_uniq(self, 'rfi', highest_severity_vuln)
 
     def _correctly_configured(self):
@@ -206,10 +210,11 @@ class rfi(AuditPlugin):
                 # Create file for remote inclusion
                 php_jsp_code, rfi_data = self._create_file()
 
-                # Setup the web server handler to return always the same response
-                # body. This is important for the test, since it might be the case
-                # that the web application prepends/appends something to the
-                # URL being included, and we don't want to fail there!
+                # Setup the web server handler to return always the same
+                # response body. This is important for the test, since it might
+                # be the case that the web application prepends/appends
+                # something to the URL being included, and we don't want to fail
+                # there!
                 #
                 # Also, this allows us to remove the payloads we sent with \0
                 # which tried to achieve the same result.
@@ -275,14 +280,12 @@ class rfi(AuditPlugin):
                      * Case sensitive protocol
                      * Same as input
         """
-        result = []
-
         # same as input
-        result.append(orig_url.url_string)
+        result = [orig_url.url_string]
 
         # url without protocol
-        url_str = orig_url.url_string.replace(
-            orig_url.get_protocol() + '://', '', 1)
+        url_str = orig_url.url_string.replace(orig_url.get_protocol() + '://',
+                                              '', 1)
         result.append(url_str)
 
         # url without case insensitive protocol
@@ -299,7 +302,7 @@ class rfi(AuditPlugin):
         """
         if rfi_data.rfi_result in response:
             desc = 'A remote file inclusion vulnerability that allows remote' \
-                  ' code execution was found at: %s' % mutant.found_at()
+                   ' code execution was found at: %s' % mutant.found_at()
             
             v = Vuln.from_mutant('Remote code execution', desc,
                                  severity.HIGH, response.id, self.get_name(),
@@ -313,7 +316,7 @@ class rfi(AuditPlugin):
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
             desc = 'A remote file inclusion vulnerability without code' \
-                  ' execution was found at: %s' % mutant.found_at()
+                   ' execution was found at: %s' % mutant.found_at()
             
             v = Vuln.from_mutant('Remote file inclusion', desc,
                                  severity.MEDIUM, response.id, self.get_name(),
@@ -330,7 +333,7 @@ class rfi(AuditPlugin):
                 if error in response and not error in mutant.get_original_response_body():
                     desc = 'A potential remote file inclusion vulnerability' \
                            ' was identified by the means of application error' \
-                           '  messages at: %s' % mutant.found_at()
+                           ' messages at: %s' % mutant.found_at()
                     
                     v = Vuln.from_mutant('Potential remote file inclusion',
                                          desc, severity.LOW, response.id,
@@ -366,17 +369,20 @@ class rfi(AuditPlugin):
             rfi_result = rand1 + rand2
 
             filename = rand_alnum(8)
-            php_jsp_code = '<? echo "%s"; echo "%s"; ?>'
-            php_jsp_code += '<%% out.print("%s"); out.print("%s"); %%>'
-            php_jsp_code = php_jsp_code % (rand1, rand2, rand1, rand2)
+            php_jsp_code = '<?php echo "%(p1)s"; echo "%(p2)s"; ?>'
+            php_jsp_code += '<? echo "%(p1)s"; echo "%(p2)s"; ?>'
+            php_jsp_code += '<%% out.print("%(p1)s"); out.print("%(p2)s"); %%>'
+            php_jsp_code = php_jsp_code % {'p1': rfi_result_part_1,
+                                           'p2': rfi_result_part_2}
+
 
             # Define the required parameters
             netloc = self._listen_address + ':' + str(self._listen_port)
             path = '/' + filename
             rfi_url = URL.from_parts('http', netloc, path, None, None, None)
 
-            rfi_data = RFIData(
-                rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
+            rfi_data = RFIData(rfi_url, rfi_result_part_1,
+                               rfi_result_part_2, rfi_result)
 
             return php_jsp_code, rfi_data
 
@@ -408,8 +414,8 @@ class rfi(AuditPlugin):
 
     def set_options(self, options_list):
         """
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
 
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
