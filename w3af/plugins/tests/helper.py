@@ -50,7 +50,7 @@ RE_COMPILE_TYPE = type(re.compile(''))
 class PluginTest(unittest.TestCase):
     """
     Remember that nosetests can't find test generators in unittest.TestCase,
-    see http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class ,
+    http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class
     """
     MOCK_RESPONSES = []
     runconfig = {}
@@ -106,6 +106,28 @@ class PluginTest(unittest.TestCase):
             set(found_tokens),
             set(expected)
         )
+
+    def assertAllURLsFound(self, expected):
+        frs = self.kb.get_all_known_fuzzable_requests()
+
+        # It is "implicit" that the user's expected files will be in the same
+        # directory as the found ones, so we only check the file names
+        found = []
+
+        for fr in frs:
+            uri = fr.get_uri()
+            fname = uri.get_file_name()
+            qs = str(uri.get_querystring())
+
+            if qs:
+                data = fname + '?' + qs
+            else:
+                data = fname
+
+            found.append(data)
+
+        self.assertEquals(set(found),
+                          set(expected))
 
     def request_callback(self, method, uri, headers):
         status = 404
