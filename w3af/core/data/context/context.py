@@ -19,11 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from cStringIO import StringIO
 from functools import wraps
+from io import SEEK_CUR
 
 from w3af.core.controllers.misc.decorators import cached_property
 
 
+QUOTE_CHARS = {'"', "'"}
 ATTR_DELIMITERS = {'"', '`', "'"}
 JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus', 
@@ -59,6 +62,8 @@ def normalize_html(data):
     Replace the < and > tags inside attribute delimiters with their encoded
     versions.
 
+    Do nothing for content inside HTML comments.
+
     :param data: A string with an HTML
     :return: Another string, with a modified HTML
     """
@@ -70,6 +75,8 @@ def normalize_html(data):
     AMP_GT = '&gt;'
     TAG_START = '<'
     TAG_END = '>'
+    COMMENT_END = '--'
+    COMMENT_START = '!--'
     ATTR_DELIMITERS = {'"', '`', "'"}
 
     # Fast search and replace when more than one char needs to be searched
@@ -80,21 +87,49 @@ def normalize_html(data):
     new_data = []
     append = new_data.append
     quote_character = None
+    inside_comment = False
+    data = StringIO(data)
+    should_read = True
 
-    for s in data:
-        if s in ATTR_DELIMITERS:
+    while should_read:
+
+        s = data.read(1)
+
+        if not s:
+            should_read = False
+
+        elif s in ATTR_DELIMITERS:
             if quote_character and s == quote_character:
                 quote_character = None
             elif not quote_character:
                 quote_character = s
 
-        elif quote_character and s == TAG_START:
-            append(AMP_LT)
-            continue
+        elif s == TAG_START:
+            position = data.tell()
+            excl_dash_dash = data.read(3)
+            data.seek(position)
 
-        elif quote_character and s == TAG_END:
-            append(AMP_GT)
-            continue
+            if excl_dash_dash == COMMENT_START:
+                # We're in the presence of <!--
+                inside_comment = True
+            elif quote_character and not inside_comment:
+                append(AMP_LT)
+                continue
+
+        elif s == TAG_END:
+
+            if inside_comment:
+                # Is this the closing of an HTML comment? Read some bytes back
+                # and find if we have a dash-dash
+                data.seek(-2, SEEK_CUR)
+                dash_dash = data.read(2)
+                if dash_dash == COMMENT_END:
+                    inside_comment = False
+
+            elif quote_character:
+                # Inside a quoted attr, and not inside a comment.
+                append(AMP_GT)
+                continue
 
         append(s)
 
@@ -416,7 +451,6 @@ class ScriptQuote(ScriptContext):
             return False
 
         quote_character = None
-        QUOTE_CHARS = {'"', "'"}
 
         for s in byte_chunk.nhtml:
             if s in QUOTE_CHARS:
@@ -463,7 +497,6 @@ class StyleText(StyleContext):
             return False
 
         quote_character = None
-        QUOTE_CHARS = {'"', "'"}
 
         for s in byte_chunk.nhtml:
             if s in QUOTE_CHARS:
@@ -537,7 +570,6 @@ class StyleQuote(StyleContext):
             return False
 
         quote_character = None
-        QUOTE_CHARS = {'"', "'"}
 
         for s in byte_chunk.nhtml:
             if s in QUOTE_CHARS:
@@ -668,6 +700,9 @@ class ByteChunk(object):
         self.attributes = dict()
         self.data = data
 
+    def __repr__(self):
+        return '<ByteChunk for "%s...">' % self.data[-25:]
+
     @cached_property
     def nhtml(self):
         return normalize_html(self.data)
@@ -687,7 +722,7 @@ class ByteChunk(object):
         # We are inside <!--...-->
         if self.nhtml.rfind('<!--') <= self.nhtml.rfind('-->'):
             return False
-
+        
         return True
 
     @cached_property

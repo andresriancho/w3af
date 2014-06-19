@@ -72,9 +72,9 @@ class TestContext(unittest.TestCase):
             <b style="='" foo='fsdfs dfHTML_ATTR_SINGLE_QUOTE'>dddd</b>
             HTML_ATTR_SINGLE_QUOTE
             <!--
-            
+
             Some HTML_COMMENT here
-            
+
             -->
             <img src="HTML_ATTR_DOUBLE_QUOTE" />
             <a href="HTML_ATTR_DOUBLE_QUOTE" />link</a>
@@ -144,7 +144,6 @@ class TestContext(unittest.TestCase):
                 ScriptSingleQuote().get_name()
                )
 
-
     def test_payload(self):
         html = """
         <html>
@@ -202,6 +201,22 @@ class TestContext(unittest.TestCase):
         </html>
         """
         self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptText)
+
+    def test_payload_html_comment_with_single_quote(self):
+        """
+        A single quote inside an HTML comment seems to break parsing by
+        "extending" the HTML comment context. See the "quote_comment.html"
+        file, specifically the section which says:
+
+            "I'm a single quote, and I break stuff."
+
+        Before fixing this bug, if you removed that single quote, this test
+        passed.
+        """
+        file_path = os.path.join(self.SAMPLES_DIR, 'quote_comment.html')
+        html = file(file_path).read()
+        self.assertIsInstance(get_context(html, 'PAYLOAD')[0],
+                              HtmlAttrDoubleQuote)
 
     def test_payload_a_single_quote(self):
         html = """
