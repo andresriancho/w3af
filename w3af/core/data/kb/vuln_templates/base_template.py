@@ -172,7 +172,7 @@ class BaseTemplate(Configurable):
     def get_method(self):
         return self.method
     
-    def get_var(self):
+    def get_vulnerable_parameter(self):
         return self.vulnerable_parameter
     
     def get_kb_location(self):
