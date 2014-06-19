@@ -49,11 +49,8 @@ class TestXSS(PluginTest):
                         'xss',
                          ('persistent_xss', True, PluginConfig.BOOL)),
                 ),
-                'crawl': (
-                    PluginConfig(
-                        'web_spider',
-                        ('only_forward', True, PluginConfig.BOOL)),
-                )
+                'crawl': (PluginConfig('web_spider',
+                          ('only_forward', True, PluginConfig.BOOL)),)
             },
         },
 
