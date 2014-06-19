@@ -31,6 +31,8 @@ class TestBlindSQLI(PluginTest):
             'target': None,
             'plugins': {
                 'audit': (PluginConfig('blind_sqli'),),
+                'crawl': (PluginConfig('web_spider',
+                          ('only_forward', True, PluginConfig.BOOL)),)
             }
         }
     }
@@ -87,7 +89,7 @@ class TestBlindSQLI(PluginTest):
         vuln = vulns[0]
 
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
-        self.assertEquals('text', vuln.get_mutant().get_var())
+        self.assertEquals('text', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form.py',
                           vuln.get_url().get_file_name())
 
@@ -104,7 +106,7 @@ class TestBlindSQLI(PluginTest):
         vuln = vulns[0]
 
         self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
-        self.assertEquals('q', vuln.get_mutant().get_var())
+        self.assertEquals('q', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
 
