@@ -63,7 +63,7 @@ class digit_sum(CrawlPlugin):
         """
         # If the fuzzable request sends post-data in any way, we don't want to
         # start fuzzing the URL, it simply doesn't make any sense.
-        if fuzzable_request.get_data():
+        if fuzzable_request.get_data() or fuzzable_request.get_method() != 'GET':
             return
 
         url = fuzzable_request.get_url()
@@ -96,7 +96,7 @@ class digit_sum(CrawlPlugin):
                               sent.
         """
         response = self._uri_opener.send_mutant(fuzzable_request, cache=True)
-
+        
         add = False
 
         if not is_404(response):
@@ -142,6 +142,7 @@ class digit_sum(CrawlPlugin):
         # First i'll mangle the digits in the URL filename
         filename = fuzzable_request.get_url().get_file_name()
         domain_path = fuzzable_request.get_url().get_domain_path()
+
         for fname in self._do_combinations(filename):
             fr_copy = copy.deepcopy(fuzzable_request)
             fr_copy.set_url(domain_path.url_join(fname))
@@ -152,20 +153,20 @@ class digit_sum(CrawlPlugin):
                 yield fr_copy
 
         # Now i'll mangle the query string variables
-        if fuzzable_request.get_method() == 'GET':
+        data_container = fuzzable_request.get_querystring()
 
-            data_container = fuzzable_request.get_querystring()
+        for _, token in data_container.iter_bound_tokens():
+            for modified_value in self._do_combinations(token.get_value()):
 
-            for dc_copy, token in data_container.iter_bound_tokens():
-                for modified_value in self._do_combinations(token.get_value()):
+                fr_copy = copy.deepcopy(fuzzable_request)
+                qs = fuzzable_request.get_querystring()
+                qs_token = qs.set_token(token.get_path())
+                qs_token.set_value(modified_value)
 
-                    fr_copy = copy.deepcopy(fuzzable_request)
-                    fr_copy.set_querystring(dc_copy)
-                    token.set_value(modified_value)
+                if fr_copy.get_uri() not in self._already_visited:
+                    self._already_visited.add(fr_copy.get_uri())
 
-                    if fr_copy.get_uri() not in self._already_visited:
-                        self._already_visited.add(fr_copy.get_uri())
-                        yield fr_copy
+                    yield fr_copy
 
     def _do_combinations(self, a_string):
         """
