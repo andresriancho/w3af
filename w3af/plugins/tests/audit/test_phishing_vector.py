@@ -18,13 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
-@attr('ci_ready')
 class TestPhishingVector(PluginTest):
 
     target_url = get_moth_http('/audit/phishing_vector/')
@@ -50,22 +47,12 @@ class TestPhishingVector(PluginTest):
 
         vulns = self.kb.get('phishing_vector', 'phishing_vector')
 
-        self.assertEquals(3, len(vulns))
-        self.assertEquals(all(
-            ['Phishing vector' == vuln.get_name() for vuln in vulns]), True)
-
         # Verify the specifics about the vulnerabilities
-        expected = [
+        EXPECTED = [
             ('http_blacklist_phishing.py', 'url'),
             ('iframe_phishing.py', 'url'),
             ('frame_phishing.py', 'url'),
         ]
 
-        found = [(str(v.get_url()), v.get_var()) for v in vulns]
-        expected = [((self.target_url + end), param) for (end,
-                    param) in expected]
-
-        self.assertEquals(
-            set(found),
-            set(expected)
-        )
+        self.assertAllVulnNamesEqual('Phishing vector', vulns)
+        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
