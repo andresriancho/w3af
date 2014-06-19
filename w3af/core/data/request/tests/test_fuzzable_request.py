@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import cPickle
+import copy
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
@@ -145,27 +146,29 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_str_no_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        expected = 'http://www.w3af.com/ | Method: GET | Query string parameters: ()'
+        expected = 'http://www.w3af.com/ | Method: GET |' \
+                   ' Query string parameters: ()'
         self.assertEqual(str(fr), expected)
 
     def test_str_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/?id=3"))
-        expected = 'http://www.w3af.com/ | Method: GET | Query string parameters: (id)'
+        expected = 'http://www.w3af.com/ | Method: GET |' \
+                   ' Query string parameters: (id)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_postdata(self):
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
         fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1',
-                                        headers=Headers([('content-type',
-                                                          URLEncodedForm.ENCODING)]))
+                                        headers=headers)
         expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
                    'form parameters: (a)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_qs_and_postdata(self):
+        headers = Headers([('content-type', URLEncodedForm.ENCODING)])
         fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
                                         post_data='a=1&b=3&a=2',
-                                        headers=Headers([('content-type',
-                                                          URLEncodedForm.ENCODING)]))
+                                        headers=headers)
         expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
                    'form parameters: (a,a,b)'
         self.assertEqual(str(fr), expected)
@@ -180,10 +183,12 @@ class TestFuzzableRequest(unittest.TestCase):
         f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
         self.assertTrue(f.sent('d%5C%27z%5C%220'))
 
-        f = FuzzableRequest(URL('http://example.com/a?p=<SCrIPT>alert("bsMs")</SCrIPT>'))
+        f = FuzzableRequest(URL('http://example.com/a?p=<SCrIPT>alert("bsMs")'
+                                '</SCrIPT>'))
         self.assertTrue(f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>'))
 
-        f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
+        f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0A'
+                                'fake_alert(a.source)</SCRiPT>'))
         self.assertTrue(f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>'))
 
     def test_sent_post_data(self):
@@ -252,6 +257,26 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertIsNot(fr.get_raw_data(), form)
 
     def test_pickle(self):
+        fr = self.create_simple_fuzzable_request()
+
+        unpickled_fr = cPickle.loads(cPickle.dumps(fr))
+        self.assertEqual(fr, unpickled_fr)
+
+    def test_deepcopy(self):
+        fr = self.create_simple_fuzzable_request()
+
+        fr_copy = copy.deepcopy(fr)
+
+        self.assertEqual(fr, fr_copy)
+        self.assertEqual(fr.get_uri(), fr_copy.get_uri())
+        self.assertEqual(fr.get_headers(), fr_copy.get_headers())
+        self.assertEqual(fr.get_data(), fr_copy.get_data())
+
+        self.assertIsNot(fr, fr_copy)
+        self.assertIsNot(fr.get_querystring(), fr_copy.get_querystring())
+        self.assertIsNot(fr.get_uri(), fr_copy.get_uri())
+
+    def create_simple_fuzzable_request(self):
         form_params = FormParameters()
         form_params.add_input([("name", "username"), ("value", "abc")])
         form_params.add_input([("name", "address"), ("value", "")])
@@ -260,7 +285,4 @@ class TestFuzzableRequest(unittest.TestCase):
 
         form = dc_from_form_params(form_params)
 
-        fr = FuzzableRequest.from_form(form)
-
-        unpickled_fr = cPickle.loads(cPickle.dumps(fr))
-        self.assertEqual(fr, unpickled_fr)
+        return FuzzableRequest.from_form(form)
