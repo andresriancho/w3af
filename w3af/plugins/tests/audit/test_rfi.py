@@ -1,5 +1,5 @@
 """
-test_remote_file_include.py
+test_rfi.py
 
 Copyright 2012 Andres Riancho
 

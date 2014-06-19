@@ -116,7 +116,8 @@ class ExecShell(Shell):
         This is a wrapper around "write" that will upload a local file
         to the remote filesystem.
 
-        :param local_filename: The local file to read and then upload to the remote system.
+        :param local_filename: The local file to read and then upload to the
+                               remote system.
         :param remote_filename: The remote file to create and write contents to.
 
         :return: The message to show to the user.
@@ -133,8 +134,8 @@ class ExecShell(Shell):
 
     def write(self, remote_filename, file_content):
         """
-        Write a the contents of the parameter "file_content" to the "remote_filename"
-        file in the remote filesystem.
+        Write a the contents of the parameter "file_content" to the
+        "remote_filename" file in the remote filesystem.
 
         :param remote_filename: The filename where to write the file_content
         :param file_content: The string to write in the remote file
@@ -211,11 +212,11 @@ class ExecShell(Shell):
 
     def get_unlink_command(self):
         """
-        :return: The command to be used to remove files in the remote operating system.
-        Examples:
-            - rm -rf %s
-            - del %s
-        The %s will be replaced by the file to be read.
+        :return: The command to be used to remove files in the remote operating
+                 system. Examples:
+                     - rm -rf %s
+                     - del %s
+                 The %s will be replaced by the file to be read.
         """
         if self._rOS == 'windows':
             return 'del %s'
@@ -235,11 +236,11 @@ class ExecShell(Shell):
         :param filename: Need the filename to determine if we need to put quotes
                          around it (because of spaces in the filename) or not.
 
-        :return: The command to be used to read files in the remote operating system.
-        Examples:
-            - cat %s
-            - type %s
-        The %s will be replaced by the file to be read.
+        :return: The command to be used to read files in the remote operating
+                 system. Examples:
+                     - cat %s
+                     - type %s
+                 The %s will be replaced by the file to be read.
         """
         if self._rOS == 'windows':
             command = 'type %s'

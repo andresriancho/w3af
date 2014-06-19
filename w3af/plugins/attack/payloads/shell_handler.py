@@ -39,8 +39,9 @@ def get_webshells(extension, force_extension=False):
     This method returns a webshell content to be used in exploits, based on
     the extension, or based on the x-powered-by header.
 
-    Plugins calling this function, should depend on "infrastructure.server_header"
-    if they want to use the complete power of this function.
+    Plugins calling this function, should depend on
+    "infrastructure.server_header" if they want to use the complete power of
+    this function.
     """
     return _get_file_list('webshell', extension, force_extension)
 
