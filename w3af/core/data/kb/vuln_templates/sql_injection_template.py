@@ -30,21 +30,7 @@ class SQLiTemplate(BaseTemplate):
         super(SQLiTemplate, self).__init__()
         
         self.name = self.get_vulnerability_name()
-        
-    def create_vuln(self):
-        v = self.create_base_vuln()
 
-        mutant = self.create_mutant_from_params()
-        mutant.set_dc(self.data)
-        mutant.set_token((self.vulnerable_parameter, 0))
-
-        v.set_mutant(mutant)
-
-        # Set the name of the vulnerability
-        v.set_name(self.name)
-
-        return v
-        
     def get_kb_location(self):
         """
         :return: A tuple with the location where the vulnerability will be
