@@ -109,8 +109,9 @@ class DataContainer(DiskItem):
 
                 return token
 
-        ppath = ', '.join([str(i) for i in token_path])
-        vpath = ' - '.join([p for _, _, p, _ in self.iter_setters()])
+        path_str = lambda path: ', '.join([str(i) for i in path])
+        ppath = path_str(token_path)
+        vpath = ' - '.join([path_str(p) for _, _, p, _ in self.iter_setters()])
 
         if vpath:
             msg = 'Invalid token path "%s". Valid paths are: %s'
