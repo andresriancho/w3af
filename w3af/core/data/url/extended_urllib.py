@@ -718,7 +718,7 @@ class ExtendedUrllib(object):
         domain in cf.cf.get('target_domains'):
 
             # Create a fuzzable request based on the urllib2 request object
-            headers_inst = Headers(request.headers.items())
+            headers_inst = Headers(request.header_items())
             fr = FuzzableRequest.from_parts(url_instance,
                                             request.get_method(),
                                             request.get_data(),
