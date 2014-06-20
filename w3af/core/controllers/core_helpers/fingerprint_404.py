@@ -31,6 +31,8 @@ from collections import deque
 from functools import wraps
 from itertools import izip_longest
 
+from darts.lib.utils.lru import SynchronizedLRUDict
+
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
@@ -38,7 +40,6 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
-from w3af.core.controllers.misc.lru import LRU
 from w3af.core.controllers.misc.decorators import retry
 
 
@@ -90,7 +91,7 @@ class fingerprint_404(object):
 
         # It is OK to store 200 here, I'm only storing path+filename as the key,
         # and bool as the value.
-        self.is_404_LRU = LRU(250)
+        self.is_404_LRU = SynchronizedLRUDict(250)
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
@@ -185,7 +186,7 @@ class fingerprint_404(object):
 
         Also, and because I was trying to cover ALL CASES, I was performing a
         lot of requests in order to cover them, which in most situations was
-        unnecesary.
+        unnecessary.
 
         So now I go for a much simple approach:
             1- Cover the simplest case of all using only 1 HTTP request

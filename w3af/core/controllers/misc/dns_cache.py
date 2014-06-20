@@ -21,16 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket
 
+from darts.lib.utils.lru import SynchronizedLRUDict
+
 import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.misc.lru import LRU
 
 
 def enable_dns_cache():
     """
     DNS cache trick
-    This will speed up all the test! Before this dns cache voodoo magic every request
-    to the HTTP server required a DNS query, this is slow on some networks so I added
-    this feature.
+
+    This will speed up all the test! Before this dns cache voodoo magic every
+    request to the HTTP server required a DNS query, this is slow on some
+    networks so I added this feature.
 
     This method was taken from:
     # $Id: download.py,v 1.30 2004/05/13 09:55:30 torh Exp $
@@ -47,7 +49,7 @@ def enable_dns_cache():
     if not hasattr(socket, 'already_configured'):
         socket._getaddrinfo = socket.getaddrinfo
 
-    _dns_cache = LRU(200)
+    _dns_cache = SynchronizedLRUDict(200)
 
     def _caching_getaddrinfo(*args, **kwargs):
         query = (args)

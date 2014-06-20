@@ -23,8 +23,9 @@ from __future__ import with_statement
 
 import threading
 
+from darts.lib.utils.lru import SynchronizedLRUDict
+
 import w3af.core.data.parsers.document_parser as DocumentParser
-from w3af.core.controllers.misc.lru import LRU
 
 DEBUG = False
 
@@ -38,7 +39,7 @@ class ParserCache(object):
     LRU_LENGTH = 40
 
     def __init__(self):
-        self._cache = LRU(self.LRU_LENGTH)
+        self._cache = SynchronizedLRUDict(self.LRU_LENGTH)
         self._LRULock = threading.RLock()
 
         # These are here for debugging:
@@ -50,8 +51,9 @@ class ParserCache(object):
     def get_document_parser_for(self, http_response):
         res = None
 
-        #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with
-        #   python's hash functions and this is what I got:
+        # Before I used md5, but I realized that it was unnecessary. I
+        # experimented a little bit with python's hash functions and this is
+        # what I got:
         #
         #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import zlib; s="aaa"*1234' 'zlib.crc32(s)'
         #   100000 loops, best of 3: 6.03 usec per loop
