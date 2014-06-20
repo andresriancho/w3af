@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -35,6 +37,9 @@ class dav(AuditPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    CONTENT_TYPE = Headers([('content-type',
+                             'application/xml; charset="utf-8"')])
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -81,7 +86,8 @@ class dav(AuditPlugin):
         content += "</g:sql>\r\n"
         content += "</g:searchrequest>\r\n"
 
-        res = self._uri_opener.SEARCH(domain_path, data=content)
+        res = self._uri_opener.SEARCH(domain_path, data=content,
+                                      headers=self.CONTENT_TYPE)
 
         content_matches = '<a:response>' in res or '<a:status>' in res or \
             'xmlns:a="DAV:"' in res
@@ -110,9 +116,11 @@ class dav(AuditPlugin):
         content += "</a:prop>\r\n"
         content += "</a:propfind>\r\n"
 
-        hdrs = Headers([('Depth', '1')])
-        res = self._uri_opener.PROPFIND(
-            domain_path, data=content, headers=hdrs)
+        headers = copy.deepcopy(self.CONTENT_TYPE)
+        headers['Depth'] = '1'
+
+        res = self._uri_opener.PROPFIND(domain_path, data=content,
+                                        headers=headers)
 
         if "D:href" in res and res.get_code() in xrange(200, 300):
             msg = 'Directory listing with HTTP PROPFIND method was found at' \
@@ -134,7 +142,10 @@ class dav(AuditPlugin):
         # upload
         url = domain_path.url_join(rand_alpha(5))
         rnd_content = rand_alnum(6)
-        put_response = self._uri_opener.PUT(url, data=rnd_content)
+        headers = Headers([('content-type', 'text/plain')])
+
+        put_response = self._uri_opener.PUT(url, data=rnd_content,
+                                            headers=headers)
 
         # check if uploaded
         res = self._uri_opener.GET(url, cache=True)
