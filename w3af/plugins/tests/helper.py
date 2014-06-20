@@ -98,7 +98,7 @@ class PluginTest(unittest.TestCase):
         for vuln in vulns:
             self.assertEqual(vuln.get_name(), vuln_name)
 
-    def assertAllExpectedVulnsFound(self, expected, found_vulns):
+    def assertExpectedVulnsFound(self, expected, found_vulns):
         found_tokens = [(v.get_url().get_file_name(),
                          v.get_token_name()) for v in found_vulns]
 
@@ -106,6 +106,17 @@ class PluginTest(unittest.TestCase):
             set(found_tokens),
             set(expected)
         )
+
+    def assertAllExpectedVulnsFound(self, expected):
+        all_info = self.kb.get_all_infos()
+        info_tokens = set()
+
+        for info in all_info:
+            info_tokens.add((info.get_name(),
+                             info.get_path(),
+                             info.get_token_name()))
+
+        self.assertEqual(expected, info_tokens)
 
     def assertAllURLsFound(self, expected):
         frs = self.kb.get_all_known_fuzzable_requests()
@@ -204,6 +215,10 @@ class PluginTest(unittest.TestCase):
                                               ptype)
 
             for pcfg in plugincfgs:
+
+                if pcfg.name == 'all':
+                    continue
+
                 plugin_instance = self.w3afcore.plugins.get_plugin_inst(ptype,
                                                                         pcfg.name)
                 default_option_list = plugin_instance.get_options()

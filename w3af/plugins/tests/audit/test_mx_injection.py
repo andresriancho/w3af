@@ -51,4 +51,4 @@ class TestMXInjection(PluginTest):
         ]
 
         self.assertAllVulnNamesEqual("MX injection vulnerability", vulns)
-        self.assertAllExpectedVulnsFound(expected, vulns)
+        self.assertExpectedVulnsFound(expected, vulns)

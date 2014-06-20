@@ -58,4 +58,4 @@ class TestGlobalRedirect(PluginTest):
             ('redirect-302-filtered.py', 'url')
         ]
 
-        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
+        self.assertExpectedVulnsFound(EXPECTED, vulns)

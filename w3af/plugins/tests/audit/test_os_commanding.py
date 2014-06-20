@@ -56,4 +56,4 @@ class TestOSCommanding(PluginTest):
         ]
 
         self.assertAllVulnNamesEqual("OS commanding vulnerability", vulns)
-        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
+        self.assertExpectedVulnsFound(EXPECTED, vulns)

@@ -56,4 +56,4 @@ class TestPreg(PluginTest):
         )
 
         self.assertAllVulnNamesEqual('Unsafe preg_replace usage', vulns)
-        self.assertAllExpectedVulnsFound(expected_results, vulns)
+        self.assertExpectedVulnsFound(expected_results, vulns)

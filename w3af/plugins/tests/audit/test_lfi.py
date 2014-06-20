@@ -56,4 +56,4 @@ class TestLFI(PluginTest):
         ]
 
         self.assertAllVulnNamesEqual("Local file inclusion vulnerability", vulns)
-        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
+        self.assertExpectedVulnsFound(EXPECTED, vulns)

@@ -55,4 +55,4 @@ class TestPhishingVector(PluginTest):
         ]
 
         self.assertAllVulnNamesEqual('Phishing vector', vulns)
-        self.assertAllExpectedVulnsFound(EXPECTED, vulns)
+        self.assertExpectedVulnsFound(EXPECTED, vulns)
