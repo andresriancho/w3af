@@ -52,7 +52,12 @@ def dc_from_hdrs_post(headers, post_data):
             pass
     else:
         content_type, _ = headers.iget('content-type', 'missing')
-        om.out.debug('Unknown post-data. Content-type: %s' % content_type)
+        msg = 'Unknown post-data. Content-type: %s and/or post-data %s'
+        om.out.debug(msg % (content_type, post_data[:50]))
+
+        # These lines are for debugging
+        #import traceback
+        #traceback.print_stack()
 
         # We just return None, saying that we don't really know how to parse
         # this post-data
