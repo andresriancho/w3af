@@ -61,13 +61,14 @@ class phishtank(CrawlPlugin):
         to_check = self._get_to_check(fuzzable_request.get_url())
 
         # I found some URLs, create fuzzable requests
-        phishtank_matches = self._is_in_phishtank(to_check)
-        for ptm in phishtank_matches:
+        pt_handler = self._is_in_phishtank(to_check)
+
+        for ptm in pt_handler.matches:
             fr = FuzzableRequest(ptm.url)
             self.output_queue.put(fr)
 
         # Only create the vuln object once
-        if phishtank_matches:
+        if pt_handler.matches:
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
             desc = desc % (ptm.url, ptm.more_info_URL)
@@ -139,7 +140,7 @@ class phishtank(CrawlPlugin):
 
         om.out.debug('Finished XML parsing. ')
 
-        return pt_handler.matches
+        return pt_handler
 
     def get_long_desc(self):
         """
@@ -190,6 +191,7 @@ class PhishTankHandler(ContentHandler):
         
         self.inside_entry = False
         self.inside_URL = False
+        self.url_count = 0
         self.inside_detail = False
         
         self.matches = []
@@ -216,6 +218,7 @@ class PhishTankHandler(ContentHandler):
             self.inside_detail = False
         if name == 'url':
             self.inside_URL = False
+            self.url_count += 1
         if name == 'entry':
             self.inside_entry = False
             #

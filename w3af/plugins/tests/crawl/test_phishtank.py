@@ -77,10 +77,11 @@ class TestPhishtank(PluginTest):
                                                                'phishtank')
 
         vuln_url_str = self.get_vulnerable_url(phishtank_inst)
-        ptm_list = phishtank_inst._is_in_phishtank([vuln_url_str, ])
-        self.assertEqual(len(ptm_list), 1, ptm_list)
+        pt_handler = phishtank_inst._is_in_phishtank([vuln_url_str, ])
+        self.assertGreater(pt_handler.url_count, 25000)
+        self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
-        ptm = ptm_list[0]
+        ptm = pt_handler.matches[0]
         self.assertEqual(ptm.url.url_string, vuln_url_str)
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
 
@@ -89,10 +90,12 @@ class TestPhishtank(PluginTest):
                                                                'phishtank')
 
         vuln_url_str = self.get_last_vulnerable_url(phishtank_inst)
-        ptm_list = phishtank_inst._is_in_phishtank([vuln_url_str, ])
-        self.assertEqual(len(ptm_list), 1, ptm_list)
+        last_domain = URL(vuln_url_str).get_domain()
+        pt_handler = phishtank_inst._is_in_phishtank([last_domain])
+        self.assertGreater(pt_handler.url_count, 25000)
+        self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
-        ptm = ptm_list[0]
+        ptm = pt_handler.matches[0]
         self.assertEqual(ptm.url.url_string, URL(vuln_url_str).url_string)
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
         
