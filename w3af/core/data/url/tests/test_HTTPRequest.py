@@ -28,6 +28,8 @@ from nose.plugins.attrib import attr
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 @attr('smoke')
@@ -37,24 +39,30 @@ class TestHTTPRequest(unittest.TestCase):
         u = URL('http://www.w3af.com')
         req = HTTPRequest(u)
         
-        self.assertEqual(req.get_full_url(),
-                         'http://www.w3af.com/')
-        self.assertEqual(req.get_uri().url_string,
-                         'http://www.w3af.com/')
-        
-    
+        self.assertEqual(req.get_full_url(), 'http://www.w3af.com/')
+        self.assertEqual(req.get_uri().url_string, 'http://www.w3af.com/')
+
     def test_to_from_dict(self):
         headers = Headers([('Host', 'www.w3af.com')])
         req = HTTPRequest(URL("http://www.w3af.com/"), data='spameggs',
                           headers=headers)
-        
+
         msg = msgpack.dumps(req.to_dict())
         loaded_dict = msgpack.loads(msg)
         loaded_req = HTTPRequest.from_dict(loaded_dict)
-        
+
         self.assertEqual(req, loaded_req)
         self.assertEqual(req.__dict__.values(),
                          loaded_req.__dict__.values())
+
+    def test_to_dict_msgpack_with_data_token(self):
+        token = DataToken('Host', 'www.w3af.com', ('Host',))
+        headers = Headers([('Host', token)])
+        freq = FuzzableRequest(URL("http://www.w3af.com/"), headers=headers)
+
+        req = HTTPRequest.from_fuzzable_request(freq)
+
+        msgpack.dumps(req.to_dict())
             
     def test_dump_case01(self):
         expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',

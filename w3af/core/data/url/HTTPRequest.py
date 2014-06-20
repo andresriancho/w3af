@@ -23,6 +23,7 @@ import copy
 import urllib2
 
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
 
@@ -51,7 +52,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.method = method
         if self.method is None:
             self.method = 'POST' if data else 'GET'
-        
+
+        headers.tokens_to_value()
         headers = dict(headers)
 
         # Call the base class constructor
@@ -64,6 +66,19 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                self.get_uri() == other.get_uri() and\
                self.get_headers() == other.get_headers() and\
                self.get_data() == other.get_data()
+
+    def add_header(self, key, val):
+        """
+        Override mostly to avoid having header values of DataToken type
+
+        :param key: The header name as a string
+        :param val: The header value (a string of a DataToken)
+        :return: None
+        """
+        if isinstance(val, DataToken):
+            val = val.get_value()
+
+        self.headers[key.capitalize()] = val
 
     def get_method(self):
         return self.method
@@ -95,15 +110,16 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     @classmethod
     def from_fuzzable_request(cls, fuzzable_request):
         """
-        :param request: The FuzzableRequest
+        :param fuzzable_request: The FuzzableRequest
         :return: An instance of HTTPRequest with all the information contained
                  in the FuzzableRequest passed as parameter
         """
         host = fuzzable_request.get_url().get_domain()
         data = fuzzable_request.get_data()
+        headers = fuzzable_request.get_headers()
+        headers.tokens_to_value()
 
-        return cls(fuzzable_request.get_uri(), data=data,
-                   headers=fuzzable_request.get_headers(),
+        return cls(fuzzable_request.get_uri(), data=data, headers=headers,
                    origin_req_host=host)
 
     @classmethod    

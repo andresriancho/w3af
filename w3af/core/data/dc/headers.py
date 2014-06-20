@@ -78,7 +78,20 @@ class Headers(NonRepeatKeyValueContainer):
             cleaned_vals.append((smart_unicode(key), value))
         
         return cleaned_vals
-    
+
+    def tokens_to_value(self):
+        """
+        Sometimes we need to serialize the headers into a more simple form,
+        a dict for example, in order to send it to msgpack. Since DataTokens
+        are "complex" classes which msgpack knows nothing about, we need to
+        replace any of those instances with their value.
+
+        :return: None. We're modifying self.
+        """
+        for key, val, path, setter in self.iter_setters():
+            if isinstance(val, DataToken):
+                setter(val.get_value())
+
     def iget(self, header_name, default=None):
         """
         :param header_name: The name of the header we want the value for
