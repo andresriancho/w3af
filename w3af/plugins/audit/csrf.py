@@ -153,7 +153,7 @@ class csrf(AuditPlugin):
         mutant = HeadersMutant(copy.deepcopy(freq))
         headers = mutant.get_dc()
         headers['Referer'] = freq.get_referer()
-        mutant.set_token('Referer')
+        mutant.set_token(('Referer',))
         mutant.set_token_value(fake_ref)
 
         mutant_response = self._uri_opener.send_mutant(mutant)
