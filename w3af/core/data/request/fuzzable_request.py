@@ -38,7 +38,7 @@ from w3af.core.data.dc.factory import dc_from_hdrs_post
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
-
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 ALL_CHARS = ''.join(chr(i) for i in xrange(256))
 TRANS_TABLE = string.maketrans(ALL_CHARS, ALL_CHARS)
@@ -267,8 +267,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         :return: A string representation of this fuzzable request.
         """
-        short_fmt = 'Method: %s | %s'
-        long_fmt = 'Method: %s | %s | %s: (%s)'
+        short_fmt = u'Method: %s | %s'
+        long_fmt = u'Method: %s | %s | %s: (%s)'
 
         if self.get_raw_data():
             parameters = self.get_raw_data().get_param_names()
@@ -278,11 +278,16 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             dc_type = self.get_uri().querystring.get_type()
 
         if not parameters:
-            return short_fmt % (self.get_method(), self.get_url())
+            output = short_fmt % (self.get_method(), self.get_url())
         else:
-            jparams = ','.join(parameters)
-            return long_fmt % (self.get_method(), self.get_url(),
+            jparams = u','.join(parameters)
+            output = long_fmt % (self.get_method(), self.get_url(),
                                dc_type, jparams)
+
+        return output.encode(DEFAULT_ENCODING)
+
+    def __unicode__(self):
+        return str(self).decode(encoding=DEFAULT_ENCODING, errors='ignore')
 
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % (self.get_method(),

@@ -185,7 +185,8 @@ class StopCtrlCTest(unittest.TestCase):
         target_opts = create_target_option_list(URL(get_moth_http()))
         w3afcore.target.set_options(target_opts)
         
-        w3afcore.plugins.set_plugins(['web_spider',], 'crawl')
+        w3afcore.plugins.set_plugins(['web_spider'], 'crawl')
+        #w3afcore.plugins.set_plugins(['console'], 'output')
         
         # Verify env and start the scan
         w3afcore.plugins.init_plugins()
