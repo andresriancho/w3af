@@ -122,7 +122,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if isinstance(url, basestring):
             url = URL(url)
 
-        if isinstance(post_data, basestring):
+        if post_data == '':
+            post_data = None
+
+        elif isinstance(post_data, basestring):
             post_data = dc_from_hdrs_post(headers, post_data)
 
         return cls(url, method=method, headers=headers, post_data=post_data)
