@@ -87,7 +87,7 @@ class ManualRequests(entries.RememberingWindow):
     def _send(self, widg):
         """Actually sends the manual requests.
 
-        :param widget: who sent the signal.
+        :param widg: who sent the signal.
         """
         (tsup, tlow) = self.reqresp.request.get_both_texts()
 

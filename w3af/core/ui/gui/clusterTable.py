@@ -459,15 +459,15 @@ if __name__ == "__main__":
     #    We create the data
     data = [
         HTTPResponse(200, 'my data1 looks like this and has no errors',
-                     {}, url_instance, url_instance, id=1),
+                     {}, url_instance, url_instance, _id=1),
         HTTPResponse(200, 'errors? i like errors like this one: SQL',
-                     {}, url_instance, url_instance, id=2),
+                     {}, url_instance, url_instance, _id=2),
         HTTPResponse(200, 'my data is really happy', {},
-                     url_instance, url_instance, id=3),
+                     url_instance, url_instance, _id=3),
         HTTPResponse(
-            200, 'my data1 loves me', {}, url_instance, url_instance, id=4),
+            200, 'my data1 loves me', {}, url_instance, url_instance, _id=4),
         HTTPResponse(
-            200, 'my data likes me', {}, url_instance, url_instance, id=5)
+            200, 'my data likes me', {}, url_instance, url_instance, _id=5)
     ]
 
     cl_win = ClusterCellWindow(data=data)

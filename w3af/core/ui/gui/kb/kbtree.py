@@ -486,7 +486,7 @@ class KBTree(gtk.TreeView):
     def _is_exploitable(self, vuln_id):
         """Indicantes if 'vuln' is exploitable
 
-        :param vuln: The vuln to test.
+        :param vuln_id: The vuln id to test.
         :return: A bool value
         """
         if self.exploit_vulns.get(str(vuln_id)):
@@ -499,7 +499,7 @@ class KBTree(gtk.TreeView):
         """If 'vuln' is an exploitable vulnerability then map it to its
         exploits
 
-        :param vuln: Potential vulnerability
+        :param vuln_id: Potential vulnerability id
         """
         exploits = self._get_exploits(vuln_id) or []
         # Ensure the each vuln is processed only once.

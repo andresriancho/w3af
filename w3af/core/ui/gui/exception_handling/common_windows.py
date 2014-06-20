@@ -605,7 +605,7 @@ class GithubBugReport(object):
             if login_result:
                 break
 
-        return (False, gh, email)
+        return False, gh, email
 
 
 class GithubMultiBugReport(GithubBugReport):

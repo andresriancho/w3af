@@ -38,7 +38,7 @@ class Platform(object):
         raise NotImplementedError
 
     @staticmethod
-    def os_package_is_installed():
+    def os_package_is_installed(package_name):
         raise NotImplementedError
 
     @staticmethod

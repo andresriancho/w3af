@@ -45,16 +45,16 @@ RECURSION_MSG = "Recursion limit: can't go deeper"
 
 
 class FullKBTree(KBTree):
-    """A tree showing all the info.
-
-    This also gives a long description of the element when clicked.
-
-    :param kbbrowser: The KB Browser
-    :param filter: The filter to show which elements
-
-    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    """
     def __init__(self, w3af, kbbrowser, ifilter):
+        """A tree showing all the info.
+
+        This also gives a long description of the element when clicked.
+
+        :param kbbrowser: The KB Browser
+        :param filter: The filter to show which elements
+
+        :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+        """
         super(FullKBTree, self).__init__(w3af, ifilter,
                                          'Knowledge Base', strict=False)
         self._historyItem = HistoryItem()

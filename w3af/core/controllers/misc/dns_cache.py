@@ -50,8 +50,9 @@ def enable_dns_cache():
     _dns_cache = LRU(200)
 
     def _caching_getaddrinfo(*args, **kwargs):
+        query = (args)
+
         try:
-            query = (args)
             res = _dns_cache[query]
             #This was too noisy and not so useful
             #om.out.debug('Cached DNS response for domain: ' + query[0] )
@@ -59,8 +60,8 @@ def enable_dns_cache():
         except KeyError:
             res = socket._getaddrinfo(*args, **kwargs)
             _dns_cache[args] = res
-            om.out.debug(
-                'DNS response from DNS server for domain: ' + query[0])
+            msg = 'DNS response from DNS server for domain: %s'
+            om.out.debug(msg % query[0])
             return res
 
     if not hasattr(socket, 'already_configured'):

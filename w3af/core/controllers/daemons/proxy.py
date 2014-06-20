@@ -605,8 +605,8 @@ def wrap(socket_obj, ssl_connection, fun, *params):
                 raise ssl_error
             else:
                 if msg == 'ssl handshake failure':
-                    msg = 'Asking the user about the invalid w3af MITM certificate.' \
-                          ' He must accept it.'
+                    msg = 'Asking the user about the invalid w3af MITM' \
+                          ' certificate. He must accept it.'
                     om.out.debug(msg)
                     ssl_connection.shutdown()
                     raise ssl_error

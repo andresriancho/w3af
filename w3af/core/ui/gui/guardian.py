@@ -47,14 +47,16 @@ class _Guarded(object):
         self.label.set_text(str(self.quant).ljust(5))
         return False
 
+
 class FoundObjectsGuardian(gtk.HBox):
-    """Shows the objects found by the core.
 
-    :param w3af: the core
-
-    :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    """
     def __init__(self, _w3af):
+        """Shows the objects found by the core.
+
+        :param w3af: the core
+
+        :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+        """
         super(FoundObjectsGuardian, self).__init__()
         self.w3af = _w3af
 

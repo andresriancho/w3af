@@ -42,7 +42,7 @@ def rand_alnum(length=0):
     return ''.join(choice(jibber) for _ in xrange(length or randint(10, 30)))
 
 
-def rand_number(length=0, exclude_numbers=[]):
+def rand_number(length=0, exclude_numbers=()):
     """
     Create a random string ONLY with numbers
 

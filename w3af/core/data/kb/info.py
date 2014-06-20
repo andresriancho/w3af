@@ -36,7 +36,6 @@ class Info(dict):
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         :param desc: The vulnerability description
-        :param severity: The severity for this object
         :param response_ids: A list of response ids associated with this vuln
         :param plugin_name: The name of the plugin which identified the vuln
         """
