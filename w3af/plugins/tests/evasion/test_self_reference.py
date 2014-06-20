@@ -32,27 +32,27 @@ class TestEvasion(unittest.TestCase):
         sr = self_reference()
 
         u = URL('http://www.w3af.com/')
-        r = HTTPRequest( u )
+        r = HTTPRequest(u)
         
-        self.assertEqual(sr.modify_request( r ).url_object.url_string,
+        self.assertEqual(sr.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/./')
 
     def test_add_to_url_with_path(self):
         sr = self_reference()
         
         u = URL('http://www.w3af.com/abc/')
-        r = HTTPRequest( u )
+        r = HTTPRequest(u)
         
-        self.assertEqual(sr.modify_request( r ).url_object.url_string,
+        self.assertEqual(sr.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/./abc/./')
 
     def test_add_to_url_with_qs(self):
         sr = self_reference()
         
         u = URL('http://www.w3af.com/abc/def.htm?id=1')
-        r = HTTPRequest( u )
+        r = HTTPRequest(u)
         
-        self.assertEqual(sr.modify_request( r ).url_object.url_string,
+        self.assertEqual(sr.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/./abc/./def.htm?id=1')
 
         #

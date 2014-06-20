@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from nose.plugins.attrib import attr
 from unittest.case import skip
 
 from w3af.core.data.parsers.url import URL
@@ -37,8 +36,8 @@ class TestEvasion(unittest.TestCase):
         bbd = backspace_between_dots()
 
         u = URL('http://www.w3af.com/')
-        r = HTTPRequest( u )
-        self.assertEqual(bbd.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(bbd.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/')
 
     def test_modify_basic(self):
@@ -46,8 +45,8 @@ class TestEvasion(unittest.TestCase):
         bbd = backspace_between_dots()
         
         u = URL('http://www.w3af.com/../')
-        r = HTTPRequest( u )
-        self.assertEqual(bbd.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(bbd.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/.%41%08./')
 
     def test_modify_with_filename(self):
@@ -55,8 +54,8 @@ class TestEvasion(unittest.TestCase):
         bbd = backspace_between_dots()
         
         u = URL('http://www.w3af.com/abc/def/.././jkl.htm')
-        r = HTTPRequest( u )
-        self.assertEqual(bbd.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(bbd.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/abc/def/.%41%08././jkl.htm')
         #
         #    The plugins should not modify the original request
