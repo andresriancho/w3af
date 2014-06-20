@@ -427,7 +427,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     def get_all_entries_of_class(self, klass):
         """
-        :return: A list of all objects of class == klass that are saved in the kb.
+        :return: A list of all objects of class == klass that are saved in the
+                 kb.
         """
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
