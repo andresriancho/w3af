@@ -146,22 +146,21 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_str_no_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        expected = 'http://www.w3af.com/ | Method: GET |' \
-                   ' Query string parameters: ()'
+        expected = 'Method: GET | http://www.w3af.com/'
         self.assertEqual(str(fr), expected)
 
     def test_str_qs(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/?id=3"))
-        expected = 'http://www.w3af.com/ | Method: GET |' \
-                   ' Query string parameters: (id)'
+        expected = 'Method: GET | http://www.w3af.com/ |' \
+                   ' Query string: (id)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_postdata(self):
         headers = Headers([('content-type', URLEncodedForm.ENCODING)])
         fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1',
                                         headers=headers)
-        expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
-                   'form parameters: (a)'
+        expected = 'Method: GET | http://www.w3af.com/ | URL encoded ' \
+                   'form: (a)'
         self.assertEqual(str(fr), expected)
 
     def test_str_with_qs_and_postdata(self):
@@ -169,8 +168,8 @@ class TestFuzzableRequest(unittest.TestCase):
         fr = FuzzableRequest.from_parts("http://www.w3af.com/?id=3",
                                         post_data='a=1&b=3&a=2',
                                         headers=headers)
-        expected = 'http://www.w3af.com/ | Method: GET | URL encoded ' \
-                   'form parameters: (a,a,b)'
+        expected = 'Method: GET | http://www.w3af.com/ | URL encoded ' \
+                   'form: (a,a,b)'
         self.assertEqual(str(fr), expected)
 
     def test_repr(self):
