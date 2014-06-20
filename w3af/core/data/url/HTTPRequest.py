@@ -53,7 +53,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         if self.method is None:
             self.method = 'POST' if data else 'GET'
 
-        headers.tokens_to_value()
+        if isinstance(headers, Headers):
+            headers.tokens_to_value()
+            
         headers = dict(headers)
 
         # Call the base class constructor
