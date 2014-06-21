@@ -159,7 +159,7 @@ class digit_sum(CrawlPlugin):
             for modified_value in self._do_combinations(token.get_value()):
 
                 fr_copy = copy.deepcopy(fuzzable_request)
-                qs = fuzzable_request.get_querystring()
+                qs = fr_copy.get_querystring()
                 qs_token = qs.set_token(token.get_path())
                 qs_token.set_value(modified_value)
 
