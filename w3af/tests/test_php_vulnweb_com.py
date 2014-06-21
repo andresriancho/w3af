@@ -1,5 +1,5 @@
 """
-test_demo_testfire_net.py
+test_php_vulnweb_com.py
 
 Copyright 2014 Andres Riancho
 
@@ -18,10 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from w3af.plugins.tests.helper import PluginTest
 from w3af.tests.utils.scan_vulnerable_site import TestScanVulnerableSite
+from w3af.plugins.tests.helper import PluginTest
 
 
-class TestDemoTestFireNet(TestScanVulnerableSite, PluginTest):
-    target_url = 'http://demo.testfire.net/'
+class TestScanPHPVulnwebCom(TestScanVulnerableSite, PluginTest):
+
+    target_url = 'http://testphp.vulnweb.com/'
     EXPECTED_VULNS = {()}

@@ -113,7 +113,7 @@ class PluginTest(unittest.TestCase):
 
         for info in all_info:
             info_tokens.add((info.get_name(),
-                             info.get_path(),
+                             info.get_url().get_path(),
                              info.get_token_name()))
 
         self.assertEqual(expected, info_tokens)
