@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.misc.file_utils import days_since_newest_file_update
+from w3af.core.data.misc.file_utils import get_days_since_last_update
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 
 
@@ -28,7 +28,7 @@ class TestSQLMapUpdate(unittest.TestCase):
     """Verify that we have an updated version of sqlmap within w3af"""
     
     def test_updated(self):
-        days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)
+        days = get_days_since_last_update(SQLMapWrapper.SQLMAP_LOCATION)
         
         # See http://nuclearsquid.com/writings/subtree-merging-and-you/
         #     https://www.kernel.org/pub/software/scm/git/docs/howto/using-merge-subtree.html
@@ -38,20 +38,27 @@ class TestSQLMapUpdate(unittest.TestCase):
         #       sudo apt-get update
         #       sudo apt-get install git
         #
-        setup_commands = ('git remote add -f sqlmap git://github.com/sqlmapproject/sqlmap.git',
-                          'git subtree add --prefix=w3af/plugins/attack/db/sqlmap/ --squash sqlmap master')
+        setup_commands = ('git remote add -f'
+                          ' sqlmap git://github.com/sqlmapproject/sqlmap.git',
+
+                          'git subtree add'
+                          ' --prefix=w3af/plugins/attack/db/sqlmap/'
+                          ' --squash sqlmap master')
         setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
         
-        maintain_commands = ('git subtree pull --prefix=w3af/plugins/attack/db/sqlmap/ --squash sqlmap master',
+        maintain_commands = ('git subtree pull'
+                             ' --prefix=w3af/plugins/attack/db/sqlmap/'
+                             ' --squash sqlmap master',
+
                              'git push')
         maintain_str = ''.join(['    %s\n' % mcmd for mcmd in maintain_commands])
         
-        msg = ('\nYou need to update the sqlmap installation that\'s embedded with'
-              ' w3af. If you run "git remote" and sqlmap appears in the output'
-              ' just run:\n'
-              '%s\n'
-              'Worse case scenario you will have to setup the remote:\n'
-              '%s')
+        msg = ('\nYou need to update the sqlmap installation that\'s embedded'
+               ' with w3af. If you run "git remote" and sqlmap appears in the'
+               'output just run:\n'
+               '%s\n'
+               'Worse case scenario you will have to setup the remote:\n'
+               '%s')
 
         msg = msg % (maintain_str, setup_str)
         
