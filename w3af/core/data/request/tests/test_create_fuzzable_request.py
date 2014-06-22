@@ -31,6 +31,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
+from w3af.core.data.dc.generic.plain import PlainContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.request.factory import create_fuzzable_request_from_request
@@ -119,7 +120,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
         # Here the "default" post-data is set, which will be empty because we
         # failed to parse the post-data
-        self.assertIsInstance(fr.get_raw_data(), KeyValueContainer)
+        self.assertIsInstance(fr.get_raw_data(), PlainContainer)
         self.assertEqual(fr.get_raw_data().get_param_names(), [])
 
     def test_xmlrpc_post(self):
@@ -181,7 +182,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
         # Here the "default" post-data is set, which will be empty because we
         # failed to parse the post-data
-        self.assertIsInstance(fr.get_raw_data(), KeyValueContainer)
+        self.assertIsInstance(fr.get_raw_data(), PlainContainer)
         self.assertEqual(fr.get_raw_data().get_param_names(), [])
 
 
