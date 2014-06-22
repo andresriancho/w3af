@@ -22,8 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os.path
 import socket
 
-from xml.sax import make_parser
-from xml.sax.handler import ContentHandler, ErrorHandler
+import lxml.etree as etree
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
@@ -71,7 +70,7 @@ class phishtank(CrawlPlugin):
         if pt_handler.matches:
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
-            desc = desc % (ptm.url, ptm.more_info_URL)
+            desc = desc % (ptm.url, ptm.more_info_url)
 
             v = Vuln('Phishing scam', desc, severity.MEDIUM, [], self.get_name())
             v.set_url(ptm.url)
@@ -125,15 +124,13 @@ class phishtank(CrawlPlugin):
             msg = 'Failed to open phishtank database: "%s", exception: "%s".'
             raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 
-        parser = make_parser()
         pt_handler = PhishTankHandler(to_check)
-        pt_error_handler = PhishTankErrorHandler()
-        parser.setContentHandler(pt_handler)
-        parser.setErrorHandler(pt_error_handler)
+        parser = etree.HTMLParser(recover=True, target=pt_handler)
+
         om.out.debug('Starting the phishtank XML parsing. ')
 
         try:
-            parser.parse(phishtank_db_fd)
+            etree.parse(phishtank_db_fd, parser)
         except Exception, e:
             msg = 'XML parsing error in phishtank DB, exception: "%s".'
             raise BaseFrameworkException(msg % e)
@@ -158,12 +155,12 @@ class PhishTankMatch(object):
     Represents a phishtank match between the site I'm scanning and
     something in the index.xml file.
     """
-    def __init__(self, url, more_info_URL):
+    def __init__(self, url, more_info_url):
         self.url = url
-        self.more_info_URL = more_info_URL
+        self.more_info_url = more_info_url
 
 
-class PhishTankHandler(ContentHandler):
+class PhishTankHandler(object):
     """
     <entry>
         <url><![CDATA[http://cbisis...paypal.support/]]></url>
@@ -196,29 +193,35 @@ class PhishTankHandler(ContentHandler):
         
         self.matches = []
 
-    def startElement(self, name, attrs):
+    def start(self, name, attrs):
         if name == 'entry':
             self.inside_entry = True
+
         elif name == 'url':
             self.inside_URL = True
             self.url = ''
+
         elif name == 'phish_detail_url':
             self.inside_detail = True
             self.phish_detail_url = ''
+
         return
 
-    def characters(self, ch):
+    def data(self, ch):
         if self.inside_URL:
             self.url += ch
+
         if self.inside_detail:
             self.phish_detail_url += ch
 
-    def endElement(self, name):
+    def end(self, name):
         if name == 'phish_detail_url':
             self.inside_detail = False
+
         if name == 'url':
             self.inside_URL = False
             self.url_count += 1
+
         if name == 'entry':
             self.inside_entry = False
             #
@@ -238,30 +241,5 @@ class PhishTankHandler(ContentHandler):
                                              phish_detail_url)
                         self.matches.append(ptm)
 
-
-class PhishTankErrorHandler(ErrorHandler):
-    """
-    If you create an object that implements this interface, then
-    register the object with your XMLReader, the parser will call the
-    methods in your object to report all warnings and errors. There
-    are three levels of errors available: warnings, (possibly)
-    recoverable errors, and unrecoverable errors. All methods take a
-    SAXParseException as the only parameter."""
-
-    def error(self, exception):
-        """
-        Handle a recoverable error.
-        """
-        pass
-
-    def fatalError(self, exception):
-        """
-        Handle a non-recoverable error.
-        """
-        pass
-
-    def warning(self, exception):
-        """
-        Handle a warning.
-        """
-        pass
+    def close(self):
+        return self.matches

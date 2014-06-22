@@ -78,12 +78,12 @@ class TestPhishtank(PluginTest):
 
         vuln_url_str = self.get_vulnerable_url(phishtank_inst)
         pt_handler = phishtank_inst._is_in_phishtank([vuln_url_str, ])
-        self.assertGreater(pt_handler.url_count, 25000)
+        self.assertGreater(pt_handler.url_count, 20000)
         self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
         ptm = pt_handler.matches[0]
         self.assertEqual(ptm.url.url_string, vuln_url_str)
-        self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
+        self.assertTrue(ptm.more_info_url.url_string.startswith(self.phish_detail))
 
     def test_xml_parsing_last_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
@@ -92,12 +92,12 @@ class TestPhishtank(PluginTest):
         vuln_url_str = self.get_last_vulnerable_url(phishtank_inst)
         last_domain = URL(vuln_url_str).get_domain()
         pt_handler = phishtank_inst._is_in_phishtank([last_domain])
-        self.assertGreater(pt_handler.url_count, 25000)
+        self.assertGreater(pt_handler.url_count, 20000)
         self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
         ptm = pt_handler.matches[0]
         self.assertEqual(ptm.url.url_string, URL(vuln_url_str).url_string)
-        self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
+        self.assertTrue(ptm.more_info_url.url_string.startswith(self.phish_detail))
         
     def test_too_old_xml(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
