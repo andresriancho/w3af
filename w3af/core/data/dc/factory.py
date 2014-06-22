@@ -27,9 +27,8 @@ from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.generic.plain import PlainContainer
 
-# Form is at the end on purpose, since its the one which has a "wildcard match"
-# for catching almost everything we don't know how to properly parse
 POST_DATA_CONTAINERS = (MultipartContainer, JSONContainer, XmlRpcContainer,
                         URLEncodedForm)
 
@@ -51,17 +50,15 @@ def dc_from_hdrs_post(headers, post_data):
         except (ValueError, TypeError) as e:
             pass
     else:
-        content_type, _ = headers.iget('content-type', 'missing')
-        msg = 'Unknown post-data. Content-type: %s and/or post-data %s'
+        content_type, _ = headers.iget('content-type', 'None')
+        msg = 'Unknown post-data. Content-type: "%s" and/or post-data "%s"'
         om.out.debug(msg % (content_type, post_data[:50]))
 
         # These lines are for debugging
         #import traceback
         #traceback.print_stack()
 
-        # We just return None, saying that we don't really know how to parse
-        # this post-data
-        return None
+        return PlainContainer.from_postdata(headers, post_data)
 
 
 def dc_from_form_params(form_parameters):

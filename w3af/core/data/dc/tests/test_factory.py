@@ -29,6 +29,7 @@ from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
+from w3af.core.data.dc.generic.plain import PlainContainer
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT
@@ -86,13 +87,17 @@ class TestDCFactory(unittest.TestCase):
         headers = self.get_headers('foo/bar')
         dc = dc_from_hdrs_post(headers, 'a=3&b=2')
 
-        self.assertIs(dc, None)
+        self.assertIsInstance(dc, PlainContainer)
+        self.assertEqual(headers.items(), dc.get_headers())
+        self.assertEqual(str(dc), 'a=3&b=2')
 
     def test_unknown_default_form_no_urlencoded(self):
         headers = self.get_headers('foo/bar')
         dc = dc_from_hdrs_post(headers, 'a')
 
-        self.assertIs(dc, None)
+        self.assertIsInstance(dc, PlainContainer)
+        self.assertEqual(headers.items(), dc.get_headers())
+        self.assertEqual(str(dc), 'a')
 
     def test_dc_from_form_params_with_files(self):
         form_params = FormParameters()

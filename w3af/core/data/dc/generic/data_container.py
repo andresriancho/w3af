@@ -43,6 +43,10 @@ class DataContainer(DiskItem):
     def get_type(self):
         return 'Generic data container'
 
+    @classmethod
+    def from_postdata(cls, headers, post_data):
+        raise NotImplementedError
+
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         """
         :warning: The subclass needs to implement it
