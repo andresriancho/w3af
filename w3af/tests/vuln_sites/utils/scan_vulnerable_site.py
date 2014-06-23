@@ -53,4 +53,4 @@ class TestScanVulnerableSite(object):
         self._scan(self.target_url, cfg['plugins'])
 
         #self.assertAllURLsFound(self.EXPECTED_URLS)
-        self.assertAllExpectedVulnsFound(self.EXPECTED_VULNS)
+        self.assertMostExpectedVulnsFound(self.EXPECTED_VULNS)
