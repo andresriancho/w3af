@@ -55,14 +55,19 @@ def create_mutants(freq, mutant_str_list, append=False,
         new_mutants = mutant_kls.create_mutants(freq, mutant_str_list,
                                                 fuzzable_param_list, append,
                                                 fuzzer_config)
-
-        
-        mutant_name = mutant_kls.get_mutant_class()
-        om.out.debug('%s created %s new mutants for "%s".' % (mutant_name,
-                                                              len(new_mutants),
-                                                              freq))
-        
         result.extend(new_mutants)
+
+    msg = 'Created %s mutants for "%s" (%s)'
+
+    count_data = {}
+    for mutant in result:
+        if mutant.get_mutant_type() in count_data:
+            count_data[mutant.get_mutant_type()] += 1
+        else:
+            count_data[mutant.get_mutant_type()] = 1
+
+    count_summary = ', '.join(['%s: %s' % (i, j) for i, j in count_data.items()])
+    om.out.debug(msg % (len(result), freq, count_summary))
 
     #
     # Improvement to reduce false positives with a double check:
