@@ -41,7 +41,7 @@ class FileDataToken(DataToken):
 
         self._extension = extension
         self._filename = filename
-        self._payload = value
+        self._payload = ''
         self._original_value = self._value = self.build_file(value)
 
     def get_payload(self):

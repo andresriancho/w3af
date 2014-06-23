@@ -47,7 +47,8 @@ class DataToken(object):
     def get_payload(self):
         """
         :return: The payload which was used to create this object.
-        :see: FileDataToken, the implementation there makes more sense.
+        :see: FileDataToken.get_value vs. FileDataToken.get_payload, the
+              implementation there makes more sense.
         """
         return self._payload
 
