@@ -76,16 +76,16 @@ class HTTPResponse(object):
         :param charset: Response's encoding; obligatory when `read` is unicode
         """
         if not isinstance(geturl, URL):
-            raise TypeError('Invalid type %s for HTTPResponse ctor param geturl.'
-                            % type(geturl))
+            msg = 'Invalid type %s for HTTPResponse ctor param geturl.'
+            raise TypeError(msg % type(geturl))
 
         if not isinstance(original_url, URL):
-            raise TypeError('Invalid type %s for HTTPResponse ctor param original_url.'
-                            % type(original_url))
+            msg = 'Invalid type %s for HTTPResponse ctor param original_url.'
+            raise TypeError(msg % type(original_url))
 
         if not isinstance(headers, Headers):
-            raise TypeError('Invalid type %s for HTTPResponse ctor param headers.'
-                            % type(headers))
+            msg = 'Invalid type %s for HTTPResponse ctor param headers.'
+            raise TypeError(msg % type(headers))
         
         if not isinstance(read, basestring):
             raise TypeError('Invalid type %s for HTTPResponse ctor param read.'
@@ -162,7 +162,7 @@ class HTTPResponse(object):
         """
         * msgpack is MUCH faster than cPickle,
         * msgpack can't serialize python objects,
-        * I have to create a dict representation of HTTPResponse to serialize it,
+        * I have to create a dict representation of HTTPResponse to serialize it
         * and a from_dict to have the object back
         
         :param unserialized_dict: A dict just as returned by to_dict()
@@ -306,6 +306,11 @@ class HTTPResponse(object):
         :return: The DOM, or None if the HTML normalization failed.
         """
         if self._dom is None:
+
+            if self.doc_type == HTTPResponse.DOC_TYPE_IMAGE:
+                # Don't waste CPU time trying to create a DOM out of an image
+                return None
+
             try:
                 parser = etree.HTMLParser(recover=True)
                 self._dom = etree.fromstring(self.body, parser)
@@ -313,6 +318,7 @@ class HTTPResponse(object):
                 msg = 'The HTTP body for "%s" could NOT be parsed by lxml.'\
                       ' The exception was: "%s".'
                 om.out.debug(msg % (self.get_url(), e))
+
         return self._dom
 
     def get_charset(self):
