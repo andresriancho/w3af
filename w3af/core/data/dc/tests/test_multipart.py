@@ -48,6 +48,21 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertEqual(mpc.get_file_vars(), [])
         self.assertEqual(mpc.get_parameter_type('a'), 'text')
 
+    def test_multipart_post_empty_value(self):
+        boundary, post_data = multipart_encode([('a', ''), ], [])
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
+
+        headers = Headers([('content-length', str(len(post_data))),
+                           ('content-type', multipart_boundary % boundary)])
+
+        mpc = MultipartContainer.from_postdata(headers, post_data)
+
+        self.assertIsInstance(mpc, MultipartContainer)
+        self.assertIn('a', mpc)
+        self.assertEqual(mpc['a'], [''])
+        self.assertEqual(mpc.get_file_vars(), [])
+        self.assertEqual(mpc.get_parameter_type('a'), 'text')
+
     def test_multipart_post_with_filename(self):
         fake_file = NamedStringIO('def', name='hello.txt')
         vars = [('a', 'bcd'), ]
