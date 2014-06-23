@@ -29,6 +29,19 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.multipart_container import MultipartContainer
 
+MULTIPART_TEST = '''\
+--4266ff2e00ac63588a571483e5727142
+Content-Disposition: form-data; name="MAX_FILE_SIZE"
+
+2097152
+--4266ff2e00ac63588a571483e5727142
+Content-Disposition: form-data; name="file"; filename="rsXiwMY.gif"
+Content-Type: image/gif
+
+GIF89aAAAAAAAAAAAAAAAAA;
+--4266ff2e00ac63588a571483e5727142--
+'''
+
 
 @attr('smoke')
 class TestMultipartContainer(unittest.TestCase):
@@ -62,6 +75,28 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertEqual(mpc['a'], [''])
         self.assertEqual(mpc.get_file_vars(), [])
         self.assertEqual(mpc.get_parameter_type('a'), 'text')
+
+    def test_multipart_test_from_string(self):
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
+        boundary = '4266ff2e00ac63588a571483e5727142'
+
+        headers = Headers([('content-length', str(len(MULTIPART_TEST))),
+                           ('content-type', multipart_boundary % boundary)])
+
+        mpc = MultipartContainer.from_postdata(headers, MULTIPART_TEST)
+
+        self.assertIsInstance(mpc, MultipartContainer)
+        self.assertIn('MAX_FILE_SIZE', mpc)
+        self.assertIn('file', mpc)
+
+        self.assertEqual(mpc['MAX_FILE_SIZE'], ['2097152'])
+        # We don't store the file content
+        self.assertEqual(mpc['file'], [''])
+
+        self.assertEqual(mpc.get_file_vars(), ['file'])
+        self.assertEqual(mpc.get_parameter_type('MAX_FILE_SIZE'), 'text')
+        self.assertEqual(mpc.get_parameter_type('file'), 'file')
+        self.assertEqual(mpc.get_file_name('file'), 'rsXiwMY.gif')
 
     def test_multipart_post_with_filename(self):
         fake_file = NamedStringIO('def', name='hello.txt')
