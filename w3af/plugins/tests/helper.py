@@ -107,7 +107,7 @@ class PluginTest(unittest.TestCase):
             set(expected)
         )
 
-    def assertAllExpectedVulnsFound(self, expected):
+    def tokenize_kb_vulns(self):
         all_info = self.kb.get_all_infos()
         info_tokens = set()
 
@@ -118,7 +118,19 @@ class PluginTest(unittest.TestCase):
 
             info_tokens.add((info.get_name(), url, token_name))
 
-        self.assertEqual(expected, info_tokens)
+        return info_tokens
+
+    def assertMostExpectedVulnsFound(self, expected, percentage=0.85):
+        """
+        Assert that at least :percentage: of the expected vulnerabilities were
+        found during the current scan.
+        """
+        len_exp_found = len(expected.intersection(self.tokenize_kb_vulns()))
+        found_perc = float(len_exp_found) / len(expected)
+        self.assertGreater(found_perc, percentage)
+
+    def assertAllExpectedVulnsFound(self, expected):
+        self.assertEqual(expected, self.tokenize_kb_vulns())
 
     def assertAllURLsFound(self, expected):
         frs = self.kb.get_all_known_fuzzable_requests()
