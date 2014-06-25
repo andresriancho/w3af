@@ -51,7 +51,7 @@ def lru_404_cache(wrapped_method):
 
     @wraps(wrapped_method)
     def inner(self, http_response):
-        path = http_response.get_uri()
+        path = http_response.get_uri().url_string
 
         try:
             return self.is_404_LRU[path]
