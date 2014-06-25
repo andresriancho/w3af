@@ -328,15 +328,15 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=3739282
         #       - http://host.tld/?id=3739212
         #
-        #   I don't want to have all these different fuzzable requests. The reason is that
-        #   audit plugins will try to send the payload to each parameter, thus generating
-        #   the following requests:
+        # I don't want to have all these different fuzzable requests. The
+        # reason is that audit plugins will try to send the payload to each
+        # parameter, thus generating the following requests:
         #       - http://host.tld/?id=payload1
         #       - http://host.tld/?id=payload1
         #       - http://host.tld/?id=payload1
         #       - http://host.tld/?id=payload1
         #
-        #   w3af has a cache, but its still a waste of time to send those requests.
+        # w3af has a cache, but its still a waste of time to send those requests.
         #
         #   Now lets analyze this with more than one parameter. Spidered URIs:
         #       - http://host.tld/?id=3739286&action=create
