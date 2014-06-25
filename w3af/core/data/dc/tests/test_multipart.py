@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import os
 
 from nose.plugins.attrib import attr
 
@@ -135,3 +136,36 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertEqual(mpc.get_parameter_type('a'), 'text')
         self.assertEqual(mpc.get_parameter_type('b'), 'file')
         self.assertEqual(mpc.get_file_name('b'), 'hello.txt')
+
+    def test_multipart_3570(self):
+        headers = Headers([(u'Content-length', u'557'),
+                           (u'Accept-encoding', u'gzip, deflate'),
+                           (u'Accept', u'*/*'),
+                           (u'User-agent', u'Mozilla/4.0'),
+                           (u'Host', u'www.webscantest.com'),
+                           (u'Cookie', u'SESSIONID_VULN_SITE=k4no98smgdkun2eqme5k2btgb5'),
+                           (u'Referer', u'http://www.webscantest.com/'),
+                           (u'Content-type', u'multipart/form-data; boundary=db36a3a8bb45ec40c22301ffcaa98e05')])
+
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        post_data_file = os.path.join(test_dir, 'samples', 'post-data-3570')
+        multipart_post_data = file(post_data_file).read()
+
+        self.assertIn('db36a3a8bb45ec40c22301ffcaa98e05', multipart_post_data)
+        self.assertEqual(len(multipart_post_data), 557)
+
+        mpc = MultipartContainer.from_postdata(headers, multipart_post_data)
+
+        self.assertIsInstance(mpc, MultipartContainer)
+        self.assertIn('MAX_FILE_SIZE', mpc)
+        self.assertIn('userfile', mpc)
+
+        self.assertEqual(mpc['MAX_FILE_SIZE'], ['2097152'])
+        # We don't store the file content
+        self.assertEqual(mpc['userfile'], [''])
+
+        self.assertEqual(mpc.get_file_vars(), ['userfile'])
+        self.assertEqual(mpc.get_parameter_type('MAX_FILE_SIZE'), 'text')
+        self.assertEqual(mpc.get_parameter_type('userfile'), 'file')
+        self.assertEqual(mpc.get_file_name('userfile'), 'aTFiAgn.gif')
+
