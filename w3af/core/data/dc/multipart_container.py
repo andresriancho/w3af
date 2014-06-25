@@ -57,7 +57,7 @@ class MultipartContainer(Form):
 
         try:
             fs = cgi.FieldStorage(fp=StringIO.StringIO(post_data),
-                                  headers=headers, environ=environ)
+                                  headers=headers.to_dict(), environ=environ)
         except ValueError:
             raise ValueError('Failed to create MultipartContainer.')
         else:

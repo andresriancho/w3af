@@ -60,7 +60,13 @@ class Headers(NonRepeatKeyValueContainer):
             res.append((name, value))
         
         return cls(res)
- 
+
+    def to_dict(self):
+        """
+        :return: A dictionary with lower-case key-headers and un-modified values
+        """
+        return dict([(k.lower(), v) for k, v in self.iteritems()])
+
     def clean_values(self, init_val):
         if isinstance(init_val, NonRepeatKeyValueContainer)\
         or isinstance(init_val, dict):
