@@ -57,6 +57,10 @@ class cache_control(GrepPlugin):
 
         elif response.get_url().get_protocol() == 'http':
             return
+
+        elif response.get_code() > 300\
+        and response.get_code() < 310:
+            return
         
         elif response.body == '':
             return
