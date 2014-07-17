@@ -40,9 +40,9 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.controllers import templates
 
 
-class w3afProxy2Handler(object):
+class w3afProxyHandler(object):
     def __init__(self, master):
-        super(w3afProxy2Handler, self).__init__()
+        super(w3afProxyHandler, self).__init__()
         self._master = master
 
     @property
@@ -70,7 +70,7 @@ class w3afProxy2Handler(object):
         uri_instance = URL(request.get_full_url())
         post_data = None
         headers = request.get_headers()
-        if 'content-length' in headers:
+        if headers.iget("Content-Type"):
             # most likely a POST request
             post_data = request.data
 
@@ -100,8 +100,8 @@ class w3afProxy2Handler(object):
             ctx["trace"] = ('\nTraceback for this error: <br/><br/>'
                             + trace.replace('\n', '<br/>'))
         content = templates.render("proxy/error.html", )
-        res = HTTPResponse(400, content, headers, request.get_full_url(),
-                           request.get_full_url(),
+        res = HTTPResponse(400, content.encode("utf-8"), headers,
+                           request.get_uri(), request.get_uri(),
                            msg=BaseHTTPRequestHandler.responses[400][0])
         return res
 
@@ -162,7 +162,7 @@ class Master(controller.Master):
          before sending response to client
     """
 
-    def __init__(self, server, uri_opener, handler=w3afProxy2Handler):
+    def __init__(self, server, uri_opener, handler=w3afProxyHandler):
         controller.Master.__init__(self, server)
         self.uri_opener = uri_opener
         self.handler_class = handler
@@ -171,7 +171,7 @@ class Master(controller.Master):
         """Convert limproxy.http.HTTPRequest to
         w3af.core.data.url.HTTPRequest.HTTPRequest
         """
-        return HTTPRequest(request.get_url(), request.content,
+        return HTTPRequest(URL(request.get_url()), request.content,
                            request.headers.items(), request.get_host(),
                            method=request.method)
 
@@ -219,7 +219,7 @@ class Proxy(Process):
     SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
 
     def __init__(self, ip, port, uri_opener, master_class=Master,
-                 handler_class=w3afProxy2Handler,
+                 handler_class=w3afProxyHandler,
                  proxy_cert=SSL_CERT):
         """
         :param ip: IP address to bind

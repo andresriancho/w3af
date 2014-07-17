@@ -29,7 +29,7 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.url import URL
 
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy2 import Proxy
 
 
 @attr('moth')
@@ -42,7 +42,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         
         # Start the proxy daemon
-        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib(), w3afProxyHandler)
+        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib())
         self._proxy.start()
         self._proxy.wait_for_start()
         
