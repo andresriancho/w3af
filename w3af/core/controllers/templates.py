@@ -28,14 +28,17 @@ _default_env = Environment(loader=FileSystemLoader(os.path.join(ROOT_PATH,
                                                                 'templates')))
 
 
-def render(template, context=None):
+def render(template, context=None, env=None):
     """Render template with name template and context
+    if env is not set, then _default_env is used
 
     :param template: string path to template, relative to templates folder
     :param context: dict with variables
     :return: compiled template string
     """
-    tmpl = _default_env.get_template(template)
+    if env is None:
+        env = _default_env
+    tmpl = env.get_template(template)
     if context is None:
         context = {}
     return tmpl.render(context)
