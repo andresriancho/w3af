@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 import os
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, FileSystemLoader
 from w3af import ROOT_PATH
 
-_default_env = Environment(loader=PackageLoader('w3a', os.path.join(ROOT_PATH,
+_default_env = Environment(loader=FileSystemLoader(os.path.join(ROOT_PATH,
                                                                 'templates')))
 
 
