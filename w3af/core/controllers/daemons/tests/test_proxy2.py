@@ -75,6 +75,8 @@ class TestProxy(unittest.TestCase):
         # the test
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
+        del proxy_resp_headers['connection']
+        del direct_resp_headers["connection"]
 
         del direct_resp_headers['transfer-encoding']
         del proxy_resp_headers['content-length']
