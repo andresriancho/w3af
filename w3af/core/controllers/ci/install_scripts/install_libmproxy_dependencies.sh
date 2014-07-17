@@ -1,5 +1,5 @@
 #!/bin/bash -x
 
-
+pip install pyOpenSSL==0.13.1 jinja2==2.7.3
 pip install git+git://github.com/mitmproxy/netlib.git@52c6ba8880363ba5d82b5e767559afbc72371272
-pip install git+git://github.com/mitmproxy/mitmproxy.git@00fd243810954b1ea7c108482513a7e92f2e8000
+pip install git+git://github.com/mitmproxy/mitmproxy.git@05a8c52f8f6c4fb5f1820475b9682da5a1eeadda
