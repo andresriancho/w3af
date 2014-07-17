@@ -42,7 +42,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('msgpack', 'msgpack-python', '0.2.4'),
                      PIPDependency('ntlm', 'python-ntlm', '1.0.1'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
-                     PIPDependency('Jinja2', 'jinja2', '2.7.3'),
+                     PIPDependency('Jinja2', 'Jinja2', '2.7.3'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6'),]
