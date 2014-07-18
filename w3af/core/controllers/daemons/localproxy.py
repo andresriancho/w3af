@@ -19,16 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os
 import Queue
 import re
 import time
 import traceback
 
-import w3af.core.controllers.output_manager as om
-
-from w3af import ROOT_PATH
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy2 import Proxy, w3afProxyHandler
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -38,13 +34,10 @@ class w3afLocalProxyHandler(w3afProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
-    def do_ALL(self):
-        """
-        This method handles EVERY request that were send by the browser.
-        """
-        # First of all, we create a fuzzable request based on the attributes
-        # that are set to this object
-        fuzzable_request = self._create_fuzzable_request()
+
+    def handle_request(self, request):
+        fuzzable_request = self._create_fuzzable_request(request)
+        res = None
         try:
             # Now we check if we need to add this to the queue, or just let
             # it go through.
@@ -54,62 +47,47 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 # Send the request to the remote webserver
                 res = self._send_fuzzable_request(fuzzable_request)
         except Exception, e:
-            self._send_error(e, trace=str(traceback.format_exc()))
-        else:
-            try:
-                self._send_to_browser(res)
-            except Exception, e:
-                error = 'Exception found while sending response to the'\
-                        ' browser. Exception description: "%s".'
-                om.out.debug(error % e)
+            res = self.send_error(request, e, trace=str(traceback.format_exc()))
+        finally:
+            return res
 
     def _do_trap(self, fuzzable_request):
         # Add it to the request queue, and wait for the user to edit the
         # request...
-        self.server.w3afLayer._request_queue.put(fuzzable_request)
-        edited_requests = self.server.w3afLayer._edited_requests
+        self._master.w3afLayer._request_queue.put(fuzzable_request)
+        edited_requests = self._master.w3afLayer._edited_requests
         
         while True:
-            
+
             if not id(fuzzable_request) in edited_requests:
                 time.sleep(0.1)
                 continue
-            
+
             head, body = edited_requests[id(fuzzable_request)]
             del edited_requests[id(fuzzable_request)]
 
             if head == body is None:
                 # The request was dropped by the user. Send 403 and break
-                self.send_response(403)
-                
-                self.send_header('Connection', 'close')
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write('The HTTP request was dropped by the user')
-                
-                self.rfile.close()
-                self.wfile.close()
-                break
-
+                return self.send_error(fuzzable_request,
+                                       'The HTTP request was dropped by the user', 403)
             else:
                 # The request was edited by the user
                 # Send it to the remote web server and to the proxy user interface.
 
-                if self.server.w3afLayer._fix_content_length:
+                if self._master.w3afLayer._fix_content_length:
                     head, body = self._fix_content_length(head, body)
 
                 try:
-                    res = self._uri_opener.send_raw_request(head, body)
+                    res = self._master.uri_opener.send_raw_request(head, body)
                 except Exception, e:
                     res = e
 
                 # Save it so the upper layer can read this response.
-                self.server.w3afLayer._edited_responses[
+                self._master.w3afLayer._edited_responses[
                     id(fuzzable_request)] = res
 
                 # From here, we send it to the browser
                 return res
-                
 
     def _fix_content_length(self, head, postdata):
         """
@@ -133,21 +111,11 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         """
         Sends a fuzzable request to the remote web server.
         """
-        uri = fuzzable_request.get_uri()
-        data = fuzzable_request.get_data()
-        headers = fuzzable_request.get_headers()
-        method = fuzzable_request.get_method()
-        
         # Also add the cookie header.
         cookie = fuzzable_request.get_cookie()
         if cookie:
-            headers['Cookie'] = str(cookie)
-
-        args = (uri, )
-        functor = getattr(self._uri_opener, method)
-        # run functor , run !   ( forest gump flash )
-        res = apply(functor, args, {'data': data, 'headers':
-                    headers, 'grep': True})
+            fuzzable_request.get_headers()['Cookie'] = str(cookie)
+        res = self.send_to_server(fuzzable_request, grep=True)
         return res
 
     def _should_be_trapped(self, fuzzable_request):
@@ -161,17 +129,17 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         If the request needs to be trapped or not.
         :param fuzzable_request: The request to analyze.
         """
-        if not self.server.w3afLayer._trap:
+        if not self._master.w3afLayer._trap:
             return False
 
-        if len(self.server.w3afLayer._methods_to_trap) and \
-                fuzzable_request.get_method() not in self.server.w3afLayer._methods_to_trap:
+        if len(self._master.w3afLayer._methods_to_trap) and \
+                fuzzable_request.get_method() not in self._master.w3afLayer._methods_to_trap:
             return False
 
-        if self.server.w3afLayer._what_not_to_trap.search(fuzzable_request.get_url().url_string):
+        if self._master.w3afLayer._what_not_to_trap.search(fuzzable_request.get_url().url_string):
             return False
 
-        if not self.server.w3afLayer._what_to_trap.search(fuzzable_request.get_url().url_string):
+        if not self._master.w3afLayer._what_to_trap.search(fuzzable_request.get_url().url_string):
             return False
 
         return True
@@ -195,8 +163,9 @@ class LocalProxy(Proxy):
         :param proxy_cert: Proxy certificate to use, this is needed for
                            proxying SSL connections.
         """
-        Proxy.__init__(self, ip, port, urlOpener, w3afLocalProxyHandler,
-                       proxy_cert)
+        Proxy.__init__(self, ip, port, urlOpener,
+                       handler_class=w3afLocalProxyHandler,
+                       proxy_cert=proxy_cert)
 
         self.daemon = True
         self.name = 'LocalProxyThread'

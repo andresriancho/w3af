@@ -4,10 +4,11 @@
 
 {% block content %}
     <h1>w3af proxy error</h1>
-
+    {% if exceptionObj %}
     <div>{{ exceptionObj }}</div>
+    {% endif %}
 
     {% if trace %}
-        <div><pre>{{ trace }}</pre></div>
+    <div><pre>{{ trace }}</pre></div>
     {% endif %}
 {%  endblock %}

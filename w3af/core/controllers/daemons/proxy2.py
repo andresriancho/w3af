@@ -34,6 +34,7 @@ from w3af.core.controllers import output_manager as om
 from w3af.core.controllers.exceptions import (ProxyException,
                                               BaseFrameworkException)
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.url import URL
@@ -67,16 +68,15 @@ class w3afProxyHandler(object):
                                  by the browser
         """
 
-        uri_instance = URL(request.get_full_url())
         post_data = None
         headers = request.get_headers()
         if headers.iget("Content-Type"):
             # most likely a POST request
-            post_data = request.data
+            post_data = request.get_data()
 
         try:
-            http_method = getattr(self.uri_opener, request.method)
-            res = http_method(uri_instance, data=post_data,
+            http_method = getattr(self.uri_opener, request.get_method())
+            res = http_method(request.get_uri(), data=post_data,
                               headers=headers, grep=grep)
         except BaseFrameworkException, w:
             om.out.error('The proxy request failed, error: ' + str(w))
@@ -86,7 +86,7 @@ class w3afProxyHandler(object):
         else:
             return res
 
-    def send_error(self, request, exceptionObj, trace=None):
+    def send_error(self, request, exceptionObj, code=400, trace=None):
         """
         Send an error to the browser.
 
@@ -99,10 +99,10 @@ class w3afProxyHandler(object):
         if trace:
             ctx["trace"] = ('\nTraceback for this error: <br/><br/>'
                             + trace.replace('\n', '<br/>'))
-        content = templates.render("proxy/error.html", )
-        res = HTTPResponse(400, content.encode("utf-8"), headers,
+        content = templates.render("proxy/error.html", ctx)
+        res = HTTPResponse(code, content.encode("utf-8"), headers,
                            request.get_uri(), request.get_uri(),
-                           msg=BaseHTTPRequestHandler.responses[400][0])
+                           msg=BaseHTTPRequestHandler.responses[code][0])
         return res
 
     def handle_request(self, request):
@@ -123,12 +123,25 @@ class w3afProxyHandler(object):
         finally:
             return res
 
+    def _create_fuzzable_request(self, request):
+        """
+        Based on the attributes, return a fuzzable request object.
 
-# There is a problem with libmproxy Master implementation.
-# It depends on "should_exit" global variable.
-# So, right now we can't create multiple master implementations and Proxy.
-# The solution is to make pull request to libmproxy with master without
-# global variable dependency.
+        :rtype : w3af.core.data.request.fuzzible_request.FuzzibleRequest
+        :param request: w3af.core.data.url.HTTPRequest.HTTPRequest
+        """
+        # See HTTPWrapperClass
+
+        fuzzable_request = FuzzableRequest(request.get_uri(),
+                                           request.get_method(),
+                                           request.get_headers())
+
+        if request.has_data():
+            fuzzable_request.set_data(request.get_data())
+
+        return fuzzable_request
+
+
 class Master(controller.Master):
     """
     All communications with HTTP handler passes through messages.
@@ -162,10 +175,11 @@ class Master(controller.Master):
          before sending response to client
     """
 
-    def __init__(self, server, uri_opener, handler=w3afProxyHandler):
+    def __init__(self, server, w3afLayer, uri_opener, handler=w3afProxyHandler):
         controller.Master.__init__(self, server)
         self.uri_opener = uri_opener
         self.handler_class = handler
+        self.w3afLayer = w3afLayer
 
     def _convert_request(self, request):
         """Convert limproxy.http.HTTPRequest to
@@ -198,13 +212,11 @@ class Master(controller.Master):
                 req = self._convert_request(request)
                 try:
                     res = handler.handle_request(req)
-                    if res:
-                        response = self._convert_response(res, request)
                 except Exception, e:
                     res = handler.send_error(req, e,
                                              trace=str(traceback.format_exc()))
-                    if res:
-                        response = self._convert_response(res, request)
+                if res:
+                    response = self._convert_response(res, request)
         except Exception, w:
             om.out.error('The proxy request failed, error: ' + str(w))
         finally:
@@ -257,7 +269,7 @@ class Proxy(Process):
             # available/free port, which we don't know until the server really
             # starts
             self._port = self._server.address.port
-        self._master = master_class(self._server, self._uri_opener,
+        self._master = master_class(self._server, self, self._uri_opener,
                                     handler=handler_class)
 
     def get_bind_ip(self):
