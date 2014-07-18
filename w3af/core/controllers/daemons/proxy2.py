@@ -34,6 +34,7 @@ from w3af.core.controllers import output_manager as om
 from w3af.core.controllers.exceptions import (ProxyException,
                                               BaseFrameworkException)
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -196,7 +197,7 @@ class Master(controller.Master):
         return http.HTTPResponse(request.httpversion, res.get_code(),
                                  res.get_msg(),
                                  http.ODictCaseless(res.headers.items()),
-                                 res.body)
+                                 smart_str(res.body, res.charset))
 
     def handle_request(self, request):
         """
