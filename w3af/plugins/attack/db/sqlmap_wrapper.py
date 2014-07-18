@@ -27,7 +27,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
-from w3af.core.controllers.daemons.proxy import Proxy
+from w3af.core.controllers.daemons.proxy2 import Proxy
 
 
 class SQLMapWrapper(object):
