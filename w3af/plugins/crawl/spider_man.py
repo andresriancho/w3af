@@ -19,13 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import traceback
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.url.HTTPResponse as HTTPResponse
 import w3af.core.data.constants.ports as ports
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy2 import Proxy, w3afProxyHandler
 from w3af.core.controllers.exceptions import RunOnce, ProxyException
 from w3af.core.controllers.misc.decorators import runonce
 
@@ -61,13 +62,14 @@ class spider_man(CrawlPlugin):
         # Create the proxy server
         try:
             self._proxy = Proxy(self._listen_address, self._listen_port,
-                                self._uri_opener, self.create_p_h())
+                                self._uri_opener,
+                                handler_class=self.create_p_h())
         except ProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)
         
         else:
             self._proxy.target_domain = freq.get_url().get_domain()
-            
+
             msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
                    'your browser to use these proxy settings and navigate the '
                    'target site.\nTo exit spider_man plugin please navigate to %s .'
@@ -96,17 +98,15 @@ class spider_man(CrawlPlugin):
         for fr in self._create_fuzzable_requests(response):
             self.output_queue.put(fr)
 
-    def stop_proxy(self):
-        self._proxy.stop()
-
     def create_p_h(self):
         """
         This method returns closure which is dressed up as a proxyHandler.
         It's a trick to get rid of global variables.
         :return: proxyHandler constructor
         """
-        def constructor(request, client_addr, server):
-            return ProxyHandler(request, client_addr, server, self)
+        def constructor(*args, **kwargs):
+            kwargs["spider_man"] = self
+            return ProxyHandler(*args, **kwargs)
 
         return constructor
 
@@ -171,18 +171,13 @@ global_first_request = True
 
 class ProxyHandler(w3afProxyHandler):
 
-    def __init__(self, request, client_address, server, spider_man=None):
+    def __init__(self, *args, **kwargs):
         self._version = 'spider_man-w3af/1.1'
-        if spider_man is None:
-            if hasattr(server, 'chainedHandler'):
-                # see core.controllers.daemons.proxy.HTTPServerWrapper
-                self._spider_man = server.chainedHandler._spider_man
-        else:
-            self._spider_man = spider_man
+        self._spider_man = kwargs.pop("spider_man")
         self._uri_opener = self._spider_man._uri_opener
-        w3afProxyHandler.__init__(self, request, client_address, server)
+        w3afProxyHandler.__init__(self, *args, **kwargs)
 
-    def do_ALL(self):
+    def handle_request(self, request):
         global global_first_request
         if global_first_request:
             global_first_request = False
@@ -190,42 +185,42 @@ class ProxyHandler(w3afProxyHandler):
                 'The user is navigating through the spider_man proxy.')
 
         # Convert to url_object
-        path = URL(self.path)
+        path = request.get_uri()
 
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')
-            self._send_end()
-            self._spider_man.stop_proxy()
-            return
+            self._master.w3afLayer.stop(after=2) # stop server after response
+            return self._send_end()
 
         om.out.debug("[spider_man] Handling request: %s %s" %
-                    (self.command, path))
+                    (request.get_method(), path))
         #   Send this information to the plugin so it can send it to the core
-        freq = self._create_fuzzable_request()
+        freq = self._create_fuzzable_request(request)
         self._spider_man.append_fuzzable_request(freq)
 
         grep = True
-        if path.get_domain() != self.server.w3afLayer.target_domain:
+        if path.get_domain() != self._master.w3afLayer.target_domain:
             grep = False
 
+        res = None
         try:
-            response = self._send_to_server(grep=grep)
+            # Send the request to the remote webserver
+            res = self.send_to_server(request, grep=grep)
         except Exception, e:
-            self._send_error(e)
+            res = self.send_error(request, e, trace=str(traceback.format_exc()))
         else:
-            if response.is_text_or_html():
-                self._spider_man.ext_fuzzable_requests(response)
+            if res.is_text_or_html():
+                self._spider_man.ext_fuzzable_requests(res)
 
-            headers = response.get_headers()
+            headers = res.get_headers()
             cookie_value, cookie_header = headers.iget('cookie', None)
             if cookie_value is not None:
                 msg = 'The remote web application sent the following' \
                       ' cookie: "%s".\nw3af will use it during the rest ' \
-                      'of the process in order to maintain the session.' 
+                      'of the process in order to maintain the session.'
                 om.out.information(msg % cookie_value)
-            self._send_to_browser(response)
-        
-    do_GET = do_POST = do_HEAD = do_ALL
+        finally:
+            return res
 
     def _send_end(self):
         """
@@ -237,4 +232,4 @@ class ProxyHandler(w3afProxyHandler):
 
         resp = HTTPResponse.HTTPResponse(200, html, headers,
                                          TERMINATE_URL, TERMINATE_URL,)
-        self._send_to_browser(resp)
+        return resp

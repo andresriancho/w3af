@@ -313,10 +313,14 @@ class Proxy(Process):
         self._master.run()
         self._running = False
 
-    def stop(self):
+    def stop(self, after=0):
         """
-        Stop the proxy by setting _go to False and creating a new request.
+        Stop the proxy.
         """
-        om.out.debug('Calling stop of proxy daemon.')
-        if self._running:
-            self._master.shutdown()
+        om.out.debug('Calling stop of proxy daemon after %s s.' % after)
+
+        def stop(after):
+            time.sleep(after)
+            if self._running:
+                self._master.shutdown()
+        Process(target=stop, args=(after, )).start()
