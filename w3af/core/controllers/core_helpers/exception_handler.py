@@ -276,11 +276,11 @@ class ExceptionData(object):
         return current.tb_lineno, current.tb_frame.f_code.co_name
 
     def get_summary(self):
-        res = 'An exception was found while running %s.%s on "%s". The'\
+        res = 'A "%s" exception was found while running %s.%s on "%s". The'\
               ' exception was: "%s" at %s:%s():%s.'
-        res = res % (
-            self.phase, self.plugin, self.fuzzable_request, self.exception,
-            self.filename, self.function_name, self.lineno)
+        res = res % (self.exception.__class__.__name__, self.phase, self.plugin,
+                     self.fuzzable_request, self.exception, self.filename,
+                     self.function_name, self.lineno)
         return res
 
     def get_details(self):

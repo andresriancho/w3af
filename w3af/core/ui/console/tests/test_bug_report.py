@@ -92,7 +92,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
                            'exit']
 
         expected = ('During the current scan (with id: ',
-                    'An exception was found while running crawl.failing_spider on ',
+                    'A "Exception" exception was found while running crawl.failing_spider on ',
                     'New URL found by failing_spider plugin: ',
                     '    [1/1] Bug with id 0 reported at https://github.com/andresriancho/w3af/issues/')
 
@@ -105,8 +105,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-        found_errors = self.error_in_output(['No such file or directory',
-                                             'Exception'])
+        found_errors = self.error_in_output(['No such file or directory'])
 
         self.assertFalse(found_errors)
         
