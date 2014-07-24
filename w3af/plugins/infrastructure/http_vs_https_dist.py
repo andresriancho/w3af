@@ -149,6 +149,9 @@ class http_vs_https_dist(InfrastructurePlugin):
             traceroute('127.0.0.1', maxttl=1)
         except socket.error:
             return False
+        except:
+            return False
+            
         return True
     # pylint: enable=E0202
 
