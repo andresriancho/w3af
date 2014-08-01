@@ -56,3 +56,6 @@ doc/sphinx/_build/
 data.shelve
 top-1m.csv
 top-1m.csv.zip
+
+# Vagrant
+.vagrant
