@@ -4,7 +4,7 @@ MAINTAINER Andres Riancho <andres.riancho@gmail.com>
 RUN apt-get update -y
 
 # Install basic requirements, python-lxml because it doesn't compile correctly from pip
-RUN apt-get install -y python-dev git python-lxml
+RUN apt-get install -y python-dev git python-lxml wget
 
 # Get and install pip
 RUN wget https://bootstrap.pypa.io/get-pip.py
