@@ -15,7 +15,7 @@ RUN git clone --depth 1 https://github.com/andresriancho/w3af.git
 RUN cd w3af && ./w3af_console ; true
 
 # Change the install script to add the -y and not require input
-RUN sed 's/apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
+RUN sed 's/sudo apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
 
 # Run the dependency installer
 RUN /tmp/w3af_dependency_install.sh
