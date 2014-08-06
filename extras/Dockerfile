@@ -22,9 +22,8 @@ RUN python get-pip.py
 
 # Install w3af
 RUN git clone --depth 1 https://github.com/andresriancho/w3af.git
-RUN ./w3af_console ; true
-
 WORKDIR /home/w3af/w3af
+RUN ./w3af_console ; true
 
 # Change the install script to add the -y and not require input
 RUN sed 's/sudo apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
