@@ -33,6 +33,9 @@ RUN sed 's/sudo pip/pip/g' -i /tmp/w3af_dependency_install.sh
 RUN cat /tmp/w3af_dependency_install.sh
 RUN /tmp/w3af_dependency_install.sh
 
+# Compile the py files into pyc in order to speed-up w3af's start
+RUN python -m compileall .
+
 # Cleanup to make the image smaller
 RUN rm /tmp/w3af_dependency_install.sh
 RUN rm -rf /tmp/pip-build-root
