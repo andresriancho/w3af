@@ -12,6 +12,7 @@ sudo docker pull andresriancho/w3af:unstable
 ```
 
 And then run the docker:
+
 ```bash
 sudo docker run --interactive --tty andresriancho/w3af:unstable
 ```
@@ -22,7 +23,8 @@ sudo docker run --interactive --tty andresriancho/w3af:unstable
 ## TODO
 
 I still need to figure out (and add to this documentation) the best way for users to be able to perform these tasks:
+
  * Save scan results to the host file system
  * Passing parameters to the docker: scripts, profiles, dictionary files (how do I run ./w3af_console -s foo.w3af when foo.w3af is in the host system?)
   * The user needs to accept the terms and conditions each time he runs the docker image, that's annoying. I would like him to accept them only once.
-  
+
