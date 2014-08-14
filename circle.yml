@@ -87,3 +87,20 @@ test:
 #  post:
 #    - coverage combine
 #    - coveralls
+
+deployment:
+  production:
+    branch: master
+    owner: andresriancho
+    commands:
+      # Note the master in the URLs
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
+
+
+  staging:
+    branch: develop
+    owner: andresriancho
+    commands:
+      # Note the develop in the URLs
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
+

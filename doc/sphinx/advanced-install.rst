@@ -20,7 +20,7 @@ Moving to bleeding edge ``w3af`` is easy:
 
 .. code-block:: bash
 
-    git clone git@github.com:andresriancho/w3af.git
+    git clone https://github.com/andresriancho/w3af.git
     cd w3af/
     git checkout develop
     ./w3af_console

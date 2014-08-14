@@ -30,6 +30,9 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
+CacheSettings = namedtuple('CacheSettings', ['type', 'value'])
+
+
 class cache_control(GrepPlugin):
     """
     Grep every page for Pragma and Cache-Control headers.
@@ -54,6 +57,10 @@ class cache_control(GrepPlugin):
 
         elif response.get_url().get_protocol() == 'http':
             return
+
+        elif response.get_code() > 300\
+        and response.get_code() < 310:
+            return
         
         elif response.body == '':
             return
@@ -72,14 +79,14 @@ class cache_control(GrepPlugin):
                  configure the browser cache control.
         """
         res = []
-        CacheSettings = namedtuple('CacheSettings', ['type', 'value'])
+
         cache_control_headers = self.SAFE_CONFIG.keys()
         headers = response.get_headers()
         
         for _type in cache_control_headers:
             header_value, _ = headers.iget(_type, None)
             if header_value is not None:
-                res.append( CacheSettings(_type, header_value.lower()) )
+                res.append(CacheSettings(_type, header_value.lower()))
                 
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(response)
@@ -93,7 +100,7 @@ class cache_control(GrepPlugin):
                     header_name = header_name.lower()
                     header_value = header_value.lower()
                     if header_name in cache_control_headers:
-                        res.append( CacheSettings(header_name, header_value) )
+                        res.append(CacheSettings(header_name, header_value))
         
         return res
 
