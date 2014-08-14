@@ -29,10 +29,10 @@ Usage:
 Options:
 
     -h or --help
-        Display this help message.
+        Display this help message
 
     -s <script_file> or --script=<script_file>
-        Run <script_file> script.
+        Run <script_file> script
 
     -n or --no-update
         No update check will be made when starting. This option takes 
