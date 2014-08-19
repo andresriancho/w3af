@@ -38,7 +38,8 @@ RUN python -m compileall .
 
 # Cleanup to make the image smaller
 RUN rm /tmp/w3af_dependency_install.sh
-RUN rm -rf /tmp/pip-build-root
 RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /tmp/pip-build-root
 
 ENTRYPOINT ["./w3af_console"]
