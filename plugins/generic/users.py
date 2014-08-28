@@ -114,7 +114,9 @@ class Users:
 
             count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
-            if not isNumPosStrValue(count):
+            if count == 0:
+                return kb.data.cachedUsers
+            elif not isNumPosStrValue(count):
                 errMsg = "unable to retrieve the number of database users"
                 raise SqlmapNoneDataException(errMsg)
 
@@ -294,7 +296,7 @@ class Users:
 
         if not kb.data.cachedUsersPasswords:
             errMsg = "unable to retrieve the password hashes for the "
-            errMsg += "database users (most probably because the session "
+            errMsg += "database users (probably because the session "
             errMsg += "user has no read privileges over the relevant "
             errMsg += "system database table)"
             logger.error(errMsg)
@@ -439,7 +441,7 @@ class Users:
 
         if not kb.data.cachedUsersPrivileges and isInferenceAvailable() and not conf.direct:
             if Backend.isDbms(DBMS.MYSQL) and kb.data.has_information_schema:
-                conditionChar = " LIKE "
+                conditionChar = "LIKE"
             else:
                 conditionChar = "="
 

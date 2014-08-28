@@ -275,7 +275,7 @@ class Agent(object):
                     inferenceQuery = inference.query
 
                 payload = payload.replace("[INFERENCE]", inferenceQuery)
-            else:
+            elif not kb.testMode:
                 errMsg = "invalid usage of inference payload without "
                 errMsg += "knowledge of underlying DBMS"
                 raise SqlmapNoneDataException(errMsg)
@@ -823,6 +823,9 @@ class Agent(object):
         @return: limited query string
         @rtype: C{str}
         """
+
+        if " FROM " not in query:
+            return query
 
         limitedQuery = query
         limitStr = queries[Backend.getIdentifiedDbms()].limit.query

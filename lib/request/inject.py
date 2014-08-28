@@ -55,7 +55,7 @@ from lib.techniques.union.use import unionUse
 def _goDns(payload, expression):
     value = None
 
-    if conf.dnsName and kb.dnsTest is not False:
+    if conf.dnsName and kb.dnsTest is not False and not kb.testMode and Backend.getDbms() is not None:
         if kb.dnsTest is None:
             dnsTest(payload)
 
@@ -71,7 +71,7 @@ def _goInference(payload, expression, charsetType=None, firstChar=None, lastChar
 
     value = _goDns(payload, expression)
 
-    if value:
+    if value is not None:
         return value
 
     timeBasedCompare = (kb.technique in (PAYLOAD.TECHNIQUE.TIME, PAYLOAD.TECHNIQUE.STACKED))
@@ -286,11 +286,21 @@ def _goBooleanProxy(expression):
 
     initTechnique(kb.technique)
 
+    if conf.dnsName:
+        query = agent.prefixQuery(kb.injection.data[kb.technique].vector)
+        query = agent.suffixQuery(query)
+        payload = agent.payload(newValue=query)
+        output = _goDns(payload, expression)
+
+        if output is not None:
+            return output
+
     vector = kb.injection.data[kb.technique].vector
     vector = vector.replace("[INFERENCE]", expression)
     query = agent.prefixQuery(vector)
     query = agent.suffixQuery(query)
     payload = agent.payload(newValue=query)
+
     timeBasedCompare = kb.technique in (PAYLOAD.TECHNIQUE.TIME, PAYLOAD.TECHNIQUE.STACKED)
 
     output = hashDBRetrieve(expression, checkConf=True)
@@ -333,6 +343,9 @@ def getValue(expression, blind=True, union=True, error=True, time=True, fromUser
         getCurrentThreadData().disableStdOut = suppressOutput
 
     try:
+        pushValue(conf.db)
+        pushValue(conf.tbl)
+
         if expected == EXPECTED.BOOL:
             forgeCaseExpression = booleanExpression = expression
 
@@ -357,21 +370,26 @@ def getValue(expression, blind=True, union=True, error=True, time=True, fromUser
             if not conf.forceDns:
                 if union and isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION):
                     kb.technique = PAYLOAD.TECHNIQUE.UNION
+                    kb.forcePartialUnion = kb.injection.data[PAYLOAD.TECHNIQUE.UNION].vector[8]
                     value = _goUnion(forgeCaseExpression if expected == EXPECTED.BOOL else query, unpack, dump)
                     count += 1
                     found = (value is not None) or (value is None and expectingNone) or count >= MAX_TECHNIQUES_PER_VALUE
 
-                    if not found and not expected and kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.ORIGINAL:
+                    if not found and not expected and kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.ORIGINAL and not kb.forcePartialUnion:
                         warnMsg = "something went wrong with full UNION "
-                        warnMsg += "technique (most probably because of "
-                        warnMsg += "limitation on retrieved number of entries). "
-                        warnMsg += "Falling back to partial UNION technique"
-                        singleTimeWarnMessage(warnMsg)
+                        warnMsg += "technique (could be because of "
+                        warnMsg += "limitation on retrieved number of entries)"
+                        if " FROM " in query.upper():
+                            warnMsg += ". Falling back to partial UNION technique"
+                            singleTimeWarnMessage(warnMsg)
 
-                        kb.forcePartialUnion = True
-                        value = _goUnion(query, unpack, dump)
-                        found = (value is not None) or (value is None and expectingNone)
-                        kb.forcePartialUnion = False
+                            pushValue(kb.forcePartialUnion)
+                            kb.forcePartialUnion = True
+                            value = _goUnion(query, unpack, dump)
+                            found = (value is not None) or (value is None and expectingNone)
+                            kb.forcePartialUnion = popValue()
+                        else:
+                            singleTimeWarnMessage(warnMsg)
 
                 if error and any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) and not found:
                     kb.technique = PAYLOAD.TECHNIQUE.ERROR if isTechniqueAvailable(PAYLOAD.TECHNIQUE.ERROR) else PAYLOAD.TECHNIQUE.QUERY
@@ -415,6 +433,9 @@ def getValue(expression, blind=True, union=True, error=True, time=True, fromUser
 
     finally:
         kb.resumeValues = True
+
+        conf.tbl = popValue()
+        conf.db = popValue()
 
         if suppressOutput is not None:
             getCurrentThreadData().disableStdOut = popValue()

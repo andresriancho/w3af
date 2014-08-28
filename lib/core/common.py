@@ -80,6 +80,7 @@ from lib.core.exception import SqlmapSyntaxException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.log import LOGGER_HANDLER
 from lib.core.optiondict import optDict
+from lib.core.settings import BANNER
 from lib.core.settings import BOLD_PATTERNS
 from lib.core.settings import BRUTE_DOC_ROOT_PREFIXES
 from lib.core.settings import BRUTE_DOC_ROOT_SUFFIXES
@@ -661,10 +662,10 @@ def getManualDirectories():
         directories = []
 
         message = "what do you want to use for writable directory?\n"
-        message += "[1] common location(s) '%s' (default)\n" % ", ".join(root for root in defaultDocRoot)
+        message += "[1] common location(s) ('%s') (default)\n" % ", ".join(root for root in defaultDocRoot)
         message += "[2] custom location(s)\n"
         message += "[3] custom directory list file\n"
-        message += "[4] brute force search\n"
+        message += "[4] brute force search"
         choice = readInput(message, default="1").strip()
 
         if choice == "2":
@@ -700,10 +701,10 @@ def getManualDirectories():
                         if BRUTE_DOC_ROOT_TARGET_MARK not in prefix:
                             break
 
-            infoMsg = "using common directories: %s" % ','.join(directories)
+            infoMsg = "using generated directory list: %s" % ','.join(directories)
             logger.info(infoMsg)
 
-            msg = "use additional custom directories [Enter for None]: "
+            msg = "use any additional custom directories [Enter for None]: "
             answer = readInput(msg)
 
             if answer:
@@ -715,7 +716,7 @@ def getManualDirectories():
     return directories
 
 def getAutoDirectories():
-    retVal = set("/")
+    retVal = set()
 
     if kb.absFilePaths:
         infoMsg = "retrieved web server absolute paths: "
@@ -728,7 +729,7 @@ def getAutoDirectories():
                 directory = ntToPosixSlashes(directory)
                 retVal.add(directory)
     else:
-        warnMsg = "unable to retrieve automatically any web server path"
+        warnMsg = "unable to automatically parse any web server path"
         logger.warn(warnMsg)
 
     _ = extractRegexResult(r"//[^/]+?(?P<result>/.*)/", conf.url)  # web directory
@@ -986,7 +987,9 @@ def banner():
     This function prints sqlmap banner with its version
     """
 
-    _ = """\n    %s - %s\n    %s\n\n""" % (VERSION_STRING, DESCRIPTION, SITE)
+    _ = BANNER
+    if not getattr(LOGGER_HANDLER, "is_tty", False):
+        _ = re.sub("\033.+?m", "", _)
     dataToStdout(_, forceOutput=True)
 
 def parsePasswordHash(password):
@@ -1043,10 +1046,7 @@ def setPaths():
     paths.SQLMAP_UDF_PATH = os.path.join(paths.SQLMAP_ROOT_PATH, "udf")
     paths.SQLMAP_XML_PATH = os.path.join(paths.SQLMAP_ROOT_PATH, "xml")
     paths.SQLMAP_XML_BANNER_PATH = os.path.join(paths.SQLMAP_XML_PATH, "banner")
-    paths.SQLMAP_OUTPUT_PATH = paths.get("SQLMAP_OUTPUT_PATH", os.path.join(paths.SQLMAP_ROOT_PATH, "output"))
-
-    if not os.access(paths.SQLMAP_OUTPUT_PATH, os.W_OK):
-        paths.SQLMAP_OUTPUT_PATH = os.path.join(os.path.expanduser("~"), ".sqlmap", "output")
+    paths.SQLMAP_OUTPUT_PATH = paths.get("SQLMAP_OUTPUT_PATH", os.path.join(os.path.expanduser("~"), ".sqlmap", "output"))
 
     paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
     paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
@@ -1260,15 +1260,22 @@ def expandAsteriskForColumns(expression):
     the SQL query string (expression)
     """
 
-    asterisk = re.search("^SELECT(\s+TOP\s+[\d]+)?\s+\*\s+FROM\s+([\w\.\_]+)\s*", expression, re.I)
+    asterisk = re.search("^SELECT(\s+TOP\s+[\d]+)?\s+\*\s+FROM\s+`?([^`\s()]+)", expression, re.I)
 
     if asterisk:
         infoMsg = "you did not provide the fields in your query. "
         infoMsg += "sqlmap will retrieve the column names itself"
         logger.info(infoMsg)
 
-        _ = asterisk.group(2).replace("..", ".")
-        conf.db, conf.tbl = _.split(".", 1) if '.' in _ else (None, _)
+        _ = asterisk.group(2).replace("..", ".").replace(".dbo.", ".")
+        db, conf.tbl = _.split(".", 1) if '.' in _ else (None, _)
+        if db is None:
+            if expression != conf.query:
+                conf.db = db
+            else:
+                expression = re.sub(r"([^\w])%s" % conf.tbl, "\g<1>%s.%s" % (conf.db, conf.tbl), expression)
+        else:
+            conf.db = db
         conf.db = safeSQLIdentificatorNaming(conf.db)
         conf.tbl = safeSQLIdentificatorNaming(conf.tbl, True)
 
@@ -1317,7 +1324,7 @@ def parseUnionPage(page):
     if page is None:
         return None
 
-    if page.startswith(kb.chars.start) and page.endswith(kb.chars.stop):
+    if re.search("(?si)\A%s.*%s\Z" % (kb.chars.start, kb.chars.stop), page):
         if len(page) > LARGE_OUTPUT_THRESHOLD:
             warnMsg = "large output detected. This might take a while"
             logger.warn(warnMsg)
@@ -1515,15 +1522,24 @@ def safeStringFormat(format_, params):
         retVal = retVal.replace("%s", str(params), 1)
     else:
         count, index = 0, 0
-        while index != -1:
-            index = retVal.find("%s")
-            if index != -1:
-                if count < len(params):
+        if retVal.count("%s") == len(params):
+            while index != -1:
+                index = retVal.find("%s")
+                if index != -1:
                     retVal = retVal[:index] + getUnicode(params[count]) + retVal[index + 2:]
+                    count += 1
+        else:
+            count = 0
+            while True:
+                match = re.search(r"(\A|[^A-Za-z0-9])(%s)([^A-Za-z0-9]|\Z)", retVal)
+                if match:
+                    if count > len(params):
+                        raise Exception("wrong number of parameters during string formatting")
+                    else:
+                        retVal = re.sub(r"(\A|[^A-Za-z0-9])(%s)([^A-Za-z0-9]|\Z)", r"\g<1>%s\g<3>" % params[count], retVal, 1)
+                        count += 1
                 else:
-                    raise Exception("wrong number of parameters during string formatting")
-                count += 1
-
+                    break
     return retVal
 
 def getFilteredPageContent(page, onlyText=True):
@@ -3321,6 +3337,8 @@ def findPageForms(content, url, raise_=False, addToTargets=False):
 
     try:
         forms = ParseResponse(response, backwards_compat=False)
+    except UnicodeError:
+        pass
     except ParseError:
         warnMsg = "badly formed HTML at the given URL ('%s'). Going to filter it" % url
         logger.warning(warnMsg)
