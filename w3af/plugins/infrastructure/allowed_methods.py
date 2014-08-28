@@ -100,6 +100,12 @@ class allowed_methods(InfrastructurePlugin):
         allowed_bf, id_bf = self._identify_with_bruteforce(url)
         
         allowed_methods = allowed_options + allowed_bf
+        # If a method was found by both, bf and options, it is duplicated in 
+        # the list. Remove dups
+        allowed_methods = list(set(allowed_methods))
+        # There are no duplicate requests.
+        # Even if a method was discovered with both, bf and options, we 
+        # furthermore want to see both requests
         id_list = id_options + id_bf
         
         # Added this to make the output a little bit more readable.
