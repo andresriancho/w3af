@@ -114,7 +114,7 @@ class SQLMapWrapper(object):
         """
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
-        all_params = DEFAULT_ARGS + final_params + target_params
+        all_params = self.DEFAULT_ARGS + final_params + target_params
         
         if self.debug:
             all_params += self.DEBUG_ARGS
