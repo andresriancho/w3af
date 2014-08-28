@@ -26,7 +26,7 @@ from mock import patch
 from ..dependency_check import dependency_check
 from ..platforms.base_platform import CORE, GUI
 from ..platforms.default import DefaultPlatform
-from ..platforms.ubuntu import Ubuntu1204
+from ..platforms.ubuntu1204 import Ubuntu1204
 from ..pip_dependency import PIPDependency
 
 

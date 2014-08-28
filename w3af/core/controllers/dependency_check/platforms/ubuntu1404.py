@@ -1,5 +1,5 @@
 """
-kali.py
+ubuntu1404.py
 
 Copyright 2014 Andres Riancho
 
@@ -23,34 +23,11 @@ import platform
 
 from .ubuntu1204 import Ubuntu1204
 
-#
-#   This piece of code will most likely be patched to be ignored when we create
-#   the latest deb package for Kali.
-#
-KALI_MESSAGE = '''
-According to Kali's documentation [0] in order to avoid breaking the packaged\
- w3af version you should run the following commands:
 
-cd ~
-apt-get install -y python-pip
-pip install --upgrade pip
-git clone https/github.com/andresriancho/w3af.git
-cd w3af
-./w3af_console
-. /tmp/w3af_dependency_install.sh
-
-[0] http://www.kali.org/kali-monday/bleeding-edge-kali-repositories/
-'''
-
-
-class Kali(Ubuntu1204):
-    SYSTEM_NAME = 'Kali'
-
-    @staticmethod
-    def after_hook():
-        print(KALI_MESSAGE)
+class Ubuntu1404(Ubuntu1204):
+    SYSTEM_NAME = 'Ubuntu 14.04'
 
     @staticmethod
     def is_current_platform():
-        return 'debian' in platform.dist() and 'kali' in platform.release()
+        return 'Ubuntu' in platform.dist() and '14.04' in platform.dist()
 

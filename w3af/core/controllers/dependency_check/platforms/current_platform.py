@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .ubuntu import Ubuntu1204
+from .ubuntu1204 import Ubuntu1204
+from .ubuntu1404 import Ubuntu1404
 from .centos import CentOS
 from .centos65 import CentOS65
 from .fedora import Fedora
@@ -30,7 +31,7 @@ from .suse import SuSE
 from .default import DefaultPlatform
 
 KNOWN_PLATFORMS = [Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX, OpenBSD5,
-                   SuSE]
+                   SuSE, Ubuntu1404]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
