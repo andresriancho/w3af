@@ -47,7 +47,7 @@ class TestSQLMapUpdate(unittest.TestCase):
         setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
         
         maintain_commands = ('git subtree pull'
-                             ' --prefix=w3af/plugins/attack/db/sqlmap/'
+                             ' --prefix=w3af/plugins/attack/db/sqlmap'
                              ' --squash sqlmap master',
 
                              'git push')
