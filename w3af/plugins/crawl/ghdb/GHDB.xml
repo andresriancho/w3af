@@ -1386,4 +1386,35 @@ direct get the access of hadoop cluster with root user
 
 -- 
 Simmant Yadav
+</textualDescription></signature><signature><signatureReferenceNumber>3952</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3952/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=(&quot;DMZ&quot; | &quot;Public IP&quot; | &quot;Private IP&quot;) filetype:xls</querystring><shortDescription>(&quot;DMZ&quot; | &quot;Public IP&quot; | &quot;Private IP&quot;) filetype:xls</shortDescription><textualDescription>Files with information DMZ, public IP, private IP network segments, etc.
+
+Daniel Maldonado
+http://caceriadespammers.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>3953</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3953/</link><category>Network or vulnerability data</category><querystring>http://www.google.com/search?q=inurl:&quot;/munin/network-*.html&quot; OR inurl:&quot;/munin/apache-*.html&quot; OR inurl:&quot;/munin/disk-*.html&quot; OR inurl:&quot;/munin/system-*.html&quot; OR inurl:&quot;/munin/munin-*.html&quot; OR inurl:&quot;/munin/problems.html&quot;</querystring><shortDescription>inurl:&quot;/munin/network-*.html&quot; OR inurl:&quot;/munin/apache-*.html&quot; OR inurl:&quot;/munin/disk-*.html&quot; OR inurl:&quot;/munin/system-*.html&quot; OR inurl:&quot;/munin/munin-*.html&quot; OR inurl:&quot;/munin/problems.html&quot;</shortDescription><textualDescription>Search the Munin monitoring graphs
+
+Daniel Maldonado
+http://caceriadespammers.blogspot.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>3954</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3954/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=SiteScope inurl:/SiteScope/cgi/go.exe/SiteScope?page=</querystring><shortDescription>SiteScope inurl:/SiteScope/cgi/go.exe/SiteScope?page=</shortDescription><textualDescription>inurl:/SiteScope/cgi/go.exe/SiteScope?page=
+
+twitter
+@firebitsbr
+</textualDescription></signature><signature><signatureReferenceNumber>3955</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3955/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:sql site:gov and &quot;insert into&quot;</querystring><shortDescription>filetype:sql site:gov and &quot;insert into&quot;</shortDescription><textualDescription>filetype:sql  site:gov and &quot;insert into&quot; 
+
+find sql files with data on governments sites  		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3956</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3956/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;phy.htm&quot; intitle:&quot;Touchstone Status&quot;</querystring><shortDescription>inurl:&quot;phy.htm&quot; intitle:&quot;Touchstone Status&quot;</shortDescription><textualDescription>Hits: 4,250 results
+
+This dork finds PacketCable 1.0 Touchstone Telephony Modems that are online
+wherein you see its event logs, system information, interface parameters,
+mac addresses, etc.
+
+*Jay Turla a.k.a shipcode*
+</textualDescription></signature><signature><signatureReferenceNumber>3957</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3957/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:sql site:com and &quot;insert into&quot; admin &quot;2014&quot;</querystring><shortDescription>http://www.google.com/search?q=filetype:sql site:com and &quot;insert into&quot; admin &quot;2014&quot;</shortDescription><textualDescription>filetype:sql site:com and &quot;insert into&quot; admin &quot;2014&quot;
+
+
+http://facebook.com/groups/hfrosario
+</textualDescription></signature><signature><signatureReferenceNumber>3958</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3958/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;index&quot; intext:&quot;Login to the Administrative Interface&quot;</querystring><shortDescription>intitle:&quot;index&quot; intext:&quot;Login to the Administrative Interface&quot;</shortDescription><textualDescription>via Priyal Viroja</textualDescription></signature><signature><signatureReferenceNumber>3959</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3959/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=inurl:ws_ftp.ini &quot;[WS_FTP]&quot; filetype:ini</querystring><shortDescription>inurl:ws_ftp.ini &quot;[WS_FTP]&quot; filetype:ini</shortDescription><textualDescription>inurl:ws_ftp.ini &quot;[WS_FTP]&quot; filetype:ini
+
+
+Files containing passwords
+
+By Dr4GoR1Ty
 </textualDescription></signature></searchEngineSignature>
