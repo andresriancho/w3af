@@ -311,13 +311,17 @@ class HTTPResponse(object):
                 # Don't waste CPU time trying to create a DOM out of an image
                 return None
 
+            if not self.body:
+                # Can't create a DOM for an empty response
+                return None
+
             try:
                 parser = etree.HTMLParser(recover=True)
                 self._dom = etree.fromstring(self.body, parser)
             except Exception, e:
                 msg = 'The HTTP body for "%s" could NOT be parsed by lxml.'\
-                      ' The exception was: "%s".'
-                om.out.debug(msg % (self.get_url(), e))
+                      ' The %s was: "%s".'
+                om.out.debug(msg % (self.get_url(), e.__class__.__name__, e))
 
         return self._dom
 
