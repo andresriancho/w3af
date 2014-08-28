@@ -6,10 +6,12 @@ See the file 'doc/COPYING' for copying permission
 """
 
 import os
+import random
 import re
 import subprocess
 import string
 import sys
+import time
 
 from lib.core.enums import DBMS
 from lib.core.enums import DBMS_DIRECTORY_NAME
@@ -19,12 +21,20 @@ from lib.core.revision import getRevisionNumber
 # sqlmap version and site
 VERSION = "1.0-dev"
 REVISION = getRevisionNumber()
-VERSION_STRING = "sqlmap/%s%s" % (VERSION, "-%s" % REVISION if REVISION else "")
+VERSION_STRING = "sqlmap/%s%s" % (VERSION, "-%s" % REVISION if REVISION else "-nongit-%s" % time.strftime("%Y%m%d", time.gmtime(os.path.getctime(__file__))))
 DESCRIPTION = "automatic SQL injection and database takeover tool"
 SITE = "http://sqlmap.org"
 ISSUES_PAGE = "https://github.com/sqlmapproject/sqlmap/issues/new"
 GIT_REPOSITORY = "git://github.com/sqlmapproject/sqlmap.git"
 ML = "sqlmap-users@lists.sourceforge.net"
+
+# colorful banner
+BANNER = """\033[01;33m         _
+ ___ ___| |_____ ___ ___  \033[01;37m{\033[01;%dm%s\033[01;37m}\033[01;33m
+|_ -| . | |     | .'| . |
+|___|_  |_|_|_|_|__,|  _|
+      |_|           |_|   \033[0m\033[4m%s\033[0m\n
+""" % ((31 + hash(REVISION) % 6) if REVISION else 30, VERSION_STRING.split('/')[-1], SITE)
 
 # Minimum distance of ratio from kb.matchRatio to result in True
 DIFF_TOLERANCE = 0.05
@@ -46,6 +56,9 @@ REPLACEMENT_MARKER = "__REPLACEMENT_MARK__"
 PAYLOAD_DELIMITER = "__PAYLOAD_DELIMITER__"
 CHAR_INFERENCE_MARK = "%c"
 PRINTABLE_CHAR_REGEX = r"[^\x00-\x1f\x7f-\xff]"
+
+# Regular expression used for recognition of textual content-type
+TEXT_CONTENT_TYPE_REGEX = r"(?i)(text|form|message|xml|javascript|ecmascript|json)"
 
 # Regular expression used for recognition of generic permission messages
 PERMISSION_DENIED_REGEX = r"(command|permission|access)\s*(was|is)?\s*denied"
@@ -245,7 +258,7 @@ ERROR_PARSING_REGEXES = (
                         )
 
 # Regular expression used for parsing charset info from meta html headers
-META_CHARSET_REGEX = r'(?si)<head>.*<meta http-equiv="?content-type"?[^>]+charset=(?P<result>[^">]+).*</head>'
+META_CHARSET_REGEX = r'(?si)<head>.*<meta[^>]+charset="?(?P<result>[^"> ]+).*</head>'
 
 # Regular expression used for parsing refresh info from meta html headers
 META_REFRESH_REGEX = r'(?si)<head>.*<meta http-equiv="?refresh"?[^>]+content="?[^">]+url=["\']?(?P<result>[^\'">]+).*</head>'
@@ -314,7 +327,7 @@ REFLECTED_VALUE_MARKER = "__REFLECTED_VALUE__"
 REFLECTED_BORDER_REGEX = r"[^A-Za-z]+"
 
 # Regular expression used for replacing non-alphanum characters
-REFLECTED_REPLACEMENT_REGEX = r".+?"
+REFLECTED_REPLACEMENT_REGEX = r".+"
 
 # Maximum number of alpha-numerical parts in reflected regex (for speed purposes)
 REFLECTED_MAX_REGEX_PARTS = 10
@@ -392,7 +405,7 @@ ITOA64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 DUMMY_SQL_INJECTION_CHARS = ";()'"
 
 # Simple check against dummy users
-DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b"
+DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b|\A-\d+\Z"
 
 # Extensions skipped by crawler
 CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jpeg", "image", "jar", "tif", "bmp", "war", "ear", "mpg", "mpeg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "mkv", "bin", "iso", "tar", "png", "pdf", "ps", "wav", "mp3", "mp4", "au", "aiff", "aac", "zip", "rar", "7z", "gz", "flv", "mov", "doc", "docx", "xls", "dot", "dotx", "xlt", "xlsx", "ppt", "pps", "pptx")
@@ -467,7 +480,7 @@ HASHDB_FLUSH_RETRIES = 3
 HASHDB_END_TRANSACTION_RETRIES = 3
 
 # Unique milestone value used for forced deprecation of old HashDB values (e.g. when changing hash/pickle mechanism)
-HASHDB_MILESTONE_VALUE = "OZkQMtwHoP"  # r9e02816 "".join(random.sample(string.ascii_letters, 10))
+HASHDB_MILESTONE_VALUE = "nXkbwIURlN"  # rd74b803 "".join(random.sample(string.ascii_letters, 10))
 
 # Warn user of possible delay due to large page dump in full UNION query injections
 LARGE_OUTPUT_THRESHOLD = 1024 ** 2
@@ -572,19 +585,19 @@ FORM_SEARCH_REGEX = r"(?si)<form(?!.+<form).+?</form>"
 MIN_ENCODED_LEN_CHECK = 5
 
 # Timeout in seconds in which Metasploit remote session has to be initialized
-METASPLOIT_SESSION_TIMEOUT = 180
+METASPLOIT_SESSION_TIMEOUT = 300
 
 # Reference: http://www.cookiecentral.com/faq/#3.5
 NETSCAPE_FORMAT_HEADER_COOKIES = "# Netscape HTTP Cookie File."
 
 # Prefixes used in brute force search for web server document root
 BRUTE_DOC_ROOT_PREFIXES = {
-    OS.LINUX: ("/var/www", "/var/www/%TARGET%", "/var/www/vhosts/%TARGET%", "/var/www/virtual/%TARGET%", "/var/www/clients/vhosts/%TARGET%", "/var/www/clients/virtual/%TARGET%"),
-    OS.WINDOWS: ("/xampp", "/Program Files/xampp/", "/wamp", "/Program Files/wampp/", "/Inetpub/wwwroot", "/Inetpub/wwwroot/%TARGET%", "/Inetpub/vhosts/%TARGET%")
+    OS.LINUX: ("/var/www", "/usr/local/apache", "/usr/local/apache2", "/usr/local/www/apache22", "/usr/local/www/apache24", "/usr/local/httpd", "/var/www/nginx-default", "/srv/www", "/var/www/%TARGET%", "/var/www/vhosts/%TARGET%", "/var/www/virtual/%TARGET%", "/var/www/clients/vhosts/%TARGET%", "/var/www/clients/virtual/%TARGET%"),
+    OS.WINDOWS: ("/xampp", "/Program Files/xampp", "/wamp", "/Program Files/wampp", "/apache", "/Program Files/Apache Group/Apache", "/Program Files/Apache Group/Apache2", "/Program Files/Apache Group/Apache2.2", "/Program Files/Apache Group/Apache2.4", "/Inetpub/wwwroot", "/Inetpub/wwwroot/%TARGET%", "/Inetpub/vhosts/%TARGET%")
 }
 
 # Suffixes used in brute force search for web server document root
-BRUTE_DOC_ROOT_SUFFIXES = ("", "html", "htdocs", "httpdocs", "php", "public", "src", "site", "build", "web", "sites/all", "www/build")
+BRUTE_DOC_ROOT_SUFFIXES = ("", "html", "htdocs", "httpdocs", "php", "public", "src", "site", "build", "web", "data", "sites/all", "www/build")
 
 # String used for marking target name inside used brute force web server document root
 BRUTE_DOC_ROOT_TARGET_MARK = "%TARGET%"

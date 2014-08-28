@@ -135,6 +135,7 @@ from lib.core.threads import getCurrentThreadData
 from lib.core.update import update
 from lib.parse.configfile import configFileParser
 from lib.parse.payloads import loadPayloads
+from lib.parse.sitemap import parseSitemap
 from lib.request.basic import checkCharEncoding
 from lib.request.connect import Connect as Request
 from lib.request.dns import DNSServer
@@ -504,10 +505,13 @@ def _setCrawler():
     if not conf.crawlDepth:
         return
 
-    if not conf.bulkFile:
+    if not any((conf.bulkFile, conf.sitemapUrl)):
         crawl(conf.url)
     else:
-        targets = getFileItems(conf.bulkFile)
+        if conf.bulkFile:
+            targets = getFileItems(conf.bulkFile)
+        else:
+            targets = parseSitemap(conf.sitemapUrl)
         for i in xrange(len(targets)):
             try:
                 target = targets[i]
@@ -567,11 +571,11 @@ def _setGoogleDorking():
             if re.search(r"(.*?)\?(.+)", link):
                 kb.targets.add((link, conf.method, conf.data, conf.cookie))
             elif re.search(URI_INJECTABLE_REGEX, link, re.I):
-                if kb.data.onlyGETs is None and conf.data is None:
+                if kb.data.onlyGETs is None and conf.data is None and not conf.googleDork:
                     message = "do you want to scan only results containing GET parameters? [Y/n] "
                     test = readInput(message, default="Y")
                     kb.data.onlyGETs = test.lower() != 'n'
-                if not kb.data.onlyGETs:
+                if not kb.data.onlyGETs or conf.googleDork:
                     kb.targets.add((link, conf.method, conf.data, conf.cookie))
 
         return links
@@ -618,9 +622,32 @@ def _setBulkMultipleTargets():
         errMsg += "does not exist"
         raise SqlmapFilePathException(errMsg)
 
+    found = False
     for line in getFileItems(conf.bulkFile):
         if re.match(r"[^ ]+\?(.+)", line, re.I) or CUSTOM_INJECTION_MARK_CHAR in line:
+            found = True
             kb.targets.add((line.strip(), None, None, None))
+
+    if not found and not conf.forms and not conf.crawlDepth:
+        warnMsg = "no usable links found (with GET parameters)"
+        logger.warn(warnMsg)
+
+def _setSitemapTargets():
+    if not conf.sitemapUrl:
+        return
+
+    infoMsg = "parsing sitemap '%s'" % conf.sitemapUrl
+    logger.info(infoMsg)
+
+    found = False
+    for item in parseSitemap(conf.sitemapUrl):
+        if re.match(r"[^ ]+\?(.+)", item, re.I):
+            found = True
+            kb.targets.add((item.strip(), None, None, None))
+
+    if not found and not conf.forms and not conf.crawlDepth:
+        warnMsg = "no usable links found (with GET parameters)"
+        logger.warn(warnMsg)
 
 def _findPageForms():
     if not conf.forms or conf.crawlDepth:
@@ -632,11 +659,17 @@ def _findPageForms():
     infoMsg = "searching for forms"
     logger.info(infoMsg)
 
-    if not conf.bulkFile:
+    if not any((conf.bulkFile, conf.googleDork, conf.sitemapUrl)):
         page, _ = Request.queryPage(content=True)
         findPageForms(page, conf.url, True, True)
     else:
-        targets = getFileItems(conf.bulkFile)
+        if conf.bulkFile:
+            targets = getFileItems(conf.bulkFile)
+        elif conf.sitemapUrl:
+            targets = parseSitemap(conf.sitemapUrl)
+        elif conf.googleDork:
+            targets = [_[0] for _ in kb.targets]
+            kb.targets.clear()
         for i in xrange(len(targets)):
             try:
                 target = targets[i]
@@ -646,6 +679,8 @@ def _findPageForms():
                 if conf.verbose in (1, 2):
                     status = '%d/%d links visited (%d%%)' % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
                     dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
+            except KeyboardInterrupt:
+                break
             except Exception, ex:
                 errMsg = "problem occurred while searching for forms at '%s' ('%s')" % (target, ex)
                 logger.error(errMsg)
@@ -1336,8 +1371,10 @@ def _setHTTPUserAgent():
         userAgent = random.sample(kb.userAgents or [_defaultHTTPUserAgent()], 1)[0]
 
         infoMsg = "fetched random HTTP User-Agent header from "
-        infoMsg += "file '%s': %s" % (paths.USER_AGENTS, userAgent)
+        infoMsg += "file '%s': '%s'" % (paths.USER_AGENTS, userAgent)
         logger.info(infoMsg)
+
+        conf.httpHeaders.append((HTTP_HEADER.USER_AGENT, userAgent))
 
 def _setHTTPReferer():
     """
@@ -1447,13 +1484,16 @@ def _cleanupOptions():
     if conf.dFile:
         conf.dFile = ntToPosixSlashes(normalizePath(conf.dFile))
 
+    if conf.sitemapUrl and not conf.sitemapUrl.lower().startswith("http"):
+        conf.sitemapUrl = "http%s://%s" % ('s' if conf.forceSSL else '', conf.sitemapUrl)
+
     if conf.msfPath:
         conf.msfPath = ntToPosixSlashes(normalizePath(conf.msfPath))
 
     if conf.tmpPath:
         conf.tmpPath = ntToPosixSlashes(normalizePath(conf.tmpPath))
 
-    if conf.googleDork or conf.logFile or conf.bulkFile or conf.forms or conf.crawlDepth:
+    if any((conf.googleDork, conf.logFile, conf.bulkFile, conf.sitemapUrl, conf.forms, conf.crawlDepth)):
         conf.multipleTargets = True
 
     if conf.optimize:
@@ -1526,6 +1566,15 @@ def _cleanupOptions():
 
     if conf.torType:
         conf.torType = conf.torType.upper()
+
+    if conf.col:
+        conf.col = re.sub(r"\s*,\s*", ",", conf.col)
+
+    if conf.excludeCol:
+        conf.excludeCol = re.sub(r"\s*,\s*", ",", conf.excludeCol)
+
+    if conf.binaryFields:
+        conf.binaryFields = re.sub(r"\s*,\s*", ",", conf.binaryFields)
 
     threadData = getCurrentThreadData()
     threadData.reset()
@@ -1629,6 +1678,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.extendTests = None
     kb.errorIsNone = True
     kb.fileReadMode = False
+    kb.followSitemapRecursion = None
     kb.forcedDbms = None
     kb.forcePartialUnion = False
     kb.headersFp = {}
@@ -1694,7 +1744,6 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.resumeValues = True
     kb.safeCharEncode = False
     kb.singleLogFlags = set()
-    kb.skipVulnHost = None
     kb.reduceTests = None
     kb.stickyDBMS = False
     kb.stickyLevel = None
@@ -1715,6 +1764,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
         kb.headerPaths = {}
         kb.keywords = set(getFileItems(paths.SQL_KEYWORDS))
         kb.passwordMgr = None
+        kb.skipVulnHost = None
         kb.tamperFunctions = []
         kb.targets = oset()
         kb.testedParams = set()
@@ -1734,25 +1784,20 @@ def _useWizardInterface():
 
     logger.info("starting wizard interface")
 
-    while True:
-        while not conf.url:
-            message = "Please enter full target URL (-u): "
-            conf.url = readInput(message, default=None)
+    while not conf.url:
+        message = "Please enter full target URL (-u): "
+        conf.url = readInput(message, default=None)
 
-        message = "POST data (--data) [Enter for None]: "
-        conf.data = readInput(message, default=None)
+    message = "POST data (--data) [Enter for None]: "
+    conf.data = readInput(message, default=None)
 
-        if filter(lambda _: '=' in unicode(_), (conf.url, conf.data)) or '*' in conf.url:
-            break
-        else:
-            warnMsg = "no GET and/or POST parameter(s) found for testing "
-            warnMsg += "(e.g. GET parameter 'id' in 'http://www.site.com/vuln.php?id=1')"
-            logger.critical(warnMsg)
-
-            if conf.crawlDepth or conf.forms:
-                break
-            else:
-                conf.url = conf.data = None
+    if not (filter(lambda _: '=' in unicode(_), (conf.url, conf.data)) or '*' in conf.url):
+        warnMsg = "no GET and/or POST parameter(s) found for testing "
+        warnMsg += "(e.g. GET parameter 'id' in 'http://www.site.com/vuln.php?id=1'). "
+        if not conf.crawlDepth and not conf.forms:
+            warnMsg += "Will search for forms"
+            conf.forms = True
+        logger.warn(warnMsg)
 
     choice = None
 
@@ -1915,7 +1960,7 @@ def _mergeOptions(inputOptions, overrideOptions):
         types_.update(optDict[group])
 
     for key in conf:
-        if key.upper() in _:
+        if key.upper() in _ and key in types_:
             value = _[key.upper()]
 
             if types_[key] == OPTION_TYPE.BOOLEAN:
@@ -2093,6 +2138,10 @@ def _basicOptionValidation():
         errMsg = "switch '--titles' is incompatible with switch '--null-connection'"
         raise SqlmapSyntaxException(errMsg)
 
+    if conf.dumpTable and conf.search:
+        errMsg = "switch '--dump' is incompatible with switch '--search'"
+        raise SqlmapSyntaxException(errMsg)
+
     if conf.data and conf.nullConnection:
         errMsg = "option '--data' is incompatible with switch '--null-connection'"
         raise SqlmapSyntaxException(errMsg)
@@ -2107,6 +2156,10 @@ def _basicOptionValidation():
 
     if conf.noCast and conf.hexConvert:
         errMsg = "switch '--no-cast' is incompatible with switch '--hex'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.dumpAll and conf.search:
+        errMsg = "switch '--dump-all' is incompatible with switch '--search'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.string and conf.notString:
@@ -2129,8 +2182,8 @@ def _basicOptionValidation():
         errMsg = "maximum number of used threads is %d avoiding potential connection issues" % MAX_NUMBER_OF_THREADS
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.forms and not any((conf.url, conf.bulkFile)):
-        errMsg = "switch '--forms' requires usage of option '-u' ('--url') or '-m'"
+    if conf.forms and not any((conf.url, conf.googleDork, conf.bulkFile, conf.sitemapUrl)):
+        errMsg = "switch '--forms' requires usage of option '-u' ('--url'), '-g', '-m' or '-x'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.requestFile and conf.url and conf.url != DUMMY_URL:
@@ -2183,10 +2236,6 @@ def _basicOptionValidation():
 
     if conf.proxy and conf.ignoreProxy:
         errMsg = "option '--proxy' is incompatible with switch '--ignore-proxy'"
-        raise SqlmapSyntaxException(errMsg)
-
-    if conf.forms and any([conf.logFile, conf.direct, conf.requestFile, conf.googleDork]):
-        errMsg = "switch '--forms' is compatible only with options '-u' ('--url') and '-m'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.timeSec < 1:
@@ -2265,7 +2314,7 @@ def init():
     parseTargetUrl()
     parseTargetDirect()
 
-    if any((conf.url, conf.logFile, conf.bulkFile, conf.requestFile, conf.googleDork, conf.liveTest)):
+    if any((conf.url, conf.logFile, conf.bulkFile, conf.sitemapUrl, conf.requestFile, conf.googleDork, conf.liveTest)):
         _setHTTPTimeout()
         _setHTTPExtraHeaders()
         _setHTTPCookies()
@@ -2278,6 +2327,7 @@ def init():
         _setSafeUrl()
         _setGoogleDorking()
         _setBulkMultipleTargets()
+        _setSitemapTargets()
         _urllib2Opener()
         _checkTor()
         _setCrawler()

@@ -63,6 +63,8 @@ def cmdLineParser():
         target.add_option("-l", dest="logFile", help="Parse target(s) from Burp "
                           "or WebScarab proxy log file")
 
+        target.add_option("-x", dest="sitemapUrl", help="Parse target(s) from remote sitemap(.xml) file")
+
         target.add_option("-m", dest="bulkFile", help="Scan multiple targets given "
                           "in a textual file ")
 
@@ -807,8 +809,8 @@ def cmdLineParser():
 
         if not any((args.direct, args.url, args.logFile, args.bulkFile, args.googleDork, args.configFile, \
             args.requestFile, args.updateAll, args.smokeTest, args.liveTest, args.wizard, args.dependencies, \
-            args.purgeOutput, args.pickledOptions)):
-            errMsg = "missing a mandatory option (-d, -u, -l, -m, -r, -g, -c, --wizard, --update, --purge-output or --dependencies), "
+            args.purgeOutput, args.pickledOptions, args.sitemapUrl)):
+            errMsg = "missing a mandatory option (-d, -u, -l, -m, -r, -g, -c, -x, --wizard, --update, --purge-output or --dependencies), "
             errMsg += "use -h for basic or -hh for advanced help"
             parser.error(errMsg)
 

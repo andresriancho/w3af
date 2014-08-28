@@ -82,6 +82,7 @@ from lib.core.settings import PAYLOAD_DELIMITER
 from lib.core.settings import PERMISSION_DENIED_REGEX
 from lib.core.settings import PLAIN_TEXT_CONTENT_TYPE
 from lib.core.settings import REPLACEMENT_MARKER
+from lib.core.settings import TEXT_CONTENT_TYPE_REGEX
 from lib.core.settings import UNENCODED_ORIGINAL_VALUE
 from lib.core.settings import URI_HTTP_HEADER
 from lib.core.settings import WARN_TIME_STDEV
@@ -537,8 +538,10 @@ class Connect(object):
                 warnMsg = "unable to connect to the target URL"
             elif "BadStatusLine" in tbMsg:
                 warnMsg = "connection dropped or unknown HTTP "
-                warnMsg += "status code received. Try to force the HTTP User-Agent "
-                warnMsg += "header with option '--user-agent' or switch '--random-agent'"
+                warnMsg += "status code received"
+                if not conf.agent and not conf.randomAgent:
+                    warnMsg += ". Try to force the HTTP User-Agent "
+                    warnMsg += "header with option '--user-agent' or switch '--random-agent'"
             elif "IncompleteRead" in tbMsg:
                 warnMsg = "there was an incomplete read error while retrieving data "
                 warnMsg += "from the target URL"
@@ -566,7 +569,11 @@ class Connect(object):
                 raise SqlmapConnectionException(warnMsg)
 
         finally:
-            page = page if isinstance(page, unicode) else getUnicode(page)
+            if not isinstance(page, unicode):
+                if HTTP_HEADER.CONTENT_TYPE in (responseHeaders or {}) and not re.search(TEXT_CONTENT_TYPE_REGEX, responseHeaders[HTTP_HEADER.CONTENT_TYPE]):
+                    page = unicode(page, errors="ignore")
+                else:
+                    page = getUnicode(page)
             socket.setdefaulttimeout(conf.timeout)
 
         processResponse(page, responseHeaders)
@@ -618,6 +625,9 @@ class Connect(object):
 
         if not place:
             place = kb.injection.place or PLACE.GET
+
+        if not auxHeaders:
+            auxHeaders = {}
 
         raise404 = place != PLACE.URI if raise404 is None else raise404
 
@@ -733,8 +743,6 @@ class Connect(object):
             uri = conf.url
 
         if value and place == PLACE.CUSTOM_HEADER:
-            if not auxHeaders:
-                auxHeaders = {}
             auxHeaders[value.split(',')[0]] = value.split(',', 1)[1]
 
         if conf.rParam:
@@ -871,9 +879,6 @@ class Connect(object):
             if kb.nullConnection == NULLCONNECTION.HEAD:
                 method = HTTPMETHOD.HEAD
             elif kb.nullConnection == NULLCONNECTION.RANGE:
-                if not auxHeaders:
-                    auxHeaders = {}
-
                 auxHeaders[HTTP_HEADER.RANGE] = "bytes=-1"
 
             _, headers, code = Connect.getPage(url=uri, get=get, post=post, cookie=cookie, ua=ua, referer=referer, host=host, silent=silent, method=method, auxHeaders=auxHeaders, raise404=raise404, skipRead=(kb.nullConnection == NULLCONNECTION.SKIP_READ))

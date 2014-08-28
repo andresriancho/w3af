@@ -38,7 +38,7 @@ class Filesystem:
 
     def _checkFileLength(self, localFile, remoteFile, fileRead=False):
         if Backend.isDbms(DBMS.MYSQL):
-            lengthQuery = "SELECT LENGTH(LOAD_FILE('%s'))" % remoteFile
+            lengthQuery = "LENGTH(LOAD_FILE('%s'))" % remoteFile
 
         elif Backend.isDbms(DBMS.PGSQL) and not fileRead:
             lengthQuery = "SELECT LENGTH(data) FROM pg_largeobject WHERE loid=%d" % self.oid
@@ -77,9 +77,9 @@ class Filesystem:
                 logger.info(infoMsg)
             else:
                 sameFile = False
-                warnMsg = "it looks like the file has not been written, this "
-                warnMsg += "can occur if the DBMS process' user has no write "
-                warnMsg += "privileges in the destination path"
+                warnMsg = "it looks like the file has not been written (usually "
+                warnMsg += "occurs if the DBMS process' user has no write "
+                warnMsg += "privileges in the destination path)"
                 logger.warn(warnMsg)
 
         return sameFile

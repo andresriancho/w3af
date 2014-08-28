@@ -52,6 +52,7 @@ from lib.core.threads import runThreads
 from lib.core.unescaper import unescaper
 from lib.request.connect import Connect as Request
 from lib.utils.progress import ProgressBar
+from thirdparty.odict.odict import OrderedDict
 
 def _oneShotUnionUse(expression, unpack=True, limited=False):
     retVal = hashDBRetrieve("%s%s" % (conf.hexConvert, expression), checkConf=True)  # as union data is stored raw unconverted
@@ -66,6 +67,7 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
         # Forge the union SQL injection request
         vector = kb.injection.data[PAYLOAD.TECHNIQUE.UNION].vector
         kb.unionDuplicates = vector[7]
+        kb.forcePartialUnion = vector[8]
         query = agent.forgeUnionQuery(injExpression, vector[0], vector[1], vector[2], vector[3], vector[4], vector[5], vector[6], None, limited)
         where = PAYLOAD.WHERE.NEGATIVE if conf.limitStart or conf.limitStop else vector[6]
         payload = agent.payload(newValue=query, where=where)
@@ -181,12 +183,12 @@ def unionUse(expression, unpack=True, dump=False):
     # NOTE: we assume that only queries that get data from a table can
     # return multiple entries
     if (kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.NEGATIVE or \
+       kb.forcePartialUnion or \
        (dump and (conf.limitStart or conf.limitStop)) or "LIMIT " in expression.upper()) and \
        " FROM " in expression.upper() and ((Backend.getIdentifiedDbms() \
        not in FROM_DUMMY_TABLE) or (Backend.getIdentifiedDbms() in FROM_DUMMY_TABLE \
        and not expression.upper().endswith(FROM_DUMMY_TABLE[Backend.getIdentifiedDbms()]))) \
-       and not re.search(SQL_SCALAR_REGEX, expression, re.I)\
-       or kb.forcePartialUnion:
+       and not re.search(SQL_SCALAR_REGEX, expression, re.I):
         expression, limitCond, topLimit, startLimit, stopLimit = agent.limitCondition(expression, dump)
 
         if limitCond:
@@ -279,9 +281,19 @@ def unionUse(expression, unpack=True, dump=False):
 
                                     if threadData.shared.showEta:
                                         threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
-                                    # in case that we requested N columns and we get M!=N then we have to filter a bit
-                                    if isListLike(items) and len(items) > 1 and len(expressionFieldsList) > 1:
-                                        items = [item for item in items if isListLike(item) and len(item) == len(expressionFieldsList)]
+                                    if isListLike(items):
+                                        # in case that we requested N columns and we get M!=N then we have to filter a bit
+                                        if len(items) > 1 and len(expressionFieldsList) > 1:
+                                            items = [item for item in items if isListLike(item) and len(item) == len(expressionFieldsList)]
+                                        items = [_ for _ in flattenValue(items)]
+                                        if len(items) > len(expressionFieldsList):
+                                            filtered = OrderedDict()
+                                            for item in items:
+                                                key = re.sub(r"[^A-Za-z0-9]", "", item).lower()
+                                                if key not in filtered or re.search(r"[^A-Za-z0-9]", item):
+                                                    filtered[key] = item
+                                            items = filtered.values()
+                                        items = [items]
                                     index = None
                                     for index in xrange(len(threadData.shared.buffered)):
                                         if threadData.shared.buffered[index][0] >= num:
@@ -305,7 +317,7 @@ def unionUse(expression, unpack=True, dump=False):
                                     del threadData.shared.buffered[0]
 
                             if conf.verbose == 1 and not (threadData.resumed and kb.suppressResumeInfo) and not threadData.shared.showEta:
-                                status = "[%s] [INFO] %s: %s" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(",".join("\"%s\"" % _ for _ in flattenValue(arrayizeValue(items)))))
+                                status = "[%s] [INFO] %s: %s" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(",".join("\"%s\"" % _ for _ in flattenValue(arrayizeValue(items))) if not isinstance(items, basestring) else items))
 
                                 if len(status) > width:
                                     status = "%s..." % status[:width - 3]
