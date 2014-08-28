@@ -50,7 +50,7 @@ def dependency_check():
               ' system meets these requirements:\n'\
               '    - PyGTK >= 2.12\n'\
               '    - GTK >= 2.12\n'
-        print msg
+        print(msg)
         should_exit = True
     
     if should_exit:
