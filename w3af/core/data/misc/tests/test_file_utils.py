@@ -23,7 +23,8 @@ import unittest
 import os
 
 from w3af import ROOT_PATH
-from w3af.core.data.misc.file_utils import days_since_file_update
+from w3af.core.data.misc.file_utils import (days_since_file_update,
+                                            get_days_since_last_update)
 
 
 class TestFileUtils(unittest.TestCase):
@@ -46,6 +47,11 @@ class TestFileUtils(unittest.TestCase):
         self.assertFalse(result)
 
     def test_days_since_file_update_directory(self):
-        filename = os.path.join(ROOT_PATH, 'core', 'data')
-        result = days_since_file_update(filename, 0)
+        dir_name = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'tests', 'test_dir')
+        result = days_since_file_update(dir_name, 0)
         self.assertTrue(result)
+
+    def test_get_days_since_last_update_directory(self):
+        dir_name = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'tests', 'test_dir')
+        dslu = get_days_since_last_update(dir_name)
+        self.assertGreater(dslu, 0)
