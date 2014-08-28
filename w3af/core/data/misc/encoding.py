@@ -82,16 +82,23 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
         except UnicodeDecodeError:
             if not on_error_guess:
                 raise
+
             guessed_encoding = chardet.detect(s)['encoding']
-            try:
-                s = s.decode(guessed_encoding, errors)
-            except UnicodeDecodeError:
+
+            if guessed_encoding is None:
+                # Chardet failed to guess the encoding! This is really broken
                 s = s.decode(encoding, 'ignore')
+            else:
+                try:
+                    s = s.decode(guessed_encoding, errors)
+                except UnicodeDecodeError:
+                    s = s.decode(encoding, 'ignore')
     else:
         if hasattr(s, '__unicode__'):
             s = unicode(s)
         else:
             s = unicode(str(s), encoding, errors)
+
     return s
 
 
