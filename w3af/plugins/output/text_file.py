@@ -34,7 +34,7 @@ from w3af.core.data.options.option_list import OptionList
 
 
 REQUEST_HEADER_FMT = '=' * 40 + 'Request %s - %s ' + '=' * 40 + '\n'
-RESPONSE_HEADER_FMT = '\n' + '=' * 40 + 'Request %s - %s ' + '=' * 39 + '\n'
+RESPONSE_HEADER_FMT = '\n' + '=' * 40 + 'Response %s - %s ' + '=' * 39 + '\n'
 LONG_LOG_FMT = '[%s - %s - %s] '
 SHORT_LOG_FMT = '[%s - %s] '
 
