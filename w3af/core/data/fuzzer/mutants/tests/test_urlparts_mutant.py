@@ -24,8 +24,9 @@ import cPickle
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
-from w3af.core.data.fuzzer.mutants.urlparts_mutant import URLPartsContainer
+from w3af.core.data.fuzzer.mutants.urlparts_mutant import (URLPartsMutant,
+                                                           TOKEN,
+                                                           URLPartsContainer)
 
 
 class TestURLPartsMutant(unittest.TestCase):
@@ -53,7 +54,11 @@ class TestURLPartsMutant(unittest.TestCase):
     def test_pickle(self):
         divided_path = URLPartsContainer('/', 'ping!', '/bar')
         loaded_dp = cPickle.loads(cPickle.dumps(divided_path))
+
         self.assertEqual(loaded_dp, divided_path)
+        self.assertEqual(loaded_dp.url_start, divided_path.url_start)
+        self.assertEqual(loaded_dp.url_end, divided_path.url_end)
+        self.assertEqual(loaded_dp[TOKEN], divided_path[TOKEN])
 
     def test_config_false(self):
         fuzzer_config = {'fuzz_url_parts': False}
