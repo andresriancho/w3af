@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 
 from scapy.all import traceroute
+from scapy.error import Scapy_Exception
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
@@ -35,9 +36,9 @@ from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.data.kb.info import Info
 
 
-PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
-                 " It seems that the user running the w3af process has not"\
-                 " enough privileges."
+PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_" \
+                 "https_dist. It seems that the user running the w3af process" \
+                 " has not enough privileges."
 
 
 class http_vs_https_dist(InfrastructurePlugin):
@@ -148,6 +149,8 @@ class http_vs_https_dist(InfrastructurePlugin):
         try:
             traceroute('127.0.0.1', maxttl=1)
         except socket.error:
+            return False
+        except Scapy_Exception:
             return False
         except:
             return False
