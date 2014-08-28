@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import re
+import sys
 import shlex
+import tempfile
 import subprocess
 
 import w3af.core.controllers.output_manager as om
@@ -31,8 +33,11 @@ from w3af.core.controllers.daemons.proxy import Proxy
 
 
 class SQLMapWrapper(object):
-    
+
     DEBUG_ARGS = ['-v6']
+    DEFAULT_ARGS = [sys.executable, 'sqlmap.py',
+                    '--output-dir=%s' % tempfile.gettempdir()]
+
     SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
@@ -109,7 +114,7 @@ class SQLMapWrapper(object):
         """
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
-        all_params = ['python', 'sqlmap.py'] + final_params + target_params
+        all_params = DEFAULT_ARGS + final_params + target_params
         
         if self.debug:
             all_params += self.DEBUG_ARGS
