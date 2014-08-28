@@ -721,7 +721,7 @@ class ExtendedUrllib(object):
             headers_inst = Headers(request.header_items())
             fr = FuzzableRequest.from_parts(url_instance,
                                             request.get_method(),
-                                            str(request.get_data()),
+                                            request.get_data() or '',
                                             headers_inst)
 
             self._grep_queue_put((fr, response))
