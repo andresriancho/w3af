@@ -102,15 +102,7 @@ class ExceptionHandler(object):
 
         stop_on_first_exception = cf.cf.get('stop_on_first_exception')
         if stop_on_first_exception:
-            # TODO: Not sure if this is 100% secure code, but it should work
-            # in most cases, and in the worse scenario it is just a developer
-            # getting hit ;)
-            #
-            # The risk is that the exception being raise is NOT the same
-            # exception that was caught before calling this handle method. This
-            # might happen (not sure actually) in places where lots of
-            # exceptions are raised in a threaded environment
-            raise
+            raise exception, None, tb
 
         #
         # Now we really handle the exception that was produced by the plugin in
@@ -257,7 +249,7 @@ class ExceptionData(object):
 
         self.traceback_str = ''.join(traceback.format_tb(tb))
         self.traceback_str = cleanup_bug_report(self.traceback_str)
-        
+
         self.phase, self.plugin = current_status.latest_running_plugin()
         self.status = current_status
         self.enabled_plugins = enabled_plugins
