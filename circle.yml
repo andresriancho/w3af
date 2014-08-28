@@ -7,8 +7,11 @@
 
 dependencies:
   cache_directories:
+    # This, since it's run in the machine section is in the home
+    - "/home/ubuntu/django-moth"
+
+    # These are inside the w3af directory
     - "xpresser"
-    - "django-moth"
     - "wivet-svn"
     - "pico-wavsep"
     - "sqlmap-testenv"

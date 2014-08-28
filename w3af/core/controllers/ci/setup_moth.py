@@ -71,6 +71,7 @@ def install_dependencies():
     run_cmd('%s/bin/pip install -r %s/requirements.txt' % (VIRTUALENV_DIR,
                                                            DJANGO_MOTH_DIR,))
 
+
 def start_daemons(log_directory=ARTIFACTS_DIR):
     """
     Start the django application in HTTP and HTTPS.
@@ -80,12 +81,15 @@ def start_daemons(log_directory=ARTIFACTS_DIR):
                                                                     log_directory)
     run_cmd(cmd)
 
+
 def run_cmd(cmd, cwd=None):
+    cwd = cwd if cwd is not None else os.getcwd()
     logging.debug('[s] %s (cwd: %s)' % (cmd, cwd))
     p = subprocess.Popen(shlex.split(cmd), cwd=cwd)
     p.wait()
     logging.debug('[e] %s (retcode: %s) (cwd: %s)' % (cmd, p.returncode, cwd))
     return p.returncode
+
 
 if __name__ == '__main__':
     configure_logging(LOG_FILE)
