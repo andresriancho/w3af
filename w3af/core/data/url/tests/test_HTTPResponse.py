@@ -19,13 +19,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import os
 import unittest
 import cPickle
 import msgpack
 
+from random import choice
+
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
 from w3af.core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.parsers.url import URL
@@ -113,8 +117,8 @@ class TestHTTPResponse(unittest.TestCase):
             body = ('<meta http-equiv=Content-Type content="text/html;'
                     'charset=utf-16"/>' + body)
             htmlbody = '%s' % body.encode(charset)
-            resp = self.create_resp(
-                Headers([('Content-Type', hvalue)]), htmlbody)
+            resp = self.create_resp(Headers([('Content-Type', hvalue)]),
+                                    htmlbody)
             self.assertEquals(body, resp.get_body())
 
     def test_parse_response_with_charset_in_meta_header(self):
@@ -143,7 +147,6 @@ class TestHTTPResponse(unittest.TestCase):
     def test_parse_response_with_wrong_charset(self):
         # A wrong or non-existant charset was set; try to decode the response
         # using the default charset and handling scheme
-        from random import choice
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
             headers = Headers([('Content-Type', 'text/xml; charset=%s' %
@@ -171,8 +174,8 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEquals(2, len(resp.get_dom().xpath('.//input')))
 
     def test_dom_are_the_same(self):
-        resp = self.create_resp(
-            Headers([('Content-Type', 'text/html')]), "<html/>")
+        resp = self.create_resp(Headers([('Content-Type', 'text/html')]),
+                                "<html/>")
         domid = id(resp.get_dom())
         self.assertEquals(domid, id(resp.get_dom()))
 
@@ -194,6 +197,36 @@ class TestHTTPResponse(unittest.TestCase):
 
         self.assertEquals(clear_text, calculated_clear_text)
         self.assertIs(calculated_clear_text_2, calculated_clear_text)
+
+    def test_get_clear_text_body_encodings(self):
+        for lang_desc, (body, encoding) in TEST_RESPONSES.iteritems():
+            encoding_header = 'text/html; charset=%s' % encoding
+            headers = Headers([('Content-Type', encoding_header)])
+
+            encoded_body = body.encode(encoding)
+            resp = self.create_resp(headers, encoded_body)
+            ct_body = resp.get_clear_text_body()
+
+            # These test strings don't really have tags
+            self.assertEqual(ct_body, body)
+
+    def test_get_clear_text_issue_4402(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/4402
+        """
+        test_file_path = 'core/data/url/tests/data/encoding_4402.php'
+        test_file = os.path.join(ROOT_PATH, test_file_path)
+        body = file(test_file, 'rb').read()
+
+        sample_encodings = [encoding for _, (_, encoding) in TEST_RESPONSES.iteritems()]
+        sample_encodings.extend(['', 'utf-8'])
+
+        for encoding in sample_encodings:
+            encoding_header = 'text/html; charset=%s' % encoding
+            headers = Headers([('Content-Type', encoding_header)])
+
+            resp = self.create_resp(headers, body)
+            resp.get_clear_text_body()
 
     def test_get_lower_case_headers(self):
         headers = Headers([('Content-Type', 'text/html')])
@@ -217,10 +250,10 @@ class TestHTTPResponse(unittest.TestCase):
     def test_pickleable_dom(self):
         
         msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
-              ' having a multiprocess process that will perform all HTTP requests' \
-              ' and return HTTP responses over a multiprocessing Queue AND only' \
-              ' process the DOM once. Of course I can set the dom to None before' \
-              ' pickling.'
+              ' having a multiprocess process that will perform all HTTP' \
+              ' requests and return HTTP responses over a multiprocessing' \
+              ' Queue AND only process the DOM once. Of course I can set the' \
+              ' dom to None before pickling.'
         raise SkipTest(msg)
     
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
@@ -278,4 +311,3 @@ class TestHTTPResponse(unittest.TestCase):
         headers = Headers([('Content-Type', 'application/pdf')])
         body = None
         self.assertRaises(TypeError, HTTPResponse, 200, body, headers, url, url)
-        
