@@ -55,7 +55,8 @@ def factory(module_name, *args):
             module_inst = sys.modules[module_name]
             a_class = getattr(module_inst, class_name)
         except Exception, e:
-            msg = 'The requested plugin ("%s") doesn\'t have a correct format: "%s".'
+            msg = 'The requested plugin ("%s") doesn\'t have a correct' \
+                  ' format: "%s".'
             raise BaseFrameworkException(msg % (module_name, e))
         else:
             try:
