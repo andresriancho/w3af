@@ -1,5 +1,5 @@
 """
-OutputPlugin.py
+output_plugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -102,16 +102,22 @@ class OutputPlugin(Plugin):
         """
         pass
 
-    def log_enabled_plugins(self, enabledPluginsDict, pluginOptionsDict):
+    def log_enabled_plugins(self, enabled_plugins_dict, plugin_options_dict):
         """
-        This method logs to the output plugins the enabled plugins and their configuration.
+        This method logs to the output plugins the enabled plugins and their
+        configuration.
 
-        :param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
-                   looks similar to:
-                   {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
+        :param enabled_plugins_dict: As returned by
+                                     w3afCore.get_all_enabled_plugins() looks
+                                     similar to:
 
-        :param pluginOptionsDict: As defined in the w3afCore, looks similar to:
-                   {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
+                                    {'audit':[],'grep':[],'bruteforce':[],
+                                     'crawl':[],...}
+
+        :param plugin_options_dict: As defined in the w3afCore, looks similar to
+
+                                    {'audit':{},'grep':{},'bruteforce':{},
+                                     'crawl':{},...}
         """
         pass
 
@@ -127,7 +133,8 @@ class OutputPlugin(Plugin):
         :param string_to_clean: A string that should be cleaned before using
                                 it in a message object.
         """
-        for char, replace in [('\0', '\\0'), ('\t', '\\t')]:  # ('\n','\\n'),('\r','\\r'),
+        # ('\n','\\n'),('\r','\\r')
+        for char, replace in [('\0', '\\0'), ('\t', '\\t')]:
             string_to_clean = string_to_clean.replace(char, replace)
         return string_to_clean
 
