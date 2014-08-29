@@ -26,17 +26,16 @@ import threading
 from w3af.core.ui.gui import reqResViewer, helpers, entries
 from w3af.core.ui.gui.tools.helpers import ThreadedURLImpact
 
-from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException,
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException,
                                               ScanMustStopOnUrlError,
                                               ScanMustStopByKnownReasonExc,
                                               ProxyException)
 
 MANUAL_REQUEST_EXAMPLE = """\
-GET http://localhost/script.php HTTP/1.0
-Host: www.some_host.com
-User-Agent: w3af.org
-Pragma: no-cache
-Content-Type: application/x-www-form-urlencoded
+GET http://w3af.org/ HTTP/1.1
+Host: w3af.org
+User-Agent: Firefox
 """
 
 
