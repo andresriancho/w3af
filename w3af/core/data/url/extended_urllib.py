@@ -416,7 +416,8 @@ class ExtendedUrllib(object):
     def _check_uri(self, req):
         # BUGBUG!
         #
-        # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
+        # Reason: "unknown url type: javascript"
+        # Exception: "<urlopen error unknown url type: javascript>"; going to retry.
         # Too many retries when trying to get: http://localhost/w3af/global_redirect/2.php?url=javascript%3Aalert
         #
         ###TODO: The problem is that the urllib2 library fails even if i do this
