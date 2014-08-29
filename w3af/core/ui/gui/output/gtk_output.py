@@ -51,10 +51,9 @@ class GtkOutput(OutputPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self):
         pass
-        
+
     def debug(self, msg_string, new_line=True):
         """
         This method is called from the output object. The output object was
@@ -64,7 +63,8 @@ class GtkOutput(OutputPlugin):
         #
         #   I don't really want to add debug messages to the queue, as they are
         #   only used in the time graph that's displayed under the log. In order
-        #   to save some memory. I'm only creating the object, but without any msg.
+        #   to save some memory. I'm only creating the object, but without any
+        #   msg.
         #
         m = Message(DEBUG, '', new_line)
         self._send_to_observers(m)
@@ -99,7 +99,7 @@ class GtkOutput(OutputPlugin):
 
     def console(self, msg_string, new_line=True):
         """
-        This method is used by the w3af console to print messages to the outside.
+        This method is used by the w3af console to print messages to the outside
         """
         m = Message(CONSOLE, self._clean_string(msg_string), new_line)
         self._send_to_observers(m)
@@ -133,6 +133,7 @@ class GtkOutput(OutputPlugin):
         global observers
         observers = set()
 
+
 #pylint: disable=E1103
 def subscribe_to_messages(observer_function):
     """
@@ -148,6 +149,7 @@ def subscribe_to_messages(observer_function):
         om.out.set_output_plugin_inst(gtk_output)
         gtk_output.subscribe(observer_function)
 
+
 def unsubscribe_to_messages(observer_function):
     """
     Unsubscribe observer_function to the GtkOutput messages
@@ -158,6 +160,7 @@ def unsubscribe_to_messages(observer_function):
             plugin_inst.unsubscribe(observer_function)
             break
 #pylint: enable=E1103
+
 
 class Message(object):
     def __init__(self, msg_type, msg, new_line=True):
