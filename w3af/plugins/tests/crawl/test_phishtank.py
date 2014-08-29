@@ -56,6 +56,16 @@ class TestPhishtank(PluginTest):
             if match and 'CDATA' not in line:
                 return match.group(1)
 
+    def get_total_urls(self, phishtank_inst):
+        total = 0
+
+        for line in file(phishtank_inst.PHISHTANK_DB):
+            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
+            if '</url>' in line:
+                total += 1
+
+        return total
+
     def test_phishtank_match(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
@@ -77,8 +87,10 @@ class TestPhishtank(PluginTest):
                                                                'phishtank')
 
         vuln_url_str = self.get_vulnerable_url(phishtank_inst)
+        total_pt_urls = self.get_total_urls(phishtank_inst)
         pt_handler = phishtank_inst._is_in_phishtank([vuln_url_str, ])
-        self.assertGreater(pt_handler.url_count, 20000)
+
+        self.assertEqual(pt_handler.url_count, total_pt_urls)
         self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
         ptm = pt_handler.matches[0]
@@ -90,9 +102,11 @@ class TestPhishtank(PluginTest):
                                                                'phishtank')
 
         vuln_url_str = self.get_last_vulnerable_url(phishtank_inst)
+        total_pt_urls = self.get_total_urls(phishtank_inst)
         last_domain = URL(vuln_url_str).get_domain()
         pt_handler = phishtank_inst._is_in_phishtank([last_domain])
-        self.assertGreater(pt_handler.url_count, 20000)
+
+        self.assertEqual(pt_handler.url_count, total_pt_urls)
         self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
 
         ptm = pt_handler.matches[0]
