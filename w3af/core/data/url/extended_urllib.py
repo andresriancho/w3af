@@ -280,7 +280,8 @@ class ExtendedUrllib(object):
         self._init()
 
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
-                          ignore_errors=ignore_errors, data=str(data))
+                          ignore_errors=ignore_errors, data=str(data),
+                          method='GET')
         req = self._add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
