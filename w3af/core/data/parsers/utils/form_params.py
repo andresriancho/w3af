@@ -190,17 +190,15 @@ class FormParameters(OrderedDict):
 
         :param attrs: attrs=[("class", "screen")]
         """
-        # Set the default input type to text.
-        attr_type = self.INPUT_TYPE_TEXT
-        name = value = ''
-
         name = self.get_value_by_key(attrs, 'name', 'id')
 
         if not name:
             return '', ''
 
-        # Find the attr type and value
-        attr_type = self.get_value_by_key(attrs, 'type')
+        # Find the attr type and value, setting the default type to text (if
+        # missing in the tag) and the default value to an empty string (if
+        # missing)
+        attr_type = self.get_value_by_key(attrs, 'type') or self.INPUT_TYPE_TEXT
         value = self.get_value_by_key(attrs, 'value') or ''
 
         if attr_type == self.INPUT_TYPE_SUBMIT:
