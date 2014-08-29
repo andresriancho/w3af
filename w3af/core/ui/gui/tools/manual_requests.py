@@ -64,7 +64,8 @@ class ManualRequests(entries.RememberingWindow):
         self._fix_content_len_cb.show()
         
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [self.send_but.set_sensitive],
+        self.reqresp = reqResViewer.reqResViewer(w3af,
+                                                 [self.send_but.set_sensitive],
                                                  withManual=False,
                                                  editableRequest=True)
         self.reqresp.response.set_sensitive(False)
@@ -77,7 +78,7 @@ class ManualRequests(entries.RememberingWindow):
         if initial_request is None:
             self.reqresp.request.show_raw(MANUAL_REQUEST_EXAMPLE, '')
         else:
-            (initialUp, initialDn) = initial_request
+            initialUp, initialDn = initial_request
             self.reqresp.request.show_raw(initialUp, initialDn)
 
         # Show all!
@@ -88,7 +89,7 @@ class ManualRequests(entries.RememberingWindow):
 
         :param widg: who sent the signal.
         """
-        (tsup, tlow) = self.reqresp.request.get_both_texts()
+        tsup, tlow = self.reqresp.request.get_both_texts()
 
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
                               gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD,

@@ -41,19 +41,25 @@ class HttpRawView(HttpEditor):
             buf.connect("changed", self._changed)
 
     def show_object(self, obj):
-        """Show object in textview."""
+        """
+        Show object in textview.
+        """
         self.set_text(obj.dump())
 
     def get_object(self):
-        """Return object (request or response)."""
-        head, body = self.get_text(splitted=True)
+        """
+        Return object (request or response).
+        """
+        head, body = self.get_split_text()
         if self.is_request:
             return http_request_parser(head, body)
         else:
             raise Exception('HttpResponseParser is not implemented!')
 
     def _changed(self, widg=None):
-        """Synchronize changes with other views (callback)."""
+        """
+        Synchronize changes with other views (callback).
+        """
         if not self.initial:
             try:
                 obj = self.get_object()

@@ -19,9 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
+import re
 import gtk
 import pango
-import os
 
 import gtksourceview2 as gtksourceview
 
@@ -40,7 +41,12 @@ SEVERITY_TO_COLOR.setdefault('yellow')
 
 
 class HttpEditor(gtk.VBox, Searchable):
-    """Special class for editing HTTP requests/responses."""
+    """
+    Special class for editing HTTP requests/responses.
+    """
+
+    HTTP_HEAD_BODY_SPLIT_RE = re.compile('(\r\n\r\n|\n\n)')
+
     def __init__(self, w3af):
         gtk.VBox.__init__(self)
         self.is_request = True
@@ -164,27 +170,29 @@ class HttpEditor(gtk.VBox, Searchable):
         else:
             return ''
 
-    def get_text(self, splitted=False):
+    def get_text(self):
         buf = self.textView.get_buffer()
-        raw_text = buf.get_text(buf.get_start_iter(), buf.get_end_iter())
-        if not splitted:
-            return raw_text
+        return buf.get_text(buf.get_start_iter(), buf.get_end_iter())
+
+    def get_split_text(self):
+        raw_text = self.get_text()
         
         # else return tuple: (headers, data)
-        splitted_raw_text = raw_text.split("\r\n\r\n", 1)
-        
-        if len(splitted_raw_text) == 1:
+        split_raw_text = self.HTTP_HEAD_BODY_SPLIT_RE.split(raw_text, 1)
+        split_raw_text = [r.strip() for r in split_raw_text]
+
+        if len(split_raw_text) == 1:
             # no postdata
-            headers = splitted_raw_text[0]
+            headers = split_raw_text[0]
             data = ''
         else:
             # We'll always have 2 here, since we passed 1 as a second
             # parameter to split
-            headers = splitted_raw_text[0]
-            data = splitted_raw_text[1]
+            headers = split_raw_text[0]
+            data = split_raw_text[2]
                 
-        return (headers, data)
-
+        return headers, data
+    
     def set_text(self, text, fixUtf8=False):
         buf = self.textView.get_buffer()
         if fixUtf8:
