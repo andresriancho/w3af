@@ -172,18 +172,25 @@ class RunFunctor(Process):
 
 
 class SQLMapShell(ReadShell):
-    
+
+    ALIAS = ('dbs', 'tables', 'users', 'dump')
+
     def __init__(self, vuln, uri_opener, worker_pool, sqlmap):
         super(SQLMapShell, self).__init__(vuln, uri_opener, worker_pool)
         self.sqlmap = sqlmap
 
-    ALIAS = ('dbs', 'tables', 'users', 'dump')
-
-    def specific_user_input(self, command, params):
+    def specific_user_input(self, command, params, return_err=True):
         # Call the parent in order to get read/download without duplicating
         # any code.
-        resp = super(SQLMapShell, self).specific_user_input(command, params,
-                                                            return_err=False)
+        #
+        # Not using super() due to some issues I've found in real life
+        #   https://github.com/andresriancho/w3af/issues/3610
+        #
+        # Documented here:
+        #   http://goo.gl/jhRznU
+        #   http://thomas-cokelaer.info/blog/2011/09/382/
+        resp = ReadShell.specific_user_input(self, command, params,
+                                             return_err=False)
         
         if resp is not None:
             return resp
