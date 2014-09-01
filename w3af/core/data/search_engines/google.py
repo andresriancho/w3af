@@ -151,8 +151,7 @@ class GoogleAPISearch(object):
 
     def _do_GET(self, url, with_rand_ua=True):
         if not isinstance(url, URL):
-            msg = 'The url parameter of a _do_GET  must'
-            msg += ' be of url.URL type.'
+            msg = 'The url parameter of a _do_GET must be of url.URL type.'
             raise ValueError(msg)
 
         if with_rand_ua:
