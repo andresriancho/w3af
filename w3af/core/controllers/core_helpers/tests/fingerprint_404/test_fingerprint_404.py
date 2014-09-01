@@ -35,7 +35,7 @@ class TestGenerate404Filename(unittest.TestCase):
                  ('a1a2', 'd4d5'),
                  ('a1a2.html', 'd4d5.html'),
                  ('Z', 'c'), # overflow handling
-                 ('hello.html', 'ehllo.html')
+                 ('hello.html', 'ehllo.html'),
                  ]
 
         f404 = fingerprint_404()
