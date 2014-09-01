@@ -199,7 +199,7 @@ class w3af_core_strategy(object):
             finished, consumer_forced_end = route_result
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
-                                               consumer_forced_end):
+                                          consumer_forced_end):
         """
         Loop once through all input consumers and route their results.
 
