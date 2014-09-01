@@ -111,7 +111,8 @@ class fingerprint_404(object):
         #    the object in order to use it.
         #
         if self._uri_opener is None:
-            msg = '404 fingerprint database was incorrectly initialized.'
+            msg = '404 fingerprint database was incorrectly initialized.'\
+                  'URL opener is None.'
             raise RuntimeError(msg)
 
         # Get the filename extension and create a 404 for it
@@ -408,8 +409,8 @@ class fingerprint_404(object):
         url_404.get_domain_path() not in self._directory_uses_404_codes:
             self._directory_uses_404_codes.add(url_404.get_domain_path())
 
-        return fuzzy_equal(clean_response_404_body,
-                                    clean_html_body, IS_EQUAL_RATIO)
+        return fuzzy_equal(clean_response_404_body, clean_html_body,
+                           IS_EQUAL_RATIO)
 
 
 def fingerprint_404_singleton(cleanup=False):
@@ -442,7 +443,7 @@ def get_clean_body(response):
         - output:
             - self._clean_body( response ) == 'spam  eggs'
 
-    The same works with filenames.
+    The same works with file names.
     All of them, are removed encoded and "as is".
 
     :param response: The HTTPResponse object to clean
