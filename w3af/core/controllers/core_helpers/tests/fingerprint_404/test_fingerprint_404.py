@@ -22,9 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import division
 
+import re
 import unittest
+import httpretty
 
-from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404
+from w3af.core.data.parsers.url import URL
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.dc.headers import Headers
+from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.core_helpers.fingerprint_404 import (fingerprint_404,
+                                                                is_404,
+                                                                fingerprint_404_singleton)
 
 
 class TestGenerate404Filename(unittest.TestCase):
@@ -42,3 +50,28 @@ class TestGenerate404Filename(unittest.TestCase):
         for fname, modfname in TESTS:
             self.assertEqual(f404._generate_404_filename(fname), modfname)
 
+
+class Test404Detection(unittest.TestCase):
+
+    @httpretty.activate
+    def test_3234(self):
+        """
+        is_404 can not handle URLs with : in path #3234
+
+        :see: https://github.com/andresriancho/w3af/issues/3234
+        """
+        # setup
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body="404 found", status=404)
+
+        url = URL('http://w3af.com/d:a')
+        resp = HTTPResponse(200, 'body', Headers(), url, url)
+
+        # setup, just to make some config settings values default
+        core = w3afCore()
+        core.scan_start_hook()
+
+        # test
+        db = fingerprint_404_singleton()
+        self.assertFalse(db._is_404_with_extra_request(resp, 'body'))
