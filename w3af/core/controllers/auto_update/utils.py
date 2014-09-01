@@ -93,6 +93,8 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
         name = repo.active_branch.name
     except IndexError:
         return DETACHED_HEAD
+    except TypeError:
+        return DETACHED_HEAD
 
     return name
 
