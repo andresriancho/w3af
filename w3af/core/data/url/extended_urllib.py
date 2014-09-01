@@ -279,8 +279,12 @@ class ExtendedUrllib(object):
         # Validate what I'm sending, init the library (if needed)
         self._init()
 
+        if data:
+            uri = uri.copy()
+            uri.querystring = data
+
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
-                          ignore_errors=ignore_errors, data=str(data),
+                          ignore_errors=ignore_errors,
                           method='GET')
         req = self._add_headers(req, headers)
 
