@@ -54,7 +54,6 @@ class audit(BaseConsumer):
                 self.handle_exception('audit', plugin.get_name(),
                                       'plugin.end()', e)
 
-    @retry(3)
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
         return plugin.get_original_response(fuzzable_request)
