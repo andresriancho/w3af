@@ -48,7 +48,6 @@ class AuditPlugin(Plugin):
         self._audit_return_vulns_lock = threading.RLock()
         self._newly_found_vulns = []
 
-    @retry(3)
     def get_original_response(self, fuzzable_request):
 
         data_container = fuzzable_request.get_raw_data()
