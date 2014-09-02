@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 
@@ -35,6 +36,7 @@ class blank_body(GrepPlugin):
     
     def __init__(self):
         GrepPlugin.__init__(self)
+        self.already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
         """
@@ -46,14 +48,17 @@ class blank_body(GrepPlugin):
         """
         if response.get_body() == '' and request.get_method() in self.METHODS\
         and response.get_code() not in self.HTTP_CODES\
-        and 'location' not in response.get_lower_case_headers():
+        and 'location' not in response.get_lower_case_headers()\
+        and response.get_url().uri2url() not in self.already_reported:
+
+            self.already_reported.add(response.get_url().uri2url())
 
             desc = 'The URL: "%s" returned an empty body, this could indicate'\
-                  ' an application error.'
+                   ' an application error.'
             desc = desc % response.get_url()
 
-            i = Info('Blank http response body', desc,
-                     response.id, self.get_name())
+            i = Info('Blank http response body', desc, response.id,
+                     self.get_name())
             i.set_url(response.get_url())
             
             self.kb_append(self, 'blank_body', i)
