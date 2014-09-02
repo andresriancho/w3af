@@ -70,8 +70,9 @@ class FileUploadTemplate(BaseTemplate):
             if token.get_name() in self.file_vars:
                 continue
 
-            form_params.add_input([("name", token.get_value()),
-                                   ("type", "text")])
+            form_params.add_input([("name", token.get_name()),
+                                   ("type", "text"),
+                                   ("value", token.get_value())])
 
         mpc = MultipartContainer(form_params)
 
