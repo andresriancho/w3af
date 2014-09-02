@@ -66,9 +66,9 @@ class Payload(object):
                                                     use_api=True)
             except:
                 msg = 'The payload you are trying to run ("%s") can not be' \
-                      ' run because it is trying to call another payload ("%s")'\
-                      ' which is failing because there are no shells that'\
-                      ' support the required system calls.'
+                      ' run because it is trying to call another payload'\
+                      ' ("%s") which is failing because there are no shells'\
+                      ' that support the required system calls.'
                 return msg % (self, payload_name)
 
     def run(self, *args):
