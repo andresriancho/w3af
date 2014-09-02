@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import stat
+import errno
 import shutil
 
 from w3af.core.controllers.misc.homeDir import get_home_dir
@@ -44,7 +45,14 @@ def create_temp_dir():
     """
     complete_dir = get_temp_dir()
     if not os.path.exists(complete_dir):
-        os.makedirs(complete_dir)
+        try:
+            os.makedirs(complete_dir)
+        except OSError, ose:
+            # I don't care if someone already created it in a different thread,
+            # but if we have any other exception, we raise!
+            if ose.errno != errno.EEXIST:
+                raise
+
         os.chmod(complete_dir, stat.S_IRWXU)
     return complete_dir
 
