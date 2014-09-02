@@ -337,7 +337,7 @@ class w3afCore(object):
             
         else:
             msg = 'The core failed to stop in %s seconds, forcing exit.'
-            msg = msg % wait_max
+            msg %= wait_max
         
         om.out.debug(msg)
     

@@ -23,7 +23,7 @@ import urllib2
 
 from w3af.core.data.url.handlers.cache_backend.db import SQLCachedResponse
 from w3af.core.controllers.misc.number_generator import (consecutive_number_generator
-                                                    as core_num_gen)
+                                                         as core_num_gen)
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
