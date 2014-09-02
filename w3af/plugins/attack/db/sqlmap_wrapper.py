@@ -86,7 +86,7 @@ class SQLMapWrapper(object):
         if self.verified_vulnerable:
             return self.verified_vulnerable
         
-        params = ['--batch',]
+        params = ['--batch']
         
         full_command, stdout, stderr = self.run_sqlmap(params)
                 
