@@ -36,14 +36,18 @@ class meta_tags(GrepPlugin):
 
     """
     Can someone explain what this meta tag does?
-    <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2LXYrdnnK50g7kdY=" />
+    <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2...0g7kdY=" />
 
     Answer:
-    That's one of the verification elements used by Google Sitemaps. When you sign up
-    for Sitemaps you have to add that element to a root page to demonstrate to Google that
-    you're the site owner. So there is probably a Sitemaps account for the site, if you
-    haven't found it already.
+    That's one of the verification elements used by Google Sitemaps. When you
+    sign up for Sitemaps you have to add that element to a root page to
+    demonstrate to Google that you're the site owner. So there is probably a
+    Sitemaps account for the site, if you haven't found it already.
     """
+
+    ATTR_NAME = 'name'
+    ATTR_VALUE = 'value'
+
     INTERESTING_WORDS = {'user': None, 'pass': None, 'microsoft': None,
                          'visual': None, 'linux': None, 'source': None,
                          'author': None, 'release': None, 'version': None,
@@ -52,7 +56,6 @@ class meta_tags(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-    
     def grep(self, request, response):
         """
         Plugin entry point, search for meta tags.
@@ -72,28 +75,29 @@ class meta_tags(GrepPlugin):
         meta_tag_list = dp.get_meta_tags()
 
         for tag in meta_tag_list:
-            tag_name = self._find_name(tag)
-            for key, val in tag.items():
+            for attr_name, attr_value in tag.items():
 
                 for word in self.INTERESTING_WORDS:
 
                     # Check if we have something interesting
                     # and WHERE that thing actually is
                     where = content = None
-                    if (word in key):
-                        where = 'name'
-                        content = key
-                    elif (word in val):
-                        where = 'value'
-                        content = val
+                    if word in attr_name:
+                        where = self.ATTR_NAME
+                        content = attr_name
+                    elif word in attr_value:
+                        where = self.ATTR_VALUE
+                        content = attr_value
 
                     # Now... if we found something, report it =)
-                    if where is not None:
-                        # The atribute is interesting!
+                    if self._should_report(attr_name, attr_value, where):
+
+                        # The attribute is interesting!
                         fmt = 'The URI: "%s" sent a <meta> tag with attribute'\
                               ' %s set to "%s" which looks interesting.'
                         desc = fmt % (response.get_uri(), where, content)
-                        
+
+                        tag_name = self._find_name(tag)
                         if self.INTERESTING_WORDS.get(tag_name, None):
                             usage = self.INTERESTING_WORDS[tag_name]
                             desc += ' The tag is used for %s.' % usage
@@ -105,6 +109,18 @@ class meta_tags(GrepPlugin):
 
                         self.kb_append_uniq(self, 'meta_tags', i, 'URL')
 
+    def _should_report(self, key, value, where):
+        """
+        :param key: The meta tag attribute name
+        :param value: The meta tag attribute value
+        :param where: The location (key|value) that we found interesting
+        :return: True if we should report this information
+        """
+        if where is None:
+            return False
+
+        return True
+
     def _find_name(self, tag):
         """
         :return: the tag name.
@@ -112,7 +128,7 @@ class meta_tags(GrepPlugin):
         for key, value in tag.items():
             if key.lower() == 'name':
                 return value
-        return ''
+        return None
 
     def get_long_desc(self):
         """
