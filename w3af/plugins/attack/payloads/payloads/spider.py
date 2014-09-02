@@ -23,26 +23,21 @@ class spider(Payload):
             :return: A list of files that's mentioned in the other payloads
             I use this as a start point.
             """
-            payload_files = self.exec_payload(
-                'apache_config_files')['apache_config'].keys()
-            payload_files.extend(
-                self.exec_payload('dhcp_config_files').keys())
-            payload_files.extend(self.exec_payload('dns_config_files').keys())
-            payload_files.extend(self.exec_payload('dns_config_files').keys())
-            payload_files.extend(self.exec_payload('ftp_config_files').keys())
-            payload_files.extend(
-                self.exec_payload('kerberos_config_files').keys())
-            payload_files.extend(
-                self.exec_payload('ldap_config_files').keys())
-            payload_files.extend(
-                self.exec_payload('mail_config_files').keys())
-            payload_files.extend(self.exec_payload('mysql_config').keys())
-            payload_files.extend(
-                self.exec_payload('users_config_files').keys())
-            payload_files.extend(self.exec_payload('read_mail').keys())
-            payload_files.extend(self.exec_payload('log_reader').keys())
-            payload_files.extend(
-                self.exec_payload('interesting_files').keys())
+            payload_result = self.exec_payload('apache_config_files')
+            payload_files = payload_result['apache_config'].keys()
+
+            key_payloads = ['dhcp_config_files', 'dns_config_files',
+                            'dns_config_files', 'ftp_config_files',
+                            'kerberos_config_files', 'kerberos_config_files',
+                            'ldap_config_files', 'mail_config_files',
+                            'mysql_config', 'users_config_files',
+                            'read_mail', 'log_reader', 'interesting_files']
+
+            for keyed_payload in key_payloads:
+                payload_result = self.exec_payload(keyed_payload)
+                if isinstance(payload_result, dict):
+                    payload_files.extend(payload_result.keys())
+
             #    This increases the run time of this plugin a lot!
             """
             pid_info = self.exec_payload('list_processes')
@@ -81,19 +76,9 @@ class spider(Payload):
             """
             :return: True if the file seems interesting
             """
-            keyword_list = []
-            keyword_list.append('passwords')
-            keyword_list.append('passwd')
-            keyword_list.append('password')
-            keyword_list.append('access')
-            keyword_list.append('auth')
-            keyword_list.append('authentication')
-            keyword_list.append('authenticate')
-            keyword_list.append('secret')
-            keyword_list.append('key')
-            keyword_list.append('keys')
-            keyword_list.append('permissions')
-            keyword_list.append('perm')
+            keyword_list = ['passwords', 'passwd', 'password', 'access', 'auth',
+                            'authentication', 'authenticate', 'secret', 'key',
+                            'keys', 'permissions', 'perm']
 
             for key in keyword_list:
                 if key in filename or key in file_content:
@@ -143,9 +128,7 @@ class spider(Payload):
         if not api_result:
             return 'No files found.'
         else:
-            rows = []
-            rows.append(['Filename', 'Interesting'])
-            rows.append([])
+            rows = [['Filename', 'Interesting'], []]
             for filename in api_result:
                 interesting = api_result[filename] and 'X' or ''
                 rows.append([filename, interesting])

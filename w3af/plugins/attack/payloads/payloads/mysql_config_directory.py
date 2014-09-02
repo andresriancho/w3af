@@ -1,4 +1,5 @@
 import re
+
 from w3af.plugins.attack.payloads.base_payload import Payload
 from w3af.core.ui.console.tables import table
 
@@ -8,8 +9,7 @@ class mysql_config_directory(Payload):
     This payload finds MySQL configuration directory.
     """
     def api_read(self):
-        result = {}
-        result['directory'] = []
+        result = {'directory': []}
         paths = []
 
         def parse_mysql_init(mysql_init):
@@ -51,9 +51,7 @@ class mysql_config_directory(Payload):
         if not api_result:
             return 'No MySQL configuration directories were found.'
         else:
-            rows = []
-            rows.append(['MySQL configuration directory'])
-            rows.append([])
+            rows = [['MySQL configuration directory'], []]
             for directory in api_result['directory']:
                 rows.append([directory, ])
 
