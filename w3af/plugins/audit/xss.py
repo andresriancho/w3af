@@ -65,9 +65,14 @@ class xss(AuditPlugin):
         """
         fake_mutants = create_mutants(freq, [''])
 
-        # Run this in the worker pool in order to get different
-        # parameters tested at the same time.
-        self.worker_pool.map(self._check_xss_in_parameter, fake_mutants)
+        # Before we run each fake mutant check in a different thread using the
+        # worker_pool, but this lead to a strange dead-lock
+        #
+        #   https://github.com/andresriancho/w3af/issues/4068
+        #
+        # So I simply migrated this to a slower for loop.
+        for fake_mutant in fake_mutants:
+            self._check_xss_in_parameter(fake_mutant)
 
     def _check_xss_in_parameter(self, mutant):
         """
