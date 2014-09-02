@@ -93,7 +93,7 @@ class find_backdoors(CrawlPlugin):
         """
         :yield: lines from the web shell DB
         """
-        for line in file(self.WEBSHELL_DB).readline():
+        for line in file(self.WEBSHELL_DB):
             if line.startswith('#'):
                 continue
 
@@ -136,28 +136,32 @@ class find_backdoors(CrawlPlugin):
         :param response: HTTPResponse object
         :return: A bool value
         """
-        if not is_404(response):
-            body_text = response.get_body()
-            dom = response.get_dom()
-            if dom is not None:
-                for ele, attrs in BACKDOOR_COLLECTION.iteritems():
-                    for attrname, attr_vals in attrs.iteritems():
-                        # Set of lowered attribute values
-                        dom_attr_vals = \
-                            set(n.get(attrname).lower() for n in
-                                (dom.xpath('//%s[@%s]' % (ele, attrname))))
-                        # If at least one elem in intersection return True
-                        if (dom_attr_vals and set(attr_vals)):
-                            return True
+        if is_404(response):
+            return False
 
-            # If no regex matched then try with keywords. At least 2 should be
-            # contained in 'body_text' to succeed.
-            times = 0
-            for back_kw in KNOWN_OFFENSIVE_WORDS:
-                if re.search(back_kw, body_text, re.I):
-                    times += 1
-                    if times == 2:
+        body_text = response.get_body()
+        dom = response.get_dom()
+        if dom is not None:
+            for ele, attrs in BACKDOOR_COLLECTION.iteritems():
+                for attrname, attr_vals in attrs.iteritems():
+                    # Set of lowered attribute values
+                    dom_attr_vals = \
+                        set(n.get(attrname).lower() for n in
+                            (dom.xpath('//%s[@%s]' % (ele, attrname))))
+
+                    # If at least one elem in intersection return True
+                    if dom_attr_vals and set(attr_vals):
                         return True
+
+        # If no regex matched then try with keywords. At least 2 should be
+        # contained in 'body_text' to succeed.
+        times = 0
+        for back_kw in KNOWN_OFFENSIVE_WORDS:
+            if re.search(back_kw, body_text, re.I):
+                times += 1
+                if times == 2:
+                    return True
+
         return False
 
     def get_long_desc(self):

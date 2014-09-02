@@ -18,23 +18,23 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestFindBackdoor(PluginTest):
 
-    base_url = 'http://moth/w3af/crawl/find_backdoor/'
+    target_url = 'http://httpretty-mock/'
+
+    MOCK_RESPONSES = [MockResponse('/', 'Hello world'),
+                      MockResponse('/c99shell.php', 'cmd shell')]
 
     _run_configs = {
         'cfg': {
-            'target': base_url,
+            'target': target_url,
             'plugins': {'crawl': (PluginConfig('find_backdoors'),)}
         }
     }
 
-    @attr('ci_fails')
     def test_find_backdoor(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -45,6 +45,6 @@ class TestFindBackdoor(PluginTest):
 
         vuln = vulns[0]
 
+        vulnerable_url = self.target_url + 'c99shell.php'
+        self.assertEqual(vuln.get_url().url_string, vulnerable_url)
         self.assertEqual(vuln.get_name(), 'Potential web backdoor')
-        self.assertEqual(
-            vuln.get_url().url_string, self.base_url + 'c99shell.php')
