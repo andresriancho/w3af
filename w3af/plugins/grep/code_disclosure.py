@@ -37,7 +37,7 @@ class code_disclosure(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        #   Internal variables
+        # Internal variables
         self._first_404 = True
 
     def grep(self, request, response):

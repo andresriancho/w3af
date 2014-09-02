@@ -323,7 +323,7 @@ class URL(DiskItem):
     @memoized
     def uri2url(self):
         """
-        :return: Returns a string contaning the URL without the query string.
+        :return: Returns a string containing the URL without the query string.
         """
         return URL.from_parts(self.scheme, self.netloc, self.path,
                               None, None, None, encoding=self._encoding)
@@ -554,23 +554,24 @@ class URL(DiskItem):
         #      www.popo.com.au --> [www, popo.com.au]
         def split_authority(aAuthority):
 
-            # walk down from right, stop at (but include) first non-toplevel domain
+            # walk down from right, stop at (but include) first non-toplevel
+            # domain
             chunks = re.split("\.", aAuthority)
             chunks.reverse()
 
-            baseAuthority = ""
+            base_authority = ""
             subdomain = ""
-            foundBreak = 0
+            found_break = 0
 
             for chunk in chunks:
-                if (not foundBreak):
-                    baseAuthority = chunk + (
-                        ".", "")[baseAuthority == ""] + baseAuthority
+                if not found_break:
+                    base_authority = chunk + (
+                        ".", "")[base_authority == ""] + base_authority
                 else:
                     subdomain = chunk + (".", "")[subdomain == ""] + subdomain
                 if chunk not in GTOP_LEVEL_DOMAINS:
-                    foundBreak = 1
-            return ([subdomain, baseAuthority])
+                    found_break = 1
+            return [subdomain, base_authority]
 
         # def to split URI into its parts, returned as URI object
         def decompose_uri():
