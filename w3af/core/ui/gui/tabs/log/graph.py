@@ -119,11 +119,21 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         if len(self.all_messages) < 2:
             yield True
 
+        try:
+            # size helpers
+            pan = self.all_messages[-1][0] - self.all_messages[0][0]
+        except IndexError:
+            # We should rarely get here, note that in the bug report the
+            # IndexError is raised in the DiskList.__getitem__ , where we're
+            # getting the -1 and 0 indexes. According to len(self.all_messages)
+            # those indexes exist... so... we get here on rare race conditions
+            #
+            # https://github.com/andresriancho/w3af/issues/4211
+            yield True
+
         self.window.clear()
         (w, h) = self.window.get_size()
 
-        # some size helpers
-        pan = self.all_messages[-1][0] - self.all_messages[0][0]
         tspan = pan / self.timeGrouping
         usableWidth = w - MDER - self.realLeftMargin
 
@@ -251,9 +261,9 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
 
     def _calculateXTicks(self, width):
         """Returns the ticks X position and time."""
-        paso = width / 10
+        step = width / 10
         for i in range(10):
-            punto = int(paso * i)
+            punto = int(step * i)
             label = "%.2f" % (punto * self.timeGrouping / 1000)
             yield punto, label
 
