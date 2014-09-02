@@ -150,11 +150,11 @@ class ria_enumerator(CrawlPlugin):
             for url in url_list:
                 url = url.getAttribute(attribute)
 
-                desc = 'The "%s" file at "%s" allows flash/silverlight'\
-                       ' access from any site.'
-                desc = desc % (file_name, response.get_url())
-
                 if url == '*':
+                    desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                           ' access from any site.'
+                    desc = desc % (file_name, response.get_url())
+
                     v = Vuln('Insecure RIA settings', desc, severity.LOW,
                              response.id, self.get_name())
                     v.set_url(response.get_url())
@@ -164,8 +164,12 @@ class ria_enumerator(CrawlPlugin):
                     om.out.vulnerability(v.get_desc(),
                                          severity=v.get_severity())
                 else:
-                    i = Info('Cross-domain allow ACL', desc,
-                             response.id, self.get_name())
+                    desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                           ' access from "%s".'
+                    desc = desc % (file_name, response.get_url(), url)
+
+                    i = Info('Cross-domain allow ACL', desc, response.id,
+                             self.get_name())
                     i.set_url(response.get_url())
                     i.set_method('GET')
 
