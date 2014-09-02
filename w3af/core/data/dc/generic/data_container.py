@@ -113,7 +113,7 @@ class DataContainer(DiskItem):
 
                 return token
 
-        path_str = lambda path: ', '.join([str(i) for i in path])
+        path_str = lambda path: '(%s)' % ', '.join([str(i) for i in path])
         ppath = path_str(token_path)
         vpath = ' - '.join([path_str(p) for _, _, p, _ in self.iter_setters()])
 
