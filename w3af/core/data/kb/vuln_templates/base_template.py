@@ -95,16 +95,23 @@ class BaseTemplate(Configurable):
         self.url = options_list['url'].get_value()
         self.data = parse_qs(options_list['data'].get_value())
         self.method = options_list['method'].get_value()
-        self.vulnerable_parameter = options_list[
-            'vulnerable_parameter'].get_value()
+        self.vulnerable_parameter = options_list['vulnerable_parameter'].get_value()
 
         if not self.data:
-            raise ValueError('This vulnerability requires data to be configured.')
+            msg = 'This vulnerability requires data to be configured.'
+            raise ValueError(msg)
 
         if self.vulnerable_parameter not in self.data:
             msg = 'The vulnerable parameter was not found in the configured data'\
                   ' field. Please enter one of the following values: %s.'
             raise ValueError(msg % ', '.join(self.data))
+
+        try:
+            self.create_vuln()
+        except RuntimeError, rte:
+            # https://github.com/andresriancho/w3af/issues/4310
+            # https://github.com/andresriancho/w3af/issues/4239
+            raise ValueError('%s' % rte)
 
     def store_in_kb(self):
         """

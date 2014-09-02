@@ -166,6 +166,7 @@ class OnlyOptions(gtk.VBox):
         self.save_btn.set_sensitive(not like_initial)
         self.rvrt_btn.set_sensitive(not like_initial)
         self.parentwidg.config_changed(like_initial)
+        self.saved_successfully = False
 
     def _changedLabelNotebook(self, like_initial, label, text):
         if like_initial:
@@ -224,9 +225,8 @@ class OnlyOptions(gtk.VBox):
             msg = "The configuration can't be saved, there is a problem in the"\
                   " following parameter(s):\n\n"
             msg += "\n-".join(invalid)
-            dlg = gtk.MessageDialog(
-                None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                    gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
