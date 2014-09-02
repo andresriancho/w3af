@@ -51,9 +51,7 @@ class pdf(BasePwdProfilingPlugin):
         :return: A map of strings:repetitions.
         """
         res = None
-        words = []
 
-        
         if response.content_type in ('application/x-pdf', 'application/pdf'):
             try:
                 words = self._get_pdf_content(response.get_body())

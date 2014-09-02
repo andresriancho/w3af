@@ -135,6 +135,12 @@ class password_profiling(GrepPlugin):
         """
         "merge" both maps and update the repetitions
         """
+        if not isinstance(old_data, dict):
+            raise TypeError('The old_data parameter must be a dict')
+
+        if not isinstance(data, dict):
+            raise TypeError('The data parameter must be a dict')
+
         if lang not in self.COMMON_WORDS.keys():
             lang = 'unknown'
             

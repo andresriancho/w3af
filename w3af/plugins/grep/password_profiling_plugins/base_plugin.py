@@ -19,12 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
-import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
-class BasePwdProfilingPlugin:
+class BasePwdProfilingPlugin(object):
     """
     This is the base plugin for all password profiling plugins.
 
@@ -39,7 +37,8 @@ class BasePwdProfilingPlugin:
         Get words from the body.
         THIS PLUGIN MUST BE IMPLEMENTED BY ALL PLUGINS.
 
-        :param response: In most common cases, an html. Could be almost anything.
-        :return: Two map of strings:repetitions. One for titles and one for words.
+        :param response: In most common cases, an html. Could be almost anything
+        :return: Dict of strings:repetitions
         """
-        raise BaseFrameworkException('The method get_words must be implemented by all password profiling plugins.')
+        raise BaseFrameworkException('The method get_words must be implemented'
+                                     ' by all password profiling plugins.')

@@ -39,12 +39,12 @@ class html(BasePwdProfilingPlugin):
 
     def get_words(self, response):
         """
-        Get words from the body, this is a modified "strings" that filters out HTML tags.
+        Get words from the body, this is a modified "strings" that filters out
+        HTML tags.
 
-        :param body: In most common cases, an html. Could be almost anything.
+        :param response: In most common cases, an html. Could be almost anything.
         :return: A map of strings:repetitions.
         """
-
         data = {}
 
         if response.is_text_or_html():
