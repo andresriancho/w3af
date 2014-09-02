@@ -18,26 +18,35 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.tests.constants.http_responses import get_apache_403
+
+
+run_configs = {
+    'base': {
+        'target': None,
+        'plugins': {'crawl': (PluginConfig('find_backdoors'),)}
+    },
+    'crawl': {
+        'target': None,
+        'plugins': {'crawl': (PluginConfig('find_backdoors'),
+                              PluginConfig('web_spider'))}
+    }
+}
 
 
 class TestFindBackdoor(PluginTest):
-
-    target_url = 'http://httpretty-mock/'
+    domain = 'httpretty-mock'
+    target_url = 'http://%s/' % domain
 
     MOCK_RESPONSES = [MockResponse('/', 'Hello world'),
                       MockResponse('/c99shell.php', 'cmd shell')]
 
-    _run_configs = {
-        'cfg': {
-            'target': target_url,
-            'plugins': {'crawl': (PluginConfig('find_backdoors'),)}
-        }
-    }
-
     def test_find_backdoor(self):
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        cfg = run_configs['base']
+        self._scan(self.target_url, cfg['plugins'])
 
         vulns = self.kb.get('find_backdoors', 'backdoors')
 
@@ -48,3 +57,46 @@ class TestFindBackdoor(PluginTest):
         vulnerable_url = self.target_url + 'c99shell.php'
         self.assertEqual(vuln.get_url().url_string, vulnerable_url)
         self.assertEqual(vuln.get_name(), 'Potential web backdoor')
+
+
+class TestFalsePositiveFindBackdoor2017_1(PluginTest):
+    """
+    :see: https://github.com/andresriancho/w3af/issues/2017
+    """
+    # TODO: Here I'm appending "-1" because of some strange cache issue with
+    # the previous test. I need to debug and fix this issue to prevent other
+    # unittests from breaking!
+    domain = 'httpretty-mock-1'
+    target_url = 'http://%s/' % domain
+
+    APACHE_403 = get_apache_403('/foobar', domain)
+
+    MOCK_RESPONSES = [MockResponse(re.compile('(.*)'), APACHE_403, status=403)]
+
+    def test_2017_false_positive_backdoor(self):
+        cfg = run_configs['base']
+        self._scan(self.target_url, cfg['plugins'])
+
+        vulns = self.kb.get('find_backdoors', 'backdoors')
+
+        self.assertEqual(len(vulns), 0, vulns)
+
+
+class TestFalsePositiveFindBackdoor2017_2(PluginTest):
+    domain = 'httpretty-mock-2'
+    target_url = 'http://%s/' % domain
+
+    APACHE_403 = get_apache_403('/forbidden/foobar', domain)
+
+    MOCK_RESPONSES = [MockResponse('/', '<a href="/forbidden/">403</a>'),
+                      MockResponse('/forbidden/c99shell.php', 'cmd shell'),
+                      MockResponse(re.compile('http://.*?/forbidden/.*'),
+                                   APACHE_403, status=403)]
+
+    def test_2017_false_positive_backdoor(self):
+        cfg = run_configs['crawl']
+        self._scan(self.target_url, cfg['plugins'])
+
+        vulns = self.kb.get('find_backdoors', 'backdoors')
+
+        self.assertEqual(len(vulns), 1, vulns)
