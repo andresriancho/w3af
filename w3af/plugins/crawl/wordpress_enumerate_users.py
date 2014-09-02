@@ -81,7 +81,7 @@ class wordpress_enumerate_users(CrawlPlugin):
             uid += 1
             gap += 1
 
-            domain_path.querystring = {u'author': u'%s' % uid}
+            domain_path.querystring = [(u'author', [u'%s' % uid])]
             wp_author_url = domain_path
             response_author = self._uri_opener.GET(wp_author_url, cache=True)
 
