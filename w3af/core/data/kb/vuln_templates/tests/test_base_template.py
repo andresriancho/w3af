@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from mock import Mock
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 
 
@@ -41,11 +42,11 @@ class BaseTemplateTest(unittest.TestCase):
         data.set_value('id=3')
         method.set_value('GET')
         vulnerable_parameter.set_value('id')
-        
+
+        bt.get_vulnerability_name = Mock(return_value='unittest')
         bt.set_options(options_list)
         
         one = bt.get_vuln_id()
         two = bt.get_vuln_id()
         
         self.assertEqual(one + 1, two)
-        
