@@ -108,10 +108,14 @@ class BaseTemplate(Configurable):
 
         try:
             self.create_vuln()
+            
         except RuntimeError, rte:
             # https://github.com/andresriancho/w3af/issues/4310
-            # https://github.com/andresriancho/w3af/issues/4239
             raise ValueError('%s' % rte)
+
+        except KeyError, ke:
+            # https://github.com/andresriancho/w3af/issues/4310
+            raise ValueError('The vulnerable parameter "%s" was not found' % ke)
 
     def store_in_kb(self):
         """
