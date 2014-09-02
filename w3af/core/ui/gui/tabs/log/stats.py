@@ -123,7 +123,9 @@ class StatsViewer(gtk.VBox):
             value = item.default_value if value is None or default else value
 
         # https://github.com/andresriancho/w3af/issues/2679
-        value = value.replace('\0', '')
+        if isinstance(value, basestring):
+            value = value.replace('\0', '')
+            
         text = '%s: %s' % (item.title, value)
         
         if item.unit is not None:
