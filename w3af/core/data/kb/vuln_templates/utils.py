@@ -62,6 +62,7 @@ def get_all_templates():
                 
     return templates
 
+
 def get_template_by_name(name):
     templates = get_all_templates()
     try:
@@ -71,10 +72,12 @@ def get_template_by_name(name):
     else:
         return template
 
+
 def get_template_names():
     templates = get_all_templates()
     template_names = [t.get_short_name() for t in templates]
     return template_names
+
 
 def get_template_long_names():
     templates = get_all_templates()
