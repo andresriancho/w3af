@@ -26,7 +26,7 @@ from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_net_iface import get_net_iface
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.options.option_types import URL_LIST
+from w3af.core.data.options.option_types import URL_LIST, COMBO
 
 
 class MiscSettings(Configurable):
@@ -98,7 +98,7 @@ class MiscSettings(Configurable):
                           'boolean', tabid='Fuzzer parameters', help=h)
         ol.add(opt)
 
-        d = 'Indicates if w3af plugins will send fuzzed filenames in order to'\
+        d = 'Indicates if w3af plugins will send fuzzed file names in order to'\
             ' find vulnerabilities'
         h = 'For example, if the discovered URL is http://test/filename.php,'\
             ' and fuzz_url_filenames is enabled, w3af will request among'\
@@ -126,9 +126,8 @@ class MiscSettings(Configurable):
         ol.add(opt)
 
         desc = 'A list with all fuzzable header names'
-        opt = opt_factory(
-            'fuzzable_headers', cf.cf.get('fuzzable_headers'), desc, 'list',
-            tabid='Fuzzer parameters')
+        opt = opt_factory('fuzzable_headers', cf.cf.get('fuzzable_headers'),
+                          desc, 'list', tabid='Fuzzer parameters')
         ol.add(opt)
 
         d = 'Indicates what HTML form combo values w3af plugins will use:'\
@@ -137,10 +136,9 @@ class MiscSettings(Configurable):
             ' w3af plugins will use: all (All values), tb (only top and bottom '\
             ' values), tmb (top, middle and bottom values), t (top values), b'\
             ' (bottom values).'
-        opt = opt_factory(
-            'form_fuzzing_mode', cf.cf.get(
-                'form_fuzzing_mode'), d, 'string',
-            help=h, tabid='Fuzzer parameters')
+        options = ['tmb', 'all', 'tb', 't', 'b']
+        opt = opt_factory('form_fuzzing_mode', options, d, COMBO, help=h,
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         ######## Core parameters ########
@@ -214,6 +212,6 @@ class MiscSettings(Configurable):
             cf.cf.save(name, options_list[name].get_value())
 
 
-# This is an undercover call to __init__ :) , so I can set all default parameters.
-# TODO: FIXME: This is awful programming.
+# This is an undercover call to __init__ :) , so I can set all default
+# parameters. TODO: FIXME: This is awful programming.
 MiscSettings()
