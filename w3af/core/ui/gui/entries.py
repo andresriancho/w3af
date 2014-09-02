@@ -231,7 +231,8 @@ class BooleanInput(gtk.CheckButton, ModifiedMixIn):
 
 
 class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
-    """Class that implements the config option ComboBox.
+    """
+    Class that implements the config option ComboBox.
 
     :author: Andres Riancho
     """
@@ -239,21 +240,21 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         self._opt = opt
 
         # Create the list store
-        liststore = gtk.ListStore(str)
-        optselected = opt.get_value_str()
-        indselected = 0
-        for i, option in enumerate(opt.get_combo_options()):
-            if optselected == option:
-                indselected = i
-            liststore.append([option])
+        list_store = gtk.ListStore(str)
+        opt_selected = opt.get_value_str()
+        idx_selected = 0
 
-        gtk.ComboBox.__init__(self, liststore)
+        for i, option in enumerate(opt.get_combo_options()):
+            if opt_selected == option:
+                idx_selected = i
+            list_store.append([option])
+
+        gtk.ComboBox.__init__(self, list_store)
 
         # default option
-        self.set_active(indselected)
+        self.set_active(idx_selected)
 
-        ModifiedMixIn.__init__(
-            self, alert, "changed", "get_value", "set_value")
+        ModifiedMixIn.__init__(self, alert, "changed", "get_value", "set_value")
 
         cell = gtk.CellRendererText()
         self.pack_start(cell, True)
@@ -267,7 +268,7 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         return model[index][0]
 
     def set_value(self, t):
-        index = self._opt.get_value().index(t)
+        index = self._opt.get_combo_options().index(t)
         self.set_active(index)
 
     def validate(self, text):
