@@ -76,8 +76,7 @@ class password_profiling(GrepPlugin):
             data = self._run_plugins(response)
 
             with self._plugin_lock:
-                old_data = kb.kb.raw_read('password_profiling',
-                                          'password_profiling')
+                old_data = kb.kb.raw_read(self.get_name(), self.get_name())
 
                 new_data = self.merge_maps(old_data, data, request,
                                            self.captured_lang)
@@ -85,7 +84,7 @@ class password_profiling(GrepPlugin):
                 new_data = self._trim_data(new_data)
 
                 # save the updated map
-                kb.kb.raw_write(self, 'password_profiling', new_data)
+                kb.kb.raw_write(self, self.get_name(), new_data)
 
     def got_lang(self):
         """
@@ -101,7 +100,7 @@ class password_profiling(GrepPlugin):
                 return False
             else:
                 self.captured_lang = captured_lang
-                kb.kb.raw_write(self, 'password_profiling', {})
+                kb.kb.raw_write(self.get_name(), self.get_name(), {})
                 self._need_init = False
                 return True
         
@@ -112,23 +111,19 @@ class password_profiling(GrepPlugin):
         If the dict grows a lot, I want to trim it. Basically, if it grows to a
         length of more than 2000 keys, I'll trim it to 1000 keys.
         """
-        if len(data) > 2000:
-            def sortfunc(x_obj, y_obj):
-                return cmp(y_obj[1], x_obj[1])
-            
-            # pylint: disable=E1103
-            items = data.items()
-            items.sort(sortfunc)
+        if len(data) < 2000:
+            return data
 
-            items = items[:1000]
+        # pylint: disable=E1103
+        items = data.items()
+        items.sort(sort_func)
 
-            new_data = {}
-            for key, value in items:
-                new_data[key] = value
+        items = items[:1000]
 
-        else:
-            new_data = data
-    
+        new_data = {}
+        for key, value in items:
+            new_data[key] = value
+
         return new_data
                 
     def merge_maps(self, old_data, data, request, lang):
@@ -190,11 +185,7 @@ class password_profiling(GrepPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        def sortfunc(x_obj, y_obj):
-            return cmp(y_obj[1], x_obj[1])
-
-        profiling_data = kb.kb.raw_read('password_profiling',
-                                        'password_profiling')
+        profiling_data = kb.kb.raw_read(self.get_name(), self.get_name())
 
         # This fixes a very strange bug where for some reason the kb doesn't
         # have a dict anymore (threading issue most likely) Seen here:
@@ -205,7 +196,7 @@ class password_profiling(GrepPlugin):
             items = profiling_data.items()
             if len(items) != 0:
 
-                items.sort(sortfunc)
+                items.sort(sort_func)
                 om.out.information('Password profiling TOP 100:')
 
                 list_length = len(items)
@@ -235,3 +226,7 @@ class password_profiling(GrepPlugin):
         This plugin creates a list of possible passwords by reading responses
         and counting the most common words.
         """
+
+
+def sort_func(x_obj, y_obj):
+    return cmp(y_obj[1], x_obj[1])
