@@ -40,6 +40,8 @@ class password_profiling(GrepPlugin):
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
 
     BANNED_WORDS = {'forbidden', 'browsing', 'index'}
+    BANNED_STATUS = {500, 401, 403, 404}
+    ALLOWED_METHODS = {'POST', 'GET'}
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -66,8 +68,9 @@ class password_profiling(GrepPlugin):
             return
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.get_code() not in {500, 401, 403, 404} \
-        and not is_404(response) and request.get_method() in {'POST', 'GET'}:
+        if response.get_code() not in self.BANNED_STATUS \
+        and not is_404(response) \
+        and request.get_method() in self.ALLOWED_METHODS:
 
             # Run the plugins
             data = self._run_plugins(response)
@@ -106,9 +109,8 @@ class password_profiling(GrepPlugin):
     
     def _trim_data(self, data):
         """
-        If the dict grows a lot, I want to trim it. Basically, if
-        it grows to a length of more than 2000 keys, I'll trim it
-        to 1000 keys.
+        If the dict grows a lot, I want to trim it. Basically, if it grows to a
+        length of more than 2000 keys, I'll trim it to 1000 keys.
         """
         if len(data) > 2000:
             def sortfunc(x_obj, y_obj):
@@ -168,12 +170,12 @@ class password_profiling(GrepPlugin):
 
         res = {}
         for plugin in self._plugins:
-            wordMap = plugin.get_words(response)
-            if wordMap is not None:
-                # If a plugin returned something thats not None, then we are done.
-                # this plugins only return a something different of None of they
-                # found something
-                res = wordMap
+            word_map = plugin.get_words(response)
+            if word_map is not None:
+                # If a plugin returned something that's not None, then we are
+                # done. These plugins only return a something different of None
+                # of they found something
+                res = word_map
                 break
 
         return res
@@ -185,7 +187,8 @@ class password_profiling(GrepPlugin):
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
 
-        profiling_data = kb.kb.raw_read('password_profiling', 'password_profiling')
+        profiling_data = kb.kb.raw_read('password_profiling',
+                                        'password_profiling')
 
         # This fixes a very strange bug where for some reason the kb doesn't
         # have a dict anymore (threading issue most likely) Seen here:
@@ -201,11 +204,11 @@ class password_profiling(GrepPlugin):
 
                 list_length = len(items)
                 if list_length > 100:
-                    xLen = 100
+                    x_len = 100
                 else:
-                    xLen = list_length
+                    x_len = list_length
 
-                for i in xrange(xLen):
+                for i in xrange(x_len):
                     msg = '- [' + str(i + 1) + '] ' + items[
                         i][0] + ' with ' + str(items[i][1])
                     msg += ' repetitions.'
