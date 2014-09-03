@@ -19,7 +19,7 @@ NOSETESTS = 'nosetests'
 NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-xunit'\
               ' -v --xunit-file=%%s --with-id --id-file=%s' % ID_FILE
 # One test can't run for more than this amount of seconds
-NOSE_TIMEOUT = 360
+NOSE_TIMEOUT = 60 * 8
 
 # Parameters used to collect the list of tests
 NOSE_COLLECT_PARAMS = '--with-id --collect-only --with-doctest'\
