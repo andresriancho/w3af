@@ -86,7 +86,7 @@ class fingerprint_404(object):
         self._already_analyzed = False
         self._404_responses = deque(maxlen=MAX_404_RESPONSES)
         self._lock = thread.allocate_lock()
-        self._fingerprinted_paths = ScalableBloomFilter()
+        self._fingerprinted_paths = set() #ScalableBloomFilter()
         self._directory_uses_404_codes = ScalableBloomFilter()
 
         # It is OK to store 200 here, I'm only storing path+filename as the key,
@@ -143,9 +143,16 @@ class fingerprint_404(object):
             not_exist_resp_lst.append(not_exist_resp)
 
         #
-        #   I have the 404 responses in not_exist_resp_lst, but maybe they
-        #   all look the same, so I'll filter the ones that look alike.
+        # I have the 404 responses in not_exist_resp_lst, but maybe they
+        # all look the same, so I'll filter the ones that look alike.
         #
+        # Just add the first one to the 404 responses list, since that one is
+        # "unique"
+        #
+        if len(not_exist_resp_lst):
+            self._404_responses.append(not_exist_resp_lst[0])
+
+        # And now add the unique responses
         for i in not_exist_resp_lst:
             for j in not_exist_resp_lst:
 
