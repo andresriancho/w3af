@@ -177,7 +177,7 @@ class OpenerSettings(Configurable):
 
         if not cookiejar_file:
             return
-        
+
         cj = cookielib.MozillaCookieJar()
         try:
             cj.load(cookiejar_file)
@@ -185,6 +185,7 @@ class OpenerSettings(Configurable):
             msg = 'The specified cookie jar file does not exist.'
             raise BaseFrameworkException(msg)
         except cookielib.LoadError, cle:
+            # pylint: disable=E1101
             if cle.message.startswith('invalid Netscape format cookies file'):
                 docs_url = 'http://docs.w3af.org/en/latest/' \
                            'authentication.html#setting-http-cookie'
@@ -197,6 +198,7 @@ class OpenerSettings(Configurable):
             else:
                 msg = 'Error while loading cookiejar file. Description: "%s".'
                 raise BaseFrameworkException(msg % cle)
+            # pylint: enable=E1101
         else:
             self._cookie_handler = CookieHandler(cj)
             cfg.save('cookie_jar_file', cookiejar_file)
