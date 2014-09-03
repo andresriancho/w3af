@@ -181,9 +181,6 @@ class OpenerSettings(Configurable):
         cj = cookielib.MozillaCookieJar()
         try:
             cj.load(cookiejar_file)
-        except IOError:
-            msg = 'The specified cookie jar file does not exist.'
-            raise BaseFrameworkException(msg)
         except cookielib.LoadError, cle:
             # pylint: disable=E1101
             if cle.message.startswith('invalid Netscape format cookies file'):
@@ -199,6 +196,9 @@ class OpenerSettings(Configurable):
                 msg = 'Error while loading cookiejar file. Description: "%s".'
                 raise BaseFrameworkException(msg % cle)
             # pylint: enable=E1101
+        except IOError:
+            msg = 'The specified cookie jar file does not exist.'
+            raise BaseFrameworkException(msg)
         else:
             self._cookie_handler = CookieHandler(cj)
             cfg.save('cookie_jar_file', cookiejar_file)
