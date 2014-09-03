@@ -62,6 +62,7 @@ Contents
    phases
    basic-ui
    scripts
+   authentication
    complex-web-apps
    
    exploitation
