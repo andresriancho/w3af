@@ -351,6 +351,16 @@ class HTTPResponse(httplib.HTTPResponse):
         self._multiread = data
 
 
+def debug(msg):
+    if DEBUG:
+        om.out.debug(msg)
+
+
+def error(msg):
+    if DEBUG:
+        om.out.error(msg)
+
+
 class ConnectionManager(object):
     """
     The connection manager must be able to:
@@ -359,6 +369,9 @@ class ConnectionManager(object):
         * Create/reuse connections when needed.
         * Control the size of the pool.
     """
+    # Used in get_available_connection
+    GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.25
+    GET_AVAILABLE_CONNECTION_RETRY_NUM = 25
 
     def __init__(self):
         self._lock = threading.RLock()
@@ -409,10 +422,9 @@ class ConnectionManager(object):
             if host and not conn_total:
                 del self._hostmap[host]
             
-            if DEBUG:
-                msg = 'keepalive: removed one connection, len(self._hostmap' \
-                      '["%s"]): %s' % (host, conn_total)
-                om.out.debug(msg)
+            msg = 'keepalive: removed one connection,' \
+                  ' len(self._hostmap["%s"]): %s'
+            debug(msg % (host, conn_total))
 
     def free_connection(self, conn):
         """
@@ -432,9 +444,7 @@ class ConnectionManager(object):
         """
         with self._lock:
             self.remove_connection(bad_conn, host)
-            if DEBUG:
-                msg = 'keepalive: replacing bad connection with a new one'
-                om.out.debug(msg)
+            debug('keepalive: replacing bad connection with a new one')
             new_conn = conn_factory(host)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
@@ -450,12 +460,11 @@ class ConnectionManager(object):
                              <host> as parameter.
         """
         with self._lock:
-            retry_count = 10
+            retry_count = self.GET_AVAILABLE_CONNECTION_RETRY_NUM
 
             while retry_count > 0:
-                ret_conn = None
-
-                # First check if we can reuse an existing free conn.
+                # First check if we can reuse an existing free connection from
+                # the connection pool
                 for conn in self._hostmap.setdefault(host, []):
                     try:
                         self._free_conns.remove(conn)
@@ -463,34 +472,42 @@ class ConnectionManager(object):
                         continue
                     else:
                         self._used_cons.append(conn)
-                        ret_conn = conn
-                        break
+                        return conn
 
-                # No?... well, let's try to create a new one.
+                # No? Well, if the connection pool is not full let's try to
+                # create a new one.
                 conn_total = self.get_connections_total(host)
-                if not ret_conn and conn_total < self._host_pool_size:
-                    if DEBUG:
-                        msg = 'keepalive: added one connection,'\
-                              'len(self._hostmap["%s"]): %s'
-                        om.out.debug(msg % (host, conn_total + 1))
-                    ret_conn = conn_factory(host)
-                    self._used_cons.append(ret_conn)
-                    self._hostmap[host].append(ret_conn)
+                if conn_total < self._host_pool_size:
+                    msg = 'keepalive: added one connection,'\
+                          'len(self._hostmap["%s"]): %s'
+                    debug(msg % (host, conn_total + 1))
+                    conn = conn_factory(host)
+                    self._used_cons.append(conn)
+                    self._hostmap[host].append(conn)
+                    return conn
 
-                if ret_conn is not None:  # Good! We have one!
-                    return ret_conn
                 else:
-                    # Maybe we should wait a little and try again 8^)
+                    # Well, the connection pool for this host is full, this
+                    # means that many threads are sending request to the host
+                    # and using the connections. This is not bad, just shows
+                    # that w3af is keeping the connections busy
+                    #
+                    # Another reason for this situation is that the connections
+                    # are *really* slow => taking many seconds to retrieve the
+                    # HTTP response => not freeing often
+                    #
+                    # We should wait a little and try again
                     retry_count -= 1
-                    time.sleep(0.3)
+                    time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
 
-            msg = 'keepalive: been waiting too long for a pool connection.' \
-                  ' I\'m giving up. Seems like the pool is full.'
-
-            if DEBUG:
-                om.out.debug(msg)
-
-            raise BaseFrameworkException(msg)
+            msg = 'HTTP connection pool (keepalive) waited too long (%s sec)' \
+                  ' for a free connection, giving up. This usually occurs' \
+                  ' when w3af is scanning using a slow connection, the remote' \
+                  ' server is slow (or applying QoS to IP addresses flagged' \
+                  ' as attackers).'
+            seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
+                       self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
+            raise BaseFrameworkException(msg % seconds)
 
     def get_all(self, host=None):
         """
@@ -666,8 +683,7 @@ class KeepAliveHandler(object):
             if resp.will_close:
                 self._cm.remove_connection(conn, host)
     
-            if DEBUG:
-                om.out.debug("STATUS: %s, %s" % (resp.status, resp.reason))
+            debug("STATUS: %s, %s" % (resp.status, resp.reason))
             
             resp._handler = self
             resp._host = host
@@ -701,9 +717,9 @@ class KeepAliveHandler(object):
             # On the next try, the same exception was raised, etc. The tradeoff
             # is that it's now possible this call will raise a DIFFERENT
             # exception
-            if DEBUG:
-                om.out.error("unexpected exception - closing connection to %s"
-                             " (%d)" % (host, id(conn)))
+            msg = "unexpected exception - closing connection to %s (%d)"
+            error(msg % (host, id(conn)))
+
             self._cm.remove_connection(conn, host)
             raise
 
@@ -712,14 +728,10 @@ class KeepAliveHandler(object):
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            if DEBUG:
-                om.out.debug("failed to re-use connection to %s (%d)" % (host,
-                             id(conn)))
+            debug("failed to re-use connection to %s (%d)" % (host, id(conn)))
             r = None
         else:
-            if DEBUG:
-                om.out.debug(
-                    "re-using connection to %s (%d)" % (host, id(conn)))
+            debug("re-using connection to %s (%d)" % (host, id(conn)))
             r._multiread = None
 
         return r
