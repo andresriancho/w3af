@@ -69,7 +69,6 @@ class ExtendedUrllib(object):
         # For error handling
         self._last_request_failed = False
         self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
-        self._error_count = {}
         self._count_lock = threading.RLock()
 
         # User configured options (in an indirect way)
@@ -284,15 +283,15 @@ class ExtendedUrllib(object):
             uri.querystring = data
 
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
-                          ignore_errors=ignore_errors,
-                          method='GET')
+                          ignore_errors=ignore_errors, method='GET',
+                          retries=self.settings.get_max_retrys())
         req = self._add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
             return self._send(req, grep=grep)
 
-    def POST(self, uri, data='', headers=Headers(), grep=True,
-             cache=False, cookies=True, ignore_errors=False):
+    def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
+             cookies=True, ignore_errors=False):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -322,7 +321,8 @@ class ExtendedUrllib(object):
         data = str(data)
 
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          ignore_errors=ignore_errors, method='POST')
+                          ignore_errors=ignore_errors, method='POST',
+                          retries=self.settings.get_max_retrys())
         req = self._add_headers(req, headers)
 
         return self._send(req, grep=grep)
@@ -396,9 +396,12 @@ class ExtendedUrllib(object):
 
                 self._xurllib._init()
 
+                max_retries = self._xurllib.settings.get_max_retrys()
+
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method,
-                                  ignore_errors=ignore_errors)
+                                  ignore_errors=ignore_errors,
+                                  retries=max_retries)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
 
@@ -548,9 +551,6 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
-        req_id = id(req)
-        if req_id in self._error_count:
-            del self._error_count[req_id]
         self._zero_global_error_count()
 
         if grep:
@@ -558,24 +558,19 @@ class ExtendedUrllib(object):
 
         return http_resp
 
-    def _retry(self, req, grep, urlerr):
+    def _retry(self, req, grep, url_error):
         """
         Try to send the request again while doing some error handling.
         """
-        req_id = id(req)
-        
-        if self._error_count.setdefault(req_id, 1) <= \
-        self.settings.get_max_retrys():
-            # Increment the error count of this particular request.
-            self._error_count[req_id] += 1
-            om.out.debug('Re-sending request...')
+        req.retries_left -= 1
+
+        if req.retries_left > 0:
+            msg = 'Re-sending request "%s" after initial exception: "%s"'
+            om.out.debug(msg % (req, url_error))
             return self._send(req, grep=grep)
         
         else:
-            # Clear the log of failed requests; this one definitely failed.
-            # Let the caller decide what to do
-            del self._error_count[req_id]
-            raise ScanMustStopOnUrlError(urlerr, req)
+            raise ScanMustStopOnUrlError(url_error, req)
 
     def _increment_global_error_count(self, error, parsed_traceback=[]):
         """

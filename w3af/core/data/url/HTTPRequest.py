@@ -33,7 +33,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
                  cookies=True, cache=False, method=None,
-                 ignore_errors=False):
+                 ignore_errors=False, retries=None):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -48,6 +48,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.cookies = cookies
         self.get_from_cache = cache
         self.ignore_errors = ignore_errors
+        self.retries_left = retries
 
         self.method = method
         if self.method is None:
