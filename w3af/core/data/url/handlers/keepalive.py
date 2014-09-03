@@ -318,12 +318,12 @@ class HTTPResponse(httplib.HTTPResponse):
                 break
             i = new.find('\n')
             if i >= 0:
-                i = i + len(self._rbuf)
+                i += len(self._rbuf)
             self._rbuf = self._rbuf + new
         if i < 0:
             i = len(self._rbuf)
         else:
-            i = i + 1
+            i += 1
         if 0 <= limit < len(self._rbuf):
             i = limit
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
@@ -447,7 +447,7 @@ class ConnectionManager(object):
 
         :param host: Host for the connection.
         :param conn_factory: Factory function for connection creation. Receives
-            <host> as parameter.
+                             <host> as parameter.
         """
         with self._lock:
             retry_count = 10
@@ -470,16 +470,17 @@ class ConnectionManager(object):
                 conn_total = self.get_connections_total(host)
                 if not ret_conn and conn_total < self._host_pool_size:
                     if DEBUG:
-                        msg = 'keepalive: added one connection, len(self._hostmap'\
-                              '["%s"]): %s' % (host, conn_total + 1)
-                        om.out.debug(msg)
+                        msg = 'keepalive: added one connection,'\
+                              'len(self._hostmap["%s"]): %s'
+                        om.out.debug(msg % (host, conn_total + 1))
                     ret_conn = conn_factory(host)
                     self._used_cons.append(ret_conn)
                     self._hostmap[host].append(ret_conn)
 
                 if ret_conn is not None:  # Good! We have one!
                     return ret_conn
-                else:  # Maybe we should wait a little and try again 8^)
+                else:
+                    # Maybe we should wait a little and try again 8^)
                     retry_count -= 1
                     time.sleep(0.3)
 
@@ -490,12 +491,6 @@ class ConnectionManager(object):
                 om.out.debug(msg)
 
             raise BaseFrameworkException(msg)
-
-    def resize_pool(self, new_size):
-        """
-        Set a new pool size.
-        """
-        pass
 
     def get_all(self, host=None):
         """
@@ -906,11 +901,13 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
                                         self.cert_file)
         self.sock = ssl_sock_inst
 
+
 def to_utf8_raw(unicode_or_str):
     if isinstance(unicode_or_str, unicode):
         # Is 'ignore' the best option here?
         return unicode_or_str.encode('utf-8', 'ignore')
     return unicode_or_str
+
 
 class HTTPConnection(_HTTPConnection):
     # use the modified response class
