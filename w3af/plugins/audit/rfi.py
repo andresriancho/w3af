@@ -58,6 +58,9 @@ class rfi(AuditPlugin):
 
     RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
+    RFI_TOKEN_1 = '8PcokTUkv'
+    RFI_TOKEN_2 = 'oudVjYpIm'
+
     RFI_ERRORS = ('php_network_getaddresses: getaddrinfo',
                   'failed to open stream: Connection refused in'
                   'java.io.FileNotFoundException',
@@ -164,8 +167,7 @@ class rfi(AuditPlugin):
         if listen_address and listen_port:
             with self._plugin_lock:
                 # If we have an active instance then we're OK!
-                if webserver.is_running(listen_address,
-                                        listen_port):
+                if webserver.is_running(listen_address, listen_port):
                     return True
 
                 # Test if it's possible to bind the address
@@ -194,7 +196,7 @@ class rfi(AuditPlugin):
         #   - The listen address is private and the target address is private
         #   - The listen address is public and the target address is public
         #
-        if self._listen_address == '':
+        if not self._listen_address:
             return
 
         is_listen_priv = is_private_site(self._listen_address)
@@ -364,8 +366,8 @@ class rfi(AuditPlugin):
         """
         with self._plugin_lock:
             # First, generate the php file to be included.
-            rfi_result_part_1 = rand1 = rand_alnum(9)
-            rfi_result_part_2 = rand2 = rand_alnum(9)
+            rfi_result_part_1 = rand1 = self.RFI_TOKEN_1
+            rfi_result_part_2 = rand2 = self.RFI_TOKEN_2
             rfi_result = rand1 + rand2
 
             filename = rand_alnum(8)
@@ -374,7 +376,6 @@ class rfi(AuditPlugin):
             php_jsp_code += '<%% out.print("%(p1)s"); out.print("%(p2)s"); %%>'
             php_jsp_code = php_jsp_code % {'p1': rfi_result_part_1,
                                            'p2': rfi_result_part_2}
-
 
             # Define the required parameters
             netloc = self._listen_address + ':' + str(self._listen_port)
