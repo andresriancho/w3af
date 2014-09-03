@@ -33,13 +33,13 @@ dependencies:
 
     # Install and run php-moth in the background
     - w3af/core/controllers/ci/install_scripts/install_php_moth.sh
-    - php -S localhost:9009 -t . -c conf/default.ini router.php:
+    - php -S localhost:9009 -t . -c conf/default.ini router.php &> $CIRCLE_ARTIFACTS/run_php_moth.log:
         background: true
         pwd: php-moth
 
     # Install and run sqlmap's testenv in the background
     - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
-    - php -S localhost:8998 -t .:
+    - php -S localhost:8998 -t . &> $CIRCLE_ARTIFACTS/run_testenv.log:
         background: true
         pwd: sqlmap-testenv
 
