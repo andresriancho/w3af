@@ -23,23 +23,23 @@ configuration set in this section will affect all plugins and other core librari
 
     w3af>>> http-settings
     w3af/config:http-settings>>> view
-    |------------------------------------------------------------------------------------------------------------|
-    | Setting                | Value    | Modified | Description                                                 |
-    |------------------------------------------------------------------------------------------------------------|
+    |--------------------------------------------------------------------------------------|
+    | Setting                | Description                                                 |
+    |--------------------------------------------------------------------------------------|
     ...
-    |------------------------------------------------------------------------------------------------------------|
-    | ntlm_auth_url          |          |          | Set the NTLM authentication domain for HTTP requests        |
-    | ntlm_auth_user         |          |          | Set the NTLM authentication username for HTTP requests      |
-    | ntlm_auth_passwd       |          |          | Set the NTLM authentication password for HTTP requests      |
-    | ntlm_auth_domain       |          |          | Set the NTLM authentication domain (the windows domain name)|
-    |                        |          |          | requests. Please note that only NTLM v1 is supported.       |
-    |------------------------------------------------------------------------------------------------------------|
+    |--------------------------------------------------------------------------------------|
+    | ntlm_auth_url          | Set the NTLM authentication domain for HTTP requests        |
+    | ntlm_auth_user         | Set the NTLM authentication username for HTTP requests      |
+    | ntlm_auth_passwd       | Set the NTLM authentication password for HTTP requests      |
+    | ntlm_auth_domain       | Set the NTLM authentication domain (the windows domain name)|
+    |                        | requests. Please note that only NTLM v1 is supported.       |
+    |--------------------------------------------------------------------------------------|
     ...
-    |------------------------------------------------------------------------------------------------------------|
-    | basic_auth_user        |          |          | Set the basic authentication username for HTTP requests     |
-    | basic_auth_passwd      |          |          | Set the basic authentication password for HTTP requests     |
-    | basic_auth_domain      |          |          | Set the basic authentication domain for HTTP requests       |
-    |------------------------------------------------------------------------------------------------------------|
+    |--------------------------------------------------------------------------------------|
+    | basic_auth_user        | Set the basic authentication username for HTTP requests     |
+    | basic_auth_passwd      | Set the basic authentication password for HTTP requests     |
+    | basic_auth_domain      | Set the basic authentication domain for HTTP requests       |
+    |--------------------------------------------------------------------------------------|
     w3af/config:http-settings>>>
 
 Please note the two different configuration sections for basic HTTP authentication
@@ -144,10 +144,12 @@ continue using the invalid session (header value).
 In order to use this method you’ll first have to:
 
  * Create a text file using your favorite text editor with the following contents:
- ``Cookie: <insert-cookie-here>``, without the quotes and inserting the desired
- session cookie.
+   ``Cookie: <insert-cookie-here>``, without the quotes and inserting the desired
+   session cookie.
+
  * Then, in w3af’s ``http-settings`` configuration menu set the ``headers_file``
- configuration parameter to point to the recently created file.
+   configuration parameter to point to the recently created file.
+
  * ``save``
 
 The w3af scanner is now configured to use the HTTP session cookie for all HTTP
