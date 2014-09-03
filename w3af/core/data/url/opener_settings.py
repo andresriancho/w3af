@@ -173,7 +173,7 @@ class OpenerSettings(Configurable):
         return cfg.get('headers_file')
 
     def set_cookie_jar_file(self, cookiejar_file):
-        om.out.debug('Called SetCookie')
+        om.out.debug('Called set_cookie_jar_file')
 
         if not cookiejar_file:
             return
@@ -181,9 +181,22 @@ class OpenerSettings(Configurable):
         cj = cookielib.MozillaCookieJar()
         try:
             cj.load(cookiejar_file)
-        except Exception, e:
-            msg = 'Error while loading cookiejar file. Description: "%s".'
-            raise BaseFrameworkException(msg % e)
+        except IOError:
+            msg = 'The specified cookie jar file does not exist.'
+            raise BaseFrameworkException(msg)
+        except cookielib.LoadError, cle:
+            if cle.message.startswith('invalid Netscape format cookies file'):
+                docs_url = 'http://docs.w3af.org/en/latest/' \
+                           'authentication.html#setting-http-cookie'
+
+                msg = 'The supplied cookiejar file is not in Netscape format'\
+                      ' please review our documentation at %s to better' \
+                      ' understand the required format.'
+
+                raise BaseFrameworkException(msg % docs_url)
+            else:
+                msg = 'Error while loading cookiejar file. Description: "%s".'
+                raise BaseFrameworkException(msg % cle)
         else:
             self._cookie_handler = CookieHandler(cj)
             cfg.save('cookie_jar_file', cookiejar_file)
@@ -191,8 +204,9 @@ class OpenerSettings(Configurable):
             if not len(cj):
                 msg = 'Did not load any cookies from the cookie jar file.'\
                       ' This usually happens when there are no cookies in'\
-                      ' the file or the cookies have expired.'
-                om.out.error(msg)
+                      ' the file, the cookies have expired or the file is not'\
+                      ' in the expected format.'
+                raise BaseFrameworkException(msg)
             else:
                 om.out.debug('Loaded the following cookies:')
                 for c in cj:
