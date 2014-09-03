@@ -49,6 +49,7 @@ from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
                                                  remove_temp_dir,
                                                  TEMP_DIR)
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException,
                                               ScanMustStopException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByUserRequest)
@@ -192,6 +193,11 @@ class w3afCore(object):
             raise
         except threading.ThreadError:
             handle_threading_error(self.status.scans_completed)
+        except HTTPRequestException, hre:
+            # TODO: These exceptions should never reach this level
+            #       adding the exception handler to raise them and fix any
+            #       instances where it happens.
+            raise
         except ScanMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the

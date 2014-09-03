@@ -37,8 +37,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
 
-from w3af.core.controllers.exceptions import (ScanMustStopException,
-                                              BaseFrameworkException,
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest,
@@ -76,7 +76,7 @@ class ExtendedUrllib(object):
         self._evasion_plugins = []
         self._user_paused = False
         self._user_stopped = False
-        self._error_stopped = False
+        self._stop_exception = None
 
     def pause(self, pause_yes_no):
         """
@@ -109,9 +109,8 @@ class ExtendedUrllib(object):
         """
         def analyze_state():
             # There might be errors that make us stop the process
-            if self._error_stopped:
-                msg = 'Multiple exceptions found while sending HTTP requests.'
-                raise ScanMustStopException(msg)
+            if self._stop_exception is not None:
+                raise self._stop_exception
 
             if self._user_stopped:
                 msg = 'The user stopped the scan.'
@@ -127,7 +126,7 @@ class ExtendedUrllib(object):
         """Clear all status set during the scanner run"""
         self._user_stopped = False
         self._user_paused = False
-        self._error_stopped = False
+        self._stop_exception = None
 
     def end(self):
         """
@@ -570,44 +569,39 @@ class ExtendedUrllib(object):
             return self._send(req, grep=grep)
         
         else:
-            raise ScanMustStopOnUrlError(url_error, req)
+            # Please note that I'm raising HTTPRequestException and not a
+            # ScanMustStopException (or subclasses) since I don't want the
+            # scan to stop because of a single HTTP request failing.
+            #
+            # Actually we get here if one request fails three times to be sent
+            # but that might be because of the http request itself and not a
+            # fault of the framework/server/network.
+            raise HTTPRequestException(url_error)
 
-    def _increment_global_error_count(self, error, parsed_traceback=[]):
+    def _increment_global_error_count(self, error):
         """
         Increment the error count, and if we got a lot of failures raise a
         "ScanMustStopException" subtype.
 
         :param error: Exception object.
-
-        :param parsed_traceback: A list with the following format:
-            [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'),
-            ('trace_test.py', '5', 'abc')]
-            Where ('filename', 'line-number', 'function-name')
-
         """
-        last_errors = self._last_errors
-
         if self._last_request_failed:
-            last_errors.append((str(error), parsed_traceback))
+            reason = self.get_exception_reason(error)
+            self._last_errors.append(reason or str(error))
         else:
             self._last_request_failed = True
 
-        error_total = len(last_errors)
-
+        error_total = len(self._last_errors)
         om.out.debug('Incrementing global error count. GEC: %s' % error_total)
 
         with self._count_lock:
             if error_total >= MAX_ERROR_COUNT:
-                self._handle_error_on_increment(error, parsed_traceback,
-                                                last_errors)
+                self._handle_error_on_increment(error, self._last_errors)
     
-    def _handle_error_on_increment(self, error, parsed_traceback, last_errors):
+    def _handle_error_on_increment(self, error, last_errors):
         """
         Handle the error
         """
-        # Stop using ExtendedUrllib instance
-        self._error_stopped = True
-
         #
         # Create a detailed exception message
         #
@@ -616,13 +610,24 @@ class ExtendedUrllib(object):
                ' server is not reachable anymore, the network is down, or'
                ' a WAF is blocking our tests. The last error message was "%s".')
 
-        if parsed_traceback:
-            tback_str = ''
-            for path, line, call in parsed_traceback[-3:]:
-                tback_str += '    %s:%s at %s\n' % (path, line, call)
+        reason_msg = self.get_exception_reason(error)
 
-            msg += ' The last calls in the traceback are: \n%s' % tback_str
+        # If I got a reason, it means that it is a known exception.
+        if reason_msg is not None:
+            # Stop using ExtendedUrllib instance
+            e = ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
 
+        else:
+            e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
+
+        self._stop_exception = e
+        raise e
+
+    def get_exception_reason(self, error):
+        """
+        :param error: The exception instance
+        :return: The reason/message associated with that exception
+        """
         reason_msg = None
 
         if isinstance(error, URLTimeoutError):
@@ -651,6 +656,9 @@ class ExtendedUrllib(object):
         elif isinstance(error, ssl.SSLError):
             reason_msg = 'SSL Error: %s' % error.message
 
+        elif isinstance(error, HTTPRequestException):
+            reason_msg = error.value
+
         elif isinstance(error, httplib.HTTPException):
             #
             #    Here we catch:
@@ -665,13 +673,7 @@ class ExtendedUrllib(object):
             reason_msg = '%s: %s' % (error.__class__.__name__,
                                      error.args)
 
-        # If I got a reason, it means that it is a known exception.
-        if reason_msg is not None:
-            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
-
-        else:
-            errors = [] if parsed_traceback else last_errors
-            raise ScanMustStopByUnknownReasonExc(msg % error, errs=errors)
+        return reason_msg
 
     def _zero_global_error_count(self):
         if self._last_request_failed or self._last_errors:

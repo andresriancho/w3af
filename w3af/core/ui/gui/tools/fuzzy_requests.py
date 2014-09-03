@@ -30,7 +30,7 @@ from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
 
 from w3af.core.data.db.history import HistoryItem
-from w3af.core.controllers.exceptions import (BaseFrameworkException,
+from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               ScanMustStopException)
 
 
@@ -402,35 +402,36 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         try:
-            httpResp = self.w3af.uri_opener.send_raw_request(
+            http_resp = self.w3af.uri_opener.send_raw_request(
                 realreq, realbody, fixContentLength)
-            errorMsg = None
+            error_msg = None
             self.result_ok += 1
-        except BaseFrameworkException, e:
-            errorMsg = str(e)
-            httpResp = None
+        except HTTPRequestException, e:
+            # One HTTP request failed
+            error_msg = str(e)
+            http_resp = None
             self.result_err += 1
         except ScanMustStopException, e:
-            errorMsg = str(e)
-            httpResp = None
+            # Many HTTP requests failed and the URL library wants to stop
+            error_msg = str(e)
             self.result_err += 1
 
             # Let the user know about the problem
             msg = "Stopped sending requests because of the following"\
-                  " unexpected error:\n\n%s" % str(e)
+                  " unexpected error:\n\n%s"
 
-            helpers.FriendlyExceptionDlg(msg)
+            helpers.FriendlyExceptionDlg(msg % error_msg)
             return False
 
-        if httpResp is not None:
-            self.responses.append((True, httpResp.get_id()))
+        if http_resp is not None:
+            self.responses.append((True, http_resp.get_id()))
         else:
-            self.responses.append((False, realreq, realbody, errorMsg))
+            self.responses.append((False, realreq, realbody, error_msg))
 
         # always update the gtk stuff
+        msg = "%d ok, %d errors"
         self.sendfb.set_sensitive(True)
-        self.sendfb.set_text(
-            "%d ok, %d errors" % (self.result_ok, self.result_err))
+        self.sendfb.set_text(msg % (self.result_ok, self.result_err))
 
         # activate and show
         self.resultReqResp.set_sensitive(True)
@@ -447,10 +448,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self.responses
 
         If OK, the responses are saved like this:
-            self.responses.append((True, httpResp.get_id()))
+            self.responses.append((True, http_resp.get_id()))
 
         else:
-            self.responses.append((False, realreq, realbody, errorMsg))
+            self.responses.append((False, realreq, realbody, error_msg))
 
         :return: None.
         """
@@ -477,7 +478,7 @@ class FuzzyRequests(entries.RememberingWindow):
                 self.title0.set_markup("<b>Id: %d</b>" % reqid)
         else:
             # the request brought problems
-            realreq, realbody, errorMsg = info[1:]
+            realreq, realbody, error_msg = info[1:]
             self.resultReqResp.request.show_raw(realreq, realbody)
-            self.resultReqResp.response.show_error(errorMsg)
+            self.resultReqResp.response.show_error(error_msg)
             self.title0.set_markup("<b>Error</b>")

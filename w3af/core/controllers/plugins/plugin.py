@@ -29,7 +29,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
-from w3af.core.controllers.exceptions import ScanMustStopOnUrlError
+from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.misc.decorators import memoized
 
 
@@ -218,8 +218,14 @@ class UrlOpenerProxy(object):
         def meth(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
-            except ScanMustStopOnUrlError, se:
-                stop_bubbling, result = self._plugin_inst.handle_url_error(se)
+            except HTTPRequestException, hre:
+                #
+                # We get here when **one** HTTP request fails. When more than
+                # one exception fails the URL opener will raise a different
+                # type of exception (not a subclass of HTTPRequestException)
+                # and that one will bubble up to w3afCore/strategy/etc.
+                #
+                stop_bubbling, result = self._plugin_inst.handle_url_error(hre)
 
                 if not stop_bubbling:
                     exc_info = sys.exc_info()

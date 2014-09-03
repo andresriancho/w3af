@@ -34,6 +34,7 @@ from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByUserRequest,
+                                              HTTPRequestException,
                                               ScanMustStopByUnknownReasonExc)
 
 DEBUG = os.environ.get('DEBUG', '0') == '1'
@@ -49,7 +50,8 @@ class ExceptionHandler(object):
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
     NO_HANDLING = (MemoryError, ScanMustStopByUnknownReasonExc,
-                   ScanMustStopException, ScanMustStopByUserRequest)
+                   ScanMustStopException, ScanMustStopByUserRequest,
+                   HTTPRequestException)
 
     if DEBUG:
         NO_HANDLING = list(NO_HANDLING)

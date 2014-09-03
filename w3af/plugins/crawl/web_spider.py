@@ -366,11 +366,7 @@ class web_spider(CrawlPlugin):
         referer = original_response.get_url().base_url().url_string
         headers = Headers([('Referer', referer)])
 
-        try:
-            resp = self._uri_opener.GET(reference, cache=True,
-                                        headers=headers)
-        except ScanMustStopOnUrlError:
-            return
+        resp = self._uri_opener.GET(reference, cache=True, headers=headers)
 
         if is_404(resp):
             # Note: I WANT to follow links that are in the 404 page, but

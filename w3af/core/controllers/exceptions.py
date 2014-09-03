@@ -34,10 +34,21 @@ class BaseFrameworkException(Exception):
         return self.value
 
 
+class HTTPRequestException(BaseFrameworkException):
+    """
+    This exception should be raised when **one** HTTP request fails.
+    """
+    pass
+
+
+class ConnectionPoolException(HTTPRequestException):
+    pass
+
+
 class RunOnce(Exception):
     """
     A small class that defines an exception to be raised by plugins that
-    dont want to be run anymore.
+    don't want to be run anymore.
     """
     def __init__(self, value=''):
         Exception.__init__(self)
@@ -71,11 +82,19 @@ class ScanMustStopException(Exception):
 
 
 class ScanMustStopByUserRequest(ScanMustStopException):
+    """
+    The user requested the scan to stop, raise this exception to stop it.
+    """
     pass
 
 
 class ScanMustStopOnUrlError(ScanMustStopException):
+    """
+    This exception should be raised when **many** HTTP requests fail.
 
+    Please note that HTTPRequestException should be used when only one HTTP
+    request failed.
+    """
     def __init__(self, url_error, req):
         # Call parent's __init__
         ScanMustStopException.__init__(self, url_error)

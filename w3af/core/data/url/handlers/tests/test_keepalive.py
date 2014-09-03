@@ -30,12 +30,13 @@ from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException)
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
-                                              ConnectionManager,
-                                              HTTPResponse,
-                                              URLTimeoutError,
-                                              HTTPHandler, HTTPSHandler)
+                                                   ConnectionManager,
+                                                   HTTPResponse,
+                                                   URLTimeoutError,
+                                                   HTTPHandler, HTTPSHandler)
 
 
 @attr('moth')
@@ -117,7 +118,7 @@ class TestKeepalive(unittest.TestCase):
         # Replace with mocked out ConnMgr.
         kah._cm = conn_mgr
         self.assertRaises(URLTimeoutError, kah.do_open, req)
-        self.assertRaises(ScanMustStopException, kah.do_open, req)
+        self.assertRaises(HTTPRequestException, kah.do_open, req)
 
         kah._start_transaction.assert_called_once_with(conn, req)
         conn_mgr.get_available_connection.assert_called_once_with(

@@ -126,6 +126,7 @@ import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ConnectionPoolException,
                                               ScanMustStopByKnownReasonExc)
 
 
@@ -507,7 +508,7 @@ class ConnectionManager(object):
                   ' as attackers).'
             seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
                        self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
-            raise BaseFrameworkException(msg % seconds)
+            raise ConnectionPoolException(msg % seconds)
 
     def get_all(self, host=None):
         """

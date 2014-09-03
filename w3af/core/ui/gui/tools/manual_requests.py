@@ -28,8 +28,7 @@ from w3af.core.ui.gui.tools.helpers import ThreadedURLImpact
 
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException,
-                                              ScanMustStopOnUrlError,
-                                              ScanMustStopByKnownReasonExc,
+                                              HTTPRequestException,
                                               ProxyException)
 
 MANUAL_REQUEST_EXAMPLE = """\
@@ -78,8 +77,8 @@ class ManualRequests(entries.RememberingWindow):
         if initial_request is None:
             self.reqresp.request.show_raw(MANUAL_REQUEST_EXAMPLE, '')
         else:
-            initialUp, initialDn = initial_request
-            self.reqresp.request.show_raw(initialUp, initialDn)
+            initial_up, initial_dn = initial_request
+            self.reqresp.request.show_raw(initial_up, initial_dn)
 
         # Show all!
         self.show()
@@ -120,31 +119,30 @@ class ManualRequests(entries.RememberingWindow):
                 self.reqresp.nb.next_page()
                 
             elif hasattr(impact, 'exception'):
-                e_kls = impact.exception.__class__
-                if e_kls in (BaseFrameworkException, ScanMustStopException,
-                             ScanMustStopOnUrlError,
-                             ScanMustStopByKnownReasonExc,
-                             ProxyException):
-                    msg = "Stopped sending requests because of the following"\
-                          " unexpected error:\n\n%s" % str(impact.exception)
-                          
-                else:
+                known_exceptions = (BaseFrameworkException,
+                                    ScanMustStopException,
+                                    HTTPRequestException,
+                                    ProxyException)
+                if not isinstance(impact.exception, known_exceptions):
                     raise impact.exception
-                
-                self.reqresp.response.clear_panes()
-                self.reqresp.response.set_sensitive(False)
-                gtk.gdk.threads_enter()
-                helpers.FriendlyExceptionDlg(msg)
-                gtk.gdk.threads_leave()
-                
+                else:
+                    msg = "Stopped sending requests because of the following"\
+                          " unexpected error:\n\n%s"
+
+                    self.reqresp.response.clear_panes()
+                    self.reqresp.response.set_sensitive(False)
+                    gtk.gdk.threads_enter()
+                    helpers.FriendlyExceptionDlg(msg % impact.exception)
+                    gtk.gdk.threads_leave()
+
             else:
                 # This is a very strange case, because impact.ok == False
                 # but impact.exception does not exist!
                 self.reqresp.response.clear_panes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
-                helpers.FriendlyExceptionDlg(
-                    'Errors occurred while sending the HTTP request.')
+                helpers.FriendlyExceptionDlg('Errors occurred while sending'
+                                             ' the HTTP request.')
                 gtk.gdk.threads_leave()
 
             return False

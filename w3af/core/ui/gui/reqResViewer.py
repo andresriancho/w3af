@@ -27,6 +27,7 @@ import gobject
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException,
                                               ScanMustStopException,
                                               ScanMustStopOnUrlError)
 
@@ -237,6 +238,7 @@ class reqResViewer(gtk.VBox):
         # We stop the throbber, and hide it
         self.throbber.hide()
         self.throbber.running(False)
+
         # Analyze the impact
         if impact.ok:
             #   Lets check if we found any vulnerabilities
@@ -255,15 +257,17 @@ class reqResViewer(gtk.VBox):
                     historyItem.info = result.get_desc()
                     historyItem.save()
         else:
-            if impact.exception.__class__ == BaseFrameworkException:
+            if isinstance(impact.exception, HTTPRequestException):
+                msg = 'Exception found while sending HTTP request. Original' \
+                      ' exception is: "%s"' % impact.exception
+            elif isinstance(impact.exception, ScanMustStopException):
+                msg = 'Multiple exceptions found while sending HTTP requests.' \
+                      ' Exception: "%s"' % impact.exception
+            elif isinstance(impact.exception, BaseFrameworkException):
                 msg = str(impact.exception)
-            elif impact.exception.__class__ == ScanMustStopException:
-                msg = "Stopped sending requests because " + \
-                    str(impact.exception)
-            elif impact.exception.__class__ == ScanMustStopOnUrlError:
-                msg = "Not sending requests because " + str(impact.exception)
             else:
                 raise impact.exception
+
             # We stop the throbber, and hide it
             self.throbber.hide()
             self.throbber.running(False)
