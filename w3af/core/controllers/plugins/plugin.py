@@ -1,5 +1,5 @@
 """
-plugins.py
+plugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -64,7 +64,7 @@ class Plugin(Configurable):
         """
         self.worker_pool = worker_pool
 
-    def set_url_opener(self, urlOpener):
+    def set_url_opener(self, url_opener):
         """
         This method should not be overwritten by any plugin (but you are free
         to do it, for example a good idea is to rewrite this method to change
@@ -78,7 +78,7 @@ class Plugin(Configurable):
 
         :return: No value is returned.
         """
-        self._uri_opener = UrlOpenerProxy(urlOpener, self)
+        self._uri_opener = UrlOpenerProxy(url_opener, self)
 
     def set_options(self, options_list):
         """
@@ -154,7 +154,7 @@ class Plugin(Configurable):
     def end(self):
         """
         This method is called by w3afCore to let the plugin know that it wont
-        be used anymore. This is helpfull to do some final tests, free some
+        be used anymore. This is helpful to do some final tests, free some
         structures, etc.
         """
         pass
@@ -173,14 +173,15 @@ class Plugin(Configurable):
         behavior and must respect the return value format.
 
         :param url_error: ScanMustStopOnUrlError exception instance
-        :return: (stopbubbling, result). The 1st is a boolean value
+        :return: (stop_bubbling, result). The 1st is a boolean value
             that indicates the caller if the original error should
             stop bubbling or not. The 2nd is the result to be
             returned by the caller. Note that only makes sense
-            when `stopbubbling` is True.
+            when `stop_bubbling` is True.
         """
-        om.out.error('There was an error while requesting "%s". Reason: %s' %
-                     (url_error.req.get_full_url(), url_error.msg))
+        msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
+        args = (self.get_name(), url_error.req.get_full_url(), url_error.msg)
+        om.out.error(msg % args)
         return False, None
 
     def _send_mutants_in_threads(self, func, iterable, callback, **kwds):
@@ -217,12 +218,13 @@ class UrlOpenerProxy(object):
         def meth(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
-            except ScanMustStopOnUrlError, w3aferr:
-                stopbubbling, result = \
-                    self._plugin_inst.handle_url_error(w3aferr)
-                if not stopbubbling:
+            except ScanMustStopOnUrlError, se:
+                stop_bubbling, result = self._plugin_inst.handle_url_error(se)
+
+                if not stop_bubbling:
                     exc_info = sys.exc_info()
                     raise exc_info[0], exc_info[1], exc_info[2]
+
                 return result
 
         attr = getattr(self._url_opener, name)
