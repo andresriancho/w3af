@@ -109,9 +109,6 @@ class find_jboss(InfrastructurePlugin):
         response = self._uri_opener.GET(vuln_url)
         return vuln_db_instance, response
 
-    def handle_url_error(self, url_error):
-        return True, None
-
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
