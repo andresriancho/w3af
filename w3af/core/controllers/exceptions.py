@@ -76,14 +76,14 @@ class ScanMustStopByUserRequest(ScanMustStopException):
 
 class ScanMustStopOnUrlError(ScanMustStopException):
 
-    def __init__(self, urlerr, req):
+    def __init__(self, url_error, req):
         # Call parent's __init__
-        ScanMustStopException.__init__(self, urlerr)
+        ScanMustStopException.__init__(self, url_error)
         self.req = req
 
     def __str__(self):
         error_fmt = "Extended URL library error '%s' while requesting '%s'."
-        return (error_fmt % (self.msg, self.req.get_full_url()))
+        return error_fmt % (self.msg, self.req.get_full_url())
 
     __repr__ = __str__
 

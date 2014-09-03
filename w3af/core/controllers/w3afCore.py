@@ -45,9 +45,11 @@ from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.misc.homeDir import (create_home_dir,
                                                 verify_dir_has_perm, HOME_DIR)
-from w3af.core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
+from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
+                                                 remove_temp_dir,
                                                  TEMP_DIR)
-from w3af.core.controllers.exceptions import (BaseFrameworkException, ScanMustStopException,
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByUserRequest)
 

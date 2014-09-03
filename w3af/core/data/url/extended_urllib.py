@@ -592,12 +592,12 @@ class ExtendedUrllib(object):
         else:
             self._last_request_failed = True
 
-        errtotal = len(last_errors)
+        error_total = len(last_errors)
 
-        om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
+        om.out.debug('Incrementing global error count. GEC: %s' % error_total)
 
         with self._count_lock:
-            if errtotal >= MAX_ERROR_COUNT:
+            if error_total >= MAX_ERROR_COUNT:
                 self._handle_error_on_increment(error, parsed_traceback,
                                                 last_errors)
     

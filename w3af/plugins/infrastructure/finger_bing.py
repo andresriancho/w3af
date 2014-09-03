@@ -83,9 +83,9 @@ class finger_bing(InfrastructurePlugin):
             # Just ignore it
             pass
         except BaseFrameworkException, w3:
-            msg = 'ExtendedUrllib exception raised while fetching page in finger_bing,'
-            msg += ' error description: ' + str(w3)
-            om.out.debug(msg)
+            msg = 'ExtendedUrllib exception raised while fetching page in' \
+                  ' finger_bing, error description: "%s"'
+            om.out.debug(msg % w3)
         else:
 
             # I have the response object!
