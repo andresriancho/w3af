@@ -43,18 +43,24 @@ class TestPhishtank(PluginTest):
         self.assertEqual(len(vulns), 0, vulns)
 
     def get_vulnerable_url(self, phishtank_inst):
+        url_re = re.compile('<url>(.*?)</url>')
+
         for line in file(phishtank_inst.PHISHTANK_DB):
             # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
-            match = re.search('<url>(.*?)</url>', line)
-            if match and 'CDATA' not in line:
-                return match.group(1)
+            if '</url>' in line:
+                match = url_re.search(line)
+                if match and 'CDATA' not in line:
+                    return match.group(1)
 
     def get_last_vulnerable_url(self, phishtank_inst):
+        url_re = re.compile('<url>(.*?)</url>')
+
         for line in reversed(file(phishtank_inst.PHISHTANK_DB).readlines()):
             # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
-            match = re.search('<url>(.*?)</url>', line)
-            if match and 'CDATA' not in line:
-                return match.group(1)
+            if '</url>' in line:
+                match = url_re.search(line)
+                if match and 'CDATA' not in line:
+                    return match.group(1)
 
     def get_total_urls(self, phishtank_inst):
         total = 0
