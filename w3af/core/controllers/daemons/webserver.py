@@ -189,6 +189,7 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
 
     return server_thread
 
+
 def start_webserver_any_free_port(ip, webroot, handler=w3afWebHandler):
     """Create a http server deamon in any free port available.
 
