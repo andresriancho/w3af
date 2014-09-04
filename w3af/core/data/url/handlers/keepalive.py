@@ -178,7 +178,7 @@ class HTTPResponse(httplib.HTTPResponse):
     # so if you THEN do a normal read, you must first take stuff from
     # the buffer.
 
-    # the read method wraps the original to accomodate buffering,
+    # the read method wraps the original to accommodate buffering,
     # although read() never adds to the buffer.
     # Both readline and readlines have been stolen with almost no
     # modification from socket.py
@@ -190,9 +190,9 @@ class HTTPResponse(httplib.HTTPResponse):
         self.code = None
         self._rbuf = ''
         self._rbufsize = 8096
-        self._handler = None  # inserted by the handler later
-        self._host = None   # (same)
-        self._url = None     # (same)
+        self._handler = None     # inserted by the handler later
+        self._host = None        # (same)
+        self._url = None         # (same)
         self._connection = None  # (same)
         self._method = method
         self._multiread = None
