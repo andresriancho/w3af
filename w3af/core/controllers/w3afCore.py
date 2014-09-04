@@ -206,9 +206,10 @@ class w3afCore(object):
             om.out.information('%s' % sbur)
         except ScanMustStopByUnknownReasonExc:
             #
-            # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
-            # purpose so we can find out the *really* unknown error
-            # conditions.
+            # If the extended_urllib module raises this type of exception we'll
+            # just re-raise. This leads to the exception_handler catching the
+            # exception, and if we're lucky users reporting it to our issue
+            # tracker
             #
             raise
         except ScanMustStopException, wmse:
