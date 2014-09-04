@@ -622,7 +622,7 @@ class KeepAliveHandler(object):
 
                 if all(st == RESP_TIMEOUT for st in resp_statuses_cp):
                     msg = ('w3af found too many consecutive timeouts. The'
-                           ' remote webserver seems to be unresponsive; please'
+                           ' remote web server seems to be unresponsive; please'
                            ' verify manually.')
                     reason = 'Timeout while trying to reach target.'
                     raise ScanMustStopByKnownReasonExc(msg, reason=reason)

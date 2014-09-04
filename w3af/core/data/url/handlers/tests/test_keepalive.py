@@ -31,7 +31,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              HTTPRequestException)
+                                              ScanMustStopByKnownReasonExc)
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                                    ConnectionManager,
                                                    HTTPResponse,
@@ -40,7 +40,6 @@ from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
 
 
 @attr('moth')
-@attr('ci_ready')
 class TestKeepalive(unittest.TestCase):
 
     def setUp(self):
@@ -118,7 +117,7 @@ class TestKeepalive(unittest.TestCase):
         # Replace with mocked out ConnMgr.
         kah._cm = conn_mgr
         self.assertRaises(URLTimeoutError, kah.do_open, req)
-        self.assertRaises(HTTPRequestException, kah.do_open, req)
+        self.assertRaises(ScanMustStopByKnownReasonExc, kah.do_open, req)
 
         kah._start_transaction.assert_called_once_with(conn, req)
         conn_mgr.get_available_connection.assert_called_once_with(
