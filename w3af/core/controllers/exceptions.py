@@ -125,8 +125,8 @@ class ScanMustStopByUnknownReasonExc(ScanMustStopException):
     def __str__(self):
         _str = self.msg
 
-        for error_str, parsed_traceback in self.errs:
-            _str += '\n' + error_str + ' ' + str(parsed_traceback)
+        for error_str in self.errs:
+            _str += '\n' + error_str
 
         return _str
 
