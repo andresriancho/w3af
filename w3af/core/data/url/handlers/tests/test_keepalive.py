@@ -74,6 +74,7 @@ class TestKeepalive(unittest.TestCase):
         # Mock conn's getresponse()
         resp = HTTPResponse(socket.socket())
         resp.will_close = True
+        resp.read = MagicMock(return_value='Response body')
         conn.getresponse = MagicMock(return_value=resp)
 
         # The connection mgr
