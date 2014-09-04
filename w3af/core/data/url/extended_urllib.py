@@ -147,7 +147,7 @@ class ExtendedUrllib(object):
                 raise ScanMustStopByUserRequest(msg)
 
         while self._user_paused:
-            time.sleep(0.5)
+            time.sleep(0.2)
             analyze_state()
 
         analyze_state()
