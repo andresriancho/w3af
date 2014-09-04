@@ -110,7 +110,9 @@ class ExtendedUrllib(object):
         def analyze_state():
             # There might be errors that make us stop the process
             if self._stop_exception is not None:
+                # pylint: disable=E0702
                 raise self._stop_exception
+                # pylint: enable=E0702
 
             if self._user_stopped:
                 msg = 'The user stopped the scan.'
