@@ -267,7 +267,9 @@ class HTTPResponse(httplib.HTTPResponse):
         self.close()
 
     def info(self):
+        # pylint: disable=E1101
         return self.headers
+        # pylint: enable=E1101
 
     @close_on_error
     def read(self, amt=None):
