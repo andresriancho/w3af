@@ -498,7 +498,8 @@ class ExtendedUrllib(object):
         if req.ignore_errors:
             msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
             om.out.debug(msg % (req.get_method(), original_url, exception))
-            raise ScanMustStopOnUrlError(exception, req)
+            error_str = self.get_exception_reason(exception) or str(exception)
+            raise HTTPRequestException(error_str)
 
         # Log the error
         msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
@@ -576,7 +577,8 @@ class ExtendedUrllib(object):
             # Actually we get here if one request fails three times to be sent
             # but that might be because of the http request itself and not a
             # fault of the framework/server/network.
-            raise HTTPRequestException(url_error)
+            error_str = self.get_exception_reason(url_error) or str(url_error)
+            raise HTTPRequestException(error_str)
 
     def _increment_global_error_count(self, error):
         """
@@ -659,12 +661,15 @@ class ExtendedUrllib(object):
         elif isinstance(error, HTTPRequestException):
             reason_msg = error.value
 
+        elif isinstance(error, httplib.BadStatusLine):
+            reason_msg = 'Bad HTTP response status line: %s' % error.line
+
         elif isinstance(error, httplib.HTTPException):
             #
-            #    Here we catch:
+            # Here we catch:
             #
-            #    BadStatusLine, ResponseNotReady, CannotSendHeader,
-            #    CannotSendRequest, ImproperConnectionState,
+            #    ResponseNotReady, CannotSendHeader, CannotSendRequest,
+            #    ImproperConnectionState,
             #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
             #    UnknownProtocol, InvalidURL, NotConnected.
             #
