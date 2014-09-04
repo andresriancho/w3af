@@ -125,6 +125,7 @@ import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException,
                                               ConnectionPoolException)
 
 
@@ -642,22 +643,32 @@ class KeepAliveHandler(object):
             # We better discard this connection
             self._cm.remove_connection(conn, host)
             raise
-        
+
+        # This response seems to be fine
+        # If not a persistent connection, don't try to reuse it
+        if resp.will_close:
+            self._cm.remove_connection(conn, host)
+
+        resp._handler = self
+        resp._host = host
+        resp._url = req.get_full_url()
+        resp._connection = conn
+        resp.code = resp.status
+        resp.headers = resp.msg
+        resp.msg = resp.reason
+
+        try:
+            resp.read()
+        except AttributeError:
+            # The rare case of: 'NoneType' object has no attribute 'recv', we
+            # read the response here because we're closer to the error and can
+            # better understand it.
+            #
+            # https://github.com/andresriancho/w3af/issues/2074
+            self._cm.remove_connection(conn, host)
+            raise HTTPRequestException('The HTTP connection died')
         else:
-            # This response seems to be fine
-            # If not a persistent connection, don't try to reuse it
-            if resp.will_close:
-                self._cm.remove_connection(conn, host)
-    
-            debug("STATUS: %s, %s" % (resp.status, resp.reason))
-            
-            resp._handler = self
-            resp._host = host
-            resp._url = req.get_full_url()
-            resp._connection = conn
-            resp.code = resp.status
-            resp.headers = resp.msg
-            resp.msg = resp.reason
+            debug("HTTP response: %s, %s" % (resp.status, resp.reason))
             return resp
 
     def _reuse_connection(self, conn, req, host):
