@@ -26,7 +26,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.url import URL as URL_KLASS
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import (
-    BOOL, INT, FLOAT, STRING, IPPORT, LIST,
+    BOOL, INT, POSITIVE_INT, FLOAT, STRING, IPPORT, LIST,
     REGEX, COMBO, INPUT_FILE, OUTPUT_FILE,
     PORT, IP, URL, URL_LIST)
 
@@ -43,6 +43,7 @@ class TestOptionFactory(unittest.TestCase):
 
         data = {BOOL: [('true', True),],
                 INT: [('1', 1),],
+                POSITIVE_INT: [('2', 2),],
                 FLOAT: [('1.0', 1.0),],
                 STRING: [('hello world', 'hello world'),],
                 URL: [('http://moth/', URL_KLASS('http://moth/')),],
@@ -89,6 +90,7 @@ class TestOptionFactory(unittest.TestCase):
 
         data = {BOOL: ['rucula'],
                 INT: ['0x32',],
+                POSITIVE_INT: ['-1'],
                 FLOAT: ['1x2',],
                 URL: ['http://', '/', ''],
                 URL_LIST: ['http://moth/1 , http://moth:333333',],

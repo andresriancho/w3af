@@ -32,7 +32,6 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
 
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
@@ -47,6 +46,8 @@ from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler
+from w3af.core.data.options.option_types import (POSITIVE_INT, INT, STRING,
+                                                 URL, LIST)
 
 
 class OpenerSettings(Configurable):
@@ -118,6 +119,7 @@ class OpenerSettings(Configurable):
         cfg.save('ignore_session_cookies', False)
         cfg.save('max_file_size', 400000)
         cfg.save('max_http_retries', 2)
+        cfg.save('max_requests_per_second', 0)
 
         cfg.save('url_parameter', '')
 
@@ -128,11 +130,12 @@ class OpenerSettings(Configurable):
 
     def set_headers_file(self, headers_file):
         """
-        Sets the special headers to use, this headers are specified in a file by the user.
-        The file can have multiple lines, each line should have the following structure :
+        Sets the special headers to use, this headers are specified in a file by
+        the user. The file can have multiple lines, each line should have the
+        following structure :
             - HEADER:VALUE_OF_HEADER
 
-        :param headers_file: The filename where the special headers are specified.
+        :param headers_file: The filename where the special headers are specified
         :return: No value is returned.
         """
         om.out.debug('Called SetHeaders()')
@@ -161,7 +164,7 @@ class OpenerSettings(Configurable):
         """
         for h, v in header_list:
             self.header_list.append((h, v))
-            om.out.debug('Added the following header: %s:%s' % (h,v))
+            om.out.debug('Added the following header: %s:%s' % (h, v))
 
     def close_connections(self):
         handlers = (self._kAHTTP, self._kAHTTPS)
@@ -285,12 +288,14 @@ class OpenerSettings(Configurable):
         cfg.save('proxy_port', port)
 
         #
-        #    Remember that this line:
+        # Remember that this line:
         #
-        #proxyMap = { 'http' : "http://" + ip + ":" + str(port) , 'https' : "https://" + ip + ":" + str(port) }
+        #proxyMap = { 'http' : "http://" + ip + ":" + str(port) ,
+        #             'https' : "https://" + ip + ":" + str(port) }
         #
-        #    makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
-        #    The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
+        # Makes no sense, because urllib2.ProxyHandler doesn't support HTTPS
+        # proxies with CONNECT. The proxying with CONNECT is implemented in
+        # keep-alive handler. (nasty!)
         proxyMap = {'http': "http://" + ip + ":" + str(port)}
         self._proxy_handler = urllib2.ProxyHandler(proxyMap)
 
@@ -302,8 +307,8 @@ class OpenerSettings(Configurable):
 
         if not url:
             if url is None:
-                raise BaseFrameworkException(
-                    'The entered basic_auth_domain URL is invalid!')
+                raise BaseFrameworkException('The entered basic_auth_domain'
+                                             ' URL is invalid!')
             elif username or password:
                 msg = ('To properly configure the basic authentication '
                        'settings, you should also set the auth domain. If you '
@@ -426,6 +431,12 @@ class OpenerSettings(Configurable):
     def set_max_http_retries(self, retryN):
         cfg.save('max_http_retries', retryN)
 
+    def set_max_requests_per_second(self, max_requests_per_second):
+        cfg.save('max_requests_per_second', max_requests_per_second)
+
+    def get_max_requests_per_second(self):
+        return cfg.get('max_requests_per_second')
+
     def get_max_retrys(self):
         return cfg.get('max_http_retries')
 
@@ -450,23 +461,23 @@ class OpenerSettings(Configurable):
         
         d = 'The timeout for connections to the HTTP server'
         h = 'Set low timeouts for LAN use and high timeouts for slow Internet'\
-             ' connections.'
-        o = opt_factory('timeout', cfg.get('timeout'), d, 'integer', help=h)
+            ' connections.'
+        o = opt_factory('timeout', cfg.get('timeout'), d, INT, help=h)
         ol.add(o)
         
         d = 'Set the headers filename. This file has additional headers which'\
             ' are added to each request.'
-        o = opt_factory('headers_file', cfg.get('headers_file'), d, 'string')
+        o = opt_factory('headers_file', cfg.get('headers_file'), d, STRING)
         ol.add(o)
         
         d = 'Set the basic authentication username for HTTP requests'
         o = opt_factory('basic_auth_user', cfg.get('basic_auth_user'), d,
-                        'string', tabid='Basic HTTP Authentication')
+                        STRING, tabid='Basic HTTP Authentication')
         ol.add(o)
         
         d = 'Set the basic authentication password for HTTP requests'
         o = opt_factory('basic_auth_passwd', cfg.get('basic_auth_passwd'), d,
-                        'string', tabid='Basic HTTP Authentication')
+                        STRING, tabid='Basic HTTP Authentication')
         ol.add(o)
         
         d = 'Set the basic authentication domain for HTTP requests'
@@ -474,23 +485,23 @@ class OpenerSettings(Configurable):
             ' settings configured in basic_auth_passwd and basic_auth_user.'\
             ' If you are unsure, just set it to the target domain name.'
         o = opt_factory('basic_auth_domain', cfg.get('basic_auth_domain'), d,
-                        'string', help=h, tabid='Basic HTTP Authentication')
+                        STRING, help=h, tabid='Basic HTTP Authentication')
         ol.add(o)
         
         d = 'Set the NTLM authentication domain (the windows domain name)'\
             ' for HTTP requests. Please note that only NTLM v1 is supported.'
         o = opt_factory('ntlm_auth_domain', cfg.get('ntlm_auth_domain'), d,
-                        'string', tabid='NTLM Authentication')
+                        STRING, tabid='NTLM Authentication')
         ol.add(o)
         
         d = 'Set the NTLM authentication username for HTTP requests'
         o = opt_factory('ntlm_auth_user', cfg.get('ntlm_auth_user'), d,
-                        'string', tabid='NTLM Authentication')
+                        STRING, tabid='NTLM Authentication')
         ol.add(o)
         
         d = 'Set the NTLM authentication password for HTTP requests'
         o = opt_factory('ntlm_auth_passwd', cfg.get('ntlm_auth_passwd'),
-                        d, 'string', tabid='NTLM Authentication')
+                        d, STRING, tabid='NTLM Authentication')
         ol.add(o)
         
         d = 'Set the NTLM authentication domain for HTTP requests'
@@ -498,7 +509,7 @@ class OpenerSettings(Configurable):
             ' settings configured in ntlm_auth_passwd and ntlm_auth_user.'\
             ' If you are unsure, just set it to the target domain name.'
         o = opt_factory('ntlm_auth_url', cfg.get('ntlm_auth_url'), d,
-                        'string', tabid='NTLM Authentication', help=h)
+                        STRING, tabid='NTLM Authentication', help=h)
         ol.add(o)
         
         d = 'Cookie jar file to load cookies from'
@@ -517,12 +528,12 @@ class OpenerSettings(Configurable):
             ' their session expiration set to 0, which will prevent them from'\
             ' being sent.'
         o = opt_factory('cookie_jar_file', cfg.get('cookie_jar_file'), d,
-                        'string', help=h, tabid='Cookies')
+                        STRING, help=h, tabid='Cookies')
         ol.add(o)
         
         d = 'Ignore session cookies'
         h = 'If set to True, w3af will ignore all session cookies sent by'\
-             ' the web application.'
+            ' the web application.'
         o = opt_factory('ignore_session_cookies',
                         cfg.get('ignore_session_cookies'), d, 'boolean',
                         help=h, tabid='Cookies')
@@ -531,7 +542,7 @@ class OpenerSettings(Configurable):
         d = 'Proxy TCP port'
         h = 'TCP port for the HTTP proxy. On Microsoft Windows systems,'\
             ' w3af will use Internet Explorer\'s proxy settings.'
-        o = opt_factory('proxy_port', cfg.get('proxy_port'), d, 'integer',
+        o = opt_factory('proxy_port', cfg.get('proxy_port'), d, INT,
                         help=h, tabid='Outgoing proxy')
         ol.add(o)
         
@@ -539,84 +550,92 @@ class OpenerSettings(Configurable):
         h = 'IP address for the HTTP proxy. On Microsoft Windows systems,'\
             ' w3af will use Internet Explorer\'s proxy settings.'
         o = opt_factory('proxy_address', cfg.get('proxy_address'), d,
-                        'string', help=h, tabid='Outgoing proxy')
+                        STRING, help=h, tabid='Outgoing proxy')
         ol.add(o)
         
         d = 'User Agent header'
         h = 'User Agent header to send in HTTP requests.'
-        o = opt_factory('user_agent', cfg.get('user_agent'), d, 'string',
-                          help=h, tabid='Misc')
+        o = opt_factory('user_agent', cfg.get('user_agent'), d, STRING,
+                        help=h, tabid='Misc')
         ol.add(o)
         
         d = 'Maximum file size'
         h = 'Indicates the maximum file size (in bytes) that w3af will'\
             ' retrieve from the remote server.'
         o = opt_factory('max_file_size', cfg.get('max_file_size'), d,
-                        'integer', help=h, tabid='Misc')
+                        INT, help=h, tabid='Misc')
         ol.add(o)
         
         d = 'Maximum number of retries'
         h = 'Indicates the maximum number of retries when requesting an URL.'
         o = opt_factory('max_http_retries', cfg.get('max_http_retries'), d,
-                        'integer', help=h, tabid='Misc')
+                        INT, help=h, tabid='Misc')
         ol.add(o)
-        
+
+        d = 'Maximum HTTP requests per second'
+        h = 'Indicates the maximum HTTP requests per second to send. A value' \
+            ' of zero indicates no limit.'
+        o = opt_factory('max_requests_per_second',
+                        cfg.get('max_requests_per_second'), d, POSITIVE_INT,
+                        help=h, tabid='Misc')
+        ol.add(o)
+
         d = 'A comma separated list that determines what URLs will ALWAYS'\
             ' be detected as 404 pages.'
-        o = opt_factory('always_404', cfg.get('always_404'), d, 'list',
+        o = opt_factory('always_404', cfg.get('always_404'), d, LIST,
                         tabid='404 settings')
         ol.add(o)
         
         d = 'A comma separated list that determines what URLs will NEVER be'\
             ' detected as 404 pages.'
-        o = opt_factory('never_404', cfg.get('never_404'), d, 'list',
-                          tabid='404 settings')
+        o = opt_factory('never_404', cfg.get('never_404'), d, LIST,
+                        tabid='404 settings')
         ol.add(o)
         
         d = 'If this string is found in an HTTP response, then it will be'\
             ' tagged as a 404.'
         o = opt_factory('string_match_404', cfg.get('string_match_404'), d,
-                          'string', tabid='404 settings')
+                        STRING, tabid='404 settings')
         ol.add(o)
         
         d = 'Append the given URL parameter to every accessed URL.'\
-              ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
+            ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
         o = opt_factory('url_parameter', cfg.get('url_parameter'), d,
-                        'string')
+                        STRING)
         ol.add(o)
         
         return ol
 
     def set_options(self, options_list):
         """
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
 
         :param options_list: An OptionList with the option objects for a plugin.
         :return: No value is returned.
         """
-        getOptsMapValue = lambda n: options_list[n].get_value()
-        self.set_timeout(getOptsMapValue('timeout'))
+        get_opt_value = lambda n: options_list[n].get_value()
+        self.set_timeout(get_opt_value('timeout'))
 
         # Only apply changes if they exist
-        bAuthDomain = getOptsMapValue('basic_auth_domain')
-        bAuthUser = getOptsMapValue('basic_auth_user')
-        bAuthPass = getOptsMapValue('basic_auth_passwd')
+        bauth_domain = get_opt_value('basic_auth_domain')
+        bauth_user = get_opt_value('basic_auth_user')
+        bauth_pass = get_opt_value('basic_auth_passwd')
 
-        if bAuthDomain != cfg['basic_auth_domain'] or \
-        bAuthUser != cfg['basic_auth_user'] or \
-        bAuthPass != cfg['basic_auth_passwd']:
+        if bauth_domain != cfg['basic_auth_domain'] or \
+        bauth_user != cfg['basic_auth_user'] or \
+        bauth_pass != cfg['basic_auth_passwd']:
             try:
-                bAuthDomain = URL(bAuthDomain) if bAuthDomain else ''
+                bauth_domain = URL(bauth_domain) if bauth_domain else ''
             except ValueError:
-                bAuthDomain = None
+                bauth_domain = None
 
-            self.set_basic_auth(bAuthDomain, bAuthUser, bAuthPass)
+            self.set_basic_auth(bauth_domain, bauth_user, bauth_pass)
 
-        ntlm_auth_domain = getOptsMapValue('ntlm_auth_domain')
-        ntlm_auth_user = getOptsMapValue('ntlm_auth_user')
-        ntlm_auth_passwd = getOptsMapValue('ntlm_auth_passwd')
-        ntlm_auth_url = getOptsMapValue('ntlm_auth_url')
+        ntlm_auth_domain = get_opt_value('ntlm_auth_domain')
+        ntlm_auth_user = get_opt_value('ntlm_auth_user')
+        ntlm_auth_passwd = get_opt_value('ntlm_auth_passwd')
+        ntlm_auth_url = get_opt_value('ntlm_auth_url')
 
         if ntlm_auth_domain != cfg['ntlm_auth_domain'] or \
         ntlm_auth_user != cfg['ntlm_auth_user'] or \
@@ -626,27 +645,28 @@ class OpenerSettings(Configurable):
                                ntlm_auth_user, ntlm_auth_passwd)
 
         # Only apply changes if they exist
-        proxy_address = getOptsMapValue('proxy_address')
-        proxy_port = getOptsMapValue('proxy_port')
+        proxy_address = get_opt_value('proxy_address')
+        proxy_port = get_opt_value('proxy_port')
 
         if proxy_address != cfg['proxy_address'] or \
         proxy_port != cfg['proxy_port']:
             self.set_proxy(proxy_address, proxy_port)
 
-        self.set_cookie_jar_file(getOptsMapValue('cookie_jar_file'))
-        self.set_headers_file(getOptsMapValue('headers_file'))
-        self.set_user_agent(getOptsMapValue('user_agent'))
-        cfg['ignore_session_cookies'] = getOptsMapValue('ignore_session_cookies')
+        self.set_cookie_jar_file(get_opt_value('cookie_jar_file'))
+        self.set_headers_file(get_opt_value('headers_file'))
+        self.set_user_agent(get_opt_value('user_agent'))
+        cfg['ignore_session_cookies'] = get_opt_value('ignore_session_cookies')
 
-        self.set_max_file_size(getOptsMapValue('max_file_size'))
-        self.set_max_http_retries(getOptsMapValue('max_http_retries'))
+        self.set_max_file_size(get_opt_value('max_file_size'))
+        self.set_max_http_retries(get_opt_value('max_http_retries'))
+        self.set_max_requests_per_second(get_opt_value('max_requests_per_second'))
 
-        self.set_url_parameter(getOptsMapValue('url_parameter'))
+        self.set_url_parameter(get_opt_value('url_parameter'))
 
         # 404 settings are saved here
-        cfg['never_404'] = getOptsMapValue('never_404')
-        cfg['always_404'] = getOptsMapValue('always_404')
-        cfg['string_match_404'] = getOptsMapValue('string_match_404')
+        cfg['never_404'] = get_opt_value('never_404')
+        cfg['always_404'] = get_opt_value('always_404')
+        cfg['string_match_404'] = get_opt_value('string_match_404')
 
     def get_desc(self):
         return ('This section is used to configure URL settings that '

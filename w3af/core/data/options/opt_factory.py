@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.options.bool_option import BoolOption
 from w3af.core.data.options.integer_option import IntegerOption
+from w3af.core.data.options.positive_integer_option import PositiveIntegerOption
 from w3af.core.data.options.float_option import FloatOption
 from w3af.core.data.options.string_option import StringOption
 from w3af.core.data.options.url_option import URLOption
@@ -35,7 +36,7 @@ from w3af.core.data.options.output_file_option import OutputFileOption
 from w3af.core.data.options.url_list_option import URLListOption
 
 from w3af.core.data.options.option_types import (
-    BOOL, INT, FLOAT, STRING, URL, IPPORT,
+    BOOL, INT, POSITIVE_INT, FLOAT, STRING, URL, IPPORT,
     LIST, REGEX, COMBO, INPUT_FILE,
     OUTPUT_FILE, PORT, IP, URL_LIST)
 
@@ -48,6 +49,7 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
     option_klasses = {
         BOOL: BoolOption,
         INT: IntegerOption,
+        POSITIVE_INT: PositiveIntegerOption,
         FLOAT: FloatOption,
         STRING: StringOption,
         URL: URLOption,

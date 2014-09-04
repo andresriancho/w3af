@@ -30,13 +30,14 @@ import urllib2
 
 from contextlib import contextmanager
 from collections import deque
-from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-                  ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
+from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
+                   ENETUNREACH, ETIMEDOUT, ENOSPC)
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
 
+from w3af.core.controllers.misc.decorators import rate_limited
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException,
                                               HTTPRequestException,
@@ -71,6 +72,10 @@ class ExtendedUrllib(object):
         self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
         self._count_lock = threading.RLock()
 
+        # For rate limiting
+        self._rate_limit_last_time_called = 0.0
+        self._rate_limit_lock = threading.Lock()
+
         # User configured options (in an indirect way)
         self._grep_queue_put = None
         self._evasion_plugins = []
@@ -102,6 +107,29 @@ class ExtendedUrllib(object):
             - Memory debugging features
         """
         self._sleep_if_paused_die_if_stopped()
+        self._rate_limit()
+
+    def _rate_limit(self):
+        """
+        Makes sure that we don't send more than X HTTP requests per seconds
+        :return:
+        """
+        max_requests_per_second = self.settings.get_max_requests_per_second()
+
+        if max_requests_per_second > 0:
+
+            min_interval = 1.0 / float(max_requests_per_second)
+            elapsed = time.clock() - self._rate_limit_last_time_called
+            left_to_wait = min_interval - elapsed
+
+            self._rate_limit_lock.acquire()
+
+            if left_to_wait > 0:
+                time.sleep(left_to_wait)
+
+            self._rate_limit_lock.release()
+
+            self._rate_limit_last_time_called = time.clock()
 
     def _sleep_if_paused_die_if_stopped(self):
         """

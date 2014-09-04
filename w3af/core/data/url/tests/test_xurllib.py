@@ -40,9 +40,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
                                               HTTPRequestException,
-                                              ScanMustStopOnUrlError,
-                                              ScanMustStopException,
-                                              ScanMustStopByUnknownReasonExc)
+                                              ScanMustStopException)
 
 
 @attr('moth')
@@ -310,6 +308,30 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+    def test_rate_limit_high(self):
+        self.rate_limit_generic(500, 0.01, 0.1)
+
+    def test_rate_limit_low(self):
+        self.rate_limit_generic(1, 1, 2)
+
+    def test_rate_limit_zero(self):
+        self.rate_limit_generic(0, 0.01, 0.1)
+
+    def rate_limit_generic(self, max_requests_per_second, _min, _max):
+        url = URL(get_moth_http())
+
+        self.uri_opener.settings.set_max_requests_per_second(max_requests_per_second)
+        start_time = time.time()
+
+        self.uri_opener.GET(url, cache=False)
+        self.uri_opener.GET(url, cache=False)
+
+        end_time = time.time()
+        self.uri_opener.settings.set_default_values()
+
+        elapsed_time = end_time - start_time
+        self.assertGreaterEqual(elapsed_time, _min)
+        self.assertLessEqual(elapsed_time, _max)
 
 class EmptyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
