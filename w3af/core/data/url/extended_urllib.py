@@ -354,7 +354,7 @@ class ExtendedUrllib(object):
                           ' wasn\'t an integer, this is strange... The value'\
                           ' is: "%s".'
                     om.out.error(msg % res.get_headers()[i])
-                    raise BaseFrameworkException(msg)
+                    raise HTTPRequestException(msg)
 
         if resource_length is not None:
             return resource_length
@@ -364,7 +364,7 @@ class ExtendedUrllib(object):
                   ' id: %s' % res.id
             om.out.debug(msg)
             # I prefer to fetch the file, before this om.out.debug was a
-            # "raise BaseFrameworkException", but this didnt make much sense
+            # "raise BaseFrameworkException", but this didn't make much sense
             return 0
 
     def __getattr__(self, method_name):
@@ -431,7 +431,7 @@ class ExtendedUrllib(object):
             return True
         elif req.get_full_url().startswith('javascript:') or \
                 req.get_full_url().startswith('mailto:'):
-            raise BaseFrameworkException('Unsupported URL: ' + req.get_full_url())
+            raise HTTPRequestException('Unsupported URL: ' + req.get_full_url())
         else:
             return False
 
