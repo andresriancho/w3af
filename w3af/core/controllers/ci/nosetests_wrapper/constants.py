@@ -54,5 +54,10 @@ NOISE = [
          'to add property GtkSettings::gtk-label-select-on-focus after '
          'class was initialised',
 
+         '/home/ubuntu/virtualenvs/venv-2.7.3/local/lib/python2.7/site-'
+         'packages/logilab/astng/raw_building.py:167: Warning: Attempt '
+         'to add property GtkSettings::gtk-menu-popup-delay after class'
+         ' was initialised',
+
          # Same as above
          '  basenames, member.__doc__)']
