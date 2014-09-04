@@ -17,11 +17,12 @@
 # This file is part of urlgrabber, a high-level cross-protocol url-grabber
 # Copyright 2002-2004 Michael D. Stenner, Ryan Tomayko
 
-# This file was modified (considerably) to be integrated with w3af. Some modifications are:
+# This file was modified (considerably) to be integrated with w3af. Some
+# modifications are:
 #   - Added the size limit for responses
-#   - Raising BaseFrameworkExceptions in some places
-#   - Modified the HTTPResponse object in order to be able to perform multiple reads, and
-#     added a hack for the HEAD method.
+#   - Raising ConnectionPoolException in some places
+#   - Modified the HTTPResponse object in order to be able to perform multiple
+#     reads, and added a hack for the HEAD method.
 
 """An HTTP handler for urllib2 that supports HTTP 1.1 and keepalive.
 
@@ -109,7 +110,6 @@ EXTRA ATTRIBUTES AND METHODS
 
 # $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
 
-from collections import deque
 import urllib2
 import httplib
 import operator
@@ -119,32 +119,20 @@ import urllib
 import sys
 import time
 import ssl
-import copy
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              ConnectionPoolException,
-                                              ScanMustStopByKnownReasonExc)
+                                              ConnectionPoolException)
 
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = False
 
 # Max connections allowed per host.
-MAXCONNECTIONS = 50
-# If found this number of timeouts in-a-row per target host then we may either:
-#    1) Shrink the pool size (we might be stressing the remote host) and retry;
-#        or:
-#    2) Give up and make w3af stop sending requests for that host.
-# This number should not be greater than (MAXCONNECTIONS / 2)
-IN_A_ROW_TIMEOUTS = 15
-# Constants for responses statuses
-RESP_OK = 0
-RESP_TIMEOUT = 1
-RESP_BAD = 2
+MAX_CONNECTIONS = 50
 
 
 class URLTimeoutError(urllib2.URLError):
@@ -162,7 +150,7 @@ class URLTimeoutError(urllib2.URLError):
             return 'HTTP timeout error.'
 
 
-def closeonerror(read_meth):
+def close_on_error(read_meth):
     """
     Decorator function. When calling decorated `read_meth` if an error occurs
     we'll proceed to invoke `inst`'s close() method.
@@ -280,7 +268,7 @@ class HTTPResponse(httplib.HTTPResponse):
     def info(self):
         return self.headers
 
-    @closeonerror
+    @close_on_error
     def read(self, amt=None):
         # w3af does always read all the content of the response...
         # and I also need to do multiple reads to this response...
@@ -330,7 +318,7 @@ class HTTPResponse(httplib.HTTPResponse):
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
         return data
 
-    @closeonerror
+    @close_on_error
     def readlines(self, sizehint=0):
         total = 0
         line_list = []
@@ -376,7 +364,7 @@ class ConnectionManager(object):
 
     def __init__(self):
         self._lock = threading.RLock()
-        self._host_pool_size = MAXCONNECTIONS
+        self._host_pool_size = MAX_CONNECTIONS
         self._hostmap = {}  # map hosts to a list of connections
         self._used_cons = []  # connections being used per host
         self._free_conns = []  # available connections
@@ -557,11 +545,6 @@ class KeepAliveHandler(object):
         self._pool_lock = threading.RLock()
         # Map hosts to a `collections.deque` of response status.
         self._hostresp = {}
-        # Current number of 'in-a-row-timeouts'. It may vary depending on the
-        # current size of the pool.
-        self._curr_check_failures = IN_A_ROW_TIMEOUTS
-        # Tail list filter factory function
-        self._get_tail_filter = lambda: deque(maxlen=self._curr_check_failures)
 
     def get_open_connections(self):
         """
@@ -606,27 +589,6 @@ class KeepAliveHandler(object):
             raise urllib2.URLError('no host given')
 
         try:
-            resp_statuses = self._hostresp.setdefault(host,
-                                                      self._get_tail_filter())
-            # Check if all our last 'resp_statuses' were timeouts and raise
-            # a ScanMustStopException if this is the case.
-            if len(resp_statuses) == self._curr_check_failures:
-
-                # https://mail.python.org/pipermail/python-dev/2007-January/070515.html
-                # https://github.com/andresriancho/w3af/search?q=deque&ref=cmdform&type=Issues
-                # https://github.com/andresriancho/w3af/issues/1311
-                #
-                # I copy the deque to avoid issues when iterating over it in the
-                # all() / for statement below
-                resp_statuses_cp = copy.copy(resp_statuses)
-
-                if all(st == RESP_TIMEOUT for st in resp_statuses_cp):
-                    msg = ('w3af found too many consecutive timeouts. The'
-                           ' remote web server seems to be unresponsive; please'
-                           ' verify manually.')
-                    reason = 'Timeout while trying to reach target.'
-                    raise ScanMustStopByKnownReasonExc(msg, reason=reason)
-
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
 
@@ -661,25 +623,20 @@ class KeepAliveHandler(object):
         except socket.timeout:
             # We better discard this connection
             self._cm.remove_connection(conn, host)
-            resp_statuses.append(RESP_TIMEOUT)
             raise URLTimeoutError()
 
         except socket.error:
             # We better discard this connection
             self._cm.remove_connection(conn, host)
-            resp_statuses.append(RESP_BAD)
             raise
         
         except httplib.HTTPException:
             # We better discard this connection
             self._cm.remove_connection(conn, host)
-            resp_statuses.append(RESP_BAD)
             raise
         
         else:
             # This response seems to be fine
-            resp_statuses.append(RESP_OK)
-    
             # If not a persistent connection, don't try to reuse it
             if resp.will_close:
                 self._cm.remove_connection(conn, host)

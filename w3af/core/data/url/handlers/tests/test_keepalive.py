@@ -30,8 +30,7 @@ from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              ScanMustStopByKnownReasonExc)
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                                    ConnectionManager,
                                                    HTTPResponse,
@@ -114,15 +113,17 @@ class TestKeepalive(unittest.TestCase):
         conn_mgr.get_available_connection = MagicMock(return_value=conn)
         conn_mgr.remove_connection = MagicMock(return_value=None)
 
-        # Replace with mocked out ConnMgr.
+        # Replace with mocked out ConnMgr
         kah._cm = conn_mgr
-        self.assertRaises(URLTimeoutError, kah.do_open, req)
-        self.assertRaises(ScanMustStopByKnownReasonExc, kah.do_open, req)
 
-        kah._start_transaction.assert_called_once_with(conn, req)
-        conn_mgr.get_available_connection.assert_called_once_with(
-            host, conn_factory)
-        conn_mgr.remove_connection.assert_called_once_with(conn, host)
+        # We raise URLTimeoutError each time the connection timeouts, the
+        # keepalive handler doesn't take any decisions like
+        # ScanMustStopByKnownReasonExc, which is the job of the extended urllib
+        self.assertRaises(URLTimeoutError, kah.do_open, req)
+        self.assertRaises(URLTimeoutError, kah.do_open, req)
+
+        self.assertEqual(len(conn_mgr.get_available_connection.call_args_list), 2)
+        self.assertEqual(len(conn_mgr.remove_connection.call_args_list), 2)
 
     def test_free_connection(self):
         """
