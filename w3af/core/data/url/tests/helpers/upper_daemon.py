@@ -25,6 +25,9 @@ class UpperTCPHandler(SocketServer.BaseRequestHandler):
 
 
 class UpperDaemon(threading.Thread):
+    """
+    Echo the data sent by the client, but upper case it first.
+    """
     def __init__(self, handler=UpperTCPHandler):
         super(UpperDaemon, self).__init__()
         self.daemon = True
@@ -53,4 +56,4 @@ class UpperDaemon(threading.Thread):
     def shutdown(self):
         self.server.RequestHandlerClass.requests = []
         self.server.shutdown()
-        
+

@@ -795,16 +795,15 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, proxy):
         KeepAliveHandler.__init__(self)
         self._proxy = proxy
-        host = port = ''
         try:
             host, port = self._proxy.split(':')
         except:
             msg = 'The proxy you are specifying (%s) is invalid! The expected'\
                   ' format is <ip_address>:<port> is expected.'
             raise BaseFrameworkException(msg % proxy)
-
-        if not host or not port:
-            self._proxy = None
+        else:
+            if not host or not port:
+                self._proxy = None
 
     def https_open(self, req):
         return self.do_open(req)
