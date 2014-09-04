@@ -588,10 +588,18 @@ class KeepAliveHandler(object):
         if not host:
             raise urllib2.URLError('no host given')
 
-        try:
-            conn_factory = self._get_connection
-            conn = self._cm.get_available_connection(host, conn_factory)
+        conn_factory = self._get_connection
 
+        try:
+            conn = self._cm.get_available_connection(host, conn_factory)
+        except ConnectionPoolException:
+            # When `self._cm.get_available_connection(host, conn_factory)` does
+            # not return a conn, it will raise this exception. So we either get
+            # here and `raise`, or we have a connection and something else
+            # failed and we get to the other error handlers.
+            raise
+
+        try:
             if conn.is_fresh:
                 # First of all, call the request method. This is needed for
                 # HTTPS Proxy
