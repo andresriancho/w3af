@@ -622,6 +622,25 @@ class ExtendedUrllib(object):
         self._stop_exception = e
         raise e
 
+    def get_socket_exception_reason(self, error):
+        """
+        :param error: The socket.error exception instance
+        :return: The reason/message associated with that exception
+        """
+        if not isinstance(error, socket.error):
+            return
+
+        # Known reason errors. See errno module for more info on these errors
+        EUNKNSERV = -2      # Name or service not known error
+        EINVHOSTNAME = -5   # No address associated with hostname
+        known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
+                        ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT, ENOSPC)
+
+        if error[0] in known_errors:
+            return str(error)
+
+        return
+
     def get_exception_reason(self, error):
         """
         :param error: The exception instance
@@ -638,22 +657,15 @@ class ExtendedUrllib(object):
         elif isinstance(error, urllib2.URLError):
             reason_err = error.reason
 
-            # Known reason errors. See errno module for more info on these
-            # errors.
-            EUNKNSERV = -2  # Name or service not known error
-            EINVHOSTNAME = -5  # No address associated with hostname
-            known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
-                            ECONNRESET, ENETDOWN, ENETUNREACH,
-                            EINVHOSTNAME, ETIMEDOUT, ENOSPC)
-
             if isinstance(reason_err, socket.error):
-                if isinstance(reason_err, socket.sslerror):
-                    reason_msg = 'SSL Error: %s' % error.reason
-                elif reason_err[0] in known_errors:
-                    reason_msg = str(reason_err)
+                reason_msg = self.get_socket_exception_reason(error)
 
         elif isinstance(error, ssl.SSLError):
-            reason_msg = 'SSL Error: %s' % error.message
+            msg = 'SSL Error: %s'
+            reason_msg = msg % self.get_socket_exception_reason(error)
+
+        elif isinstance(error, socket.error):
+            reason_msg = self.get_socket_exception_reason(error)
 
         elif isinstance(error, HTTPRequestException):
             reason_msg = error.value
