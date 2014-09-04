@@ -38,11 +38,11 @@ import w3af.core.data.kb.config as cf
 import opener_settings
 
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ConnectionPoolException,
                                               HTTPRequestException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByKnownReasonExc,
-                                              ScanMustStopByUserRequest,
-                                              ScanMustStopOnUrlError)
+                                              ScanMustStopByUserRequest)
 from w3af.core.data.parsers.http_request_parser import http_request_parser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
@@ -419,19 +419,14 @@ class ExtendedUrllib(object):
         return req
 
     def _check_uri(self, req):
-        # BUGBUG!
-        #
-        # Reason: "unknown url type: javascript"
-        # Exception: "<urlopen error unknown url type: javascript>"; going to retry.
-        # Too many retries when trying to get: http://localhost/w3af/global_redirect/2.php?url=javascript%3Aalert
-        #
-        ###TODO: The problem is that the urllib2 library fails even if i do this
-        #        tests, it fails if it finds javascript: in some part of the URL
         if req.get_full_url().startswith('http'):
             return True
+
         elif req.get_full_url().startswith('javascript:') or \
-                req.get_full_url().startswith('mailto:'):
-            raise HTTPRequestException('Unsupported URL: ' + req.get_full_url())
+        req.get_full_url().startswith('mailto:'):
+            msg = 'Unsupported URL: "%s"'
+            raise HTTPRequestException(msg % req.get_full_url())
+
         else:
             return False
 
@@ -462,10 +457,10 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst, start_time)
         
-        except (socket.error, URLTimeoutError), e:
+        except (socket.error, URLTimeoutError, ConnectionPoolException), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
-        except (urllib2.URLError, httplib.HTTPException), e:
+        except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
             return self._handle_send_urllib_error(req, e, grep, original_url)
         
         else:
