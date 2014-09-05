@@ -226,7 +226,11 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', 'abc')
         kb.raw_write('a', 'b', 'def')
         self.assertEqual(kb.raw_read('a', 'b'), 'def')
-    
+
+    def test_raw_write_dict(self):
+        kb.raw_write('a', 'b', {})
+        self.assertEqual(kb.raw_read('a', 'b'), {})
+
     def test_drop_table(self):
         kb = DBKnowledgeBase()
         table_name = kb.table_name
