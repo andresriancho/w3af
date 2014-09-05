@@ -78,6 +78,7 @@ class MangleHandler(urllib2.BaseHandler):
         ka_resp._url = mangled_response.get_uri().url_string
         ka_resp.msg = original_response.msg
         ka_resp.id = original_response.id
+        ka_resp.set_wait_time(original_response.get_wait_time())
         ka_resp.encoding = mangled_response.charset
 
         return ka_resp
@@ -89,7 +90,7 @@ class MangleHandler(urllib2.BaseHandler):
 class MangledKeepAliveHTTPResponse(kaHTTPResponse):
     def __init__(self):
         """
-        Overriding in order to allow me to create a response with a socket
+        Overriding in order to allow me to create a response without a socket
         instance. At this point I've already read everything I needed from the
         socket, so it doesn't make any sense to keep a pointer to it.
 
