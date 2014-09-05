@@ -42,7 +42,7 @@ class HTTPRequestException(BaseFrameworkException):
     This exception should be raised when **one** HTTP request fails.
     """
     def __init__(self, message, request=None):
-        Exception.__init__(message)
+        Exception.__init__(self, message)
         self.request = request
 
     def get_url(self):
