@@ -29,7 +29,6 @@ class BaseFrameworkException(Exception):
     """
     A small class that defines a BaseFrameworkException.
     """
-
     def __init__(self, value):
         Exception.__init__(self)
         self.value = str(value)
@@ -42,7 +41,15 @@ class HTTPRequestException(BaseFrameworkException):
     """
     This exception should be raised when **one** HTTP request fails.
     """
-    pass
+    def __init__(self, message, request=None):
+        Exception.__init__(message)
+        self.request = request
+
+    def get_url(self):
+        if self.request is None:
+            return None
+
+        return self.request.get_full_url()
 
 
 class ConnectionPoolException(HTTPRequestException):

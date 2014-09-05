@@ -387,7 +387,7 @@ class ExtendedUrllib(object):
                           ' wasn\'t an integer, this is strange... The value'\
                           ' is: "%s".'
                     om.out.error(msg % res.get_headers()[i])
-                    raise HTTPRequestException(msg)
+                    raise HTTPRequestException(msg, request=req)
 
         if resource_length is not None:
             return resource_length
@@ -458,7 +458,7 @@ class ExtendedUrllib(object):
         elif req.get_full_url().startswith('javascript:') or \
         req.get_full_url().startswith('mailto:'):
             msg = 'Unsupported URL: "%s"'
-            raise HTTPRequestException(msg % req.get_full_url())
+            raise HTTPRequestException(msg % req.get_full_url(), request=req)
 
         else:
             return False
@@ -531,7 +531,7 @@ class ExtendedUrllib(object):
             msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
             om.out.debug(msg % (req.get_method(), original_url, exception))
             error_str = self.get_exception_reason(exception) or str(exception)
-            raise HTTPRequestException(error_str)
+            raise HTTPRequestException(error_str, request=req)
 
         # Log the error
         msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
@@ -609,7 +609,7 @@ class ExtendedUrllib(object):
             # but that might be because of the http request itself and not a
             # fault of the framework/server/network.
             error_str = self.get_exception_reason(url_error) or str(url_error)
-            raise HTTPRequestException(error_str)
+            raise HTTPRequestException(error_str, request=req)
 
     def _increment_global_error_count(self, error):
         """

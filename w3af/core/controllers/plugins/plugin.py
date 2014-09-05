@@ -84,7 +84,8 @@ class Plugin(Configurable):
         """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
-        using the options that were retrieved from the plugin using get_options()
+        using the options that were retrieved from the plugin using
+        get_options()
 
         This method must be implemented in every plugin that wishes to have user
         configurable options.
@@ -166,13 +167,13 @@ class Plugin(Configurable):
     def get_name(self):
         return self.__class__.__name__
 
-    def handle_url_error(self, url_error):
+    def handle_url_error(self, http_exception):
         """
         Handle UrlError exceptions raised when requests are made.
         Subclasses should redefine this method for a more refined
         behavior and must respect the return value format.
 
-        :param url_error: ScanMustStopOnUrlError exception instance
+        :param http_exception: HTTPRequestException exception instance
         :return: (stop_bubbling, result). The 1st is a boolean value
             that indicates the caller if the original error should
             stop bubbling or not. The 2nd is the result to be
@@ -180,7 +181,7 @@ class Plugin(Configurable):
             when `stop_bubbling` is True.
         """
         msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
-        args = (self.get_name(), url_error.req.get_full_url(), url_error.msg)
+        args = (self.get_name(), http_exception.get_url(), http_exception)
         om.out.error(msg % args)
         return False, None
 
