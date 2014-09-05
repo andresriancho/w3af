@@ -72,12 +72,14 @@ class password_profiling(GrepPlugin):
         and not is_404(response) \
         and request.get_method() in self.ALLOWED_METHODS:
 
+            old_data = kb.kb.raw_read(self.get_name(), self.get_name())
+            if not isinstance(old_data, dict):
+                return
+
             # Run the plugins
             data = self._run_plugins(response)
 
             with self._plugin_lock:
-                old_data = kb.kb.raw_read(self.get_name(), self.get_name())
-
                 new_data = self.merge_maps(old_data, data, request,
                                            self.captured_lang)
 
@@ -128,7 +130,9 @@ class password_profiling(GrepPlugin):
                 
     def merge_maps(self, old_data, data, request, lang):
         """
-        "merge" both maps and update the repetitions
+        "merge" both maps and update the repetitions, the maps contain:
+            * Key:   word
+            * Value: number of repetitions
         """
         msg = 'The "%s" parameter must be a dict, got "%s" instead.'
 
