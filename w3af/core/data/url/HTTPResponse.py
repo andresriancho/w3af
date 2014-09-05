@@ -661,9 +661,26 @@ class HTTPResponse(object):
             Header1: Value1
             Header2: Value2
         """
-        dump_head = "%s%s" % (self.get_status_line(), self.dump_headers())
+        # Adding some extreme exception logging to be able to better debug
+        # https://github.com/andresriancho/w3af/issues/3661
+        status_line = self.get_status_line()
+        dumped_headers = self.dump_headers()
+
+        try:
+            dump_head = "%s%s" % (status_line, dumped_headers)
+        except UnicodeDecodeError, ude:
+            msg = 'UnicodeDecodeError found at dump_response_head(). Original'\
+                  ' exception was: "%s". The response charset is: "%s", the'\
+                  ' content-type: "%s", the status_line is "%r" and the' \
+                  ' dumped_headers are: "%r".'
+
+            args = (ude, self.charset, self.content_type, status_line,
+                    dumped_headers)
+            raise Exception(msg % args)
+
         if type(dump_head) is unicode:
             dump_head = dump_head.encode(self.charset)
+
         return dump_head
 
     def dump(self):
