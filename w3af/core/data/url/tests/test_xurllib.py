@@ -35,6 +35,7 @@ from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
@@ -155,6 +156,15 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertEqual(scan_must_stop_e, 1)
         self.assertEqual(http_request_e, 5)
+
+    def test_get_wait_time(self):
+        """
+        Asserts that all the responses coming out of the extended urllib have a
+        get_wait_time different from the default.
+        """
+        url = URL(get_moth_http())
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertNotEqual(http_response.get_wait_time(), DEFAULT_WAIT_TIME)
 
     def test_timeout(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)

@@ -80,6 +80,7 @@ class ExtendedUrllib(object):
         self._evasion_plugins = []
         self._user_paused = False
         self._user_stopped = False
+        self._stop_exception = None
 
     def pause(self, pause_yes_no):
         """
@@ -136,17 +137,19 @@ class ExtendedUrllib(object):
         def analyze_state():
             # This handles the case where the user pauses and then stops
             if self._user_stopped:
-                # We disable raising the exception, so we do this only once and
-                # don't affect other parts of the tool such as the exploitation
-                # or manual HTTP request sending from the GUI
-                #
-                # https://github.com/andresriancho/w3af/issues/2704
-                # https://github.com/andresriancho/w3af/issues/2711
-                self._user_stopped = False
-
-                # Raise the exception to stop the scan
+                # Raise the exception to stop the scan, this exception will be
+                # raised all the time until we un-set the self._user_stopped
+                # attribute
                 msg = 'The user stopped the scan.'
                 raise ScanMustStopByUserRequest(msg)
+
+            # There might be errors that make us stop the process, the exception
+            # was already raised (see below) but we want to make sure that we
+            # keep raising it until the w3afCore really stops.
+            if self._stop_exception is not None:
+                # pylint: disable=E0702
+                raise self._stop_exception
+                # pylint: enable=E0702
 
         while self._user_paused:
             time.sleep(0.2)
@@ -158,6 +161,7 @@ class ExtendedUrllib(object):
         """Clear all status set during the scanner run"""
         self._user_stopped = False
         self._user_paused = False
+        self._stop_exception = None
 
     def end(self):
         """
@@ -477,14 +481,12 @@ class ExtendedUrllib(object):
         original_url = req._Request__original
         original_url_inst = req.url_object
         
-        start_time = time.time()
-
         try:
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
             return self._handle_send_success(req, e, grep, original_url,
-                                             original_url_inst, start_time)
+                                             original_url_inst)
         
         except (socket.error, URLTimeoutError, ConnectionPoolException), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
@@ -494,7 +496,7 @@ class ExtendedUrllib(object):
         
         else:
             return self._handle_send_success(req, res, grep, original_url,
-                                             original_url_inst, start_time)
+                                             original_url_inst)
     
     def _handle_send_socket_error(self, req, exception, grep, original_url):
         """
@@ -541,7 +543,7 @@ class ExtendedUrllib(object):
         return self._retry(req, grep, exception)
     
     def _handle_send_success(self, req, res, grep, original_url,
-                             original_url_inst, start_time):
+                             original_url_inst):
         """
         Handle the case in "def _send" where the request was successful and
         we were able to get a valid HTTP response.
@@ -577,7 +579,6 @@ class ExtendedUrllib(object):
         http_resp = HTTPResponse.from_httplib_resp(res,
                                                    original_url=original_url_inst)
         http_resp.set_id(res.id)
-        http_resp.set_wait_time(time.time() - start_time)
         http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
@@ -647,10 +648,13 @@ class ExtendedUrllib(object):
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
             # Stop using ExtendedUrllib instance
-            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
+            e = ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
 
         else:
-            raise ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
+            e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
+
+        self._stop_exception = e
+        raise self._stop_exception
 
     def get_socket_exception_reason(self, error):
         """

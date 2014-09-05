@@ -436,7 +436,13 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         """
-        pass
+        # We disable raising the exception, so we do this only once and don't
+        # affect other parts of the tool such as the exploitation or manual HTTP
+        # request sending from the GUI
+        #
+        # https://github.com/andresriancho/w3af/issues/2704
+        # https://github.com/andresriancho/w3af/issues/2711
+        self.uri_opener.clear()
 
     def _home_directory(self):
         """

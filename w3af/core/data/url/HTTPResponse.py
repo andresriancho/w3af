@@ -49,6 +49,7 @@ STATUS_LINE = 'HTTP/1.1 %s %s' + CRLF
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
 ANY_TAG_MATCH = re.compile('(<.*?>)')
+DEFAULT_WAIT_TIME = 0.2
 
 
 class HTTPResponse(object):
@@ -60,7 +61,8 @@ class HTTPResponse(object):
     DOC_TYPE_OTHER = 'DOC_TYPE_OTHER'
 
     def __init__(self, code, read, headers, geturl, original_url,
-                 msg='OK', _id=None, time=0.2, alias=None, charset=None):
+                 msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
+                 charset=None):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -145,6 +147,10 @@ class HTTPResponse(object):
         else:
             url_inst = original_url = URL(resp.geturl())
 
+        httplib_time = DEFAULT_WAIT_TIME
+        if hasattr(httplibresp, 'get_wait_time'):
+            # This is defined in the keep alive http response object
+            httplib_time = httplibresp.get_wait_time()
 
         if isinstance(resp, urllib2.HTTPError):
             # This is possible because in errors.py I do:
@@ -155,7 +161,7 @@ class HTTPResponse(object):
             charset = getattr(resp, 'encoding', None)
         
         return cls(code, body, hdrs, url_inst, original_url,
-                   msg, charset=charset)
+                   msg, charset=charset, time=httplib_time)
 
     @classmethod    
     def from_dict(cls, unserialized_dict):

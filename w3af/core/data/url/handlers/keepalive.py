@@ -198,6 +198,7 @@ class HTTPResponse(httplib.HTTPResponse):
         self._method = method
         self._multiread = None
         self._encoding = None
+        self._time = None
 
     def geturl(self):
         return self._url
@@ -211,6 +212,12 @@ class HTTPResponse(httplib.HTTPResponse):
         self._encoding = enc
     
     encoding = property(get_encoding, set_encoding)
+
+    def set_wait_time(self, t):
+        self._time = t
+
+    def get_wait_time(self):
+        return self._time
 
     def _raw_read(self, amt=None):
         """
@@ -273,15 +280,16 @@ class HTTPResponse(httplib.HTTPResponse):
 
     @close_on_error
     def read(self, amt=None):
-        # w3af does always read all the content of the response...
-        # and I also need to do multiple reads to this response...
+        # w3af does always read all the content of the response, and I also need
+        # to do multiple reads to this response...
+        #
         # BUGBUG: Is this OK? What if a HEAD method actually returns something?!
         if self._method == 'HEAD':
             # This indicates that we have read all that we needed from the socket
             # and that the socket can be reused!
             #
             # This like fixes the bug with title "GET is much faster than HEAD".
-            #https://sourceforge.net/tracker2/?func=detail&aid=2202532&group_id=170274&atid=853652
+            # https://sourceforge.net/tracker2/?func=detail&aid=2202532&group_id=170274&atid=853652
             self.close()
             return ''
 
@@ -610,10 +618,12 @@ class KeepAliveHandler(object):
                     conn.proxy_setup(req.get_full_url())
 
                 conn.is_fresh = False
+                start = time.time()
                 self._start_transaction(conn, req)
                 resp = conn.getresponse()
             else:
                 # We'll try to use a previously created connection
+                start = time.time()
                 resp = self._reuse_connection(conn, req, host)
                 # If the resp is None it means that connection is bad. It was
                 # possibly closed by the server. Replace it with a new one.
@@ -628,6 +638,7 @@ class KeepAliveHandler(object):
 
                     # Try again with the fresh one
                     conn.is_fresh = False
+                    start = time.time()
                     self._start_transaction(conn, req)
                     resp = conn.getresponse()
 
@@ -669,9 +680,13 @@ class KeepAliveHandler(object):
             # https://github.com/andresriancho/w3af/issues/2074
             self._cm.remove_connection(conn, host)
             raise HTTPRequestException('The HTTP connection died')
-        else:
-            debug("HTTP response: %s, %s" % (resp.status, resp.reason))
-            return resp
+
+        # We measure time here because it's the best place we know of
+        elapsed = time.time() - start
+        resp.set_wait_time(elapsed)
+
+        debug("HTTP response: %s, %s" % (resp.status, resp.reason))
+        return resp
 
     def _reuse_connection(self, conn, req, host):
         """
