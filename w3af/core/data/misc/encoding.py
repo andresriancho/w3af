@@ -70,7 +70,7 @@ codecs.register_error(HTML_ENCODE, _return_html_encoded)
 
 def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
     """
-    Return the unicode representation of 's'. Decodes bytestrings using
+    Return the unicode representation of 's'. Decodes byte-strings using
     the 'encoding' codec.
     """
     if isinstance(s, unicode):
@@ -95,9 +95,20 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
                     s = s.decode(encoding, 'ignore')
     else:
         if hasattr(s, '__unicode__'):
-            s = unicode(s, encoding, errors)
+            try:
+                # Read the pyar thread "__unicode__ deberia tomar los mismos
+                # parametros que unicode() ?" to better understand why I can't
+                # pass encoding and errors parameters here:
+                s = unicode(s)
+            except UnicodeDecodeError:
+                # And why I'm doing it here:
+                s = str(s)
+                s = smart_unicode(s, encoding=encoding, errors=errors,
+                                  on_error_guess=on_error_guess)
         else:
-            s = unicode(str(s), encoding, errors)
+            s = str(s)
+            s = smart_unicode(s, encoding=encoding, errors=errors,
+                              on_error_guess=on_error_guess)
 
     return s
 

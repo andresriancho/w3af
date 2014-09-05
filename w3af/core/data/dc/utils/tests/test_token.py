@@ -23,6 +23,7 @@ import unittest
 import copy
 
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.misc.encoding import smart_unicode
 
 
 class TestToken(unittest.TestCase):
@@ -59,3 +60,12 @@ class TestToken(unittest.TestCase):
         self.assertEqual(token.get_value(), self.PAYLOAD)
         self.assertEqual(token.get_original_value(), self.VALUE)
         self.assertEqual(token.get_path(), self.PATH)
+
+    def test_invalid_utf8(self):
+        invalid_utf8 = '\xf3'
+        token = DataToken(self.NAME, invalid_utf8, self.PATH)
+
+        self.assertRaises(UnicodeDecodeError, unicode, token)
+
+        encoded_token = smart_unicode(token)
+        self.assertEqual(encoded_token, u'\xf3')
