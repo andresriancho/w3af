@@ -80,7 +80,6 @@ class ExtendedUrllib(object):
         self._evasion_plugins = []
         self._user_paused = False
         self._user_stopped = False
-        self._stop_exception = None
 
     def pause(self, pause_yes_no):
         """
@@ -105,7 +104,7 @@ class ExtendedUrllib(object):
             - The pause/stop feature
             - Memory debugging features
         """
-        self._sleep_if_paused_die_if_stopped()
+        self._pause_and_stop()
         self._rate_limit()
 
     def _rate_limit(self):
@@ -130,18 +129,22 @@ class ExtendedUrllib(object):
 
             self._rate_limit_last_time_called = time.clock()
 
-    def _sleep_if_paused_die_if_stopped(self):
+    def _pause_and_stop(self):
         """
         This method sleeps until self._user_paused is False.
         """
         def analyze_state():
-            # There might be errors that make us stop the process
-            if self._stop_exception is not None:
-                # pylint: disable=E0702
-                raise self._stop_exception
-                # pylint: enable=E0702
-
+            # This handles the case where the user pauses and then stops
             if self._user_stopped:
+                # We disable raising the exception, so we do this only once and
+                # don't affect other parts of the tool such as the exploitation
+                # or manual HTTP request sending from the GUI
+                #
+                # https://github.com/andresriancho/w3af/issues/2704
+                # https://github.com/andresriancho/w3af/issues/2711
+                self._user_stopped = False
+
+                # Raise the exception to stop the scan
                 msg = 'The user stopped the scan.'
                 raise ScanMustStopByUserRequest(msg)
 
@@ -155,7 +158,6 @@ class ExtendedUrllib(object):
         """Clear all status set during the scanner run"""
         self._user_stopped = False
         self._user_paused = False
-        self._stop_exception = None
 
     def end(self):
         """
@@ -645,13 +647,10 @@ class ExtendedUrllib(object):
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
             # Stop using ExtendedUrllib instance
-            e = ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
+            raise ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
 
         else:
-            e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
-
-        self._stop_exception = e
-        raise e
+            raise ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
 
     def get_socket_exception_reason(self, error):
         """

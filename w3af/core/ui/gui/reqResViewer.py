@@ -274,6 +274,7 @@ class reqResViewer(gtk.VBox):
             gtk.gdk.threads_enter()
             helpers.FriendlyExceptionDlg(msg)
             gtk.gdk.threads_leave()
+
         return False
 
     def _send_request(self, widg, func):
