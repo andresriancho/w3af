@@ -106,7 +106,9 @@ class w3af_core_profiles(object):
         Gets all the information from the profile and stores it in the
         w3af core plugins / target attributes for later use.
 
-        @raise BaseFrameworkException: if the profile to load has some type of problem.
+        :raise BaseFrameworkException: if the profile to load has some type of
+                                       problem, or the plugins are incorrectly
+                                       configured.
         """
         # Clear all enabled plugins if profile_name is None
         if profile_name is None:
@@ -142,17 +144,22 @@ class w3af_core_profiles(object):
         error_fmt = ('The profile you are trying to load (%s) seems to be'
                      ' outdated, this is a common issue which happens when the'
                      ' framework is updated and one of its plugins adds/removes'
-                     ' one of the configuration parameters referenced by a profile'
-                     ', or the plugin is removed all together.\n\n'
+                     ' one of the configuration parameters referenced by a'
+                     ' profile, or the plugin is removed all together.\n\n'
+
                      'The profile was loaded but some of your settings might'
-                     ' have been lost. This is the list of issues that were found:\n\n'
+                     ' have been lost. This is the list of issues that were'
+                     ' found:\n\n'
                      '    - %s\n'
-                     '\nWe recommend you review the specific plugin configurations,'
-                     ' apply the required changes and save the profile in order'
-                     ' to update it and avoid this message. If this warning does not'
-                     ' disappear you can manually edit the profile file to fix it.')
+
+                     '\nWe recommend you review the specific plugin'
+                     ' configurations, apply the required changes and save'
+                     ' the profile in order to update it and avoid this'
+                     ' message. If this warning does not disappear you can'
+                     ' manually edit the profile file to fix it.')
 
         error_messages = []
+        core_set_plugins = self._w3af_core.plugins.set_plugins
 
         for plugin_type in self._w3af_core.plugins.get_plugin_types():
             plugin_names = profile_inst.get_enabled_plugins(plugin_type)
@@ -160,9 +167,8 @@ class w3af_core_profiles(object):
             # Handle errors that might have been triggered from a possibly
             # invalid profile
             try:
-                unknown_plugins = self._w3af_core.plugins.set_plugins(plugin_names,
-                                                                      plugin_type,
-                                                                      raise_on_error=False)
+                unknown_plugins = core_set_plugins(plugin_names, plugin_type,
+                                                   raise_on_error=False)
             except KeyError:
                 msg = 'The profile references the "%s" plugin type which is'\
                       ' unknown to the w3af framework.'
@@ -170,11 +176,13 @@ class w3af_core_profiles(object):
                 continue
                 
             for unknown_plugin in unknown_plugins:
-                msg = 'The profile references the "%s.%s" plugin which is unknown.'
+                msg = 'The profile references the "%s.%s" plugin which is' \
+                      ' unknown in the current framework version.'
                 error_messages.append(msg % (plugin_type, unknown_plugin))
 
-            # Now we set the plugin options, which can also trigger errors with "outdated"
-            # profiles that users could have in their ~/.w3af/ directory.
+            # Now we set the plugin options, which can also trigger errors with
+            # "outdated" profiles that users could have in their ~/.w3af/
+            # directory.
             for plugin_name in set(plugin_names) - set(unknown_plugins):
 
                 try:
