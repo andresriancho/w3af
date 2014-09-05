@@ -654,7 +654,9 @@ class ExtendedUrllib(object):
             e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
 
         self._stop_exception = e
+        # pylint: disable=E0702
         raise self._stop_exception
+        # pylint: enable=E0702
 
     def get_socket_exception_reason(self, error):
         """
