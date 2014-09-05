@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
 import gtk
 import cgi
 
@@ -89,8 +88,8 @@ class ProfileList(gtk.TreeView):
             desc = profile_obj.get_desc()
             tmpprofiles.append((nom, desc, profile_obj))
 
-        # Also add to that list the "selected" profile, that was specified by the user with the
-        # "-p" parameter when executing w3af
+        # Also add to that list the "selected" profile, that was specified by
+        # the user with the "-p" parameter when executing w3af
         if self._parameter_profile:
             try:
                 profile_obj = profile(self._parameter_profile)
@@ -111,8 +110,9 @@ class ProfileList(gtk.TreeView):
                 if add_to_list:
                     tmpprofiles.append((nom, desc, profile_obj))
 
-        # Create the liststore using a specially sorted list, what I basically want is the
-        # empty profile at the beginning of the list, and the rest sorted in alpha order
+        # Create the liststore using a specially sorted list, what I basically
+        # want is the empty profile at the beginning of the list, and the rest
+        # sorted in alpha order
         tmpprofiles = sorted(tmpprofiles)
         tmpprofiles_special_order = []
         for nom, desc, profile_obj in tmpprofiles:
@@ -354,9 +354,10 @@ class ProfileList(gtk.TreeView):
 
         :return: The profile instance for the actual cursor position.
         """
-        (path, focus) = self.get_cursor()
+        path, focus = self.get_cursor()
         if path is None:
             return None
+
         prfid = self.liststore[path][2]
         profile_obj = self.profile_instances[prfid]
         return profile_obj
@@ -369,6 +370,7 @@ class ProfileList(gtk.TreeView):
         profile_obj = self._getProfile()
         if profile_obj is None:
             return None
+
         return profile_obj.get_name()
 
     def _use_profile(self, widget=None):
@@ -377,6 +379,8 @@ class ProfileList(gtk.TreeView):
         profileName = self._getProfileName()
         if profileName == self.selectedProfile:
             return
+
+        # Changed the profile in the UI
         self.selectedProfile = profileName
 
         try:
@@ -387,11 +391,10 @@ class ProfileList(gtk.TreeView):
                                     str(w3))
             dlg.run()
             dlg.destroy()
+            return
 
-        if profile_obj is not None:
-            profdesc = profile_obj.get_desc()
-        else:
-            profdesc = None
+        # Reload the UI
+        profdesc = None if profile_obj is None else profile_obj.get_desc()
         self.w3af.mainwin.pcbody.reload(profdesc)
 
         # get the activated plugins
