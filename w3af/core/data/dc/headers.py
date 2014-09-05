@@ -76,7 +76,7 @@ class Headers(NonRepeatKeyValueContainer):
 
         # Cleanup whatever came from the wire into a unicode string
         for key, value in init_val:
-            # I can do this key, value thing because the headers do NOT
+            # I can do this (key, value) thing because the headers do NOT
             # have multiple header values like query strings and post-data
             if isinstance(value, basestring):
                 value = smart_unicode(value)
