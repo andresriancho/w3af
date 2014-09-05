@@ -23,11 +23,11 @@ import unittest
 
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.options.option_types import (
-    BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
+    BOOL, INT, POSITIVE_INT, FLOAT, STRING, URL, IPPORT, LIST,
     REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
 
-OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-                INPUT_FILE, OUTPUT_FILE, PORT)
+OPTION_TYPES = (BOOL, INT, POSITIVE_INT, FLOAT, STRING, URL, IPPORT, LIST,
+                REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
 
 
 class TestOpenerSettings(unittest.TestCase):
