@@ -130,11 +130,13 @@ class password_profiling(GrepPlugin):
         """
         "merge" both maps and update the repetitions
         """
+        msg = 'The "%s" parameter must be a dict, got "%s" instead.'
+
         if not isinstance(old_data, dict):
-            raise TypeError('The old_data parameter must be a dict')
+            raise TypeError(msg % ('old_data', old_data.__class__.__name__))
 
         if not isinstance(data, dict):
-            raise TypeError('The data parameter must be a dict')
+            raise TypeError(msg % ('data', old_data.__class__.__name__))
 
         if lang not in self.COMMON_WORDS.keys():
             lang = 'unknown'
