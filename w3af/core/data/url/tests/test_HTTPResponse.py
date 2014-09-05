@@ -311,3 +311,20 @@ class TestHTTPResponse(unittest.TestCase):
         headers = Headers([('Content-Type', 'application/pdf')])
         body = None
         self.assertRaises(TypeError, HTTPResponse, 200, body, headers, url, url)
+
+    def test_dump_response_head_3661(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/3661
+        """
+        url = URL('http://w3af.com')
+        # '\xf3' is o-tilde in windows-1251
+        #
+        # We get from that arbitrary character to o-tilde in windows-1251 when
+        # we fail to decode it, and chardet guesses the encoding.
+        headers = Headers([('Content-Type', '\xf3')])
+        resp = HTTPResponse(200, '', headers, url, url)
+
+        # '\xc3\xb3' is o-tilde in utf-8
+        expected_dump = 'HTTP/1.1 200 OK\r\nContent-Type: \xc3\xb3\r\n'
+
+        self.assertEqual(resp.dump_response_head(), expected_dump)
