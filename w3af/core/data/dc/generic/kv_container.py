@@ -85,7 +85,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         Return unicode representation
         """
-        return self._to_str_with_separators(u'=', u'&')
+        return self._to_str_with_separators(u'=', u'&', errors='percent_encode')
 
     def iter_setters(self):
         """
@@ -103,17 +103,17 @@ class KeyValueContainer(DataContainer, OrderedDict):
                 if self.token_filter(token_path, ele):
                     yield k, ele, token_path, partial(v.__setitem__, idx)
 
-    def _to_str_with_separators(self, key_val_sep, pair_sep):
+    def _to_str_with_separators(self, key_val_sep, pair_sep, errors='strict'):
         """
         :return: Join all the values stored in this data container using the
                  specified separators.
         """
         lst = []
 
-        for k, v in self.items():
-            for ele in v:
-                to_app = u'%s%s%s' % (k, key_val_sep,
-                                      smart_unicode(ele, encoding=UTF8))
+        for key, value_list in self.items():
+            for value in value_list:
+                value = smart_unicode(value, encoding=UTF8, errors=errors)
+                to_app = u'%s%s%s' % (key, key_val_sep, value)
                 lst.append(to_app)
 
         return pair_sep.join(lst)
