@@ -497,9 +497,13 @@ class ExtendedUrllib(object):
     
     def _handle_send_socket_error(self, req, exception, grep, original_url):
         """
-        This error handling is separated from the other because at some point I
-        want to have some type of backoff feature here that will wait increasing
-        amounts of seconds before retrying when a timeout occurs.
+        This error handling is separated from the other because we want to have
+        better handling for:
+            * Connection timeouts
+            * Connection resets
+            * Network problems (network connection goes down for some seconds)
+
+        Our strategy for handling these errors is simple
         """
         if not req.ignore_errors:
             self._increment_global_error_count(exception)

@@ -548,6 +548,13 @@ class URL(DiskItem):
         output: myself.ru
 
         Code taken from: http://getoutfoxed.com/node/41
+
+        TODO: If you ever want to improve this code section, you might be
+              interested in https://pypi.python.org/pypi/tldextract , which
+              seems to be really updated and supported.
+
+              The (minor) down side is that they HTTP GET the GTOP_LEVEL_DOMAINS
+              each time you start the library for the first time.
         """
         # break authority into two parts: subdomain(s), and base authority
         # e.g. images.google.com --> [images, google.com]

@@ -333,6 +333,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(elapsed_time, _min)
         self.assertLessEqual(elapsed_time, _max)
 
+
 class EmptyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
