@@ -97,7 +97,7 @@ class text_file(OutputPlugin):
             args = (os.path.abspath(self._http_file_name), e)
             raise BaseFrameworkException(msg % args)
 
-    def _write_to_file(self, msg):
+    def _write_to_file(self, msg, flush=False):
         """
         Write to the log file.
 
@@ -114,6 +114,9 @@ class text_file(OutputPlugin):
                   ' file "%s", error: "%s". Disabling output to this file.'
             om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins=set([self.get_name()]))
+
+        if flush and self._file is not None:
+            self._file.flush()
 
     def _write_to_HTTP_log(self, msg):
         """
@@ -134,7 +137,7 @@ class text_file(OutputPlugin):
             om.out.error(msg % (self._http_file_name, e),
                          ignore_plugins=set([self.get_name()]))
             
-    def write(self, message, log_type, new_line=True):
+    def write(self, message, log_type, new_line=True, flush=False):
         """
         Method that writes stuff to the text_file.
 
@@ -157,7 +160,7 @@ class text_file(OutputPlugin):
         else:
             timestamp = SHORT_LOG_FMT % (the_time, log_type)
 
-        self._write_to_file(timestamp + to_print)
+        self._write_to_file(timestamp + to_print, flush=flush)
 
     def debug(self, message, new_line=True):
         """
@@ -182,7 +185,7 @@ class text_file(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
         """
-        self.write(message, 'error', new_line)
+        self.write(message, 'error', new_line, flush=True)
 
     def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
         """
