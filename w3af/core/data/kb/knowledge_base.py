@@ -176,7 +176,8 @@ class BasicKnowledgeBase(object):
 
     def get_all_entries_of_class(self, klass):
         """
-        :return: A list of all objects of class == klass that are saved in the kb.
+        :return: A list of all objects of class == klass that are saved in the
+                 kb.
         """
         raise NotImplementedError
 

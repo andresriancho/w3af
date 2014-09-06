@@ -43,4 +43,3 @@ class TestExecShell(unittest.TestCase):
         
         self.assertIn('execute', _help)
         self.assertIn('upload', _help)
-        

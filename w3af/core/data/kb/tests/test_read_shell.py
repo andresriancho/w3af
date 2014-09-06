@@ -51,5 +51,4 @@ class TestReadShell(unittest.TestCase):
         
         self.assertIn('read', _help)
         self.assertIn('/etc/passwd', _help)
-        
-        
+
