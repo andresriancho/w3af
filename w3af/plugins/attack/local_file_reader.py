@@ -184,16 +184,16 @@ class FileReaderShell(ReadShell):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
+    NOT_EXISTS_FILE = 'not_exist0.txt'
+
     def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
         super(FileReaderShell, self).__init__(vuln, url_opener, worker_pool)
 
         self.set_cut(header_len, footer_len)
 
         self._initialized = False
-        self._application_file_not_found_error = None
+        self._file_not_found_str = None
         self._use_base64_wrapper = False
-
-        self._init_read()
 
     def _init_read(self):
         """
@@ -220,9 +220,8 @@ class FileReaderShell(ReadShell):
         This is very helpful for reading non-text files.
         """
         # Error handling
-        app_error = self.read('not_exist0.txt')
-        self._application_file_not_found_error = app_error.replace(
-            "not_exist0.txt", '')
+        app_error = self.read(self.NOT_EXISTS_FILE)
+        self._file_not_found_str = app_error.replace(self.NOT_EXISTS_FILE, '')
 
         # PHP wrapper configuration
         self._use_base64_wrapper = False
@@ -230,7 +229,8 @@ class FileReaderShell(ReadShell):
             #FIXME: This only works in Linux!
             response = self._read_with_b64('/etc/passwd')
         except Exception, e:
-            msg = 'Not using base64 wrapper for reading because of exception: "%s"'
+            msg = 'Not using base64 wrapper for reading because of ' \
+                  'exception: "%s"'
             om.out.debug(msg % e)
         else:
             if 'root:' in response or '/bin/' in response:
@@ -241,6 +241,8 @@ class FileReaderShell(ReadShell):
                       ' did not match "root:" or "/bin/".'
                 om.out.debug(msg)
 
+        self._initialized = True
+
     @read_debug
     def read(self, filename):
         """
@@ -248,6 +250,9 @@ class FileReaderShell(ReadShell):
 
         :return: The file content.
         """
+        if not self._initialized:
+            self._init_read()
+
         if self._use_base64_wrapper:
             try:
                 return self._read_with_b64(filename)
@@ -310,15 +315,15 @@ class FileReaderShell(ReadShell):
         elif result.count(': failed to open stream: '):
             error = FAILED_STREAM
 
-        elif self._application_file_not_found_error is not None:
+        elif self._file_not_found_str is not None:
             # The result string has the file I requested inside, so I'm going
             # to remove it.
             clean_result = result.replace(filename, '')
 
             # Now I compare both strings, if they are VERY similar, then
             # filename is a non existing file.
-            if fuzzy_equal(self._application_file_not_found_error,
-                                    clean_result, 0.9):
+            if fuzzy_equal(self._file_not_found_str,
+                           clean_result, 0.9):
                 error = NO_SUCH_FILE
 
         #
@@ -335,3 +340,11 @@ class FileReaderShell(ReadShell):
         :return: The name of this shell.
         """
         return 'local_file_reader'
+
+    def __reduce__(self):
+        """
+        Need to define this method since the Shell class defines it, and we have
+        a different number of __init__ parameters.
+        """
+        return self.__class__, (self._vuln, None, None, self._header_length,
+                                self._footer_length)

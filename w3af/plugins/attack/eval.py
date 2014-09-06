@@ -165,3 +165,10 @@ class EvalShell(ExecShell):
 
     def get_name(self):
         return 'eval_shell'
+
+    def __reduce__(self):
+        """
+        Need to define this method since the Shell class defines it, and we have
+        a different number of __init__ parameters.
+        """
+        return self.__class__, (self._vuln, None, None, self.shellcode_generator)

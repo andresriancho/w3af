@@ -36,6 +36,7 @@ from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.w3afCore import w3afCore
 
+from w3af.plugins.attack.payloads.shell_handler import get_shell_code
 from w3af.plugins.attack.sqlmap import SQLMapShell
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.dav import DAVShell
@@ -486,5 +487,78 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
         self.assertEqual(unpickled_shell.exploit_url, shell.exploit_url)
+
+        w3af_core.quit()
+
+    @unittest.skip('Still need to figure out how to fix this one...')
+    def test_kb_list_shells_eval_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+
+        shellcodes = get_shell_code('php', 'ls')
+        shellcode_generator = shellcodes[0][2]
+
+        shell = EvalShell(MockVuln(), w3af_core.uri_opener,
+                          w3af_core.worker_pool, shellcode_generator)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell.shellcode_generator,
+                         shell.shellcode_generator)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_file_upload_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+        exploit_url = URL('http://w3af.org/')
+
+        shell = FileUploadShell(MockVuln(), w3af_core.uri_opener,
+                                w3af_core.worker_pool, exploit_url)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell._exploit_url, shell._exploit_url)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_file_read_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+        header_len, footer_len = 1, 1
+
+        vuln = MockVuln()
+
+        shell = FileReaderShell(vuln, w3af_core.uri_opener,
+                                w3af_core.worker_pool, header_len, footer_len)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell._header_length, shell._header_length)
+        self.assertEqual(unpickled_shell._footer_length, shell._footer_length)
 
         w3af_core.quit()
