@@ -82,7 +82,8 @@ class ReadShell(Shell):
         to a local file.
 
         :param remote_filename: The remote file to download.
-        :param local_filename: The local file where to write the contents of the remote file.
+        :param local_filename: The local file where to write the contents of
+                               the remote file.
         :return: The message to show to the user.
         """
         remote_content = self.read(remote_filename)
