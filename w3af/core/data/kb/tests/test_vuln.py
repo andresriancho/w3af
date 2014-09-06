@@ -40,6 +40,7 @@ class MockVuln(Vuln):
         super(MockVuln, self).__init__(name, long_desc, severity,
                                        _id, plugin_name)
 
+
 @attr('smoke')
 class TestVuln(unittest.TestCase):
     

@@ -41,7 +41,7 @@ class TestQSMutant(unittest.TestCase):
                                                   False, self.fuzzer_config)
 
         expected_dcs = ['a=abc&b=2', 'a=1&b=abc',
-                        'a=def&b=2', 'a=1&b=def',]
+                        'a=def&b=2', 'a=1&b=def']
 
         created_dcs = [str(i.get_dc()) for i in created_mutants]
 
