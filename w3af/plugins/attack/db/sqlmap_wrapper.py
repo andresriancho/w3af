@@ -54,15 +54,18 @@ class SQLMapWrapper(object):
             fmt = 'Invalid type %s for target parameter in SQLMapWrapper ctor.'
             raise TypeError(fmt % type(target))
 
-        self._start_proxy(uri_opener)
-
         self.debug = debug
         self.target = target
         self.coloring = coloring
         self.last_command = None
         self.verified_vulnerable = False
-    
-    def _start_proxy(self, uri_opener):
+        self.proxy = None
+        self.local_proxy_url = None
+
+        if uri_opener is not None:
+            self.start_proxy(uri_opener)
+
+    def start_proxy(self, uri_opener):
         """
         Saves the proxy configuration to self.local_proxy_url in order for the
         wrapper to use it in the calls to sqlmap.py and have the traffic go
@@ -75,7 +78,19 @@ class SQLMapWrapper(object):
         self.proxy = Proxy(host, 0, uri_opener)
         self.proxy.start()
         self.local_proxy_url = 'http://%s:%s/' % (host, self.proxy.get_bind_port())
-    
+
+    def __reduce__(self):
+        """
+        Need to define this method in order to remove the uri_opener from the
+        pickled string. This will make sure that when the object is un-pickled
+        we get the real uri_opener from w3af's core.
+
+        The object being un-pickled is the SQLMapShell, which when un-pickled
+        from the kb we call "shell.set_url_opener(w3af_core.uri_opener)",
+        which then calls start_proxy(uri_opener) in order to restore the opener
+        """
+        return self.__class__, (self.target, None, self.coloring, self.debug)
+
     def cleanup(self):
         self.proxy.stop()
     
@@ -257,9 +272,8 @@ class Target(object):
         self.post_data = post_data
     
     def to_params(self):
-        params = []
-        params.append("--url=%s" % self.uri)
-        
+        params = ["--url=%s" % self.uri]
+
         if self.post_data is not None:
             params.append("--data=%s" % self.post_data)
         

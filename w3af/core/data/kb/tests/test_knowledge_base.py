@@ -34,7 +34,10 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.controllers.w3afCore import w3afCore
 
+from w3af.plugins.attack.sqlmap import SQLMapShell
+from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 
 class TestKnowledgeBase(unittest.TestCase):
 
@@ -427,3 +430,31 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(observer_1.call_count, 1)
         self.assertEqual(observer_2.call_count, 1)
+
+    def test_kb_list_shells_empty(self):
+        self.assertEqual(kb.get_all_shells(), [])
+
+    def test_kb_list_shells_2181(self):
+        """
+        Also very related with test_pickleable_shells
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+        target = Target(URL('http://w3af.org/'))
+        sqlmap_wrapper = SQLMapWrapper(target, w3af_core.uri_opener)
+
+        sqlmap_shell = SQLMapShell(MockVuln(), w3af_core.uri_opener,
+                                   w3af_core.worker_pool, sqlmap_wrapper)
+        kb.append('a', 'b', sqlmap_shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(sqlmap_shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertIs(unpickled_shell.sqlmap.proxy._uri_opener,
+                      w3af_core.uri_opener)
+
+        w3af_core.quit()

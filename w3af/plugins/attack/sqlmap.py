@@ -176,8 +176,8 @@ class SQLMapShell(ReadShell):
     ALIAS = ('dbs', 'tables', 'users', 'dump')
 
     def __init__(self, vuln, uri_opener, worker_pool, sqlmap):
-        super(SQLMapShell, self).__init__(vuln, uri_opener, worker_pool)
         self.sqlmap = sqlmap
+        super(SQLMapShell, self).__init__(vuln, uri_opener, worker_pool)
 
     def specific_user_input(self, command, params, return_err=True):
         # Call the parent in order to get read/download without duplicating
@@ -288,3 +288,15 @@ class SQLMapShell(ReadShell):
                 exit                            Exit this shell session
             """
         return textwrap.dedent(_help)
+
+    def __reduce__(self):
+        """
+        Need to define this method since the Shell class defines it, and we have
+        a different number of __init__ parameters.
+        """
+        return self.__class__, (self._vuln, None, None, self.sqlmap)
+
+    def set_url_opener(self, uo):
+        if uo is not None:
+            self._uri_opener = uo
+            self.sqlmap.start_proxy(uo)
