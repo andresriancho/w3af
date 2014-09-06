@@ -110,17 +110,17 @@ class dav(AttackPlugin):
 
             if shell_handler.SHELL_IDENTIFIER in response.get_body():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER, which'\
-                      ' verifies that the file was uploaded and is being executed.'
+                      ' verifies that the file was uploaded and is being' \
+                      ' executed.'
                 om.out.debug(msg)
                 self._exploit_url = exploit_url
                 return True
             else:
                 msg = 'The uploaded shell with extension: "%s" did NOT return'\
-                      ' the SHELL_IDENTIFIER, which means that the file was not'\
-                      ' uploaded to the remote server or the code is not being'\
-                      ' run. The returned body was: "%s".' % (extension,
-                                                              response.get_body())
-                om.out.debug(msg)
+                      ' the SHELL_IDENTIFIER, which means that the file was'\
+                      ' not uploaded to the remote server or the code is not'\
+                      ' being run. The returned body was: "%s".'
+                om.out.debug(msg % (extension, response.get_body()))
                 extension = ''
 
     def get_root_probability(self):
@@ -170,7 +170,8 @@ class DAVShell(ExecShell):
     def end(self):
         url_to_del = self.exploit_url.uri2url()
 
-        msg = 'DAVShell is going to delete the web shell that was uploaded to %s.'
+        msg = 'DAVShell is going to delete the web shell that was uploaded' \
+              ' to %s.'
         om.out.debug(msg % url_to_del)
 
         try:
@@ -182,3 +183,10 @@ class DAVShell(ExecShell):
 
     def get_name(self):
         return 'dav'
+
+    def __reduce__(self):
+        """
+        Need to define this method since the Shell class defines it, and we have
+        a different number of __init__ parameters.
+        """
+        return self.__class__, (self._vuln, None, None, self.exploit_url)

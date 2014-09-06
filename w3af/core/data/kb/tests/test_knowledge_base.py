@@ -38,6 +38,14 @@ from w3af.core.controllers.w3afCore import w3afCore
 
 from w3af.plugins.attack.sqlmap import SQLMapShell
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
+from w3af.plugins.attack.dav import DAVShell
+from w3af.plugins.attack.eval import EvalShell
+from w3af.plugins.attack.file_upload import FileUploadShell
+from w3af.plugins.attack.local_file_reader import FileReaderShell
+from w3af.plugins.attack.os_commanding import OSCommandingShell
+from w3af.plugins.attack.rfi import RFIShell
+from w3af.plugins.attack.xpath import XPathReader
+
 
 class TestKnowledgeBase(unittest.TestCase):
 
@@ -434,7 +442,7 @@ class TestKnowledgeBase(unittest.TestCase):
     def test_kb_list_shells_empty(self):
         self.assertEqual(kb.get_all_shells(), [])
 
-    def test_kb_list_shells_2181(self):
+    def test_kb_list_shells_sqlmap_2181(self):
         """
         Also very related with test_pickleable_shells
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -456,5 +464,27 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
         self.assertIs(unpickled_shell.sqlmap.proxy._uri_opener,
                       w3af_core.uri_opener)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_dav_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+        exploit_url = URL('http://w3af.org/')
+
+        shell = DAVShell(MockVuln(), w3af_core.uri_opener,
+                         w3af_core.worker_pool, exploit_url)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell.exploit_url, shell.exploit_url)
 
         w3af_core.quit()

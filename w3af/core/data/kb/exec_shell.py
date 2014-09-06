@@ -94,7 +94,8 @@ class ExecShell(Shell):
         to a local file.
 
         :param remote_filename: The remote file to download.
-        :param local_filename: The local file where to write the contents of the remote file.
+        :param local_filename: The local file where to write the contents of
+                               the remote file.
         :return: The message to show to the user.
         """
         remote_content = self.read(remote_filename)
@@ -265,12 +266,12 @@ class ExecShell(Shell):
     def end_interaction(self):
         """
         When the user executes "exit" in the console, this method is called.
-        Basically, here we handle WHAT TO DO in that case. In most cases (and this is
-        why we implemented it this way here) the response is "yes, do it end me" that
-        equals to "return True".
+        Basically, here we handle WHAT TO DO in that case. In most cases (and
+        this is why we implemented it this way here) the response is "yes, do it
+        end me" that equals to "return True".
 
-        In some other cases, the shell prints something to the console and then exists,
-        or maybe some other, more complex, thing.
+        In some other cases, the shell prints something to the console and then
+        exists, or maybe some other, more complex, thing.
         """
         return True
 
