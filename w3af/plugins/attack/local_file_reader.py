@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import base64
 import copy
+import threading
 
 import w3af.core.controllers.output_manager as om
 
@@ -192,6 +193,7 @@ class FileReaderShell(ReadShell):
         self.set_cut(header_len, footer_len)
 
         self._initialized = False
+        self._init_lock = threading.RLock()
         self._file_not_found_str = None
         self._use_base64_wrapper = False
 
@@ -241,8 +243,6 @@ class FileReaderShell(ReadShell):
                       ' did not match "root:" or "/bin/".'
                 om.out.debug(msg)
 
-        self._initialized = True
-
     @read_debug
     def read(self, filename):
         """
@@ -250,8 +250,10 @@ class FileReaderShell(ReadShell):
 
         :return: The file content.
         """
-        if not self._initialized:
-            self._init_read()
+        with self._init_lock:
+            if not self._initialized:
+                self._initialized = True
+                self._init_read()
 
         if self._use_base64_wrapper:
             try:
