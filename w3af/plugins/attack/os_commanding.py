@@ -258,6 +258,6 @@ class OSCommandingShell(ExecShell):
 
     def __reduce__(self):
         """
-        @see: shell.__reduce__ to understand why this is required.
+        @see: Shell.__reduce__ to understand why this is required.
         """
         return self.__class__, (self.strategy, None, None)

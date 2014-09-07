@@ -43,7 +43,8 @@ from w3af.plugins.attack.dav import DAVShell
 from w3af.plugins.attack.eval import EvalShell
 from w3af.plugins.attack.file_upload import FileUploadShell
 from w3af.plugins.attack.local_file_reader import FileReaderShell
-from w3af.plugins.attack.os_commanding import OSCommandingShell
+from w3af.plugins.attack.os_commanding import (OSCommandingShell,
+                                               BasicExploitStrategy)
 from w3af.plugins.attack.rfi import RFIShell
 from w3af.plugins.attack.xpath import XPathReader
 
@@ -560,5 +561,30 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
         self.assertEqual(unpickled_shell._header_length, shell._header_length)
         self.assertEqual(unpickled_shell._footer_length, shell._footer_length)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_file_read_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+
+        vuln = MockVuln()
+        vuln['separator'] = '&'
+        vuln['os'] = 'linux'
+        strategy = BasicExploitStrategy(vuln)
+        shell = OSCommandingShell(strategy, w3af_core.uri_opener,
+                                  w3af_core.worker_pool)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell.strategy.vuln, vuln)
 
         w3af_core.quit()
