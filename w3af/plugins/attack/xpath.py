@@ -239,12 +239,12 @@ class XPathReader(Shell):
 
     def __init__(self, vuln, uri_opener, worker_pool, str_delim,
                  true_xpath, is_error_resp):
-        super(XPathReader, self).__init__(vuln, uri_opener, worker_pool)
-        
         self.STR_DELIM = str_delim
         self.TRUE_COND = true_xpath
         self.is_error_resp = is_error_resp
-         
+
+        super(XPathReader, self).__init__(vuln, uri_opener, worker_pool)
+
         self._rOS = 'XML'
         self._rSystem = 'XPATH Query'
         self._rUser = None
@@ -257,6 +257,10 @@ class XPathReader(Shell):
         return '<' + self.get_name() + ' object)>'
 
     __str__ = __repr__
+
+    def set_url_opener(self, uo):
+        self.is_error_resp.set_url_opener(uo)
+        self._uri_opener = uo
 
     def help(self, command):
         """
@@ -439,6 +443,13 @@ class XPathReader(Shell):
         self._rUser = 'xml-file'
         self._rSystemName = 'unknown'
 
+    def __reduce__(self):
+        """
+        @see: Shell.__reduce__ to understand why this is required.
+        """
+        return self.__class__, (self._vuln, None, None, self.STR_DELIM,
+                                self.TRUE_COND, self.is_error_resp)
+
 
 class IsErrorResponse(object):
     def __init__(self, vuln_obj, url_opener, use_difflib):
@@ -446,6 +457,15 @@ class IsErrorResponse(object):
         self.url_opener = url_opener
         self.use_difflib = use_difflib
         self.base_response = None
+
+    def __reduce__(self):
+        """
+        @see: Shell.__reduce__ to understand why this is required.
+        """
+        return self.__class__, (self.vuln_obj, None, self.use_difflib)
+
+    def set_url_opener(self, uo):
+        self.url_opener = uo
 
     def _configure(self):
         mutant = self.vuln_obj.get_mutant()
