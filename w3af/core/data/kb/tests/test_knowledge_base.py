@@ -34,6 +34,8 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.w3afCore import w3afCore
 
 from w3af.plugins.attack.payloads.shell_handler import get_shell_code
@@ -564,7 +566,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
-    def test_kb_list_shells_file_read_2181(self):
+    def test_kb_list_shells_os_commanding_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
         """
@@ -586,5 +588,31 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
         self.assertEqual(unpickled_shell.strategy.vuln, vuln)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_rfi_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+
+        vuln = MockVuln()
+        url = URL('http://moth/?a=1')
+        freq = FuzzableRequest(url)
+        exploit_mutant = QSMutant.create_mutants(freq, [''], [], False, {})[0]
+
+        shell = RFIShell(vuln, w3af_core.uri_opener, w3af_core.worker_pool,
+                         exploit_mutant)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell._exploit_mutant, exploit_mutant)
 
         w3af_core.quit()

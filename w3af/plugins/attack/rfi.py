@@ -476,10 +476,16 @@ class RFIShell(ExecShell, PortScanShell):
 
     def _rm_file(self, url_to_include):
         """
-        Remove the file from the webroot.
+        Remove the file from the web root.
 
         PLEASE NOTE: This is duplicated code!! see the same note above.
         """
         # Remove the file
         filename = url_to_include.split('/')[-1:][0]
         os.remove(os.path.join(get_home_dir(), 'webroot', filename))
+
+    def __reduce__(self):
+        """
+        @see: Shell.__reduce__ to understand why this is required.
+        """
+        return self.__class__, (self._vuln, None, None, self._exploit_mutant)
