@@ -218,8 +218,7 @@ class test_connection_mgr(unittest.TestCase):
     def test_replace_conn(self):
         cf = lambda h: Mock()
         bad_conn = Mock()
-        self.assertRaises(
-            ValueError, self.cm.replace_connection, bad_conn, self.host, cf)
+        self.cm.replace_connection( bad_conn, self.host, cf)
         bad_conn = self.cm.get_available_connection(self.host, cf)
         old_len = self.cm.get_connections_total()
         # Replace bad with a new one
@@ -230,14 +229,17 @@ class test_connection_mgr(unittest.TestCase):
         self.assertEquals(self.cm.get_connections_total(), old_len)
 
     def test_remove_conn(self):
-        # Rem a non existing conn
-        non_exist_conn = Mock()
+        """
+        Remove a non existing conn, nothing should happen.
+        """
+        self.assertEqual(self.cm.get_connections_total(), 0)
+
         conn = self.cm.get_available_connection(self.host, lambda h: Mock())
-        old_len = self.cm.get_connections_total()
+        self.assertEqual(self.cm.get_connections_total(), 0)
         non_exist_host = "non_host"
-        self.assertRaises(
-            ValueError, self.cm.remove_connection, conn, non_exist_host)
+
         # Remove ok
+        self.cm.remove_connection(conn, non_exist_host)
         self.cm.remove_connection(conn, self.host)
-        # curr_len = old_len - 1
-        self.assertTrue(old_len - 1 == self.cm.get_connections_total() == 0)
+
+        self.assertEqual(self.cm.get_connections_total(), 0)

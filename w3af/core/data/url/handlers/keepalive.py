@@ -418,7 +418,7 @@ class ConnectionManager(object):
             
             # No more conns for 'host', remove it from mapping
             conn_total = self.get_connections_total(host)
-            if host and not conn_total:
+            if host and host in self._hostmap and not conn_total:
                 del self._hostmap[host]
             
             msg = 'keepalive: removed one connection,' \
@@ -526,6 +526,9 @@ class ConnectionManager(object):
         If <host> is None return the grand total of created connections;
         otherwise return the total of created conns. for <host>.
         """
+        if host not in self._hostmap:
+            return 0
+
         values = self._hostmap.values() if (host is None) \
             else [self._hostmap[host]]
         return reduce(operator.add, map(len, values or [[]]))
