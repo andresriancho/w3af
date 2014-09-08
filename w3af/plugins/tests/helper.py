@@ -156,6 +156,7 @@ class PluginTest(unittest.TestCase):
         status = 404
         body = 'Not found'
         content_type = 'text/html'
+        mock_headers = {}
 
         for mock_response in self.MOCK_RESPONSES:
             if mock_response.method != method.command:
@@ -166,6 +167,7 @@ class PluginTest(unittest.TestCase):
                     status = mock_response.status
                     body = mock_response.body
                     content_type = mock_response.content_type
+                    mock_headers = mock_response.headers
 
                     break
             elif isinstance(mock_response.url, RE_COMPILE_TYPE):
@@ -173,9 +175,11 @@ class PluginTest(unittest.TestCase):
                     status = mock_response.status
                     body = mock_response.body
                     content_type = mock_response.content_type
+                    mock_headers = mock_response.headers
 
                     break
 
+        headers.update(mock_headers)
         headers['Content-Type'] = content_type
         headers['status'] = status
 
@@ -423,12 +427,17 @@ def create_target_option_list(*target):
 
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200,
-                 method='GET'):
+                 method='GET', headers=None):
         self.url = url
         self.body = body
-        self.content_type = content_type
         self.status = status
         self.method = method
+
+        self.content_type = content_type
+        self.headers = {'Content-Type': content_type}
+
+        if headers is not None:
+            self.headers.update(headers)
 
         assert method in ('GET', 'PUT', 'POST', 'DELETE', 'HEAD', 'PATCH',
                           'OPTIONS', 'CONNECT'), 'httpretty can not mock this'\
