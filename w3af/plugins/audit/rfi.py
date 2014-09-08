@@ -44,6 +44,8 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.vuln import Vuln
 
+CONFIG_OK = 'Ok'
+
 
 class rfi(AuditPlugin):
     """
@@ -54,7 +56,8 @@ class rfi(AuditPlugin):
     CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to' \
                        ' use. Please set valid values for local address (eg.' \
                        ' 10.5.2.5) and port (eg. 44449), or use the official' \
-                       ' w3af site as the target server for remote inclusions.'
+                       ' w3af site as the target server for remote inclusions.'\
+                       ' The configuration error is: "%s"'
 
     RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
@@ -72,7 +75,6 @@ class rfi(AuditPlugin):
 
         # Internal variables
         self._error_reported = False
-        # FIXME: self._vulns and self._report_vulns are not thread-safe
         self._vulns = []
 
         # User configured parameters
@@ -92,7 +94,9 @@ class rfi(AuditPlugin):
             self._w3af_site_test_inclusion(freq, orig_response)
 
         # Sanity check required for #2 technique
-        if not self._correctly_configured() and not self._error_reported:
+        config_ok, config_message = self._correctly_configured()
+
+        if not config_ok and not self._error_reported:
             # Report error to the user only once
             self._error_reported = True
             om.out.error(self.CONFIG_ERROR_MSG)
@@ -168,19 +172,22 @@ class rfi(AuditPlugin):
             with self._plugin_lock:
                 # If we have an active instance then we're OK!
                 if webserver.is_running(listen_address, listen_port):
-                    return True
+                    return True, CONFIG_OK
 
                 # Test if it's possible to bind the address
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                bind_args = (listen_address, listen_port)
                 try:
-                    s.bind((listen_address, listen_port))
+                    s.bind(bind_args)
                 except socket.error:
-                    return False
+                    return False, 'Failed to bind to address %s:%s' % bind_args
                 finally:
                     s.close()
                     del s
-                return True
+                return True, CONFIG_OK
+
+        return False, 'Listen address and port need to be configured'
 
     def _local_test_inclusion(self, freq, orig_response):
         """
@@ -425,8 +432,10 @@ class rfi(AuditPlugin):
         self._listen_port = options_list['listen_port'].get_value()
         self._use_w3af_site = options_list['use_w3af_site'].get_value()
 
-        if not self._correctly_configured() and not self._use_w3af_site:
-            raise BaseFrameworkException(self.CONFIG_ERROR_MSG)
+        config_ok, config_message = self._correctly_configured()
+
+        if not config_ok and not self._use_w3af_site:
+            raise BaseFrameworkException(self.CONFIG_ERROR_MSG % config_message)
 
     def get_long_desc(self):
         """
