@@ -46,6 +46,10 @@ def get_webshells(extension, force_extension=False):
     return _get_file_list('webshell', extension, force_extension)
 
 
+def cmd_replace(shellcode_content, _command):
+    return shellcode_content.replace(CMD_TO_RUN_CONSTANT, _command)
+
+
 def get_shell_code(extension, command, force_extension=False):
     """
     Similar to get_webshells but returns a code that when it is evaluated runs
@@ -67,9 +71,6 @@ def get_shell_code(extension, command, force_extension=False):
     """
     result = []
     shellcodes = _get_file_list('code', extension, force_extension)
-
-    def cmd_replace(shellcode_content, _command):
-        return shellcode_content.replace(CMD_TO_RUN_CONSTANT, _command)
 
     for file_content, real_extension in shellcodes:
         custom_replacer = functools.partial(cmd_replace, file_content)

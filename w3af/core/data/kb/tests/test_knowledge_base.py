@@ -493,7 +493,6 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
-    @unittest.skip('Still need to figure out how to fix this one...')
     def test_kb_list_shells_eval_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -514,8 +513,8 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(shell, unpickled_shell)
         self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
-        self.assertEqual(unpickled_shell.shellcode_generator,
-                         shell.shellcode_generator)
+        self.assertEqual(unpickled_shell.shellcode_generator.args,
+                         shell.shellcode_generator.args)
 
         w3af_core.quit()
 
