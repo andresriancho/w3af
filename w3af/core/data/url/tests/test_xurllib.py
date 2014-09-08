@@ -319,13 +319,13 @@ class TestXUrllib(unittest.TestCase):
         self.assertIn(header_content, http_response.body)
 
     def test_rate_limit_high(self):
-        self.rate_limit_generic(500, 0.01, 0.35)
+        self.rate_limit_generic(500, 0.01, 0.4)
 
     def test_rate_limit_low(self):
         self.rate_limit_generic(1, 1, 2)
 
     def test_rate_limit_zero(self):
-        self.rate_limit_generic(0, 0.01, 0.35)
+        self.rate_limit_generic(0, 0.01, 0.4)
 
     def rate_limit_generic(self, max_requests_per_second, _min, _max):
         url = URL(get_moth_http())
