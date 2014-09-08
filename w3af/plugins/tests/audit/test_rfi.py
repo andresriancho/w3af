@@ -25,6 +25,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.core.controllers.daemons.webserver import w3afHTTPServer
+from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.plugins.audit.rfi import RFIWebHandler
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -33,6 +34,7 @@ class TestRFI(PluginTest):
 
     target_rce = get_php_moth_http('/audit/rfi/rfi-rce.php')
     target_read = get_php_moth_http('/audit/rfi/rfi-read.php')
+    unused_port = get_unused_port()
 
     _run_configs = {
         'remote_rce': {
@@ -46,8 +48,8 @@ class TestRFI(PluginTest):
             'target': target_rce + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
-                                       (
-                                       'use_w3af_site', False, PluginConfig.BOOL),),),
+                                       ('use_w3af_site', False, PluginConfig.BOOL),
+                                       ('listen_port', unused_port, PluginConfig.INT)),),
             }
         },
 
@@ -55,8 +57,8 @@ class TestRFI(PluginTest):
             'target': target_read + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
-                                       (
-                                       'use_w3af_site', False, PluginConfig.BOOL),),),
+                                       ('use_w3af_site', False, PluginConfig.BOOL),
+                                       ('listen_port', unused_port, PluginConfig.INT)),),
             }
         },
 
@@ -64,8 +66,8 @@ class TestRFI(PluginTest):
             'target': target_read + '?file=abc.txt',
             'plugins': {
                 'audit': (PluginConfig('rfi',
-                                       (
-                                       'use_w3af_site', False, PluginConfig.BOOL),),),
+                                       ('use_w3af_site', False, PluginConfig.BOOL),
+                                       ('listen_port', unused_port, PluginConfig.INT)),),
             }
         }
 
