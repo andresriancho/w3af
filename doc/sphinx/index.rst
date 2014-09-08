@@ -63,13 +63,14 @@ Contents
    basic-ui
    scripts
    authentication
+   common-use-cases
    complex-web-apps
    
    exploitation
    advanced-exploitation
 
    report-a-bug
-   contributors
+   contribute
 
 GUI documentation
 -----------------
