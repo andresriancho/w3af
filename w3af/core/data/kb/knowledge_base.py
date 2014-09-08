@@ -27,6 +27,7 @@ import collections
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.db.disk_set import DiskSet
+from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.vuln import Vuln
@@ -301,7 +302,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         location_a = self._get_real_name(location_a)
         uniq_id = self._get_uniq_id(value)
         
-        pickled_obj = cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
+        pickled_obj = cpickle_dumps(value)
         t = (location_a, location_b, uniq_id, pickled_obj)
         
         query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name

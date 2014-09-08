@@ -23,6 +23,7 @@ import __builtin__ #magic
 import hashlib
 import cPickle
 
+from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.db.dbms import get_default_temp_db_instance
 from w3af.core.data.fuzzer.utils import rand_alpha
@@ -99,7 +100,7 @@ class DiskList(object):
                  way.
         """
         if type(obj).__name__ in dir(__builtin__):
-            return cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)
+            return cpickle_dumps(obj)
 
         elif isinstance(obj, DiskItem):
             result = ''
@@ -136,7 +137,7 @@ class DiskList(object):
         :param value: The value to append.
         """
         assert self._state == OPEN
-        pickled_obj = cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
+        pickled_obj = cpickle_dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
         
