@@ -79,21 +79,23 @@ class DiskDict(object):
         # have to scan through all the table/index, it just stops on the
         # first match.
         query = 'SELECT count(*) FROM %s WHERE key=? limit 1' % self.table_name
-        r = self.db.select_one(query, (cPickle.dumps(key),))
+        r = self.db.select_one(query, (cPickle.dumps(key, cPickle.HIGHEST_PROTOCOL),))
         return bool(r[0])
     
     def __setitem__(self, key, value):
         # Test if it is already in the DB:
         if key in self:
             query = 'UPDATE %s SET value = ? WHERE key=?' % self.table_name
-            self.db.execute(query, (cPickle.dumps(value), cPickle.dumps(key)))
+            self.db.execute(query, (cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL),
+                                    cPickle.dumps(key, cPickle.HIGHEST_PROTOCOL)))
         else:
             query = "INSERT INTO %s VALUES (NULL, ?, ?)" % self.table_name
-            self.db.execute(query, (cPickle.dumps(key), cPickle.dumps(value)))
+            self.db.execute(query, (cPickle.dumps(key, cPickle.HIGHEST_PROTOCOL),
+                                    cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)))
 
     def __getitem__(self, key):
         query = 'SELECT value FROM %s WHERE key=? limit 1' % self.table_name
-        r = self.db.select(query, (cPickle.dumps(key),))
+        r = self.db.select(query, (cPickle.dumps(key, cPickle.HIGHEST_PROTOCOL),))
         
         if not r:
             raise KeyError('%s not in DiskDict.' % key)

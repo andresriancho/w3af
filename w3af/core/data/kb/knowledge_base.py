@@ -301,7 +301,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         location_a = self._get_real_name(location_a)
         uniq_id = self._get_uniq_id(value)
         
-        pickled_obj = cPickle.dumps(value)
+        pickled_obj = cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
         t = (location_a, location_b, uniq_id, pickled_obj)
         
         query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name

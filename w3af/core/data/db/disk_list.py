@@ -99,7 +99,7 @@ class DiskList(object):
                  way.
         """
         if type(obj).__name__ in dir(__builtin__):
-            return cPickle.dumps(obj)
+            return cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)
 
         elif isinstance(obj, DiskItem):
             result = ''
@@ -136,7 +136,7 @@ class DiskList(object):
         :param value: The value to append.
         """
         assert self._state == OPEN
-        pickled_obj = cPickle.dumps(value)
+        pickled_obj = cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
         
