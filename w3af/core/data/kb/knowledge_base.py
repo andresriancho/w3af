@@ -232,7 +232,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                    ('uniq_id', 'TEXT'),
                    ('pickle', 'BLOB')]
 
-        self.table_name = rand_alpha(30)
+        self.table_name = 'knowledge_base_' + rand_alpha(30)
         self.db.create_table(self.table_name, columns)
         self.db.create_index(self.table_name, ['location_a', 'location_b'])
         self.db.create_index(self.table_name, ['uniq_id',])

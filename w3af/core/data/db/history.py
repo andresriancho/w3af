@@ -52,7 +52,7 @@ class HistoryItem(object):
     """Represents history item."""
 
     _db = None
-    _DATA_TABLE = 'data_table'
+    _DATA_TABLE = 'history_items'
     _COLUMNS = [
         ('id', 'INTEGER'), ('url', 'TEXT'), ('code', 'INTEGER'),
         ('tag', 'TEXT'), ('mark', 'INTEGER'), ('info', 'TEXT'),
