@@ -304,6 +304,12 @@ class Shell(ExploitResult):
         So, the UI has the responsibility to assign a ExtendedUrllib and a
         Pool to the Shell before it is used again.
         """
+        class_name = self.__class__.__name__
+        if class_name != 'Shell':
+            msg = 'You need to implement __reduce__ for the Shell subclass' \
+                  ' "%s". See #2181 for more details.'
+            raise NotImplementedError(msg % class_name)
+
         return self.__class__, (self._vuln, None, None)
     
     def __eq__(self, other):
