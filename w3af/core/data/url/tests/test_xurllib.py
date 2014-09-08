@@ -322,7 +322,7 @@ class TestXUrllib(unittest.TestCase):
         self.rate_limit_generic(500, 0.01, 0.4)
 
     def test_rate_limit_low(self):
-        self.rate_limit_generic(1, 1, 2)
+        self.rate_limit_generic(1, 1, 2.2)
 
     def test_rate_limit_zero(self):
         self.rate_limit_generic(0, 0.01, 0.4)
