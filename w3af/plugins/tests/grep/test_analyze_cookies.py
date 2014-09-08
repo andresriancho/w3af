@@ -145,9 +145,10 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(security), 2)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
-        self.assertTrue(any([True for i in security if 'The remote platform is: "PHP"' in i.get_desc()]))
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+
+        msg = 'The remote platform is: "PHP"'
+        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
 
     def test_analyze_cookies_secure_over_http(self):
         body = ''
@@ -163,9 +164,10 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(security), 2)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
-        self.assertTrue(any([True for i in security if 'A cookie marked with the secure flag' in i.get_desc()]))
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+
+        msg = 'A cookie marked with the secure flag'
+        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
 
     def test_analyze_cookies_no_httponly(self):
         body = ''
@@ -181,9 +183,10 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(security), 1)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
-        self.assertTrue(any([True for i in security if 'A cookie without the HttpOnly flag' in i.get_desc()]))
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+
+        msg = 'A cookie without the HttpOnly flag'
+        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
 
     def test_analyze_cookies_with_httponly(self):
         body = ''
@@ -227,8 +230,9 @@ class TestAnalyzeCookies(unittest.TestCase):
     def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
         body = ''
         url = URL('https://www.w3af.com/')
+        c = 'name2=value2; Expires=Wed, 09-Jun-2021 10:18:14 GMT;Secure;HttpOnly'
         headers = {'content-type': 'text/html',
-                   'Set-Cookie': 'name2=value2; Expires=Wed, 09-Jun-2021 10:18:14 GMT;Secure;HttpOnly'}
+                   'Set-Cookie': c}
         headers = Headers(headers.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
@@ -241,8 +245,9 @@ class TestAnalyzeCookies(unittest.TestCase):
     def test_analyze_cookies_https_value_over_http(self):
         body = ''
         url = URL('https://www.w3af.com/')
+        c = 'abc=defjkluio; secure; httponly;'
         headers = Headers({'content-type': 'text/html',
-                           'Set-Cookie': 'abc=defjkluio; secure; httponly;'}.items())
+                           'Set-Cookie': c}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
