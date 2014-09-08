@@ -180,8 +180,11 @@ class rfi(AuditPlugin):
                 bind_args = (listen_address, listen_port)
                 try:
                     s.bind(bind_args)
-                except socket.error:
-                    return False, 'Failed to bind to address %s:%s' % bind_args
+                except socket.error, se:
+                    msg = 'Failed to bind to address %s:%s, error: %s'
+                    fmt_args = list(bind_args)
+                    fmt_args.append(se)
+                    return False, msg % tuple(fmt_args)
                 finally:
                     s.close()
                     del s
