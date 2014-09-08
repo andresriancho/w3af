@@ -48,6 +48,11 @@ class fingerprint_WAF(InfrastructurePlugin):
     - Old version F5 Traffic Shield, NetContinuum, TEROS, BinarySec
     """
 
+    """
+    Currently (09/2014) most cookie names are matched case insensitive using
+    python's re.IGNORECASE . This should be configurable.
+    """
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -62,9 +67,15 @@ class fingerprint_WAF(InfrastructurePlugin):
                    self._fingerprint_SecureIIS,
                    self._fingerprint_Airlock,
                    self._fingerprint_Barracuda,
+                   self._fingerprint_CloudFlare,
                    self._fingerprint_DenyAll,
+                   self._fingerprint_dotDefender,
                    self._fingerprint_F5ASM,
                    self._fingerprint_F5TrafficShield,
+                   self._fingerprint_FortiWeb,
+                   self._fingerprint_IBMWebSphere,
+                   self._fingerprint_Incapsula,
+                   self._fingerprint_Profense,
                    self._fingerprint_TEROS,
                    self._fingerprint_NetContinuum,
                    self._fingerprint_BinarySec,
@@ -109,7 +120,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^AL[_-]?(SESS|LB)=', protected_by):
+                if re.match('^AL[_-]?(SESS|LB)(-S)?=', protected_by, re.IGNORECASE):
                     self._report_finding('Airlock', response, protected_by)
                     return
             # else
@@ -125,8 +136,40 @@ class fingerprint_WAF(InfrastructurePlugin):
             if header_name.lower() == 'set-cookie':
                 # ToDo: not sure if this is always there (08jul08 Achim)
                 protected_by = response.get_headers()[header_name]
-                if re.match('^barra_counter_session=', protected_by):
+                if re.match('^barra_counter_session=', protected_by, re.IGNORECASE):
                     self._report_finding('Barracuda', protected_by)
+                    return
+            # else
+                # don't know ...
+
+    def _fingerprint_CloudFlare(self, fuzzable_request):
+        """
+        Try to verify if CloudFlare Web Application Firewall is present.
+        """
+        om.out.debug('detect CloudFlare')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^(cloudflare(-nginx)?|__cfduid)=', protected_by):
+                    self._report_finding(
+                        'CloudFlare', response, protected_by)
+                    return
+            # else
+                # don't know ...
+
+    def _fingerprint_dotDefender(self, fuzzable_request):
+        """
+        Try to verify if dotDefender is present.
+        """
+        om.out.debug('detect dotDefender')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^X-dotDefender-denied=', protected_by):
+                    self._report_finding(
+                        'dotDefender', response, protected_by)
                     return
             # else
                 # don't know ...
@@ -146,6 +189,7 @@ class fingerprint_WAF(InfrastructurePlugin):
                     return
             # else
                 # more checks like detection=detected cookie
+                # or  200 Condition Intercepted
 
     def _fingerprint_F5ASM(self, fuzzable_request):
         """
@@ -159,8 +203,10 @@ class fingerprint_WAF(InfrastructurePlugin):
                 if re.match('^TS[a-zA-Z0-9]{3,6}=', protected_by):
                     self._report_finding('F5 ASM', response, protected_by)
                     return
-            # else
-                # more checks like special string in response
+            elif header_name.lower() == 'X-Cnection':
+                if re.match('^close', response.get_headers()[header_name]):
+                    self._report_finding('F5 ASM', response, protected_by)
+                    return
 
     def _fingerprint_F5TrafficShield(self, fuzzable_request):
         """
@@ -173,12 +219,75 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^ASINFO=', protected_by):
+                if re.match('^ASINFO=', protected_by, re.IGNORECASE):
                     self._report_finding(
                         'F5 TrafficShield', response, protected_by)
                     return
             # else
                 # more checks like special string in response
+
+    def _fingerprint_FortiWeb(self, fuzzable_request):
+        """
+        Try to verify if FortiWeb is present.
+        """
+        om.out.debug('detect FortiWeb')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^FORTIWAFSID=', protected_by, re.IGNORECASE):
+                    self._report_finding(
+                        'FortiWeb', response, protected_by)
+                    return
+            # else
+                # don't know ...
+
+    def _fingerprint_Incapsula(self, fuzzable_request):
+        """
+        Try to verify if Incapsula is present.
+        """
+        om.out.debug('detect FortiWeb')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^(incap_ses|visid_incap)=', protected_by, re.IGNORECASE):
+                    self._report_finding('Incapsula', response, protected_by)
+                    return
+            # else
+                # don't know ...
+
+    def _fingerprint_IBMWebSphere(self, fuzzable_request):
+        """
+        Try to verify if IBM WebSphere DataPower is present.
+        """
+        om.out.debug('detect IBM WebSphere')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^X-Backside-Transport=', protected_by, re.IGNORECASE):
+                    self._report_finding('IBM WebSphere', response, protected_by)
+                    return
+            # else
+                # don't know ...
+
+    def _fingerprint_Profense(self, fuzzable_request):
+        """
+        Try to verify if Profense is present.
+        """
+        om.out.debug('detect Profense')
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
+            if header_name.lower() == 'set-cookie':
+                protected_by = response.get_headers()[header_name]
+                if re.match('^PLBSID==', protected_by, re.IGNORECASE):
+                    self._report_finding('Profense', response, protected_by)
+                    return
+            elif header_name.lower() == 'Server':
+                if re.match('^Profense', response.get_headers()[header_name], re.IGNORECASE):
+                    self._report_finding('Profense', response, protected_by)
+                    return
 
     def _fingerprint_TEROS(self, fuzzable_request):
         """
@@ -208,7 +317,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^NCI__SessionId=', protected_by):
+                if re.match('^NCI__SessionId=', protected_by, re.IGNORECASE):
                     self._report_finding(
                         'NetContinuum', response, protected_by)
                     return
@@ -239,7 +348,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^WODSESSION=', protected_by):
+                if re.match('^WODSESSION=', protected_by, re.IGNORECASE):
                     self._report_finding('HyperGuard', response, protected_by)
                     return
             # else
@@ -286,19 +395,19 @@ class fingerprint_WAF(InfrastructurePlugin):
 
     def _report_finding(self, name, response, protected_by=None):
         """
-        Creates a information object based on the name and the response parameter
-        and saves the data in the kb.
+        Creates a information object based on the name and the response
+        parameter and saves the data in the kb.
 
         :param name: The name of the WAF
         :param response: The HTTP response object that was used to identify the WAF
         :param protected_by: A more detailed description/version of the WAF
         """
         desc = 'The remote network seems to have a "%s" WAF deployed to' \
-              ' protect access to the web server.'
+               ' protect access to the web server.'
         desc = desc % name
         
         if protected_by:
-            desc += ' The following is the WAF\'s version: "%s".'
+            desc += ' The following is the WAF\'s version: "%s".' % protected_by
         
         i = Info('Web Application Firewall fingerprint', desc, response.id,
                  self.get_name())
@@ -310,8 +419,8 @@ class fingerprint_WAF(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         """
-        :return: A list with the names of the plugins that should be run before the
-        current one.
+        :return: A list with the names of the plugins that should be run before
+                 the current one.
         """
         return ['infrastructure.afd']
 
