@@ -42,7 +42,7 @@ class error_500(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._error_500_responses = DiskSet()
+        self._error_500_responses = DiskSet(table_prefix='error_500')
 
     def grep(self, request, response):
         """
@@ -53,8 +53,7 @@ class error_500(GrepPlugin):
         :return: None
         """
         if response.is_text_or_html() \
-        and response.get_code() > 400 \
-        and response.get_code() < 600 \
+        and 400 < response.get_code() < 600 \
         and response.get_code() not in self.IGNORE_CODES\
         and not self._is_false_positive(response):
             self._error_500_responses.add((request, response.id))

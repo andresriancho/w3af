@@ -30,7 +30,7 @@ DEFAULT_MAX_VARIANTS = 5
 class VariantDB(object):
 
     def __init__(self, max_variants=DEFAULT_MAX_VARIANTS):
-        self._disk_dict = DiskDict()
+        self._disk_dict = DiskDict(table_prefix='variant_db')
         self._db_lock = threading.RLock()
         self.max_variants = max_variants
 

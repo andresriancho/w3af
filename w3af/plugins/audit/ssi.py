@@ -43,8 +43,8 @@ class ssi(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal variables
-        self._expected_res_mutant = DiskDict()
-        self._freq_list = DiskList()
+        self._expected_res_mutant = DiskDict(table_prefix='ssi')
+        self._freq_list = DiskList(table_prefix='ssi')
         
         re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'
         self._extract_results_re = re.compile(re_str) 

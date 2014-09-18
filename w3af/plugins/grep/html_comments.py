@@ -66,7 +66,7 @@ class html_comments(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._comments = DiskDict()
+        self._comments = DiskDict(table_prefix='html_comments')
         self._already_reported_interesting = ScalableBloomFilter()
 
     def grep(self, request, response):

@@ -274,6 +274,19 @@ class TestDiskList(unittest.TestCase):
         
         self.assertFalse(db.table_exists(table_name))
 
+    def test_table_name_with_prefix(self):
+        _unittest = 'unittest'
+        disk_list = DiskList(_unittest)
+
+        self.assertIn(_unittest, disk_list.table_name)
+        db = get_default_temp_db_instance()
+
+        self.assertTrue(db.table_exists(disk_list.table_name))
+
+        disk_list.cleanup()
+
+        self.assertFalse(db.table_exists(disk_list.table_name))
+
     def test_remove_table_then_add(self):
         disk_list = DiskList()
         disk_list.append(1)

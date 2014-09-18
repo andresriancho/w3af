@@ -32,8 +32,7 @@ import w3af.core.data.constants.response_codes as http_constants
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
-from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              ScanMustStopOnUrlError)
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -66,7 +65,7 @@ class web_spider(CrawlPlugin):
         # Internal variables
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
-        self._broken_links = DiskSet()
+        self._broken_links = DiskSet(table_prefix='web_spider')
         self._first_run = True
         self._target_urls = []
         self._target_domain = None

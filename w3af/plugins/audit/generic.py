@@ -47,7 +47,7 @@ class generic(AuditPlugin):
         AuditPlugin.__init__(self)
 
         #   Internal variables
-        self._potential_vulns = DiskList()
+        self._potential_vulns = DiskList(table_prefix='generic')
 
         #   User configured variables
         self._diff_ratio = 0.30
@@ -70,15 +70,19 @@ class generic(AuditPlugin):
                 continue
 
             # Now, we request the limit (something that doesn't exist)
-            # If http://localhost/a.php?b=1 ; then I should request b=12938795
-            #                                                       (random number)
-            # If http://localhost/a.php?b=abc ; then I should request b=hnv98yks
-            #                                                         (random alnum)
+            # If http://localhost/a.php?b=1
+            #   * Then I should request b=12938795 (random number)
+            #
+            # If http://localhost/a.php?b=abc
+            #   * Then I should request b=hnv98yks (random alnum)
             limit_response = self._get_limit_response(m)
 
             # Now I request something that could generate an error
-            #     If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
-            #     If http://localhost/a.php?b=abc ; then I should request b=d'kcz'gj'"**5*(((*)
+            # If http://localhost/a.php?b=1
+            #   * Then I should request b=d'kcz'gj'"**5*(((*)
+            #
+            # If http://localhost/a.php?b=abc
+            #   * Then I should request b=d'kcz'gj'"**5*(((*)
             #
             # I also try to trigger errors by sending empty strings
             #     If http://localhost/a.php?b=1 ; then I should request b=

@@ -94,3 +94,16 @@ class TestDiskDict(unittest.TestCase):
         disk_dict.cleanup()
         
         self.assertFalse(db.table_exists(table_name))
+
+    def test_table_with_prefix(self):
+        _unittest = 'unittest'
+        disk_dict = DiskDict(_unittest)
+
+        self.assertIn(_unittest, disk_dict.table_name)
+        db = get_default_temp_db_instance()
+
+        self.assertTrue(db.table_exists(disk_dict.table_name))
+
+        disk_dict.cleanup()
+
+        self.assertFalse(db.table_exists(disk_dict.table_name))

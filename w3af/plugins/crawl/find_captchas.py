@@ -43,7 +43,7 @@ class find_captchas(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-        self._captchas_found = DiskSet()
+        self._captchas_found = DiskSet(table_prefix='find_captchas')
 
     def crawl(self, fuzzable_request):
         """

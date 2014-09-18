@@ -223,8 +223,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     def __init__(self):
         super(DBKnowledgeBase, self).__init__()
         
-        self.urls = DiskSet()
-        self.fuzzable_requests = DiskSet()
+        self.urls = DiskSet(table_prefix='kb_urls')
+        self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
         
         self.db = get_default_persistent_db_instance()
 
@@ -470,10 +470,10 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         # Remove the old, create new.
         self.urls.cleanup()
-        self.urls = DiskSet()
+        self.urls = DiskSet(table_prefix='kb_urls')
         
         self.fuzzable_requests.cleanup()
-        self.fuzzable_requests = DiskSet()
+        self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
         
         self.observers.clear()
     
