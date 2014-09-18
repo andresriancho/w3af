@@ -195,3 +195,16 @@ class test_DiskSet(unittest.TestCase):
 
         self.assertEqual(stored_fr, fr)
         self.assertIsNot(stored_fr, fr)
+
+    def test_table_name_with_prefix(self):
+        _unittest = 'unittest'
+        disk_set = DiskSet(_unittest)
+
+        self.assertIn(_unittest, disk_set.table_name)
+        db = get_default_temp_db_instance()
+
+        self.assertTrue(db.table_exists(disk_set.table_name))
+
+        disk_set.cleanup()
+
+        self.assertFalse(db.table_exists(disk_set.table_name))

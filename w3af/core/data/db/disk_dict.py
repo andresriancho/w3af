@@ -36,10 +36,11 @@ class DiskDict(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self):
+    def __init__(self, table_prefix=None):
         self.db = get_default_temp_db_instance()
 
-        self.table_name = 'disk_dict_' + rand_alpha(30)
+        prefix = '' if table_prefix is None else ('%s_' % table_prefix)
+        self.table_name = 'disk_dict_' + prefix + rand_alpha(30)
 
         # Create table
         # DO NOT add the AUTOINCREMENT flag to the table creation since that

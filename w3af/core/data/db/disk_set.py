@@ -31,8 +31,8 @@ class DiskSet(DiskList):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        super(DiskSet, self).__init__()
+    def __init__(self, table_prefix=None):
+        super(DiskSet, self).__init__(table_prefix=table_prefix)
 
         self.lock = threading.RLock()
     
