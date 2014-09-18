@@ -63,7 +63,7 @@ class dir_file_bruter(CrawlPlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = DiskSet()
+        self._already_tested = DiskSet(table_prefix='dir_file_bruter')
 
     def crawl(self, fuzzable_request):
         """

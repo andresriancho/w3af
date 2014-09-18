@@ -51,7 +51,7 @@ class phpinfo(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # Internal variables
-        self._analyzed_dirs = DiskSet()
+        self._analyzed_dirs = DiskSet(table_prefix='phpinfo')
         self._has_audited = 0
 
     def crawl(self, fuzzable_request):
