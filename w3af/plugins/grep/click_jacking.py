@@ -38,8 +38,8 @@ class click_jacking(GrepPlugin):
 
         self._total_count = 0
         self._vuln_count = 0
-        self._vulns = DiskList()
-        self._ids = DiskList()
+        self._vulns = DiskList(table_prefix='click_jacking')
+        self._ids = DiskList(table_prefix='click_jacking')
 
     def grep(self, request, response):
         """

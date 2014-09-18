@@ -64,7 +64,7 @@ class html_file(OutputPlugin):
 
         # These attributes hold the file pointers
         self._file = None
-        self._aditional_info = DiskList()
+        self._aditional_info = DiskList(table_prefix='html_file')
 
         # User configured parameters
         self._verbose = False

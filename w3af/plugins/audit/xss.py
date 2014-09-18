@@ -52,7 +52,7 @@ class xss(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         
-        self._xss_mutants = DiskList()
+        self._xss_mutants = DiskList(table_prefix='xss')
 
         # User configured parameters
         self._check_persistent_xss = True

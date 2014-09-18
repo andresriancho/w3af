@@ -48,8 +48,8 @@ class cache_control(GrepPlugin):
 
         self._total_count = 0
         self._vuln_count = 0
-        self._vulns = DiskList()
-        self._ids = DiskList()
+        self._vulns = DiskList(table_prefix='cache_control')
+        self._ids = DiskList(table_prefix='cache_control')
 
     def grep(self, request, response):
         if response.is_image() or response.is_swf():
@@ -58,8 +58,7 @@ class cache_control(GrepPlugin):
         elif response.get_url().get_protocol() == 'http':
             return
 
-        elif response.get_code() > 300\
-        and response.get_code() < 310:
+        elif 300 < response.get_code() < 310:
             return
         
         elif response.body == '':

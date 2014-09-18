@@ -41,7 +41,7 @@ class path_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_added = DiskList()
+        self._already_added = DiskList(table_prefix='path_disclosure')
 
         # Compile all regular expressions and store information to avoid
         # multiple queries to the same function

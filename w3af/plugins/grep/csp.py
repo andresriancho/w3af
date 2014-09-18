@@ -28,7 +28,7 @@ from w3af.core.controllers.csp.utils import find_vulns
 
 class csp(GrepPlugin):
     """
-    This plugin identifies incorrect or too permissive CSP (Content Security Policy) headers returned by the web application under analysis.
+    Identifies incorrect or too permissive Content Security Policy headers.
     """
     VULN_NAME = 'CSP vulnerability'
 
@@ -39,8 +39,8 @@ class csp(GrepPlugin):
         GrepPlugin.__init__(self)
 
         self._total_count = 0
-        self._vulns = DiskList()
-        self._urls = DiskList() 
+        self._vulns = DiskList(table_prefix='csp')
+        self._urls = DiskList(table_prefix='csp')
                 
     def get_long_desc(self):
         return """

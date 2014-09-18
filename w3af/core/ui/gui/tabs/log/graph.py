@@ -60,7 +60,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         self.pangolayout = self.create_pango_layout("")
 
         # store all messages to be able to redraw
-        self.all_messages = DiskList()
+        self.all_messages = DiskList(table_prefix='gui_graph')
         self._need_redraw = 0
         
         # control variables

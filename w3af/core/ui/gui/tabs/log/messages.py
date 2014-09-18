@@ -49,7 +49,7 @@ class _LineScroller(gtk.TextView, MessageConsumer):
         self.active_filter = active_filter
         self.text_position = 0
         
-        self.all_messages = DiskList()
+        self.all_messages = DiskList(table_prefix='gui_messages')
         
         # scroll bar
         self.freeze_scrollbar = False
