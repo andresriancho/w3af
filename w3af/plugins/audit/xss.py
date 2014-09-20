@@ -48,6 +48,7 @@ class xss(AuditPlugin):
                 "RANDOMIZE'RANDOMIZE",
                 "RANDOMIZE`RANDOMIZE",
                 "RANDOMIZE ="]
+    
         
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -56,6 +57,7 @@ class xss(AuditPlugin):
 
         # User configured parameters
         self._check_persistent_xss = True
+        self._simple_detection_mode = False
 
     def audit(self, freq, orig_response):
         """
@@ -78,8 +80,14 @@ class xss(AuditPlugin):
         """
         Tries to identify (persistent) XSS in one parameter.
         """
-        if not self._identify_trivial_xss(mutant):
-            self._search_xss(mutant)
+        
+        # Simple detection mode. Reduced number of HTTP requests for speed
+        if self._simple_detection_mode:
+            self._identify_trivial_xss(mutant)
+        
+        else:
+            if not self._identify_trivial_xss(mutant):
+                self._search_xss(mutant)
 
     def _report_vuln(self, mutant, response, mod_value):
         """
@@ -274,7 +282,14 @@ class xss(AuditPlugin):
              ' vulnerabilities.'
         o1 = opt_factory('persistent_xss', self._check_persistent_xss, d1,
                          'boolean', help=h1)
+        d2 = 'Only check for trivial cross site scripting vulnerabilities'
+        h2 = 'If set to True, w3af will only check for trivial cross site'\
+             ' vulnerabilities and drastically increase run time.'
+        o2 = opt_factory('simple_detection_mode', self._simple_detection_mode, d2,
+                         'boolean', help=h2)
+        
         ol.add(o1)
+        ol.add(o2)
         
         return ol
         
@@ -287,6 +302,7 @@ class xss(AuditPlugin):
         :return: No value is returned.
         """
         self._check_persistent_xss = options_list['persistent_xss'].get_value()
+        self._simple_detection_mode = options_list['simple_detection_mode'].get_value()
         
     def get_long_desc(self):
         """
