@@ -187,7 +187,7 @@ class Plugin(Configurable):
         for (mutant,), http_response in imap_unordered(func, iterable):
             callback(mutant, http_response)
 
-    def handle_url_error(self, http_exception):
+    def handle_url_error(self, uri, http_exception):
         """
         Handle UrlError exceptions raised when requests are made.
         Subclasses should redefine this method for a more refined
@@ -204,9 +204,9 @@ class Plugin(Configurable):
                       sense if re_raise is False.
         """
         msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
-        args = (self.get_name(), http_exception.get_url(), http_exception)
+        args = (self.get_name(), uri, http_exception)
         om.out.error(msg % args)
-        return False, new_no_content_resp()
+        return False, new_no_content_resp(uri)
 
 
 class UrlOpenerProxy(object):
@@ -220,9 +220,9 @@ class UrlOpenerProxy(object):
 
     def __getattr__(self, name):
 
-        def meth(*args, **kwargs):
+        def meth(uri, *args, **kwargs):
             try:
-                return attr(*args, **kwargs)
+                return attr(uri, *args, **kwargs)
             except HTTPRequestException, hre:
                 #
                 # We get here when **one** HTTP request fails. When more than
@@ -230,7 +230,7 @@ class UrlOpenerProxy(object):
                 # type of exception (not a subclass of HTTPRequestException)
                 # and that one will bubble up to w3afCore/strategy/etc.
                 #
-                re_raise, result = self._plugin_inst.handle_url_error(hre)
+                re_raise, result = self._plugin_inst.handle_url_error(uri, hre)
 
                 # By default we do NOT re-raise, we just return a 204-no content
                 # response and hope for the best.
