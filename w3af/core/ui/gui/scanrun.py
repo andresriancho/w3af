@@ -25,7 +25,6 @@ import sys
 import re
 import Queue
 import webbrowser
-import xdot
 
 from multiprocessing.dummy import Process, Event
 
@@ -33,6 +32,7 @@ from w3af.core.ui.gui import httpLogTab, reqResViewer, entries
 from w3af.core.ui.gui.kb.kbtree import KBTree
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from w3af.core.ui.gui.tools.manual_requests import ManualRequests
+from w3af.core.ui.gui.misc.xdot_wrapper import WrappedDotWidget
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.kb.info import Info
@@ -335,7 +335,7 @@ class URLsGraph(gtk.VBox):
         return False
 
     def _draw_real(self, q, evt):
-        new_widget = xdot.DotWidget()
+        new_widget = WrappedDotWidget()
         self._somethingnew = False
         dotcode = "graph G {%s}" % "\n".join(self.nodos_code)
         new_widget.set_dotcode(dotcode)
