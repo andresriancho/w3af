@@ -31,6 +31,7 @@ from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.data.url.helpers import new_no_content_resp
 
 
 class Plugin(Configurable):
@@ -48,7 +49,7 @@ class Plugin(Configurable):
 
     def __init__(self):
         """
-        Create some generic attributes that are going to be used by most plugins.
+        Create some generic attributes that are going to be used by most plugins
         """
         self._uri_opener = None
         self.worker_pool = None
@@ -205,7 +206,7 @@ class Plugin(Configurable):
         msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
         args = (self.get_name(), http_exception.get_url(), http_exception)
         om.out.error(msg % args)
-        return True, None
+        return False, new_no_content_resp()
 
 
 class UrlOpenerProxy(object):
@@ -231,6 +232,8 @@ class UrlOpenerProxy(object):
                 #
                 re_raise, result = self._plugin_inst.handle_url_error(hre)
 
+                # By default we do NOT re-raise, we just return a 204-no content
+                # response and hope for the best.
                 if re_raise:
                     exc_info = sys.exc_info()
                     raise exc_info[0], exc_info[1], exc_info[2]
