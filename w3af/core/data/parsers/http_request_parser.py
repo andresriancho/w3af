@@ -93,15 +93,15 @@ def http_request_parser(head, postdata):
 
     """
     # Parse the request head, the strip() helps us deal with the \r (if any)
-    splitted_head = head.split('\n')
-    splitted_head = [h.strip() for h in splitted_head if h]
+    split_head = head.split('\n')
+    split_head = [h.strip() for h in split_head if h]
 
-    if not splitted_head:
+    if not split_head:
         msg = 'The HTTP request is invalid.'
         raise BaseFrameworkException(msg)
 
     # Get method, uri, version
-    method_uri_version = splitted_head[0]
+    method_uri_version = split_head[0]
     first_line = method_uri_version.split(' ')
     if len(first_line) == 3:
         # Ok, we have something like "GET /foo HTTP/1.0". This is the best case
@@ -124,16 +124,16 @@ def http_request_parser(head, postdata):
 
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
-    headers_str = splitted_head[1:]
+    headers_str = split_head[1:]
     headers_inst = Headers()
     for header in headers_str:
-        one_splitted_header = header.split(':', 1)
-        if len(one_splitted_header) == 1:
+        one_split_header = header.split(':', 1)
+        if len(one_split_header) == 1:
             msg = 'The HTTP request has an invalid header: "%s".'
             raise BaseFrameworkException(msg % header)
 
-        header_name = one_splitted_header[0].strip()
-        header_value = one_splitted_header[1].strip()
+        header_name = one_split_header[0].strip()
+        header_value = one_split_header[1].strip()
         if header_name in headers_inst:
             headers_inst[header_name] += ', ' + header_value
         else:

@@ -402,8 +402,8 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         try:
-            http_resp = self.w3af.uri_opener.send_raw_request(
-                realreq, realbody, fixContentLength)
+            http_resp = self.w3af.uri_opener.send_raw_request(realreq, realbody,
+                                                              fixContentLength)
             error_msg = None
             self.result_ok += 1
         except HTTPRequestException, e:
@@ -465,8 +465,6 @@ class FuzzyRequests(entries.RememberingWindow):
             except IndexError:
                 #
                 # This catches a strange error
-                # https://sourceforge.net/tracker/?func=detail&aid=2696941&group_id=170274&atid=853652
-                # TODO: Investigate this further...
                 #
                 error_msg = 'Error searching the request database'
                 self.resultReqResp.request.show_raw(error_msg, error_msg)
