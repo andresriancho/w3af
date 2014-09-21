@@ -680,7 +680,8 @@ class ExtendedUrllib(object):
     def get_exception_reason(self, error):
         """
         :param error: The exception instance
-        :return: The reason/message associated with that exception
+        :return: The reason/message associated with that exception (if known)
+                 else we return None.
         """
         reason_msg = None
 
@@ -697,8 +698,9 @@ class ExtendedUrllib(object):
                 reason_msg = self.get_socket_exception_reason(error)
 
         elif isinstance(error, ssl.SSLError):
-            msg = 'SSL Error: %s'
-            reason_msg = msg % self.get_socket_exception_reason(error)
+            socket_reason = self.get_socket_exception_reason(error)
+            if socket_reason:
+                reason_msg = 'SSL Error: %s' % socket_reason
 
         elif isinstance(error, socket.error):
             reason_msg = self.get_socket_exception_reason(error)
