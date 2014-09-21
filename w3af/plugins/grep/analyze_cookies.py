@@ -376,7 +376,7 @@ class analyze_cookies(GrepPlugin):
 
         tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
         res_dict, item_idx = group_by_min_key(tmp)
-        if not item_idx:
+        if item_idx:
             # Grouped by URLs
             msg = 'The URL: "%s" sent these cookies:'
         else:
