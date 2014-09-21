@@ -132,4 +132,4 @@ class TestBasicConsoleUI(ConsoleTestHelper):
                                'The configuration has been saved.')
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
-        
+
