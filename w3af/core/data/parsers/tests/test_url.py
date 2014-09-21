@@ -963,3 +963,12 @@ class TestURLParser(unittest.TestCase):
 
         cPickle.dumps(u)
         cPickle.dumps(domain_path)
+
+    def test_can_be_pickled_with_qs(self):
+        # Pickle a URL object that contains a query string
+        u = URL('http://www.w3af.com/?id=1')
+        cPickle.dumps(u)
+
+    def test_copy(self):
+        u = URL('http://www.w3af.com/?id=1&id=2')
+        self.assertEqual(u, u.copy())
