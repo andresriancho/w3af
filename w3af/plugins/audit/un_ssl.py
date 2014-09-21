@@ -125,7 +125,7 @@ class un_ssl(AuditPlugin):
         :return: (True: to avoid this exception to be re-raised
                   None: There is no response)
         """
-        return True, None
+        return False, None
 
     def _redirects_to_secure(self, insecure_response, secure_response):
         """

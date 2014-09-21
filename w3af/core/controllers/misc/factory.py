@@ -62,8 +62,9 @@ def factory(module_name, *args):
             try:
                 inst = a_class(*args)
             except Exception, e:
-                msg = 'Failed to get an instance of "%s". Original exception: '
-                msg += '"%s". Traceback for this error: %s'
-                raise BaseFrameworkException(
-                    msg % (class_name, e, traceback.format_exc()))
+                msg = 'Failed to get an instance of "%s". Original exception:'\
+                      ' "%s". Traceback for this error: %s'
+                msg = msg % (class_name, e, traceback.format_exc())
+                raise BaseFrameworkException(msg)
+
             return inst
