@@ -43,3 +43,16 @@ class TestQueryString(unittest.TestCase):
         expected = 'a=1%222'
         self.assertEqual(qs, expected)
 
+    def test_setitem_fail_on_string(self):
+        qs = QueryString([('a', ['1'])])
+        self.assertRaises(TypeError, qs.__setitem__, 'abc')
+
+    def test_setitem_list(self):
+        qs = QueryString([('a', ['1'])])
+        qs['foo'] = ['bar']
+
+        self.assertEqual(str(qs), 'a=1&foo=bar')
+
+        qs['foo'] = ['bar', 'spam']
+        self.assertEqual(str(qs), 'a=1&foo=bar&foo=spam')
+

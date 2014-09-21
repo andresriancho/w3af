@@ -28,32 +28,33 @@ from w3af.plugins.evasion.rnd_param import rnd_param
 
 
 class TestEvasion(unittest.TestCase):
-    
-    def test_add_when_empty(self):
-        rp = rnd_param()
 
-        u = URL('http://www.w3af.com/')
-        r = HTTPRequest( u )
-        qs = rp.modify_request( r ).url_object.querystring
-        self.assertEqual(len(qs), 1)
+    def setUp(self):
+        self.eplugin = rnd_param()
+
+    def test_add_when_empty(self):
+        url = URL('http://www.w3af.com/')
+        original_req = HTTPRequest(url)
+
+        modified_req = self.eplugin.modify_request(original_req)
+        self.assertEqual(len(modified_req.url_object.querystring), 1)
 
     def test_add_when_qs(self):
-        rp = rnd_param()
-                
-        u = URL('http://www.w3af.com/?id=1')
-        r = HTTPRequest( u )
-        qs = rp.modify_request( r ).url_object.querystring
-        self.assertEqual(len(qs), 2)
+        url = URL('http://www.w3af.com/?id=1')
+        original_req = HTTPRequest(url)
+
+        modified_req = self.eplugin.modify_request(original_req)
+        self.assertEqual(len(modified_req.url_object.querystring), 2)
 
     def test_add_when_qs_and_postdata(self):
-        rp = rnd_param()
-        
-        u = URL('http://www.w3af.com/?id=1')
-        r = HTTPRequest( u, data='a=b' )
-        modified_request = rp.modify_request( r )
+        url = URL('http://www.w3af.com/?id=1')
+        original_req = HTTPRequest(url, data='a=b')
 
-        data = parse_qs( modified_request.get_data() )
+        modified_req = self.eplugin.modify_request(original_req)
+        self.assertEqual(len(modified_req.url_object.querystring), 2)
+        
+        data = parse_qs(modified_req.get_data())
         self.assertEqual(len(data), 2)
 
-        modified_qs = modified_request.url_object.querystring
+        modified_qs = modified_req.url_object.querystring
         self.assertEqual(len(modified_qs), 2)

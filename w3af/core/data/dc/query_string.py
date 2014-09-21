@@ -23,6 +23,9 @@ import w3af.core.data.parsers.encode_decode as enc_dec
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
+from w3af.core.data.dc.utils.token import DataToken
+
+ERR_MSG = 'Unsupported value "%s", expected format is [u"2", u"abc"].'
 
 
 class QueryString(KeyValueContainer):
@@ -42,3 +45,13 @@ class QueryString(KeyValueContainer):
         :return: string representation of the QueryString object.
         """
         return enc_dec.urlencode(self, encoding=self.encoding, safe='')
+
+    def __setitem__(self, key, value):
+        if not isinstance(value, (list, tuple)):
+            raise TypeError(ERR_MSG % value)
+
+        for sub_val in value:
+            if not isinstance(sub_val, (basestring, DataToken)):
+                raise TypeError(ERR_MSG % value)
+
+        super(QueryString, self).__setitem__(key, value)
