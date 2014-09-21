@@ -77,7 +77,7 @@ class rnd_param(EvasionPlugin):
         """
         key = rand_alnum(5)
         value = rand_alnum(8)
-        data[key] = value
+        data[key] = [value]
         return data
 
     def get_priority(self):

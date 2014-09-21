@@ -45,6 +45,7 @@ class TestEvasion(unittest.TestCase):
 
         modified_req = self.eplugin.modify_request(original_req)
         self.assertEqual(len(modified_req.url_object.querystring), 2)
+        self.assertIn('id=1', str(modified_req.url_object.querystring))
 
     def test_add_when_qs_and_postdata(self):
         url = URL('http://www.w3af.com/?id=1')
@@ -52,9 +53,11 @@ class TestEvasion(unittest.TestCase):
 
         modified_req = self.eplugin.modify_request(original_req)
         self.assertEqual(len(modified_req.url_object.querystring), 2)
+        self.assertIn('id=1', str(modified_req.url_object.querystring))
         
         data = parse_qs(modified_req.get_data())
         self.assertEqual(len(data), 2)
+        self.assertIn('a=b', str(data))
 
         modified_qs = modified_req.url_object.querystring
         self.assertEqual(len(modified_qs), 2)
