@@ -24,12 +24,17 @@ import copy
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.plugins.plugin import Plugin
-from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.controllers.plugins.plugin import Plugin
+from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
+from w3af.core.controllers.exceptions import (NoVulnerabilityFoundException,
+                                              ExploitFailedException,
+                                              HTTPRequestException,
+                                              ScanMustStopException,
+                                              ScanMustStopByUnknownReasonExc,
+                                              ScanMustStopByUserRequest)
 
 
 class AttackPlugin(Plugin, CommonAttackMethods):
@@ -171,7 +176,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         """
         if not self.can_exploit():
             fmt = 'No %s vulnerabilities have been found.'
-            raise BaseFrameworkException(fmt % ' or '.join(self.get_kb_location()))
+            msg = fmt % ' or '.join(self.get_kb_location())
+            raise NoVulnerabilityFoundException(msg)
 
         om.out.information(self.get_name() + ' exploit plugin is starting.')
         generated_shells = []
@@ -199,7 +205,17 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                 continue
 
             # Try to get a shell using a vuln
-            s = self._generate_shell(vuln)
+            try:
+                s = self._generate_shell(vuln)
+            except (HTTPRequestException, ScanMustStopException,
+                    ScanMustStopByUnknownReasonExc,
+                    ScanMustStopByUserRequest) as e:
+                # We get here when there were errors in the exploitation process
+                # and we raise this custom exception to let the user know that
+                # something went wrong.
+                msg = 'The exploitation failed due to HTTP exception: "%s".'
+                raise ExploitFailedException(msg % e)
+
             if s is not None:
                 kb.kb.append(self.get_name(), 'shell', s)
                 generated_shells.append(s)

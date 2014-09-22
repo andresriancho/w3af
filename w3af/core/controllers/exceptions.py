@@ -159,3 +159,11 @@ class FileException(BaseFrameworkException):
 
 class OSDetectionException(BaseFrameworkException):
     pass
+
+
+class NoVulnerabilityFoundException(BaseFrameworkException):
+    pass
+
+
+class ExploitFailedException(BaseFrameworkException):
+    pass
