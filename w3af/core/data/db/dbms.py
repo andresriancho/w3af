@@ -290,16 +290,22 @@ class SQLiteExecutor(Process):
         self.conn = conn
         
         self.cursor = conn.cursor()
-        self.cursor.execute('PRAGMA synchronous=OFF')
+
+        # Commented line to be: Slower but (hopefully) without malformed
+        # databases
+        #
+        # https://github.com/andresriancho/w3af/issues/4937
+        #
+        #self.cursor.execute('PRAGMA synchronous=OFF')
     
     def run(self):
         """
         This is the "main" method for this class, the one that
         consumes the commands which are sent to the Queue. The idea is to have
         the following architecture features:
-            * Other parts of the framework which want to insert into the DB simply
-              add an item to our input Queue and "forget about it" since it will
-              be processed in another thread.
+            * Other parts of the framework which want to insert into the DB
+              simply add an item to our input Queue and "forget about it" since
+              it will be processed in another thread.
 
             * Only one thread accesses the sqlite3 object, which avoids many
             issues because of sqlite's non thread-safeness
