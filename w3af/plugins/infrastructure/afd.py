@@ -60,8 +60,8 @@ class afd(InfrastructurePlugin):
         """
         try:
             filtered, not_filtered = self._send_requests(fuzzable_request)
-        except BaseFrameworkException, w3:
-            om.out.error(str(w3))
+        except BaseFrameworkException, bfe:
+            om.out.error(str(bfe))
         else:
             self._analyze_results(filtered, not_filtered)
 
@@ -80,31 +80,30 @@ class afd(InfrastructurePlugin):
 
         try:
             http_resp = self._uri_opener.GET(original_url, cache=True)
-        except BaseFrameworkException:
+        except BaseFrameworkException, bfe:
             msg = 'Active filter detection plugin failed to receive a'\
-                  ' response for the first request. Can not perform analysis.'
-            om.out.error(msg)
+                  ' response for the first request. The exception was: "%s".' \
+                  ' Can not perform analysis.'
+            raise BaseFrameworkException(msg % bfe)
         else:
-            original_response_body = http_resp.get_body()
-            original_response_body = original_response_body.replace(
-                rnd_param, '')
-            original_response_body = original_response_body.replace(
-                rnd_value, '')
+            orig_resp_body = http_resp.get_body()
+            orig_resp_body = orig_resp_body.replace(rnd_param, '')
+            orig_resp_body = orig_resp_body.replace(rnd_value, '')
 
             tests = []
             for offending_string in self._get_offending_strings():
-                offending_URL = fmt % (fuzzable_request.get_url(),
+                offending_url = fmt % (fuzzable_request.get_url(),
                                        rnd_param,
                                        offending_string)
-                offending_URL = URL(offending_URL)
-                tests.append((offending_string, offending_URL,
-                              original_response_body, rnd_param))
+                offending_url = URL(offending_url)
+                tests.append((offending_string, offending_url,
+                              orig_resp_body, rnd_param))
 
             self.worker_pool.map_multi_args(self._send_and_analyze, tests)
 
             return self._filtered, self._not_filtered
 
-    def _send_and_analyze(self, offending_string, offending_URL,
+    def _send_and_analyze(self, offending_string, offending_url,
                           original_resp_body, rnd_param):
         """
         Actually send the HTTP request.
@@ -113,20 +112,20 @@ class afd(InfrastructurePlugin):
                  self._not_filtered lists.
         """
         try:
-            resp_body = self._uri_opener.GET(offending_URL,
+            resp_body = self._uri_opener.GET(offending_url,
                                              cache=False).get_body()
         except BaseFrameworkException:
             # I get here when the remote end closes the connection
-            self._filtered.append(offending_URL)
+            self._filtered.append(offending_url)
         else:
             # I get here when the remote end returns a 403 or something like
             # that... So I must analyze the response body
             resp_body = resp_body.replace(offending_string, '')
             resp_body = resp_body.replace(rnd_param, '')
             if fuzzy_not_equal(resp_body, original_resp_body, 0.15):
-                self._filtered.append(offending_URL)
+                self._filtered.append(offending_url)
             else:
-                self._not_filtered.append(offending_URL)
+                self._not_filtered.append(offending_url)
 
     def _analyze_results(self, filtered, not_filtered):
         """
@@ -134,7 +133,7 @@ class afd(InfrastructurePlugin):
         """
         if len(filtered) >= len(self._get_offending_strings()) / 5.0:
             desc = 'The remote network has an active filter. IMPORTANT: The'\
-                   ' result of all the other plugins will be unaccurate, web'\
+                   ' result of all the other plugins will be inaccurate, web'\
                    ' applications could be vulnerable but "protected" by the'\
                    ' active filter.'
                    
