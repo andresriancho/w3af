@@ -220,9 +220,9 @@ class UrlOpenerProxy(object):
 
     def __getattr__(self, name):
 
-        def meth(uri, *args, **kwargs):
+        def meth(*args, **kwargs):
             try:
-                return attr(uri, *args, **kwargs)
+                return attr(*args, **kwargs)
             except HTTPRequestException, hre:
                 #
                 # We get here when **one** HTTP request fails. When more than
@@ -230,6 +230,7 @@ class UrlOpenerProxy(object):
                 # type of exception (not a subclass of HTTPRequestException)
                 # and that one will bubble up to w3afCore/strategy/etc.
                 #
+                uri = args[0]
                 re_raise, result = self._plugin_inst.handle_url_error(uri, hre)
 
                 # By default we do NOT re-raise, we just return a 204-no content
