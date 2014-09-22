@@ -59,8 +59,6 @@ class ExceptionHandler(object):
         NO_HANDLING = tuple(NO_HANDLING)
 
     def __init__(self):
-        # TODO: Maybe this should be a DiskList just to make sure we don't
-        # fill the memory with exceptions?
         self._exception_data = []
         self._lock = threading.RLock()
 
