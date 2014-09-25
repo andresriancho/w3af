@@ -31,7 +31,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
-TEST_HEADER = 'Shock'
+TEST_HEADER = 'User-Agent'
 
 
 class shell_shock(AuditPlugin):
@@ -76,12 +76,14 @@ class shell_shock(AuditPlugin):
                                               False, fuzzer_config)[0]
 
         # Unix
-        delay_obj = PingDelay('() { test; }; ping -c %s localhost', 'unix', '')
+        test_fmt = '() { test; }; ping -c %s localhost'
+        delay_obj = PingDelay(test_fmt, 'unix', '')
 
         ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
         success, responses = ed.delay_is_controlled()
 
         if success:
+            mutant.set_token_value(test_fmt % 3)
             desc = 'Shell shock was found at: %s' % mutant.found_at()
 
             v = Vuln.from_mutant('Shell shock vulnerability', desc,
