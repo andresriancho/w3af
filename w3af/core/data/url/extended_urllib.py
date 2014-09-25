@@ -485,7 +485,7 @@ class ExtendedUrllib(object):
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            return self._handle_send_success(req, e, grep, original_url,
+            return self._handle_send_success(req, e.fp, grep, original_url,
                                              original_url_inst)
         
         except (socket.error, URLTimeoutError, ConnectionPoolException), e:
