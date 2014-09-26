@@ -76,10 +76,9 @@ class shell_shock(AuditPlugin):
             # We are implementing these methods for detecting shell-shock vulns
             # if you know about other methods, or have improvements on these
             # please let us know. Pull-requests are also welcome.
-            DETECTION_METHODS = [self._with_header_echo_injection,
-                                 #self._with_body_echo_injection,
-                                 self._with_time_delay]
-            for detection_method in DETECTION_METHODS:
+            for detection_method in [self._with_header_echo_injection,
+                                     #self._with_body_echo_injection,
+                                     self._with_time_delay]:
                 if detection_method(freq):
                     break
 
@@ -91,16 +90,17 @@ class shell_shock(AuditPlugin):
         :param freq: A FuzzableRequest
         :return: True if a vulnerability was found
         """
-        injected_header = 'ShellShock'
-        payload = '() { :;}; echo "%s: " $(</etc/passwd)' % injected_header
+        injected_header = 'shellshock'
+        injected_value = 'check'
+        payload = '() { :;}; echo "%s: %s"' % (injected_header, injected_value)
 
         mutant = self.create_mutant(freq, TEST_HEADER)
         mutant.set_token_value(payload)
 
         response = self._uri_opener.send_mutant(mutant)
-        headers = response.get_lower_case_headers()
+        header_value, header_name = response.get_headers().iget(injected_header)
 
-        if injected_header.lower() in headers:
+        if header_value is not None and injected_value in header_value.lower():
             desc = 'Shell shock was found at: %s' % mutant.found_at()
 
             v = Vuln.from_mutant('Shell shock vulnerability', desc,
