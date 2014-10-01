@@ -1417,4 +1417,10 @@ http://facebook.com/groups/hfrosario
 Files containing passwords
 
 By Dr4GoR1Ty
+</textualDescription></signature><signature><signatureReferenceNumber>3960</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3960/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=&quot;automatic teller&quot; &quot;operator manual&quot; &quot;password&quot; filetype:pdf</querystring><shortDescription>&quot;automatic teller&quot; &quot;operator manual&quot; &quot;password&quot; filetype:pdf</shortDescription><textualDescription>ATM Passwords
+
+&quot;automatic teller&quot; &quot;operator manual&quot; &quot;password&quot; filetype:pdf
+</textualDescription></signature><signature><signatureReferenceNumber>3961</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3961/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=&quot;google confidential&quot; filetype:pdf</querystring><shortDescription>&quot;google confidential&quot; filetype:pdf</shortDescription><textualDescription>&quot;google confidential&quot; filetype:pdf
+
+Google leaking their own files
 </textualDescription></signature></searchEngineSignature>
