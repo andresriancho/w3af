@@ -385,7 +385,7 @@ class Connect(object):
 
             conn = urllib2.urlopen(req)
 
-            if not kb.authHeader and getRequestHeader(req, HTTP_HEADER.AUTHORIZATION) and conf.authType == AUTH_TYPE.BASIC:
+            if not kb.authHeader and getRequestHeader(req, HTTP_HEADER.AUTHORIZATION) and (conf.authType or "").lower() == AUTH_TYPE.BASIC.lower():
                 kb.authHeader = getRequestHeader(req, HTTP_HEADER.AUTHORIZATION)
 
             if not kb.proxyAuthHeader and getRequestHeader(req, HTTP_HEADER.PROXY_AUTHORIZATION):
@@ -533,6 +533,8 @@ class Connect(object):
             elif "forcibly closed" in tbMsg:
                 warnMsg = "connection was forcibly closed by the target URL"
             elif "timed out" in tbMsg:
+                if kb.testMode and kb.testType not in (None, PAYLOAD.TECHNIQUE.TIME, PAYLOAD.TECHNIQUE.STACKED):
+                    singleTimeWarnMessage("there is a possibility that the target (or WAF) is dropping 'suspicious' requests")
                 warnMsg = "connection timed out to the target URL"
             elif "URLError" in tbMsg or "error" in tbMsg:
                 warnMsg = "unable to connect to the target URL"
@@ -766,7 +768,7 @@ class Connect(object):
 
         if conf.evalCode:
             delimiter = conf.paramDel or DEFAULT_GET_POST_DELIMITER
-            variables = {}
+            variables = {"uri": uri}
             originals = {}
 
             for item in filter(None, (get, post if not kb.postHint else None)):
@@ -785,6 +787,7 @@ class Connect(object):
 
             originals.update(variables)
             evaluateCode(conf.evalCode, variables)
+            uri = variables["uri"]
 
             for name, value in variables.items():
                 if name != "__builtins__" and originals.get(name, "") != value:
@@ -856,7 +859,7 @@ class Connect(object):
                 if deviation > WARN_TIME_STDEV:
                     kb.adjustTimeDelay = ADJUST_TIME_DELAY.DISABLE
 
-                    warnMsg = "there is considerable lagging "
+                    warnMsg = "considerable lagging has been detected "
                     warnMsg += "in connection response(s). Please use as high "
                     warnMsg += "value for option '--time-sec' as possible (e.g. "
                     warnMsg += "10 or more)"
