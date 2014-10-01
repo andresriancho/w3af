@@ -19,9 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import urllib
-import cgi
-
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
@@ -107,10 +104,10 @@ class blind_sqli_response_diff(object):
         false_statement = statement_tuple[1]
 
         mutant.set_token_value(true_statement)
-        _, body_true_response = self.send_clean(mutant)
+        _, body_true_response = self._uri_opener.send_clean(mutant)
 
         mutant.set_token_value(false_statement)
-        _, body_false_response = self.send_clean(mutant)
+        _, body_false_response = self._uri_opener.send_clean(mutant)
 
         if body_true_response == body_false_response:
             #
@@ -135,7 +132,7 @@ class blind_sqli_response_diff(object):
 
         syntax_error = "d'z'0"
         mutant.set_token_value(syntax_error)
-        syntax_error_response, body_syntax_error_response = self.send_clean(
+        syntax_error_response, body_syntax_error_response = self._uri_opener.send_clean(
             mutant)
 
         self.debug(
@@ -151,11 +148,11 @@ class blind_sqli_response_diff(object):
         second_false_stm = statements[statement_type][1]
 
         mutant.set_token_value(second_true_stm)
-        second_true_response, body_second_true_response = self.send_clean(
+        second_true_response, body_second_true_response = self._uri_opener.send_clean(
             mutant)
 
         mutant.set_token_value(second_false_stm)
-        second_false_response, body_second_false_response = self.send_clean(mutant)
+        second_false_response, body_second_false_response = self._uri_opener.send_clean(mutant)
 
         self.debug('Comparing body_second_true_response and'
                    ' body_true_response.')
@@ -208,55 +205,4 @@ class blind_sqli_response_diff(object):
 
         return cmp_res
 
-    def send_clean(self, mutant):
-        """
-        Sends a mutant to the network (without using the cache) and then returns
-        the HTTP response object and a sanitized response body (which doesn't
-        contain any traces of the injected payload).
 
-        The sanitized version is useful for having clean comparisons between two
-        responses that were generated with different mutants.
-
-        :param mutant: The mutant to send to the network.
-        :return: (
-                    HTTP response,
-                    Sanitized HTTP response body,
-                 )
-        """
-        http_response = self._uri_opener.send_mutant(mutant, cache=False)
-        clean_body = get_clean_body(mutant, http_response)
-
-        return http_response, clean_body
-
-
-def get_clean_body(mutant, response):
-    """
-    @see: Very similar to fingerprint_404.py get_clean_body() bug not quite
-          the same maybe in the future I can merge both?
-
-    Definition of clean in this method:
-        - input:
-            - response.get_url() == http://host.tld/aaaaaaa/?id=1 OR 23=23
-            - response.get_body() == '...<x>1 OR 23=23</x>...'
-
-        - output:
-            - self._clean_body( response ) == '...<x></x>...'
-
-    All injected values are removed encoded and "as is".
-
-    :param mutant: The mutant where I can get the value from.
-    :param response: The HTTPResponse object to clean
-    :return: A string that represents the "cleaned" response body.
-    """
-
-    body = response.body
-
-    if response.is_text_or_html():
-        mod_value = mutant.get_token_value()
-
-        body = body.replace(mod_value, '')
-        body = body.replace(urllib.unquote_plus(mod_value), '')
-        body = body.replace(cgi.escape(mod_value), '')
-        body = body.replace(cgi.escape(urllib.unquote_plus(mod_value)), '')
-
-    return body
