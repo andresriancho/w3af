@@ -98,6 +98,7 @@ from lib.core.settings import ERROR_PARSING_REGEXES
 from lib.core.settings import FORCE_COOKIE_EXPIRATION_TIME
 from lib.core.settings import FORM_SEARCH_REGEX
 from lib.core.settings import GENERIC_DOC_ROOT_DIRECTORY_NAMES
+from lib.core.settings import GIT_PAGE
 from lib.core.settings import GOOGLE_ANALYTICS_COOKIE_PREFIX
 from lib.core.settings import HASHDB_MILESTONE_VALUE
 from lib.core.settings import HOST_ALIASES
@@ -549,7 +550,7 @@ def paramToDict(place, parameters=None):
         parts = element.split("=")
 
         if len(parts) >= 2:
-            parameter = parts[0].replace(" ", "")
+            parameter = urldecode(parts[0].replace(" ", ""))
 
             if conf.paramDel and conf.paramDel == '\n':
                 parts[-1] = parts[-1].rstrip()
@@ -576,6 +577,11 @@ def paramToDict(place, parameters=None):
                         test = readInput(message, default="N")
                         if test[0] not in ("y", "Y"):
                             raise SqlmapSilentQuitException
+                    elif not _:
+                        warnMsg = "provided value for parameter '%s' is empty. " % parameter
+                        warnMsg += "Please, always use only valid parameter values "
+                        warnMsg += "so sqlmap could be able to run properly"
+                        logger.warn(warnMsg)
 
     if conf.testParameter and not testableParameters:
         paramStr = ", ".join(test for test in conf.testParameter)
@@ -1046,13 +1052,16 @@ def setPaths():
     paths.SQLMAP_UDF_PATH = os.path.join(paths.SQLMAP_ROOT_PATH, "udf")
     paths.SQLMAP_XML_PATH = os.path.join(paths.SQLMAP_ROOT_PATH, "xml")
     paths.SQLMAP_XML_BANNER_PATH = os.path.join(paths.SQLMAP_XML_PATH, "banner")
-    paths.SQLMAP_OUTPUT_PATH = paths.get("SQLMAP_OUTPUT_PATH", os.path.join(os.path.expanduser("~"), ".sqlmap", "output"))
 
+    _ = os.path.join(os.path.expanduser("~"), ".sqlmap")
+    paths.SQLMAP_OUTPUT_PATH = getUnicode(paths.get("SQLMAP_OUTPUT_PATH", os.path.join(_, "output")), system=True)
     paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
     paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
 
     # sqlmap files
-    paths.SQLMAP_HISTORY = os.path.join(os.path.expanduser('~'), ".sqlmap_history")
+    paths.SQL_SHELL_HISTORY = os.path.join(_, "sql.hst")
+    paths.OS_SHELL_HISTORY = os.path.join(_, "os.hst")
+    paths.SQLMAP_SHELL_HISTORY = os.path.join(_, "sqlmap.hst")
     paths.SQLMAP_CONFIG = os.path.join(paths.SQLMAP_ROOT_PATH, "sqlmap-%s.conf" % randomStr())
     paths.COMMON_COLUMNS = os.path.join(paths.SQLMAP_TXT_PATH, "common-columns.txt")
     paths.COMMON_TABLES = os.path.join(paths.SQLMAP_TXT_PATH, "common-tables.txt")
@@ -2820,13 +2829,14 @@ def unhandledExceptionMessage():
     Returns detailed message about occurred unhandled exception
     """
 
-    errMsg = "unhandled exception in %s, retry your " % VERSION_STRING
-    errMsg += "run with the latest development version from the GitHub "
-    errMsg += "repository. If the exception persists, please send by e-mail "
-    errMsg += "to '%s' or open a new issue at '%s' with the following text " % (ML, ISSUES_PAGE)
-    errMsg += "and any information required to reproduce the bug. The "
+    errMsg = "unhandled exception occurred in %s. It is recommended to retry your " % VERSION_STRING
+    errMsg += "run with the latest development version from official GitHub "
+    errMsg += "repository at '%s'. If the exception persists, please open a new issue " % GIT_PAGE
+    errMsg += "at '%s' (or less preferably send by e-mail to '%s') " % (ISSUES_PAGE, ML)
+    errMsg += "with the following text and any other information required to "
+    errMsg += "reproduce the bug. The "
     errMsg += "developers will try to reproduce the bug, fix it accordingly "
-    errMsg += "and get back to you.\n"
+    errMsg += "and get back to you\n"
     errMsg += "sqlmap version: %s%s\n" % (VERSION, "-%s" % REVISION if REVISION else "")
     errMsg += "Python version: %s\n" % PYVERSION
     errMsg += "Operating system: %s\n" % PLATFORM
@@ -2841,10 +2851,10 @@ def maskSensitiveData(msg):
     Masks sensitive data in the supplied message
     """
 
-    retVal = msg
+    retVal = getUnicode(msg)
 
     for item in filter(None, map(lambda x: conf.get(x), ("hostname", "googleDork", "authCred", "proxyCred", "tbl", "db", "col", "user", "cookie", "proxy"))):
-        regex = SENSITIVE_DATA_REGEX % re.sub("(\W)", r"\\\1", item)
+        regex = SENSITIVE_DATA_REGEX % re.sub("(\W)", r"\\\1", getUnicode(item))
         while extractRegexResult(regex, retVal):
             value = extractRegexResult(regex, retVal)
             retVal = retVal.replace(value, '*' * len(value))
@@ -2923,7 +2933,7 @@ def removeReflectiveValues(content, payload, suppressWarning=False):
 
     retVal = content
 
-    if all([content, payload]) and isinstance(content, unicode) and kb.reflectiveMechanism:
+    if all([content, payload]) and isinstance(content, unicode) and kb.reflectiveMechanism and not kb.heuristicMode:
         def _(value):
             while 2 * REFLECTED_REPLACEMENT_REGEX in value:
                 value = value.replace(2 * REFLECTED_REPLACEMENT_REGEX, REFLECTED_REPLACEMENT_REGEX)
@@ -2958,7 +2968,7 @@ def removeReflectiveValues(content, payload, suppressWarning=False):
                     regex = REFLECTED_REPLACEMENT_REGEX.join(parts[1:])
                     retVal = re.sub(r"(?i)\b%s\b" % regex, REFLECTED_VALUE_MARKER, retVal)
 
-            if retVal != content and not kb.heuristicMode:
+            if retVal != content:
                 kb.reflectiveCounters[REFLECTIVE_COUNTER.HIT] += 1
                 if not suppressWarning:
                     warnMsg = "reflective value(s) found and filtering out"
