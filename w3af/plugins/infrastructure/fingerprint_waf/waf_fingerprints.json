@@ -1,0 +1,450 @@
+{
+    "Varnish": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^X-Varnish"
+    },
+    "Hyperguard": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*W?ODSESSION="
+    },
+    "WebSphere": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^X-Backside-Transport:\\s*(OK|FAIL)?"
+    },
+    "PaloAlto": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Access.*?has been blocked in accordance with company policy).*",
+        "header": ""
+    },
+    "WebKnight": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Server:\\s*WebKnight"
+    },
+    "FortiWeb": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*FORTIWAFSID="
+    },
+    "Proventia": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^(Cteonnt|ntCoent)-Length:"
+    },
+    "NSFOCUS": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Interdo": {
+        "status": "",
+        "code": "",
+        "description": "very rare, is now AppWall",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "rWeb": {
+        "status": "",
+        "code": "200",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Condition Intercepted).*",
+        "header": ""
+    },
+    "USP": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Server:\\s*Secure Entry Server"
+    },
+    "WebCastellum": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Stingray": {
+        "status": "",
+        "code": "",
+        "description": "same as Hyperguard",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*W?ODSESSION="
+    },
+    "WAF_XML_Firewall": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "ISAServer": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Server denied the specified Uniform Resource Locator).*",
+        "header": ""
+    },
+    "AppWall": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Unauthorized Activity Has Been Detected\\..*Case Number:).*",
+        "header": ""
+    },
+    "Barracuda": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^barra_counter_session="
+    },
+    "Cyberoam": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "SecureSphere": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "dotDefender": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^X-dotDefender-denied"
+    },
+    "ModSecurity": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Server_Defender": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "sProxy": {
+        "status": "",
+        "code": "200",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Condition Intercepted).*",
+        "header": ""
+    },
+    "webApp.secure": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(nx=@@).*",
+        "header": ""
+    },
+    "dmz_shield": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "nevisProxy": {
+        "status": "",
+        "code": "403",
+        "description": "",
+        "test_path": "/",
+        "content": ".*?(Authorization Error \\(Access\\)).*",
+        "header": ""
+    },
+    "Forum_Sentry-f": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Teros": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*st8(id|_?wat|_?wlf)="
+    },
+    "CloudFlare": {
+        "status": "Bad Behavior",
+        "code": "403",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*(cf_clearance|__cfduid)="
+    },
+    "Profense": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*PLBSID="
+    },
+    "Forum_Sentry-c": {
+        "status": "",
+        "code": "",
+        "description": "same as Forum Systems?",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "ASM": {
+        "status": "",
+        "code": "",
+        "description": "F5 ASM or TrafficShield",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*TS[a-zA-Z0-9]{3,6}="
+    },
+    "A10_Thunder": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "IronBee": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Incapsula": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*(incap_ses|visid_incap)"
+    },
+    "ThreatSenty": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "WebDefend": {
+        "status": "",
+        "code": "501",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "SingleKey": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "NetScaler": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*(ns_af|citrix_ns_id|NSC_.*)="
+    },
+    "TrafficShield": {
+        "status": "",
+        "code": "",
+        "description": "TrafficShield, old version",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*ASINFO="
+    },
+    "RealSentry": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "ACE_XML": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Server:\\s*ACE XML"
+    },
+    "a-test": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-cookie:\\s*AL[_-]?(SESS|LB)(-S)?="
+    },
+    "Sucuri": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Server:\\s*Sucuri"
+    },
+    "WAPPLES": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "XML_Firewall": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "AppShield": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "SecureIIS": {
+        "status": "",
+        "code": "404",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Transfer-Encoding:\\s*a{1025}"
+    },
+    "Web_Security": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "NC2000": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-Cookie:\\s*NCI__SessionId="
+    },
+    "ApplicationFirewall-x": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "APS": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "Forum_Xwall": {
+        "status": "",
+        "code": "",
+        "description": "probably same as Forum_Sentry",
+        "test_path": "/",
+        "content": "",
+        "header": ""
+    },
+    "ApplicationFirewall-b": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "BinarySec"
+    },
+    "URLScan": {
+        "status": "",
+        "code": "404",
+        "description": "HEAD returns content",
+        "test_path": "HEAD /bad.exe?a%00b",
+        "content": "^(\\.).*",
+        "header": ""
+    },
+    "Airlock": {
+        "status": "",
+        "code": "",
+        "description": "",
+        "test_path": "/",
+        "content": "",
+        "header": "^Set-cookie:\\s*AL[_-]?(SESS|LB)(-S)?="
+    }
+}
