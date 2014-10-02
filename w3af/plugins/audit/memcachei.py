@@ -36,8 +36,8 @@ class memcachei(AuditPlugin):
         AuditPlugin.__init__(self)
         MemcacheInjection = namedtuple('MemcacheInjection', ['ok', 'error_1', 'error_2'])
         self.mci = MemcacheInjection(u"key1 0 30 1\r\n1\r\nset injected 0 10 10\r\n1234567890\r\n",
-                                u"key1 0 f 1\r\n1\r\n",
-                                u"key1 0 30 0\r\n1\r\n")
+                                     u"key1 0 f 1\r\n1\r\n",
+                                     u"key1 0 30 0\r\n1\r\n")
         self._eq_limit = 0.97
 
     def debug(self, msg):
@@ -61,12 +61,13 @@ class memcachei(AuditPlugin):
 
             if fuzzy_equal(orig_body, body_error_1_response, self._eq_limit):
                 #
-                #  if we manage to break execution flow, there is a potential injection
-                #  otherwise - no injection!
+                # if we manage to break execution flow, there is a potential
+                # injection otherwise - no injection!
                 #
                 continue
 
-            #trying the correct injection request, to confirm that we've found it!
+            # trying the correct injection request, to confirm that we've found
+            # it!
 
             mutant.set_token_value(self.mci.ok)
             ok_response, body_ok_response = self._uri_opener.send_clean(mutant)
@@ -84,7 +85,8 @@ class memcachei(AuditPlugin):
 
             if fuzzy_equal(orig_body, body_error_2_response, self._eq_limit):
                 #
-                #  now requests should be different again, otherwise injection is not confirmed
+                # now requests should be different again, otherwise injection
+                # is not confirmed
                 #
                 continue
 
@@ -111,3 +113,13 @@ class memcachei(AuditPlugin):
             self.kb_append_uniq(self, 'memcachei', v)
 
         return
+
+    def get_long_desc(self):
+        """
+        :return: A DETAILED description of the plugin functions and features.
+        """
+        return """
+        This plugin identifies memcache injections using error based techniques,
+        it can identify these injection types:
+            * Batch injection (command injection) - 0x0a/0x0d bytes
+        """
