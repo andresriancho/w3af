@@ -1,5 +1,5 @@
 """
-linux.py
+ubuntu1204.py
 
 Copyright 2013 Andres Riancho
 

@@ -52,6 +52,8 @@ class SQLCachedResponse(CachedResponse):
             res = hist.msg
         elif part == CachedResponse.PART_CHARSET:
             res = hist.charset
+        elif part == CachedResponse.PART_TIME:
+            res = hist.time
         else:
             raise ValueError("Unexpected value for param 'part': %s" % part)
 

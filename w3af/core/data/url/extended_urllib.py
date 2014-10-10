@@ -50,7 +50,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-
+from w3af.core.data.url.helpers import get_clean_body
 
 MAX_ERROR_COUNT = 10
 
@@ -199,6 +199,26 @@ class ExtendedUrllib(object):
         :return: The cookies that this uri opener has collected during this scan
         """
         return self.settings.get_cookies()
+
+    def send_clean(self, mutant):
+        """
+        Sends a mutant to the network (without using the cache) and then returns
+        the HTTP response object and a sanitized response body (which doesn't
+        contain any traces of the injected payload).
+
+        The sanitized version is useful for having clean comparisons between two
+        responses that were generated with different mutants.
+
+        :param mutant: The mutant to send to the network.
+        :return: (
+                    HTTP response,
+                    Sanitized HTTP response body,
+                 )
+        """
+        http_response = self.send_mutant(mutant, cache=False)
+        clean_body = get_clean_body(mutant, http_response)
+
+        return http_response, clean_body
 
     def send_raw_request(self, head, postdata, fix_content_len=True):
         """
@@ -485,7 +505,7 @@ class ExtendedUrllib(object):
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            return self._handle_send_success(req, e, grep, original_url,
+            return self._handle_send_success(req, e.fp, grep, original_url,
                                              original_url_inst)
         
         except (socket.error, URLTimeoutError, ConnectionPoolException), e:

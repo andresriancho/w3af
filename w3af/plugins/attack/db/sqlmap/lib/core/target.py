@@ -115,6 +115,12 @@ def _setRequestParams():
             else:
                 kb.processUserMarks = not test or test[0] not in ("n", "N")
 
+                if kb.processUserMarks and "=%s" % CUSTOM_INJECTION_MARK_CHAR in conf.data:
+                    warnMsg = "it seems that you've provided empty parameter value(s) "
+                    warnMsg += "for testing. Please, always use only valid parameter values "
+                    warnMsg += "so sqlmap could be able to run properly"
+                    logger.warn(warnMsg)
+
         if not (kb.processUserMarks and CUSTOM_INJECTION_MARK_CHAR in conf.data):
             if re.search(JSON_RECOGNITION_REGEX, conf.data):
                 message = "JSON data found in %s data. " % conf.method
@@ -209,6 +215,12 @@ def _setRequestParams():
                     raise SqlmapUserQuitException
                 else:
                     kb.processUserMarks = not test or test[0] not in ("n", "N")
+
+                    if kb.processUserMarks and "=%s" % CUSTOM_INJECTION_MARK_CHAR in _:
+                        warnMsg = "it seems that you've provided empty parameter value(s) "
+                        warnMsg += "for testing. Please, always use only valid parameter values "
+                        warnMsg += "so sqlmap could be able to run properly"
+                        logger.warn(warnMsg)
 
             if not kb.processUserMarks:
                 if place == PLACE.URI:
@@ -544,7 +556,7 @@ def _createTargetDirs():
             f.write(kb.originalUrls.get(conf.url) or conf.url or conf.hostname)
             f.write(" (%s)" % (HTTPMETHOD.POST if conf.data else HTTPMETHOD.GET))
             if conf.data:
-                f.write("\n\n%s" % conf.data)
+                f.write("\n\n%s" % getUnicode(conf.data))
     except IOError, ex:
         if "denied" in str(ex):
             errMsg = "you don't have enough permissions "

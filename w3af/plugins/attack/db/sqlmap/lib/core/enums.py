@@ -338,3 +338,8 @@ class AUTH_TYPE:
     DIGEST = "digest"
     NTLM = "ntlm"
     PKI = "pki"
+
+class AUTOCOMPLETE_TYPE:
+    SQL = 0
+    OS = 1
+    SQLMAP = 2
