@@ -257,6 +257,26 @@ def sha_encode(t):
     return s.hexdigest()
 
 
+def sha256_encode(t):
+    """Encoder using SHA256.
+
+    >>> sha256_encode("Hola mundo")
+    'ca8f60b2cc7f05837d98b208b57fb6481553fc5f1219d59618fd025002a66f5c'
+    """
+    s = hashlib.sha256(t)
+    return s.hexdigest()
+
+
+def sha512_encode(t):
+    """Encoder using SHA512.
+
+    >>> sha512_encode("Hola mundo")
+    '34ddb0edac59e441459e07cf33bd628f53fbbf752141125f069f32081b169f933666c71b2f1b83031da66bc905a1e72af7c6cfd779fc197513639a098f94c641'
+    """
+    s = hashlib.sha512(t)
+    return s.hexdigest()
+
+
 def md5_encode(t):
     """Encoder using MD5.
 
@@ -544,6 +564,8 @@ _butNameFunc_enc = [
     (_("Double URL Encode"), double_urlencode),
     (_("Base64 Encode"), b64encode),
     (_("SHA1 Hash"), sha_encode),
+    (_("SHA256 Hash"), sha256_encode),
+    (_("SHA512 Hash"), sha512_encode),
     (_("MD5 Hash"), md5_encode),
     (_("Hex Encoding"), hex_encoding),
     (_("0xFFFF Encoding"), zero_x_encoding),
