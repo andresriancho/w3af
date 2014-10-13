@@ -271,8 +271,7 @@ def sha512_encode(t):
     """Encoder using SHA512.
 
     >>> sha512_encode("Hola mundo")
-    '34ddb0edac59e441459e07cf33bd628f53fbbf752141125f069f32081b169f933
-    666c71b2f1b83031da66bc905a1e72af7c6cfd779fc197513639a098f94c641'
+    '34ddb0edac59e441459e07cf33bd628f53fbbf752141125f069f32081b169f933666c71b2f1b83031da66bc905a1e72af7c6cfd779fc197513639a098f94c641'
     """
     s = hashlib.sha512(t)
     return s.hexdigest()
