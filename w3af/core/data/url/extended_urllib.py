@@ -446,8 +446,8 @@ class ExtendedUrllib(object):
         # Add all custom Headers() if they exist
         
         if self.settings.rand_user_agent is True:
-            headers = Headers([('User-Agent', get_random_user_agent())])            
-        
+            self.settings.header_list = [('User-Agent', get_random_user_agent())]
+            
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 

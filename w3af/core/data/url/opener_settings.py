@@ -87,7 +87,7 @@ class OpenerSettings(Configurable):
                      ' Trident/4.0; w3af.org)'
         
         # to use random Agent in http requests
-        self.rand_user_agent=False
+        self.rand_user_agent = False
         
         #   which basically is the UA for IE8 running in Windows 7, plus our
         #   website :)    
@@ -107,7 +107,7 @@ class OpenerSettings(Configurable):
         cfg.save('headers_file', '')
         cfg.save('cookie_jar_file', '')
         cfg.save('user_agent', 'w3af.org')
-        cfg.save('rand_user_agent', 'False')
+        cfg.save('rand_user_agent', False)
 
         
         cfg.save('proxy_address', '')
@@ -263,7 +263,7 @@ class OpenerSettings(Configurable):
         
     def set_rand_user_agent(self, rand_user_agent):
         om.out.debug('Called set_rand_user_agent')
-        self.rand_user_agent=rand_user_agent
+        self.rand_user_agent = rand_user_agent
         cfg.save('rand_user_agent', rand_user_agent)
         
     def get_user_agent(self):
@@ -573,8 +573,8 @@ class OpenerSettings(Configurable):
                         help=h, tabid='Misc')
         ol.add(o)
 
-        d = 'Use Random Agent header'
-        h = 'To Random Use User Agent header to send in HTTP requests.'
+        d = 'Use random Agent header'
+        h = 'To random use of user Agent header to send in HTTP requests.'
         o = opt_factory('rand_user_agent', cfg.get('rand_user_agent'), d, BOOL,
                         help=h, tabid='Misc')
         ol.add(o)
