@@ -50,6 +50,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 
 
 MAX_ERROR_COUNT = 10
@@ -443,6 +444,10 @@ class ExtendedUrllib(object):
 
     def _add_headers(self, req, headers=Headers()):
         # Add all custom Headers() if they exist
+        
+        if self.settings.rand_user_agent is True:
+            headers = Headers([('User-Agent', get_random_user_agent())])            
+        
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 
