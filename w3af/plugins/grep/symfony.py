@@ -31,9 +31,9 @@ class symfony(GrepPlugin):
     """
     Grep every page for traces of the Symfony framework.
 
-    :author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon
-    work by Andres Riancho (andres.riancho@gmail.com) and help from
-    Pablo Mouzo (pablomouzo@gmail.com)
+    :author: Carlos Pantelides (carlos.pantelides@yahoo.com )
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Pablo Mouzo (pablomouzo@gmail.com)
     """
 
     def __init__(self):
