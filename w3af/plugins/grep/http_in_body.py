@@ -27,7 +27,7 @@ from w3af.core.data.esmre.multi_re import multi_re
 from w3af.core.data.kb.info import Info
 
 
-class http_in_body (GrepPlugin):
+class http_in_body(GrepPlugin):
     """
     Search for HTTP request/response string in response body.
     :author: Andres Riancho (andres.riancho@gmail.com)
