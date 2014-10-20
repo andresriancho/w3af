@@ -339,6 +339,12 @@ class xml_file(OutputPlugin):
         # Add the information results
         infos = kb.kb.get_all_infos()
         for i in infos:
+            try:
+                str(i)
+            except:
+                import sys
+                reload(sys)
+                sys.setdefaultencoding('utf-8')
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.get_url()))
             messageNode.setAttribute("name", str(i.get_name()))
