@@ -1,5 +1,5 @@
 """
-test_websockets_links_password.py
+test_websockets_links.py
 
 Copyright 2011 Andres Riancho
 
