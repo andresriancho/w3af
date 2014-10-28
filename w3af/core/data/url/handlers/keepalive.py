@@ -822,7 +822,7 @@ class _HTTPConnection(httplib.HTTPConnection):
 
 class ProxyHTTPConnection(_HTTPConnection):
     """
-    this class is used to provide HTTPS CONNECT support.
+    This class is used to provide HTTPS CONNECT support.
     """
     _ports = {'http': 80, 'https': 443}
 
@@ -830,18 +830,20 @@ class ProxyHTTPConnection(_HTTPConnection):
         _HTTPConnection.__init__(self, host, port, strict)
 
     def proxy_setup(self, url):
-        #request is called before connect, so can interpret url and get
-        #real host/port to be used to make CONNECT request to proxy
+        # request is called before connect, so can interpret url and get
+        # real host/port to be used to make CONNECT request to proxy
         proto, rest = urllib.splittype(url)
         if proto is None:
             raise ValueError("unknown URL type: %s" % url)
-        #get host
+
+        # get host
         host, rest = urllib.splithost(rest)
         self._real_host = host
 
-        #try to get port
+        # try to get port
         host, port = urllib.splitport(host)
-        #if port is not defined try to get from proto
+
+        # if port is not defined try to get from proto
         if port is None:
             try:
                 self._real_port = self._ports[proto]
@@ -871,14 +873,16 @@ class ProxyHTTPConnection(_HTTPConnection):
         #expect a HTTP/1.0 200 Connection established
         response = self.response_class(self.sock, strict=self.strict,
                                        method=self._method)
-        (version, code, message) = response._read_status()
+        version, code, message = response._read_status()
+
         #probably here we can handle auth requests...
         if code != 200:
             #proxy returned and error, abort connection, and raise exception
             self.close()
             raise socket.error("Proxy connection failed: %d %s" %
                               (code, message.strip()))
-        #eat up header block from proxy....
+
+        # eat up header block from proxy....
         while True:
             #should not use directly fp probably
             line = response.fp.readline()
@@ -886,9 +890,68 @@ class ProxyHTTPConnection(_HTTPConnection):
                 break
 
 
-class ProxyHTTPSConnection(ProxyHTTPConnection):
+_protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
+
+
+class SSLNegotiatorConnection(httplib.HTTPSConnection):
     """
-    this class is used to provide HTTPS CONNECT support.
+    Connection class that enables usage of newer SSL protocols.
+
+    References:
+        http://bugs.python.org/msg128686
+        https://github.com/andresriancho/w3af/issues/5802
+        https://gist.github.com/flandr/74be22d1c3d7c1dfefdd
+    """
+    def __init__(self, *args, **kwargs):
+        httplib.HTTPSConnection.__init__(self, *args, **kwargs)
+
+    def connect(self):
+        self.connect_multi_ssl()
+
+    def connect_socket(self):
+        """
+        :return: fresh TCP/IP connection
+        """
+        sock = socket.create_connection((self.host, self.port), self.timeout)
+
+        if getattr(self, "_tunnel_host", None):
+            self.sock = sock
+            self._tunnel()
+
+        return sock
+
+    def connect_multi_ssl(self):
+        """
+        Test the different SSL protocols
+        """
+        for protocol in _protocols:
+            try:
+                sock = self.connect_socket()
+
+                ssl_sock = ssl.wrap_socket(sock,
+                                           self.key_file,
+                                           self.cert_file,
+                                           ssl_version=protocol)
+
+                if ssl_sock:
+                    self.sock = ssl_sock
+                    _protocols.remove(protocol)
+                    _protocols.insert(0, protocol)
+                    break
+                else:
+                    sock.close()
+            except ssl.SSLError, ssl_exc:
+                msg = "SSL connection error occurred with protocol %s: '%s'"
+                debug(msg % (protocol, ssl_exc))
+
+        else:
+            msg = 'Unable to create a SSL connection using protocol: %s'
+            raise HTTPRequestException(msg % protocol)
+
+
+class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
+    """
+    This class is used to provide HTTPS CONNECT support.
     """
     default_port = 443
 
@@ -897,16 +960,12 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
-        ProxyHTTPConnection.__init__(self, host, port)
+        ProxyHTTPConnection.__init__(self, host, port, strict=strict)
         self.key_file = key_file
         self.cert_file = cert_file
 
-    def connect(self):
+    def connect_socket(self):
         ProxyHTTPConnection.connect(self)
-        #make the sock ssl-aware
-        ssl_sock_inst = ssl.wrap_socket(self.sock, self.key_file,
-                                        self.cert_file)
-        self.sock = ssl_sock_inst
 
 
 def to_utf8_raw(unicode_or_str):
@@ -924,11 +983,11 @@ class HTTPConnection(_HTTPConnection):
         _HTTPConnection.__init__(self, host, port, strict)
 
 
-class HTTPSConnection(httplib.HTTPSConnection):
+class HTTPSConnection(SSLNegotiatorConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
-        httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
+        SSLNegotiatorConnection.__init__(self, host, port, key_file, cert_file,
                                          strict)
         self.is_fresh = True
