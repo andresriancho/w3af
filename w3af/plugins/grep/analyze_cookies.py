@@ -373,21 +373,21 @@ class analyze_cookies(GrepPlugin):
         This method is called when the plugin wont be used anymore.
         """
         cookies = kb.kb.get('analyze_cookies', 'cookies')
-
         tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
+        
         res_dict, item_idx = group_by_min_key(tmp)
         if item_idx:
             # Grouped by URLs
-            msg = 'The URL: "%s" sent these cookies:'
+            msg = u'The URL: "%s" sent these cookies:'
         else:
             # Grouped by cookies
-            msg = 'The cookie: "%s" was sent by these URLs:'
+            msg = u'The cookie: "%s" was sent by these URLs:'
 
         for k in res_dict:
             to_print = msg % k
 
             for i in res_dict[k]:
-                to_print += '\n- ' + i
+                to_print += u'\n- ' + i.decode('utf-8', errors='ignore')
 
             om.out.information(to_print)
 
