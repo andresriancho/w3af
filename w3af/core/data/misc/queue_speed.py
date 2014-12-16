@@ -39,7 +39,9 @@ class QueueSpeed(object):
     
     def _add(self, true_false, data):
         data.append((true_false, time.time()))
-        while len(data) >= self.MAX_SIZE: data.pop(0)
+
+        while len(data) >= self.MAX_SIZE:
+            data.pop(0)
     
     def _item_left_queue(self):
         self._add(True, self._output_data)
