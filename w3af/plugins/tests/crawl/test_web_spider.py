@@ -21,14 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib2
 import re
+import os
 
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
+from w3af import ROOT_PATH
 from w3af.plugins.crawl.web_spider import web_spider
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
+from w3af.core.controllers.threads.timeout_function import timelimited
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -259,3 +262,80 @@ def get_coverage_for_scan_id(scan_id):
         return int(match_obj.group(1))
 
     return None
+
+
+class TestRelativePathsIn404(PluginTest):
+    """
+    This test reproduces the issue #5834 which generates an endless crawl loop
+
+    :see: https://github.com/andresriancho/w3af/issues/5834
+    """
+    target_url = 'http://mock/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('web_spider'),)}
+        }
+    }
+
+    TEST_ROOT = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
+                             'web_spider', '5834')
+
+    GALERIA_HTML = file(os.path.join(TEST_ROOT, 'galeria-root.html')).read()
+    INDEX_HTML = file(os.path.join(TEST_ROOT, 'index.html')).read()
+
+    MOCK_RESPONSES = [MockResponse(re.compile('http://mock/galeria/.*'),
+                                   GALERIA_HTML),
+                      MockResponse('/', INDEX_HTML)]
+
+    def test_crawl_404_relative(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'], debug=True)
+
+        # Define the expected/desired output
+        expected_files = ['',
+                          '/galeria/',
+                          '/galeria/assets/',
+                          '/galeria/assets/ico/']
+        expected_urls = set(URL(self.target_url).url_join(end).url_string for end
+                            in expected_files)
+
+        # pylint: disable=E1101
+        # Pylint fails to detect the object types that come out of the KB
+        urls = self.kb.get_all_known_urls()
+        found_urls = set(str(u).decode('utf-8') for u in urls)
+
+        self.assertEquals(found_urls, expected_urls)
+
+
+class TestDeadLock(PluginTest):
+    """
+    This test reproduces a lock that I've found while debugging #5834, as far as
+    I know, it has nothing to do with #5834 itself.
+
+    I tried, but was unable to make this test fail when the dead-lock is found,
+    instead when the dead-lock is found the test will "hang", CI will timeout,
+    and in your workstation you'll have to manually kill it.
+    """
+    target_url = 'http://mock/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('web_spider'),)}
+        }
+    }
+
+    TEST_ROOT = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
+                             'web_spider', '5834')
+
+    INDEX_HTML = file(os.path.join(TEST_ROOT, 'index.html')).read()
+
+    MOCK_RESPONSES = [MockResponse('/', INDEX_HTML)]
+
+    def test_no_lock(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+
