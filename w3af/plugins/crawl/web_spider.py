@@ -389,11 +389,11 @@ class web_spider(CrawlPlugin):
                 #   * http://foo.com/abc/def/def/def/
                 #   * ...
                 #
-                non_recursive_verify_ref = partial(self._verify_reference,
-                                                   be_recursive=False)
-                self.worker_pool.map_multi_args(
-                    non_recursive_verify_ref,
-                    self._urls_to_verify_generator(resp, original_request))
+
+                # Do not use threads here, it will dead-lock (for unknown
+                # reasons). This is tested in TestDeadLock unittest.
+                for args in self._urls_to_verify_generator(resp, original_request):
+                    self._verify_reference(*args, be_recursive=False)
 
             # Store the broken links
             if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:
