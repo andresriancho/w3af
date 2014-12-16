@@ -116,7 +116,7 @@ class crawl_infrastructure(BaseConsumer):
                              'end() method: %s' % (plugin.get_name(), e))
 
     @task_decorator
-    def _consume(self, work_unit):
+    def _consume(self, function_id, work_unit):
         for plugin in self._consumer_plugins:
 
             if not self._running:
@@ -138,14 +138,16 @@ class crawl_infrastructure(BaseConsumer):
             self._route_all_plugin_results()
 
     @task_decorator
-    def _plugin_finished_cb(self, ((plugin, fuzzable_request), plugin_result)):
+    def _plugin_finished_cb(self,
+                            function_id,
+                            ((plugin, fuzzable_request), plugin_result)):
         if not self._running:
             return
 
         self._route_plugin_results(plugin)
 
     @task_decorator
-    def _route_all_plugin_results(self):
+    def _route_all_plugin_results(self, function_id):
         for plugin in self._consumer_plugins:
 
             if not self._running:
@@ -157,7 +159,7 @@ class crawl_infrastructure(BaseConsumer):
             self._route_plugin_results(plugin)
 
     @task_decorator
-    def _route_plugin_results(self, plugin):
+    def _route_plugin_results(self, function_id, plugin):
         """
         Retrieve the results from all plugins and put them in our output Queue.
         """
@@ -373,7 +375,7 @@ class crawl_infrastructure(BaseConsumer):
         return False
 
     @task_decorator
-    def _discover_worker(self, plugin, fuzzable_request):
+    def _discover_worker(self, function_id, plugin, fuzzable_request):
         """
         This method runs @plugin with FuzzableRequest as parameter and returns
         new fuzzable requests and/or stores vulnerabilities in the knowledge base.
@@ -413,7 +415,6 @@ class crawl_infrastructure(BaseConsumer):
         except Exception, e:
             self.handle_exception(plugin.get_type(), plugin.get_name(),
                                   fuzzable_request, e)
-
         else:
             # The plugin output is retrieved and analyzed by the
             # _route_plugin_results method, here we just verify that the plugin

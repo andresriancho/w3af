@@ -76,7 +76,7 @@ class auth(BaseConsumer):
     # that we're still doing something. The _task_done below will "undo"
     # this action.
     @task_decorator
-    def _login(self):
+    def _login(self, function_id):
         """
         This is the method that actually calls the plugins in order to login
         to the web application.
