@@ -336,7 +336,7 @@ class web_spider(CrawlPlugin):
         if self._known_variants.need_more_variants(new_reference):
             return True
         else:
-            msg = ('Ignoring new reference "%s" (it is simply a variant).'
+            msg = ('Ignoring reference "%s" (it is simply a variant).'
                    % new_reference)
             om.out.debug(msg)
             return False

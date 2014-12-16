@@ -287,6 +287,7 @@ class TestRelativePathsIn404(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(re.compile('http://mock/galeria/.*'),
                                    GALERIA_HTML),
+                      MockResponse('/', 'Thanks.', method='POST'),
                       MockResponse('/', INDEX_HTML)]
 
     def test_crawl_404_relative(self):
@@ -296,8 +297,10 @@ class TestRelativePathsIn404(PluginTest):
         # Define the expected/desired output
         expected_files = ['',
                           '/galeria/',
-                          '/galeria/assets/',
-                          '/galeria/assets/ico/']
+                          '/galeria/assets/ico/',
+                          '/i18n/setlang/',
+                          '/galeria/assets/ico/tel:982560987',
+                          '/reserva/resumen/']
         expected_urls = set(URL(self.target_url).url_join(end).url_string for end
                             in expected_files)
 
