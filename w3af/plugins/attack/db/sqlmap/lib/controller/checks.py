@@ -58,6 +58,7 @@ from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapSilentQuitException
 from lib.core.exception import SqlmapUserQuitException
+from lib.core.settings import DUMMY_XSS_CHECK_APPENDIX
 from lib.core.settings import FORMAT_EXCEPTION_STRINGS
 from lib.core.settings import HEURISTIC_CHECK_ALPHABET
 from lib.core.settings import SUHOSIN_MAX_VALUE_LENGTH
@@ -104,11 +105,15 @@ def checkSqlInjection(place, parameter, value):
                     if kb.extendTests is None:
                         _ = (Format.getErrorParsedDBMSes() if Backend.getErrorParsedDBMSes() else kb.heuristicDbms)
                         msg = "do you want to include all tests for '%s' " % _
-                        msg += "extending provided level (%d) and risk (%s)? [Y/n]" % (conf.level, conf.risk)
+                        msg += "extending provided level (%d) and risk (%s) values? [Y/n]" % (conf.level, conf.risk)
                         kb.extendTests = [] if readInput(msg, default='Y').upper() != 'Y' else (Backend.getErrorParsedDBMSes() or [kb.heuristicDbms])
+            elif kb.extendTests is None and conf.level < 5 and conf.risk < 3:
+                msg = "do you want to include all tests for '%s' " % conf.dbms
+                msg += "extending provided level (%d) and risk (%s)? [Y/n]" % (conf.level, conf.risk)
+                kb.extendTests = [] if readInput(msg, default='Y').upper() != 'Y' else ([conf.dbms])
 
             title = test.title
-            stype = test.stype
+            kb.testType = stype = test.stype
             clause = test.clause
             unionExtended = False
 
@@ -844,6 +849,21 @@ def heuristicCheckSqlInjection(place, parameter):
         infoMsg += "not be injectable"
         logger.warn(infoMsg)
 
+    kb.heuristicMode = True
+
+    value = "%s%s%s" % (randomStr(), DUMMY_XSS_CHECK_APPENDIX, randomStr())
+    payload = "%s%s%s" % (prefix, "'%s" % value, suffix)
+    payload = agent.payload(place, parameter, newValue=payload)
+    page, _ = Request.queryPage(payload, place, content=True, raise404=False)
+
+    if value in (page or ""):
+        infoMsg = "heuristic (XSS) test shows that %s " % place
+        infoMsg += "parameter '%s' might " % parameter
+        infoMsg += "be vulnerable to XSS attacks"
+        logger.info(infoMsg)
+
+    kb.heuristicMode = False
+
     return kb.heuristicTest
 
 def checkDynParam(place, parameter, value):
@@ -1171,6 +1191,7 @@ def identifyWaf():
         infoMsg = "no WAF/IDS/IPS product has been identified"
         logger.info(infoMsg)
 
+    kb.testType = None
     kb.testMode = False
 
     return retVal

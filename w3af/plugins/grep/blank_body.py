@@ -32,7 +32,7 @@ class blank_body(GrepPlugin):
     """
 
     METHODS = ('GET', 'POST')
-    HTTP_CODES = (401, 304, 302, 301, 204)
+    HTTP_CODES = (401, 304, 302, 301, 204, 405)
     
     def __init__(self):
         GrepPlugin.__init__(self)

@@ -159,19 +159,22 @@ class ExceptionHandler(object):
         @see: generate_summary method for a way of getting a summary in a
               different format.
         """
-        fmt_with_exceptions = 'During the current scan (with id: %s) w3af caught'\
-                              ' %s exceptions in it\'s plugins. The scan was able'\
-                              ' to continue by ignoring those failures but the'\
-                              ' scan result is most likely incomplete.\n\n'\
+        fmt_with_exceptions = 'During the current scan (with id: %s) w3af'\
+                              ' caught %s exceptions in it\'s plugins. The'\
+                              ' scan was able to continue by ignoring those'\
+                              ' failures but the result is most likely'\
+                              ' incomplete.\n\n'\
                               'These are the phases and plugins that raised'\
                               ' exceptions:\n'\
                               '%s\n'\
                               'We recommend you report these vulnerabilities'\
-                              ' to the developers in order to help increase the'\
-                              ' project\'s stability.\n'\
-                              'To report these bugs just run the "report" command.'
+                              ' to the developers in order to help increase'\
+                              ' the project\'s stability.\n'\
+                              'To report these bugs just run the "report"' \
+                              ' command.'
 
-        fmt_without_exceptions = 'No exceptions were raised during scan with id: %s.'
+        fmt_without_exceptions = 'No exceptions were raised during scan with' \
+                                 ' id: %s.'
 
         summary = self.generate_summary()
 
@@ -194,9 +197,7 @@ class ExceptionHandler(object):
         """
         :return: A dict with information about exceptions.
         """
-        res = {}
-        res['total_exceptions'] = len(self._exception_data)
-        res['exceptions'] = {}
+        res = {'total_exceptions': len(self._exception_data), 'exceptions': {}}
         exception_dict = res['exceptions']
 
         for exception in self._exception_data:
