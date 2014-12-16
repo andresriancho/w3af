@@ -291,7 +291,7 @@ class TestRelativePathsIn404(PluginTest):
 
     def test_crawl_404_relative(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'], debug=True)
+        self._scan(cfg['target'], cfg['plugins'])
 
         # Define the expected/desired output
         expected_files = ['',
@@ -332,7 +332,8 @@ class TestDeadLock(PluginTest):
 
     INDEX_HTML = file(os.path.join(TEST_ROOT, 'index.html')).read()
 
-    MOCK_RESPONSES = [MockResponse('/', INDEX_HTML)]
+    MOCK_RESPONSES = [MockResponse('/', INDEX_HTML),
+                      MockResponse('/', 'Thanks.', method='POST')]
 
     def test_no_lock(self):
         cfg = self._run_configs['cfg']
