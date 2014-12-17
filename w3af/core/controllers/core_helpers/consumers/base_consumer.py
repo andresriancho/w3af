@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Queue
 import sys
+import random
 
 from multiprocessing.dummy import Process
 from functools import wraps
@@ -32,6 +33,10 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.queue_speed import QueueSpeed
 
+# For some reason getting a randint with a large MAX like this is faster than
+# with a small one like 10**10
+MAX_RAND = 10**24
+
 
 def task_decorator(method):
     """
@@ -41,14 +46,18 @@ def task_decorator(method):
     
     @wraps(method)
     def _wrapper(self, *args, **kwds):
-        self._add_task()
+        rnd_id = random.randint(1, MAX_RAND)
+        function_id = '%s_%s' % (method.__name__, rnd_id)
+
+        self._add_task(function_id)
+
         try:
-            result = method(self, *args, **kwds)
+            result = method(self, function_id, *args, **kwds)
         except:
-            self._task_done(None)
+            self._task_done(function_id)
             raise
         else:
-            self._task_done(None)
+            self._task_done(function_id)
             return result
     
     return _wrapper
@@ -77,7 +86,7 @@ class BaseConsumer(Process):
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
         
-        self._tasks_in_progress_counter = Queue.Queue()
+        self._tasks_in_progress = {}
         
         self._threadpool = None
          
@@ -86,8 +95,8 @@ class BaseConsumer(Process):
 
     def run(self):
         """
-        Consume the queue items, sending them to the plugins which are then going
-        to find vulnerabilities, new URLs, etc.
+        Consume the queue items, sending them to the plugins which are then
+        going to find vulnerabilities, new URLs, etc.
         """
 
         while True:
@@ -119,13 +128,13 @@ class BaseConsumer(Process):
         raise NotImplementedError
     
     @task_decorator
-    def _consume_wrapper(self, work_unit):
+    def _consume_wrapper(self, function_id, work_unit):
         """
         Just makes sure that all _consume methods are decorated as tasks.
         """
         return self._consume(work_unit)
 
-    def _task_done(self, result):
+    def _task_done(self, function_id):
         """
         The task_in_progress_counter is needed because we want to know if the
         consumer is processing something and let it finish. It is mainly used
@@ -141,7 +150,7 @@ class BaseConsumer(Process):
             * You can have pending work when there are no items in input_queue
             and no items in output_queue but the threadpool inside the consumer
             is processing something. This situation is handled by the
-            self._tasks_in_progress_counter attribute and the _add_task and
+            self._tasks_in_progress attribute and the _add_task and
             _task_done methods.
 
         So, for each _add_task() there has to be a _task_done() even if the
@@ -153,16 +162,17 @@ class BaseConsumer(Process):
         that finished with an exception.
         """
         try:
-            self._tasks_in_progress_counter.get_nowait()
-        except Queue.Empty:
-            raise AssertionError('You can not _task_done()' 
-                                 ' more than you _add_task().')
+            self._tasks_in_progress.pop(function_id)
+        except KeyError:
+            raise AssertionError('The function %s was not found!' % function_id)
 
-    def _add_task(self):
+    def _add_task(self, function_id):
         """
+        :param function_id: Just for debugging
+
         @see: _task_done()'s documentation.
         """
-        self._tasks_in_progress_counter.put(None)
+        self._tasks_in_progress[function_id] = 1
 
     def in_queue_put(self, work):
         if work is not None:
@@ -184,7 +194,7 @@ class BaseConsumer(Process):
         or self.out_queue.qsize() > 0:
             return True
 
-        if self._tasks_in_progress_counter.qsize() > 0:
+        if len(self._tasks_in_progress) > 0:
             return True
 
         # This is a special case which loosely translates to: "If there are any

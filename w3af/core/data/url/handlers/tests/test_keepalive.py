@@ -152,8 +152,7 @@ class TestKeepalive(unittest.TestCase):
         conn_mgr_https = id(HTTPSHandler(':')._cm)
         
         self.assertNotEqual(conn_mgr_http,conn_mgr_https)
-    
-    
+
     def test_close_all_established_sockets(self):
         self.close_all_sockets(0)
 
@@ -182,7 +181,7 @@ class TestKeepalive(unittest.TestCase):
         self.assertLess(len(connections_after), len(connections_before))
         
         
-class test_connection_mgr(unittest.TestCase):
+class TestConnectionMgr(unittest.TestCase):
 
     def setUp(self):
         self.cm = ConnectionManager()

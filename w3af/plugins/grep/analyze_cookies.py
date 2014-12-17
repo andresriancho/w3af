@@ -374,8 +374,9 @@ class analyze_cookies(GrepPlugin):
         """
         cookies = kb.kb.get('analyze_cookies', 'cookies')
         tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
-        
+
         res_dict, item_idx = group_by_min_key(tmp)
+
         if item_idx:
             # Grouped by URLs
             msg = u'The URL: "%s" sent these cookies:'
@@ -387,7 +388,15 @@ class analyze_cookies(GrepPlugin):
             to_print = msg % k
 
             for i in res_dict[k]:
-                to_print += u'\n- ' + i.decode('utf-8', errors='ignore')
+                # Switch depending on the type of grouping returned by
+                # group_by_min_key
+                if isinstance(i, unicode):
+                    # it's the cookie as string
+                    to_print += u'\n- ' + i
+                else:
+                    # it's a URL
+                    to_print += u'\n- ' + i.url_string.decode('utf-8',
+                                                              errors='ignore')
 
             om.out.information(to_print)
 

@@ -40,6 +40,7 @@ class CachedResponse(StringIO.StringIO):
     PART_CODE = 'PART_CODE'
     PART_MSG = 'PART_MSG'
     PART_CHARSET = 'PART_CHARSET'
+    PART_TIME = 'PART_TIME'
 
     def __init__(self, request):
         self._hash_id = gen_hash(request)
@@ -49,6 +50,7 @@ class CachedResponse(StringIO.StringIO):
         self._msg = None
         self._headers = None
         self._encoding = None
+        self._time = None
         # Call parent's __init__
         self._body = self._get_from_response(CachedResponse.PART_BODY)
         StringIO.StringIO.__init__(self, self._body)
@@ -73,9 +75,13 @@ class CachedResponse(StringIO.StringIO):
     @property
     def encoding(self):
         if not self._encoding:
-            self._encoding = self._get_from_response(
-                CachedResponse.PART_CHARSET)
+            self._encoding = self._get_from_response(CachedResponse.PART_CHARSET)
         return self._encoding
+
+    def get_wait_time(self):
+        if not self._time:
+            self._time = self._get_from_response(CachedResponse.PART_TIME)
+        return self._time
 
     def info(self):
         return self.headers()
@@ -143,7 +149,7 @@ class CachedResponse(StringIO.StringIO):
     def init():
         """
         Takes all the actions needed for the CachedResponse class to work,
-        in most cases this means creating a file, directory or databse.
+        in most cases this means creating a file, directory or database.
         """
         raise NotImplementedError
 

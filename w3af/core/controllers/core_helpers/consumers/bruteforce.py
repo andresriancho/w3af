@@ -51,7 +51,7 @@ class bruteforce(BaseConsumer):
                 om.out.error(str(e))
 
     @task_decorator
-    def _consume(self, work_unit):
+    def _consume(self, function_id, work_unit):
 
         for plugin in self._consumer_plugins:
             stats = '%s plugin is testing: "%s"'
@@ -68,7 +68,7 @@ class bruteforce(BaseConsumer):
                                  new_fuzzable_request))
 
     @task_decorator
-    def _bruteforce(self, plugin, fuzzable_request):
+    def _bruteforce(self, function_id, plugin, fuzzable_request):
         """
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to handle

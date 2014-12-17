@@ -93,38 +93,29 @@ from lib.core.exception import SqlmapUnsupportedDBMSException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.log import FORMATTER
 from lib.core.optiondict import optDict
-from lib.core.settings import ACCESS_ALIASES
 from lib.core.settings import BURP_REQUEST_REGEX
 from lib.core.settings import BURP_XML_HISTORY_REGEX
 from lib.core.settings import CODECS_LIST_PAGE
 from lib.core.settings import CRAWL_EXCLUDE_EXTENSIONS
 from lib.core.settings import CUSTOM_INJECTION_MARK_CHAR
-from lib.core.settings import DB2_ALIASES
+from lib.core.settings import DBMS_ALIASES
 from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DEFAULT_TOR_HTTP_PORTS
 from lib.core.settings import DEFAULT_TOR_SOCKS_PORT
 from lib.core.settings import DUMMY_URL
-from lib.core.settings import FIREBIRD_ALIASES
 from lib.core.settings import INJECT_HERE_MARK
 from lib.core.settings import IS_WIN
 from lib.core.settings import KB_CHARS_BOUNDARY_CHAR
 from lib.core.settings import LOCALHOST
-from lib.core.settings import MAXDB_ALIASES
 from lib.core.settings import MAX_CONNECT_RETRIES
 from lib.core.settings import MAX_NUMBER_OF_THREADS
-from lib.core.settings import MSSQL_ALIASES
-from lib.core.settings import MYSQL_ALIASES
 from lib.core.settings import NULL
-from lib.core.settings import ORACLE_ALIASES
 from lib.core.settings import PARAMETER_SPLITTING_REGEX
-from lib.core.settings import PGSQL_ALIASES
 from lib.core.settings import PROBLEMATIC_CUSTOM_INJECTION_PATTERNS
 from lib.core.settings import SITE
-from lib.core.settings import SQLITE_ALIASES
 from lib.core.settings import SQLMAP_ENVIRONMENT_PREFIX
 from lib.core.settings import SUPPORTED_DBMS
 from lib.core.settings import SUPPORTED_OS
-from lib.core.settings import SYBASE_ALIASES
 from lib.core.settings import TIME_DELAY_CANDIDATES
 from lib.core.settings import UNION_CHAR_REGEX
 from lib.core.settings import UNKNOWN_DBMS_VERSION
@@ -885,16 +876,14 @@ def _setDBMS():
 
     if conf.dbms not in SUPPORTED_DBMS:
         errMsg = "you provided an unsupported back-end database management "
-        errMsg += "system. The supported DBMS are %s. " % ', '.join([_ for _ in DBMS_DICT])
+        errMsg += "system. Supported DBMSes are as follows: %s. " % ', '.join(sorted(_ for _ in DBMS_DICT))
         errMsg += "If you do not know the back-end DBMS, do not provide "
         errMsg += "it and sqlmap will fingerprint it for you."
         raise SqlmapUnsupportedDBMSException(errMsg)
 
-    for aliases in (MSSQL_ALIASES, MYSQL_ALIASES, PGSQL_ALIASES, ORACLE_ALIASES, \
-                    SQLITE_ALIASES, ACCESS_ALIASES, FIREBIRD_ALIASES, \
-                    MAXDB_ALIASES, SYBASE_ALIASES, DB2_ALIASES):
+    for dbms, aliases in DBMS_ALIASES:
         if conf.dbms in aliases:
-            conf.dbms = aliases[0]
+            conf.dbms = dbms
 
             break
 
@@ -1009,13 +998,15 @@ def _setWafFunctions():
                 sys.path.insert(0, dirname)
 
             try:
+                if filename[:-3] in sys.modules:
+                    del sys.modules[filename[:-3]]
                 module = __import__(filename[:-3])
             except ImportError, msg:
                 raise SqlmapSyntaxException("cannot import WAF script '%s' (%s)" % (filename[:-3], msg))
 
             _ = dict(inspect.getmembers(module))
             if "detect" not in _:
-                errMsg = "missing function 'detect(page, headers, code)' "
+                errMsg = "missing function 'detect(get_page)' "
                 errMsg += "in WAF script '%s'" % found
                 raise SqlmapGenericException(errMsg)
             else:
@@ -1512,8 +1503,8 @@ def _cleanupOptions():
         conf.dbms = conf.dbms.capitalize()
 
     if conf.testFilter:
-        if not any([char in conf.testFilter for char in ('.', ')', '(', ']', '[')]):
-            conf.testFilter = conf.testFilter.replace('*', '.*')
+        conf.testFilter = conf.testFilter.strip('*+')
+        conf.testFilter = re.sub(r"([^.])([*+])", "\g<1>.\g<2>", conf.testFilter)
 
     if "timeSec" not in kb.explicitSettings:
         if conf.tor:
@@ -1752,6 +1743,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.technique = None
     kb.testMode = False
     kb.testQueryCount = 0
+    kb.testType = None
     kb.threadContinue = True
     kb.threadException = False
     kb.tableExistsChoice = None

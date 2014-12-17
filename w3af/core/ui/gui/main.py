@@ -74,6 +74,7 @@ if sys.platform == "win32":
     gtk.rc_add_default_file('%USERPROFILE%/.gtkrc-2.0')
 else:
     gtk.gdk.threads_init()
+    gtk.gdk.threads_enter()
 
 
 class FakeShelve(dict):
