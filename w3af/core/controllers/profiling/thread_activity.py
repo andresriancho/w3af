@@ -62,7 +62,7 @@ def dump_thread_stack():
     data = {}
 
     for thread, frame in sys._current_frames().items():
-        # Actually saving it as a list makes it more human                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  readable
+        # Actually saving it as a list makes it more human readable
         trace = traceback.format_stack(frame)
 
         data['%x' % thread] = {'traceback': trace}
