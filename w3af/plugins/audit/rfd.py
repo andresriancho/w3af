@@ -78,7 +78,6 @@ class rfd(AuditPlugin):
 
     def _report_vuln(self, debug_msg, freq, rid):
         debug_msg = debug_msg % (freq.get_uri(), rid)
-        print debug_msg
         om.out.debug(debug_msg)
         desc = 'Reflected File Download has been ' \
                'found at: %s'
