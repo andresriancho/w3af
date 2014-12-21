@@ -33,8 +33,8 @@ from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 
 ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
-                    HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
-                    XmlRpcMutant)
+               HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
+               XmlRpcMutant)
 
 def create_mutants(freq, mutant_str_list, mutant_tuple=ALL_MUTANTS,
                    append=False, fuzzable_param_list=[], orig_resp=None):
