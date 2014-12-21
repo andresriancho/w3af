@@ -32,9 +32,12 @@ from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 
+ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
+               HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
+               XmlRpcMutant)
 
-def create_mutants(freq, mutant_str_list, append=False,
-                   fuzzable_param_list=[], orig_resp=None):
+def create_mutants(freq, mutant_str_list, mutant_tuple=ALL_MUTANTS,
+                   append=False, fuzzable_param_list=[], orig_resp=None):
     """
     :param freq: A fuzzable request with a DataContainer inside.
     :param mutant_str_list: a list with mutant strings to use
@@ -46,10 +49,6 @@ def create_mutants(freq, mutant_str_list, append=False,
     """
     result = []
     fuzzer_config = _get_fuzzer_config()
-
-    mutant_tuple = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
-                    HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
-                    XmlRpcMutant)
 
     for mutant_kls in mutant_tuple:
         new_mutants = mutant_kls.create_mutants(freq, mutant_str_list,
