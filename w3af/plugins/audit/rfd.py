@@ -17,15 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
 
+"""
+import w3af.core.controllers.output_manager as om
+import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
-import w3af.core.controllers.output_manager as om
-import w3af.core.data.constants.severity as severity
+
 
 PATH_PARAM = '%3B/w3af.cmd%3B/w3af.cmd'
 EXEC_TOKEN = 'w3afExecToken'
@@ -36,7 +37,7 @@ NOT_VULNERABLE_TYPES = ('application/xml','text/xml','text/html')
 class rfd(AuditPlugin):
     """
     Identify reflected file download vulnerabilities.
- 
+    :author: Dmitry (nixwzard@gmail.com)
     """
 
     def audit(self, freq, orig_response):

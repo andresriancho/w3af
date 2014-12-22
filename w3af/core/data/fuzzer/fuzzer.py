@@ -36,8 +36,8 @@ ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
                HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
                XmlRpcMutant)
 
-def create_mutants(freq, mutant_str_list, mutant_tuple=ALL_MUTANTS,
-                   append=False, fuzzable_param_list=[], orig_resp=None):
+def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
+                   orig_resp=None, mutant_tuple=ALL_MUTANTS):
     """
     :param freq: A fuzzable request with a DataContainer inside.
     :param mutant_str_list: a list with mutant strings to use
@@ -45,6 +45,8 @@ def create_mutants(freq, mutant_str_list, mutant_tuple=ALL_MUTANTS,
         be appended to the variable value
     :param fuzzable_param_list: If [] then all params are fuzzed. If ['a'],
         then only 'a' is fuzzed.
+    :param mutant_tuple: a tuple which contains classes of the mutants
+        to be returned
     :return: A Mutant object List.
     """
     result = []
