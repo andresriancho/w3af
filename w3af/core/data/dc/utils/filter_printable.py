@@ -37,7 +37,10 @@ def filter_non_printable(_str):
         if is_printable_chr(c):
             chars.append(c)
         else:
-            if chars[-1] != NON_PRINTABLE_REPLACE:
+            if not chars:
+                chars.append(NON_PRINTABLE_REPLACE)
+
+            elif chars[-1] != NON_PRINTABLE_REPLACE:
                 chars.append(NON_PRINTABLE_REPLACE)
 
     return ''.join(chars)
