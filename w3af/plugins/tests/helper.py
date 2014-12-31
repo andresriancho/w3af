@@ -25,6 +25,7 @@ import urllib2
 import httpretty
 import tempfile
 import pprint
+import time
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
@@ -157,6 +158,7 @@ class PluginTest(unittest.TestCase):
         body = 'Not found'
         content_type = 'text/html'
         mock_headers = {}
+        delay = None
 
         for mock_response in self.MOCK_RESPONSES:
             if mock_response.method != method.command:
@@ -168,6 +170,7 @@ class PluginTest(unittest.TestCase):
                     body = mock_response.body
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
+                    delay = mock_response.delay
 
                     break
             elif isinstance(mock_response.url, RE_COMPILE_TYPE):
@@ -176,12 +179,16 @@ class PluginTest(unittest.TestCase):
                     body = mock_response.body
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
+                    delay = mock_response.delay
 
                     break
 
         headers.update(mock_headers)
         headers['Content-Type'] = content_type
         headers['status'] = status
+
+        if delay is not None:
+            time.sleep(delay)
 
         return status, headers, body
 
@@ -427,11 +434,12 @@ def create_target_option_list(*target):
 
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200,
-                 method='GET', headers=None):
+                 method='GET', headers=None, delay=None):
         self.url = url
         self.body = body
         self.status = status
         self.method = method
+        self.delay = delay
 
         self.content_type = content_type
         self.headers = {'Content-Type': content_type}
