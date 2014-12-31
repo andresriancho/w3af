@@ -74,9 +74,9 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
         if HAS_PIP:
-            dependency_specs = w3af_req.package_name, w3af_req.package_version
             for dist in pip_distributions:
-                if (dist.project_name, dist.version) == dependency_specs:
+                if w3af_req.package_name.lower() == dist.project_name.lower()\
+                and w3af_req.package_version.lower() == dist.version.lower():
                     # It's installed and the version matches!
                     break
             else:
