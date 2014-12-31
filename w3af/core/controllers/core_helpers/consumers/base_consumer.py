@@ -118,8 +118,10 @@ class BaseConsumer(Process):
                 break
 
             else:
+                # pylint: disable=E1120
                 self._consume_wrapper(work_unit)
                 self.in_queue.task_done()
+                # pylint: enable=E1120
 
     def _teardown(self):
         raise NotImplementedError

@@ -76,7 +76,9 @@ class crawl_infrastructure(BaseConsumer):
             try:
                 work_unit = self.in_queue.get(timeout=0.1)
             except Queue.Empty:
+                # pylint: disable=E1120
                 self._route_all_plugin_results()
+                # pylint: enable=E1120
             else:
                 if work_unit == POISON_PILL:
 
@@ -135,7 +137,9 @@ class crawl_infrastructure(BaseConsumer):
             self._threadpool.apply_async(return_args(self._discover_worker),
                                         (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
+            # pylint: disable=E1120
             self._route_all_plugin_results()
+            # pylint: enable=E1120
 
     @task_decorator
     def _plugin_finished_cb(self,
@@ -144,7 +148,9 @@ class crawl_infrastructure(BaseConsumer):
         if not self._running:
             return
 
+        # pylint: disable=E1120
         self._route_plugin_results(plugin)
+        # pylint: enable=E1120
 
     @task_decorator
     def _route_all_plugin_results(self, function_id):
@@ -156,7 +162,9 @@ class crawl_infrastructure(BaseConsumer):
             if plugin in self._disabled_plugins:
                 continue
 
+            # pylint: disable=E1120
             self._route_plugin_results(plugin)
+            # pylint: enable=E1120
 
     @task_decorator
     def _route_plugin_results(self, function_id, plugin):
