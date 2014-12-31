@@ -28,7 +28,7 @@ from ..requirements import CORE, GUI
 
 class Ubuntu1204(Platform):
     SYSTEM_NAME = 'Ubuntu 12.04'
-    PKG_MANAGER_CMD = 'sudo apt-get install'
+    PKG_MANAGER_CMD = 'sudo apt-get -y install'
     PIP_CMD = 'pip'
 
     CORE_SYSTEM_PACKAGES = ['python-pip', 'python2.7-dev',
