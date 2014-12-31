@@ -23,6 +23,8 @@ import inspect
 import copy
 import threading
 
+import stopit
+
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
@@ -38,6 +40,7 @@ class AuditPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    AUDIT_PLUGIN_TIMEOUT = 120
 
     def __init__(self):
         Plugin.__init__(self)
@@ -129,7 +132,9 @@ class AuditPlugin(Plugin):
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         """
         fuzzable_request = copy.deepcopy(fuzzable_request)
-        return self.audit(fuzzable_request, orig_resp)
+
+        with stopit.ThreadingTimeout(self.AUDIT_PLUGIN_TIMEOUT, swallow_exc=False):
+            return self.audit(fuzzable_request, orig_resp)
 
     def audit(self, freq, orig_resp):
         """

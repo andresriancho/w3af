@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import stopit
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -109,6 +110,10 @@ class audit(BaseConsumer):
         """
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp)
+        except stopit.TimeoutException:
+            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
+                  ' complete the analysis of "%s", killing it!'
+            om.out.debug(msg)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
