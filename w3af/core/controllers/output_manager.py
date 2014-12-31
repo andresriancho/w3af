@@ -24,6 +24,7 @@ import os
 import sys
 import Queue
 import threading
+import logging
 
 from multiprocessing.dummy import Process
 
@@ -32,7 +33,13 @@ from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
 
+# https://pypi.python.org/pypi/stopit#logging
+# The stopit named logger emits a warning each time a block of code execution
+# exceeds the associated timeout. To turn logging off, just:
+stopit_logger = logging.getLogger('stopit')
+stopit_logger.setLevel(logging.ERROR)
 
+# Thread locking to avoid starting the om many times from different threads
 start_lock = threading.Lock()
 
 
