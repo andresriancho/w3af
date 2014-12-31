@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import time
+import re
 
 from nose.plugins.attrib import attr
 from mock import patch, call, PropertyMock
@@ -28,9 +29,10 @@ from mock import patch, call, PropertyMock
 from w3af.core.data.kb.knowledge_base import kb
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
-
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
+
+from w3af.plugins.tests.helper import PluginTest, MockResponse
 
 
 @attr('moth')
@@ -101,3 +103,45 @@ class TestAuditPlugin(unittest.TestCase):
 
         # Just to make sure we didn't affect the class attribute with our test
         self.assertEqual(plugin_inst.PLUGIN_TIMEOUT, 5 * 60)
+
+
+class TestAuditTimeoutThreads(PluginTest):
+
+    params = '&'.join('%s=%s' % (i, i) for i in xrange(200))
+    target_url = 'http://httpretty-mock/?%s' % params
+
+    MOCK_RESPONSES = [MockResponse(re.compile('.*'), 'Just a response',
+                                   method='GET', status=200, delay=0.5)]
+
+    def test_audit_plugin_timeout_threads(self):
+        """
+        I want to make sure that when stopit kills the real audit function,
+        the threads which are called from it won't do anything strange.
+
+        The plan is to scan something large with httpretty, with delays in the
+        HTTP responses to simulate a slow network and a low PLUGIN_TIMEOUT to
+        make the test quicker.
+        """
+        plugin_inst = self.w3afcore.plugins.get_plugin_inst('audit', 'sqli')
+
+        url = URL(self.target_url)
+        freq = FuzzableRequest(url)
+
+        orig_response = plugin_inst.get_original_response(freq)
+
+        mod = 'w3af.core.controllers.plugins.audit_plugin.%s'
+
+        with patch(mod % 'om.out') as om_mock,\
+             patch(mod % 'AuditPlugin.PLUGIN_TIMEOUT', new_callable=PropertyMock) as timeout_mock:
+
+            timeout_mock.return_value = 2
+            plugin_inst.audit_with_copy(freq, orig_response)
+
+            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
+                  ' complete the analysis of "%s", killing it!'
+
+            error = msg % (plugin_inst.get_name(),
+                           plugin_inst.PLUGIN_TIMEOUT,
+                           freq.get_url())
+
+            self.assertIn(call.debug(error), om_mock.mock_calls)
