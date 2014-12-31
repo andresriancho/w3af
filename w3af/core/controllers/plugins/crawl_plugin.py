@@ -21,10 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
+from stopit import ThreadingTimeout, TimeoutException
+
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+
+import w3af.core.controllers.output_manager as om
 
 
 class CrawlPlugin(Plugin):
@@ -35,6 +39,9 @@ class CrawlPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # in seconds
+    PLUGIN_TIMEOUT = 5 * 60
+
     def __init__(self):
         Plugin.__init__(self)
 
@@ -46,7 +53,18 @@ class CrawlPlugin(Plugin):
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = copy.deepcopy(fuzzable_request)
-        return self.crawl(fuzzable_request_copy)
+
+        # Crawl with timeout
+        try:
+            with ThreadingTimeout(self.PLUGIN_TIMEOUT, swallow_exc=False):
+                return self.crawl(fuzzable_request_copy)
+        except TimeoutException:
+            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
+                  ' complete the crawling of "%s", killing it!'
+
+            om.out.debug(msg % (self.get_name(),
+                                self.PLUGIN_TIMEOUT,
+                                fuzzable_request.get_url()))
 
     def crawl(self, fuzzable_request):
         """
