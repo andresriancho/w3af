@@ -20,8 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import time
 
 from nose.plugins.attrib import attr
+from mock import patch, call, PropertyMock
 
 from w3af.core.data.kb.knowledge_base import kb
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -59,3 +61,43 @@ class TestAuditPlugin(unittest.TestCase):
         self.assertEquals(target_url, str(vuln.get_url()))        
         
         self.assertEqual(plugin_inst._store_kb_vulns, False)
+
+    def test_audit_plugin_timeout(self):
+        plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')
+
+        url = URL(get_moth_http('/'))
+        freq = FuzzableRequest(url)
+
+        def delay(x, y):
+            """
+            According to the stopit docs it can't kill a thread running an
+            atomic python function such as time.sleep() , so I have to create
+            a function like this. I don't mind, since it's realistic with what
+            we do in w3af anyways.
+            """
+            total_delay = 3.0
+
+            for _ in xrange(100):
+                time.sleep(total_delay/100)
+
+        plugin_inst.audit = delay
+
+        mod = 'w3af.core.controllers.plugins.audit_plugin.%s'
+
+        with patch(mod % 'om.out') as om_mock,\
+             patch(mod % 'AuditPlugin.PLUGIN_TIMEOUT', new_callable=PropertyMock) as timeout_mock:
+
+            timeout_mock.return_value = 1
+            plugin_inst.audit_with_copy(freq, None)
+
+            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
+                  ' complete the analysis of "%s", killing it!'
+
+            error = msg % (plugin_inst.get_name(),
+                           plugin_inst.PLUGIN_TIMEOUT,
+                           freq.get_url())
+
+            self.assertIn(call.debug(error), om_mock.mock_calls)
+
+        # Just to make sure we didn't affect the class attribute with our test
+        self.assertEqual(plugin_inst.PLUGIN_TIMEOUT, 5 * 60)
