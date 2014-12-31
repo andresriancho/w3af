@@ -26,21 +26,20 @@ import logging
 try:
     # Is pip even there?
     import pip
-    # We do this in order to check for really old versions of pip
-    pip.get_installed_distributions()
 except ImportError:
     print('We recommend you install pip before continuing.')
     print('http://www.pip-installer.org/en/latest/installing.html')
-    HAS_PIP = False
-except AttributeError:
-    print('A very old version of pip was detected. We recommend a pip update'
+    sys.exit(1)
+
+try:
+    # We do this in order to check for old pip versions
+    from pip._vendor.packaging.version import Version
+except ImportError:
+    print('An old pip version was detected. We recommend a pip update'
           ' before continuing:')
     print('    sudo pip install --upgrade pip')
-    HAS_PIP = False
-else:
-    HAS_PIP = True
+    sys.exit(1)
 
-from .lazy_load import lazy_load
 from .utils import verify_python_version
 from .helper_script import (generate_helper_script,
                             generate_pip_install_non_git,
@@ -67,29 +66,21 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     #    Check for missing python modules
     #
     failed_deps = []
-    pip_distributions = []
-
-    if HAS_PIP:
-        pip_distributions = pip.get_installed_distributions()
+    pip_distributions = pip.get_installed_distributions()
     
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
-        if HAS_PIP:
-            for dist in pip_distributions:
-                if w3af_req.package_name.lower() == dist.project_name.lower()\
-                and w3af_req.package_version.lower() == dist.version.lower():
+        for dist in pip_distributions:
+            if w3af_req.package_name.lower() == dist.project_name.lower():
+
+                w3af_req_version = str(Version(w3af_req.package_version))
+                dist_version = str(dist.version)
+
+                if w3af_req_version == dist_version:
                     # It's installed and the version matches!
                     break
-            else:
-                failed_deps.append(w3af_req)
         else:
-            # The pip module is not installed (really strange for new unixes)
-            try:
-                if not lazy_load(w3af_req.module_name):
-                    failed_deps.append(w3af_req)
-            except KeyboardInterrupt:
-                print('User exit with Ctrl+C.')
-                sys.exit(-1)
-    
+            failed_deps.append(w3af_req)
+
     #
     #    Check for missing operating system packages
     #
