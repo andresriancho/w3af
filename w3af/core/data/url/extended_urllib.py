@@ -463,16 +463,17 @@ class ExtendedUrllib(object):
         return AnyMethod(self, method_name)
 
     def _add_headers(self, req, headers=Headers()):
-        # Add all custom Headers() if they exist
-        
-        if self.settings.rand_user_agent is True:
-            self.settings.header_list = [('User-Agent', get_random_user_agent())]
-            
+        """
+        Add all custom Headers() if they exist
+        """
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 
         for h, v in headers.iteritems():
             req.add_header(h, v)
+
+        if self.settings.rand_user_agent is True:
+            req.add_header('User-Agent', get_random_user_agent())
 
         return req
 

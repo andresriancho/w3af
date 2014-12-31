@@ -573,8 +573,9 @@ class OpenerSettings(Configurable):
                         help=h, tabid='Misc')
         ol.add(o)
 
-        d = 'Use random Agent header'
-        h = 'To random use of user Agent header to send in HTTP requests.'
+        d = 'Use random User-Agent header'
+        h = 'Enable to make w3af choose a random user agent for each HTTP'\
+            ' request sent to the target web application.'
         o = opt_factory('rand_user_agent', cfg.get('rand_user_agent'), d, BOOL,
                         help=h, tabid='Misc')
         ol.add(o)
