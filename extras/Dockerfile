@@ -31,7 +31,7 @@ RUN useradd w3af
 RUN mkdir /var/run/sshd
 RUN echo 'root:w3af' | chpasswd
 ADD scripts/w3af-docker.pub /home/w3af/.ssh/
-RUN cat /home/w3af/.ssh/w3af-docker.pub >>/home/w3af/.ssh/authorized_keys
+RUN cat /home/w3af/.ssh/w3af-docker.pub >> /root/.ssh/authorized_keys
 
 # Get and install pip
 RUN pip install --upgrade pip
