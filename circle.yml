@@ -16,8 +16,10 @@ dependencies:
     - "pico-wavsep"
     - "sqlmap-testenv"
     - "php-moth"
+
   pre:
     # Install the core/console dependencies
+    - pip install --upgrade pip
     - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh
 
     # Install GUI dependencies
@@ -51,6 +53,10 @@ dependencies:
 
     # Wait for the daemon to be available to run the tests
     - w3af/core/controllers/ci/wait_for_moth.py
+
+  post:
+    - pip --version
+    - pip freeze
 
 machine:
   python:
