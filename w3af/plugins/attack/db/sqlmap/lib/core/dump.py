@@ -9,6 +9,7 @@ import cgi
 import codecs
 import os
 import re
+import tempfile
 import threading
 
 from lib.core.common import Backend
@@ -32,6 +33,7 @@ from lib.core.enums import DBMS
 from lib.core.enums import DUMP_FORMAT
 from lib.core.exception import SqlmapGenericException
 from lib.core.exception import SqlmapValueException
+from lib.core.exception import SqlmapSystemException
 from lib.core.replication import Replication
 from lib.core.settings import HTML_DUMP_CSS_STYLE
 from lib.core.settings import METADB_SUFFIX
@@ -66,17 +68,28 @@ class Dump(object):
         if kb.get("multiThreadMode"):
             self._lock.acquire()
 
-        self._outputFP.write(text)
+        try:
+            self._outputFP.write(text)
+        except IOError, ex:
+            errMsg = "error occurred while writing to log file ('%s')" % ex
+            raise SqlmapGenericException(errMsg)
 
         if kb.get("multiThreadMode"):
             self._lock.release()
 
         kb.dataOutputFlag = True
 
+    def flush(self):
+        if self._outputFP:
+            try:
+                self._outputFP.flush()
+            except IOError:
+                pass
+
     def setOutputFile(self):
         self._outputFile = os.path.join(conf.outputPath, "log")
         try:
-            self._outputFP = codecs.open(self._outputFile, "ab" if not conf.flushSession else "wb", UNICODE_ENCODING)
+            self._outputFP = openFile(self._outputFile, "ab" if not conf.flushSession else "wb")
         except IOError, ex:
             errMsg = "error occurred while opening log file ('%s')" % ex
             raise SqlmapGenericException(errMsg)
@@ -380,15 +393,32 @@ class Dump(object):
             self._write(tableValues, content_type=CONTENT_TYPE.DUMP_TABLE)
             return
 
-        dumpDbPath = os.path.join(conf.dumpPath, re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(db)))
+        dumpDbPath = os.path.join(conf.dumpPath, re.sub(r"[^\w]", "_", normalizeUnicode(unsafeSQLIdentificatorNaming(db))))
 
         if conf.dumpFormat == DUMP_FORMAT.SQLITE:
             replication = Replication(os.path.join(conf.dumpPath, "%s.sqlite3" % unsafeSQLIdentificatorNaming(db)))
         elif conf.dumpFormat in (DUMP_FORMAT.CSV, DUMP_FORMAT.HTML):
             if not os.path.isdir(dumpDbPath):
-                os.makedirs(dumpDbPath, 0755)
+                try:
+                    os.makedirs(dumpDbPath, 0755)
+                except (OSError, IOError), ex:
+                    try:
+                        tempDir = tempfile.mkdtemp(prefix="sqlmapdb")
+                    except IOError, _:
+                        errMsg = "unable to write to the temporary directory ('%s'). " % _
+                        errMsg += "Please make sure that your disk is not full and "
+                        errMsg += "that you have sufficient write permissions to "
+                        errMsg += "create temporary files and/or directories"
+                        raise SqlmapSystemException(errMsg)
 
-            dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (unsafeSQLIdentificatorNaming(table), conf.dumpFormat.lower()))
+                    warnMsg = "unable to create dump directory "
+                    warnMsg += "'%s' (%s). " % (dumpDbPath, ex)
+                    warnMsg += "Using temporary directory '%s' instead" % tempDir
+                    logger.warn(warnMsg)
+
+                    dumpDbPath = tempDir
+
+            dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (normalizeUnicode(unsafeSQLIdentificatorNaming(table)), conf.dumpFormat.lower()))
             appendToFile = os.path.isfile(dumpFileName) and any((conf.limitStart, conf.limitStop))
             dumpFP = openFile(dumpFileName, "wb" if not appendToFile else "ab")
 
