@@ -117,7 +117,7 @@ class TestFalsePositiveFindBackdoorNixWizardEmail(PluginTest):
 
 
 class TestFalsePositiveFindBackdoorNixWizardEmailNot(PluginTest):
-    target_url = 'http://httpretty-mock-3/'
+    target_url = 'http://httpretty-mock-4/'
 
     MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="c1m2d"/>')]
 
