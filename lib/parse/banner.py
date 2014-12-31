@@ -9,7 +9,6 @@ import re
 
 from xml.sax.handler import ContentHandler
 
-from lib.core.common import checkFile
 from lib.core.common import Backend
 from lib.core.common import parseXmlFile
 from lib.core.common import sanitizeStr
@@ -63,7 +62,7 @@ class MSSQLBannerHandler(ContentHandler):
     def endElement(self, name):
         if name == "signature":
             for version in (self._version, self._versionAlt):
-                if version and re.search(r" %s[\.\ ]+" % version, self._banner):
+                if version and re.search(r" %s[\.\ ]+" % re.escape(version), self._banner):
                     self._feedInfo("dbmsRelease", self._release)
                     self._feedInfo("dbmsVersion", self._version)
                     self._feedInfo("dbmsServicePack", self._servicePack)
@@ -103,8 +102,6 @@ def bannerParser(banner):
 
     if not xmlfile:
         return
-
-    checkFile(xmlfile)
 
     if Backend.isDbms(DBMS.MSSQL):
         handler = MSSQLBannerHandler(banner, kb.bannerFp)

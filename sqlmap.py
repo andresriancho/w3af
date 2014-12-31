@@ -6,10 +6,13 @@ See the file 'doc/COPYING' for copying permission
 """
 
 import bdb
+import glob
 import inspect
 import logging
 import os
+import re
 import sys
+import tempfile
 import time
 import traceback
 import warnings
@@ -21,8 +24,10 @@ from lib.utils import versioncheck  # this has to be the first non-standard impo
 
 from lib.controller.controller import start
 from lib.core.common import banner
+from lib.core.common import createGithubIssue
 from lib.core.common import dataToStdout
 from lib.core.common import getUnicode
+from lib.core.common import maskSensitiveData
 from lib.core.common import setColor
 from lib.core.common import setPaths
 from lib.core.common import weAreFrozen
@@ -39,6 +44,7 @@ from lib.core.exception import SqlmapUserQuitException
 from lib.core.option import initOptions
 from lib.core.option import init
 from lib.core.profiling import profile
+from lib.core.settings import BIGARRAY_TEMP_PREFIX
 from lib.core.settings import LEGAL_DISCLAIMER
 from lib.core.testing import smokeTest
 from lib.core.testing import liveTest
@@ -127,13 +133,32 @@ def main():
     except:
         print
         errMsg = unhandledExceptionMessage()
+        excMsg = traceback.format_exc()
+
+        for match in re.finditer(r'File "(.+?)", line', excMsg):
+            file_ = match.group(1)
+            file_ = os.path.relpath(file_, os.path.dirname(__file__))
+            file_ = file_.replace("\\", '/')
+            file_ = re.sub(r"\.\./", '/', file_).lstrip('/')
+            excMsg = excMsg.replace(match.group(1), file_)
+
+        errMsg = maskSensitiveData(errMsg)
+        excMsg = maskSensitiveData(excMsg)
+
         logger.critical(errMsg)
         kb.stickyLevel = logging.CRITICAL
-        dataToStdout(setColor(traceback.format_exc()))
+        dataToStdout(excMsg)
+        createGithubIssue(errMsg, excMsg)
 
     finally:
         if conf.get("showTime"):
             dataToStdout("\n[*] shutting down at %s\n\n" % time.strftime("%X"), forceOutput=True)
+
+        for filename in glob.glob("%s*" % os.path.join(tempfile.gettempdir(), BIGARRAY_TEMP_PREFIX)):
+            try:
+                os.remove(filename)
+            except:
+                pass
 
         kb.threadContinue = False
         kb.threadException = True
@@ -155,6 +180,9 @@ def main():
                 conf.database_cursor.disconnect()
             except KeyboardInterrupt:
                 pass
+
+        if conf.get("dumper"):
+            conf.dumper.flush()
 
         # Reference: http://stackoverflow.com/questions/1635080/terminate-a-multi-thread-python-program
         if conf.get("threads", 0) > 1 or conf.get("dnsServer"):

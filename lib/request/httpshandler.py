@@ -19,7 +19,7 @@ try:
 except ImportError:
     pass
 
-_protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
+_protocols = filter(None, (getattr(ssl, _, None) for _ in ("PROTOCOL_SSLv3", "PROTOCOL_TLSv1", "PROTOCOL_SSLv23", "PROTOCOL_SSLv2")))
 
 class HTTPSConnection(httplib.HTTPSConnection):
     """
@@ -53,7 +53,7 @@ class HTTPSConnection(httplib.HTTPSConnection):
                     break
                 else:
                     sock.close()
-            except ssl.SSLError, errMsg:
+            except (ssl.SSLError, socket.error), errMsg:
                 logger.debug("SSL connection error occurred ('%s')" % errMsg)
 
         if not success:
