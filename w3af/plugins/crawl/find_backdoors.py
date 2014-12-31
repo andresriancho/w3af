@@ -39,7 +39,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 BACKDOOR_COLLECTION = {'input': {'value': ('run', 'send', 'exec', 'execute',
                                            'run cmd', 'execute command',
                                            'run command', 'list', 'connect'),
-                       'name': ('cmd', 'command')},
+                                 'name': ('cmd', 'command')},
                        'form': {'enctype': ('multipart/form-data',)}}
 
 # List of known offensive words.
@@ -94,13 +94,15 @@ class find_backdoors(CrawlPlugin):
         :yield: lines from the web shell DB
         """
         for line in file(self.WEBSHELL_DB):
+            line = line.strip()
+
             if line.startswith('#'):
                 continue
 
             if not line:
                 continue
 
-            yield line.strip()
+            yield line
 
     def _check_if_exists(self, web_shell_url):
         """
@@ -150,7 +152,7 @@ class find_backdoors(CrawlPlugin):
                             (dom.xpath('//%s[@%s]' % (ele, attrname))))
 
                     # If at least one elem in intersection return True
-                    if dom_attr_vals and set(attr_vals):
+                    if dom_attr_vals & set(attr_vals):
                         return True
 
         # If no regex matched then try with keywords. At least 2 should be

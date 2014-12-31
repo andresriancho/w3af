@@ -100,3 +100,31 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
         vulns = self.kb.get('find_backdoors', 'backdoors')
 
         self.assertEqual(len(vulns), 1, vulns)
+
+
+class TestFalsePositiveFindBackdoorNixWizardEmail(PluginTest):
+    target_url = 'http://httpretty-mock-3/'
+
+    MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="cmd"/>')]
+
+    def test_false_positive_backdoor(self):
+        cfg = run_configs['crawl']
+        self._scan(self.target_url, cfg['plugins'])
+
+        vulns = self.kb.get('find_backdoors', 'backdoors')
+
+        self.assertEqual(len(vulns), 1, vulns)
+
+
+class TestFalsePositiveFindBackdoorNixWizardEmailNot(PluginTest):
+    target_url = 'http://httpretty-mock-3/'
+
+    MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="c1m2d"/>')]
+
+    def test_false_positive_backdoor(self):
+        cfg = run_configs['crawl']
+        self._scan(self.target_url, cfg['plugins'])
+
+        vulns = self.kb.get('find_backdoors', 'backdoors')
+
+        self.assertEqual(len(vulns), 0, vulns)
