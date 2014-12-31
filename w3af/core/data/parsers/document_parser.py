@@ -19,13 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from stopit import ThreadingTimeout, TimeoutException
+
 from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.pdf import PDFParser
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.parsers.wml_parser import WMLParser
 from w3af.core.data.parsers.javascript import JavaScriptParser
-
 from w3af.core.controllers.exceptions import BaseFrameworkException
+
+import w3af.core.controllers.output_manager as om
 
 
 class DocumentParser(object):
@@ -34,6 +37,9 @@ class DocumentParser(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # in seconds
+    PARSER_TIMEOUT = 60
+
     # WARNING! The order of this list is important. See note below
     PARSERS = [WMLParser, JavaScriptParser, PDFParser, SWFParser, HTMLParser]
 
@@ -53,8 +59,19 @@ class DocumentParser(object):
 
         for parser in self.PARSERS:
             if parser.can_parse(http_resp):
-                self._parser = parser(http_resp)
-                break
+                try:
+                    with ThreadingTimeout(self.PARSER_TIMEOUT, swallow_exc=False):
+                        self._parser = parser(http_resp)
+                except TimeoutException:
+                    msg = '[timeout] The "%s" parser took more than %s seconds'\
+                          ' to complete parsing of "%s", killing it!'
+
+                    om.out.debug(msg % (parser.__name__,
+                                        self.PARSER_TIMEOUT,
+                                        http_resp.get_url()))
+                finally:
+                    break
+
         else:
             msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise BaseFrameworkException(msg)
