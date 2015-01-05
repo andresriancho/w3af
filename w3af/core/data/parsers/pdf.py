@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import StringIO
 
-from pdfminer.converter import TextConverter
+from pdfminer.converter import TextConverter, HTMLConverter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.layout import LAParams
@@ -108,10 +108,12 @@ def pdf_to_text(pdf_string):
     :return: A string with the content of the PDF file.
     """
     rsrcmgr = PDFResourceManager(caching=True)
-    laparams = LAParams()
-    
     output = StringIO.StringIO()
-    device = TextConverter(rsrcmgr, output, codec='utf-8', laparams=laparams)
+
+    # According to https://github.com/euske/pdfminer/issues/61 it is a good idea
+    # to set laparams to None, which will speed-up parsing
+    device = HTMLConverter(rsrcmgr, output, codec='utf-8', layoutmode='normal',
+                           laparams=None, imagewriter=None)
 
     document_io = StringIO.StringIO(pdf_string)
     pagenos = set()
