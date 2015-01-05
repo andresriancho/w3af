@@ -95,8 +95,15 @@ class php_sca(Payload):
 
         # Was able to download files
         for url, file in files.iteritems():
-            sca = PhpSCA(file=file[1])
-            for vulnty, funcs in sca.get_vulns().iteritems():
+            try:
+                sca = PhpSCA(file=file[1])
+                vulns = sca.get_vulns()
+            except Exception, e:
+                msg = 'The PHP SCA failed with an unhandled exception: "%s".'
+                om.out.console(msg % e)
+                return {}
+
+            for vulnty, funcs in vulns.iteritems():
                 # Write to KB
                 write_vuln_to_kb(vulnty, url, funcs)
                 # Fill res dict
