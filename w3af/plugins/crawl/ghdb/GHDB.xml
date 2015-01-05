@@ -1423,4 +1423,88 @@ By Dr4GoR1Ty
 </textualDescription></signature><signature><signatureReferenceNumber>3961</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3961/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=&quot;google confidential&quot; filetype:pdf</querystring><shortDescription>&quot;google confidential&quot; filetype:pdf</shortDescription><textualDescription>&quot;google confidential&quot; filetype:pdf
 
 Google leaking their own files
+</textualDescription></signature><signature><signatureReferenceNumber>3962</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3962/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;virtual office&quot; sonicwall domain</querystring><shortDescription>intitle:&quot;virtual office&quot; sonicwall domain</shortDescription><textualDescription>Network or vulnerability data
+IP address AD Domain NameLogin entry/method for internal network
+
+
+</textualDescription></signature><signature><signatureReferenceNumber>3963</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3963/</link><category>Sensitive Online Shopping Info</category><querystring>http://www.google.com/search?q=dcid= bn= pin code=</querystring><shortDescription>dcid= bn= pin code=</shortDescription><textualDescription>Information disclosure of reservation information,which can leak to many other leaks.
+
+All related to t Booking.com client who decided to save theirs trip data online,sometime near personal information like passport 
+
+By popshark1 
+
+
+</textualDescription></signature><signature><signatureReferenceNumber>3964</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3964/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=ext:cgi inurl:cgi-bin intext:#!/bin/bash</querystring><shortDescription>ext:cgi inurl:cgi-bin intext:#!/bin/bash</shortDescription><textualDescription>gnu-bash site dorks
+
+Ariel Anonis - @ariel_anonis
+</textualDescription></signature><signature><signatureReferenceNumber>3965</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3965/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=(intext:mail AND intext:samAccountName) AND (filetype:xlsx OR filetype:xls OR filetype:csv OR filetype:txt)</querystring><shortDescription>(intext:mail AND intext:samAccountName) AND (filetype:xlsx OR filetype:xls OR filetype:csv OR filetype:txt)</shortDescription><textualDescription>Search for samAccountName (an ActiveDirectory attribute).  50/50 success, some usernames disclosed along with other information.
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3966</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3966/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8 AND (ext:txt OR ext:csv OR ext:xls OR ext:lst)</querystring><shortDescription>intext:5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8 AND (ext:txt OR ext:csv OR ext:xls OR ext:lst)</shortDescription><textualDescription>Looks for text files with SHA1 of &quot;password&quot;.  These could be tips (not very useful), config files, other peoples wordlist dumps, etc
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3967</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3967/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:FRITZ!Box inurl:login.lua</querystring><shortDescription>intitle:FRITZ!Box inurl:login.lua</shortDescription><textualDescription>Show open FritzBox-Router with
+intitle:FRITZ!Box inurl:login.lua
+</textualDescription></signature><signature><signatureReferenceNumber>3968</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3968/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:logon.html &quot;CSCOE&quot;</querystring><shortDescription>inurl:logon.html &quot;CSCOE&quot;</shortDescription><textualDescription>Pages containing login portals - Web Server Detection 
+
+Finds logins portals for Cisco ASA Clientless Webvpn
+
+inurl:logon.html &quot;CSCOE&quot;
+</textualDescription></signature><signature><signatureReferenceNumber>3969</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3969/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:cgi-bin/mailgraph.cgi</querystring><shortDescription>inurl:cgi-bin/mailgraph.cgi</shortDescription><textualDescription>Mail statistics
+
+
+Ariel Anonis - @ariel_anonis
+</textualDescription></signature><signature><signatureReferenceNumber>3970</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3970/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:log intext:org.apache.hadoop.hdfs</querystring><shortDescription>filetype:log intext:org.apache.hadoop.hdfs</shortDescription><textualDescription>Dork : filetype:log intext:org.apache.hadoop.hdfs
+
+List of Log files which contain details about internal and External ip in
+Hadoop Grid
+.This Log Files generated after every batch process.
+-- 
+Simmant Yadav
+</textualDescription></signature><signature><signatureReferenceNumber>3971</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3971/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:CHANGELOG.txt intext:drupal intext:&quot;SA-CORE&quot; -intext:7.32 -site:github.com -site:drupal.org</querystring><shortDescription>inurl:CHANGELOG.txt intext:drupal intext:&quot;SA-CORE&quot; -intext:7.32 -site:github.com -site:drupal.org</shortDescription><textualDescription>inurl:CHANGELOG.txt intext:drupal intext:&quot;SA-CORE&quot; -intext:7.32 -site:github.com -site:drupal.org
+
+look for a CHANGELOG.txt file that has drupal and SA-CORE in the text, but not the latest 7.32 patch.  Ignore github and drupal.org
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3972</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3972/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:robots.txt intext:CHANGELOG.txt intext:disallow ext:txt -site:github.com</querystring><shortDescription>inurl:robots.txt intext:CHANGELOG.txt intext:disallow ext:txt -site:github.com</shortDescription><textualDescription>inurl:robots.txt intext:CHANGELOG.txt intext:disallow ext:txt -site:github.com
+
+sites that have robots.txt file (potentially blocking a GD for seeing) CHANGELOG.txt
+
+Can then check the CHANGELOG.txt file manually for version (not 7.32?).
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3973</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3973/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=ext:msg OR ext:eml site:gov OR site:edu</querystring><shortDescription>ext:msg OR ext:eml site:gov OR site:edu</shortDescription><textualDescription>Mails leak by Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3974</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3974/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=ext:txt inurl:gov intext:&quot;Content-Type: text/plain; charset=utf-8&quot; AND intext:&quot;Received: from &quot;</querystring><shortDescription>ext:txt inurl:gov intext:&quot;Content-Type: text/plain; charset=utf-8&quot; AND intext:&quot;Received: from &quot;</shortDescription><textualDescription>ext:txt inurl:gov intext:&quot;Content-Type: text/plain; charset=utf-8&quot; AND intext:&quot;Received: from &quot;
+Dork to find gov't emails.
+~ Carl</textualDescription></signature><signature><signatureReferenceNumber>3975</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3975/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intext:&quot;Please Authenticate&quot; intitle:Peakflow</querystring><shortDescription>intext:&quot;Please Authenticate&quot; intitle:Peakflow</shortDescription><textualDescription>Pages containing login portals - Web Server Detection
+
+Finds Login portals for Arbor Peakflow (Anti-DDoS System)
+
+Twitter - @libborius
+</textualDescription></signature><signature><signatureReferenceNumber>3976</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3976/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=ext:log telnet intext:password</querystring><shortDescription>ext:log telnet intext:password</shortDescription><textualDescription>Telnet logs.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3977</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3977/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:mobileconfig intext:password OR intext:pass</querystring><shortDescription>filetype:mobileconfig intext:password OR intext:pass</shortDescription><textualDescription>filetype:mobileconfig intext:password OR intext:pass</textualDescription></signature><signature><signatureReferenceNumber>3978</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3978/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=inurl:yahoo_site_admin/credentials/</querystring><shortDescription>inurl:yahoo_site_admin/credentials/</shortDescription><textualDescription># Exploit Title: [Yahoo Hosting db-credentials]
+# Google Dork: [inurl:yahoo_site_admin/credentials/]
+# Date: [29/11/2014]
+# Exploit Author: [Mohammad Shahein]
+# Vendor Homepage: [www.boxeffect.com ]
+# Tested on: Win7 ,Google Chrome Version 39.0.2171.71 m]
+
+Google the dork it will allow you to download db.conf the file will contain
+the following info
+
+
+   mysql
+   [ database name ]
+   [ database user name ]
+   [ database password ]
+
+
+*Mohammad Shaheen*
+senior Programer, BoxEffect
+website: www.boxeffect.com </textualDescription></signature><signature><signatureReferenceNumber>3979</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3979/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=ext:pem intext:BEGIN CERTIFICATE</querystring><shortDescription>ext:pem intext:BEGIN CERTIFICATE</shortDescription><textualDescription>Vulnerables CA files.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3980</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3980/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=inurl:/elfinder/elfinder.html+intitle:&quot;elFinder 2.0&quot; 	</querystring><shortDescription>inurl:/elfinder/elfinder.html+intitle:&quot;elFinder 2.0&quot; 	</shortDescription><textualDescription>Upload Vulnerability Elfinder 2.0
+
+inurl:/elfinder/elfinder.html+intitle:&quot;elFinder 2.0&quot; 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3981</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3981/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:&quot;installer-log.txt&quot; intext:&quot;DUPLICATOR INSTALL-LOG&quot;</querystring><shortDescription>inurl:&quot;installer-log.txt&quot; intext:&quot;DUPLICATOR INSTALL-LOG&quot;</shortDescription><textualDescription>Files found with this google dork will show juicy information about a
+migration of a complete wordpress site, including the location of a .zip
+file where the complete site is stored including &quot;wp-config.php&quot;,
+&quot;.htaccess&quot; and other interesting private files.
+
+This file is the result of a migration with the Wordpress plugin
+&quot;Duplicator&quot;.
+
+Author: @felmoltor
 </textualDescription></signature></searchEngineSignature>
