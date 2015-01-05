@@ -49,8 +49,6 @@ class ParserCache(object):
         self._total = 0.0
 
     def get_document_parser_for(self, http_response):
-        res = None
-
         # Before I used md5, but I realized that it was unnecessary. I
         # experimented a little bit with python's hash functions and this is
         # what I got:

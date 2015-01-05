@@ -118,24 +118,6 @@ class TestDocumentParserFactory(unittest.TestCase):
         Test to verify fix for https://github.com/andresriancho/w3af/issues/6723
         "w3af running long time more than 24h"
         """
-        class DelayedParser(object):
-            def __init__(self, http_response):
-                """
-                According to the stopit docs it can't kill a thread running an
-                atomic python function such as time.sleep() , so I have to
-                create a function like this. I don't mind, since it's realistic
-                with what we do in w3af anyways.
-                """
-                total_delay = 3.0
-
-                for _ in xrange(100):
-                    time.sleep(total_delay/100)
-
-            @staticmethod
-            def can_parse(*args):
-                return True
-
-
         mod = 'w3af.core.data.parsers.document_parser.%s'
 
         with patch(mod % 'om.out') as om_mock,\
@@ -161,3 +143,21 @@ class TestDocumentParserFactory(unittest.TestCase):
                 self.assertIn(call.debug(error), om_mock.mock_calls)
             else:
                 self.assertTrue(False)
+
+
+class DelayedParser(object):
+    def __init__(self, http_response):
+        """
+        According to the stopit docs it can't kill a thread running an
+        atomic python function such as time.sleep() , so I have to
+        create a function like this. I don't mind, since it's realistic
+        with what we do in w3af anyways.
+        """
+        total_delay = 3.0
+
+        for _ in xrange(100):
+            time.sleep(total_delay/100)
+
+    @staticmethod
+    def can_parse(*args):
+        return True
