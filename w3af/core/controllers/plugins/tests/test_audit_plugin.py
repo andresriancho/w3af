@@ -26,6 +26,8 @@ import re
 from nose.plugins.attrib import attr
 from mock import patch, call, PropertyMock
 
+from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
+from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.kb.knowledge_base import kb
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
@@ -63,6 +65,34 @@ class TestAuditPlugin(unittest.TestCase):
         self.assertEquals(target_url, str(vuln.get_url()))        
         
         self.assertEqual(plugin_inst._store_kb_vulns, False)
+
+    def test_http_timeout_with_plugin(self):
+        """
+        This is very related with the tests at:
+            w3af/core/data/url/tests/test_xurllib.py
+
+        Very similar test is TestXUrllib.test_timeout
+
+        :see: https://github.com/andresriancho/w3af/issues/7112
+        """
+        upper_daemon = UpperDaemon(TimeoutTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        freq = FuzzableRequest(url)
+
+        plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')
+        plugin_inst._uri_opener.settings.set_timeout(1)
+
+        # We expect the server to timeout and the response to be a 204
+        resp = plugin_inst.get_original_response(freq)
+        self.assertEqual(resp.get_url(), url)
+        self.assertEqual(resp.get_code(), 204)
+
+        plugin_inst._uri_opener.settings.set_default_values()
 
     def test_audit_plugin_timeout(self):
         plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')

@@ -209,10 +209,6 @@ class Plugin(Configurable):
         return False, new_no_content_resp(uri, add_id=True)
 
 
-NO_URL_WRAP = ('send_mutant', 'send_raw_request', 'send_clean',
-               'get_remote_file_size', '_send')
-
-
 class UrlOpenerProxy(object):
     """
     Proxy class for urlopener objects such as ExtendedUrllib instances.
@@ -234,7 +230,14 @@ class UrlOpenerProxy(object):
                 # type of exception (not a subclass of HTTPRequestException)
                 # and that one will bubble up to w3afCore/strategy/etc.
                 #
-                uri = args[0]
+                arg1 = args[0]
+                if hasattr(arg1, 'get_uri'):
+                    # Mutants and fuzzable requests enter here
+                    uri = arg1.get_uri()
+                else:
+                    # It was a URL instance
+                    uri = arg1
+
                 re_raise, result = self._plugin_inst.handle_url_error(uri, hre)
 
                 # By default we do NOT re-raise, we just return a 204-no content
@@ -247,7 +250,7 @@ class UrlOpenerProxy(object):
 
         attr = getattr(self._url_opener, name)
 
-        if callable(attr) and name not in NO_URL_WRAP:
+        if callable(attr):
             return meth
         else:
             return attr
