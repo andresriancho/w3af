@@ -76,7 +76,9 @@ class crawl_infrastructure(BaseConsumer):
             try:
                 work_unit = self.in_queue.get(timeout=0.1)
             except Queue.Empty:
+                # pylint: disable=E1120
                 self._route_all_plugin_results()
+                # pylint: enable=E1120
             else:
                 if work_unit == POISON_PILL:
 
@@ -95,6 +97,7 @@ class crawl_infrastructure(BaseConsumer):
                 else:
                     self._consume(work_unit)
                     self.in_queue.task_done()
+                    work_unit = None
 
     def _teardown(self, plugin=None):
         """End plugins"""
@@ -115,7 +118,7 @@ class crawl_infrastructure(BaseConsumer):
                              'end() method: %s' % (plugin.get_name(), e))
 
     @task_decorator
-    def _consume(self, work_unit):
+    def _consume(self, function_id, work_unit):
         for plugin in self._consumer_plugins:
 
             if not self._running:
@@ -134,17 +137,23 @@ class crawl_infrastructure(BaseConsumer):
             self._threadpool.apply_async(return_args(self._discover_worker),
                                         (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
+            # pylint: disable=E1120
             self._route_all_plugin_results()
+            # pylint: enable=E1120
 
     @task_decorator
-    def _plugin_finished_cb(self, ((plugin, fuzzable_request), plugin_result)):
+    def _plugin_finished_cb(self,
+                            function_id,
+                            ((plugin, fuzzable_request), plugin_result)):
         if not self._running:
             return
-        
+
+        # pylint: disable=E1120
         self._route_plugin_results(plugin)
+        # pylint: enable=E1120
 
     @task_decorator
-    def _route_all_plugin_results(self):
+    def _route_all_plugin_results(self, function_id):
         for plugin in self._consumer_plugins:
 
             if not self._running:
@@ -153,10 +162,12 @@ class crawl_infrastructure(BaseConsumer):
             if plugin in self._disabled_plugins:
                 continue
 
+            # pylint: disable=E1120
             self._route_plugin_results(plugin)
+            # pylint: enable=E1120
 
     @task_decorator
-    def _route_plugin_results(self, plugin):
+    def _route_plugin_results(self, function_id, plugin):
         """
         Retrieve the results from all plugins and put them in our output Queue.
         """
@@ -166,7 +177,7 @@ class crawl_infrastructure(BaseConsumer):
                 fuzzable_request = plugin.output_queue.get_nowait()
             except Queue.Empty:
                 break
-            
+
             else:
                 # Is the plugin really returning a fuzzable request?
                 if not isinstance(fuzzable_request, FuzzableRequest):
@@ -188,7 +199,7 @@ class crawl_infrastructure(BaseConsumer):
                                          fuzzable_request))
             finally:
                 # Should I continue with the crawl phase? If not, simply call
-                # terminate() to clear the input queue and put a POISION_PILL
+                # terminate() to clear the input queue and put a POISON_PILL
                 # in the output queue
                 if self._should_stop_discovery():
                     self._running = False
@@ -207,7 +218,7 @@ class crawl_infrastructure(BaseConsumer):
 
         # Let the client know that I finished
         self.out_queue.put(POISON_PILL)
-                    
+
     def join(self):
         super(crawl_infrastructure, self).join()
         self.cleanup()
@@ -242,14 +253,14 @@ class crawl_infrastructure(BaseConsumer):
 
         # print the URLs
         om.out.information('The URL list is:')
-        
+
         tmp_url_list = ['- %s' % u.url_string for u in tmp_url_list]
         tmp_url_list.sort()
         map(om.out.information, tmp_url_list)
 
         # Now I simply print the list that I have after the filter.
         om.out.information('The list of fuzzable requests is:')
-        
+
         tmp_fr = [u'- %s' % unicode(fr) for fr in all_known_fuzzable_requests]
         tmp_fr.sort()
         map(om.out.information, tmp_fr)
@@ -262,10 +273,10 @@ class crawl_infrastructure(BaseConsumer):
         """
         if not self._running:
             return True
-        
+
         if self._w3af_core.status.get_run_time() > self._max_discovery_time:
             if self._report_max_time:
-                self._report_max_time = False                
+                self._report_max_time = False
                 msg = 'Maximum crawl time limit hit, no new URLs will be'\
                       ' added to the queue.'
                 om.out.information(msg)
@@ -284,7 +295,8 @@ class crawl_infrastructure(BaseConsumer):
                 msg = 'The %s plugin: "%s" wont be run anymore.'
                 om.out.debug(msg % (plugin_type, plugin_to_remove.get_name()))
 
-                # Add it to the list of disabled plugins, and run the end() method
+                # Add it to the list of disabled plugins, and run the end()
+                # method
                 self._disabled_plugins.add(plugin_to_remove)
                 self._teardown(plugin_to_remove)
 
@@ -304,7 +316,7 @@ class crawl_infrastructure(BaseConsumer):
 
         fr_uri = fuzzable_request.get_uri()
         method = fuzzable_request.get_method()
-        
+
         # No need to care about fragments
         # (http://a.com/foo.php#frag). Remove them
         fr_uri.remove_fragment()
@@ -312,10 +324,10 @@ class crawl_infrastructure(BaseConsumer):
         # Is the "new" fuzzable request domain in the configured targets?
         if fr_uri.base_url() not in base_urls_cf:
             return False
-        
+
         if (method, fr_uri) in self._already_seen_urls:
             return False
-        
+
         self._already_seen_urls.add((method, fr_uri))
 
         # Filter out the fuzzable requests that aren't important
@@ -371,7 +383,7 @@ class crawl_infrastructure(BaseConsumer):
         return False
 
     @task_decorator
-    def _discover_worker(self, plugin, fuzzable_request):
+    def _discover_worker(self, function_id, plugin, fuzzable_request):
         """
         This method runs @plugin with FuzzableRequest as parameter and returns
         new fuzzable requests and/or stores vulnerabilities in the knowledge base.
@@ -411,7 +423,6 @@ class crawl_infrastructure(BaseConsumer):
         except Exception, e:
             self.handle_exception(plugin.get_type(), plugin.get_name(),
                                   fuzzable_request, e)
-
         else:
             # The plugin output is retrieved and analyzed by the
             # _route_plugin_results method, here we just verify that the plugin

@@ -50,6 +50,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body
 
 MAX_ERROR_COUNT = 10
@@ -462,12 +463,17 @@ class ExtendedUrllib(object):
         return AnyMethod(self, method_name)
 
     def _add_headers(self, req, headers=Headers()):
-        # Add all custom Headers() if they exist
+        """
+        Add all custom Headers() if they exist
+        """
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 
         for h, v in headers.iteritems():
             req.add_header(h, v)
+
+        if self.settings.rand_user_agent is True:
+            req.add_header('User-Agent', get_random_user_agent())
 
         return req
 
@@ -505,7 +511,7 @@ class ExtendedUrllib(object):
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            return self._handle_send_success(req, e.fp, grep, original_url,
+            return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
         
         except (socket.error, URLTimeoutError, ConnectionPoolException), e:

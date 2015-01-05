@@ -18,6 +18,8 @@ dependencies:
     - "php-moth"
 
   pre:
+    - sudo apt-get update; sudo apt-get install python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2 python-dbus python-pygame python-opencv python-scipy python-numpy stunnel4 libffi-dev
+    
     # Install the core/console dependencies
     - pip install --upgrade pip
     - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh

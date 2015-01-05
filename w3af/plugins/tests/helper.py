@@ -32,6 +32,7 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
@@ -159,6 +160,7 @@ class PluginTest(unittest.TestCase):
         content_type = 'text/html'
         mock_headers = {}
         delay = None
+        match = None
 
         for mock_response in self.MOCK_RESPONSES:
             if mock_response.method != method.command:
@@ -171,6 +173,7 @@ class PluginTest(unittest.TestCase):
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
                     delay = mock_response.delay
+                    match = mock_response
 
                     break
             elif isinstance(mock_response.url, RE_COMPILE_TYPE):
@@ -180,8 +183,15 @@ class PluginTest(unittest.TestCase):
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
                     delay = mock_response.delay
+                    match = mock_response
 
                     break
+
+        if match is not None:
+            fmt = (uri, match)
+            om.out.debug('[request_callback] URI %s matched %s' % fmt)
+        else:
+            om.out.debug('[request_callback] URI %s will return 404' % uri)
 
         headers.update(mock_headers)
         headers['Content-Type'] = content_type
@@ -434,12 +444,11 @@ def create_target_option_list(*target):
 
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200,
-                 method='GET', headers=None, delay=None):
+                 method='GET', headers=None):
         self.url = url
         self.body = body
         self.status = status
         self.method = method
-        self.delay = delay
 
         self.content_type = content_type
         self.headers = {'Content-Type': content_type}
