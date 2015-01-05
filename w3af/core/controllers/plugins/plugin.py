@@ -209,6 +209,10 @@ class Plugin(Configurable):
         return False, new_no_content_resp(uri)
 
 
+NO_URL_WRAP = ('send_mutant', 'send_raw_request', 'send_clean',
+               'get_remote_file_size', '_send')
+
+
 class UrlOpenerProxy(object):
     """
     Proxy class for urlopener objects such as ExtendedUrllib instances.
@@ -242,4 +246,8 @@ class UrlOpenerProxy(object):
                 return result
 
         attr = getattr(self._url_opener, name)
-        return meth if callable(attr) else attr
+
+        if callable(attr) and name not in NO_URL_WRAP:
+            return meth
+        else:
+            return attr
