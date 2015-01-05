@@ -33,6 +33,7 @@ from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.url.constants import MAX_HTTP_RETRIES
 
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
@@ -49,9 +50,6 @@ from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler
 from w3af.core.data.options.option_types import (POSITIVE_INT, INT, STRING,
                                                  LIST, BOOL)
-
-
-MAX_HTTP_RETRIES = 2
 
 
 class OpenerSettings(Configurable):

@@ -26,7 +26,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
-from w3af.core.data.url.opener_settings import MAX_HTTP_RETRIES
+from w3af.core.data.url.constants import MAX_HTTP_RETRIES
 
 
 class HTTPRequest(RequestMixIn, urllib2.Request):
