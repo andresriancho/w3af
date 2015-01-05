@@ -444,11 +444,12 @@ def create_target_option_list(*target):
 
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200,
-                 method='GET', headers=None):
+                 method='GET', headers=None, delay=None):
         self.url = url
         self.body = body
         self.status = status
         self.method = method
+        self.delay = delay
 
         self.content_type = content_type
         self.headers = {'Content-Type': content_type}
