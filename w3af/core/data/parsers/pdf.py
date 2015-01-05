@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import StringIO
 
 from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFResourceManager, process_pdf
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
 from pdfminer.layout import LAParams
 from pdfminer.pdfparser import PDFSyntaxError
 
@@ -111,11 +112,15 @@ def pdf_to_text(pdf_string):
     
     output = StringIO.StringIO()
     device = TextConverter(rsrcmgr, output, codec='utf-8', laparams=laparams)
-    
+
     document_io = StringIO.StringIO(pdf_string)
     pagenos = set()
     try:
-        process_pdf(rsrcmgr, device, document_io, pagenos, check_extractable=False)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+        for page in PDFPage.get_pages(document_io, pagenos, maxpages=0,
+                                      caching=True, check_extractable=True):
+            page.rotate = (page.rotate + 0) % 360
+            interpreter.process_page(page)
     except PDFSyntaxError:
         return u''
     
