@@ -206,7 +206,7 @@ class Plugin(Configurable):
         msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
         args = (self.get_name(), uri, http_exception)
         om.out.error(msg % args)
-        return False, new_no_content_resp(uri)
+        return False, new_no_content_resp(uri, add_id=True)
 
 
 NO_URL_WRAP = ('send_mutant', 'send_raw_request', 'send_clean',
