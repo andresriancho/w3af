@@ -70,7 +70,7 @@ class HTTPResponse(object):
         :param geturl: URL object instance
         :param original_url: URL object instance
         :param msg: HTTP message
-        :param id: Optional response identifier
+        :param _id: Optional response identifier
         :param time: The time between the request and the response
         :param alias: Alias for the response, this contains a hash that helps
                       the backend sqlite find http_responses faster by indexing

@@ -42,6 +42,7 @@ def new_no_content_resp(uri, add_id=False):
 
     return no_content_response
 
+
 def get_clean_body(mutant, response):
     """
     @see: Very similar to fingerprint_404.py get_clean_body() bug not quite
