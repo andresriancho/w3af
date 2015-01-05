@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import StringIO
 
-from pdfminer.converter import TextConverter, HTMLConverter
+from pdfminer.converter import HTMLConverter
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
-from pdfminer.layout import LAParams
 from pdfminer.pdfparser import PDFSyntaxError
 
 from w3af.core.data.parsers.baseparser import BaseParser
+from w3af.core.data.url.HTTPResponse import ANY_TAG_MATCH
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
@@ -112,8 +112,10 @@ def pdf_to_text(pdf_string):
 
     # According to https://github.com/euske/pdfminer/issues/61 it is a good idea
     # to set laparams to None, which will speed-up parsing
-    device = HTMLConverter(rsrcmgr, output, codec='utf-8', layoutmode='normal',
-                           laparams=None, imagewriter=None)
+    device = NoPageHTMLConverter(rsrcmgr, output, codec='utf-8',
+                                 layoutmode='normal',
+                                 laparams=None, imagewriter=None,
+                                 showpageno=False)
 
     document_io = StringIO.StringIO(pdf_string)
     pagenos = set()
@@ -128,4 +130,11 @@ def pdf_to_text(pdf_string):
     
     device.close()
     output.seek(0)
-    return output.read().decode('utf-8')
+    output_str = output.read().decode('utf-8')
+    return ANY_TAG_MATCH.sub('', output_str)
+
+
+class NoPageHTMLConverter(HTMLConverter):
+    def write_footer(self):
+        self.write('</body></html>\n')
+        return

@@ -35,7 +35,7 @@ class TestPDF(unittest.TestCase):
         pdf_inst = pdf()
         
         words = pdf_inst._get_pdf_content(file(fname).read())
-        
+
         EXPECTED_RESULT = ['Testing,', 'testing,', '123.', 'Text', 'in',
                            'page', 'number', 'two.']
         self.assertEqual(EXPECTED_RESULT, words)
