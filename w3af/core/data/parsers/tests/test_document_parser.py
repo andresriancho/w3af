@@ -88,7 +88,7 @@ class TestDocumentParserFactory(unittest.TestCase):
                               response)
 
     def test_no_parser_binary(self):
-        all_chars = ''.join([chr(i) for i in xrange(0,255)])
+        all_chars = ''.join([chr(i) for i in xrange(0, 255)])
         response = _build_http_response(all_chars, u'application/bar')
         self.assertRaises(BaseFrameworkException, document_parser_factory,
                           response)
