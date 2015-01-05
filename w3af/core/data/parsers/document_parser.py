@@ -66,9 +66,9 @@ class DocumentParser(object):
                     msg = '[timeout] The "%s" parser took more than %s seconds'\
                           ' to complete parsing of "%s", killing it!'
 
-                    om.out.debug(msg % (parser.__name__,
-                                        self.PARSER_TIMEOUT,
-                                        http_resp.get_url()))
+                    BaseFrameworkException(msg % (parser.__name__,
+                                                  self.PARSER_TIMEOUT,
+                                                  http_resp.get_url()))
                 finally:
                     break
 
