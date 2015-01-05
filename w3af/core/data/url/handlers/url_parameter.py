@@ -46,5 +46,6 @@ class URLParameterHandler(urllib2.BaseHandler):
 
         new_request = HTTPRequest(url_instance, headers=req.headers,
                                   origin_req_host=req.get_origin_req_host(),
-                                  unverifiable=req.is_unverifiable())
+                                  unverifiable=req.is_unverifiable(),
+                                  retries=req.retries_left)
         return new_request

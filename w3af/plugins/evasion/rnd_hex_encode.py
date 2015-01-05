@@ -64,7 +64,8 @@ class rnd_hex_encode(EvasionPlugin):
                 data = self._mutate(data)
 
         new_req = HTTPRequest(new_url, data, request.headers,
-                              request.get_origin_req_host())
+                              request.get_origin_req_host(),
+                              retries=request.retries_left)
 
         return new_req
 

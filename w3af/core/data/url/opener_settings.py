@@ -50,6 +50,9 @@ from w3af.core.data.url.handlers.errors import ErrorHandler
 from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST
 
 
+MAX_HTTP_RETRIES = 2
+
+
 class OpenerSettings(Configurable):
     """
     This is a urllib2 configuration manager.
@@ -118,7 +121,7 @@ class OpenerSettings(Configurable):
 
         cfg.save('ignore_session_cookies', False)
         cfg.save('max_file_size', 400000)
-        cfg.save('max_http_retries', 2)
+        cfg.save('max_http_retries', MAX_HTTP_RETRIES)
         cfg.save('max_requests_per_second', 0)
 
         cfg.save('url_parameter', '')
