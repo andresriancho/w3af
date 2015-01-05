@@ -88,7 +88,7 @@ class TestDocumentParserFactory(unittest.TestCase):
                               response)
 
     def test_no_parser_binary(self):
-        all_chars = ''.join([chr(i) for i in xrange(0, 255)])
+        all_chars = ''.join([chr(i) for i in xrange(0,255)])
         response = _build_http_response(all_chars, u'application/bar')
         self.assertRaises(BaseFrameworkException, document_parser_factory,
                           response)
@@ -147,13 +147,17 @@ class TestDocumentParserFactory(unittest.TestCase):
 
             html = '<html>foo!</html>'
             http_resp = _build_http_response(html, u'text/html')
-            document_parser_factory(http_resp)
 
-            msg = '[timeout] The "%s" parser took more than %s seconds'\
-                  ' to complete parsing of "%s", killing it!'
+            try:
+                document_parser_factory(http_resp)
+            except BaseFrameworkException:
+                msg = '[timeout] The "%s" parser took more than %s seconds'\
+                      ' to complete parsing of "%s", killing it!'
 
-            error = msg % ('DelayedParser',
-                           DocumentParser.PARSER_TIMEOUT,
-                           http_resp.get_url())
+                error = msg % ('DelayedParser',
+                               DocumentParser.PARSER_TIMEOUT,
+                               http_resp.get_url())
 
-            self.assertIn(call.debug(error), om_mock.mock_calls)
+                self.assertIn(call.debug(error), om_mock.mock_calls)
+            else:
+                self.assertTrue(False)
