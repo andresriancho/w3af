@@ -47,7 +47,8 @@ from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler
-from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST, BOOL
+from w3af.core.data.options.option_types import (POSITIVE_INT, INT, STRING,
+                                                 LIST, BOOL)
 
 
 MAX_HTTP_RETRIES = 2
