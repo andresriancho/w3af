@@ -53,6 +53,8 @@ class DocumentParser(object):
         which will return True to "can_parse" in lots of cases (even when we're
         unsure that the response is really an HTML document).
         """
+        self._parser = None
+
         if http_resp.is_image():
             msg = 'There is no parser for images.'
             raise BaseFrameworkException(msg)
@@ -66,13 +68,11 @@ class DocumentParser(object):
                     msg = '[timeout] The "%s" parser took more than %s seconds'\
                           ' to complete parsing of "%s", killing it!'
 
-                    BaseFrameworkException(msg % (parser.__name__,
-                                                  self.PARSER_TIMEOUT,
-                                                  http_resp.get_url()))
-                finally:
-                    break
+                    om.out.debug(msg % (parser.__name__,
+                                        self.PARSER_TIMEOUT,
+                                        http_resp.get_url()))
 
-        else:
+        if self._parser is None:
             msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise BaseFrameworkException(msg)
 
