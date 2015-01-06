@@ -93,16 +93,19 @@ class ParserCache(object):
     def _debug_not_in_cache(self, hash_string):
         if DEBUG:
             if hash_string in self._archive:
-                print hash_string, 'calculated and was in archive. (harmful)'
+                msg = '[%s] calculated and was in archive. (bad)'
+                print msg % hash_string
                 self._calculated_more_than_once += 1
             else:
-                print hash_string, 'calculated for the first time and cached. (good)'
+                msg = '[%s] calculated for the first time and cached. (good)'
+                print msg % hash_string
                 self._archive.add(hash_string)
 
     def _debug_in_cache(self, hash_string):
         if DEBUG:
             if hash_string in self._archive:
-                print hash_string, 'return from LRU and was in archive. (good)'
+                msg = '[%s] return from LRU and was in archive. (good)'
+                print msg % hash_string
                 self._from_LRU += 1
 
     def __del__(self):
