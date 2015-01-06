@@ -64,7 +64,6 @@ class ParserCache(object):
         """
         if self._pool is None:
             # Keep track of which pid is processing which http response
-            manager = multiprocessing.Manager()
             self._processes = manager.dict()
 
             # The pool
@@ -238,4 +237,5 @@ class ProcessDocumentParser(DocumentParser):
         super(ProcessDocumentParser, self).__init__(http_resp)
 
 
+manager = multiprocessing.Manager()
 dpc = ParserCache()
