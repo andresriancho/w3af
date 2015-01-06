@@ -128,6 +128,19 @@ class DocumentParser(object):
         """
         return self._parser.get_meta_tags()
 
+    def get_dom(self):
+        """
+        :return: The DOM which holds the HTML. Not all parsers return something
+                 here. In some cases (like the PDF parser) this returns None.
+        """
+        return self._parser.get_dom()
+
+    def get_clear_text_body(self):
+        """
+        :return: Only the text, no tags, which is present in a document.
+        """
+        return self._parser.get_clear_text_body()
+
 
 def document_parser_factory(http_resp):
     return DocumentParser(http_resp)

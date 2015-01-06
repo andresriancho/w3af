@@ -177,6 +177,9 @@ class SWFParser(BaseParser):
                         else:
                             self._re_urls.add(url)
 
+    def get_clear_text_body(self):
+        return u''
+
     def get_references(self):
         """
         Searches for references on a page. w3af searches references in every

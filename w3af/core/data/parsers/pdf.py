@@ -27,7 +27,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFSyntaxError
 
 from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.data.url.HTTPResponse import ANY_TAG_MATCH
+from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
@@ -81,6 +81,9 @@ class PDFParser(BaseParser):
         re_extract = ReExtract(doc_string, self._base_url, self._encoding)
         self._re_urls = re_extract.get_references()
 
+    def get_clear_text_body(self):
+        return pdf_to_text(self.get_http_response().get_body())
+
     def get_references(self):
         """
         Searches for references on a page. w3af searches references in every
@@ -131,7 +134,7 @@ def pdf_to_text(pdf_string):
     device.close()
     output.seek(0)
     output_str = output.read().decode('utf-8')
-    return ANY_TAG_MATCH.sub('', output_str)
+    return SGMLParser.ANY_TAG_MATCH.sub('', output_str)
 
 
 class NoPageHTMLConverter(HTMLConverter):

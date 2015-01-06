@@ -59,3 +59,8 @@ class TestPDF(unittest.TestCase):
         
         self.assertEqual(parsed, [])
         self.assertEqual(re_refs, [URL('http://moth/pdf/')])
+
+        # We have no DOM
+        self.assertIsNone(parser.get_dom())
+        self.assertEqual(parser.get_clear_text_body().strip(),
+                         'http://moth/pdf/')
