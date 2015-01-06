@@ -19,15 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
-import threading
+import os
+import signal
+import multiprocessing
 
-from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import LRUDict
 
-import w3af.core.data.parsers.document_parser as DocumentParser
-
-DEBUG = False
+import w3af.core.controllers.output_manager as om
+from w3af.core.data.parsers.document_parser import DocumentParser
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class ParserCache(object):
@@ -38,16 +40,52 @@ class ParserCache(object):
     """
     LRU_LENGTH = 40
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
+    MAX_WORKERS = (multiprocessing.cpu_count() / 2) or 1
+    PARSER_TIMEOUT = 60 # in seconds
+    DEBUG = False
 
     def __init__(self):
-        self._cache = SynchronizedLRUDict(self.LRU_LENGTH)
-        self._LRULock = threading.RLock()
+        self._cache = LRUDict(self.LRU_LENGTH)
+        self._pool = None
+        self._processes = None
+        self._parser_finished_events = {}
 
         # These are here for debugging:
         self._archive = set()
         self._from_LRU = 0.0
         self._calculated_more_than_once = 0.0
         self._total = 0.0
+
+    def start_workers(self):
+        """
+        Start the pool and workers
+        :return: The pool instance
+        """
+        if self._pool is None:
+            # Keep track of which pid is processing which http response
+            manager = multiprocessing.Manager()
+            self._processes = manager.dict()
+
+            # The pool
+            self._pool = multiprocessing.Pool(self.MAX_WORKERS,
+                                              maxtasksperchild=25,
+                                              initargs={'name': 'ParserProcess'})
+
+        return self._pool
+
+    def stop_workers(self):
+        """
+        Stop the pool workers
+        :return: None
+        """
+        if self._pool is not None:
+            self._pool.terminate()
+            self._processes = None
+
+        if self.DEBUG:
+            print('parser_cache LRU rate: %s' % (self._from_LRU / self._total))
+            print('parser_cache re-calculation rate: %s' % (self._calculated_more_than_once / self._total))
+            print('parser_cache size: %s' % self.LRU_LENGTH)
 
     def get_cache_key(self, http_response):
         """
@@ -81,6 +119,49 @@ class ParserCache(object):
         """
         return len(http_response.get_body()) < self.MAX_CACHEABLE_BODY_LEN
 
+    def _parse_http_response_in_worker(self, http_response, hash_string):
+        """
+        This parses the http_response in a pool worker. This has two features:
+            * We can kill the worker if the parser is taking too long
+            * We can have different parsers
+
+        :return: The DocumentParser instance
+        """
+        event = multiprocessing.Event()
+        self._parser_finished_events[hash_string] = event
+
+        args = (http_response, self._processes, hash_string)
+        result = self._pool.apply_async(ProcessDocumentParser, args)
+
+        try:
+            return result.get(timeout=self.PARSER_TIMEOUT)
+        except multiprocessing.TimeoutError:
+            # Near the timeout error, so we make sure that the pid is still
+            # running our "buggy" input
+            pid = self._processes[hash_string]
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError, ose:
+                msg = 'An error occurred while killing the parser process: "%s"'
+                om.out.debug(msg % ose)
+            else:
+                msg = '[timeout] The parser took more than %s seconds'\
+                      ' to complete parsing of "%s", killed it!'
+
+                om.out.debug(msg % (self.PARSER_TIMEOUT,
+                                    http_response.get_url()))
+
+            # Act just like when there is no parser
+            msg = 'There is no parser for "%s".' % http_response.get_url()
+            raise BaseFrameworkException(msg)
+        finally:
+            # Just remove it so it doesn't use memory
+            self._processes.pop(hash_string)
+
+            # Let other know that we're done
+            event = self._parser_finished_events.pop(hash_string)
+            event.set()
+
     def get_document_parser_for(self, http_response):
         """
         Get a document parser for http_response using the cache if required
@@ -88,50 +169,71 @@ class ParserCache(object):
         :param http_response: The http response instance
         :return: An instance of DocumentParser
         """
-        if not self.should_cache(http_response):
-            # Just return the document parser, no need to cache
-            return DocumentParser.DocumentParser(http_response)
-
-        # Let's use a cache
+        self.start_workers()
         hash_string = self.get_cache_key(http_response)
 
-        with self._LRULock:
-            if hash_string in self._cache:
-                res = self._cache[hash_string]
-                self._debug_in_cache(hash_string)
-            else:
-                # Create a new instance of DocumentParser, add it to the cache
-                res = DocumentParser.DocumentParser(http_response)
-                self._cache[hash_string] = res
-                self._debug_not_in_cache(hash_string)
-            return res
+        if not self.should_cache(http_response):
+            # Just return the document parser, no need to cache
+            return self._parse_http_response_in_worker(http_response,
+                                                       hash_string)
+
+        parser_finished = self._parser_finished_events.get(hash_string, None)
+        if parser_finished is not None:
+            # There is one subprocess already processing this http response
+            # body, the best thing to do here is to make this thread wait
+            # until that process has finished
+            try:
+                parser_finished.wait(timeout=self.PARSER_TIMEOUT)
+            except:
+                # Act just like when there is no parser
+                msg = 'There is no parser for "%s".' % http_response.get_url()
+                raise BaseFrameworkException(msg)
+
+        parser = self._cache.get(hash_string, None)
+        if parser is not None:
+            self._debug_in_cache(hash_string)
+            return parser
+        else:
+            # Create a new instance of DocumentParser, add it to the cache
+            parser = self._parse_http_response_in_worker(http_response,
+                                                         hash_string)
+            self._cache[hash_string] = parser
+            self._debug_not_in_cache(hash_string)
+            return parser
 
     def _debug_not_in_cache(self, hash_string):
-        if DEBUG:
+        if self.DEBUG:
             self._total += 1
 
             if hash_string in self._archive:
                 msg = '[%s] calculated and was in archive. (bad)'
-                print msg % hash_string
+                print(msg % hash_string)
                 self._calculated_more_than_once += 1
             else:
                 msg = '[%s] calculated for the first time and cached. (good)'
-                print msg % hash_string
+                print(msg % hash_string)
                 self._archive.add(hash_string)
 
     def _debug_in_cache(self, hash_string):
-        if DEBUG:
+        if self.DEBUG:
             self._total += 1
 
             if hash_string in self._archive:
                 msg = '[%s] return from LRU and was in archive. (good)'
-                print msg % hash_string
+                print(msg % hash_string)
                 self._from_LRU += 1
 
-    def __del__(self):
-        if DEBUG:
-            print 'parser_cache LRU rate: %s' % (self._from_LRU / self._total)
-            print 'parser_cache re-calculation rate: %s' % (self._calculated_more_than_once / self._total)
-            print 'parser_cache size: %s' % self.LRU_LENGTH
+
+class ProcessDocumentParser(DocumentParser):
+    """
+    Simple wrapper to get the current process id and store it in a shared object
+    so we can kill the process if needed.
+    """
+    def __init__(self, http_resp, processes, hash_string):
+        pid = multiprocessing.current_process().pid
+        processes[hash_string] = pid
+
+        super(ProcessDocumentParser, self).__init__(http_resp)
+
 
 dpc = ParserCache()

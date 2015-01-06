@@ -26,6 +26,7 @@ import threading
 import traceback
 import pprint
 
+import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
@@ -291,6 +292,9 @@ class w3afCore(object):
         # Clean all data that is stored in the kb
         kb.cleanup()
 
+        # Stop the parser subprocess
+        parser_cache.dpc.stop_workers()
+
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
         # timeout and other configs to remain configured as he did it the first
@@ -357,7 +361,9 @@ class w3afCore(object):
         self.stop()
         self.uri_opener.end()
         remove_temp_dir(ignore_errors=True)
-        
+        # Stop the parser subprocess
+        parser_cache.dpc.stop_workers()
+
     def pause(self, pause_yes_no):
         """
         Pauses/Un-Pauses scan.
@@ -429,6 +435,9 @@ class w3afCore(object):
 
             # Finish the profiling
             stop_profiling(self)
+
+            # Stop the parser subprocess
+            parser_cache.dpc.stop_workers()
 
     def exploit_phase_prerequisites(self):
         """

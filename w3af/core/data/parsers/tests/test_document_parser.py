@@ -124,37 +124,6 @@ class TestDocumentParserFactory(unittest.TestCase):
         
         self.assertEqual(expected_paths, set(paths))
 
-    def test_parser_timeout(self):
-        """
-        Test to verify fix for https://github.com/andresriancho/w3af/issues/6723
-        "w3af running long time more than 24h"
-        """
-        mod = 'w3af.core.data.parsers.document_parser.%s'
-
-        with patch(mod % 'om.out') as om_mock,\
-             patch(mod % 'DocumentParser.PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
-             patch(mod % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
-
-            timeout_mock.return_value = 1
-            parsers_mock.return_value = [DelayedParser]
-
-            html = '<html>foo!</html>'
-            http_resp = _build_http_response(html, u'text/html')
-
-            try:
-                document_parser_factory(http_resp)
-            except BaseFrameworkException:
-                msg = '[timeout] The "%s" parser took more than %s seconds'\
-                      ' to complete parsing of "%s", killing it!'
-
-                error = msg % ('DelayedParser',
-                               DocumentParser.PARSER_TIMEOUT,
-                               http_resp.get_url())
-
-                self.assertIn(call.debug(error), om_mock.mock_calls)
-            else:
-                self.assertTrue(False)
-
 
 class DelayedParser(object):
     def __init__(self, http_response):
