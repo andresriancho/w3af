@@ -80,6 +80,7 @@ class ParserCache(object):
         """
         if self._pool is not None:
             self._pool.terminate()
+            self._pool = None
             self._processes = None
 
         if self.DEBUG:
