@@ -30,6 +30,7 @@ from darts.lib.utils.lru import LRUDict
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.ci.detect import is_running_on_ci
 
 
 class ParserCache(object):
@@ -40,9 +41,9 @@ class ParserCache(object):
     """
     LRU_LENGTH = 40
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
-    MAX_WORKERS = (multiprocessing.cpu_count() / 2) or 1
     PARSER_TIMEOUT = 60 # in seconds
     DEBUG = False
+    MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
 
     def __init__(self):
         self._cache = LRUDict(self.LRU_LENGTH)
