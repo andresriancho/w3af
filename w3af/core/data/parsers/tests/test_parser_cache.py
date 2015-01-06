@@ -102,6 +102,5 @@ class TestParserCache(unittest.TestCase):
                                http_resp.get_url())
 
                 self.assertIn(call.debug(error), om_mock.mock_calls)
-                self.assertEqual(self.dpc._LRULock._RLock__count, 0)
             else:
                 self.assertTrue(False)
