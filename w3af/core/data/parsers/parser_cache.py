@@ -26,6 +26,7 @@ import signal
 import multiprocessing
 
 from darts.lib.utils.lru import LRUDict
+from tblib.decorators import apply_with_return_error, Error
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.document_parser import DocumentParser
@@ -120,6 +121,12 @@ class ParserCache(object):
         """
         return len(http_response.get_body()) < self.MAX_CACHEABLE_BODY_LEN
 
+    def _test_parse_http_response(self, http_response, *args):
+        """
+        Left here for testing!
+        """
+        return DocumentParser(http_response)
+
     def _parse_http_response_in_worker(self, http_response, hash_string):
         """
         This parses the http_response in a pool worker. This has two features:
@@ -131,11 +138,15 @@ class ParserCache(object):
         event = multiprocessing.Event()
         self._parser_finished_events[hash_string] = event
 
-        args = (http_response, self._processes, hash_string)
-        result = self._pool.apply_async(ProcessDocumentParser, args)
+        apply_args = (ProcessDocumentParser,
+                      http_response,
+                      self._processes,
+                      hash_string)
+
+        result = self._pool.apply_async(apply_with_return_error, (apply_args,))
 
         try:
-            return result.get(timeout=self.PARSER_TIMEOUT)
+            parser_output = result.get(timeout=self.PARSER_TIMEOUT)
         except multiprocessing.TimeoutError:
             # Near the timeout error, so we make sure that the pid is still
             # running our "buggy" input
@@ -155,6 +166,10 @@ class ParserCache(object):
             # Act just like when there is no parser
             msg = 'There is no parser for "%s".' % http_response.get_url()
             raise BaseFrameworkException(msg)
+        else:
+            if isinstance(parser_output, Error):
+                parser_output.reraise()
+
         finally:
             # Just remove it so it doesn't use memory
             self._processes.pop(hash_string)
@@ -162,6 +177,8 @@ class ParserCache(object):
             # Let other know that we're done
             event = self._parser_finished_events.pop(hash_string)
             event.set()
+
+        return parser_output
 
     def get_document_parser_for(self, http_response):
         """
@@ -233,7 +250,7 @@ class ProcessDocumentParser(DocumentParser):
     def __init__(self, http_resp, processes, hash_string):
         pid = multiprocessing.current_process().pid
         processes[hash_string] = pid
-
+        
         super(ProcessDocumentParser, self).__init__(http_resp)
 
 
