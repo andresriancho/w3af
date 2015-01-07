@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+from __future__ import print_function
+
 import os
 import re
 import unittest
@@ -293,6 +295,7 @@ class PluginTest(unittest.TestCase):
         exception_handler.get_all_exceptions() , we'll return a string that
         shows the information about them.
         """
+        #[print(e.get_traceback_str()) for e in caught_exceptions]
         return [e for e in caught_exceptions]
 
     def _configure_debug(self):
