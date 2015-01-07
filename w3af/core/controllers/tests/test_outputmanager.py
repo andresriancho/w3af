@@ -46,11 +46,11 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_instances = [plugin, ]
+            om.manager._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
-            om.out.process_all_messages()
+            om.manager.process_all_messages()
 
             plugin_action.assert_called_once_with(msg, True)
 
@@ -65,11 +65,11 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_instances = [plugin, ]
+            om.manager._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
-            om.out.process_all_messages()
+            om.manager.process_all_messages()
 
             plugin_action.assert_called_once_with(utf8_encoded_msg, True)
 
@@ -92,11 +92,11 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, action, plugin_action)
 
         # Invoke action
-        om.out._output_plugin_instances = [plugin, ]
+        om.manager._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         om_action(msg, False)
 
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)
     
@@ -113,14 +113,14 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, 'get_name', plugin_get_name)
 
         # Invoke action
-        om.out._output_plugin_instances = [plugin, ]
+        om.manager._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         # This one will be ignored at the output manager level
         om_action(msg, False, ignore_plugins=set(['fake']))
         # This one will make it and we'll assert it below
         om_action(msg, False)
         
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)        
 
@@ -143,9 +143,10 @@ class TestOutputManager(unittest.TestCase):
 
         w3af_core = w3afCore()
 
-        om.out._output_plugin_instances = [invalid_plugin, ]
+        om.manager._output_plugin_instances = [invalid_plugin, ]
+        om.manager.start()
         om.out.information('abc')
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         exc_list = w3af_core.exception_handler.get_all_exceptions()
         self.assertEqual(len(exc_list), 1, exc_list)

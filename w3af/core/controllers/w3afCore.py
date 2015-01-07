@@ -39,7 +39,8 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
 
-from w3af.core.controllers.output_manager import fresh_output_manager_inst
+from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
+                                                  log_sink_factory)
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
@@ -75,7 +76,8 @@ class w3afCore(object):
         Create the URI opener.
         """
         # Make sure we get a fresh new instance of the output manager
-        fresh_output_manager_inst()
+        manager = fresh_output_manager_inst()
+        log_sink_factory(manager.get_in_queue())
 
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
@@ -108,7 +110,7 @@ class w3afCore(object):
         # FIXME: In the future, when the output_manager is not an awful singleton
         # anymore, this line should be removed and the output_manager object
         # should take a w3afCore object as a parameter in its __init__
-        om.out.set_w3af_core(self)
+        om.manager.set_w3af_core(self)
         
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
@@ -179,8 +181,8 @@ class w3afCore(object):
 
         # Let the output plugins know what kind of plugins we're
         # using during the scan
-        om.out.log_enabled_plugins(self.plugins.get_all_enabled_plugins(),
-                                   self.plugins.get_all_plugin_options())
+        om.manager.log_enabled_plugins(self.plugins.get_all_enabled_plugins(),
+                                       self.plugins.get_all_plugin_options())
 
         self._first_scan = False
         
@@ -408,7 +410,7 @@ class w3afCore(object):
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
-            om.out.end_output_plugins()
+            om.manager.end_output_plugins()
             
             # Note that running "self.uri_opener.end()" here is a bad idea
             # since it will clear all the history items from the DB and remove
