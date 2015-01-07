@@ -30,6 +30,7 @@ from tblib.decorators import apply_with_return_error, Error
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.threads.process_pool import ProcessPool
 from w3af.core.controllers.output_manager import log_sink_factory
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -73,10 +74,10 @@ class ParserCache(object):
 
             # The pool
             log_queue = om.manager.get_in_queue()
-            self._pool = multiprocessing.Pool(self.MAX_WORKERS,
-                                              maxtasksperchild=25,
-                                              initializer=log_sink_factory,
-                                              initargs=(log_queue,))
+            self._pool = ProcessPool(self.MAX_WORKERS,
+                                     maxtasksperchild=25,
+                                     initializer=log_sink_factory,
+                                     initargs=(log_queue,))
 
         return self._pool
 
