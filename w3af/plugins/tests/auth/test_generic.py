@@ -100,6 +100,7 @@ class TestGeneric(PluginTest):
                           '/auth/auth_1/post_auth_xss.py')
 
     @attr('internet')
+    @attr('fails')
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else

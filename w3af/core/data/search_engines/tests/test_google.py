@@ -37,7 +37,8 @@ URL_REGEX = re.compile('((http|ftp|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)',
 
 
 @attr('internet')
-class test_google(unittest.TestCase):
+@attr('fails')
+class TestGoogle(unittest.TestCase):
     """
     This unittest verifies that the Google class works. Remember that this class
     internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to avoid
@@ -179,13 +180,18 @@ class BaseGoogleAPISearch(unittest.TestCase):
 
 
 @attr('internet')
+@attr('fails')
 class TestGAjaxSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GAjaxSearch
 
+
 @attr('internet')
+@attr('fails')
 class TestGMobileSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GMobileSearch
 
+
 @attr('internet')
+@attr('fails')
 class TestGStandardSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GStandardSearch
