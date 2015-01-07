@@ -59,7 +59,6 @@ class crawl_infrastructure(BaseConsumer):
 
         # For filtering fuzzable requests found by plugins:
         self._variant_db = VariantDB()
-        self._already_seen_urls = ScalableBloomFilter()
 
         self._disabled_plugins = set()
         self._running = True
@@ -312,22 +311,11 @@ class crawl_infrastructure(BaseConsumer):
         :return: True if @FuzzableRequest is new (never seen before).
         """
         base_urls_cf = cf.cf.get('baseURLs')
-
         fr_uri = fuzzable_request.get_uri()
-        method = fuzzable_request.get_method()
-
-        # No need to care about fragments
-        # (http://a.com/foo.php#frag). Remove them
-        fr_uri.remove_fragment()
 
         # Is the "new" fuzzable request domain in the configured targets?
         if fr_uri.base_url() not in base_urls_cf:
             return False
-
-        if (method, fr_uri) in self._already_seen_urls:
-            return False
-
-        self._already_seen_urls.add((method, fr_uri))
 
         # Filter out the fuzzable requests that aren't important
         # (and will be ignored by audit plugins anyway...)
@@ -371,8 +359,8 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=payload1&action=remove
         #       - http://host.tld/?id=payload1&action=remove
         #
-        if self._variant_db.need_more_variants(fr_uri):
-            self._variant_db.append(fr_uri)
+        if self._variant_db.need_more_variants_for_fr(fuzzable_request):
+            self._variant_db.append_fr(fuzzable_request)
 
             msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
                                                         fuzzable_request.get_url())
