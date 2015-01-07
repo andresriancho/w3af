@@ -270,7 +270,7 @@ class TestRelativePathsIn404(PluginTest):
 
     :see: https://github.com/andresriancho/w3af/issues/5834
     """
-    target_url = 'http://mock1/'
+    target_url = 'http://mock/'
 
     _run_configs = {
         'cfg': {
@@ -285,7 +285,7 @@ class TestRelativePathsIn404(PluginTest):
     GALERIA_HTML = file(os.path.join(TEST_ROOT, 'galeria-root.html')).read()
     INDEX_HTML = file(os.path.join(TEST_ROOT, 'index.html')).read()
 
-    MOCK_RESPONSES = [MockResponse(re.compile('http://mock1/galeria/.*'),
+    MOCK_RESPONSES = [MockResponse(re.compile('http://mock/galeria/.*'),
                                    GALERIA_HTML),
                       MockResponse('/', 'Thanks.', method='POST'),
                       MockResponse('/', INDEX_HTML)]
@@ -321,7 +321,7 @@ class TestDeadLock(PluginTest):
     instead when the dead-lock is found the test will "hang", CI will timeout,
     and in your workstation you'll have to manually kill it.
     """
-    target_url = 'http://mock2/'
+    target_url = 'http://mock/'
 
     _run_configs = {
         'cfg': {

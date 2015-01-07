@@ -97,6 +97,7 @@ class PluginTest(unittest.TestCase):
 
         if self.MOCK_RESPONSES:
             httpretty.disable()
+            httpretty.reset()
 
     def assertAllVulnNamesEqual(self, vuln_name, vulns):
         for vuln in vulns:
