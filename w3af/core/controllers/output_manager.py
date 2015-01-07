@@ -366,25 +366,6 @@ class OutputManager(Process):
                 # Append the plugin to the list
             self._output_plugin_instances.append(plugin)
 
-    def report_finding(self, info_inst):
-        """
-        The plugins call this in order to report an info/vuln object to the
-        user. This is an utility function that simply calls information() or
-        vulnerability() with the correct parameters, depending on the info_inst
-        type and severity.
-        
-        :param info_inst: An Info class or subclass.
-        """
-        from w3af.core.data.kb.info import Info
-        from w3af.core.data.kb.vuln import Vuln
-        
-        if isinstance(info_inst, Vuln):
-            self.vulnerability(info_inst.get_desc(),
-                               severity=info_inst.get_severity())
-            
-        elif isinstance(info_inst, Info):
-            self.information(info_inst.get_desc())
-
 
 class LogSink(object):
     """
@@ -395,6 +376,25 @@ class LogSink(object):
     def __init__(self, om_queue):
         super(LogSink, self).__init__()
         self.om_queue = om_queue
+
+    def report_finding(self, info_inst):
+        """
+        The plugins call this in order to report an info/vuln object to the
+        user. This is an utility function that simply calls information() or
+        vulnerability() with the correct parameters, depending on the info_inst
+        type and severity.
+
+        :param info_inst: An Info class or subclass.
+        """
+        from w3af.core.data.kb.info import Info
+        from w3af.core.data.kb.vuln import Vuln
+
+        if isinstance(info_inst, Vuln):
+            self.vulnerability(info_inst.get_desc(),
+                               severity=info_inst.get_severity())
+
+        elif isinstance(info_inst, Info):
+            self.information(info_inst.get_desc())
 
     def _add_to_queue(self, *args, **kwds):
         self.om_queue.put((args, kwds))
