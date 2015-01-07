@@ -25,7 +25,6 @@ import sys
 import threading
 import logging
 
-from cPickle import PicklingError
 from multiprocessing.dummy import Process
 
 from w3af import ROOT_PATH

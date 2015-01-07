@@ -20,13 +20,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import multiprocessing
 
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
+from tblib.decorators import apply_with_return_error, Error
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.output_manager import log_sink_factory
+
+
+def send_log_message(msg):
+    om.out.information(msg)
 
 
 @attr('smoke')
@@ -153,3 +160,26 @@ class TestOutputManager(unittest.TestCase):
 
         edata = exc_list[0]
         self.assertEqual(str(edata.exception), 'Test')
+
+    def test_output_manager_multiprocessing(self):
+        msg = 'Sent from a different process'
+
+        action = 'information'
+
+        plugin = Mock()
+        plugin_action = MagicMock()
+        setattr(plugin, action, plugin_action)
+        om.manager._output_plugin_instances = [plugin, ]
+
+        log_queue = om.manager.get_in_queue()
+        _pool = multiprocessing.Pool(1,
+                                     initializer=log_sink_factory,
+                                     initargs=(log_queue,))
+
+        result = _pool.apply(apply_with_return_error, ((send_log_message, msg),))
+        if isinstance(result, Error):
+            result.reraise()
+
+        om.manager.process_all_messages()
+
+        plugin_action.assert_called_once_with(msg)
