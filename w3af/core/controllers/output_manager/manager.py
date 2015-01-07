@@ -1,5 +1,5 @@
 """
-output_manager.py
+manager.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,11 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import functools
 import os
 import sys
 import threading
-import logging
 
 from multiprocessing.dummy import Process
 
@@ -33,47 +31,8 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
 
-# https://pypi.python.org/pypi/stopit#logging
-# The stopit named logger emits a warning each time a block of code execution
-# exceeds the associated timeout. To turn logging off, just:
-stopit_logger = logging.getLogger('stopit')
-stopit_logger.setLevel(logging.ERROR)
-
 # Thread locking to avoid starting the om many times from different threads
 start_lock = threading.RLock()
-
-
-def fresh_output_manager_inst():
-    """
-    Creates a new "manager" instance at the module level.
-
-    :return: A reference to the newly created instance
-    """
-    global manager
-
-    #
-    #   Stop the old instance thread
-    #
-    if manager.is_alive():
-        manager.in_queue.put(POISON_PILL)
-        manager.join()
-
-    #
-    #   Create the new instance
-    #
-    manager = OutputManager()
-    return manager
-
-
-def log_sink_factory(om_queue):
-    """
-    Creates a new "out" instance at the module level.
-
-    :return: A reference to the newly created instance
-    """
-    global out
-    out = LogSink(om_queue)
-    return out
 
 
 def start_thread_on_demand(func):
@@ -81,13 +40,15 @@ def start_thread_on_demand(func):
     Given that the output manager has been migrated into a producer/consumer
     model, the messages that are sent to it are added to a Queue and printed
     "when the om thread gets its turn".
-    
+
     The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is
     printed using the om (see functions below), which ends up with unordered
     messages printed to the console.
     """
     def od_wrapper(*args, **kwds):
         global start_lock
+        from w3af.core.controllers.output_manager import manager
+
         with start_lock:
             if not manager.is_alive():
                 manager.start()
@@ -106,16 +67,6 @@ class OutputManager(Process):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    METHODS = (
-        'debug',
-        'information',
-        'error',
-        'vulnerability',
-        'console',
-        'log_http',
-    )
-
     def __init__(self):
         super(OutputManager, self).__init__(name='OutputManager')
         self.daemon = True
@@ -365,61 +316,3 @@ class OutputManager(Process):
 
                 # Append the plugin to the list
             self._output_plugin_instances.append(plugin)
-
-
-class LogSink(object):
-    """
-    The log sink receives log messages in different threads/processes and sends
-    them over a multiprocessing queue to the main process where they are handled
-    by the output manager => output plugins.
-    """
-    def __init__(self, om_queue):
-        super(LogSink, self).__init__()
-        self.om_queue = om_queue
-
-    def report_finding(self, info_inst):
-        """
-        The plugins call this in order to report an info/vuln object to the
-        user. This is an utility function that simply calls information() or
-        vulnerability() with the correct parameters, depending on the info_inst
-        type and severity.
-
-        :param info_inst: An Info class or subclass.
-        """
-        from w3af.core.data.kb.info import Info
-        from w3af.core.data.kb.vuln import Vuln
-
-        if isinstance(info_inst, Vuln):
-            self.vulnerability(info_inst.get_desc(),
-                               severity=info_inst.get_severity())
-
-        elif isinstance(info_inst, Info):
-            self.information(info_inst.get_desc())
-
-    def _add_to_queue(self, *args, **kwds):
-        try:
-            self.om_queue.put((args, kwds))
-        except IOError:
-            print('LogSink queue communication lost. Some log messages will'
-                  ' be lost.')
-
-    def __getattr__(self, name):
-        """
-        This magic method replaces all the previous debug/information/error ones
-        It will basically return a func pointer to
-        self.add_to_queue('debug',  ...) where "..." is completed later by the
-        caller.
-
-        @see: http://docs.python.org/library/functools.html for help on partial.
-        @see: METHODS defined at the top of this class
-        """
-        if name in OutputManager.METHODS:
-            return functools.partial(self._add_to_queue, name)
-        else:
-            raise AttributeError("'LogSink' object has no attribute '%s'" % name)
-
-
-# Create the default manager and out instances, we'll be creating others later
-# most likely for the log sink, which will be replaced in each sub-process
-manager = OutputManager()
-out = log_sink_factory(manager.get_in_queue())

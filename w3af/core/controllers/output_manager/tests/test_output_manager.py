@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-test_outputmanager.py
+test_output_manager.py
 
 Copyright 2011 Andres Riancho
 
