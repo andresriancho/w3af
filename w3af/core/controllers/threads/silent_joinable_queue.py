@@ -52,6 +52,9 @@ class SilentJoinableQueue(JoinableQueue):
                                 wrelease()
                 except IndexError:
                     pass
+                except IOError:
+                    # Should be catching the same as errno.EPIPE below
+                    return
                 except Exception as e:
                     if getattr(e, 'errno', 0) == errno.EPIPE:
                         return
