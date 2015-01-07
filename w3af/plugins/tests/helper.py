@@ -287,17 +287,24 @@ class PluginTest(unittest.TestCase):
         #
         if assert_exceptions:
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-            msg = self._pprint_exception_summary(caught_exceptions)
-            self.assertEqual(len(caught_exceptions), 0, msg)
+            tracebacks = [e.get_details() for e in caught_exceptions]
+            self.assertEqual(len(caught_exceptions), 0, tracebacks)
 
-    def _pprint_exception_summary(self, caught_exceptions):
+    def _formatMessage(self, msg, standardMsg):
+        """Honour the longMessage attribute when generating failure messages.
+        If longMessage is False this means:
+        * Use only an explicit message if it is provided
+        * Otherwise use the standard message for the assert
+
+        If longMessage is True:
+        * Use the standard message
+        * If an explicit message is provided, plus ' : ' and the explicit message
         """
-        Given a list of caught exceptions, as returned by
-        exception_handler.get_all_exceptions() , we'll return a string that
-        shows the information about them.
-        """
-        #[print(e.get_traceback_str()) for e in caught_exceptions]
-        return [e for e in caught_exceptions]
+        if msg:
+            data = '%s:\n%s' % (standardMsg, pprint.pformat(msg))
+            return data.replace('\\n', '\n')
+
+        return standardMsg
 
     def _configure_debug(self):
         """
