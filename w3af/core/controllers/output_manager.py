@@ -25,13 +25,14 @@ import sys
 import threading
 import logging
 
+from cPickle import PicklingError
 from multiprocessing.dummy import Process
-from multiprocessing import JoinableQueue
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
+from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
 
 # https://pypi.python.org/pypi/stopit#logging
 # The stopit named logger emits a warning each time a block of code execution
@@ -127,7 +128,7 @@ class OutputManager(Process):
         self._plugin_options = {}
 
         # Internal variables
-        self.in_queue = JoinableQueue()
+        self.in_queue = SilentJoinableQueue()
         self._w3af_core = None
 
     def set_w3af_core(self, w3af_core):
