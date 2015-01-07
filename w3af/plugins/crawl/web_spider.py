@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import itertools
 import re
 
-from functools import partial
-
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache

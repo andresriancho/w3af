@@ -307,7 +307,6 @@ class crawl_infrastructure(BaseConsumer):
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
         """
         :param plugin: The plugin that found these fuzzable requests
-
         :param fuzzable_request: A potentially new fuzzable request
 
         :return: True if @FuzzableRequest is new (never seen before).
