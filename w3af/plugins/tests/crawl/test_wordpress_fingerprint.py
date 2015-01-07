@@ -92,16 +92,17 @@ class Testwordpress_fingerprint(PluginTest):
 
     def test_updated_wp_versions_xml(self):
         wp_fp_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'wordpress_fingerprint')
-        url = 'https://raw.github.com/wpscanteam/wpscan/master/data/wp_versions.xml'
-        
+        url = 'https://github.com/wpscanteam/wpscan/blob/master/data.zip?raw=true'
+
         wp_versions_file = wp_fp_inst.WP_VERSIONS_XML
         is_older = days_since_file_update(wp_versions_file, 60)
 
         msg = 'The wp_versions.xml file is too old. The following commands need'\
               ' to be run in order to update it:\n'\
-              'cd w3af/plugins/crawl/wordpress_fingerprint/\n'\
-              'wget %s -O wp_versions.xml\n'\
-              'git commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
+              'wget %s -O data.zip\n'\
+              'unzip -p data.zip data/wp_versions.xml > w3af/plugins/crawl/wordpress_fingerprint/wp_versions.xml\n'\
+              'rm -rf data.zip\n'\
+              'git commit -m "Updating wp_versions.xml file." w3af/plugins/crawl/wordpress_fingerprint/wp_versions.xml\n'\
               'git push\n'\
               'cd -'
         self.assertFalse(is_older, msg % url)
