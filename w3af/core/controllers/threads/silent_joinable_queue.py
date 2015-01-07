@@ -71,3 +71,7 @@ class SilentJoinableQueue(JoinableQueue):
                     traceback.print_exc()
             except Exception:
                 pass
+
+# monkey-patch
+import multiprocessing.queues
+multiprocessing.queues.JoinableQueue = SilentJoinableQueue
