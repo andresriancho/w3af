@@ -40,7 +40,7 @@ stopit_logger = logging.getLogger('stopit')
 stopit_logger.setLevel(logging.ERROR)
 
 # Thread locking to avoid starting the om many times from different threads
-start_lock = threading.Lock()
+start_lock = threading.RLock()
 
 
 def fresh_output_manager_inst():
