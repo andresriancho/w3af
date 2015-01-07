@@ -29,6 +29,8 @@ from darts.lib.utils.lru import LRUDict
 from tblib.decorators import apply_with_return_error, Error
 
 import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.output_manager import log_sink_factory
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.ci.detect import is_running_on_ci
@@ -68,9 +70,11 @@ class ParserCache(object):
             self._processes = manager.dict()
 
             # The pool
+            log_queue = om.manager.get_in_queue()
             self._pool = multiprocessing.Pool(self.MAX_WORKERS,
                                               maxtasksperchild=25,
-                                              initargs={'name': 'ParserProcess'})
+                                              initializer=log_sink_factory,
+                                              initargs=(log_queue,))
 
         return self._pool
 
