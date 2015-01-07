@@ -397,7 +397,11 @@ class LogSink(object):
             self.information(info_inst.get_desc())
 
     def _add_to_queue(self, *args, **kwds):
-        self.om_queue.put((args, kwds))
+        try:
+            self.om_queue.put((args, kwds))
+        except IOError:
+            print('LogSink queue communication lost. Some log messages will'
+                  ' be lost.')
 
     def __getattr__(self, name):
         """
