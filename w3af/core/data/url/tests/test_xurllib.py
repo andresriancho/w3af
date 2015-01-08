@@ -25,6 +25,7 @@ import unittest
 import Queue
 import SocketServer
 import types
+import httpretty
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
@@ -327,8 +328,11 @@ class TestXUrllib(unittest.TestCase):
     def test_rate_limit_zero(self):
         self.rate_limit_generic(0, 0.01, 0.4)
 
+    @httpretty.activate
     def rate_limit_generic(self, max_requests_per_second, _min, _max):
-        url = URL(get_moth_http())
+        mock_url = 'http://mock/'
+        url = URL(mock_url)
+        httpretty.register_uri(httpretty.GET, mock_url, body='Body')
 
         start_time = time.time()
 
@@ -337,6 +341,8 @@ class TestXUrllib(unittest.TestCase):
 
             self.uri_opener.GET(url, cache=False)
             self.uri_opener.GET(url, cache=False)
+
+        httpretty.reset()
 
         end_time = time.time()
         elapsed_time = end_time - start_time
