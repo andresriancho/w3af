@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import logging
+import hashlib
 
 from itertools import ifilterfalse
 
@@ -45,10 +46,20 @@ def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
     logging.debug(stderr)
 
 
-def print_status(done_list, total_tests):
+def get_run_id(nose_cmd):
+    return hashlib.md5(nose_cmd).hexdigest()[:7]
+
+
+def print_status(done_list, total_tests, queued_run_ids):
     msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
-    
+
+    if len(queued_run_ids) <= 3:
+        msg = 'The pending run ids are:\n'
+        for qri in queued_run_ids:
+            msg += '    - %s' % qri
+        logging.warning(msg)
+
     if len(done_list) > total_tests:
         raise RuntimeError('Done list has more items than total_tests!')
 

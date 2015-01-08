@@ -4,6 +4,7 @@ import select
 import subprocess
 import shlex
 
+from w3af.core.controllers.ci.nosetests_wrapper.utils.output import get_run_id
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
                                                                   ARTIFACT_DIR,
                                                                   NOSE_TIMEOUT,
@@ -52,7 +53,7 @@ def run_nosetests(nose_cmd, first, last):
     
     cmd_args = shlex.split(nose_cmd)
     
-    logging.debug('Starting: "%s"' % nose_cmd)
+    logging.debug('Starting (%s): "%s"' % (get_run_id(nose_cmd), nose_cmd))
     
     p = subprocess.Popen(
         cmd_args,
