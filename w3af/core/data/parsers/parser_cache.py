@@ -68,9 +68,9 @@ class ParserCache(object):
         """
         if self._pool is None:
             # Keep track of which pid is processing which http response
-            # pylint: disable=E1120
+            # pylint: disable=E1101
             self._processes = manager.dict()
-            # pylint: enable=E1120
+            # pylint: enable=E1101
 
             # The pool
             log_queue = om.manager.get_in_queue()
