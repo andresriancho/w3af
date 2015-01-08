@@ -157,18 +157,20 @@ class ParserCache(object):
         except multiprocessing.TimeoutError:
             # Near the timeout error, so we make sure that the pid is still
             # running our "buggy" input
-            pid = self._processes[hash_string]
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError, ose:
-                msg = 'An error occurred while killing the parser process: "%s"'
-                om.out.debug(msg % ose)
-            else:
-                msg = '[timeout] The parser took more than %s seconds'\
-                      ' to complete parsing of "%s", killed it!'
+            pid = self._processes.pop(hash_string, None)
+            if pid is not None:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError, ose:
+                    msg = 'An error occurred while killing the parser' \
+                          ' process: "%s"'
+                    om.out.debug(msg % ose)
 
-                om.out.debug(msg % (self.PARSER_TIMEOUT,
-                                    http_response.get_url()))
+            msg = '[timeout] The parser took more than %s seconds'\
+                  ' to complete parsing of "%s", killed it!'
+
+            om.out.debug(msg % (self.PARSER_TIMEOUT,
+                                http_response.get_url()))
 
             # Act just like when there is no parser
             msg = 'There is no parser for "%s".' % http_response.get_url()
@@ -179,7 +181,7 @@ class ParserCache(object):
 
         finally:
             # Just remove it so it doesn't use memory
-            self._processes.pop(hash_string)
+            self._processes.pop(hash_string, None)
 
             # Let other know that we're done
             event = self._parser_finished_events.pop(hash_string)
