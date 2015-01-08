@@ -100,7 +100,7 @@ def run_nosetests(nose_cmd, first, last):
 
                 # Log everywhere I can:
                 output_file.write('TIMEOUT @ nosetests wrapper\n')
-                stdout += 'TIMEOUT @ nosetests wrapper\n'
+                stdout += 'TIMEOUT @ nosetests wrapper (%s-%s)\n' % (first, last)
                 logging.warning('"%s" timeout waiting for output.' % nose_cmd)
                 
                 # Kill the nosetests command
