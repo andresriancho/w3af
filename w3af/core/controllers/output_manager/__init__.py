@@ -30,6 +30,7 @@ def fresh_output_manager_inst():
     #   Create the new instance
     #
     manager = OutputManager()
+    manager.start()
     return manager
 
 
@@ -47,4 +48,6 @@ def log_sink_factory(om_queue):
 # Create the default manager and out instances, we'll be creating others later
 # most likely for the log sink, which will be replaced in each sub-process
 manager = OutputManager()
+manager.start()
+
 out = log_sink_factory(manager.get_in_queue())

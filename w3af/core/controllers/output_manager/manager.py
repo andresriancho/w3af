@@ -31,9 +31,6 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
 
-# Thread locking to avoid starting the om many times from different threads
-start_lock = threading.RLock()
-
 
 def start_thread_on_demand(func):
     """
@@ -46,10 +43,9 @@ def start_thread_on_demand(func):
     messages printed to the console.
     """
     def od_wrapper(*args, **kwds):
-        global start_lock
         from w3af.core.controllers.output_manager import manager
 
-        with start_lock:
+        with OutputManager.start_lock:
             if not manager.is_alive():
                 manager.start()
         return func(*args, **kwds)
@@ -67,6 +63,9 @@ class OutputManager(Process):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # Thread locking to avoid starting the om many times from different threads
+    start_lock = threading.RLock()
+
     def __init__(self):
         super(OutputManager, self).__init__(name='OutputManager')
         self.daemon = True
@@ -95,8 +94,7 @@ class OutputManager(Process):
         return self.in_queue
 
     def start(self):
-        global start_lock
-        with start_lock:
+        with self.start_lock:
             if not self.is_alive():
                 super(OutputManager, self).start()
 
