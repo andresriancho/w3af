@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from mock import patch, Mock, _Call
+
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.handlers.cache import CacheHandler, SQLCachedResponse
 from w3af.core.data.parsers.url import URL
@@ -42,11 +44,32 @@ class TestCacheHandler(unittest.TestCase):
         
         response = FakeHttplibHTTPResponse(200, 'OK', 'spameggs', Headers(),
                                            url.url_string)
-        cache.http_response(request, response)
-        
-        cached_response = cache.default_open(request)
-        
-        self.assertIsInstance(cached_response, SQLCachedResponse)
+
+        with patch('w3af.core.data.url.handlers.cache.CacheClass') as cc_mock:
+            store_in_cache = Mock()
+            cc_mock.attach_mock(store_in_cache, 'store_in_cache')
+
+            # This stores the response
+            cache.http_response(request, response)
+
+            # Make sure the right call was made
+            _call = _Call(('store_in_cache', (request, response)))
+            self.assertEqual(cc_mock.mock_calls, [_call])
+            cc_mock.reset_mock()
+
+            exists_in_cache = Mock()
+            cc_mock.return_value = response
+            cc_mock.attach_mock(exists_in_cache, 'exists_in_cache')
+
+            # This retrieves the response from the "cache"
+            cached_response = cache.default_open(request)
+
+            # Make sure the right call was made
+            _exists_call = _Call(('exists_in_cache', (request,)))
+            _retrieve_call = _Call(((request,), {}))
+            self.assertEqual(cc_mock.mock_calls, [_exists_call, _retrieve_call])
+
+        self.assertIsNotNone(cached_response)
         
         self.assertEqual(cached_response.code, response.code)
         self.assertEqual(cached_response.msg, response.msg)
