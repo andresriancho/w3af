@@ -93,13 +93,14 @@ def run_nosetests(nose_cmd, first, last):
                     p.returncode = 0
                     break
 
-                # Debugging my workaround
+                # Debugging workaround
                 output_file.write("stdout.strip().endswith('OK') == %s\n" % console.strip().endswith('OK'))
                 output_file.write("'Ran ' in stdout == %s\n" % ('Ran ' in console))
 
-
                 # Log everywhere I can:
                 output_file.write('TIMEOUT @ nosetests wrapper\n')
+                output_file.flush()
+
                 stdout += 'TIMEOUT @ nosetests wrapper (%s-%s)\n' % (first, last)
                 logging.warning('"%s" timeout waiting for output.' % nose_cmd)
                 
