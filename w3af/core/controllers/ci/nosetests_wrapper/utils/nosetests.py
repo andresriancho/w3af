@@ -5,25 +5,10 @@ import subprocess
 import shlex
 
 from w3af.core.controllers.ci.nosetests_wrapper.utils.output import get_run_id
-from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
-                                                                  ARTIFACT_DIR,
+from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
                                                                   NOSE_TIMEOUT,
                                                                   NOSE_OUTPUT_PREFIX,
                                                                   NOSE_XUNIT_EXT)
-
-
-def clean_noise(output_string):
-    """
-    Removes useless noise from the output
-    
-    :param output_string: The output string, stdout.
-    :return: A sanitized output string
-    """
-    for noise in NOISE:
-        output_string = output_string.replace(noise + '\n', '')
-        output_string = output_string.replace(noise, '')
-    
-    return output_string
 
 
 def open_nosetests_output(suffix, first, last):
