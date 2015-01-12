@@ -50,7 +50,7 @@ def get_run_id(nose_cmd):
     return hashlib.md5(nose_cmd).hexdigest()[:7]
 
 
-def print_status(done_list, total_tests, queued_run_ids):
+def print_status(done_list, total_tests, queued_run_ids, executor):
     msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
 
@@ -58,6 +58,10 @@ def print_status(done_list, total_tests, queued_run_ids):
         logging.warning('The pending run ids are:')
         for qri in queued_run_ids:
             logging.warning('    - %s' % qri)
+
+        msg = 'Running in %s threads, task queue size is %s'
+        logging.warning(msg % (len(executor._threads),
+                               executor._work_queue.qsize()))
 
     if len(done_list) > total_tests:
         raise RuntimeError('Done list has more items than total_tests!')

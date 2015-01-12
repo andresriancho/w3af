@@ -78,7 +78,7 @@ if __name__ == '__main__':
             future_list.append(future)
         
         total_tests = len(future_list)
-        print_status(done_list, total_tests, queued_run_ids)
+        print_status(done_list, total_tests, queued_run_ids, executor)
         
         while future_list:
             try:
