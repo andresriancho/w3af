@@ -63,7 +63,7 @@ def print_status(done_list, total_tests, queued_run_ids, executor):
             logging.warning('    - %s' % qri)
 
         msg = 'Running in %s threads, task queue size is %s'
-        logging.warning(msg % (len(executor._threads),
+        logging.warning(msg % (len(executor._processes),
                                executor._work_queue.qsize()))
 
     if len(done_list) > total_tests:
