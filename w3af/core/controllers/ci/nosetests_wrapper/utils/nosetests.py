@@ -38,6 +38,7 @@ def run_nosetests(nose_cmd, first, last):
         nose_cmd %= xunit_output.name
     except Exception as e:
         logging.warning('Failed to initialize run_nosetests: "%s"' % e)
+        return
 
     logging.debug('Starting (%s): "%s"' % (get_run_id(nose_cmd), nose_cmd))
 
