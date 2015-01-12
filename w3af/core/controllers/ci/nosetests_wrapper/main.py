@@ -88,7 +88,7 @@ if __name__ == '__main__':
                     done_list.append(future)
                     queued_run_ids.remove(future.run_id)
 
-                    print_status(done_list, total_tests, queued_run_ids)
+                    print_status(done_list, total_tests, queued_run_ids, executor)
                     
                     if exit_code != 0:
                         print_info_console(cmd, stdout, stderr,
@@ -98,7 +98,7 @@ if __name__ == '__main__':
             except futures.TimeoutError:
                 logging.debug('Hit futures.as_completed timeout.')
                 logging.warning('Waiting...')
-                print_status(done_list, total_tests, queued_run_ids)
+                print_status(done_list, total_tests, queued_run_ids, executor)
             
             # Filter future_list to avoid issues with tasks which are already
             # finished/done
