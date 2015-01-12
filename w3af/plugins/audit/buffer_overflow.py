@@ -19,6 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from itertools import repeat
+from tblib.decorators import apply_with_return_error, Error
+
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
@@ -97,8 +100,14 @@ class buffer_overflow(AuditPlugin):
         """
         mutants = create_mutants(freq, self.BUFFER_TESTS,
                                  orig_resp=orig_response)
+        args = zip(repeat(self._send_request), mutants)
 
-        self.worker_pool.map(self._send_request, mutants)
+        for result in self.worker_pool.imap_unordered(apply_with_return_error, args):
+            # re-raise the thread exception in the main thread with this method
+            # so we get a nice traceback instead of things like the ones we see
+            # in https://github.com/andresriancho/w3af/issues/7287
+            if isinstance(result, Error):
+                result.reraise()
 
     def _send_request(self, mutant):
         """
