@@ -46,8 +46,11 @@ def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
     logging.debug(stderr)
 
 
-def get_run_id(nose_cmd):
-    return hashlib.md5(nose_cmd).hexdigest()[:7]
+def get_run_id(first, last):
+    _first = str(first).zfill(4)
+    _last = str(first).zfill(4)
+    _hash = hashlib.md5('%s%s' % (first, last)).hexdigest()[:7]
+    return '%s-%s-%s' % (_first, _last, _hash)
 
 
 def print_status(done_list, total_tests, queued_run_ids, executor):

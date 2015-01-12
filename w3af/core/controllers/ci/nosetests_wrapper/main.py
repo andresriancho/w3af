@@ -70,7 +70,7 @@ if __name__ == '__main__':
         for nose_cmd, first, last in nose_strategy():
             args = run_nosetests, nose_cmd, first, last
 
-            run_id = get_run_id(nose_cmd)
+            run_id = get_run_id(first, last)
             queued_run_ids.append(run_id)
 
             future = executor.submit(*args)

@@ -29,7 +29,7 @@ def run_nosetests(nose_cmd, first, last):
     :return: (stdout, stderr, exit code) 
     """
     logging.debug('Called run_nosetests(%s, %s)' % (first, last))
-    
+
     try:
         # Init the outputs
         console = stdout = stderr = ''
@@ -42,7 +42,7 @@ def run_nosetests(nose_cmd, first, last):
         logging.warning('Failed to initialize run_nosetests: "%s"' % e)
         return
 
-    logging.debug('Starting (%s): "%s"' % (get_run_id(nose_cmd), nose_cmd))
+    logging.debug('Starting (%s): "%s"' % (get_run_id(first, last), nose_cmd))
 
     # Start the nosetests process
     cmd_args = shlex.split(nose_cmd)
@@ -114,7 +114,7 @@ def run_nosetests(nose_cmd, first, last):
     # Close the output   
     output_file.close()
     
-    logging.debug('Finished (%s): "%s" with code "%s"' % (get_run_id(nose_cmd),
+    logging.debug('Finished (%s): "%s" with code "%s"' % (get_run_id(first, last),
                                                           nose_cmd,
                                                           p.returncode))
     
