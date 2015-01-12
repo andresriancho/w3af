@@ -36,6 +36,7 @@ ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
                HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
                XmlRpcMutant)
 
+
 def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
                    orig_resp=None, mutant_tuple=ALL_MUTANTS):
     """
