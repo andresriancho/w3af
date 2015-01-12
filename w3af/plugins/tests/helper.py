@@ -180,8 +180,8 @@ class PluginTest(unittest.TestCase):
             fmt = (uri, match)
             om.out.debug('[request_callback] URI %s matched %s' % fmt)
 
-            headers.update({'Content-Type': match.content_type,
-                           'status': match.status})
+            headers.update({'status': match.status})
+            headers.update(match.headers)
 
             if match.delay is not None:
                 time.sleep(match.delay)
