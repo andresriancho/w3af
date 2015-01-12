@@ -23,6 +23,9 @@ import sys
 import threading
 import Queue
 
+from itertools import repeat
+from tblib.decorators import apply_with_return_error, Error
+
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
@@ -173,6 +176,9 @@ class Plugin(Configurable):
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
         """
+        imap_unordered = self.worker_pool.imap_unordered
+        awre = apply_with_return_error
+
         # You can use this code to debug issues that happen in threads, by
         # simply not using them:
         #
@@ -182,10 +188,17 @@ class Plugin(Configurable):
         #
         # Now the real code:
         func = return_args(func, **kwds)
-        imap_unordered = self.worker_pool.imap_unordered
+        args = zip(repeat(func), iterable)
 
-        for (mutant,), http_response in imap_unordered(func, iterable):
-            callback(mutant, http_response)
+        for result in imap_unordered(awre, args):
+            # re-raise the thread exception in the main thread with this method
+            # so we get a nice traceback instead of things like the ones we see
+            # in https://github.com/andresriancho/w3af/issues/7286
+            if isinstance(result, Error):
+                result.reraise()
+            else:
+                (mutant,), http_response = result
+                callback(mutant, http_response)
 
     def handle_url_error(self, uri, http_exception):
         """
