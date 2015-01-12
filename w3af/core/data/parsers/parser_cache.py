@@ -26,7 +26,7 @@ import signal
 import multiprocessing
 
 from darts.lib.utils.lru import LRUDict
-from tblib.decorators import apply_with_return_error, Error
+from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
 
@@ -35,6 +35,7 @@ from w3af.core.controllers.output_manager import log_sink_factory
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.ci.detect import is_running_on_ci
+from w3af.core.controllers.threads.decorators import apply_with_return_error
 
 
 class ParserCache(object):

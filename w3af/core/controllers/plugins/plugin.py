@@ -24,16 +24,17 @@ import threading
 import Queue
 
 from itertools import repeat
-from tblib.decorators import apply_with_return_error, Error
+from tblib.decorators import Error
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.controllers.threads.decorators import apply_with_return_error
+from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.url.helpers import new_no_content_resp
 
 

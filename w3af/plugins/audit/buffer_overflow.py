@@ -20,10 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from itertools import repeat
-from tblib.decorators import apply_with_return_error, Error
+from tblib.decorators import Error
 
 import w3af.core.data.constants.severity as severity
 
+from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException)

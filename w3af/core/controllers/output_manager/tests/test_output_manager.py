@@ -24,12 +24,13 @@ import multiprocessing
 
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
-from tblib.decorators import apply_with_return_error, Error
+from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.output_manager import log_sink_factory
+from w3af.core.controllers.threads.decorators import apply_with_return_error
 
 
 def send_log_message(msg):
