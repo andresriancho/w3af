@@ -226,9 +226,10 @@ class PluginTest(unittest.TestCase):
             except urllib2.URLError, e:
                 if hasattr(e, 'code'):
                     if e.code in (404, 403, 401):
+                        continue
+                    else:
                         no_code = 'Unexpected code %s' % e.code
                         self.assertTrue(False, msg % (target, no_code))
-                        continue
 
                 self.assertTrue(False, msg % (target, e.reason))
             
