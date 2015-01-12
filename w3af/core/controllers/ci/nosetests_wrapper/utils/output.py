@@ -54,7 +54,7 @@ def print_status(done_list, total_tests, queued_run_ids):
     msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
 
-    if len(queued_run_ids) <= 3:
+    if len(queued_run_ids) <= 3 and queued_run_ids:
         logging.warning('The pending run ids are:')
         for qri in queued_run_ids:
             logging.warning('    - %s' % qri)
