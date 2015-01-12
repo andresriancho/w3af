@@ -28,6 +28,8 @@ def run_nosetests(nose_cmd, first, last):
     :param nose_cmd: The nosetests command, with all parameters.
     :return: (stdout, stderr, exit code) 
     """
+    logging.debug('Called run_nosetests(%s, %s)' % (first, last))
+    
     try:
         # Init the outputs
         console = stdout = stderr = ''
