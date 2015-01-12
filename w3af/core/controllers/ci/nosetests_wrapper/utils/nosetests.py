@@ -107,6 +107,8 @@ def run_nosetests(nose_cmd, first, last):
     # Close the output   
     output_file.close()
     
-    logging.debug('Finished: "%s" with code "%s"' % (nose_cmd, p.returncode))
+    logging.debug('Finished (%s): "%s" with code "%s"' % (get_run_id(nose_cmd),
+                                                          nose_cmd,
+                                                          p.returncode))
     
     return nose_cmd, stdout, stderr, p.returncode, output_file.name
