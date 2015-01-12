@@ -68,7 +68,14 @@ class PluginTest(unittest.TestCase):
         if self.MOCK_RESPONSES:
             httpretty.enable()
             
-            url = URL(self.target_url)
+            try:
+                url = URL(self.target_url)
+            except ValueError, ve:
+                msg = 'When using MOCK_RESPONSES you need to set the'\
+                      ' target_url attribute to a valid URL, exception was:'\
+                      ' "%s".'
+                raise Exception(msg % ve)
+
             domain = url.get_domain()
             proto = url.get_protocol()
             port = url.get_port()
@@ -158,69 +165,74 @@ class PluginTest(unittest.TestCase):
                           set(expected))
 
     def request_callback(self, method, uri, headers):
-        status = 404
-        body = 'Not found'
-        content_type = 'text/html'
-        mock_headers = {}
-        delay = None
         match = None
 
         for mock_response in self.MOCK_RESPONSES:
+
             if mock_response.method != method.command:
                 continue
 
-            if isinstance(mock_response.url, basestring):
-                if uri.endswith(mock_response.url):
-                    status = mock_response.status
-                    body = mock_response.body
-                    content_type = mock_response.content_type
-                    mock_headers = mock_response.headers
-                    delay = mock_response.delay
-                    match = mock_response
-
-                    break
-            elif isinstance(mock_response.url, RE_COMPILE_TYPE):
-                if mock_response.url.match(uri):
-                    status = mock_response.status
-                    body = mock_response.body
-                    content_type = mock_response.content_type
-                    mock_headers = mock_response.headers
-                    delay = mock_response.delay
-                    match = mock_response
-
-                    break
+            if self._mock_url_matches(mock_response, uri):
+                match = mock_response
+                break
 
         if match is not None:
             fmt = (uri, match)
             om.out.debug('[request_callback] URI %s matched %s' % fmt)
+
+            headers.update({'Content-Type': match.content_type,
+                           'status': match.status})
+
+            if match.delay is not None:
+                time.sleep(match.delay)
+
+            return (match.status,
+                    headers,
+                    match.get_body(method, uri, headers))
+
         else:
             om.out.debug('[request_callback] URI %s will return 404' % uri)
 
-        headers.update(mock_headers)
-        headers['Content-Type'] = content_type
-        headers['status'] = status
+            status = 404
+            body = 'Not found'
+            headers.update({'Content-Type': 'text/html', 'status': status})
 
-        if delay is not None:
-            time.sleep(delay)
+            return status, headers, body
 
-        return status, headers, body
+    def _mock_url_matches(self, mock_response, request_uri):
+        """
+        :param mock_response: A MockResponse instance configured by dev
+        :param request_uri: The http request URI sent by the plugin
+        :return: True if the request_uri matches this mock_response
+        """
+        if isinstance(mock_response.url, basestring):
+            if request_uri.endswith(mock_response.url):
+                return True
+
+        elif isinstance(mock_response.url, RE_COMPILE_TYPE):
+            if mock_response.url.match(request_uri):
+                return True
+
+        return False
 
     @retry(tries=3, delay=0.5, backoff=2)
     def _verify_targets_up(self, target_list):
+        msg = 'The target site "%s" is down: "%s"'
+
         for target in target_list:
-            msg = 'The target site "%s" is down' % target
-            
             try:
                 response = urllib2.urlopen(target.url_string)
                 response.read()
             except urllib2.URLError, e:
                 if hasattr(e, 'code') and e.code in (404, 403, 401):
                     continue
-                
-                self.assertTrue(False, msg)
+
+                no_code = 'Unexpected code %s' % e.code
+                self.assertTrue(False, msg % (target, no_code))
             
             except Exception, e:
-                self.assertTrue(False, msg)
+                raise
+                self.assertTrue(False, msg % (target, e))
 
     def _scan(self, target, plugins, debug=False, assert_exceptions=True,
               verify_targets=True):
@@ -475,3 +487,16 @@ class MockResponse(object):
 
     def __repr__(self):
         return '<MockResponse (%s|%s)>' % (self.url, self.status)
+
+    def get_body(self, method, uri, headers):
+        """
+        :param method: HTTP method sent by plugin
+        :param uri: The http request URI sent by the plugin
+        :param headers: The http headers sent by plugin
+        :return: Tuple with the response we'll send to the plugin
+        """
+        if not callable(self.body):
+            # A string
+            return self.body
+
+        return self.body(method, uri, headers)
