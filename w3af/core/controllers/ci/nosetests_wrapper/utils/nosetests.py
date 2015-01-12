@@ -28,18 +28,22 @@ def run_nosetests(nose_cmd, first, last):
     :param nose_cmd: The nosetests command, with all parameters.
     :return: (stdout, stderr, exit code) 
     """
-    # Init the outputs
-    console = stdout = stderr = ''
-    output_file = open_nosetests_output('log', first, last)
-    xunit_output = open_nosetests_output(NOSE_XUNIT_EXT, first, last)
+    try:
+        # Init the outputs
+        console = stdout = stderr = ''
+        output_file = open_nosetests_output('log', first, last)
+        xunit_output = open_nosetests_output(NOSE_XUNIT_EXT, first, last)
     
-    # Configure the xunit output before running the command
-    nose_cmd = nose_cmd % xunit_output.name
-    
-    cmd_args = shlex.split(nose_cmd)
-    
+        # Configure the xunit output before running the command
+        nose_cmd %= xunit_output.name
+    except Exception as e:
+        logging.warning('Failed to initialize run_nosetests: "%s"' % e)
+
     logging.debug('Starting (%s): "%s"' % (get_run_id(nose_cmd), nose_cmd))
-    
+
+    # Start the nosetests process
+    cmd_args = shlex.split(nose_cmd)
+
     p = subprocess.Popen(
         cmd_args,
         stdin=subprocess.PIPE,
