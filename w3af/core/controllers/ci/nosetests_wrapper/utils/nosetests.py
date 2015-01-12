@@ -81,14 +81,11 @@ def run_nosetests(nose_cmd, first, last):
                 # There is a special case which happens with the first call to
                 # nose where the tests finish successfully (OK shown) but the
                 # nosetests process doesn't end. Handle that case here:
-                if console.strip().endswith('OK') and 'Ran ' in console:
+                if console.strip().split('\n')[-1].startswith('OK') and 'Ran ' in console:
                     p.kill()
+                    p.wait()
                     p.returncode = 0
                     break
-
-                # Debugging workaround
-                output_file.write("stdout.strip().endswith('OK') == %s\n" % console.strip().endswith('OK'))
-                output_file.write("'Ran ' in stdout == %s\n" % ('Ran ' in console))
 
                 # Log everywhere I can:
                 output_file.write('TIMEOUT @ nosetests wrapper\n')
@@ -99,6 +96,7 @@ def run_nosetests(nose_cmd, first, last):
                 
                 # Kill the nosetests command
                 p.kill()
+                p.wait()
                 p.returncode = -1
                 break
     
