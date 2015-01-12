@@ -254,7 +254,7 @@ class PluginTest(unittest.TestCase):
         elif isinstance(target, basestring):
             target = (URL(target),)
         
-        if verify_targets:
+        if verify_targets and not self.MOCK_RESPONSES:
             self._verify_targets_up(target)
         
         target_opts = create_target_option_list(*target)
