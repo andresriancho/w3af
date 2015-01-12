@@ -48,7 +48,7 @@ def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
 
 def get_run_id(first, last):
     _first = str(first).zfill(4)
-    _last = str(first).zfill(4)
+    _last = str(last).zfill(4)
     _hash = hashlib.md5('%s%s' % (first, last)).hexdigest()[:7]
     return '%s-%s-%s' % (_first, _last, _hash)
 
