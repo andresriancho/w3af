@@ -21,6 +21,14 @@ def open_nosetests_output(suffix, first, last):
     return fhandler
 
 
+def add_message(message, output_file, stdout):
+    output_file.write('%s\n' % message)
+    output_file.flush()
+
+    stdout += '%s\n' % message
+    return stdout
+
+
 def run_nosetests(nose_cmd, first, last):
     """
     Run nosetests and return the output
@@ -82,22 +90,35 @@ def run_nosetests(nose_cmd, first, last):
                 # nose where the tests finish successfully (OK shown) but the
                 # nosetests process doesn't end. Handle that case here:
                 if console.strip().split('\n')[-1].startswith('OK') and 'Ran ' in console:
+                    msg = 'TIMEOUT after success at wrapper (%s)\n'
+                    stdout = add_message(msg % get_run_id(first, last),
+                                         output_file,
+                                         stdout)
+
                     p.kill()
                     p.wait()
                     p.returncode = 0
+
+                    logging.debug('Process %s killed' % get_run_id(first, last))
+
                     break
 
                 # Log everywhere I can:
-                output_file.write('TIMEOUT @ nosetests wrapper\n')
-                output_file.flush()
+                msg = 'TIMEOUT after error at wrapper (%s)\n'
+                stdout = add_message(msg % get_run_id(first, last),
+                                     output_file,
+                                     stdout)
 
-                stdout += 'TIMEOUT @ nosetests wrapper (%s-%s)\n' % (first, last)
-                logging.warning('"%s" timeout waiting for output.' % nose_cmd)
+                args = (nose_cmd, get_run_id(first, last))
+                logging.warning('"%s" (%s) timeout waiting for output.' % args)
                 
                 # Kill the nosetests command
                 p.kill()
                 p.wait()
                 p.returncode = -1
+
+                logging.debug('Process %s killed' % get_run_id(first, last))
+
                 break
     
     # Make sure all the output is read, there were cases when the process ended
