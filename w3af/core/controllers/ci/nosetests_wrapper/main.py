@@ -83,17 +83,25 @@ if __name__ == '__main__':
         while future_list:
             try:
                 for future in futures.as_completed(future_list, timeout=120):
-                    cmd, stdout, stderr, exit_code, output_fname = future.result()
-                    exit_codes.append(exit_code)
-                    done_list.append(future)
-                    queued_run_ids.remove(future.run_id)
+                    try:
+                        cmd, stdout, stderr, exit_code, output_fname = future.result()
+                    except Exception as e:
+                        msg = 'Run id %s raised exception: "%s"'
+                        logging.error(msg % (future.run_id, e))
+                        print_will_fail(1)
+                        sys.exit(1)
+                    else:
+                        exit_codes.append(exit_code)
+                        done_list.append(future)
+                        queued_run_ids.remove(future.run_id)
 
-                    print_status(done_list, total_tests, queued_run_ids, executor)
-                    
-                    if exit_code != 0:
-                        print_info_console(cmd, stdout, stderr,
-                                           exit_code, output_fname)
-                        print_will_fail(exit_code)
+                        print_status(done_list, total_tests,
+                                     queued_run_ids, executor)
+
+                        if exit_code != 0:
+                            print_info_console(cmd, stdout, stderr,
+                                               exit_code, output_fname)
+                            print_will_fail(exit_code)
                     
             except futures.TimeoutError:
                 logging.debug('Hit futures.as_completed timeout.')
