@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     configure_logging(LOG_FILE)
 
-    with futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    with futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for nose_cmd, first, last in nose_strategy():
             args = run_nosetests, nose_cmd, first, last
 
