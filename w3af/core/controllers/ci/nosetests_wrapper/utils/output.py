@@ -64,7 +64,7 @@ def print_status(done_list, total_tests, queued_run_ids, executor):
 
         msg = 'Running in %s threads, task queue size is %s'
         logging.warning(msg % (len(executor._processes),
-                               executor._work_queue.qsize()))
+                               executor._call_queue.qsize()))
 
     if len(done_list) > total_tests:
         raise RuntimeError('Done list has more items than total_tests!')
