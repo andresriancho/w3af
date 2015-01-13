@@ -25,6 +25,8 @@ def add_message(message, output_file, stdout):
     output_file.write('%s\n' % message)
     output_file.flush()
 
+    logging.debug(message)
+
     stdout += '%s\n' % message
     return stdout
 
@@ -36,7 +38,7 @@ def run_nosetests(nose_cmd, first, last):
     :param nose_cmd: The nosetests command, with all parameters.
     :return: (stdout, stderr, exit code) 
     """
-    logging.debug('Called run_nosetests(%s, %s)' % (first, last))
+    logging.debug('Called run_nosetests for' % get_run_id(first, last))
 
     try:
         # Init the outputs
@@ -120,7 +122,9 @@ def run_nosetests(nose_cmd, first, last):
                 logging.debug('Process %s killed' % get_run_id(first, last))
 
                 break
-    
+
+    logging.debug('Cleanup for %s' % get_run_id(first, last))
+
     # Make sure all the output is read, there were cases when the process ended
     # and there were still bytes in stdout/stderr.
     c_stdout, c_stderr = p.communicate()
