@@ -1,8 +1,44 @@
+import os
 import threading
 
 from multiprocessing.pool import Pool, RUN, cpu_count, Finalize
+from multiprocessing.process import Process, _cleanup, current_process
 
 from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
+
+
+class SubDaemonProcess(Process):
+    """
+    Get rid of "daemonic processes are not allowed to have children" message
+    using the hack explained in:
+    
+    https://github.com/celery/celery/issues/1709
+    https://github.com/celery/billiard/commit/e6bb0f744e97bd9acc560788a1b6152bc9ba48c3
+    """
+    _Popen = None
+
+    def start(self):
+        """
+        Start child process
+        """
+        assert self._popen is None, 'cannot start a process twice'
+        assert self._parent_pid == os.getpid(), \
+               'can only start a process object created by current process'
+
+        # This is the code I'm commenting out and allows me to perform the
+        # dangerous task of forking inside a daemon process.
+        """
+        assert not current_process()._daemonic, \
+               'daemonic processes are not allowed to have children'
+        """
+
+        _cleanup()
+        if self._Popen is not None:
+            Popen = self._Popen
+        else:
+            from multiprocessing.forking import Popen
+        self._popen = Popen(self)
+        current_process()._children.add(self)
 
 
 class ProcessPool(Pool):
@@ -11,6 +47,8 @@ class ProcessPool(Pool):
         * Use SilentJoinableQueue as taskqueue
         * ...
     """
+    Process = SubDaemonProcess
+
     def __init__(self, processes=None, initializer=None, initargs=(),
                  maxtasksperchild=None):
         self._setup_queues()

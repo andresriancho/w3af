@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import multiprocessing
 
 from mock import patch, call, PropertyMock
 
@@ -104,3 +105,53 @@ class TestParserCache(unittest.TestCase):
                 self.assertIn(call.debug(error), om_mock.mock_calls)
             else:
                 self.assertTrue(False)
+
+    def test_daemon_child(self):
+        """
+        Reproduces:
+
+            A "AssertionError" exception was found while running
+            crawl.web_spider on "Method: GET | http://domain:8000/". The
+            exception was: "daemonic processes are not allowed to have children"
+            at process.py:start():124. The scan will continue but some
+            vulnerabilities might not be identified.
+        """
+        queue = multiprocessing.Queue()
+
+        p = multiprocessing.Process(target=daemon_child, args=(queue,))
+        p.daemon = True
+        p.start()
+        p.join()
+
+        got_assertion_error = queue.get(timeout=10)
+        if got_assertion_error:
+            self.assertTrue(False, 'daemonic processes are not allowed'
+                                   ' to have children')
+
+    def test_non_daemon_child_ok(self):
+        """
+        Making sure that the previous failure is due to "p.daemon = True"
+        """
+        queue = multiprocessing.Queue()
+
+        p = multiprocessing.Process(target=daemon_child, args=(queue,))
+        # This is where we change stuff:
+        #p.daemon = True
+        p.start()
+        p.join()
+
+        got_assertion_error = queue.get(timeout=10)
+        if got_assertion_error:
+            self.assertTrue(False, 'daemonic processes are not allowed'
+                                   ' to have children')
+
+
+def daemon_child(queue):
+    dpc = ParserCache()
+
+    try:
+        dpc.start_workers()
+    except AssertionError:
+        queue.put(True)
+    else:
+        queue.put(False)
