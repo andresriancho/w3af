@@ -123,14 +123,27 @@ class TestParserCache(unittest.TestCase):
         p.start()
         p.join()
 
-        try:
-            got_assertion_error = queue.get(timeout=10)
-        except:
-            raise
-        else:
-            if got_assertion_error:
-                self.assertTrue(False, 'daemonic processes are not allowed'
-                                       ' to have children')
+        got_assertion_error = queue.get(timeout=10)
+        if got_assertion_error:
+            self.assertTrue(False, 'daemonic processes are not allowed'
+                                   ' to have children')
+
+    def test_non_daemon_child_ok(self):
+        """
+        Making sure that the previous failure is due to "p.daemon = True"
+        """
+        queue = multiprocessing.Queue()
+
+        p = multiprocessing.Process(target=daemon_child, args=(queue,))
+        # This is where we change stuff:
+        #p.daemon = True
+        p.start()
+        p.join()
+
+        got_assertion_error = queue.get(timeout=10)
+        if got_assertion_error:
+            self.assertTrue(False, 'daemonic processes are not allowed'
+                                   ' to have children')
 
 
 def daemon_child(queue):
