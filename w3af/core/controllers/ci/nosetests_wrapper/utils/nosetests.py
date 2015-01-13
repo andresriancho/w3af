@@ -92,13 +92,12 @@ def run_nosetests(nose_cmd, first, last):
                 # nose where the tests finish successfully (OK shown) but the
                 # nosetests process doesn't end. Handle that case here:
                 if console.strip().split('\n')[-1].startswith('OK') and 'Ran ' in console:
-                    msg = 'TIMEOUT after success at wrapper (%s)\n'
+                    msg = 'TIMEOUT after success at wrapper (%s)'
                     stdout = add_message(msg % get_run_id(first, last),
                                          output_file,
                                          stdout)
 
                     p.kill()
-                    p.wait()
                     p.returncode = 0
 
                     logging.debug('Process %s killed' % get_run_id(first, last))
@@ -106,7 +105,7 @@ def run_nosetests(nose_cmd, first, last):
                     break
 
                 # Log everywhere I can:
-                msg = 'TIMEOUT after error at wrapper (%s)\n'
+                msg = 'TIMEOUT after error at wrapper (%s)'
                 stdout = add_message(msg % get_run_id(first, last),
                                      output_file,
                                      stdout)
@@ -116,7 +115,6 @@ def run_nosetests(nose_cmd, first, last):
                 
                 # Kill the nosetests command
                 p.kill()
-                p.wait()
                 p.returncode = -1
 
                 logging.debug('Process %s killed' % get_run_id(first, last))
