@@ -27,7 +27,6 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 
-
 class detailed(AuthPlugin):
     """Detailed authentication plugin."""
 
@@ -44,6 +43,7 @@ class detailed(AuthPlugin):
         self.check_url = 'http://host.tld/'
         self.check_string = ''
         self._login_error = True
+        self.follow_redirects = False
 
     def login(self):
         """
@@ -58,7 +58,18 @@ class detailed(AuthPlugin):
 
         try:
             functor = getattr(self._uri_opener, self.method)
-            functor(self.auth_url, data)
+
+            while True:
+                # actually file the auth HTTP reuqest
+                r = functor(self.auth_url, data)
+                # follow redirects if the feature is enabled
+                if self.follow_redirects and r.get_code() % 300 < 10:
+                    self.auth_url.set_path(r.get_headers().iget('location')[0])
+                    om.out.debug('Auth redirected to new URL', self.auth_url)
+                    self.method = 'GET'
+                    data = ''
+                else:
+                    break
 
             if not self.is_logged():
                 raise Exception("Can't login into web application as %s/%s"
@@ -138,6 +149,7 @@ class detailed(AuthPlugin):
              '    - %p for the password parameter name value\n'
              '    - %P for the password value\n'),
             ('method', self.method, 'string', 'The HTTP method to use'),
+            ('follow_redirects', self.follow_redirects, 'string', 'Follow HTTP redirects on multi-stage authentication pages'),
         ]
         ol = OptionList()
         for o in options:
@@ -162,6 +174,7 @@ class detailed(AuthPlugin):
         self.method = options_list['method'].get_value()
         self.auth_url = options_list['auth_url'].get_value()
         self.check_url = options_list['check_url'].get_value()
+        self.follow_redirects= options_list['follow_redirects'].get_value()
 
         for o in options_list:
             if not o.get_value():
@@ -176,7 +189,7 @@ class detailed(AuthPlugin):
         This authentication plugin can login to web application with more detailed
         and complex authentication schemas where the generic plugin does not work.
 
-        Nine configurable parameters exist:
+        Ten configurable parameters exist:
             - username
             - password
             - username_field
@@ -186,4 +199,5 @@ class detailed(AuthPlugin):
             - method
             - check_url
             - check_string
+            - follow_redirects
         """
