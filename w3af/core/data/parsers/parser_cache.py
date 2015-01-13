@@ -24,6 +24,7 @@ from __future__ import with_statement, print_function
 import os
 import zlib
 import signal
+import atexit
 import multiprocessing
 
 from darts.lib.utils.lru import LRUDict
@@ -78,7 +79,7 @@ class ParserCache(object):
             log_queue = om.manager.get_in_queue()
             self._pool = ProcessPool(self.MAX_WORKERS,
                                      maxtasksperchild=25,
-                                     initializer=log_sink_factory,
+                                     initializer=init_worker,
                                      initargs=(log_queue,))
 
         return self._pool
@@ -120,6 +121,7 @@ class ParserCache(object):
 
         _to_hash = body_str + uri_str
 
+        # Added adler32 after finding some hash() collisions in builds
         hash_string = str(hash(_to_hash))
         hash_string += str(zlib.adler32(_to_hash))
         return hash_string
@@ -266,6 +268,23 @@ class ProcessDocumentParser(DocumentParser):
         processes[hash_string] = pid
         
         super(ProcessDocumentParser, self).__init__(http_resp)
+
+
+@atexit.register
+def cleanup_pool():
+    dpc.stop_workers()
+    
+
+def init_worker(log_queue):
+    """
+    This function is called right after each Process in the ProcessPool is
+    created, and it will initialized some variables/handlers which are required
+    for it to work as expected
+
+    :return: None
+    """
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    log_sink_factory(log_queue)
 
 
 manager = multiprocessing.Manager()
