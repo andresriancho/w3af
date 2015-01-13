@@ -59,15 +59,21 @@ class detailed(AuthPlugin):
         try:
             functor = getattr(self._uri_opener, self.method)
 
+            redir_count = 0
+
             while True:
+                if redir_count > 5:
+                    break
                 # actually file the auth HTTP reuqest
                 r = functor(self.auth_url, data)
+
                 # follow redirects if the feature is enabled
                 if self.follow_redirects and r.get_code() % 300 < 10:
                     self.auth_url.set_path(r.get_headers().iget('location')[0])
                     om.out.debug('Auth redirected to new URL', self.auth_url)
                     self.method = 'GET'
                     data = ''
+                    redir_count += 1
                 else:
                     break
 
@@ -149,7 +155,7 @@ class detailed(AuthPlugin):
              '    - %p for the password parameter name value\n'
              '    - %P for the password value\n'),
             ('method', self.method, 'string', 'The HTTP method to use'),
-            ('follow_redirects', self.follow_redirects, 'string', 'Follow HTTP redirects on multi-stage authentication pages'),
+            ('follow_redirects', self.follow_redirects, 'boolean', 'Follow HTTP redirects on multi-stage authentication pages'),
         ]
         ol = OptionList()
         for o in options:
