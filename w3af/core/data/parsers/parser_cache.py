@@ -27,7 +27,7 @@ import signal
 import atexit
 import multiprocessing
 
-from darts.lib.utils.lru import LRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict
 from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
@@ -53,7 +53,7 @@ class ParserCache(object):
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
 
     def __init__(self):
-        self._cache = LRUDict(self.LRU_LENGTH)
+        self._cache = SynchronizedLRUDict(self.LRU_LENGTH)
         self._pool = None
         self._processes = None
         self._parser_finished_events = {}
