@@ -47,7 +47,14 @@ def start_thread_on_demand(func):
 
         with OutputManager.start_lock:
             if not manager.is_alive():
-                manager.start()
+                try:
+                    manager.start()
+                except RuntimeError:
+                    # is_alive() doesn't always return the true state of the
+                    # thread, thus we need to add this try/except, see:
+                    #
+                    # https://github.com/andresriancho/w3af/issues/7453
+                    pass
         return func(*args, **kwds)
     return od_wrapper
 
