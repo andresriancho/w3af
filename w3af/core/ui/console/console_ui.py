@@ -167,7 +167,7 @@ class ConsoleUI(object):
                 self._w3af.quit()
                 self._context.join()
                 om.out.console(self._random_message())
-                om.out.process_all_messages()
+                om.manager.process_all_messages()
             except KeyboardInterrupt:
                 # The user might be in a hurry, and after "w3af>>> exit" he
                 # might also press Ctrl+C like seen here:

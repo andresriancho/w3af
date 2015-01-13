@@ -93,7 +93,8 @@ class TestJSON(PluginTest):
         vulns = self.kb.get('rfd', 'rfd')
         self.assertEquals(1, len(vulns))
 
-class TestJSONDoblequotesFiltered(PluginTest):
+
+class TestJSONDobleQuotesFiltered(PluginTest):
 
     target_url = 'http://json-filtered/?q=rfd'
 
@@ -119,6 +120,7 @@ class TestJSONDoblequotesFiltered(PluginTest):
         self._scan(self.target_url, cfg['plugins'])
         vulns = self.kb.get('rfd', 'rfd')
         self.assertEquals(0, len(vulns))
+
 
 class TestJSONP(PluginTest):
 

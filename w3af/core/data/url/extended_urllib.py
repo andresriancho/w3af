@@ -52,8 +52,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body
-
-MAX_ERROR_COUNT = 10
+from w3af.core.data.url.constants import MAX_ERROR_COUNT
 
 
 class ExtendedUrllib(object):

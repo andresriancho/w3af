@@ -61,7 +61,7 @@ def _configure_output_manager():
     since it is used by most w3af modules
     """ 
     try:
-        om.out.set_output_plugins( ['console'] )
+        om.manager.set_output_plugins(['console'])
     except Exception, e:
         print('Something went wrong, w3af failed to start the output manager.')
         print('Exception: "%s"' % e)
@@ -154,7 +154,7 @@ def main():
     
     if not console.accept_disclaimer():
         return -4
-    
+
     return console.sh()
 
 

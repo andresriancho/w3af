@@ -20,20 +20,26 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import unittest
+import cPickle
 
 from functools import partial
 from itertools import combinations
 from random import choice
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
+from w3af import ROOT_PATH
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.url.tests.test_HTTPResponse import TEST_RESPONSES
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.utils.form_params import FormParameters
+
 
 HTML_DOC = u"""
 <html>
@@ -329,6 +335,112 @@ class TestSGMLParser(unittest.TestCase):
         #    I've seen in Opera and Chrome.
         #
         self.assertEquals(0, len(parsed_refs))
+
+    def test_eval_xpath_in_dom(self):
+        html = """
+        <html>
+          <head>
+            <title>THE TITLE</title>
+          </head>
+          <body>
+            <input name="user" type="text">
+            <input name="pass" type="password">
+          </body>
+        </html>"""
+        headers = Headers([('Content-Type', 'text/xml')])
+        r = _build_http_response(URL_INST, html, headers)
+
+        p = _SGMLParser(r)
+        p._parse(r)
+
+        self.assertEquals(2, len(p.get_dom().xpath('.//input')))
+
+    def test_get_clear_text_body(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        clear_text = 'header ABC-DEF-XYZ footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        r = _build_http_response(URL_INST, html, headers)
+
+        p = _SGMLParser(r)
+        p._parse(r)
+
+        self.assertEquals(clear_text, p.get_clear_text_body())
+
+    def test_get_clear_text_body_memoized(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        clear_text = 'header ABC-DEF-XYZ footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        r = _build_http_response(URL_INST, html, headers)
+
+        p = _SGMLParser(r)
+        p._parse(r)
+
+        calculated_clear_text = p.get_clear_text_body()
+        calculated_clear_text_2 = p.get_clear_text_body()
+
+        self.assertEquals(clear_text, calculated_clear_text)
+        self.assertIs(calculated_clear_text_2, calculated_clear_text)
+
+    def test_get_clear_text_body_encodings(self):
+
+        raise SkipTest('Not sure why this one is failing :S')
+
+        for lang_desc, (body, encoding) in TEST_RESPONSES.iteritems():
+            encoding_header = 'text/html; charset=%s' % encoding
+            headers = Headers([('Content-Type', encoding_header)])
+
+            encoded_body = body.encode(encoding)
+            r = _build_http_response(URL_INST, encoded_body, headers)
+
+            p = _SGMLParser(r)
+            p._parse(r)
+
+            ct_body = p.get_clear_text_body()
+
+            # These test strings don't really have tags, so they should be eq
+            self.assertEqual(ct_body, body)
+
+    def test_get_clear_text_issue_4402(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/4402
+        """
+        test_file_path = 'core/data/url/tests/data/encoding_4402.php'
+        test_file = os.path.join(ROOT_PATH, test_file_path)
+        body = file(test_file, 'rb').read()
+
+        sample_encodings = [encoding for _, (_, encoding) in TEST_RESPONSES.iteritems()]
+        sample_encodings.extend(['', 'utf-8'])
+
+        for encoding in sample_encodings:
+            encoding_header = 'text/html; charset=%s' % encoding
+            headers = Headers([('Content-Type', encoding_header)])
+
+            r = _build_http_response(URL_INST, body, headers)
+
+            p = _SGMLParser(r)
+            p._parse(r)
+
+            p.get_clear_text_body()
+
+    def test_not_pickleable_dom(self):
+        """
+        Since we can't pickle when there is a dom, there are some things which
+        I won't be able to do (just as sending the parser over the wire).
+
+        This test is just a reminder of that fact.
+        """
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        r = _build_http_response(URL_INST, html, headers)
+
+        p = _SGMLParser(r)
+        p._parse(r)
+
+        # This just calculates the DOM and stores it as an attribute, NEEDS
+        # to be done before pickling (dumps) to have a real test.
+        p.get_dom()
+
+        self.assertRaises(TypeError, cPickle.dumps, p)
 
 
 # We subclass HTMLParser to prevent that the parsing process

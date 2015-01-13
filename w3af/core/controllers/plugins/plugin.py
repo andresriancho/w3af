@@ -23,14 +23,18 @@ import sys
 import threading
 import Queue
 
+from itertools import repeat
+from tblib.decorators import Error
+
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.controllers.threads.decorators import apply_with_return_error
+from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.url.helpers import new_no_content_resp
 
 
@@ -173,6 +177,9 @@ class Plugin(Configurable):
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
         """
+        imap_unordered = self.worker_pool.imap_unordered
+        awre = apply_with_return_error
+
         # You can use this code to debug issues that happen in threads, by
         # simply not using them:
         #
@@ -182,10 +189,17 @@ class Plugin(Configurable):
         #
         # Now the real code:
         func = return_args(func, **kwds)
-        imap_unordered = self.worker_pool.imap_unordered
+        args = zip(repeat(func), iterable)
 
-        for (mutant,), http_response in imap_unordered(func, iterable):
-            callback(mutant, http_response)
+        for result in imap_unordered(awre, args):
+            # re-raise the thread exception in the main thread with this method
+            # so we get a nice traceback instead of things like the ones we see
+            # in https://github.com/andresriancho/w3af/issues/7286
+            if isinstance(result, Error):
+                result.reraise()
+            else:
+                (mutant,), http_response = result
+                callback(mutant, http_response)
 
     def handle_url_error(self, uri, http_exception):
         """
@@ -206,7 +220,7 @@ class Plugin(Configurable):
         msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
         args = (self.get_name(), uri, http_exception)
         om.out.error(msg % args)
-        return False, new_no_content_resp(uri)
+        return False, new_no_content_resp(uri, add_id=True)
 
 
 class UrlOpenerProxy(object):
@@ -230,7 +244,14 @@ class UrlOpenerProxy(object):
                 # type of exception (not a subclass of HTTPRequestException)
                 # and that one will bubble up to w3afCore/strategy/etc.
                 #
-                uri = args[0]
+                arg1 = args[0]
+                if hasattr(arg1, 'get_uri'):
+                    # Mutants and fuzzable requests enter here
+                    uri = arg1.get_uri()
+                else:
+                    # It was a URL instance
+                    uri = arg1
+
                 re_raise, result = self._plugin_inst.handle_url_error(uri, hre)
 
                 # By default we do NOT re-raise, we just return a 204-no content
@@ -242,4 +263,8 @@ class UrlOpenerProxy(object):
                 return result
 
         attr = getattr(self._url_opener, name)
-        return meth if callable(attr) else attr
+
+        if callable(attr):
+            return meth
+        else:
+            return attr

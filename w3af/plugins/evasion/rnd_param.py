@@ -64,7 +64,8 @@ class rnd_param(EvasionPlugin):
                 post_data = str(self._mutate(post_data))
 
         new_req = HTTPRequest(new_url, post_data, request.headers,
-                              request.get_origin_req_host())
+                              request.get_origin_req_host(),
+                              retries=request.retries_left)
 
         return new_req
 

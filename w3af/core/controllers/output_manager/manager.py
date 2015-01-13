@@ -1,5 +1,5 @@
 """
-output_manager.py
+manager.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import functools
 import os
 import sys
-import Queue
 import threading
 
 from multiprocessing.dummy import Process
@@ -31,31 +29,7 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.data.constants.encodings import UTF8
-
-
-start_lock = threading.Lock()
-
-
-def fresh_output_manager_inst():
-    """
-    Creates a new "out" instance at the module level.
-
-    :return: A reference to the newly created instance
-    """
-    global out
-
-    #
-    #   Stop the old instance thread
-    #
-    if out.is_alive():
-        out.in_queue.put(POISON_PILL)
-        out.join()
-
-    #
-    #   Create the new instance
-    #
-    out = output_manager()
-    return out
+from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
 
 
 def start_thread_on_demand(func):
@@ -63,39 +37,37 @@ def start_thread_on_demand(func):
     Given that the output manager has been migrated into a producer/consumer
     model, the messages that are sent to it are added to a Queue and printed
     "when the om thread gets its turn".
-    
+
     The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is
     printed using the om (see functions below), which ends up with unordered
     messages printed to the console.
     """
     def od_wrapper(*args, **kwds):
-        global start_lock
-        with start_lock:
-            if not out.is_alive():
-                out.start()
+        from w3af.core.controllers.output_manager import manager
+
+        with OutputManager.start_lock:
+            if not manager.is_alive():
+                manager.start()
         return func(*args, **kwds)
     return od_wrapper
 
 
-class output_manager(Process):
+class OutputManager(Process):
     """
     This class manages output. It has a list of output plugins and sends the
     messages to every plugin on that list.
 
+    Logs are sent to the "out" instance (see module level variable) and using
+    a queue we forward the messages to this object which will be calling the
+    output plugins.
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    METHODS = (
-        'debug',
-        'information',
-        'error',
-        'vulnerability',
-        'console',
-        'log_http',
-    )
+    # Thread locking to avoid starting the om many times from different threads
+    start_lock = threading.RLock()
 
     def __init__(self):
-        super(output_manager, self).__init__(name='OutputManager')
+        super(OutputManager, self).__init__(name='OutputManager')
         self.daemon = True
         self.name = 'OutputManager'
 
@@ -105,11 +77,26 @@ class output_manager(Process):
         self._plugin_options = {}
 
         # Internal variables
-        self.in_queue = Queue.Queue()
+        self.in_queue = SilentJoinableQueue()
         self._w3af_core = None
 
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
+
+    def get_in_queue(self):
+        """
+        The output sinks need this queue, they will send the messages directly
+        to it from different threads/processes. Then the main process will
+        get the log messages and process them in the run() method below.
+
+        :return: A multiprocessing Queue
+        """
+        return self.in_queue
+
+    def start(self):
+        with self.start_lock:
+            if not self.is_alive():
+                super(OutputManager, self).start()
 
     def run(self):
         """
@@ -117,7 +104,13 @@ class output_manager(Process):
         will consume the work units from the queue and send them to the plugins
         """
         while True:
-            work_unit = self.in_queue.get()
+            try:
+                work_unit = self.in_queue.get()
+            except EOFError:
+                # The queue which we're consuming ended abruptly, this is
+                # usually a side effect of the process ending and
+                # multiprocessing not handling things cleanly
+                break
 
             if work_unit == POISON_PILL:
 
@@ -137,12 +130,12 @@ class output_manager(Process):
         self.process_all_messages()
         self.__end_output_plugins_impl()
 
+    @start_thread_on_demand
     def process_all_messages(self):
-        """Blocks until all messages are processed"""
+        """
+        Blocks until all messages are processed
+        """
         self.in_queue.join()
-
-    def _add_to_queue(self, *args, **kwds):
-        self.in_queue.put((args, kwds))
 
     def __end_output_plugins_impl(self):
         for o_plugin in self._output_plugin_instances:
@@ -179,7 +172,7 @@ class output_manager(Process):
         for o_plugin in self._output_plugin_instances:
             o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)
 
-    def _call_output_plugins_action(self, actionname, *args, **kwds):
+    def _call_output_plugins_action(self, action_name, *args, **kwds):
         """
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
@@ -229,7 +222,7 @@ class output_manager(Process):
                 continue
             
             try:
-                opl_func_ptr = getattr(o_plugin, actionname)
+                opl_func_ptr = getattr(o_plugin, action_name)
                 apply(opl_func_ptr, args, kwds)
             except Exception, e:
                 if self._w3af_core is None:
@@ -276,36 +269,36 @@ class output_manager(Process):
         self._output_plugin_names = output_plugins
 
         for plugin_name in self._output_plugin_names:
-            out._add_output_plugin(plugin_name)
+            self._add_output_plugin(plugin_name)
 
     def get_output_plugins(self):
         return self._output_plugin_names
 
-    def set_plugin_options(self, plugin_name, PluginsOptions):
+    def set_plugin_options(self, plugin_name, plugin_options):
         """
-        :param PluginsOptions: A tuple with a string and a dictionary
+        :param plugin_options: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
                                    { console:{'verbose': True} }
 
         :return: No value is returned.
         """
-        self._plugin_options[plugin_name] = PluginsOptions
+        self._plugin_options[plugin_name] = plugin_options
 
-    def _add_output_plugin(self, OutputPluginName):
+    def _add_output_plugin(self, output_plugin_name):
         """
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
 
-        :param OutputPluginName: The name of the plugin to add to the list.
+        :param output_plugin_name: The name of the plugin to add to the list.
         :return: No value is returned.
         """
-        if OutputPluginName == 'all':
+        if output_plugin_name == 'all':
             file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
-            strReqPlugins = [os.path.splitext(f)[0] for f in file_list
-                             if os.path.splitext(f)[1] == '.py']
-            strReqPlugins.remove('__init__')
+            str_req_plugins = [os.path.splitext(f)[0] for f in file_list
+                               if os.path.splitext(f)[1] == '.py']
+            str_req_plugins.remove('__init__')
 
-            for plugin_name in strReqPlugins:
+            for plugin_name in str_req_plugins:
                 plugin = factory('w3af.plugins.output.' + plugin_name)
 
                 if plugin_name in self._plugin_options.keys():
@@ -315,46 +308,9 @@ class output_manager(Process):
                 self._output_plugin_instances.append(plugin)
 
         else:
-            plugin = factory('w3af.plugins.output.' + OutputPluginName)
-            if OutputPluginName in self._plugin_options.keys():
-                plugin.set_options(self._plugin_options[OutputPluginName])
+            plugin = factory('w3af.plugins.output.' + output_plugin_name)
+            if output_plugin_name in self._plugin_options.keys():
+                plugin.set_options(self._plugin_options[output_plugin_name])
 
                 # Append the plugin to the list
             self._output_plugin_instances.append(plugin)
-
-    def report_finding(self, info_inst):
-        """
-        The plugins call this in order to report an info/vuln object to the
-        user. This is an utility function that simply calls information() or
-        vulnerability() with the correct parameters, depending on the info_inst
-        type and severity.
-        
-        :param info_inst: An Info class or subclass.
-        """
-        from w3af.core.data.kb.info import Info
-        from w3af.core.data.kb.vuln import Vuln
-        
-        if isinstance(info_inst, Vuln):
-            self.vulnerability(info_inst.get_desc(),
-                               severity=info_inst.get_severity())
-            
-        elif isinstance(info_inst, Info):
-            self.information(info_inst.get_desc())
-
-    @start_thread_on_demand
-    def __getattr__(self, name):
-        """
-        This magic method replaces all the previous debug/information/error ones
-        It will basically return a func pointer to self.add_to_queue('debug', ...)
-        where ... is completed later by the caller.
-
-        @see: http://docs.python.org/library/functools.html for help on partial.
-        @see: METHODS defined at the top of this class
-        """
-        if name in self.METHODS:
-            return functools.partial(self._add_to_queue, name)
-        else:
-            raise AttributeError("'output_manager' object has no attribute '%s'"
-                                 % name)
-
-out = output_manager()

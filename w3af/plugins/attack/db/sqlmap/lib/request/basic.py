@@ -27,6 +27,7 @@ from lib.core.data import logger
 from lib.core.enums import HTTP_HEADER
 from lib.core.enums import PLACE
 from lib.core.exception import SqlmapCompressionException
+from lib.core.settings import BLOCKED_IP_REGEX
 from lib.core.settings import DEFAULT_COOKIE_DELIMITER
 from lib.core.settings import EVENTVALIDATION_REGEX
 from lib.core.settings import MAX_CONNECTION_TOTAL_SIZE
@@ -38,6 +39,7 @@ from lib.parse.headers import headersParser
 from lib.parse.html import htmlParser
 from lib.utils.htmlentities import htmlEntities
 from thirdparty.chardet import detect
+from thirdparty.odict.odict import OrderedDict
 
 def forgeHeaders(items=None):
     """
@@ -51,8 +53,8 @@ def forgeHeaders(items=None):
         if items[_] is None:
             del items[_]
 
-    headers = dict(conf.httpHeaders)
-    headers.update(items or {})
+    headers = OrderedDict(conf.httpHeaders)
+    headers.update(items.items())
 
     class _str(str):
         def capitalize(self):
@@ -62,7 +64,7 @@ def forgeHeaders(items=None):
             return _str(self)
 
     _ = headers
-    headers = {}
+    headers = OrderedDict()
     for key, value in _.items():
         success = False
         if key.upper() not in (_.upper() for _ in getPublicTypeMembers(HTTP_HEADER, True)):
@@ -94,7 +96,7 @@ def forgeHeaders(items=None):
                         kb.mergeCookies = not _ or _[0] in ("y", "Y")
 
                     if kb.mergeCookies:
-                        _ = lambda x: re.sub("(?i)%s=[^%s]+" % (cookie.name, conf.cookieDel or DEFAULT_COOKIE_DELIMITER), "%s=%s" % (cookie.name, getUnicode(cookie.value)), x)
+                        _ = lambda x: re.sub(r"(?i)\b%s=[^%s]+" % (re.escape(cookie.name), conf.cookieDel or DEFAULT_COOKIE_DELIMITER), "%s=%s" % (cookie.name, getUnicode(cookie.value)), x)
                         headers[HTTP_HEADER.COOKIE] = _(headers[HTTP_HEADER.COOKIE])
 
                         if PLACE.COOKIE in conf.parameters:
@@ -105,7 +107,7 @@ def forgeHeaders(items=None):
                 elif not kb.testMode:
                     headers[HTTP_HEADER.COOKIE] += "%s %s=%s" % (conf.cookieDel or DEFAULT_COOKIE_DELIMITER, cookie.name, getUnicode(cookie.value))
 
-        if kb.testMode:
+        if kb.testMode and not conf.csrfToken:
             resetCookieJar(conf.cj)
 
     return headers
@@ -257,7 +259,7 @@ def decodePage(page, contentEncoding, contentType):
 
         if (any((httpCharset, metaCharset)) and not all((httpCharset, metaCharset)))\
             or (httpCharset == metaCharset and all((httpCharset, metaCharset))):
-            kb.pageEncoding = httpCharset or metaCharset
+            kb.pageEncoding = httpCharset or metaCharset  # Reference: http://bytes.com/topic/html-css/answers/154758-http-equiv-vs-true-header-has-precedence
             debugMsg = "declared web page charset '%s'" % kb.pageEncoding
             singleTimeLogMessage(debugMsg, logging.DEBUG, debugMsg)
         else:
@@ -267,38 +269,44 @@ def decodePage(page, contentEncoding, contentType):
 
     # can't do for all responses because we need to support binary files too
     if contentType and not isinstance(page, unicode) and "text/" in contentType.lower():
-        # e.g. &#195;&#235;&#224;&#226;&#224;
-        if "&#" in page:
-            page = re.sub(r"&#(\d{1,3});", lambda _: chr(int(_.group(1))) if int(_.group(1)) < 256 else _.group(0), page)
+        if kb.heuristicMode:
+            kb.pageEncoding = kb.pageEncoding or checkCharEncoding(getHeuristicCharEncoding(page))
+            page = getUnicode(page, kb.pageEncoding)
+        else:
+            # e.g. &#195;&#235;&#224;&#226;&#224;
+            if "&#" in page:
+                page = re.sub(r"&#(\d{1,3});", lambda _: chr(int(_.group(1))) if int(_.group(1)) < 256 else _.group(0), page)
 
-        # e.g. %20%28%29
-        if "%" in page:
-            page = re.sub(r"%([0-9a-fA-F]{2})", lambda _: _.group(1).decode("hex"), page)
+            # e.g. %20%28%29
+            if "%" in page:
+                page = re.sub(r"%([0-9a-fA-F]{2})", lambda _: _.group(1).decode("hex"), page)
 
-        # e.g. &amp;
-        page = re.sub(r"&([^;]+);", lambda _: chr(htmlEntities[_.group(1)]) if htmlEntities.get(_.group(1), 256) < 256 else _.group(0), page)
+            # e.g. &amp;
+            page = re.sub(r"&([^;]+);", lambda _: chr(htmlEntities[_.group(1)]) if htmlEntities.get(_.group(1), 256) < 256 else _.group(0), page)
 
-        kb.pageEncoding = kb.pageEncoding or checkCharEncoding(getHeuristicCharEncoding(page))
-        page = getUnicode(page, kb.pageEncoding)
+            kb.pageEncoding = kb.pageEncoding or checkCharEncoding(getHeuristicCharEncoding(page))
+            page = getUnicode(page, kb.pageEncoding)
 
-        # e.g. &#8217;&#8230;&#8482;
-        if "&#" in page:
-            def _(match):
-                retVal = match.group(0)
-                try:
-                    retVal = unichr(int(match.group(1)))
-                except ValueError:
-                    pass
-                return retVal
-            page = re.sub(r"&#(\d+);", _, page)
+            # e.g. &#8217;&#8230;&#8482;
+            if "&#" in page:
+                def _(match):
+                    retVal = match.group(0)
+                    try:
+                        retVal = unichr(int(match.group(1)))
+                    except ValueError:
+                        pass
+                    return retVal
+                page = re.sub(r"&#(\d+);", _, page)
 
-        # e.g. &zeta;
-        page = re.sub(r"&([^;]+);", lambda _: unichr(htmlEntities[_.group(1)]) if htmlEntities.get(_.group(1), 0) > 255 else _.group(0), page)
+            # e.g. &zeta;
+            page = re.sub(r"&([^;]+);", lambda _: unichr(htmlEntities[_.group(1)]) if htmlEntities.get(_.group(1), 0) > 255 else _.group(0), page)
 
     return page
 
 def processResponse(page, responseHeaders):
     kb.processResponseCounter += 1
+
+    page = page or ""
 
     parseResponse(page, responseHeaders if kb.processResponseCounter < PARSE_HEADERS_LIMIT else None)
 
@@ -318,3 +326,7 @@ def processResponse(page, responseHeaders):
                         continue
                     conf.paramDict[PLACE.POST][name] = value
                 conf.parameters[PLACE.POST] = re.sub("(?i)(%s=)[^&]+" % name, r"\g<1>%s" % value, conf.parameters[PLACE.POST])
+
+    if re.search(BLOCKED_IP_REGEX, page):
+        errMsg = "it appears that you have been blocked by the target server"
+        singleTimeLogMessage(errMsg, logging.ERROR)

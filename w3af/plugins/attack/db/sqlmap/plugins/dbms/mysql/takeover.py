@@ -5,10 +5,12 @@ Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import os
 import re
 
 from lib.core.agent import agent
 from lib.core.common import Backend
+from lib.core.common import decloakToTemp
 from lib.core.common import isStackingAvailable
 from lib.core.common import normalizePath
 from lib.core.common import ntToPosixSlashes
@@ -78,10 +80,12 @@ class Takeover(GenericTakeover):
         self.udfSharedLibName = "libs%s" % randomStr(lowercase=True)
 
         if Backend.isOs(OS.WINDOWS):
-            self.udfLocalFile += "/mysql/windows/%d/lib_mysqludf_sys.dll" % Backend.getArch()
+            _ = os.path.join(self.udfLocalFile, "mysql", "windows", "%d" % Backend.getArch(), "lib_mysqludf_sys.dll_")
+            self.udfLocalFile = decloakToTemp(_)
             self.udfSharedLibExt = "dll"
         else:
-            self.udfLocalFile += "/mysql/linux/%d/lib_mysqludf_sys.so" % Backend.getArch()
+            _ = os.path.join(self.udfLocalFile, "mysql", "linux", "%d" % Backend.getArch(), "lib_mysqludf_sys.so_")
+            self.udfLocalFile = decloakToTemp(_)
             self.udfSharedLibExt = "so"
 
     def udfCreateFromSharedLib(self, udf, inpRet):

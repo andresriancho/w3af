@@ -26,7 +26,7 @@ class get_source_code(Payload):
             msg = 'Failed to open "%s" for writing.'
             raise ValueError(msg % output_directory)
 
-        self.result = {}
+        result = {}
 
         apache_root_directory = self.exec_payload('apache_root_directory')
         webroot_list = apache_root_directory['apache_root_directory']
@@ -62,9 +62,9 @@ class get_source_code(Payload):
                     fh.write(file_content)
                     fh.close()
 
-                    self.result[url] = (remote_full_path, local_full_path)
+                    result[url] = (remote_full_path, local_full_path)
 
-        return self.result
+        return result
 
     def run_read(self, output_directory):
         api_result = self.api_read(output_directory)
@@ -72,9 +72,7 @@ class get_source_code(Payload):
         if not api_result:
             return 'Failed to download the application source code.'
         else:
-            rows = []
-            rows.append(['Remote file', 'Local file', ])
-            rows.append([])
+            rows = [['Remote file', 'Local file', ], []]
 
             for url, (remote_filename, local_filename) in api_result.items():
                 rows.append([remote_filename, local_filename])

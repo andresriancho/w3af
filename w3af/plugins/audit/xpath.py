@@ -74,31 +74,24 @@ class xpath(AuditPlugin):
     )
     _multi_in = multi_in(XPATH_PATTERNS)
 
+    XPATH_TEST_PAYLOADS = [
+        "d'z\"0",
+        # http://www.owasp.org/index.php/Testing_for_XML_Injection
+        "<!--"
+    ]
+
     def audit(self, freq, orig_response):
         """
         Tests an URL for xpath injection vulnerabilities.
 
         :param freq: A FuzzableRequest
         """
-        xpath_strings = self._get_xpath_strings()
-        mutants = create_mutants(freq, xpath_strings, orig_resp=orig_response)
+        mutants = create_mutants(freq, self.XPATH_TEST_PAYLOADS,
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-
-    def _get_xpath_strings(self):
-        """
-        Gets a list of strings to test against the web app.
-
-        :return: A list with all xpath strings to test.
-        """
-        xpath_strings = ["d'z\"0"]
-
-        # http://www.owasp.org/index.php/Testing_for_XML_Injection
-        xpath_strings.append("<!--")
-
-        return xpath_strings
 
     def _analyze_result(self, mutant, response):
         """
