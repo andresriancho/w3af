@@ -89,7 +89,7 @@ if __name__ == '__main__':
                         msg = 'Run id %s raised exception: "%s"'
                         logging.error(msg % (future.run_id, e))
                         print_will_fail(1)
-                        sys.exit(1)
+                        raise
                     else:
                         exit_codes.append(exit_code)
                         done_list.append(future)
