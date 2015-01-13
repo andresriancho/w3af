@@ -79,7 +79,7 @@ class strange_headers(GrepPlugin):
         "X-CACHE",
         "X-UA-COMPATIBLE",
         "X-PAD",
-        "X-XSS-Protection"]
+        "X-XSS-PROTECTION"]
     )
 
     def __init__(self):
