@@ -27,6 +27,8 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 
+from w3af.core.data.url.handlers.redirect import GET_HEAD_CODES
+
 class detailed(AuthPlugin):
     """Detailed authentication plugin."""
 
@@ -68,7 +70,7 @@ class detailed(AuthPlugin):
                 r = functor(self.auth_url, data)
 
                 # follow redirects if the feature is enabled
-                if self.follow_redirects and r.get_code() % 300 < 10:
+                if self.follow_redirects and r.get_code() in GET_HEAD_CODES:
                     self.auth_url.set_path(r.get_headers().iget('location')[0])
                     om.out.debug('Auth redirected to new URL', self.auth_url)
                     self.method = 'GET'
