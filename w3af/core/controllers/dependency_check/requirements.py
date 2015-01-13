@@ -41,7 +41,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
                      PIPDependency('guess_language', 'guess-language', '0.2'),
                      PIPDependency('cluster', 'cluster', '1.1.1b3'),
-                     PIPDependency('msgpack', 'msgpack-python', '0.2.4'),
+                     PIPDependency('msgpack', 'msgpack-python', '0.4.4'),
                      PIPDependency('ntlm', 'python-ntlm', '1.0.1'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5')]
