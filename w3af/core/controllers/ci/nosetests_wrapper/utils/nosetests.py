@@ -1,4 +1,5 @@
 import os
+import signal
 import logging
 import select
 import subprocess
@@ -63,7 +64,8 @@ def run_nosetests(nose_cmd, first, last):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=False,
-        universal_newlines=True
+        universal_newlines=True,
+        preexec_fn=os.setsid
     )
     
     # Read output while the process is alive
@@ -97,7 +99,8 @@ def run_nosetests(nose_cmd, first, last):
                                          output_file,
                                          stdout)
 
-                    p.kill()
+                    # Send the signal to all the process groups
+                    os.killpg(p.pid, signal.SIGTERM)
                     p.returncode = 0
 
                     logging.debug('Process %s killed' % get_run_id(first, last))
@@ -114,7 +117,8 @@ def run_nosetests(nose_cmd, first, last):
                 logging.warning('"%s" (%s) timeout waiting for output.' % args)
                 
                 # Kill the nosetests command
-                p.kill()
+                # Send the signal to all the process groups
+                os.killpg(p.pid, signal.SIGTERM)
                 p.returncode = -1
 
                 logging.debug('Process %s killed' % get_run_id(first, last))
