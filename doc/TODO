@@ -2,7 +2,7 @@ The w3af project has a very well defined roadmap, which aims to deliver value
 to our users and the community in every step we take. The roadmap can be found
 in our Github issue tracker:
 
-    https://github.com/andresriancho/w3af/issues/milestones
+    https://github.com/andresriancho/w3af/milestones
 
 They are lots of very interesting problems to solve, they range from enhancing
 algorithms for detecting vulnerabilities and low level performance improvements

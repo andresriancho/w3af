@@ -34,8 +34,8 @@ class auth(BaseConsumer):
 
     def __init__(self, auth_plugins, w3af_core, timeout):
         """
-        :param in_queue: A queue that's used to communicate with the thread. Items
-                         that might appear in this queue are:
+        :param in_queue: A queue that's used to communicate with the thread.
+                         Items that might appear in this queue are:
                              * POISON_PILL
                              * FORCE_LOGIN
         :param auth_plugins: Instances of auth plugins in a list
@@ -56,7 +56,9 @@ class auth(BaseConsumer):
             try:
                 action = self.in_queue.get(timeout=self._timeout)
             except Queue.Empty:
+                # pylint: disable=E1120
                 self._login()
+                # pylint: enable=E1120
             else:
 
                 if action == POISON_PILL:
@@ -68,15 +70,16 @@ class auth(BaseConsumer):
                     break
 
                 elif action == FORCE_LOGIN:
-
+                    # pylint: disable=E1120
                     self._login()
                     self.in_queue.task_done()
+                    # pylint: enable=E1120
 
     # Adding task here because we want to let the rest of the world know
     # that we're still doing something. The _task_done below will "undo"
     # this action.
     @task_decorator
-    def _login(self):
+    def _login(self, function_id):
         """
         This is the method that actually calls the plugins in order to login
         to the web application.
@@ -92,4 +95,6 @@ class auth(BaseConsumer):
         self.in_queue_put(FORCE_LOGIN)
 
     def force_login(self):
+        # pylint: disable=E1120
         self._login()
+        # pylint: enable=E1120

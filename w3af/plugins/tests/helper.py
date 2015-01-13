@@ -31,6 +31,7 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
@@ -157,6 +158,7 @@ class PluginTest(unittest.TestCase):
         body = 'Not found'
         content_type = 'text/html'
         mock_headers = {}
+        match = None
 
         for mock_response in self.MOCK_RESPONSES:
             if mock_response.method != method.command:
@@ -168,6 +170,7 @@ class PluginTest(unittest.TestCase):
                     body = mock_response.body
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
+                    match = mock_response
 
                     break
             elif isinstance(mock_response.url, RE_COMPILE_TYPE):
@@ -176,8 +179,15 @@ class PluginTest(unittest.TestCase):
                     body = mock_response.body
                     content_type = mock_response.content_type
                     mock_headers = mock_response.headers
+                    match = mock_response
 
                     break
+
+        if match is not None:
+            fmt = (uri, match)
+            om.out.debug('[request_callback] URI %s matched %s' % fmt)
+        else:
+            om.out.debug('[request_callback] URI %s will return 404' % uri)
 
         headers.update(mock_headers)
         headers['Content-Type'] = content_type
@@ -445,4 +455,4 @@ class MockResponse(object):
         assert isinstance(url, (basestring, RE_COMPILE_TYPE))
 
     def __repr__(self):
-        return '<MockResponse (%s|%s)>' % (self.url, self.status)
+        return '<MockResponse (uri: %s | status: %s)>' % (self.url, self.status)

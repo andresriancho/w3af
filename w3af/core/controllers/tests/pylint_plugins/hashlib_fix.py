@@ -30,18 +30,28 @@ class sha512(object):
         return u''
     def digest(self):
         return u''
+
+class sha256(object):
+    def __init__(self, value): pass
+    def hexdigest(self):
+        return u''
+    def update(self, x):
+        return u''
+    def digest(self):
+        return u''
 """
+
 
 def hashlib_transform(module):
     if module.name == 'hashlib':
         fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
         
-        for hashfunc in ('sha1', 'md5', 'sha512'):
+        for hashfunc in ('sha1', 'md5', 'sha512', 'sha256'):
             module.locals[hashfunc] = fake.locals[hashfunc]
 
+
 def register(linter):
-    """called when loaded by pylint --load-plugins, register our tranformation
+    """called when loaded by pylint --load-plugins, register our transformation
     function here
     """
     MANAGER.register_transformer(hashlib_transform)
-    

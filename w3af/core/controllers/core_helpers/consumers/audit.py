@@ -96,7 +96,7 @@ class audit(BaseConsumer):
                                         (plugin, fuzzable_request, orig_resp))
 
     @task_decorator
-    def _audit(self, plugin, fuzzable_request, orig_resp):
+    def _audit(self, function_id, plugin, fuzzable_request, orig_resp):
         """
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to

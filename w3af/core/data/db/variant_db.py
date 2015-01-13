@@ -59,10 +59,15 @@ class VariantDB(object):
         this reference in the DB.
         """
         clean_reference = self._clean_reference(reference)
+        has_qs = reference.has_query_string()
 
         # I believe this is atomic enough...
         count = self._disk_dict.get(clean_reference, 0)
-        if count >= self.max_variants:
+
+        # When we're analyzing a path (without QS), we just need 1
+        max_variants = self.max_variants if has_qs else 1
+
+        if count >= max_variants:
             return False
         else:
             return True
