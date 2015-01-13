@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement, print_function
 
 import os
+import zlib
 import signal
 import multiprocessing
 
@@ -117,7 +118,10 @@ class ParserCache(object):
         if isinstance(body_str, unicode):
             body_str = body_str.encode('utf-8', 'replace')
 
-        hash_string = hash(body_str + uri_str)
+        _to_hash = body_str + uri_str
+
+        hash_string = str(hash(_to_hash))
+        hash_string += str(zlib.adler32(_to_hash))
         return hash_string
 
     def should_cache(self, http_response):
