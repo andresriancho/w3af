@@ -44,7 +44,6 @@ class ProcessPool(Pool):
         self._worker_handler._state = RUN
         self._worker_handler.start()
 
-
         self._task_handler = threading.Thread(
             target=Pool._handle_tasks,
             args=(self._taskqueue, self._quick_put, self._outqueue,
