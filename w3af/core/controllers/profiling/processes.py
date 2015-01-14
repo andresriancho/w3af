@@ -64,7 +64,7 @@ def dump_processes():
         child_data = {'name': child.name,
                       'daemon': child.daemon,
                       'exitcode': child.exitcode,
-                      'target': child._target,
+                      'target': child._target.__name__,
                       'args': child._args,
                       'kwargs': child._kwargs}
         data[pid] = child_data
