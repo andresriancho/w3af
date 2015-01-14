@@ -72,7 +72,10 @@ def dump_processes():
             try:
                 json.dumps(arg)
             except TypeError:
-                child_data['args'].append('undefined')
+                try:
+                    child_data['args'].append(arg.__class__.__name__)
+                except:
+                    child_data['args'].append('undefined')
             else:
                 child_data['args'].append(arg)
 
@@ -80,7 +83,10 @@ def dump_processes():
             try:
                 json.dumps(value)
             except TypeError:
-                child_data['kwargs'][key] = 'undefined'
+                try:
+                    child_data['kwargs'][key] = value.__class__.__name__
+                except:
+                    child_data['kwargs'][key] = 'undefined'
             else:
                 child_data['kwargs'][key] = value
 
