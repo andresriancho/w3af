@@ -55,7 +55,8 @@ class rnd_path(EvasionPlugin):
 
         # Finally, we set all the mutants to the request in order to return it
         new_req = HTTPRequest(new_url, request.data, request.headers,
-                              request.get_origin_req_host())
+                              request.get_origin_req_host(),
+                              retries=request.retries_left)
 
         return new_req
 

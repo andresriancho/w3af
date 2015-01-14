@@ -60,8 +60,10 @@ def memoized(meth):
     """
     @wraps(meth)
     def cache_wrapper(self, *args, **kwargs):
-        if meth in self._cache:
-            return self._cache[meth]
+        result = self._cache.get(meth, None)
+
+        if result is not None:
+            return result
         else:
             value = meth(self, *args, **kwargs)
             self._cache[meth] = value

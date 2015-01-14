@@ -37,21 +37,21 @@ CTRL_CODES.remove(13)
 
 def sync_with_om(func):
     """
-    Given that the output manager has been migrated into a producer/consumer model,
-    the messages that are sent to it are added to a Queue and printed "at a random time".
-    The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
-    using the om (see functions below), which ends up with unordered messages printed
-    to the console.
+    Given that the output manager has been migrated into a producer/consumer
+    model, the messages that are sent to it are added to a Queue and printed
+    "at a random time". The issue with this is that NOT EVERYTHING YOU SEE IN
+    THE CONSOLE is printed using the om (see functions below), which ends up
+    with unordered messages printed to the console.
     """
     def om_wrapper(*args, **kwds):
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
         return func(*args, **kwds)
     return om_wrapper
 
 
 @sync_with_om
 def write(s):
-    if (len(s)):
+    if len(s):
         sys.stdout.write(s)
 
 
@@ -131,6 +131,7 @@ def terminal_size():
     # reverse rows, cols
     return int(cr[1]), int(cr[0])
 
+
 def terminal_width():
     return terminal_size()[0]
 
@@ -140,7 +141,7 @@ try:
     import termios
     from w3af.core.ui.console.io.unixctrl import *
 except Exception, e:
-    # We arent on unix !
+    # We aren't on unix !
     try:
         import msvcrt
         from w3af.core.ui.console.io.winctrl import *

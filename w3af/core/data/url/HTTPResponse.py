@@ -25,11 +25,12 @@ import httplib
 import threading
 import urllib2
 
-from lxml import etree
 from itertools import imap
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.parsers.parser_cache as parser_cache
 
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.url import URL
@@ -48,7 +49,6 @@ STATUS_LINE = 'HTTP/1.1 %s %s' + CRLF
 
 CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
 CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
-ANY_TAG_MATCH = re.compile('(<.*?>)')
 DEFAULT_WAIT_TIME = 0.2
 
 
@@ -70,7 +70,7 @@ class HTTPResponse(object):
         :param geturl: URL object instance
         :param original_url: URL object instance
         :param msg: HTTP message
-        :param id: Optional response identifier
+        :param _id: Optional response identifier
         :param time: The time between the request and the response
         :param alias: Alias for the response, this contains a hash that helps
                       the backend sqlite find http_responses faster by indexing
@@ -263,84 +263,41 @@ class HTTPResponse(object):
 
     body = property(get_body, set_body)
 
-    @memoized
-    def get_clear_text_body(self):
-        """
-        :return: A clear text representation of the HTTP response body.
-        """
-        dom = self.get_dom()
-
-        if dom is None:
-            # Well, we don't have a DOM for this response, so lets apply regex
-            return ANY_TAG_MATCH.sub('', self.get_body())
-
-        # DOM was calculated, lets do some magic
-        try:
-            return ''.join(dom.itertext())
-        except UnicodeDecodeError, ude:
-            msg = 'UnicodeDecodeError found while iterating the DOM. Original'\
-                  ' exception was: "%s". The response charset is: "%s", the'\
-                  ' content-type: "%s" and the body snippet is: "%r".'
-
-            body = self._raw_body if self._raw_body is not None else self._body
-            body_snippet = body[ude.start-2:ude.end+2]
-
-            args = (ude, self.charset, self.content_type, body_snippet)
-            raise Exception(msg % args)
-
-    def set_dom(self, dom_inst):
-        """
-        This setter is part of a performance improvement I'm talking about in
-        get_dom() and sgmlParser._parse().
-
-        Without this set_dom() which is called from sgmlParser._parse() when the
-        code runs:
-            sgmlParser( http_response )
-            ...
-            http_response.get_dom()
-
-        The DOM is calculated twice.
-
-        We still need to figure out how to solve the other issue which should
-        aim to avoid the double DOM generation when:
-            http_response.get_dom()
-            ...
-            sgmlParser( http_response )
-
-        :return: None
-        """
-        self._dom = dom_inst
-
     def get_dom(self):
         """
-        I don't want to calculate the DOM for all responses, only for those
-        which are needed. This method will first calculate the DOM, and then
-        save it for upcoming calls.
-
-        @see: TODO: Potential performance improvement in sgmlParser._parse()
-                    for ideas on how to reduce CPU usage.
-
-        :return: The DOM, or None if the HTML normalization failed.
+        Just a shortcut to get the dom (if any)
+        :return: A DOM instance from lxml
         """
-        if self._dom is None:
+        parser = self.get_parser()
+        if parser is not None:
+            return parser.get_dom()
 
-            if self.doc_type == HTTPResponse.DOC_TYPE_IMAGE:
-                # Don't waste CPU time trying to create a DOM out of an image
-                return None
+        # No DOM for this response
+        return None
 
-            if not self.body:
-                # Can't create a DOM for an empty response
-                return None
+    def get_clear_text_body(self):
+        """
+        Just a shortcut to get the clear text body
+        :return: A unicode string
+        """
+        parser = self.get_parser()
+        if parser is not None:
+            return parser.get_clear_text_body()
 
-            try:
-                parser = etree.HTMLParser(recover=True)
-                self._dom = etree.fromstring(self.body, parser)
-            except Exception, e:
-                msg = 'The HTTP body for "%s" could NOT be parsed by lxml.'\
-                      ' The %s was: "%s".'
-                om.out.debug(msg % (self.get_url(), e.__class__.__name__, e))
+        return u''
 
-        return self._dom
+    def get_parser(self):
+        """
+        Just a shortcut to get the parser for this response, we get this from
+        the document parser cache.
+
+        :return: A DocumentParser instance or None
+        """
+        try:
+            return parser_cache.dpc.get_document_parser_for(self)
+        except BaseFrameworkException:
+            # Failed to find a suitable parser for the document
+            return
 
     def get_charset(self):
         if not self._charset:

@@ -24,6 +24,11 @@ import unittest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.db.variant_db import VariantDB, DEFAULT_MAX_VARIANTS
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.factory import dc_from_form_params
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 
 
 class TestVariantDB(unittest.TestCase):
@@ -101,36 +106,59 @@ class TestVariantDB(unittest.TestCase):
 
     def test_clean_reference_simple(self):
         self.assertEqual(self.vdb._clean_reference(URL('http://w3af.org/')),
-                         u'http://w3af.org/')
+                         u'(GET)-http://w3af.org/')
 
     def test_clean_reference_file(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/index.php')),
-            u'http://w3af.org/index.php')
+            u'(GET)-http://w3af.org/index.php')
 
     def test_clean_reference_directory_file(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/foo/index.php')),
-                                         u'http://w3af.org/foo/index.php')
+                                      u'(GET)-http://w3af.org/foo/index.php')
 
     def test_clean_reference_directory_file_int(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/foo/index.php?id=2')),
-                                      u'http://w3af.org/foo/index.php?id=number')
+                                      u'(GET)-http://w3af.org/foo/index.php?id=number')
 
     def test_clean_reference_int(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2')),
-            u'http://w3af.org/index.php?id=number')
+            u'(GET)-http://w3af.org/index.php?id=number')
 
     def test_clean_reference_int_str(self):
         self.assertEqual(
             self.vdb._clean_reference(
                 URL('http://w3af.org/index.php?id=2&foo=bar')),
-            u'http://w3af.org/index.php?id=number&foo=string')
+            u'(GET)-http://w3af.org/index.php?id=number&foo=string')
 
     def test_clean_reference_int_str_empty(self):
         self.assertEqual(
             self.vdb._clean_reference(
                 URL('http://w3af.org/index.php?id=2&foo=bar&spam=')),
-            u'http://w3af.org/index.php?id=number&foo=string&spam=string')
+            u'(GET)-http://w3af.org/index.php?id=number&foo=string&spam=string')
+
+    def test_clean_form_fuzzable_request(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),
+                             headers=Headers([('Host', 'www.w3af.com')]),
+                             method='POST',
+                             post_data=KeyValueContainer(init_val=[('data', ['23'])]))
+
+        expected = u'(POST)-http://www.w3af.com/!data=number'
+        self.assertEqual(self.vdb._clean_fuzzable_request(fr), expected)
+
+    def test_clean_form_fuzzable_request_form(self):
+        form_params = FormParameters()
+        form_params.add_input([("name", "username"), ("value", "abc")])
+        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.set_action(URL('http://example.com/?id=1'))
+        form_params.set_method('post')
+
+        form = dc_from_form_params(form_params)
+
+        fr = FuzzableRequest.from_form(form)
+
+        expected = u'(POST)-http://example.com/?id=number!username=string&address=string'
+        self.assertEqual(self.vdb._clean_fuzzable_request(fr), expected)

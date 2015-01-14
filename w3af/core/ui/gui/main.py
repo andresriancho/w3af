@@ -241,7 +241,7 @@ class MainApp(object):
         splash.push(_("Initializing core..."))
 
         # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugin_inst(GtkOutput())
+        om.manager.set_output_plugin_inst(GtkOutput())
 
         # status bar
         splash.push(_("Building the status bar..."))
@@ -602,7 +602,7 @@ class MainApp(object):
         def start_scan_wrap():
             # Just in case, make sure we have a GtkOutput in the output manager
             # for the current scan
-            om.out.set_output_plugin_inst(GtkOutput())
+            om.manager.set_output_plugin_inst(GtkOutput())
             
             
             try:
@@ -730,7 +730,7 @@ class MainApp(object):
         """
         # After the scan finishes, I want to be able to use the GtkOutput
         # features for exploitation
-        om.out.set_output_plugin_inst(GtkOutput())
+        om.manager.set_output_plugin_inst(GtkOutput())
         
         exception_list = self.w3af.exception_handler.get_unique_exceptions()
         if exception_list:
@@ -754,7 +754,7 @@ class MainApp(object):
         self.window.set_title(MAIN_TITLE)
 
         # This is done here in order to keep the logging facility.
-        om.out.set_output_plugin_inst(GtkOutput())
+        om.manager.set_output_plugin_inst(GtkOutput())
 
     def _scan_superviseStatus(self):
         """Handles the waiting until core finishes the scan.

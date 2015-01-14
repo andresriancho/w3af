@@ -127,12 +127,29 @@ class SWFParser(BaseParser):
         :return: Store new URLs in self._re_urls, None is returned.
         """
         for index, char in enumerate(swf_body):
-            if char == '\x83' and swf_body[index+2] == '\x00':
+            if char == '\x83':
+                try:
+                    plus_two_zero = swf_body[index+2] == '\x00'
+                except IndexError:
+                    continue
+                else:
+                    if not plus_two_zero:
+                        continue
+
                 # potential getURL with string as first parameter
                 # lets get the length and verify that there is a 0x00 where
                 # we expect it to be
                 str_len = ord(swf_body[index+1])
-                str_end = swf_body[index + 1 + str_len]
+
+                try:
+                    str_end = swf_body[index + 1 + str_len]
+                except IndexError:
+                    # The str_len was too long and took us out of the string
+                    # length, this is a "common" bug since our parser is not
+                    # very smart
+                    #
+                    # https://github.com/andresriancho/w3af/issues/5535
+                    continue
 
                 # Strings in SWF bytecode have 0x00 content 0x00 and the len
                 # counts the delimiters, so a length of 2 or less is useless
@@ -159,6 +176,9 @@ class SWFParser(BaseParser):
                             pass
                         else:
                             self._re_urls.add(url)
+
+    def get_clear_text_body(self):
+        return u''
 
     def get_references(self):
         """

@@ -196,15 +196,19 @@ class PhishTankHandler(object):
         self.matches = []
 
     def start(self, name, attrs):
-        if name == u'entry':
+        # name parameters are strings (as sent by lxml) so we use strings here
+        # to avoid the conversion
+        if name == 'entry':
             self.inside_entry = True
 
-        elif name == u'url':
+        elif name == 'url':
             self.inside_URL = True
+            # But when it sends the information in data(), it uses unicode
             self.url = u''
 
-        elif name == u'phish_detail_url':
+        elif name == 'phish_detail_url':
             self.inside_detail = True
+            # But when it sends the information in data(), it uses unicode
             self.phish_detail_url = u''
 
         return
@@ -217,14 +221,16 @@ class PhishTankHandler(object):
             self.phish_detail_url += ch
 
     def end(self, name):
-        if name == u'phish_detail_url':
+        # name parameters are strings (as sent by lxml) so we use strings here
+        # to avoid the conversion
+        if name == 'phish_detail_url':
             self.inside_detail = False
 
-        if name == u'url':
+        if name == 'url':
             self.inside_URL = False
             self.url_count += 1
 
-        if name == u'entry':
+        if name == 'entry':
             self.inside_entry = False
             #
             #    Now I try to match the entry with an element in the

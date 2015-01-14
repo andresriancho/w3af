@@ -63,6 +63,7 @@ def task_decorator(method):
     return _wrapper
 
 
+# pylint: disable=E1120
 class BaseConsumer(Process):
     """
     Consumer thread that takes fuzzable requests from a Queue that's populated
@@ -121,14 +122,13 @@ class BaseConsumer(Process):
                 # pylint: disable=E1120
                 self._consume_wrapper(work_unit)
                 self.in_queue.task_done()
-                # pylint: enable=E1120
 
     def _teardown(self):
         raise NotImplementedError
 
     def _consume(self, work_unit):
         raise NotImplementedError
-    
+
     @task_decorator
     def _consume_wrapper(self, function_id, work_unit):
         """

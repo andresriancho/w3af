@@ -19,13 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
-import os
-import shutil
 
 from mock import patch, call
 from nose.plugins.attrib import attr
 
-from w3af import ROOT_PATH
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore

@@ -33,6 +33,7 @@ from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.url.constants import MAX_HTTP_RETRIES
 
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
@@ -47,7 +48,8 @@ from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler
-from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST, BOOL
+from w3af.core.data.options.option_types import (POSITIVE_INT, INT, STRING,
+                                                 LIST, BOOL)
 
 
 class OpenerSettings(Configurable):
@@ -124,7 +126,7 @@ class OpenerSettings(Configurable):
 
         cfg.save('ignore_session_cookies', False)
         cfg.save('max_file_size', 400000)
-        cfg.save('max_http_retries', 2)
+        cfg.save('max_http_retries', MAX_HTTP_RETRIES)
         cfg.save('max_requests_per_second', 0)
 
         cfg.save('url_parameter', '')

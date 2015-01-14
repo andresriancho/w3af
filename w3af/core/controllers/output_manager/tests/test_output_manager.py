@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-test_outputmanager.py
+test_output_manager.py
 
 Copyright 2011 Andres Riancho
 
@@ -20,13 +20,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import multiprocessing
 
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
+from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.output_manager import log_sink_factory
+from w3af.core.controllers.threads.decorators import apply_with_return_error
+
+
+def send_log_message(msg):
+    om.out.information(msg)
 
 
 @attr('smoke')
@@ -46,11 +54,11 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_instances = [plugin, ]
+            om.manager._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
-            om.out.process_all_messages()
+            om.manager.process_all_messages()
 
             plugin_action.assert_called_once_with(msg, True)
 
@@ -65,11 +73,11 @@ class TestOutputManager(unittest.TestCase):
             setattr(plugin, action, plugin_action)
 
             # Invoke action
-            om.out._output_plugin_instances = [plugin, ]
+            om.manager._output_plugin_instances = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
 
-            om.out.process_all_messages()
+            om.manager.process_all_messages()
 
             plugin_action.assert_called_once_with(utf8_encoded_msg, True)
 
@@ -92,11 +100,11 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, action, plugin_action)
 
         # Invoke action
-        om.out._output_plugin_instances = [plugin, ]
+        om.manager._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         om_action(msg, False)
 
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)
     
@@ -113,14 +121,14 @@ class TestOutputManager(unittest.TestCase):
         setattr(plugin, 'get_name', plugin_get_name)
 
         # Invoke action
-        om.out._output_plugin_instances = [plugin, ]
+        om.manager._output_plugin_instances = [plugin, ]
         om_action = getattr(om.out, action)
         # This one will be ignored at the output manager level
         om_action(msg, False, ignore_plugins=set(['fake']))
         # This one will make it and we'll assert it below
         om_action(msg, False)
         
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)        
 
@@ -143,12 +151,36 @@ class TestOutputManager(unittest.TestCase):
 
         w3af_core = w3afCore()
 
-        om.out._output_plugin_instances = [invalid_plugin, ]
+        om.manager._output_plugin_instances = [invalid_plugin, ]
+        om.manager.start()
         om.out.information('abc')
-        om.out.process_all_messages()
+        om.manager.process_all_messages()
 
         exc_list = w3af_core.exception_handler.get_all_exceptions()
         self.assertEqual(len(exc_list), 1, exc_list)
 
         edata = exc_list[0]
         self.assertEqual(str(edata.exception), 'Test')
+
+    def test_output_manager_multiprocessing(self):
+        msg = 'Sent from a different process'
+
+        action = 'information'
+
+        plugin = Mock()
+        plugin_action = MagicMock()
+        setattr(plugin, action, plugin_action)
+        om.manager._output_plugin_instances = [plugin, ]
+
+        log_queue = om.manager.get_in_queue()
+        _pool = multiprocessing.Pool(1,
+                                     initializer=log_sink_factory,
+                                     initargs=(log_queue,))
+
+        result = _pool.apply(apply_with_return_error, ((send_log_message, msg),))
+        if isinstance(result, Error):
+            result.reraise()
+
+        om.manager.process_all_messages()
+
+        plugin_action.assert_called_once_with(msg)
