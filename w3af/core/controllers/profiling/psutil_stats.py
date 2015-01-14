@@ -65,11 +65,15 @@ def dump_psutil():
             pinfo = proc.as_dict(attrs=['pid', 'name', 'parent', 'status',
                                         'io_counters', 'num_threads',
                                         'cpu_times', 'cpu_percent',
-                                        'memory_info_ex', 'memory_percent'])
+                                        'memory_info_ex', 'memory_percent',
+                                        'exe', 'cmdline'])
         except psutil.NoSuchProcess:
             pass
         else:
-            process_info[pinfo['pid']] = pinfo
+            if hasattr(pinfo, '_asdict'):
+                process_info[pinfo['pid']] = dict(pinfo._asdict())
+            else:
+                process_info[pinfo['pid']] = pinfo
 
     netinfo = psutil.net_io_counters(pernic=True)
     for key, value in netinfo.iteritems():
