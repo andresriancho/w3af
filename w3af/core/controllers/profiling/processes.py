@@ -64,17 +64,25 @@ def dump_processes():
         child_data = {'name': child.name,
                       'daemon': child.daemon,
                       'exitcode': child.exitcode,
-                      'target': child._target.__name__}
+                      'target': child._target.__name__,
+                      'args': [],
+                      'kwargs': {}}
 
-        might_be_serializable = {'args': child._args, 'kwargs': child._kwargs}
+        for arg in child._args:
+            try:
+                json.dumps(arg)
+            except TypeError:
+                child_data['args'].append('undefined')
+            else:
+                child_data['args'].append(arg)
 
-        for key, value in might_be_serializable.iteritems():
+        for key, value in child._kwargs.iteritems():
             try:
                 json.dumps(value)
             except TypeError:
-                child_data[key] = None
+                child_data['kwargs'][key] = 'undefined'
             else:
-                child_data[key] = value
+                child_data['kwargs'][key] = value
 
         data[pid] = child_data
 
