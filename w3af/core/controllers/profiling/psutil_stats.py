@@ -23,6 +23,7 @@ import os
 import json
 import psutil
 
+from .utils.ps_mem import get_memory_usage, cmd_with_count
 from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
 
@@ -82,15 +83,37 @@ def dump_psutil():
     for key, value in netinfo.iteritems():
         netinfo[key] = value._asdict()
 
+    # Get the memory usage from ps_mem
+    pids_to_show = [pid for pid, pinfo in process_info.iteritems() if 'python' in str(pinfo['exe'])]
+    ps_mem_data = ps_mem_to_json(*get_memory_usage(pids_to_show, True))
+
     # Merge all the data here
     psutil_data = {'CPU': psutil.cpu_times()._asdict(),
                    'Load average': os.getloadavg(),
                    'Virtual memory': psutil.virtual_memory()._asdict(),
                    'Swap memory': psutil.swap_memory()._asdict(),
                    'Network': netinfo,
-                   'Processes': process_info}
+                   'Processes': process_info,
+                   'ps_mem': ps_mem_data}
     
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
+
+
+def ps_mem_to_json(sorted_cmds, shareds, count, total):
+    result = []
+    
+    for cmd in sorted_cmds:
+        private = cmd[1]-shareds[cmd[0]]
+        shared = shareds[cmd[0]]
+        ram_used = cmd[1]
+        cmd_count = cmd_with_count(cmd[0], count[cmd[0]])
+
+        result.append({'Private': private,
+                       'Shared': shared,
+                       'Total RAM used': ram_used,
+                       'Command line': cmd_count})
+
+    return result
 
 
 @should_dump_psutil
