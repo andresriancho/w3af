@@ -70,10 +70,13 @@ def dump_psutil():
         except psutil.NoSuchProcess:
             pass
         else:
-            if hasattr(pinfo, '_asdict'):
-                process_info[pinfo['pid']] = dict(pinfo._asdict())
-            else:
-                process_info[pinfo['pid']] = pinfo
+            for info_name, info_data in pinfo.iteritems():
+                if hasattr(info_data, '_asdict'):
+                    pinfo[info_name] = dict(info_data._asdict())
+                else:
+                    pinfo[info_name] = info_data
+
+            process_info[pinfo['pid']] = pinfo
 
     netinfo = psutil.net_io_counters(pernic=True)
     for key, value in netinfo.iteritems():
@@ -86,7 +89,7 @@ def dump_psutil():
                    'Swap memory': psutil.swap_memory()._asdict(),
                    'Network': netinfo,
                    'Processes': process_info}
-
+    
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
 
