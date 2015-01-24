@@ -25,7 +25,6 @@ from .core_stats import start_core_profiling, stop_core_profiling
 from .thread_activity import start_thread_stack_dump, stop_thread_stack_dump
 from .processes import start_process_dump, stop_process_dump
 from .psutil_stats import start_psutil_dump, stop_psutil_dump
-from .pytracemalloc import start_tracemalloc_dump, stop_tracemalloc_dump
 
 
 def start_profiling(w3af_core):
@@ -35,7 +34,6 @@ def start_profiling(w3af_core):
     start_thread_stack_dump(w3af_core)
     start_process_dump(w3af_core)
     start_psutil_dump(w3af_core)
-    start_tracemalloc_dump(w3af_core)
 
 
 def stop_profiling(w3af_core):
@@ -45,4 +43,3 @@ def stop_profiling(w3af_core):
     stop_thread_stack_dump(w3af_core)
     stop_process_dump(w3af_core)
     stop_psutil_dump(w3af_core)
-    stop_tracemalloc_dump(w3af_core)
