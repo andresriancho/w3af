@@ -204,13 +204,16 @@ class analyze_cookies(GrepPlugin):
         :return: None
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
-            
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            desc = 'A cookie without the HttpOnly flag was sent when ' \
+            keys = ''
+            for key in cookie_obj.keys(): 
+                keys += key + ' '
+            keys = keys.strip()
+            desc = 'Cookie(s) (%s) without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
                    ' Cross-Site Scripting attacks.'
-            desc = desc % response.get_url()
+            desc = desc % (keys, response.get_url())
             
             v = Vuln('Cookie without HttpOnly', desc,
                      vuln_severity, response.id, self.get_name())
@@ -245,8 +248,8 @@ class analyze_cookies(GrepPlugin):
 
                         desc = 'Cookie values that were set over HTTPS, are' \
                                ' then sent over an insecure channel in a' \
-                               ' request to "%s".'
-                        desc = desc % request.get_url()
+                               ' request to "%s, with cookie: %s".'
+                        desc = desc % (request.get_url(),key)
                     
                         v = Vuln('Secure cookies over insecure channel', desc,
                                  severity.HIGH, response.id, self.get_name())
@@ -321,13 +324,17 @@ class analyze_cookies(GrepPlugin):
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
             
-            desc = 'A cookie marked with the secure flag was sent over' \
+            keys = ''
+            for key in cookie_obj.keys(): 
+                keys += key + ' '
+            keys = keys.strip()
+            desc = 'Cookie(s) (%s) marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
                    ' "%s", this usually means that the Web application was'\
                    ' designed to run over SSL and was deployed without'\
                    ' security or that the developer does not understand the'\
                    ' "secure" flag.'
-            desc = desc % response.get_url()
+            desc = desc % (keys,response.get_url())
             
             v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
                      response.id, self.get_name())
@@ -352,13 +359,16 @@ class analyze_cookies(GrepPlugin):
 
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
+            keys = ''
+            for key in cookie_obj.keys(): 
+                keys += key + ' '
 
-            desc = 'A cookie without the secure flag was sent in an HTTPS' \
+            desc = 'Cookie(s) %s without the secure flag was sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
                    ' channel, thus preventing potential session hijacking' \
                    ' attacks.'
-            desc = desc % response.get_url()
+            desc = desc % (keys,response.get_url())
             
             v = Vuln('Secure flag missing in HTTPS cookie', desc,
                      severity.HIGH, response.id, self.get_name())
