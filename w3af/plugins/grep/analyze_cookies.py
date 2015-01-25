@@ -248,7 +248,7 @@ class analyze_cookies(GrepPlugin):
 
                         desc = 'Cookie values that were set over HTTPS, are' \
                                ' then sent over an insecure channel in a' \
-                               ' request to "%s, with cookie: %s".'
+                               ' request to "%s", with cookie: %s.'
                         desc = desc % (request.get_url(),key)
                     
                         v = Vuln('Secure cookies over insecure channel', desc,
@@ -362,8 +362,9 @@ class analyze_cookies(GrepPlugin):
             keys = ''
             for key in cookie_obj.keys(): 
                 keys += key + ' '
+	    keys = keys.strip()
 
-            desc = 'Cookie(s) %s without the secure flag was sent in an HTTPS' \
+            desc = 'Cookie(s) (%s) without the secure flag sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
                    ' channel, thus preventing potential session hijacking' \
