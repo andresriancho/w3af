@@ -371,8 +371,10 @@ class analyze_cookies(GrepPlugin):
                    ' attacks.'
             desc = desc % (keys,response.get_url())
             
+	    # Severity set to low, secure flag only protects
+	    # confidentiality which is already protected by SSL
             v = Vuln('Secure flag missing in HTTPS cookie', desc,
-                     severity.HIGH, response.id, self.get_name())
+                     severity.LOW, response.id, self.get_name())
 
             v.set_url(response.get_url())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
