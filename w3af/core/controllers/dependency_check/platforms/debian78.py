@@ -1,5 +1,5 @@
 """
-current_platform.py
+debian78.py
 
 Copyright 2013 Andres Riancho
 
@@ -19,29 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import platform
+
 from .ubuntu1204 import Ubuntu1204
-from .ubuntu1404 import Ubuntu1404
-from .debian76 import Debian76
-from .debian78 import Debian78
-from .centos import CentOS
-from .centos65 import CentOS65
-from .fedora import Fedora
-from .kali import Kali
-from .mac import MacOSX
-from .openbsd import OpenBSD5
-from .suse import SuSE
-from .default import DefaultPlatform
-
-KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
-                   OpenBSD5, SuSE, Ubuntu1404]
 
 
-def get_current_platform(known_platforms=KNOWN_PLATFORMS):
-    for known_platform in known_platforms:
-        if known_platform.is_current_platform():
-            return known_platform()
-    else:
-        return DefaultPlatform()
+class Debian78(Ubuntu1204):
+    SYSTEM_NAME = 'Debian 7.8'
 
-
-
+    @staticmethod
+    def is_current_platform():
+        dist_name, dist_version, _ = platform.dist()
+        return 'debian' == dist_name and '7.8' == dist_version
