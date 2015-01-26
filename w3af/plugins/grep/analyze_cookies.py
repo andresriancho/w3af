@@ -339,13 +339,16 @@ class analyze_cookies(GrepPlugin):
                    ' "secure" flag.'
             desc = desc % (key['key'],response.get_url())
             
+            i = Info('Secure cookie over HTTP', desc, 
+                        response.get_id(), self.get_name())
             v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
                      response.id, self.get_name())
             v.set_url(response.get_url())
 
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            if not v in kb.kb.get(self, 'security'):
+                kb.kb.append(self, 'security', v)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):

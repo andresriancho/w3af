@@ -216,20 +216,26 @@ class TestAnalyzeCookies(unittest.TestCase):
         name = 'Cookie "abc"'
         has_name = [True for i in security if name in i.get_desc()]
         self.assertTrue(any( has_name ))
+	self.assertEqual(len(security),1)
 
     def test_analyze_cookies_secure_over_http_has_cookie_name(self):
         body = ''
-        url = URL('http://www.w3af.com/')
-        headers = Headers({'content-type': 'text/html',
+        urls = [URL('http://www.w3af.com/a'), URL('http://www.w3af.com/b')]
+      	headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def; secure; httponly;'}.items())
-        response = HTTPResponse(200, body, headers, url, url, _id=1)
-        request = FuzzableRequest(url, method='GET')
 
-        self.plugin.grep(request, response)
+	# Make requests to multiple URLs to test that vulnerability
+	# description is printed only once per cookie  
+	for url in urls:
+            response = HTTPResponse(200, body, headers, url, url, _id=1)
+            request = FuzzableRequest(url, method='GET')
+            self.plugin.grep(request, response)
+
         security = kb.kb.get('analyze_cookies', 'security')
         name = 'Cookie "abc"'
         has_name = [True for i in security if name in i.get_desc()]
         self.assertTrue(any( has_name ))
+	self.assertEqual(len(security),1)
 
     def test_analyze_cookies_with_httponly_case_sensitive(self):
         body = ''
