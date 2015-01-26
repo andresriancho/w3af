@@ -166,7 +166,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(security), 2)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
-        msg = 'Cookie(s) (abc) marked with the secure flag'
+        msg = 'Cookie "abc" marked with the secure flag'
         has_msg = [True for i in security if msg in i.get_desc()]
         self.assertTrue(any( has_msg ))
 
@@ -186,7 +186,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(security), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
-        msg = 'Cookie(s) (abc) without the HttpOnly flag'
+        msg = 'Cookie "abc" without the HttpOnly flag'
         has_msg = [True for i in security if msg in i.get_desc()]
         self.assertTrue(any( has_msg ))
 
@@ -213,7 +213,7 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
         security = kb.kb.get('analyze_cookies', 'security')
-        name = 'Cookie(s) (abc)'
+        name = 'Cookie "abc"'
         has_name = [True for i in security if name in i.get_desc()]
         self.assertTrue(any( has_name ))
 
@@ -227,7 +227,7 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
         security = kb.kb.get('analyze_cookies', 'security')
-        name = 'Cookie(s) (abc)'
+        name = 'Cookie "abc"'
         has_name = [True for i in security if name in i.get_desc()]
         self.assertTrue(any( has_name ))
 
