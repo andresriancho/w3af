@@ -25,7 +25,7 @@ from .ubuntu1204 import Ubuntu1204
 
 
 class ElementaryOS02(Ubuntu1204):
-    SYSTEM_NAME = 'elemenataryOS 0.2'
+    SYSTEM_NAME = 'elementaryOS 0.2'
 
     @staticmethod
     def is_current_platform():
