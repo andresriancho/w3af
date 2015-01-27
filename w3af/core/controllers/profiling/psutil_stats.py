@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import sys
 import json
-import psutil
 
 from .utils.ps_mem import get_memory_usage, cmd_with_count
 from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
@@ -32,11 +32,27 @@ DELAY_MINUTES = 2
 SAVE_PSUTIL_PTR = []
 
 
+def user_wants_psutil():
+    _should_profile = os.environ.get('W3AF_PSUTILS', '0')
+
+    if _should_profile.isdigit() and int(_should_profile) == 1:
+        return True
+
+    return False
+
+
+if user_wants_psutil():
+    try:
+        # User's don't need this module
+        import psutil
+    except ImportError, ie:
+        print('Failed to import psutil: %s' % ie)
+        sys.exit(-1)
+
+
 def should_dump_psutil(wrapped):
     def inner(w3af_core):
-        _should_profile = os.environ.get('W3AF_PSUTILS', '0')
-
-        if _should_profile.isdigit() and int(_should_profile) == 1:
+        if user_wants_psutil():
             return wrapped(w3af_core)
 
     return inner
