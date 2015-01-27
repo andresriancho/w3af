@@ -59,7 +59,7 @@ def should_dump_psutil(wrapped):
 
 
 @should_dump_psutil
-def start_psutil_dump(w3af_core):
+def start_psutil_dump():
     """
     If the environment variable W3AF_PSUTILS is set to 1, then we start
     the thread that will dump the operating system data which can be retrieved
@@ -133,7 +133,7 @@ def ps_mem_to_json(sorted_cmds, shareds, count, total):
 
 
 @should_dump_psutil
-def stop_psutil_dump(w3af_core):
+def stop_psutil_dump():
     """
     Save profiling information (if available)
     """

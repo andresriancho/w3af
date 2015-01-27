@@ -43,7 +43,7 @@ def should_dump_thread_stack(wrapped):
 
 
 @should_dump_thread_stack
-def start_thread_stack_dump(w3af_core):
+def start_thread_stack_dump():
     """
     If the environment variable W3AF_THREAD_ACTIVITY is set to 1, then we start
     the thread that will dump the current line being executed of every thread
@@ -71,7 +71,7 @@ def dump_thread_stack():
 
 
 @should_dump_thread_stack
-def stop_thread_stack_dump(w3af_core):
+def stop_thread_stack_dump():
     """
     Save profiling information (if available)
     """

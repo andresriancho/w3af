@@ -32,6 +32,7 @@ from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.process_pool import ProcessPool
 from w3af.core.controllers.output_manager import log_sink_factory
 from w3af.core.data.parsers.document_parser import DocumentParser
@@ -285,6 +286,7 @@ def init_worker(log_queue):
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     log_sink_factory(log_queue)
+    start_profiling_no_core()
 
 
 manager = multiprocessing.Manager()

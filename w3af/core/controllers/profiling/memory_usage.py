@@ -40,7 +40,7 @@ def should_profile_memory(wrapped):
 
 
 @should_profile_memory
-def start_memory_profiling(w3af_core):
+def start_memory_profiling():
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
     the CPU and memory profiling.
@@ -59,7 +59,7 @@ def dump_objects():
 
 
 @should_profile_memory
-def stop_memory_profiling(w3af_core):
+def stop_memory_profiling():
     """
     We cancel the save thread and dump objects for the last time.
     """

@@ -40,7 +40,7 @@ def should_profile_cpu(wrapped):
 
 
 @should_profile_cpu
-def start_cpu_profiling(w3af_core):
+def start_cpu_profiling():
     """
     If the environment variable W3AF_PROFILING is set to 1, then we start
     the CPU and memory profiling.
@@ -60,7 +60,7 @@ def dump_data():
 
 
 @should_profile_cpu
-def stop_cpu_profiling(w3af_core):
+def stop_cpu_profiling():
     """
     Save profiling information (if available)
     """
