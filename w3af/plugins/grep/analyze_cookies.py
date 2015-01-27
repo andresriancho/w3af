@@ -347,8 +347,19 @@ class analyze_cookies(GrepPlugin):
 
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            if not v in kb.kb.get(self, 'security'):
+            vulns = kb.kb.get(self, 'security')
+            if len(vulns) > 1:
+                # error
+                raise DBException('At most, one vulnerability should be' \
+                                   ' returned for "%s"' % self.get_name())
+            elif len(vulns) == 0:
                 kb.kb.append(self, 'security', v)
+            else:
+                old_vuln = vulns[0]
+                updated_vuln = old_vuln.copy()
+                updated_vuln['urls'] = [old_vuln.get_url()]
+                updated_vuln['urls'].append(response.get_url())
+                kb.kb.update(old_vuln.get_uniq_id(),updated_vuln)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
