@@ -30,11 +30,11 @@ SAVE_THREAD_PTR = []
 
 
 def should_profile_memory(wrapped):
-    def inner(w3af_core):
+    def inner():
         _should_profile = os.environ.get('W3AF_MEMORY_PROFILING', '0')
 
         if _should_profile.isdigit() and int(_should_profile) == 1:
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 

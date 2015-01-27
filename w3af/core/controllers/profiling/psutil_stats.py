@@ -51,9 +51,9 @@ if user_wants_psutil():
 
 
 def should_dump_psutil(wrapped):
-    def inner(w3af_core):
+    def inner():
         if user_wants_psutil():
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 

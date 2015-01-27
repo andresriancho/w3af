@@ -33,11 +33,11 @@ SAVE_THREAD_PTR = []
 
 
 def should_dump_thread_stack(wrapped):
-    def inner(w3af_core):
+    def inner():
         _should_profile = os.environ.get('W3AF_THREAD_ACTIVITY', '0')
 
         if _should_profile.isdigit() and int(_should_profile) == 1:
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 

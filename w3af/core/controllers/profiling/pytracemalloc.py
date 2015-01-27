@@ -53,9 +53,9 @@ SAVE_TRACEMALLOC_PTR = []
 
 
 def should_dump_tracemalloc(wrapped):
-    def inner(w3af_core):
+    def inner():
         if user_wants_pytracemalloc():
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 
