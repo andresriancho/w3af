@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from .ubuntu1204 import Ubuntu1204
 from .ubuntu1404 import Ubuntu1404
+from .ubuntu1410 import Ubuntu1410
 from .debian76 import Debian76
 from .debian78 import Debian78
 from .centos import CentOS
@@ -33,7 +34,7 @@ from .suse import SuSE
 from .default import DefaultPlatform
 
 KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
-                   OpenBSD5, SuSE, Ubuntu1404]
+                   OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
