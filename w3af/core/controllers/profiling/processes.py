@@ -32,17 +32,17 @@ SAVE_PROCESS_PTR = []
 
 
 def should_dump_processes(wrapped):
-    def inner(w3af_core):
+    def inner():
         _should_profile = os.environ.get('W3AF_PROCESSES', '0')
 
         if _should_profile.isdigit() and int(_should_profile) == 1:
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 
 
 @should_dump_processes
-def start_process_dump(w3af_core):
+def start_process_dump():
     """
     If the environment variable W3AF_PROCESSES is set to 1, then we start
     the thread that will dump the sub processes created by this main thread.
@@ -96,7 +96,7 @@ def dump_processes():
 
 
 @should_dump_processes
-def stop_process_dump(w3af_core):
+def stop_process_dump():
     """
     Save profiling information (if available)
     """

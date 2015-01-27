@@ -53,15 +53,15 @@ SAVE_TRACEMALLOC_PTR = []
 
 
 def should_dump_tracemalloc(wrapped):
-    def inner(w3af_core):
+    def inner():
         if user_wants_pytracemalloc():
-            return wrapped(w3af_core)
+            return wrapped()
 
     return inner
 
 
 @should_dump_tracemalloc
-def start_tracemalloc_dump(w3af_core):
+def start_tracemalloc_dump():
     """
     If the environment variable W3AF_PYTRACEMALLOC is set to 1, then we start
     the thread that will dump the memory usage data which can be retrieved
@@ -91,7 +91,7 @@ def dump_tracemalloc():
 
 
 @should_dump_tracemalloc
-def stop_tracemalloc_dump(w3af_core):
+def stop_tracemalloc_dump():
     """
     Save profiling information (if available)
     """
