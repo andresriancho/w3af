@@ -31,10 +31,11 @@ from .kali import Kali
 from .mac import MacOSX
 from .openbsd import OpenBSD5
 from .suse import SuSE
+from .elementaryOS02 import ElementaryOS02
 from .default import DefaultPlatform
 
 KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
-                   OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410]
+                   OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410, ElementaryOS02]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
