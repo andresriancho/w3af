@@ -1,5 +1,5 @@
 """
-ConsoleUI.py
+console_ui.py
 
 Copyright 2008 Andres Riancho
 
@@ -41,7 +41,7 @@ try:
 
     from w3af.core.controllers.w3afCore import w3afCore
     from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                             ScanMustStopException)
+                                                  ScanMustStopException)
 except KeyboardInterrupt:
     sys.exit(0)
 
