@@ -34,6 +34,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.process_pool import ProcessPool
+from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.output_manager import log_sink_factory
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -289,5 +290,6 @@ def init_worker(log_queue):
     start_profiling_no_core()
 
 
-manager = multiprocessing.Manager()
-dpc = ParserCache()
+if is_main_process():
+    manager = multiprocessing.Manager()
+    dpc = ParserCache()
