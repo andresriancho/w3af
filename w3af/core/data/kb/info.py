@@ -93,7 +93,7 @@ class Info(dict):
             raise TypeError('Info expected in from_info.')
         
         name = other_info.get_name()
-        desc = other_info.get_desc()
+        desc = other_info.get_desc(with_id=False)
         response_ids = other_info.get_id()
         plugin_name = other_info.get_plugin_name()
         
