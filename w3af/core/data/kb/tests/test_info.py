@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
 import unittest
 import cPickle
 
@@ -36,6 +37,7 @@ class MockInfo(Info):
     def __init__(self):
         long_desc = 'Foo bar spam eggs' * 10
         super(MockInfo, self).__init__('TestCase', long_desc, 1, 'plugin_name')
+
 
 @attr('smoke')
 class TestInfo(unittest.TestCase):
@@ -154,3 +156,22 @@ class TestInfo(unittest.TestCase):
         self.assertEqual(inst.get_method(), mutant.get_method())
         self.assertEqual(inst.get_dc(), mutant.get_dc())
         self.assertIsInstance(inst.get_dc(), QueryString)
+
+    def test_get_uniq_id(self):
+        uri = URL('http://www.w3af.com/')
+
+        i = MockInfo()
+        i.set_uri(uri)
+
+        self.assertIsInstance(i.get_uniq_id(), str)
+        self.assertTrue(i.get_uniq_id().isdigit())
+
+    def test_get_uniq_id_with_copy(self):
+        uri = URL('http://www.w3af.com/')
+
+        i1 = MockInfo()
+        i1.set_uri(uri)
+
+        i2 = copy.deepcopy(i1)
+
+        self.assertEqual(i1.get_uniq_id(), i2.get_uniq_id())
