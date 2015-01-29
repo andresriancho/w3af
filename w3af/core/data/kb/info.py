@@ -276,6 +276,9 @@ class Info(dict):
                self.get_desc() == other.get_desc() and\
                self.get_plugin_name() == other.get_plugin_name()
 
+    def __ne__(self, other):
+        return not self.__eq__(other) 
+
     def set_id(self, _id):
         """
         The id is a unique number that identifies every request and response
