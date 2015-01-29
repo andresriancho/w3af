@@ -339,8 +339,6 @@ class analyze_cookies(GrepPlugin):
                    ' "secure" flag.'
             desc = desc % (key['key'],response.get_url())
             
-            i = Info('Secure cookie over HTTP', desc, 
-                        response.get_id(), self.get_name())
             v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
                      response.id, self.get_name())
             v.set_url(response.get_url())
@@ -356,8 +354,9 @@ class analyze_cookies(GrepPlugin):
                 kb.kb.append(self, 'security', v)
             else:
                 old_vuln = vulns[0]
-                updated_vuln = old_vuln.copy()
-                updated_vuln['urls'] = [old_vuln.get_url()]
+                updated_vuln = Vuln.from_vuln(old_vuln)
+                if 'urls' not in updated_vuln.keys():
+                    updated_vuln['urls'] = [old_vuln.get_url()]
                 updated_vuln['urls'].append(response.get_url())
                 kb.kb.update(old_vuln.get_uniq_id(),updated_vuln)
 

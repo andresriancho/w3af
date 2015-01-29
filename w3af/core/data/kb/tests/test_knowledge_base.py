@@ -648,3 +648,15 @@ class TestKnowledgeBase(unittest.TestCase):
                          w3af_core.uri_opener)
 
         w3af_core.quit()
+
+    def test_update_info(self):
+	# Need to use Info instead of MockInfo() for the update copy
+	# to have a valid uniq_id
+        long_desc = 'Foo bar spam eggs' * 10
+	info = Info('TestCase', long_desc, 1, 'plugin_name')
+	kb.append('a','b',info)
+	update_info = Info.from_info(info)
+	update_info.set_name('a')
+	update_uniq_id = update_info.get_uniq_id()
+	kb.update(info,update_info)
+	self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))

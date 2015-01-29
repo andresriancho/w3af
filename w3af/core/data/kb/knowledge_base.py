@@ -182,6 +182,12 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
+    def update(self, old_vuln, update_vuln):
+        """
+        :return: The updated vulnerability/info instance stored in the kb.
+        """
+        raise NotImplementedError
+
     def clear(self, location_a, location_b):
         """
         Clear any values stored in (location_a, location_b)
@@ -359,6 +365,28 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         return result
 
+    def update(self, old_inst, update_inst):
+        """
+	:param old_inst: The info/vulnerability instance to be updated in the kb.
+	:param update_inst: The info/vulnerability instance with new information 
+        :return: Nothing 
+        """
+	old_not_info = not isinstance(old_inst, (Info, Shell)) 
+	update_not_info = not isinstance(update_inst, (Info, Shell))
+        
+	if old_not_info and update_not_info:
+            msg = 'You MUST use raw_write/raw_read to store non-info objects'\
+                  ' to the KnowledgeBase.'
+            raise TypeError(msg)
+
+	old_uniq_id = old_inst.get_uniq_id()
+	new_uniq_id = update_inst.get_uniq_id()
+	pickle = cpickle_dumps(update_inst)
+	# Update the pickle and unique_id after finding by original uniq_id
+	query = "UPDATE OR ROLLBACK %s SET pickle = ?,uniq_id = ? WHERE uniq_id = ?"
+	params = (pickle,new_uniq_id,old_uniq_id)
+	self.db.execute(query % self.table_name,params)
+	
     def add_observer(self, location_a, location_b, observer):
         """
         Add the observer function to the observer list. The function will be
