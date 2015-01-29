@@ -31,6 +31,7 @@ from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.vuln import Vuln 
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -650,13 +651,23 @@ class TestKnowledgeBase(unittest.TestCase):
         w3af_core.quit()
 
     def test_update_info(self):
-	# Need to use Info instead of MockInfo() for the update copy
-	# to have a valid uniq_id
-        long_desc = 'Foo bar spam eggs' * 10
-	info = Info('TestCase', long_desc, 1, 'plugin_name')
+	info = MockInfo()
 	kb.append('a','b',info)
 	update_info = Info.from_info(info)
 	update_info.set_name('a')
 	update_uniq_id = update_info.get_uniq_id()
 	kb.update(info,update_info)
+
+	self.assertTrue(update_info != info)
 	self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_vuln(self):
+	vuln = MockVuln()
+	kb.append('a','b',vuln)
+	update_vuln = Vuln.from_vuln(vuln)
+	update_vuln.set_name('a')
+	update_uniq_id = update_vuln.get_uniq_id()
+	kb.update(vuln,update_vuln)
+
+	self.assertTrue(update_vuln != vuln)
+	self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
