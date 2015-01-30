@@ -23,10 +23,11 @@ import re
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.search_engines.search_engine import SearchEngine
 from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.exceptions import (HTTPRequestException,
+                                              BaseFrameworkException)
 
 
 class pks(SearchEngine):
@@ -66,8 +67,14 @@ class pks(SearchEngine):
         url = URL(u'http://pgp.mit.edu:11371/pks/lookup')
         url.querystring = [(u'op', [u'index']), (u'search', [query])]
 
-        response = self._uri_opener.GET(url, headers=self._headers, cache=True,
-                                        grep=False)
+        try:
+            response = self._uri_opener.GET(url, headers=self._headers,
+                                            cache=True, grep=False)
+        except HTTPRequestException:
+            # Very naive exception handling for the case where we can't reach
+            # the PKS server (it's down, blocking us, bad internet connection)
+            return []
+
         content = response.get_body()
 
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)

@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import string
+
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
@@ -103,11 +105,12 @@ class Headers(NonRepeatKeyValueContainer):
         :param header_name: The name of the header we want the value for
         :return: The value for a header given a name (be case insensitive)
         """
-        lower_header_name = header_name.lower()
-        
-        for stored_header_name in self:
-            if lower_header_name == stored_header_name.lower():
-                return self[stored_header_name], stored_header_name
+        lower = string.lower
+        lower_header_name = lower(header_name)
+
+        for stored_header_name, value in self.iteritems():
+            if lower_header_name == lower(stored_header_name):
+                return value, stored_header_name
 
         return default, None
 

@@ -61,7 +61,8 @@ class mod_security(EvasionPlugin):
                 headers_copy['content-length'] = str(len(data))
 
                 request = HTTPRequest(request.url_object, data, headers_copy,
-                                      request.get_origin_req_host())
+                                      request.get_origin_req_host(),
+                                      retries=request.retries_left)
 
         return request
 

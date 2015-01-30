@@ -32,9 +32,13 @@ from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 
+ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
+               HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
+               XmlRpcMutant)
 
-def create_mutants(freq, mutant_str_list, append=False,
-                   fuzzable_param_list=[], orig_resp=None):
+
+def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
+                   orig_resp=None, mutant_tuple=ALL_MUTANTS):
     """
     :param freq: A fuzzable request with a DataContainer inside.
     :param mutant_str_list: a list with mutant strings to use
@@ -42,14 +46,12 @@ def create_mutants(freq, mutant_str_list, append=False,
         be appended to the variable value
     :param fuzzable_param_list: If [] then all params are fuzzed. If ['a'],
         then only 'a' is fuzzed.
+    :param mutant_tuple: a tuple which contains classes of the mutants
+        to be returned
     :return: A Mutant object List.
     """
     result = []
     fuzzer_config = _get_fuzzer_config()
-
-    mutant_tuple = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
-                    HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
-                    XmlRpcMutant)
 
     for mutant_kls in mutant_tuple:
         new_mutants = mutant_kls.create_mutants(freq, mutant_str_list,
@@ -82,8 +84,8 @@ def create_mutants(freq, mutant_str_list, append=False,
     #
     # This is very impressing, but the performance enhancement is only
     # possible IF the remote server sends the ETag header, and for example
-    # Apache+PHP doesn't send that tag by default (only sent if the PHP developer
-    # added some code to his PHP to do it).
+    # Apache+PHP doesn't send that tag by default (only sent if the PHP
+    # developer added some code to his PHP to do it).
     #
     if orig_resp is not None:
 
@@ -101,6 +103,14 @@ def create_mutants(freq, mutant_str_list, append=False,
     return result
 
 
+CONF_KEYS = [('fuzzable_headers', []),
+             ('fuzz_cookies', False),
+             ('fuzz_url_filenames', False),
+             ('fuzzed_files_extension', 'gif'),
+             ('fuzz_form_files', False),
+             ('fuzz_url_parts', False)]
+
+
 def _get_fuzzer_config():
     """
     :return: This function verifies the configuration, and creates a map of
@@ -108,13 +118,6 @@ def _get_fuzzer_config():
     """
     config = cf.cf
     fuzzer_config = {}
-
-    CONF_KEYS = [('fuzzable_headers', []),
-                 ('fuzz_cookies', False),
-                 ('fuzz_url_filenames', False),
-                 ('fuzzed_files_extension', 'gif'),
-                 ('fuzz_form_files', False),
-                 ('fuzz_url_parts', False),]
 
     for conf_name, default in CONF_KEYS:
         fuzzer_config[conf_name] = config.get(conf_name, default)

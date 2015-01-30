@@ -22,15 +22,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from .cpu_usage import start_cpu_profiling, stop_cpu_profiling
 from .memory_usage import start_memory_profiling, stop_memory_profiling
 from .core_stats import start_core_profiling, stop_core_profiling
+from .thread_activity import start_thread_stack_dump, stop_thread_stack_dump
+from .processes import start_process_dump, stop_process_dump
+from .psutil_stats import start_psutil_dump, stop_psutil_dump
+from .pytracemalloc import start_tracemalloc_dump, stop_tracemalloc_dump
 
 
 def start_profiling(w3af_core):
-    start_cpu_profiling(w3af_core)
-    start_memory_profiling(w3af_core)
     start_core_profiling(w3af_core)
+    start_profiling_no_core()
+
+
+def start_profiling_no_core():
+    start_cpu_profiling()
+    start_memory_profiling()
+    start_thread_stack_dump()
+    start_process_dump()
+    start_psutil_dump()
+    start_tracemalloc_dump()
 
 
 def stop_profiling(w3af_core):
-    stop_cpu_profiling(w3af_core)
-    stop_memory_profiling(w3af_core)
     stop_core_profiling(w3af_core)
+    stop_profiling_no_core()
+
+
+def stop_profiling_no_core():
+    stop_cpu_profiling()
+    stop_memory_profiling()
+    stop_thread_stack_dump()
+    stop_process_dump()
+    stop_psutil_dump()
+    stop_tracemalloc_dump()

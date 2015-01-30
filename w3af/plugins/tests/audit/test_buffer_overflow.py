@@ -18,23 +18,33 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
 
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+
+
+def mock_body_handler(method, uri, headers):
+    if len(uri) > 800:
+        return '"*** stack smashing detected ***:"'
+
+    return 'A regular body without errors'
 
 
 class TestBufferOverflow(PluginTest):
 
-    target = 'http://moth/w3af/audit/buffer_overflow/index.php'
+    target_url = 'http://mock/bo.c'
+
+    MOCK_RESPONSES = [MockResponse(re.compile('.*'),
+                                   body=mock_body_handler,
+                                   method='GET', status=200)]
 
     _run_config = {
-        'target': target + '?buf=',
+        'target': target_url + '?buf=',
         'plugins': {
             'audit': (PluginConfig('buffer_overflow',),),
         }
     }
 
-    @attr('ci_fails')
     def test_found_bo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -45,4 +55,6 @@ class TestBufferOverflow(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Buffer overflow vulnerability', vuln.get_name())
         self.assertEquals("buf", vuln.get_token_name())
-        self.assertEquals(self.target, str(vuln.get_url()))
+        self.assertEquals(self.target_url, str(vuln.get_url()))
+
+

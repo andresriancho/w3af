@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+from __future__ import print_function
+
 import os
 import re
 import unittest
@@ -25,12 +27,14 @@ import urllib2
 import httpretty
 import tempfile
 import pprint
+import time
 
 from functools import wraps
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
@@ -64,7 +68,14 @@ class PluginTest(unittest.TestCase):
         if self.MOCK_RESPONSES:
             httpretty.enable()
             
-            url = URL(self.target_url)
+            try:
+                url = URL(self.target_url)
+            except ValueError, ve:
+                msg = 'When using MOCK_RESPONSES you need to set the'\
+                      ' target_url attribute to a valid URL, exception was:'\
+                      ' "%s".'
+                raise Exception(msg % ve)
+
             domain = url.get_domain()
             proto = url.get_protocol()
             port = url.get_port()
@@ -93,6 +104,7 @@ class PluginTest(unittest.TestCase):
 
         if self.MOCK_RESPONSES:
             httpretty.disable()
+            httpretty.reset()
 
     def assertAllVulnNamesEqual(self, vuln_name, vulns):
         for vuln in vulns:
@@ -153,54 +165,76 @@ class PluginTest(unittest.TestCase):
                           set(expected))
 
     def request_callback(self, method, uri, headers):
-        status = 404
-        body = 'Not found'
-        content_type = 'text/html'
-        mock_headers = {}
+        match = None
 
         for mock_response in self.MOCK_RESPONSES:
+
             if mock_response.method != method.command:
                 continue
 
-            if isinstance(mock_response.url, basestring):
-                if uri.endswith(mock_response.url):
-                    status = mock_response.status
-                    body = mock_response.body
-                    content_type = mock_response.content_type
-                    mock_headers = mock_response.headers
+            if self._mock_url_matches(mock_response, uri):
+                match = mock_response
+                break
 
-                    break
-            elif isinstance(mock_response.url, RE_COMPILE_TYPE):
-                if mock_response.url.match(uri):
-                    status = mock_response.status
-                    body = mock_response.body
-                    content_type = mock_response.content_type
-                    mock_headers = mock_response.headers
+        if match is not None:
+            fmt = (uri, match)
+            om.out.debug('[request_callback] URI %s matched %s' % fmt)
 
-                    break
+            headers.update({'status': match.status})
+            headers.update(match.headers)
 
-        headers.update(mock_headers)
-        headers['Content-Type'] = content_type
-        headers['status'] = status
+            if match.delay is not None:
+                time.sleep(match.delay)
 
-        return status, headers, body
+            return (match.status,
+                    headers,
+                    match.get_body(method, uri, headers))
+
+        else:
+            om.out.debug('[request_callback] URI %s will return 404' % uri)
+
+            status = 404
+            body = 'Not found'
+            headers.update({'Content-Type': 'text/html', 'status': status})
+
+            return status, headers, body
+
+    def _mock_url_matches(self, mock_response, request_uri):
+        """
+        :param mock_response: A MockResponse instance configured by dev
+        :param request_uri: The http request URI sent by the plugin
+        :return: True if the request_uri matches this mock_response
+        """
+        if isinstance(mock_response.url, basestring):
+            if request_uri.endswith(mock_response.url):
+                return True
+
+        elif isinstance(mock_response.url, RE_COMPILE_TYPE):
+            if mock_response.url.match(request_uri):
+                return True
+
+        return False
 
     @retry(tries=3, delay=0.5, backoff=2)
     def _verify_targets_up(self, target_list):
+        msg = 'The target site "%s" is down: "%s"'
+
         for target in target_list:
-            msg = 'The target site "%s" is down' % target
-            
             try:
                 response = urllib2.urlopen(target.url_string)
                 response.read()
             except urllib2.URLError, e:
-                if hasattr(e, 'code') and e.code in (404, 403, 401):
-                    continue
-                
-                self.assertTrue(False, msg)
+                if hasattr(e, 'code'):
+                    if e.code in (404, 403, 401):
+                        continue
+                    else:
+                        no_code = 'Unexpected code %s' % e.code
+                        self.assertTrue(False, msg % (target, no_code))
+
+                self.assertTrue(False, msg % (target, e.reason))
             
             except Exception, e:
-                self.assertTrue(False, msg)
+                self.assertTrue(False, msg % (target, e))
 
     def _scan(self, target, plugins, debug=False, assert_exceptions=True,
               verify_targets=True):
@@ -221,7 +255,7 @@ class PluginTest(unittest.TestCase):
         elif isinstance(target, basestring):
             target = (URL(target),)
         
-        if verify_targets:
+        if verify_targets and not self.MOCK_RESPONSES:
             self._verify_targets_up(target)
         
         target_opts = create_target_option_list(*target)
@@ -267,16 +301,24 @@ class PluginTest(unittest.TestCase):
         #
         if assert_exceptions:
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-            msg = self._pprint_exception_summary(caught_exceptions)
-            self.assertEqual(len(caught_exceptions), 0, msg)
+            tracebacks = [e.get_details() for e in caught_exceptions]
+            self.assertEqual(len(caught_exceptions), 0, tracebacks)
 
-    def _pprint_exception_summary(self, caught_exceptions):
+    def _formatMessage(self, msg, standardMsg):
+        """Honour the longMessage attribute when generating failure messages.
+        If longMessage is False this means:
+        * Use only an explicit message if it is provided
+        * Otherwise use the standard message for the assert
+
+        If longMessage is True:
+        * Use the standard message
+        * If an explicit message is provided, plus ' : ' and the explicit message
         """
-        Given a list of caught exceptions, as returned by
-        exception_handler.get_all_exceptions() , we'll return a string that
-        shows the information about them.
-        """
-        return [e for e in caught_exceptions]
+        if msg:
+            data = '%s:\n%s' % (standardMsg, pprint.pformat(msg))
+            return data.replace('\\n', '\n')
+
+        return standardMsg
 
     def _configure_debug(self):
         """
@@ -427,11 +469,12 @@ def create_target_option_list(*target):
 
 class MockResponse(object):
     def __init__(self, url, body, content_type='text/html', status=200,
-                 method='GET', headers=None):
+                 method='GET', headers=None, delay=None):
         self.url = url
         self.body = body
         self.status = status
         self.method = method
+        self.delay = delay
 
         self.content_type = content_type
         self.headers = {'Content-Type': content_type}
@@ -446,3 +489,16 @@ class MockResponse(object):
 
     def __repr__(self):
         return '<MockResponse (%s|%s)>' % (self.url, self.status)
+
+    def get_body(self, method, uri, headers):
+        """
+        :param method: HTTP method sent by plugin
+        :param uri: The http request URI sent by the plugin
+        :param headers: The http headers sent by plugin
+        :return: Tuple with the response we'll send to the plugin
+        """
+        if not callable(self.body):
+            # A string
+            return self.body
+
+        return self.body(method, uri, headers)

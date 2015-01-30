@@ -101,6 +101,7 @@ class ConfigMenu(menu):
         if len(params) < 2:
             om.out.console('Invalid call to set, please see the help:')
             self._cmd_help(['set'])
+            return
             
         if params[0] not in self._options:
             raise BaseFrameworkException('Unknown option: "%s".' % params[0])

@@ -43,6 +43,7 @@ class TestBaseParser(unittest.TestCase):
         self.assertRaises(NotImplementedError, bp_inst.get_meta_redir)
         self.assertRaises(NotImplementedError, bp_inst.get_meta_tags)
         self.assertRaises(NotImplementedError, bp_inst.get_references)
+        self.assertRaises(NotImplementedError, bp_inst.get_clear_text_body)
 
     def test_decode_url_simple(self):
         u = URL('http://www.w3af.com/')

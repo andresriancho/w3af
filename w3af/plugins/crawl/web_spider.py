@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import itertools
 import re
 
-from functools import partial
-
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
@@ -336,7 +334,7 @@ class web_spider(CrawlPlugin):
         if self._known_variants.need_more_variants(new_reference):
             return True
         else:
-            msg = ('Ignoring new reference "%s" (it is simply a variant).'
+            msg = ('Ignoring reference "%s" (it is simply a variant).'
                    % new_reference)
             om.out.debug(msg)
             return False
@@ -389,11 +387,11 @@ class web_spider(CrawlPlugin):
                 #   * http://foo.com/abc/def/def/def/
                 #   * ...
                 #
-                non_recursive_verify_ref = partial(self._verify_reference,
-                                                   be_recursive=False)
-                self.worker_pool.map_multi_args(
-                    non_recursive_verify_ref,
-                    self._urls_to_verify_generator(resp, original_request))
+
+                # Do not use threads here, it will dead-lock (for unknown
+                # reasons). This is tested in TestDeadLock unittest.
+                for args in self._urls_to_verify_generator(resp, original_request):
+                    self._verify_reference(*args, be_recursive=False)
 
             # Store the broken links
             if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:

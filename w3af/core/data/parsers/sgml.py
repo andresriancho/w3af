@@ -30,6 +30,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.baseparser import BaseParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.misc.decorators import memoized
 
 
 class SGMLParser(BaseParser):
@@ -38,8 +39,10 @@ class SGMLParser(BaseParser):
     and 'close' will be called during the parsing process.
 
     :author: Javier Andalia (jandalia =at= gmail.com)
-             Andres Riancho ((andres.riancho@gmail.com))
+             Andres Riancho (andres.riancho@gmail.com)
     """
+    ANY_TAG_MATCH = re.compile('(<.*?>)')
+
     EMAIL_RE = re.compile(
         '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
         re.I | re.U)
@@ -136,30 +139,16 @@ class SGMLParser(BaseParser):
 
     def _parse(self, http_resp):
         """
-        Parse the HTTP response body.
-
-        TODO: Potential performance improvement:
-            * Note that this method receives an HTTPResponse and that it has a
-              get_dom method that generates a DOM based on the same response body
-              we use here for generating our DOM. In other words, the same
-              response body is passed through etree.fromstring twice.
-
-            * There are some differences which avoid us from improving this
-              immediately:
-                  * The parser used here uses target=self
-                  * This method fallbacks to a different parser when errors
-                    are found (which is good and is not done in HTTPResponse)
-
-            * Note that a part of this issue was solved with the call to set_dom,
-              read the docs in that method to understand what.
+        Parse the HTTP response body
         """
         # Start parsing!
         parser = etree.HTMLParser(target=self, recover=True)
         resp_body = http_resp.body
-        dom = None
 
         try:
-            dom = etree.fromstring(resp_body, parser)
+            # Note: Given that the parser has target != None, this call does not
+            # return a DOM instance!
+            etree.fromstring(resp_body, parser)
         except ValueError:
             # Sometimes we get XMLs in the response. lxml fails to parse them
             # when an encoding header is specified and the text is unicode. So
@@ -170,14 +159,42 @@ class SGMLParser(BaseParser):
             parser = etree.HTMLParser(target=self,
                                       recover=True,
                                       encoding=http_resp.charset)
-            dom = etree.fromstring(resp_body, parser)
+            etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
             msg = 'An error occurred while parsing "%s",'\
                   ' original exception: "%s"'
             om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
 
-        # Performance improvement! Read the docs before removing this!
-        http_resp.set_dom(dom)
+    def get_dom(self):
+        """
+        :return: The DOM instance
+        """
+        if self._dom is None:
+            # Start parsing, using a parser without target so we get the DOM
+            # instance as result of our call to fromstring
+            parser = etree.HTMLParser(recover=True)
+
+            http_resp = self.get_http_response()
+            resp_body = http_resp.get_body()
+
+            try:
+                self._dom = etree.fromstring(resp_body, parser)
+            except ValueError:
+                # Sometimes we get XMLs in the response. lxml fails to parse
+                # them when an encoding header is specified and the text is
+                # unicode. So we better make an exception and convert it to
+                # string. Note that yet the parsed elems will be unicode.
+                resp_body = resp_body.encode(http_resp.charset,
+                                             'xmlcharrefreplace')
+                parser = etree.HTMLParser(recover=True,
+                                          encoding=http_resp.charset)
+                self._dom = etree.fromstring(resp_body, parser)
+            except etree.XMLSyntaxError:
+                msg = 'An error occurred while parsing "%s",'\
+                      ' original exception: "%s"'
+                om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
+
+        return self._dom
 
     def _filter_ref(self, attr):
         key = attr[0]
@@ -258,7 +275,7 @@ class SGMLParser(BaseParser):
                 self._tag_and_url.add((tag, url))
 
     def _fill_forms(self, tag, attrs):
-        raise NotImplementedError('This method must be overriden by a subclass')
+        raise NotImplementedError('This method must be overridden by a subclass')
 
     ## Properties ##
     @property
@@ -316,12 +333,32 @@ class SGMLParser(BaseParser):
     def get_meta_tags(self):
         return self.meta_tags
 
-    def get_references_of_tag(self, tagType):
+    @memoized
+    def get_clear_text_body(self):
+        """
+        :return: A clear text representation of the HTTP response body.
+        """
+        dom = self.get_dom()
+
+        if dom is None:
+            # Well, we don't have a DOM for this response, so lets apply regex
+            return self.ANY_TAG_MATCH.sub('',
+                                          self.get_http_response().get_body())
+
+        # DOM was calculated, lets do some magic
+        try:
+            return ''.join(dom.itertext())
+        except UnicodeDecodeError, ude:
+            msg = 'UnicodeDecodeError found while iterating the DOM. Original'\
+                  ' exception was: "%s".'
+            raise Exception(msg % ude)
+
+    def get_references_of_tag(self, tag_type):
         """
         :return: A list of the URLs that the parser found in a tag of
             tagType = "tagType" (i.e img, a)
         """
-        return [x[1] for x in self._tag_and_url if x[0] == tagType]
+        return [x[1] for x in self._tag_and_url if x[0] == tag_type]
 
     ## Methods for tags handling ##
     def _handle_base_tag_start(self, tag, attrs):

@@ -78,9 +78,9 @@ def handle_keyboardinterrupt(w3af_core):
         
         print nice_thread_repr(threading.enumerate())
         
-    om.out.set_output_plugins(['console'])
+    om.manager.set_output_plugins(['console'])
     om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af, bye!'))
-    om.out.process_all_messages()
+    om.manager.process_all_messages()
      
     # 130 seems to be the correct exit code for this case
     # http://tldp.org/LDP/abs/html/exitcodes.html

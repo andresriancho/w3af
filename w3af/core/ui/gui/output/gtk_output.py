@@ -139,14 +139,14 @@ def subscribe_to_messages(observer_function):
     """
     Subscribe observer_function to the GtkOutput messages
     """
-    all_output_plugins = om.out.get_output_plugin_inst()
+    all_output_plugins = om.manager.get_output_plugin_inst()
     for plugin_inst in all_output_plugins:
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.subscribe(observer_function)
             break
     else:
         gtk_output = GtkOutput()
-        om.out.set_output_plugin_inst(gtk_output)
+        om.manager.set_output_plugin_inst(gtk_output)
         gtk_output.subscribe(observer_function)
 
 
@@ -154,7 +154,7 @@ def unsubscribe_to_messages(observer_function):
     """
     Unsubscribe observer_function to the GtkOutput messages
     """
-    all_output_plugins = om.out.get_output_plugin_inst()
+    all_output_plugins = om.manager.get_output_plugin_inst()
     for plugin_inst in all_output_plugins:
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.unsubscribe(observer_function)

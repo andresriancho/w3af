@@ -104,10 +104,19 @@ class sqlmap(AttackPlugin):
 
             target = Target(mutant.get_uri(), post_data)
 
-            sqlmap = SQLMapWrapper(target, self._uri_opener)
-            if sqlmap.is_vulnerable():
-                self._sqlmap = sqlmap
-                return True
+            try:
+                sqlmap = SQLMapWrapper(target, self._uri_opener)
+            except TypeError:
+                issue_url = 'https://github.com/andresriancho/w3af/issues/6439'
+                msg = 'w3af\'s sqlmap wrapper has some limitations, and you' \
+                      ' just found one of them. For more information please' \
+                      ' visit %s .'
+                om.out.console(msg % issue_url)
+                return False
+            else:
+                if sqlmap.is_vulnerable():
+                    self._sqlmap = sqlmap
+                    return True
         
         return False
 
@@ -157,7 +166,7 @@ class RunFunctor(Process):
         
         try:
             while process.poll() is None:
-                read_ready, _, _ = select.select( [process.stdout,], [], [], 0.1 )
+                read_ready, _, _ = select.select([process.stdout], [], [], 0.1)
                 
                 if read_ready:
                     line = process.stdout.read(1)

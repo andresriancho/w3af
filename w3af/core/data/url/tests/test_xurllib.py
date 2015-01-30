@@ -25,10 +25,11 @@ import unittest
 import Queue
 import SocketServer
 import types
+import httpretty
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from mock import Mock
+from mock import Mock, patch
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
@@ -327,18 +328,23 @@ class TestXUrllib(unittest.TestCase):
     def test_rate_limit_zero(self):
         self.rate_limit_generic(0, 0.01, 0.4)
 
+    @httpretty.activate
     def rate_limit_generic(self, max_requests_per_second, _min, _max):
-        url = URL(get_moth_http())
+        mock_url = 'http://mock/'
+        url = URL(mock_url)
+        httpretty.register_uri(httpretty.GET, mock_url, body='Body')
 
-        self.uri_opener.settings.set_max_requests_per_second(max_requests_per_second)
         start_time = time.time()
 
-        self.uri_opener.GET(url, cache=False)
-        self.uri_opener.GET(url, cache=False)
+        with patch.object(self.uri_opener.settings, 'get_max_requests_per_second') as mrps_mock:
+            mrps_mock.return_value = max_requests_per_second
+
+            self.uri_opener.GET(url, cache=False)
+            self.uri_opener.GET(url, cache=False)
+
+        httpretty.reset()
 
         end_time = time.time()
-        self.uri_opener.settings.set_default_values()
-
         elapsed_time = end_time - start_time
         self.assertGreaterEqual(elapsed_time, _min)
         self.assertLessEqual(elapsed_time, _max)

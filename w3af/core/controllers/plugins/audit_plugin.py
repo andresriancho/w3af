@@ -23,6 +23,8 @@ import inspect
 import copy
 import threading
 
+from stopit import ThreadingTimeout, TimeoutException
+
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
@@ -38,6 +40,8 @@ class AuditPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # in seconds
+    PLUGIN_TIMEOUT = 5 * 60
 
     def __init__(self):
         Plugin.__init__(self)
@@ -82,8 +86,8 @@ class AuditPlugin(Plugin):
 
     def _audit_return_vulns_in_caller(self):
         """
-        This is a helper method that returns True if the method audit_return_vulns
-        is in the call stack.
+        This is a helper method that returns True if the method
+        audit_return_vulns is in the call stack.
         
         Please note that this method is *very* slow (because of the inspect
         module being slow) and should only be called when audit_return_vulns
@@ -129,7 +133,17 @@ class AuditPlugin(Plugin):
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         """
         fuzzable_request = copy.deepcopy(fuzzable_request)
-        return self.audit(fuzzable_request, orig_resp)
+
+        try:
+            with ThreadingTimeout(self.PLUGIN_TIMEOUT, swallow_exc=False):
+                return self.audit(fuzzable_request, orig_resp)
+        except TimeoutException:
+            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
+                  ' complete the analysis of "%s", killing it!'
+
+            om.out.debug(msg % (self.get_name(),
+                                self.PLUGIN_TIMEOUT,
+                                fuzzable_request.get_url()))
 
     def audit(self, freq, orig_resp):
         """

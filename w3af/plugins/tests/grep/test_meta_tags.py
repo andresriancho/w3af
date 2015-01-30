@@ -18,15 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 import w3af.core.data.constants.severity as severity
 
 
-@attr('ci_ready')
 class TestMetaTags(PluginTest):
 
     meta_tags_url = get_moth_http('/grep/meta_tags/')
@@ -60,5 +57,5 @@ class TestMetaTags(PluginTest):
 
         joined_desc = ''.join([v.get_desc() for v in vulns])
 
-        self.assertTrue('linux' in joined_desc)
-        self.assertTrue('Google Sitemap' in joined_desc)
+        self.assertIn('linux', joined_desc)
+        self.assertIn('Google Sitemap', joined_desc)
