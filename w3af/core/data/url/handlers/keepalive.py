@@ -120,6 +120,8 @@ import sys
 import time
 import ssl
 
+from ssl_sni.openssl import wrap_socket
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
@@ -913,7 +915,8 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
         """
         :return: fresh TCP/IP connection
         """
-        sock = socket.create_connection((self.host, self.port), self.timeout)
+        sock = socket.create_connection((self.host, self.port),
+                                        timeout=self.timeout)
 
         if getattr(self, "_tunnel_host", None):
             self.sock = sock
@@ -926,29 +929,39 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
         Test the different SSL protocols
         """
         for protocol in _protocols:
+            sock = self.connect_socket()
+
             try:
-                sock = self.connect_socket()
-
-                ssl_sock = ssl.wrap_socket(sock,
-                                           self.key_file,
-                                           self.cert_file,
-                                           ssl_version=protocol)
-
-                if ssl_sock:
-                    self.sock = ssl_sock
-                    with _protocols_lock:
-                        _protocols.remove(protocol)
-                        _protocols.insert(0, protocol)
-                    break
-                else:
-                    sock.close()
+                ssl_sock = wrap_socket(sock,
+                                       keyfile=self.key_file,
+                                       certfile=self.cert_file,
+                                       ssl_version=protocol,
+                                       server_hostname=self.host)
             except ssl.SSLError, ssl_exc:
                 msg = "SSL connection error occurred with protocol %s: '%s'"
                 debug(msg % (protocol, ssl_exc))
 
+                # Always close the tcp/ip connection on error
+                sock.close()
+
+            except Exception, e:
+                msg = "Unexpected exception occurred with protocol %s: '%s'"
+                debug(msg % (protocol, e))
+
+                # Always close the tcp/ip connection on error
+                sock.close()
+
+            else:
+                self.sock = ssl_sock
+                with _protocols_lock:
+                    _protocols.remove(protocol)
+                    _protocols.insert(0, protocol)
+                break
+
         else:
-            msg = 'Unable to create a SSL connection using protocol: %s'
-            raise HTTPRequestException(msg % protocol)
+            msg = 'Unable to create a SSL connection using protocols: %s'
+            protocols = ', '.join([str(p) for p in _protocols])
+            raise HTTPRequestException(msg % protocols)
 
 
 class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
