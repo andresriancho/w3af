@@ -352,7 +352,7 @@ class analyze_cookies(GrepPlugin):
                         updated_vuln['urls'] = [old_vuln.get_url()]
                     updated_vuln['urls'].append(response.get_url())
                     
-                        kb.kb.update(old_vuln.get_uniq_id(),updated_vuln)
+                    kb.kb.update(old_vuln.get_uniq_id(), updated_vuln)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
@@ -377,8 +377,8 @@ class analyze_cookies(GrepPlugin):
                    ' attacks.'
             desc = desc % (key['key'],response.get_url())
             
-	    # Severity set to low, secure flag only protects
-	    # confidentiality which is already protected by SSL
+	        # Severity set to low, secure flag only protects
+	        # confidentiality which is already protected by SSL
             v = Vuln('Secure flag missing in HTTPS cookie', desc,
                      severity.LOW, response.id, self.get_name())
 
