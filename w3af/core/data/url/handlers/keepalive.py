@@ -81,42 +81,13 @@ EXTRA ATTRIBUTES AND METHODS
   easy to distinguish between non-200 responses.  The reason is that
   urllib2 tries to do clever things with error codes 301, 302, 401,
   and 407, and it wraps the object upon return.
-
-  For python versions earlier than 2.4, you can avoid this fancy error
-  handling by setting the module-level global HANDLE_ERRORS to zero.
-  You see, prior to 2.4, it's the HTTP Handler's job to determine what
-  to handle specially, and what to just pass up.  HANDLE_ERRORS == 0
-  means "pass everything up".  In python 2.4, however, this job no
-  longer belongs to the HTTP Handler and is now done by a NEW handler,
-  HTTPErrorProcessor.  Here's the bottom line:
-
-    python version < 2.4
-        HANDLE_ERRORS == 1  (default) pass up 200, treat the rest as
-                            errors
-        HANDLE_ERRORS == 0  pass everything up, error processing is
-                            left to the calling code
-    python version >= 2.4
-        HANDLE_ERRORS == 1  pass up 200, treat the rest as errors
-        HANDLE_ERRORS == 0  (default) pass everything up, let the
-                            other handlers (specifically,
-                            HTTPErrorProcessor) decide what to do
-
-  In practice, setting the variable either way makes little difference
-  in python 2.4, so for the most consistent behavior across versions,
-  you probably just want to use the defaults, which will give you
-  exceptions on errors.
-
 """
-
-# $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
-
 import urllib2
 import httplib
 import operator
 import socket
 import threading
 import urllib
-import sys
 import time
 import ssl
 
@@ -131,7 +102,6 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException)
 
 
-HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = False
 
 # Max connections allowed per host.
