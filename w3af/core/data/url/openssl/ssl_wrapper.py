@@ -1,6 +1,17 @@
 """
 Based heavily on code from:
-https://github.com/t-8ch/requests/blob/d7908a9fdef7bca16e384ca42478d69d1894c8b6/requests/packages/urllib3/contrib/pyopenssl.py
+    https://code.google.com/p/ssl-sni/source/browse/ssl_sni/openssl.py
+
+Which uses the GNU Affero General Public License >= 3 , but that code is
+actually based heavily on code from:
+    https://github.com/t-8ch/requests/blob/d7908a9fdef7bca16e384ca42478d69d1894c8b6/requests/packages/urllib3/contrib/pyopenssl.py
+
+Which is actually part of the "requests" project that's released under Apache
+License, Version 2.0.
+
+IANAL but I believe that the guys from ssl-sni made a mistake at changing the
+license (basically they can't). So I'm choosing to use the original Apache
+License, Version 2.0 for this file.
 """
 import socket
 import ssl
