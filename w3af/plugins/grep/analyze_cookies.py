@@ -204,12 +204,12 @@ class analyze_cookies(GrepPlugin):
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            key = self._extract_keypair(cookie_header_value) 
+            key = cookie_obj.keys[0]
             desc = 'Cookie "%s" without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
                    ' Cross-Site Scripting attacks.'
-            desc = desc % (key['key'], response.get_url())
+            desc = desc % (key, response.get_url())
             
             v = Vuln('Cookie without HttpOnly', desc,
                      vuln_severity, response.id, self.get_name())
@@ -320,14 +320,14 @@ class analyze_cookies(GrepPlugin):
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
             
-            key = self._extract_keypair(cookie_header_value)
+            key = cookie_obj.keys[0]
             desc = 'Cookie "%s" marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
                    ' "%s", this usually means that the Web application was'\
                    ' designed to run over SSL and was deployed without'\
                    ' security or that the developer does not understand the'\
                    ' "secure" flag.'
-            desc = desc % (key['key'],response.get_url())
+            desc = desc % (key, response.get_url())
             
             v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
                      response.id, self.get_name())
@@ -375,7 +375,7 @@ class analyze_cookies(GrepPlugin):
                    ' from sending a "secure" cookie over an insecure HTTP' \
                    ' channel, thus preventing potential session hijacking' \
                    ' attacks.'
-            desc = desc % (key['key'],response.get_url())
+            desc = desc % (key,response.get_url())
             
 	        # Severity set to low, secure flag only protects
 	        # confidentiality which is already protected by SSL
