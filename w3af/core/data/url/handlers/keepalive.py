@@ -102,10 +102,10 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException)
 
 
-DEBUG = False
-
+# Config
 # Max connections allowed per host.
 MAX_CONNECTIONS = 50
+DEBUG = False
 
 
 class URLTimeoutError(urllib2.URLError):
