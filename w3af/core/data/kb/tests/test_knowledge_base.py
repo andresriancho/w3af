@@ -652,22 +652,22 @@ class TestKnowledgeBase(unittest.TestCase):
 
     def test_update_info(self):
 	info = MockInfo()
-	kb.append('a','b',info)
+	kb.append('a', 'b', info)
 	update_info = Info.from_info(info)
 	update_info.set_name('a')
 	update_uniq_id = update_info.get_uniq_id()
-	kb.update(info,update_info)
+	kb.update(info, update_info)
 
-	self.assertTrue(update_info != info)
+	self.assertNotEqual(update_info, info)
 	self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
 
     def test_update_vuln(self):
 	vuln = MockVuln()
-	kb.append('a','b',vuln)
+	kb.append('a', 'b', vuln)
 	update_vuln = Vuln.from_vuln(vuln)
 	update_vuln.set_name('a')
 	update_uniq_id = update_vuln.get_uniq_id()
-	kb.update(vuln,update_vuln)
+	kb.update(vuln, update_vuln)
 
-	self.assertTrue(update_vuln != vuln)
+	self.assertNotEqual(update_vuln, vuln)
 	self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))

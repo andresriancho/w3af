@@ -374,7 +374,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 	old_not_info = not isinstance(old_inst, (Info, Shell)) 
 	update_not_info = not isinstance(update_inst, (Info, Shell))
         
-	if old_not_info and update_not_info:
+	if old_not_info or update_not_info:
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
             raise TypeError(msg)
