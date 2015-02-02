@@ -47,8 +47,6 @@ class analyze_cookies(GrepPlugin):
     SECURE_RE = re.compile('; *?secure([\s;, ]|$)', re.I)
     HTTPONLY_RE = re.compile('; *?httponly([\s;, ]|$)', re.I)
     
-    EXTRACT_KEYPAIR_RE = re.compile('([\w]*)=([\w]*)', re.I)
-
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_reported_server = []
@@ -171,14 +169,6 @@ class analyze_cookies(GrepPlugin):
 
         else:
             return cookie_object
-
-    def _extract_keypair(self, cookie_header_value):
-        key_match = self.EXTRACT_KEYPAIR_RE.match(cookie_header_value)
-        if not key_match:
-            return {'key':'','value':''}
-        else:
-            # Return the key and value of the cookie
-            return {'key':key_match.group(1),'value':key_match.group(2)}
 
     def _analyze_cookie_security(self, request, response, cookie_obj,
                                  cookie_header_value):
@@ -349,22 +339,20 @@ class analyze_cookies(GrepPlugin):
             with self._plugin_lock:
                 vulns = kb.kb.get(self, 'security')
             
-            if len(vulns) > 1:
-                # error
-                raise DBException('At most, one vulnerability should be' \
-                                   ' returned for "%s"' % self.get_name())
-            elif len(vulns) == 0:
-                with self._plugin_lock:
-                    kb.kb.append(self, 'security', v)
-            else:
-                old_vuln = vulns[0]
-                updated_vuln = Vuln.from_vuln(old_vuln)
-                if 'urls' not in updated_vuln.keys():
-                    updated_vuln['urls'] = [old_vuln.get_url()]
-                updated_vuln['urls'].append(response.get_url())
-                
-                with self._plugin_lock:
-                    kb.kb.update(old_vuln.get_uniq_id(),updated_vuln)
+                if len(vulns) > 1:
+                    # error
+                    raise DBException('At most, one vulnerability should be' \
+                                       ' returned for "%s"' % self.get_name())
+                elif len(vulns) == 0:
+                        kb.kb.append(self, 'security', v)
+                else:
+                    old_vuln = vulns[0]
+                    updated_vuln = Vuln.from_vuln(old_vuln)
+                    if 'urls' not in updated_vuln.keys():
+                        updated_vuln['urls'] = [old_vuln.get_url()]
+                    updated_vuln['urls'].append(response.get_url())
+                    
+                        kb.kb.update(old_vuln.get_uniq_id(),updated_vuln)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
@@ -381,7 +369,7 @@ class analyze_cookies(GrepPlugin):
 
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-            key = self._extract_keypair(cookie_header_value)
+            key = cookie_obj.keys()[0] 
             desc = 'Cookie "%s" without the secure flag sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
