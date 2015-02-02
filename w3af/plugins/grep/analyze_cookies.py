@@ -329,7 +329,9 @@ class analyze_cookies(GrepPlugin):
         # And now, the code:
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
-            
+            # TODO: Match key with secure flag with the key pair in cookie_obj
+            #       test with multiple cookies, some with and some without
+            #       secure flag. Same should also be done for httponly
             key = cookie_obj.keys[0]
             desc = 'Cookie "%s" marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
