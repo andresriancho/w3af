@@ -891,6 +891,7 @@ class ProxyHTTPConnection(_HTTPConnection):
 
 
 _protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
+_protocols_lock = threading.RLock()
 
 
 class SSLNegotiatorConnection(httplib.HTTPSConnection):
@@ -935,8 +936,9 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
 
                 if ssl_sock:
                     self.sock = ssl_sock
-                    _protocols.remove(protocol)
-                    _protocols.insert(0, protocol)
+                    with _protocols_lock:
+                        _protocols.remove(protocol)
+                        _protocols.insert(0, protocol)
                     break
                 else:
                     sock.close()
