@@ -23,6 +23,7 @@ import Cookie
 import re
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.controllers.exceptions as ex
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
@@ -46,6 +47,15 @@ class analyze_cookies(GrepPlugin):
 
     SECURE_RE = re.compile('; *?secure([\s;, ]|$)', re.I)
     HTTPONLY_RE = re.compile('; *?httponly([\s;, ]|$)', re.I)
+
+    # Extracts the keypair to match what is returned by cookie_obj
+    # Important when multiple cookies sent in a single response and
+    # wanting to match only the cookie with the appropriate attribute value
+    #
+    # BUGBUG work-around for cookie-obj leaving out
+    # attribute values in a SimpleCookie object
+    EXTRACT_HTTPONLY_RE = re.compile(': *?([\w-_]*)=[\w-_\"]*; *?httponly([\s;, ]|$)', re.I)
+    EXTRACT_SECURE_RE = re.compile(': *?([\w-_]*)=[\w-_\"]*; *?secure([\s;, ]|$)', re.I)
     
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -341,8 +351,8 @@ class analyze_cookies(GrepPlugin):
             
                 if len(vulns) > 1:
                     # error
-                    raise DBException('At most, one vulnerability should be' \
-                                       ' returned for "%s"' % self.get_name())
+                    raise ex.DBException('At most, one vulnerability should be' \
+                                         ' returned for "%s"' % self.get_name())
                 elif len(vulns) == 0:
                         kb.kb.append(self, 'security', v)
                 else:
