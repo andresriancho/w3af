@@ -136,7 +136,7 @@ class HTTPResponse(httplib.HTTPResponse):
         # w3af does always read all the content of the response, and I also need
         # to do multiple reads to this response...
         #
-        # BUGBUG: Is this OK? What if a HEAD method actually returns something?!
+        # TODO: Is this OK? What if a HEAD method actually returns something?!
         if self._method == 'HEAD':
             # This indicates that we have read all that we needed from the socket
             # and that the socket can be reused!
@@ -165,6 +165,7 @@ class HTTPResponse(httplib.HTTPResponse):
 
     def readline(self, limit=-1):
         i = self._rbuf.find('\n')
+
         while i < 0 and not (0 < limit <= len(self._rbuf)):
             new = self._raw_read(self._rbufsize)
             if not new:
@@ -173,12 +174,15 @@ class HTTPResponse(httplib.HTTPResponse):
             if i >= 0:
                 i += len(self._rbuf)
             self._rbuf = self._rbuf + new
+
         if i < 0:
             i = len(self._rbuf)
         else:
             i += 1
+
         if 0 <= limit < len(self._rbuf):
             i = limit
+
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
         return data
 
