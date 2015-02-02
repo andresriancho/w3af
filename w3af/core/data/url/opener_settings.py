@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import urllib2
-import socket
 import urlparse
 import cookielib
 
@@ -105,7 +104,6 @@ class OpenerSettings(Configurable):
     
     def set_default_values(self):
         cfg.save('timeout', 15)
-        socket.setdefaulttimeout(cfg.get('timeout'))
         cfg.save('headers_file', '')
         cfg.save('cookie_jar_file', '')
         cfg.save('user_agent', 'w3af.org')
@@ -245,12 +243,6 @@ class OpenerSettings(Configurable):
             raise BaseFrameworkException(err)
         else:
             cfg.save('timeout', timeout)
-
-            # Set the default timeout
-            # I don't need to use timeoutsocket.py , it has been added to
-            # python sockets!
-            socket.setdefaulttimeout(cfg.get('timeout'))
-            
             self.need_update = True
 
     def get_timeout(self):

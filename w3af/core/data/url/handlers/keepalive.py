@@ -91,7 +91,7 @@ import urllib
 import time
 import ssl
 
-from ssl_sni.openssl import wrap_socket
+from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -885,8 +885,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
         """
         :return: fresh TCP/IP connection
         """
-        sock = socket.create_connection((self.host, self.port),
-                                        timeout=self.timeout)
+        sock = socket.create_connection((self.host, self.port))
 
         if getattr(self, "_tunnel_host", None):
             self.sock = sock
@@ -906,7 +905,8 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
                                        keyfile=self.key_file,
                                        certfile=self.cert_file,
                                        ssl_version=protocol,
-                                       server_hostname=self.host)
+                                       server_hostname=self.host,
+                                       timeout=cf.cf.get('timeout'))
             except ssl.SSLError, ssl_exc:
                 msg = "SSL connection error occurred with protocol %s: '%s'"
                 debug(msg % (protocol, ssl_exc))
@@ -965,7 +965,10 @@ class HTTPConnection(_HTTPConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict)
+        _HTTPConnection.__init__(self, host,
+                                 port=port,
+                                 strict=strict,
+                                 timeout=cf.cf.get('timeout'))
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
