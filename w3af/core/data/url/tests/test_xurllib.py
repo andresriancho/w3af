@@ -187,7 +187,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertLess(end-start, 3)
 
     def test_timeout_ssl(self):
-        ssl_daemon = RawSSLDaemon()
+        ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
         ssl_daemon.start()
         ssl_daemon.wait_for_start()
 
