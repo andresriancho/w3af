@@ -33,6 +33,7 @@ from mock import Mock, patch
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
+from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
@@ -177,10 +178,31 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         
         self.uri_opener.settings.set_timeout(1)
-        
+        start = time.time()
+
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
-        
+
+        end = time.time()
         self.uri_opener.settings.set_default_values()
+        self.assertLess(end-start, 3)
+
+    def test_timeout_ssl(self):
+        ssl_daemon = RawSSLDaemon()
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        self.uri_opener.settings.set_timeout(1)
+        start = time.time()
+
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+
+        end = time.time()
+        self.uri_opener.settings.set_default_values()
+        self.assertLess(end-start, 3)
 
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
