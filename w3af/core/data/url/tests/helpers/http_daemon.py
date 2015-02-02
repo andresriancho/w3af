@@ -37,6 +37,7 @@ class LoggedRequest(object):
         return '<LoggedRequest %s %s %s>' % (self.command, self.path,
                                              self.request_version)
 
+
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     requests = []
