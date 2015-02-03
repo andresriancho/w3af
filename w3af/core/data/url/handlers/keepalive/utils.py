@@ -1,7 +1,7 @@
 from w3af.core.controllers.output_manager import out
 from w3af.core.controllers.tests.running_tests import is_running_tests
 
-DEBUG = is_running_tests() or False
+DEBUG = False
 
 
 def to_utf8_raw(unicode_or_str):
