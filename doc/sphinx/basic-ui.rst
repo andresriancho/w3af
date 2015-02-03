@@ -94,7 +94,7 @@ Here is a usage example of these commands in the ``http-settings`` menu:
     w3af/config:http-settings>>> back
     w3af>>>
 
-To summarize, the ``view`` command is used to list all configurable parameters, with their values and a description. The ``set`` command is used to change a value. Finally we can execute ``back``, “.” or press CTRL+C to return to the previous menu. A detailed help for every configuration parameter can be obtained using ``help parameter`` as shown in this example:
+To summarize, the ``view`` command is used to list all configurable parameters, with their values and a description. The ``set`` command is used to change a value. Finally we can execute ``back`` or press CTRL+C to return to the previous menu. A detailed help for every configuration parameter can be obtained using ``help parameter`` as shown in this example:
 
 .. code-block:: none
 
