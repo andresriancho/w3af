@@ -183,7 +183,7 @@ class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
         self.key_file = key_file
         self.cert_file = cert_file
 
-    def connect_socket(self):
+    def connect(self):
         """
         Connect using different SSL protocols
         """
