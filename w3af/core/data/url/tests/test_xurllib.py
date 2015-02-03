@@ -20,12 +20,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import ssl
 import time
-import unittest
 import Queue
-import SocketServer
 import types
+import unittest
 import httpretty
+import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
@@ -203,6 +204,42 @@ class TestXUrllib(unittest.TestCase):
         end = time.time()
         self.uri_opener.settings.set_default_values()
         self.assertLess(end-start, 3)
+
+    def test_ssl_tls_1_0(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_TLSv1)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_v23(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv23)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_v3(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv3)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
 
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
@@ -383,3 +420,14 @@ class TimeoutTCPHandler(SocketServer.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         time.sleep(60)
         self.request.sendall('')
+
+
+class Ok200Handler(SocketServer.BaseRequestHandler):
+    body = 'abc'
+
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        self.request.sendall('HTTP/1.0 200 Ok\r\n'
+                             'Connection: Close\r\n'
+                             'Content-Length: 3\r\n'
+                             '\r\n' + self.body)
