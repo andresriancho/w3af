@@ -133,8 +133,11 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
                                OpenSSLReformattedError(e))
 
     cnx = OpenSSL.SSL.Connection(ctx, sock)
+
+    # SNI support
     if server_hostname is not None:
         cnx.set_tlsext_host_name(server_hostname)
+
     cnx.set_connect_state()
 
     try:

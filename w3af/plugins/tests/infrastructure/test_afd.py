@@ -38,7 +38,6 @@ class TestFoundAFD(PluginTest):
         }
     }
 
-
     MOCK_RESPONSES = [MockResponse('/', 'PASS'),
                       MockResponse(BAD_SIG_URI, 'FAIL')]
 
