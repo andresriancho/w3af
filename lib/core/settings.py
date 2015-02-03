@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -27,7 +27,6 @@ SITE = "http://sqlmap.org"
 ISSUES_PAGE = "https://github.com/sqlmapproject/sqlmap/issues/new"
 GIT_REPOSITORY = "git://github.com/sqlmapproject/sqlmap.git"
 GIT_PAGE = "https://github.com/sqlmapproject/sqlmap"
-ML = "sqlmap-users@lists.sourceforge.net"
 
 # colorful banner
 BANNER = """\033[01;33m         _
@@ -40,6 +39,9 @@ BANNER = """\033[01;33m         _
 # Minimum distance of ratio from kb.matchRatio to result in True
 DIFF_TOLERANCE = 0.05
 CONSTANT_RATIO = 0.9
+
+# Ratio used in heuristic check for WAF/IDS/IPS protected targets
+IDS_WAF_CHECK_RATIO = 0.5
 
 # Lower and upper values for match ratio in case of stable page
 LOWER_RATIO_BOUND = 0.02
@@ -210,6 +212,9 @@ DBMS_ALIASES = ((DBMS.MSSQL, MSSQL_ALIASES), (DBMS.MYSQL, MYSQL_ALIASES), (DBMS.
 USER_AGENT_ALIASES = ("ua", "useragent", "user-agent")
 REFERER_ALIASES = ("ref", "referer", "referrer")
 HOST_ALIASES = ("host",)
+
+# Names that can't be used to name files on Windows OS
+WINDOWS_RESERVED_NAMES = ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9")
 
 # Items displayed in basic help (-h) output
 BASIC_HELP_ITEMS = (
@@ -427,7 +432,7 @@ BRUTE_TABLE_EXISTS_TEMPLATE = "EXISTS(SELECT %d FROM %s)"
 BRUTE_COLUMN_EXISTS_TEMPLATE = "EXISTS(SELECT %s FROM %s)"
 
 # Payload used for checking of existence of IDS/WAF (dummier the better)
-IDS_WAF_CHECK_PAYLOAD = "AND 1=1 UNION ALL SELECT 1,2,3,table_name FROM information_schema.tables WHERE 2>1"
+IDS_WAF_CHECK_PAYLOAD = "AND 1=1 UNION ALL SELECT 1,2,3,table_name FROM information_schema.tables WHERE 2>1-- ../../../etc/passwd"
 
 # Vectors used for provoking specific WAF/IDS/IPS behavior(s)
 WAF_ATTACK_VECTORS = (
@@ -441,11 +446,8 @@ WAF_ATTACK_VECTORS = (
 # Used for status representation in dictionary attack phase
 ROTATING_CHARS = ('\\', '|', '|', '/', '-')
 
-# Chunk length (in items) used by BigArray objects (only last chunk and cached one are held in memory)
-BIGARRAY_CHUNK_LENGTH = 4096
-
-# Prefix used for storing dumped chunks in BigArray objects
-BIGARRAY_TEMP_PREFIX = "sqlmapba-%d-" % os.getpid()
+# Approximate chunk length (in bytes) used by BigArray objects (only last chunk and cached one are held in memory)
+BIGARRAY_CHUNK_SIZE = 1024 * 1024
 
 # Only console display last n table rows
 TRIM_STDOUT_DUMP_SIZE = 256
@@ -481,7 +483,7 @@ DEFAULT_COOKIE_DELIMITER = ';'
 FORCE_COOKIE_EXPIRATION_TIME = "9999999999"
 
 # Github OAuth token used for creating an automatic Issue for unhandled exceptions
-GITHUB_REPORT_OAUTH_TOKEN = "d6c0c7bf3f2298a7b85f82176c46d2f8d494fcc5"
+GITHUB_REPORT_OAUTH_TOKEN = "29f6bdf5ce4424fc17a19405bce75d6aca7dcd27"
 
 # Skip unforced HashDB flush requests below the threshold number of cached items
 HASHDB_FLUSH_THRESHOLD = 32
@@ -608,6 +610,9 @@ MIN_ENCODED_LEN_CHECK = 5
 
 # Timeout in seconds in which Metasploit remote session has to be initialized
 METASPLOIT_SESSION_TIMEOUT = 300
+
+# Suffix used to mark variables having keyword names
+EVALCODE_KEYWORD_SUFFIX = "_KEYWORD"
 
 # Reference: http://www.cookiecentral.com/faq/#3.5
 NETSCAPE_FORMAT_HEADER_COOKIES = "# Netscape HTTP Cookie File."

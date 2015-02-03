@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -14,6 +14,7 @@ import hashlib
 import httplib
 import inspect
 import json
+import locale
 import logging
 import ntpath
 import os
@@ -117,7 +118,6 @@ from lib.core.settings import LARGE_OUTPUT_THRESHOLD
 from lib.core.settings import MIN_ENCODED_LEN_CHECK
 from lib.core.settings import MIN_TIME_RESPONSES
 from lib.core.settings import MIN_VALID_DELAYED_RESPONSE
-from lib.core.settings import ML
 from lib.core.settings import NETSCAPE_FORMAT_HEADER_COOKIES
 from lib.core.settings import NULL
 from lib.core.settings import PARAMETER_AMP_MARKER
@@ -544,7 +544,6 @@ def paramToDict(place, parameters=None):
     if place in conf.parameters and not parameters:
         parameters = conf.parameters[place]
 
-    parameters = parameters.replace(", ", ",")
     parameters = re.sub(r"&(\w{1,4});", r"%s\g<1>%s" % (PARAMETER_AMP_MARKER, PARAMETER_SEMICOLON_MARKER), parameters)
     if place == PLACE.COOKIE:
         splitParams = parameters.split(conf.cookieDel or DEFAULT_COOKIE_DELIMITER)
@@ -582,7 +581,7 @@ def paramToDict(place, parameters=None):
                         warnMsg += "so sqlmap could be able to run properly"
                         logger.warn(warnMsg)
 
-                        message = "are you sure you want to continue? [y/N] "
+                        message = "are you really sure that you want to continue (sqlmap could have problems)? [y/N] "
                         test = readInput(message, default="N")
                         if test[0] not in ("y", "Y"):
                             raise SqlmapSilentQuitException
@@ -1557,6 +1556,22 @@ def normalizePath(filepath):
         retVal = retVal.strip("\r\n")
         retVal = ntpath.normpath(retVal) if isWindowsDriveLetterPath(retVal) else posixpath.normpath(retVal)
 
+    return retVal
+
+def safeExpandUser(filepath):
+    """
+    Patch for a Python Issue18171 (http://bugs.python.org/issue18171)
+    """
+
+    retVal = filepath
+
+    try:
+        retVal = os.path.expanduser(filepath)
+    except UnicodeDecodeError:
+        _ = locale.getdefaultlocale()
+        retVal = getUnicode(os.path.expanduser(filepath.encode(_[1] if _ and len(_) > 1 else UNICODE_ENCODING)))
+
+    print retVal
     return retVal
 
 def safeStringFormat(format_, params):
@@ -2898,7 +2913,7 @@ def unhandledExceptionMessage():
     errMsg = "unhandled exception occurred in %s. It is recommended to retry your " % VERSION_STRING
     errMsg += "run with the latest development version from official GitHub "
     errMsg += "repository at '%s'. If the exception persists, please open a new issue " % GIT_PAGE
-    errMsg += "at '%s' (or less preferably send by e-mail to '%s') " % (ISSUES_PAGE, ML)
+    errMsg += "at '%s' " % ISSUES_PAGE
     errMsg += "with the following text and any other information required to "
     errMsg += "reproduce the bug. The "
     errMsg += "developers will try to reproduce the bug, fix it accordingly "
@@ -2970,6 +2985,8 @@ def createGithubIssue(errMsg, excMsg):
             warnMsg = "something went wrong while creating a Github issue"
             if ex:
                 warnMsg += " ('%s')" % ex
+            if "Unauthorized" in warnMsg:
+                warnMsg += ". Please update to the latest revision"
             logger.warn(warnMsg)
 
 def maskSensitiveData(msg):
@@ -2986,9 +3003,9 @@ def maskSensitiveData(msg):
             retVal = retVal.replace(value, '*' * len(value))
 
     if not conf.get("hostname"):
-        match = re.search(r"(?i)sqlmap.+(-u|--url)\s+([^ ]+)", retVal)
+        match = re.search(r"(?i)sqlmap.+(-u|--url)(\s+|=)([^ ]+)", retVal)
         if match:
-            retVal = retVal.replace(match.group(2), '*' * len(match.group(2)))
+            retVal = retVal.replace(match.group(3), '*' * len(match.group(3)))
 
 
     if getpass.getuser():
@@ -3279,7 +3296,10 @@ def expandMnemonics(mnemonics, parser, args):
                     if opt.startswith(name):
                         options[opt] = option
 
-            if name in options:
+            if not options:
+                warnMsg = "mnemonic '%s' can't be resolved" % name
+                logger.warn(warnMsg)
+            elif name in options:
                 found = name
                 debugMsg = "mnemonic '%s' resolved to %s). " % (name, found)
                 logger.debug(debugMsg)
@@ -3289,7 +3309,8 @@ def expandMnemonics(mnemonics, parser, args):
                 warnMsg += "Resolved to shortest of those ('%s')" % found
                 logger.warn(warnMsg)
 
-            found = options[found]
+            if found:
+                found = options[found]
         else:
             found = pointer.current[0]
             debugMsg = "mnemonic '%s' resolved to %s). " % (name, found)
@@ -3356,6 +3377,8 @@ def randomizeParameterValue(value):
     """
 
     retVal = value
+
+    value = re.sub(r"%[0-9a-fA-F]{2}", "", value)
 
     for match in re.finditer('[A-Z]+', value):
         retVal = retVal.replace(match.group(), randomStr(len(match.group())).upper())
