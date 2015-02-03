@@ -53,7 +53,7 @@ Installation in Kali
 
 .. code-block:: console
 
-	cd ~
+    cd ~
     apt-get update
     apt-get install -y python-pip
     pip install --upgrade pip
