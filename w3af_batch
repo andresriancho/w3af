@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+
+import logging
+import argparse
+import signal
+import threading as th
+import multiprocessing as mp
+import multiprocessing.dummy as mpd
+
+
+STOPSCAN = mp.Event()
+logger = logging.getLogger('w3af_batch')
+
+
+def cancel_scan(*args):
+    """
+    Dummy SIGINT hanlder which stops target list processing.
+    """
+    STOPSCAN.set()
+    raise KeyboardInterrupt('Scan is terminated by user request')
+
+
+def execute_scan(target, profile, timeout):
+    """
+    Execute w4af scan.  Try to stop it after timeout seconds.
+    """
+    def stop_scan(scanner):
+        """
+        Stop w3af scan after timeout.
+        """
+        if scanner.status.is_running():
+            scanner.stop()
+            logger.info('Scan of target %s is stopped', target)
+
+    from w3af.core.controllers.w3afCore import w3afCore
+    from w3af.core.data.kb.knowledge_base import kb
+
+    scanner = w3afCore()
+    scanner.profiles.use_profile(profile)
+    option_list = scanner.target.get_options()
+    option_list['target'].set_value(target)
+    scanner.target.set_options(option_list)
+    scanner.plugins.init_plugins()
+
+    timer = th.Timer(timeout, stop_scan, (scanner,))
+    timer.start()
+    scanner.start()
+    if timer.is_alive():
+        timer.cancel()
+        timer.join()
+        logger.debug('Target %s has %s vulnerabilities',
+                     target, len(kb.get_all_vulns()))
+
+
+def start_executor(target, profile, timeout):
+    """
+    Start w3af scan in a separate process. Terminate child process after
+    2 * timeout seconds.
+
+    :param target: Target uri
+    :param profile: Profile's internal name of path to pw3af file
+    :param timeout: Scan timeout
+    """
+    def stop_executor(executor, target):
+        """
+        Stop w3af scanner process after timeout.
+        """
+        if executor.is_alive():
+            executor.terminate()
+            logger.info('Scan of target %s is terminated', target)
+
+    executor = mp.Process(target=execute_scan,
+                          name='Executor',
+                          args=(target, profile, timeout))
+    timer = th.Timer(2 * timeout, stop_executor, (executor, target))
+    timer.start()
+    executor.start()
+    executor.join()
+    if timer.is_alive():
+        timer.cancel()
+        timer.join()
+
+
+def main(args):
+    """
+    Execute w3af scans of args.targets in parallel.  A pool of manager
+    threads is created. Each thread receives a target to scan. Manager
+    thread executes scan in a separate process. Scanner process will
+    try to stop w3af after timeout seconds. In addition manager thread
+    will terminate the child process if its execution time exceeds
+    2 x timeout seconds.
+    """
+
+    def terminate_scan(pool):
+        """
+        Terminate pool tasks processing in case of SIGINT.
+        """
+        if STOPSCAN.wait():
+            pool.terminate()
+
+    logger.info('Begin scanning')
+    pool = mpd.Pool(args.workers)
+    controller = th.Thread(target=terminate_scan,
+                           name='Controller',
+                           args=(pool,))
+    controller.start()
+    with open(args.targets) as targets:
+        for line in targets:
+            target_uri = line.rstrip()
+            pool.apply_async(start_executor,
+                             (target_uri, args.profile, args.timeout))
+    pool.close()
+    pool.join()
+    if not STOPSCAN.is_set():
+        STOPSCAN.set()
+        controller.join()
+    logger.info('Finish scanning')
+
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, cancel_scan)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', dest='workers', type=int,
+                        default=mp.cpu_count(),
+                        help='number of worker processes '
+                             '(default: number of CPUs)')
+    parser.add_argument('-t', default=300, dest='timeout', type=int,
+                        help='target scan timeout')
+    parser.add_argument('-P', dest='profile', required=True,
+                        help='path to w3af profile')
+    parser.add_argument('targets', help='path to file with list of targets')
+    main(parser.parse_args())
