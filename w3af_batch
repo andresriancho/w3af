@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         help='number of worker processes '
                              '(default: number of CPUs)')
     parser.add_argument('-t', default=300, dest='timeout', type=int,
-                        help='target scan timeout')
+                        help='target scan timeout in seconds')
     parser.add_argument('-P', dest='profile', required=True,
                         help='path to w3af profile')
     parser.add_argument('targets', help='path to file with list of targets')
