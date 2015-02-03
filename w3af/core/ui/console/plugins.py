@@ -193,7 +193,7 @@ class pluginsTypeMenu(menu):
         #
         if self._name == 'output' and 'console' not in enabled and \
                 len(enabled) == 0:
-            msg = "Warning: You disabled the console output plugin. If you"\
+            msg = "\nWarning: You disabled the console output plugin. If you"\
                   " start a new scan, the discovered vulnerabilities won\'t be"\
                   " printed to the console, we advise you to enable at least"\
                   " one output plugin in order to be able to actually see the"\
