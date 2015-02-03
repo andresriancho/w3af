@@ -24,7 +24,7 @@ def cancel_scan(*args):
 
 def execute_scan(target, profile, timeout):
     """
-    Execute w4af scan.  Try to stop it after timeout seconds.
+    Execute w3af scan. Try to stop it after timeout seconds.
     """
     def stop_scan(scanner):
         """
