@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,12 +10,27 @@ try:
 except:
    import pickle
 
+import itertools
 import os
+import sys
 import tempfile
 
 from lib.core.exception import SqlmapSystemException
-from lib.core.settings import BIGARRAY_CHUNK_LENGTH
-from lib.core.settings import BIGARRAY_TEMP_PREFIX
+from lib.core.settings import BIGARRAY_CHUNK_SIZE
+
+DEFAULT_SIZE_OF = sys.getsizeof(object())
+
+def _size_of(object_):
+    """
+    Returns total size of a given object_ (in bytes)
+    """
+
+    retval = sys.getsizeof(object_, DEFAULT_SIZE_OF)
+    if isinstance(object_, dict):
+        retval += sum(_size_of(_) for _ in itertools.chain.from_iterable(object_.items()))
+    elif hasattr(object_, "__iter__"):
+        retval += sum(_size_of(_) for _ in object_)
+    return retval
 
 class Cache(object):
     """
@@ -34,13 +49,20 @@ class BigArray(list):
 
     def __init__(self):
         self.chunks = [[]]
+        self.chunk_length = sys.maxint
         self.cache = None
         self.filenames = set()
         self._os_remove = os.remove
+        self._size_counter = 0
 
     def append(self, value):
         self.chunks[-1].append(value)
-        if len(self.chunks[-1]) >= BIGARRAY_CHUNK_LENGTH:
+        if self.chunk_length == sys.maxint:
+            self._size_counter += _size_of(value)
+            if self._size_counter >= BIGARRAY_CHUNK_SIZE:
+                self.chunk_length = len(self.chunks[-1])
+                self._size_counter = None
+        if len(self.chunks[-1]) >= self.chunk_length:
             filename = self._dump(self.chunks[-1])
             self.chunks[-1] = filename
             self.chunks.append([])
@@ -67,17 +89,20 @@ class BigArray(list):
                 return index
         return ValueError, "%s is not in list" % value
 
-    def _dump(self, value):
+    def _dump(self, chunk):
         try:
-            handle, filename = tempfile.mkstemp(prefix=BIGARRAY_TEMP_PREFIX)
+            handle, filename = tempfile.mkstemp()
             self.filenames.add(filename)
             os.close(handle)
             with open(filename, "w+b") as fp:
-                pickle.dump(value, fp, pickle.HIGHEST_PROTOCOL)
+                pickle.dump(chunk, fp, pickle.HIGHEST_PROTOCOL)
             return filename
-        except IOError, ex:
+        except (OSError, IOError), ex:
             errMsg = "exception occurred while storing data "
-            errMsg += "to a temporary file ('%s')" % ex
+            errMsg += "to a temporary file ('%s'). Please " % ex
+            errMsg += "make sure that there is enough disk space left. If problem persists, "
+            errMsg += "try to set environment variable 'TEMP' to a location "
+            errMsg += "writeable by the current user"
             raise SqlmapSystemException, errMsg
 
     def _checkcache(self, index):
@@ -111,8 +136,8 @@ class BigArray(list):
     def __getitem__(self, y):
         if y < 0:
             y += len(self)
-        index = y / BIGARRAY_CHUNK_LENGTH
-        offset = y % BIGARRAY_CHUNK_LENGTH
+        index = y / self.chunk_length
+        offset = y % self.chunk_length
         chunk = self.chunks[index]
         if isinstance(chunk, list):
             return chunk[offset]
@@ -121,8 +146,8 @@ class BigArray(list):
             return self.cache.data[offset]
 
     def __setitem__(self, y, value):
-        index = y / BIGARRAY_CHUNK_LENGTH
-        offset = y % BIGARRAY_CHUNK_LENGTH
+        index = y / self.chunk_length
+        offset = y % self.chunk_length
         chunk = self.chunks[index]
         if isinstance(chunk, list):
             chunk[offset] = value
@@ -139,4 +164,4 @@ class BigArray(list):
             yield self[i]
 
     def __len__(self):
-        return len(self.chunks[-1]) if len(self.chunks) == 1 else (len(self.chunks) - 1) * BIGARRAY_CHUNK_LENGTH + len(self.chunks[-1])
+        return len(self.chunks[-1]) if len(self.chunks) == 1 else (len(self.chunks) - 1) * self.chunk_length + len(self.chunks[-1])

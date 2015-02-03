@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -59,6 +59,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
     """
 
     abortedFlag = False
+    showEta = False
     partialValue = u""
     finalValue = None
     retrievedLength = 0

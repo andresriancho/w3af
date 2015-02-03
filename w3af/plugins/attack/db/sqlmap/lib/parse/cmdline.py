@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -676,10 +676,6 @@ def cmdLineParser():
         miscellaneous.add_option("--beep", dest="beep", action="store_true",
                                   help="Make a beep sound when SQL injection is found")
 
-        miscellaneous.add_option("--check-waf", dest="checkWaf",
-                                  action="store_true",
-                                  help="Heuristically check for WAF/IPS/IDS protection")
-
         miscellaneous.add_option("--cleanup", dest="cleanup",
                                   action="store_true",
                                   help="Clean up the DBMS from sqlmap specific "
@@ -792,7 +788,16 @@ def cmdLineParser():
         prompt = False
         advancedHelp = True
 
-        for arg in sys.argv:
+        _ = sys.argv
+
+        # Python on Windows has problems with quote/whitespace cases like: python -c "import sys; print sys.argv" --dummy='foo: bar'  # ['-c', "--dummy='foo:", "bar'"]
+        if IS_WIN:
+            try:
+                _ = shlex.split(" ".join(sys.argv), posix=False)
+            except ValueError:
+                pass
+
+        for arg in _:
             argv.append(getUnicode(arg, encoding=sys.getfilesystemencoding()))
 
         checkDeprecatedOptions(argv)
@@ -821,6 +826,7 @@ def cmdLineParser():
 
                 try:
                     command = raw_input("sqlmap-shell> ").strip()
+                    command = getUnicode(command, encoding=sys.stdin.encoding)
                 except (KeyboardInterrupt, EOFError):
                     print
                     raise SqlmapShellQuitException

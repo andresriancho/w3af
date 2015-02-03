@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import compiler
 import httplib
 import json
+import keyword
 import logging
 import re
 import socket
@@ -72,6 +74,7 @@ from lib.core.settings import CUSTOM_INJECTION_MARK_CHAR
 from lib.core.settings import DEFAULT_CONTENT_TYPE
 from lib.core.settings import DEFAULT_COOKIE_DELIMITER
 from lib.core.settings import DEFAULT_GET_POST_DELIMITER
+from lib.core.settings import EVALCODE_KEYWORD_SUFFIX
 from lib.core.settings import HTTP_ACCEPT_HEADER_VALUE
 from lib.core.settings import HTTP_ACCEPT_ENCODING_HEADER_VALUE
 from lib.core.settings import MAX_CONNECTION_CHUNK_SIZE
@@ -263,10 +266,6 @@ class Connect(object):
         # support those by default
         url = asciifyUrl(url)
 
-        # fix for known issues when using url in unicode format
-        # (e.g. UnicodeDecodeError: "url = url + '?' + query" in redirect case)
-        url = unicodeencode(url)
-
         try:
             socket.setdefaulttimeout(timeout)
 
@@ -305,8 +304,12 @@ class Connect(object):
                         get = urlencode(get, limit=True)
 
                 if get:
-                    url = "%s?%s" % (url, get)
-                    requestMsg += "?%s" % get
+                    if '?' in url:
+                        url = "%s%s%s" % (url, DEFAULT_GET_POST_DELIMITER, get)
+                        requestMsg += "%s%s" % (DEFAULT_GET_POST_DELIMITER, get)
+                    else:
+                        url = "%s?%s" % (url, get)
+                        requestMsg += "?%s" % get
 
                 if PLACE.POST in conf.parameters and not post and method != HTTPMETHOD.GET:
                     post = conf.parameters[PLACE.POST]
@@ -326,7 +329,9 @@ class Connect(object):
             if kb.proxyAuthHeader:
                 headers[HTTP_HEADER.PROXY_AUTHORIZATION] = kb.proxyAuthHeader
 
-            headers[HTTP_HEADER.ACCEPT] = HTTP_ACCEPT_HEADER_VALUE
+            if HTTP_HEADER.ACCEPT not in headers:
+                headers[HTTP_HEADER.ACCEPT] = HTTP_ACCEPT_HEADER_VALUE
+
             headers[HTTP_HEADER.ACCEPT_ENCODING] = HTTP_ACCEPT_ENCODING_HEADER_VALUE if kb.pageCompress else "identity"
             headers[HTTP_HEADER.HOST] = host or getHostHeader(url)
 
@@ -353,6 +358,7 @@ class Connect(object):
                 del headers[key]
                 headers[unicodeencode(key, kb.pageEncoding)] = unicodeencode(item, kb.pageEncoding)
 
+            url = unicodeencode(url)
             post = unicodeencode(post, kb.pageEncoding)
 
             if method and method not in (HTTPMETHOD.GET, HTTPMETHOD.POST):
@@ -590,7 +596,7 @@ class Connect(object):
         if conn and getattr(conn, "redurl", None):
             _ = urlparse.urlsplit(conn.redurl)
             _ = ("%s%s" % (_.path or "/", ("?%s" % _.query) if _.query else ""))
-            requestMsg = re.sub("(\n[A-Z]+ ).+?( HTTP/\d)", "\g<1>%s\g<2>" % getUnicode(_), requestMsg, 1)
+            requestMsg = re.sub("(\n[A-Z]+ ).+?( HTTP/\d)", "\g<1>%s\g<2>" % re.escape(getUnicode(_)), requestMsg, 1)
             responseMsg += "[#%d] (%d %s):\n" % (threadData.lastRequestUID, conn.code, status)
         else:
             responseMsg += "[#%d] (%d %s):\n" % (threadData.lastRequestUID, code, status)
@@ -814,43 +820,76 @@ class Connect(object):
         if conf.rParam:
             def _randomizeParameter(paramString, randomParameter):
                 retVal = paramString
-                match = re.search("%s=(?P<value>[^&;]+)" % re.escape(randomParameter), paramString)
+                match = re.search(r"(\A|\b)%s=(?P<value>[^&;]+)" % re.escape(randomParameter), paramString)
                 if match:
                     origValue = match.group("value")
-                    retVal = re.sub("%s=[^&;]+" % re.escape(randomParameter), "%s=%s" % (randomParameter, randomizeParameterValue(origValue)), paramString)
+                    retVal = re.sub(r"(\A|\b)%s=[^&;]+" % re.escape(randomParameter), "%s=%s" % (randomParameter, randomizeParameterValue(origValue)), paramString)
                 return retVal
 
             for randomParameter in conf.rParam:
-                for item in (PLACE.GET, PLACE.POST, PLACE.COOKIE):
+                for item in (PLACE.GET, PLACE.POST, PLACE.COOKIE, PLACE.URI, PLACE.CUSTOM_POST):
                     if item in conf.parameters:
                         if item == PLACE.GET and get:
                             get = _randomizeParameter(get, randomParameter)
-                        elif item == PLACE.POST and post:
+                        elif item in (PLACE.POST, PLACE.CUSTOM_POST) and post:
                             post = _randomizeParameter(post, randomParameter)
                         elif item == PLACE.COOKIE and cookie:
                             cookie = _randomizeParameter(cookie, randomParameter)
+                        elif item == PLACE.URI and uri:
+                            uri = _randomizeParameter(uri, randomParameter)
 
         if conf.evalCode:
             delimiter = conf.paramDel or DEFAULT_GET_POST_DELIMITER
             variables = {"uri": uri}
             originals = {}
+            keywords = keyword.kwlist
 
             for item in filter(None, (get, post if not kb.postHint else None)):
                 for part in item.split(delimiter):
                     if '=' in part:
                         name, value = part.split('=', 1)
+                        name = name.strip()
+                        if name in keywords:
+                            name = "%s%s" % (name, EVALCODE_KEYWORD_SUFFIX)
                         value = urldecode(value, convall=True, plusspace=(item==post and kb.postSpaceToPlus))
-                        evaluateCode("%s=%s" % (name.strip(), repr(value)), variables)
+                        evaluateCode("%s=%s" % (name, repr(value)), variables)
 
             if cookie:
                 for part in cookie.split(conf.cookieDel or DEFAULT_COOKIE_DELIMITER):
                     if '=' in part:
                         name, value = part.split('=', 1)
+                        name = name.strip()
+                        if name in keywords:
+                            name = "%s%s" % (name, EVALCODE_KEYWORD_SUFFIX)
                         value = urldecode(value, convall=True)
-                        evaluateCode("%s=%s" % (name.strip(), repr(value)), variables)
+                        evaluateCode("%s=%s" % (name, repr(value)), variables)
+
+            while True:
+                try:
+                    compiler.parse(conf.evalCode.replace(';', '\n'))
+                except SyntaxError, ex:
+                    original = replacement = ex.text.strip()
+                    for _ in re.findall(r"[A-Za-z_]+", original)[::-1]:
+                        if _ in keywords:
+                            replacement = replacement.replace(_, "%s%s" % (_, EVALCODE_KEYWORD_SUFFIX))
+                            break
+                    if original == replacement:
+                        conf.evalCode = conf.evalCode.replace(EVALCODE_KEYWORD_SUFFIX, "")
+                        break
+                    else:
+                        conf.evalCode = conf.evalCode.replace(ex.text.strip(), replacement)
+                else:
+                    break
 
             originals.update(variables)
             evaluateCode(conf.evalCode, variables)
+
+            for variable in variables.keys():
+                if variable.endswith(EVALCODE_KEYWORD_SUFFIX):
+                    value = variables[variable]
+                    del variables[variable]
+                    variables[variable.replace(EVALCODE_KEYWORD_SUFFIX, "")] = value
+
             uri = variables["uri"]
 
             for name, value in variables.items():
