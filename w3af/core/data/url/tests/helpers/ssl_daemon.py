@@ -23,7 +23,7 @@ import SocketServer
 import ssl
 import os
 
-from .upper_daemon import UpperDaemon
+from .upper_daemon import UpperDaemon, UpperTCPHandler
 
 
 class RawSSLDaemon(UpperDaemon):
@@ -31,6 +31,10 @@ class RawSSLDaemon(UpperDaemon):
     Echo the data sent by the client, but upper case it first. SSL version of
     UpperDaemon.
     """
+    def __init__(self, handler=UpperTCPHandler, ssl_version=ssl.PROTOCOL_TLSv1):
+        super(RawSSLDaemon, self).__init__(handler=handler)
+        self.ssl_version = ssl_version
+
     def run(self):
         self.server = SocketServer.TCPServer(self.server_address, self.handler,
                                              bind_and_activate=False)
@@ -42,7 +46,7 @@ class RawSSLDaemon(UpperDaemon):
                                              keyfile=key_file,
                                              certfile=cert_file,
                                              cert_reqs=ssl.CERT_NONE,
-                                             ssl_version=ssl.PROTOCOL_TLSv1)
+                                             ssl_version=self.ssl_version)
 
         self.server.server_bind()
         self.server.server_activate()
