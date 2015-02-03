@@ -31,7 +31,7 @@ from .openbsd import OpenBSD5
 from .suse import SuSE
 from .default import DefaultPlatform
 
-KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
+KNOWN_PLATFORMS = [Debian76, Ubuntu1204, Linux Mint, CentOS65, CentOS, Fedora, Kali, MacOSX,
                    OpenBSD5, SuSE, Ubuntu1404]
 
 
