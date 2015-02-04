@@ -345,6 +345,8 @@ class PluginTest(unittest.TestCase):
         default_opts['http_output_file'].set_value(http_output)
         default_opts['verbose'].set_value(True)
 
+        print('Logging to %s' % text_output)
+
         self.w3afcore.plugins.set_plugin_options(ptype, pname, default_opts)
 
 
