@@ -45,7 +45,7 @@ class TestRFI(ExecExploitTest):
 
     def test_found_exploit_rfi(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'] + '?file=abc.txt', cfg['plugins'], debug=True)
+        self._scan(cfg['target'] + '?file=abc.txt', cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('rfi', 'rfi')
