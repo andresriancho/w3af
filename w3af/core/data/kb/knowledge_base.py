@@ -24,8 +24,10 @@ import cPickle
 import types
 import collections
 
+
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
+from w3af.core.controllers.exceptions import DBException
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
 from w3af.core.data.parsers.url import URL
@@ -365,28 +367,31 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         
         return result
 
-    def update(self, old_inst, update_inst):
+    def update(self, old_info, update_info):
         """
-	:param old_inst: The info/vulnerability instance to be updated in the kb.
-	:param update_inst: The info/vulnerability instance with new information 
-        :return: Nothing 
+        :param old_info: The info/vulnerability instance to be updated in the kb.
+        :param update_info: The info/vulnerability instance with new information
+        :return: Nothing
         """
-	old_not_info = not isinstance(old_inst, (Info, Shell)) 
-	update_not_info = not isinstance(update_inst, (Info, Shell))
-        
-	if old_not_info or update_not_info:
+        old_not_info = not isinstance(old_info, (Info, Shell))
+        update_not_info = not isinstance(update_info, (Info, Shell))
+
+        if old_not_info or update_not_info:
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
             raise TypeError(msg)
 
-	old_uniq_id = old_inst.get_uniq_id()
-	new_uniq_id = update_inst.get_uniq_id()
-	pickle = cpickle_dumps(update_inst)
-	# Update the pickle and unique_id after finding by original uniq_id
-	query = "UPDATE OR ROLLBACK %s SET pickle = ?,uniq_id = ? WHERE uniq_id = ?"
-	params = (pickle,new_uniq_id,old_uniq_id)
-	self.db.execute(query % self.table_name,params)
-	
+        old_uniq_id = old_info.get_uniq_id()
+        new_uniq_id = update_info.get_uniq_id()
+        pickle = cpickle_dumps(update_info)
+        # Update the pickle and unique_id after finding by original uniq_id
+        query = "UPDATE OR ROLLBACK %s SET pickle = ?, uniq_id = ? WHERE uniq_id = ?"
+
+        params = (pickle, new_uniq_id, old_uniq_id)
+        try:
+            self.db.execute(query % self.table_name, params)
+        except Exception, e:
+            raise DBException(str(e))
     def add_observer(self, location_a, location_b, observer):
         """
         Add the observer function to the observer list. The function will be

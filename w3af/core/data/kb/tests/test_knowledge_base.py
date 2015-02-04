@@ -24,6 +24,7 @@ import unittest
 from mock import Mock, call
 
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.exceptions import DBException
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.knowledge_base import kb, DBKnowledgeBase
@@ -651,23 +652,31 @@ class TestKnowledgeBase(unittest.TestCase):
         w3af_core.quit()
 
     def test_update_info(self):
-	info = MockInfo()
-	kb.append('a', 'b', info)
-	update_info = Info.from_info(info)
-	update_info.set_name('a')
-	update_uniq_id = update_info.get_uniq_id()
-	kb.update(info, update_info)
+        info = MockInfo()
+        kb.append('a', 'b', info)
+        update_info = Info.from_info(info)
+        update_info.set_name('a')
+        update_uniq_id = update_info.get_uniq_id()
+        kb.update(info, update_info)
 
-	self.assertNotEqual(update_info, info)
-	self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
+        self.assertNotEqual(update_info, info)
+        self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
 
     def test_update_vuln(self):
-	vuln = MockVuln()
-	kb.append('a', 'b', vuln)
-	update_vuln = Vuln.from_vuln(vuln)
-	update_vuln.set_name('a')
-	update_uniq_id = update_vuln.get_uniq_id()
-	kb.update(vuln, update_vuln)
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        update_vuln = Vuln.from_vuln(vuln)
+        update_vuln.set_name('a')
+        update_uniq_id = update_vuln.get_uniq_id()
+        kb.update(vuln, update_vuln)
 
-	self.assertNotEqual(update_vuln, vuln)
-	self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
+        self.assertNotEqual(update_vuln, vuln)
+        self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_exception(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        # Cause error by changing vuln uniq_id
+        update_vuln = vuln
+        update_vuln.set_name('a')
+        self.assertRaises(DBException, kb.update, vuln, update_vuln)
