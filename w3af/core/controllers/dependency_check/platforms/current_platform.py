@@ -30,7 +30,7 @@ from .mac import MacOSX
 from .openbsd import OpenBSD5
 from .suse import SuSE
 from .default import DefaultPlatform
-from .LinuxMint17 import LinuxMint17
+from .linuxMint17 import LinuxMint17
 
 KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
                    OpenBSD5, SuSE, Ubuntu1404, LinuxMint17]
