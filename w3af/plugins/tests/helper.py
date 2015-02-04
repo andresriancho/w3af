@@ -418,8 +418,8 @@ class ExecExploitTest(ReadExploitTest):
                                                            exploit_plugin)
         
         etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd',])
-        self.assertTrue('root' in etc_passwd)
-        self.assertTrue('/bin/bash' in etc_passwd)
+        self.assertIn('root', etc_passwd)
+        self.assertIn('/bin/bash', etc_passwd)
         
         _help = shell.help(None)
         self.assertIn('execute', _help)
