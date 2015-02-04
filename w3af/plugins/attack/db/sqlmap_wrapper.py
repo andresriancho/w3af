@@ -34,9 +34,11 @@ from w3af.core.controllers.daemons.proxy import Proxy
 
 class SQLMapWrapper(object):
 
+    OUTPUT_DIR = '%s/%s' % (tempfile.gettempdir(), os.getpid())
     DEBUG_ARGS = ['-v6']
-    DEFAULT_ARGS = [sys.executable, 'sqlmap.py',
-                    '--output-dir=%s' % tempfile.gettempdir()]
+    DEFAULT_ARGS = [sys.executable,
+                    'sqlmap.py',
+                    '--output-dir=%s' % OUTPUT_DIR]
 
     SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
@@ -129,6 +131,9 @@ class SQLMapWrapper(object):
         
         :return: A Popen object.
         """
+        if not os.path.exists(self.OUTPUT_DIR):
+            os.mkdir(self.OUTPUT_DIR)
+
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = self.DEFAULT_ARGS + final_params + target_params
