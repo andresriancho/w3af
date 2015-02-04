@@ -106,11 +106,10 @@ def main(args):
                            name='Controller',
                            args=(pool,))
     controller.start()
-    with open(args.targets) as targets:
-        for line in targets:
-            target_uri = line.rstrip()
-            pool.apply_async(start_executor,
-                             (target_uri, args.profile, args.timeout))
+    for line in args.targets:
+        target_uri = line.rstrip()
+        pool.apply_async(start_executor,
+                         (target_uri, args.profile, args.timeout))
     pool.close()
     pool.join()
     if not STOPSCAN.is_set():
@@ -129,6 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', default=300, dest='timeout', type=int,
                         help='target scan timeout in seconds')
     parser.add_argument('-P', dest='profile', required=True,
-                        help='path to w3af profile')
-    parser.add_argument('targets', help='path to file with list of targets')
+                        help='builtin profile name or path to pw3af file')
+    parser.add_argument('targets', type=argparse.FileType(),
+                        help='path to file with list of targets')
     main(parser.parse_args())
