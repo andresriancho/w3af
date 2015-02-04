@@ -10,7 +10,7 @@ import multiprocessing as mp
 import multiprocessing.dummy as mpd
 
 
-WAIT_TIMEOUT = 30
+WAIT_TIMEOUT = 30  # in seconds
 STOPSCAN = mp.Event()
 logger = logging.getLogger('w3af_batch')
 
@@ -59,7 +59,7 @@ def execute_scan(target, profile, timeout):
 def start_executor(target, profile, timeout):
     """
     Start w3af scan in a separate process. Terminate child process after
-    2 * timeout seconds.
+    WAIT_TIMEOUT seconds.
 
     :param target: Target uri
     :param profile: Profile's internal name of path to pw3af file
@@ -93,13 +93,11 @@ def main(args):
     threads is created. Each thread receives a target to scan. Manager
     thread executes scan in a separate process. Scanner process will
     try to stop w3af after timeout seconds. In addition manager thread
-    will terminate the child process if its execution time exceeds
-    2 x timeout seconds.
+    will terminate the child process after WAIT_TIMEOUT seconds.
     """
-
     def terminate_scan(pool):
         """
-        Terminate pool tasks processing in case of SIGINT.
+        Terminate processing of pool tasks in case of SIGINT.
         """
         if STOPSCAN.wait():
             pool.terminate()
