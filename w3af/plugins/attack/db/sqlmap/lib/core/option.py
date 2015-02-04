@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -15,6 +15,7 @@ import re
 import socket
 import string
 import sys
+import tempfile
 import threading
 import time
 import urllib2
@@ -51,6 +52,7 @@ from lib.core.common import readCachedFileContent
 from lib.core.common import readInput
 from lib.core.common import resetCookieJar
 from lib.core.common import runningAsAdmin
+from lib.core.common import safeExpandUser
 from lib.core.common import sanitizeStr
 from lib.core.common import setOptimize
 from lib.core.common import setPaths
@@ -475,11 +477,12 @@ def _adjustLoggingFormatter():
         return
 
     def format(record):
-        _ = boldifyMessage(FORMATTER._format(record))
-        if kb.prependFlag:
-            _ = "\n%s" % _
+        message = FORMATTER._format(record)
+        message = boldifyMessage(message)
+        if kb.get("prependFlag"):
+            message = "\n%s" % message
             kb.prependFlag = False
-        return _
+        return message
 
     FORMATTER._format = FORMATTER.format
     FORMATTER.format = format
@@ -495,7 +498,7 @@ def _setRequestFromFile():
 
     addedTargetUrls = set()
 
-    conf.requestFile = os.path.expanduser(conf.requestFile)
+    conf.requestFile = safeExpandUser(conf.requestFile)
 
     infoMsg = "parsing HTTP request from '%s'" % conf.requestFile
     logger.info(infoMsg)
@@ -618,7 +621,7 @@ def _setBulkMultipleTargets():
     if not conf.bulkFile:
         return
 
-    conf.bulkFile = os.path.expanduser(conf.bulkFile)
+    conf.bulkFile = safeExpandUser(conf.bulkFile)
 
     infoMsg = "parsing multiple targets list from '%s'" % conf.bulkFile
     logger.info(infoMsg)
@@ -1267,9 +1270,9 @@ def _setHTTPAuthentication():
         debugMsg = "setting the HTTP(s) authentication PEM private key"
         logger.debug(debugMsg)
 
-        key_file = os.path.expanduser(conf.authPrivate)
-        checkFile(key_file)
-        authHandler = HTTPSPKIAuthHandler(key_file)
+        _ = safeExpandUser(conf.authPrivate)
+        checkFile(_)
+        authHandler = HTTPSPKIAuthHandler(_)
 
 def _setHTTPExtraHeaders():
     if conf.headers:
@@ -1437,6 +1440,30 @@ def _checkDependencies():
     if conf.dependencies:
         checkDependencies()
 
+def _createTemporaryDirectory():
+    """
+    Creates temporary directory for this run.
+    """
+
+    try:
+        if not os.path.isdir(tempfile.gettempdir()):
+            os.makedirs(tempfile.gettempdir())
+    except IOError, ex:
+        errMsg = "there has been a problem while accessing "
+        errMsg += "system's temporary directory location(s) ('%s'). Please " % ex
+        errMsg += "make sure that there is enough disk space left. If problem persists, "
+        errMsg += "try to set environment variable 'TEMP' to a location "
+        errMsg += "writeable by the current user"
+        raise SqlmapSystemException, errMsg
+
+    if "sqlmap" not in (tempfile.tempdir or ""):
+        tempfile.tempdir = tempfile.mkdtemp(prefix="sqlmap", suffix=str(os.getpid()))
+
+    kb.tempDir = tempfile.tempdir
+
+    if not os.path.isdir(tempfile.tempdir):
+        os.makedirs(tempfile.tempdir)
+
 def _cleanupOptions():
     """
     Cleanup configuration attributes.
@@ -1454,7 +1481,7 @@ def _cleanupOptions():
 
     for key, value in conf.items():
         if value and any(key.endswith(_) for _ in ("Path", "File")):
-            conf[key] = os.path.expanduser(value)
+            conf[key] = safeExpandUser(value)
 
     if conf.testParameter:
         conf.testParameter = urldecode(conf.testParameter)
@@ -1760,6 +1787,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.storeHashesChoice = None
     kb.suppressResumeInfo = False
     kb.technique = None
+    kb.tempDir = None
     kb.testMode = False
     kb.testQueryCount = 0
     kb.testType = None
@@ -2246,8 +2274,8 @@ def _basicOptionValidation():
         errMsg = "switch '--check-tor' requires usage of switch '--tor' (or option '--proxy' with HTTP proxy address using Tor)"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.torPort is not None and not (isinstance(conf.torPort, int) and conf.torPort > 0):
-        errMsg = "value for option '--tor-port' must be a positive integer"
+    if conf.torPort is not None and not (isinstance(conf.torPort, int) and conf.torPort >= 0 and conf.torPort <= 65535):
+        errMsg = "value for option '--tor-port' must be in range 0-65535"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.torType not in getPublicTypeMembers(PROXY_TYPE, True):
@@ -2332,6 +2360,7 @@ def init():
     _cleanupOptions()
     _purgeOutput()
     _checkDependencies()
+    _createTemporaryDirectory()
     _basicOptionValidation()
     _setProxyList()
     _setTorProxySettings()

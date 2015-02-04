@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -215,6 +215,7 @@ DEPRECATED_OPTIONS = {
                         "--no-unescape": "use '--no-escape' instead",
                         "--binary": "use '--binary-fields' instead",
                         "--check-payload": None,
+                        "--check-waf": None,
                      }
 
 DUMP_DATA_PREPROCESS = {

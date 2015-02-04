@@ -27,6 +27,7 @@ import time
 import traceback
 import urllib
 import urllib2
+import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
@@ -513,7 +514,7 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
         
-        except (socket.error, URLTimeoutError, ConnectionPoolException), e:
+        except (socket.error, URLTimeoutError, ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:

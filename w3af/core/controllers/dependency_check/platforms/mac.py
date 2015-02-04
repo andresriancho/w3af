@@ -25,8 +25,7 @@ import platform
 
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 from .base_platform import Platform
-from ..requirements import (CORE_PIP_PACKAGES, GUI_PIP_PACKAGES,
-                            GUI_PIP_EXTRAS, CORE, GUI)
+from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_EXTRAS, CORE, GUI
 
 
 TWO_PYTHON_MSG = """\
@@ -70,7 +69,7 @@ class MacOSX(Platform):
     # Python port includes the dev headers
     CORE_SYSTEM_PACKAGES = ['py27-pip', 'python27', 'py27-setuptools', 'gcc48',
                             'autoconf', 'automake', 'git-core', 'py27-pcapy',
-                            'py27-libdnet']
+                            'py27-libdnet', 'libffi']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'py27-pygtksourceview',

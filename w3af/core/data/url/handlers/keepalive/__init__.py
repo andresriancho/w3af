@@ -1,137 +1,50 @@
-#   This library is free software; you can redistribute it and/or
-#   modify it under the terms of the GNU Lesser General Public
-#   License as published by the Free Software Foundation; either
-#   version 2.1 of the License, or (at your option) any later version.
-#
-#   This library is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#   Lesser General Public License for more details.
-#
-#   You should have received a copy of the GNU Lesser General Public
-#   License along with this library; if not, write to the
-#     Free Software Foundation, Inc.,
-#     59 Temple Place, Suite 330,
-#     Boston, MA  02111-1307  USA
-
-# This file is part of urlgrabber, a high-level cross-protocol url-grabber
-# Copyright 2002-2004 Michael D. Stenner, Ryan Tomayko
-
-# This file was modified (considerably) to be integrated with w3af. Some
-# modifications are:
-#   - Added the size limit for responses
-#   - Raising ConnectionPoolException in some places
-#   - Modified the HTTPResponse object in order to be able to perform multiple
-#     reads, and added a hack for the HEAD method.
-
-"""An HTTP handler for urllib2 that supports HTTP 1.1 and keepalive.
-
->> import urllib2
->> from keepalive import HTTPHandler
->> keepalive_handler = HTTPHandler()
->> opener = urllib2.build_opener(keepalive_handler)
->> urllib2.install_opener(opener)
->>
->> fo = urllib2.urlopen('http://www.python.org')
-
-If a connection to a given host is requested, and all of the existing
-connections are still in use, another connection will be opened.  If
-the handler tries to use an existing connection but it fails in some
-way, it will be closed and removed from the pool.
-
-To remove the handler, simply re-run build_opener with no arguments, and
-install that opener.
-
-You can explicitly close connections by using the close_connection()
-method of the returned file-like object (described below) or you can
-use the handler methods:
-
-  close_connection(host)
-  close_all()
-  get_open_connections()
-
-NOTE: using the close_connection and close_all methods of the handler
-should be done with care when using multiple threads.
-  * there is nothing that prevents another thread from creating new
-    connections immediately after connections are closed
-  * no checks are done to prevent in-use connections from being closed
-
->> keepalive_handler.close_all()
-
-EXTRA ATTRIBUTES AND METHODS
-
-  Upon a status of 200, the object returned has a few additional
-  attributes and methods, which should not be used if you want to
-  remain consistent with the normal urllib2-returned objects:
-
-    close_connection()  -  close the connection to the host
-    readlines()      -  you know, readlines()
-    status            -  the return status (ie 404)
-    reason            -  english translation of status (ie 'File not found')
-
-  If you want the best of both worlds, use this inside an
-  AttributeError-catching try:
-
-    >> try:
-    ...     status = fo.status
-    ... except AttributeError:
-    ...     status = None
-
-  Unfortunately, these are ONLY there if status == 200, so it's not
-  easy to distinguish between non-200 responses.  The reason is that
-  urllib2 tries to do clever things with error codes 301, 302, 401,
-  and 407, and it wraps the object upon return.
-
-  For python versions earlier than 2.4, you can avoid this fancy error
-  handling by setting the module-level global HANDLE_ERRORS to zero.
-  You see, prior to 2.4, it's the HTTP Handler's job to determine what
-  to handle specially, and what to just pass up.  HANDLE_ERRORS == 0
-  means "pass everything up".  In python 2.4, however, this job no
-  longer belongs to the HTTP Handler and is now done by a NEW handler,
-  HTTPErrorProcessor.  Here's the bottom line:
-
-    python version < 2.4
-        HANDLE_ERRORS == 1  (default) pass up 200, treat the rest as
-                            errors
-        HANDLE_ERRORS == 0  pass everything up, error processing is
-                            left to the calling code
-    python version >= 2.4
-        HANDLE_ERRORS == 1  pass up 200, treat the rest as errors
-        HANDLE_ERRORS == 0  (default) pass everything up, let the
-                            other handlers (specifically,
-                            HTTPErrorProcessor) decide what to do
-
-  In practice, setting the variable either way makes little difference
-  in python 2.4, so for the most consistent behavior across versions,
-  you probably just want to use the defaults, which will give you
-  exceptions on errors.
-
 """
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
 
-# $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
 
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the
+    Free Software Foundation, Inc.,
+    59 Temple Place, Suite 330,
+    Boston, MA  02111-1307  USA
+
+This file is part of urlgrabber, a high-level cross-protocol url-grabber
+Copyright 2002-2004 Michael D. Stenner, Ryan Tomayko
+
+This file was modified (considerably) to be integrated with w3af. Some
+modifications are:
+  - Added the size limit for responses
+  - Raising ConnectionPoolException in some places
+  - Modified the HTTPResponse object in order to be able to perform multiple
+    reads, and added a hack for the HEAD method.
+  - SNI support for SSL
+"""
 import urllib2
 import httplib
 import operator
 import socket
 import threading
-import urllib
-import sys
 import time
-import ssl
 
-import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.config as cf
+import OpenSSL
 
-from w3af.core.data.constants.response_codes import NO_CONTENT
+from .utils import debug, error, to_utf8_raw
+from .http_response import HTTPResponse
+from .connections import (ProxyHTTPConnection, ProxyHTTPSConnection,
+                          HTTPConnection, HTTPSConnection)
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ConnectionPoolException)
 
 
-HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
-DEBUG = False
-
+# Config
 # Max connections allowed per host.
 MAX_CONNECTIONS = 50
 
@@ -149,216 +62,6 @@ class URLTimeoutError(urllib2.URLError):
             return 'HTTP timeout error after %s seconds.' % default_timeout
         else:
             return 'HTTP timeout error.'
-
-
-def close_on_error(read_meth):
-    """
-    Decorator function. When calling decorated `read_meth` if an error occurs
-    we'll proceed to invoke `inst`'s close() method.
-    """
-    def new_read_meth(inst):
-        try:
-            return read_meth(inst)
-        except httplib.HTTPException:
-            inst.close()
-            raise
-    return new_read_meth
-
-
-class HTTPResponse(httplib.HTTPResponse):
-    # we need to subclass HTTPResponse in order to
-    # 1) add readline() and readlines() methods
-    # 2) add close_connection() methods
-    # 3) add info() and geturl() methods
-
-    # in order to add readline(), read must be modified to deal with a
-    # buffer.  example: readline must read a buffer and then spit back
-    # one line at a time.  The only real alternative is to read one
-    # BYTE at a time (ick).  Once something has been read, it can't be
-    # put back (ok, maybe it can, but that's even uglier than this),
-    # so if you THEN do a normal read, you must first take stuff from
-    # the buffer.
-
-    # the read method wraps the original to accommodate buffering,
-    # although read() never adds to the buffer.
-    # Both readline and readlines have been stolen with almost no
-    # modification from socket.py
-
-    def __init__(self, sock, debuglevel=0, strict=0, method=None):
-        httplib.HTTPResponse.__init__(self, sock, debuglevel, strict=strict,
-                                      method=method)
-        self.fileno = sock.fileno
-        self.code = None
-        self._rbuf = ''
-        self._rbufsize = 8096
-        self._handler = None     # inserted by the handler later
-        self._host = None        # (same)
-        self._url = None         # (same)
-        self._connection = None  # (same)
-        self._method = method
-        self._multiread = None
-        self._encoding = None
-        self._time = None
-
-    def geturl(self):
-        return self._url
-
-    URL = property(geturl)
-
-    def get_encoding(self):
-        return self._encoding
-
-    def set_encoding(self, enc):
-        self._encoding = enc
-    
-    encoding = property(get_encoding, set_encoding)
-
-    def set_wait_time(self, t):
-        self._time = t
-
-    def get_wait_time(self):
-        return self._time
-
-    def _raw_read(self, amt=None):
-        """
-        This is the original read function from httplib with a minor
-        modification that allows me to check the size of the file being
-        fetched, and throw an exception in case it is too big.
-        """
-        if self.fp is None:
-            return ''
-
-        max_file_size = cf.cf.get('max_file_size') or None
-        if max_file_size:
-            if self.length > max_file_size:
-                self.status = NO_CONTENT
-                self.reason = 'No Content'  # Reason-Phrase
-                self.close()
-                return ''
-
-        if self.chunked:
-            return self._read_chunked(amt)
-
-        if amt is None:
-            # unbounded read
-            if self.length is None:
-                s = self.fp.read()
-            else:
-                s = self._safe_read(self.length)
-                self.length = 0
-            self.close()        # we read everything
-            return s
-
-        if self.length is not None:
-            if amt > self.length:
-                # clip the read to the "end of response"
-                amt = self.length
-
-        # we do not use _safe_read() here because this may be a .will_close
-        # connection, and the user is reading more bytes than will be provided
-        # (for example, reading in 1k chunks)
-        s = self.fp.read(amt)
-        if self.length is not None:
-            self.length -= len(s)
-
-        return s
-
-    def close(self):
-        # First call parent's close()
-        httplib.HTTPResponse.close(self)
-        if self._handler:
-            self._handler._request_closed(self._connection)
-
-    def close_connection(self):
-        self._handler._remove_connection(self._host, self._connection)
-        self.close()
-
-    def info(self):
-        # pylint: disable=E1101
-        return self.headers
-        # pylint: enable=E1101
-
-    @close_on_error
-    def read(self, amt=None):
-        # w3af does always read all the content of the response, and I also need
-        # to do multiple reads to this response...
-        #
-        # BUGBUG: Is this OK? What if a HEAD method actually returns something?!
-        if self._method == 'HEAD':
-            # This indicates that we have read all that we needed from the socket
-            # and that the socket can be reused!
-            #
-            # This like fixes the bug with title "GET is much faster than HEAD".
-            # https://sourceforge.net/tracker2/?func=detail&aid=2202532&group_id=170274&atid=853652
-            self.close()
-            return ''
-
-        if self._multiread is None:
-            #read all
-            self._multiread = self._raw_read()
-
-        if not amt is None:
-            L = len(self._rbuf)
-            if amt > L:
-                amt -= L
-            else:
-                s = self._rbuf[:amt]
-                self._rbuf = self._rbuf[amt:]
-                return s
-        else:
-            s = self._rbuf + self._multiread
-            self._rbuf = ''
-            return s
-
-    def readline(self, limit=-1):
-        i = self._rbuf.find('\n')
-        while i < 0 and not (0 < limit <= len(self._rbuf)):
-            new = self._raw_read(self._rbufsize)
-            if not new:
-                break
-            i = new.find('\n')
-            if i >= 0:
-                i += len(self._rbuf)
-            self._rbuf = self._rbuf + new
-        if i < 0:
-            i = len(self._rbuf)
-        else:
-            i += 1
-        if 0 <= limit < len(self._rbuf):
-            i = limit
-        data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
-        return data
-
-    @close_on_error
-    def readlines(self, sizehint=0):
-        total = 0
-        line_list = []
-        while 1:
-            line = self.readline()
-            if not line:
-                break
-            line_list.append(line)
-            total += len(line)
-            if sizehint and total >= sizehint:
-                break
-        return line_list
-
-    def set_body(self, data):
-        """
-        This was added to make my life a lot simpler while implementing mangle
-        plugins
-        """
-        self._multiread = data
-
-
-def debug(msg):
-    if DEBUG:
-        om.out.debug(msg)
-
-
-def error(msg):
-    if DEBUG:
-        om.out.error(msg)
 
 
 class ConnectionManager(object):
@@ -649,12 +352,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host)
             raise URLTimeoutError()
 
-        except socket.error:
-            # We better discard this connection
-            self._cm.remove_connection(conn, host)
-            raise
-        
-        except httplib.HTTPException:
+        except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
             self._cm.remove_connection(conn, host)
             raise
@@ -811,124 +509,3 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
             return HTTPSConnection(host)
 
 
-class _HTTPConnection(httplib.HTTPConnection):
-
-    def __init__(self, host, port=None, strict=None,
-                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
-        httplib.HTTPConnection.__init__(self, host, port, strict,
-                                        timeout=timeout)
-        self.is_fresh = True
-
-
-class ProxyHTTPConnection(_HTTPConnection):
-    """
-    this class is used to provide HTTPS CONNECT support.
-    """
-    _ports = {'http': 80, 'https': 443}
-
-    def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict)
-
-    def proxy_setup(self, url):
-        #request is called before connect, so can interpret url and get
-        #real host/port to be used to make CONNECT request to proxy
-        proto, rest = urllib.splittype(url)
-        if proto is None:
-            raise ValueError("unknown URL type: %s" % url)
-        #get host
-        host, rest = urllib.splithost(rest)
-        self._real_host = host
-
-        #try to get port
-        host, port = urllib.splitport(host)
-        #if port is not defined try to get from proto
-        if port is None:
-            try:
-                self._real_port = self._ports[proto]
-            except KeyError:
-                raise ValueError("unknown protocol for: %s" % url)
-        else:
-            self._real_port = int(port)
-
-    def connect(self):
-        httplib.HTTPConnection.connect(self)
-        
-        #send proxy CONNECT request
-        new_line = '\r\n'
-        self.send("CONNECT %s:%d HTTP/1.1%s" % (self._real_host,
-                                                self._real_port,
-                                                new_line))
-        
-        connect_headers = {'Proxy-Connection': 'keep-alive',
-                           'Connection': 'keep-alive',
-                           'Host': self._real_host}
-        
-        for header_name, header_value in connect_headers.items():
-            self.send('%s: %s%s' % (header_name, header_value, new_line))
-        
-        self.send(new_line)
-        
-        #expect a HTTP/1.0 200 Connection established
-        response = self.response_class(self.sock, strict=self.strict,
-                                       method=self._method)
-        (version, code, message) = response._read_status()
-        #probably here we can handle auth requests...
-        if code != 200:
-            #proxy returned and error, abort connection, and raise exception
-            self.close()
-            raise socket.error("Proxy connection failed: %d %s" %
-                              (code, message.strip()))
-        #eat up header block from proxy....
-        while True:
-            #should not use directly fp probably
-            line = response.fp.readline()
-            if line == '\r\n':
-                break
-
-
-class ProxyHTTPSConnection(ProxyHTTPConnection):
-    """
-    this class is used to provide HTTPS CONNECT support.
-    """
-    default_port = 443
-
-    # Customized response class
-    response_class = HTTPResponse
-
-    def __init__(self, host, port=None, key_file=None, cert_file=None,
-                 strict=None):
-        ProxyHTTPConnection.__init__(self, host, port)
-        self.key_file = key_file
-        self.cert_file = cert_file
-
-    def connect(self):
-        ProxyHTTPConnection.connect(self)
-        #make the sock ssl-aware
-        ssl_sock_inst = ssl.wrap_socket(self.sock, self.key_file,
-                                        self.cert_file)
-        self.sock = ssl_sock_inst
-
-
-def to_utf8_raw(unicode_or_str):
-    if isinstance(unicode_or_str, unicode):
-        # Is 'ignore' the best option here?
-        return unicode_or_str.encode('utf-8', 'ignore')
-    return unicode_or_str
-
-
-class HTTPConnection(_HTTPConnection):
-    # use the modified response class
-    response_class = HTTPResponse
-
-    def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict)
-
-
-class HTTPSConnection(httplib.HTTPSConnection):
-    response_class = HTTPResponse
-
-    def __init__(self, host, port=None, key_file=None, cert_file=None,
-                 strict=None):
-        httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
-                                         strict)
-        self.is_fresh = True

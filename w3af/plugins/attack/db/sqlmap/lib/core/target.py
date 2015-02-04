@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -97,6 +97,7 @@ def _setRequestParams():
 
     if conf.data is not None:
         conf.method = HTTPMETHOD.POST if not conf.method or conf.method == HTTPMETHOD.GET else conf.method
+        hintNames = []
 
         def process(match, repl):
             retVal = match.group(0)
@@ -109,7 +110,8 @@ def _setRequestParams():
                         retVal = retVal.replace(_.group(0), match.group(int(_.group(1)) if _.group(1).isdigit() else _.group(1)))
                     else:
                         break
-
+                if CUSTOM_INJECTION_MARK_CHAR in retVal:
+                    hintNames.append((retVal.split(CUSTOM_INJECTION_MARK_CHAR)[0], match.group("name")))
             return retVal
 
         if kb.processUserMarks is None and CUSTOM_INJECTION_MARK_CHAR in conf.data:
@@ -181,7 +183,7 @@ def _setRequestParams():
                     kb.postHint = POST_HINT.SOAP if "soap" in conf.data.lower() else POST_HINT.XML
 
             elif re.search(MULTIPART_RECOGNITION_REGEX, conf.data):
-                message = "Multipart like data found in %s data. " % conf.method
+                message = "Multipart-like data found in %s data. " % conf.method
                 message += "Do you want to process it? [Y/n/q] "
                 test = readInput(message, default="Y")
                 if test and test[0] in ("q", "Q"):
@@ -280,7 +282,15 @@ def _setRequestParams():
                     parts = value.split(CUSTOM_INJECTION_MARK_CHAR)
 
                     for i in xrange(len(parts) - 1):
-                        conf.paramDict[place]["%s#%d%s" % (("%s " % kb.postHint) if kb.postHint else "", i + 1, CUSTOM_INJECTION_MARK_CHAR)] = "".join("%s%s" % (parts[j], CUSTOM_INJECTION_MARK_CHAR if i == j else "") for j in xrange(len(parts)))
+                        name = None
+                        if kb.postHint:
+                            for ending, _ in hintNames:
+                                if parts[i].endswith(ending):
+                                    name = "%s %s" % (kb.postHint, _)
+                                    break
+                        if name is None:
+                            name = "%s#%s%s" % (("%s " % kb.postHint) if kb.postHint else "", i + 1, CUSTOM_INJECTION_MARK_CHAR)
+                        conf.paramDict[place][name] = "".join("%s%s" % (parts[j], CUSTOM_INJECTION_MARK_CHAR if i == j else "") for j in xrange(len(parts)))
 
                     if place == PLACE.URI and PLACE.GET in conf.paramDict:
                         del conf.paramDict[PLACE.GET]
@@ -585,7 +595,7 @@ def _createTargetDirs():
         except (OSError, IOError), ex:
             try:
                 tempDir = tempfile.mkdtemp(prefix="sqlmapoutput")
-            except IOError, _:
+            except Exception, _:
                 errMsg = "unable to write to the temporary directory ('%s'). " % _
                 errMsg += "Please make sure that your disk is not full and "
                 errMsg += "that you have sufficient write permissions to "
@@ -607,7 +617,7 @@ def _createTargetDirs():
         except (OSError, IOError), ex:
             try:
                 tempDir = tempfile.mkdtemp(prefix="sqlmapoutput")
-            except IOError, _:
+            except Exception, _:
                 errMsg = "unable to write to the temporary directory ('%s'). " % _
                 errMsg += "Please make sure that your disk is not full and "
                 errMsg += "that you have sufficient write permissions to "

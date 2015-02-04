@@ -192,9 +192,20 @@ class ParserCache(object):
             # Just remove it so it doesn't use memory
             self._processes.pop(hash_string, None)
 
-            # Let other know that we're done
-            event = self._parser_finished_events.pop(hash_string)
-            event.set()
+            # Let other threads know that we're done
+            event = self._parser_finished_events.pop(hash_string, None)
+
+            if event is not None:
+                # There is a really rare race condition where more than one
+                # thread calls _parse_http_response_in_worker and queues the
+                # same hash_string for processing, since it's so rare I believe
+                # the best way to fix it is to:
+                #
+                #   * Avoid adding a lock
+                #   * Accept that in these rare edge case we'll waste some CPU
+                #
+                # https://circleci.com/gh/andresriancho/w3af/1354
+                event.set()
 
         return parser_output
 
