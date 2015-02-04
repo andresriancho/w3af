@@ -10,6 +10,7 @@ import multiprocessing as mp
 import multiprocessing.dummy as mpd
 
 
+WAIT_TIMEOUT = 30
 STOPSCAN = mp.Event()
 logger = logging.getLogger('w3af_batch')
 
@@ -32,7 +33,8 @@ def execute_scan(target, profile, timeout):
         """
         if scanner.status.is_running():
             scanner.stop()
-            logger.info('Scan of target %s is stopped', target)
+            logger.info('Stop scan of %s because of configured timeout',
+                        target)
 
     from w3af.core.controllers.w3afCore import w3afCore
     from w3af.core.data.kb.knowledge_base import kb
@@ -65,16 +67,18 @@ def start_executor(target, profile, timeout):
     """
     def stop_executor(executor, target):
         """
-        Stop w3af scanner process after timeout.
+        Force stop of w3af scanner process after WAIT_TIMEOUT.
         """
         if executor.is_alive():
             executor.terminate()
-            logger.info('Scan of target %s is terminated', target)
+            logger.info('Terminate scan proccess of %s '
+                        'after waiting for w3afCore.stop()',
+                        target)
 
     executor = mp.Process(target=execute_scan,
                           name='Executor',
                           args=(target, profile, timeout))
-    timer = th.Timer(2 * timeout, stop_executor, (executor, target))
+    timer = th.Timer(timeout + WAIT_TIMEOUT, stop_executor, (executor, target))
     timer.start()
     executor.start()
     executor.join()
@@ -126,7 +130,7 @@ if __name__ == '__main__':
                         help='number of worker processes '
                              '(default: number of CPUs)')
     parser.add_argument('-t', default=300, dest='timeout', type=int,
-                        help='target scan timeout in seconds')
+                        help='target scan timeout in seconds (default: 300)')
     parser.add_argument('-P', dest='profile', required=True,
                         help='builtin profile name or path to pw3af file')
     parser.add_argument('targets', type=argparse.FileType(),
