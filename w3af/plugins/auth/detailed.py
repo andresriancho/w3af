@@ -62,23 +62,33 @@ class detailed(AuthPlugin):
             functor = getattr(self._uri_opener, self.method)
 
             redir_count = 0
+            working_auth_url = self.auth_url
 
             while True:
                 if redir_count > 5:
-                    break
+                    raise Exception("Authentication seems to have"
+                                    "entered endless HTTP redirect"
+                                    "loop: {0} redirects, last URL was {1}"
+                                    .format(redir_count, working_auth_url))
+
                 # actually file the auth HTTP reuqest
                 r = functor(self.auth_url, data)
 
                 # follow redirects if the feature is enabled
                 if self.follow_redirects and r.get_code() in GET_HEAD_CODES:
-                    self.auth_url.set_path(r.get_headers().iget('location')[0])
-                    om.out.debug('Auth redirected to new URL', self.auth_url)
+                    working_auth_url.set_path(r.get_headers().iget('location')[0])
+                    om.out.debug('Auth redirected to new URL', working_auth_url)
+                    # on HTTP redirect we can only follow up with GET
                     self.method = 'GET'
+                    # do not send any data on redirect
                     data = ''
+                    # avoid endless loops
                     redir_count += 1
                 else:
+                    # no redirect received, continue
                     break
 
+            # check if we're logged in
             if not self.is_logged():
                 raise Exception("Can't login into web application as %s/%s"
                                 % (self.username, self.password))
@@ -180,7 +190,7 @@ class detailed(AuthPlugin):
             ('follow_redirects',
              self.follow_redirects,
              'boolean',
-             'Follow HTTP redirects on multi-stage authentication pages'),
+             'Follow HTTP redirects in multi-stage authentication workflows'),
             ('method',
              self.method,
              'string',
