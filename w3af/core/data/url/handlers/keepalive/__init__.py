@@ -31,8 +31,9 @@ import httplib
 import operator
 import socket
 import threading
-
 import time
+
+import OpenSSL
 
 from .utils import debug, error, to_utf8_raw
 from .http_response import HTTPResponse
@@ -351,12 +352,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host)
             raise URLTimeoutError()
 
-        except socket.error:
-            # We better discard this connection
-            self._cm.remove_connection(conn, host)
-            raise
-        
-        except httplib.HTTPException:
+        except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
             self._cm.remove_connection(conn, host)
             raise
