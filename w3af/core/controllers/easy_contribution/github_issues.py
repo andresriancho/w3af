@@ -31,21 +31,21 @@ from github import GithubException
 from w3af.core.controllers.exception_handling.helpers import get_versions
 
 
-TICKET_TEMPLATE = string.Template(
-"""# User description
-$user_desc
-## Version Information
-```
-$w3af_v
-```
-## Traceback
-```pytb
-$t_back
-```
-## Enabled Plugins
-```python
-$plugins
-```""")
+DEFAULT_BUG_QUERY_TEXT = """What steps will reproduce the problem?
+1.
+2.
+3.
+
+What is the expected output? What do you see instead?
+
+
+What operating system are you using?
+
+
+Please provide any additional information below:
+
+
+"""
 
 TICKET_URL_FMT = 'https://github.com/andresriancho/w3af/issues/%s'
 
@@ -134,11 +134,13 @@ class GithubIssues(object):
                 m.update(time.ctime())
                 bug_summary = m.hexdigest()
 
-        # Generate the summary string. Concat 'user_title'. If empty, append a
-        # random token to avoid the double click protection added by sourceforge.
+        # Generate the summary string. Concat 'user_title'
         summary = '%sBug Report - %s' % (
             autogen and '[Auto-Generated] ' or '',
             bug_summary)
+
+        if desc.strip() == DEFAULT_BUG_QUERY_TEXT.strip():
+            desc = ''
 
         #
         #    Define which description to use (depending on the availability of an
@@ -149,13 +151,26 @@ class GithubIssues(object):
                         'contact: %s'
             desc += email_fmt % email
 
-        #
-        #    Apply all the info
-        #
-        bdata = {'plugins': plugins, 't_back': tback,
-                 'user_desc': desc, 'w3af_v': get_versions()}
-
         # Build details string
-        details = TICKET_TEMPLATE.safe_substitute(bdata)
+        details = ''
+        if desc:
+            details += desc
+            details += '\n'
+
+        details += '## Version Information\n'
+        details += '```\n'
+        details += get_versions()
+        details += '\n```\n'
+
+        details += '## Traceback\n'
+        details += '```pytb\n'
+        details += tback
+        details += '\n```\n'
+
+        if plugins:
+            details += '## Enabled Plugins\n'
+            details += '```python\n'
+            details += plugins
+            details += '\n```\n'
 
         return summary, details
