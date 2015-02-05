@@ -285,7 +285,8 @@ class ProcessDocumentParser(DocumentParser):
 
 @atexit.register
 def cleanup_pool():
-    dpc.stop_workers()
+    if 'dpc' in globals():
+        dpc.stop_workers()
     
 
 def init_worker(log_queue):
