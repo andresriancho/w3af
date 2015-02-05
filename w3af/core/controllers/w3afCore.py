@@ -264,6 +264,10 @@ class w3afCore(object):
                                      worker_names='WorkerThread')
 
         if not self._worker_pool.is_running():
+            # Clean-up the old worker pool
+            self._worker_pool.terminate_join()
+
+            # Create a new one
             self._worker_pool = Pool(self.WORKER_THREADS,
                                      worker_names='WorkerThread')
 
