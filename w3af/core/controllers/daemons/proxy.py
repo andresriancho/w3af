@@ -19,14 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import SocketServer
 import cStringIO
+import threading
 import traceback
+import httplib
 import socket
 import select
-import httplib
 import time
 import os
-import SocketServer
+
 
 from OpenSSL import SSL
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -527,7 +529,6 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
     """
     I want to use threads to handle all requests.
     """
-
     def serve_forever(self):
         """Handle one request at a time until stopped."""
         self.stop = False
@@ -540,6 +541,16 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
         
         msg = 'Exiting proxy server serve_forever(); stop() was successful.'
         om.out.debug(msg)
+
+    def process_request(self, request, client_address):
+        """
+        Start a new thread to process the request.
+        """
+        t = threading.Thread(target=self.process_request_thread,
+                             args=(request, client_address),
+                             name='ProxyServerWorker')
+        t.daemon = True
+        t.start()
 
     def server_bind(self):
         msg = 'Changing socket options of ProxyServer to (socket.SOL_SOCKET,'\
