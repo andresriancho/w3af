@@ -76,7 +76,8 @@ class ProcessPool(Pool):
 
         self._worker_handler = threading.Thread(
             target=Pool._handle_workers,
-            args=(self, )
+            args=(self, ),
+            name='PoolWorkerHandler'
             )
         self._worker_handler.daemon = True
         self._worker_handler._state = RUN
@@ -85,7 +86,8 @@ class ProcessPool(Pool):
         self._task_handler = threading.Thread(
             target=Pool._handle_tasks,
             args=(self._taskqueue, self._quick_put, self._outqueue,
-                  self._pool, self._cache)
+                  self._pool, self._cache),
+            name='PoolTaskHandler'
             )
         self._task_handler.daemon = True
         self._task_handler._state = RUN
@@ -93,7 +95,8 @@ class ProcessPool(Pool):
 
         self._result_handler = threading.Thread(
             target=Pool._handle_results,
-            args=(self._outqueue, self._quick_get, self._cache)
+            args=(self._outqueue, self._quick_get, self._cache),
+            name='PoolResultHandler'
             )
         self._result_handler.daemon = True
         self._result_handler._state = RUN

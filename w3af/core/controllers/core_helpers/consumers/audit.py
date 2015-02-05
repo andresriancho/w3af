@@ -35,7 +35,6 @@ class audit(BaseConsumer):
 
     def __init__(self, audit_plugins, w3af_core):
         """
-        :param in_queue: The input queue that will feed the audit plugins
         :param audit_plugins: Instances of audit plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """
