@@ -62,7 +62,10 @@ try:
     #
     # We don't want that, so we're disabling it globally
     # https://github.com/andresriancho/w3af/issues/8115
+    #
+    # pylint: disable=E1101
     ssl._create_default_https_context = ssl._create_unverified_context
+    # pylint: enable=E1101
 except AttributeError:
     pass
 
