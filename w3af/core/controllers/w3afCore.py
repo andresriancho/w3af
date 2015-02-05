@@ -405,11 +405,12 @@ class w3afCore(object):
         """
         This method is called when the process ends normally or by an error.
         """
-        # The scan has ended, and we've already joined() the workers in the
-        # strategy (in a nice way, waiting for them to finish before returning
-        # from strategy.start call), so there is no need to call this:
+        # The scan has ended, and we've already joined() the consumer threads
+        # from strategy (in a nice way, waiting for them to finish before
+        # returning from strategy.start call), so this terminate and join call
+        # should return really quick:
         #
-        #self.worker_pool.terminate_join()
+        self.worker_pool.terminate_join()
 
         try:
             # Close the output manager, this needs to be done BEFORE the end()
