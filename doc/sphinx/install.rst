@@ -98,6 +98,7 @@ In order to start the process, you need XCode and MacPorts installed.
 
 .. code-block:: console
 
+    sudo xcode-select --install
     sudo port selfupdate
     sudo port upgrade outdated
     sudo port install python27
