@@ -61,7 +61,8 @@ class spider_man(CrawlPlugin):
         # Create the proxy server
         try:
             self._proxy = Proxy(self._listen_address, self._listen_port,
-                                self._uri_opener, self.create_p_h())
+                                self._uri_opener, self.create_p_h(),
+                                name='SpiderManProxyThread')
         except ProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)
         
@@ -70,8 +71,10 @@ class spider_man(CrawlPlugin):
             
             msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
                    'your browser to use these proxy settings and navigate the '
-                   'target site.\nTo exit spider_man plugin please navigate to %s .'
-                   % (self._listen_address, self._listen_port, TERMINATE_URL))
+                   'target site.\nTo exit spider_man plugin please navigate'
+                   ' to %s .' % (self._listen_address,
+                                 self._listen_port,
+                                 TERMINATE_URL))
             om.out.information(msg)
             
             self._proxy.run()

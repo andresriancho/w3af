@@ -415,7 +415,7 @@ class Proxy(Process):
     SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
 
     def __init__(self, ip, port, uri_opener, proxy_handler=w3afProxyHandler,
-                 proxy_cert=SSL_CERT):
+                 proxy_cert=SSL_CERT, name='ProxyThread'):
         """
         :param ip: IP address to bind
         :param port: Port to bind
@@ -428,7 +428,7 @@ class Proxy(Process):
         """
         Process.__init__(self)
         self.daemon = True
-        self.name = 'ProxyThread'
+        self.name = name
         
         # Internal vars
         self._server = None
@@ -447,7 +447,7 @@ class Proxy(Process):
                                        self._proxy_handler)
         except socket.error, se:
             raise ProxyException('Socket error while starting proxy: "%s"'
-                                     % se.strerror)
+                                 % se.strerror)
         else:
             # This is here to support port == 0, which will bind to the first
             # available/free port, which we don't know until the server really
