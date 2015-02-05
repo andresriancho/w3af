@@ -340,8 +340,9 @@ class w3afCore(object):
             self.strategy.stop()
 
         stop_start_time = time.time()
-        
-        wait_max = 10 # seconds
+
+        # seconds
+        wait_max = 10
         loop_delay = 0.5
         for _ in xrange(int(wait_max/loop_delay)):
             if not self.status.is_running():
@@ -360,6 +361,9 @@ class w3afCore(object):
             msg %= wait_max
         
         om.out.debug(msg)
+
+        # Finally we terminate+join the worker pool
+        self.worker_pool.terminate_join()
     
     def quit(self):
         """

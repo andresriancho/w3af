@@ -83,11 +83,11 @@ class TestStrategy(unittest.TestCase):
         """
         threads = [t for t in threading.enumerate()]
         thread_names = [t.name for t in threads]
-        self.assertLessEqual(len(thread_names), 5, threads)
 
         thread_names_set = set(thread_names)
         expected_names = {'MainThread', 'SQLiteExecutor',
                           'OutputManager', 'QueueFeederThread'}
+
         self.assertEqual(thread_names_set, expected_names)
 
     def test_strategy_exception(self):
