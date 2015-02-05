@@ -64,7 +64,9 @@ class UpperDaemon(threading.Thread):
     
     def get_port(self):
         if self.server is not None:
-            return self.server.server_address[1]
+            port = self.server.server_address[1]
+            if port != 0:
+                return port
     
     def wait_for_start(self):
         while self.server is None or self.get_port() is None:
