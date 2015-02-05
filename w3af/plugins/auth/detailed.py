@@ -49,7 +49,6 @@ class detailed(AuthPlugin):
         """
         Login to the application.
         """
-
         msg = 'Logging into the application using %s/%s' % (self.username,
                                                             self.password)
         om.out.debug(msg)
