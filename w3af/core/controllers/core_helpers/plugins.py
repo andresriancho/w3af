@@ -38,6 +38,9 @@ class w3af_core_plugins(object):
         self._w3af_core = w3af_core
 
         self.initialized = False
+        self._plugins_names_dict = None
+        self._plugins_options = None
+        self.plugins = None
         self.zero_enabled_plugins()
 
     def zero_enabled_plugins(self):
