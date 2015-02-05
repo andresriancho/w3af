@@ -149,7 +149,8 @@ class w3afCore(object):
         self.strategy = w3af_core_strategy(self)
         
         # And create this again just to clear the internal states
-        self.status = w3af_core_status(self)
+        scans_completed = self.status.scans_completed
+        self.status = w3af_core_status(self, scans_completed=scans_completed)
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -194,8 +195,8 @@ class w3afCore(object):
                   ' to stop.'
             om.out.error(msg)
             raise
-        except threading.ThreadError:
-            handle_threading_error(self.status.scans_completed)
+        except threading.ThreadError, te:
+            handle_threading_error(self.status.scans_completed, te)
         except HTTPRequestException, hre:
             # TODO: These exceptions should never reach this level
             #       adding the exception handler to raise them and fix any
@@ -492,7 +493,7 @@ class w3afCore(object):
             sys.exit(-3)
 
 
-def handle_threading_error(scans_completed):
+def handle_threading_error(scans_completed, threading_error):
     """
     Catch threading errors such as "error: can't start new thread"
     and handle them in a specific way
@@ -506,7 +507,8 @@ def handle_threading_error(scans_completed):
     
     pprint_threads = nice_thread_repr(threading.enumerate())
     
-    msg = 'An error occurred while trying to start a new thread.\n'\
+    msg = 'A "%s" threading error was found.\n'\
           ' The current process has a total of %s active threads and has'\
           ' completed %s scans. The complete list of threads follows:\n\n%s'
-    raise Exception(msg % (active_threads, scans_completed, pprint_threads))
+    raise Exception(msg % (threading_error, active_threads,
+                           scans_completed, pprint_threads))

@@ -184,16 +184,11 @@ class LocalProxy(Proxy):
         :param port: Port to bind
         :param url_opener: The urlOpener that will be used to open the requests
                           that arrive from the browser
-        :param proxyHandler: A class that will know how to handle requests
-                             from the browser
         :param proxy_cert: Proxy certificate to use, this is needed for
                            proxying SSL connections.
         """
         Proxy.__init__(self, ip, port, url_opener, w3afLocalProxyHandler,
-                       proxy_cert)
-
-        self.daemon = True
-        self.name = 'LocalProxyThread'
+                       proxy_cert, name='LocalProxyThread')
 
         # Internal vars
         self.request_queue = Queue.Queue()
