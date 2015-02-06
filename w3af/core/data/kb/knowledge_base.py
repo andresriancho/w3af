@@ -384,19 +384,19 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         old_uniq_id = old_info.get_uniq_id()
         new_uniq_id = update_info.get_uniq_id()
         pickle = cpickle_dumps(update_info)
+
         # Update the pickle and unique_id after finding by original uniq_id
         query = "UPDATE %s SET pickle = ?, uniq_id = ? WHERE uniq_id = ?"
 
         params = (pickle, new_uniq_id, old_uniq_id)
-        try:
-            result = self.db.execute(query % self.table_name, params).result()
-        except DBException:
-            ex = 'Tried to update() Info instance and failed because'\
+        result = self.db.execute(query % self.table_name, params).result()
+
+        if not result.rowcount:
+            ex = 'Failed to update() Info instance because'\
                  ' the original unique_id (%s) does not exist in the DB,'\
                  ' or the new unique_id (%s) is invalid.'
-            raise DBException(ex % old_uniq_id, new_uniq_id)
+            raise DBException(ex % (old_uniq_id, new_uniq_id))
 
-        return result
     def add_observer(self, location_a, location_b, observer):
         """
         Add the observer function to the observer list. The function will be

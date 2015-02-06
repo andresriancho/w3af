@@ -677,6 +677,7 @@ class TestKnowledgeBase(unittest.TestCase):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
         original_id = vuln.get_uniq_id()
+
         # Cause error by changing vuln uniq_id
         update_vuln = vuln
         update_vuln.set_name('a')
