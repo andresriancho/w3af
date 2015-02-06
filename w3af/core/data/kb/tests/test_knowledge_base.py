@@ -676,7 +676,11 @@ class TestKnowledgeBase(unittest.TestCase):
     def test_update_exception(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
+        original_id = vuln.get_uniq_id()
         # Cause error by changing vuln uniq_id
         update_vuln = vuln
         update_vuln.set_name('a')
+        modified_id = vuln.get_uniq_id()
+
+        self.assertNotEqual(original_id, modified_id)
         self.assertRaises(DBException, kb.update, vuln, update_vuln)
