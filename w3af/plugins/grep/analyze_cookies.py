@@ -54,8 +54,10 @@ class analyze_cookies(GrepPlugin):
     #
     # BUGBUG work-around for cookie-obj leaving out
     # attribute values in a SimpleCookie object
-    EXTRACT_HTTPONLY_RE = re.compile(': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^]*; *?httponly([\s;, ]|$)', re.I)
-    EXTRACT_SECURE_RE = re.compile(': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^]*; *?secure([\s;, ]|$)', re.I)
+    httponly_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?httponly([\s;, ]|$)'
+    secure_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?secure([\s;, ]|$)'
+    EXTRACT_HTTPONLY_RE = re.compile(httponly_capture, re.I)
+    EXTRACT_SECURE_RE = re.compile(secure_capture, re.I)
     
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -214,7 +216,7 @@ class analyze_cookies(GrepPlugin):
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            key = cookie_obj.keys[0]
+            key = cookie_obj.keys()[0]
             desc = 'Cookie "%s" without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
@@ -332,7 +334,7 @@ class analyze_cookies(GrepPlugin):
             # TODO: Match key with secure flag with the key pair in cookie_obj
             #       test with multiple cookies, some with and some without
             #       secure flag. Same should also be done for httponly
-            key = cookie_obj.keys[0]
+            key = cookie_obj.keys()[0]
             desc = 'Cookie "%s" marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
                    ' "%s", this usually means that the Web application was'\

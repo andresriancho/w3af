@@ -309,3 +309,18 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertIn('Secure cookies over insecure channel', names)
         self.assertTrue(any(has_cname))
+
+    def test_multiple_cookies(self):
+        body = ''
+        url = URL('https://www.w3af.com/')
+        header_content = ['name="adf"', 'name2="adfff"; secure']
+        header_string = 'Set-Cookie: %s; , %s;' % (header_content[0], header_content[1])
+        headers = Headers().from_string(header_string)
+
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        self.plugin.grep(request, response)
+
+        for hc in header_content:
+            self.assertIn(hc, response.headers.values()[0])
