@@ -654,7 +654,7 @@ class TestKnowledgeBase(unittest.TestCase):
     def test_update_info(self):
         info = MockInfo()
         kb.append('a', 'b', info)
-        update_info = Info.from_info(info)
+        update_info = copy.deepcopy(info)
         update_info.set_name('a')
         update_uniq_id = update_info.get_uniq_id()
         kb.update(info, update_info)
@@ -665,7 +665,7 @@ class TestKnowledgeBase(unittest.TestCase):
     def test_update_vuln(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
-        update_vuln = Vuln.from_vuln(vuln)
+        update_vuln = copy.deepcopy(vuln)
         update_vuln.set_name('a')
         update_uniq_id = update_vuln.get_uniq_id()
         kb.update(vuln, update_vuln)

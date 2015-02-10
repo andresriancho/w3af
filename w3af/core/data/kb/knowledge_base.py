@@ -47,175 +47,175 @@ class BasicKnowledgeBase(object):
     """
 
     def __init__(self):
-        self._kb_lock = threading.RLock()
+	self._kb_lock = threading.RLock()
     
-        self.FILTERS = {'URL': self.filter_url,
-                        'VAR': self.filter_var}
-        
+	self.FILTERS = {'URL': self.filter_url,
+			'VAR': self.filter_var}
+	
     def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
-        """
-        Append to a location in the KB if and only if there it no other
-        vulnerability in the same location for the same URL and parameter.
+	"""
+	Append to a location in the KB if and only if there it no other
+	vulnerability in the same location for the same URL and parameter.
 
-        Does this in a thread-safe manner.
+	Does this in a thread-safe manner.
 
-        :param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
-                          (location_a, location_b) if there is NO OTHER info
-                          in that location with the same:
-                              - 'VAR': URL,Variable,DataContainer.keys()
-                              - 'URL': URL
+	:param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
+			  (location_a, location_b) if there is NO OTHER info
+			  in that location with the same:
+			      - 'VAR': URL,Variable,DataContainer.keys()
+			      - 'URL': URL
 
-        :return: True if the vuln was added. False if there was already a
-                 vulnerability in the KB location with the same URL and
-                 parameter.
-        """
-        if not isinstance(info_inst, Info):
-            raise ValueError('append_uniq requires an info object as parameter.')
-        
-        filter_function = self.FILTERS.get(filter_by, None)
-        
-        if filter_function is None:
-            raise ValueError('append_uniq only knows about URL or VAR filters.')
+	:return: True if the vuln was added. False if there was already a
+		 vulnerability in the KB location with the same URL and
+		 parameter.
+	"""
+	if not isinstance(info_inst, Info):
+	    raise ValueError('append_uniq requires an info object as parameter.')
+	
+	filter_function = self.FILTERS.get(filter_by, None)
+	
+	if filter_function is None:
+	    raise ValueError('append_uniq only knows about URL or VAR filters.')
 
-        with self._kb_lock:
-            
-            if filter_function(location_a, location_b, info_inst):
-                self.append(location_a, location_b, info_inst)
-                return True
-            
-            return False
+	with self._kb_lock:
+	    
+	    if filter_function(location_a, location_b, info_inst):
+		self.append(location_a, location_b, info_inst)
+		return True
+	    
+	    return False
 
     def filter_url(self, location_a, location_b, info_inst):
-        """
-        :return: True if there is no other info in (location_a, location_b)
-                 with the same URL as the info_inst.
-        """
-        for saved_vuln in self.get(location_a, location_b):
-            if saved_vuln.get_url() == info_inst.get_url():
-                return False
-        
-        return True
+	"""
+	:return: True if there is no other info in (location_a, location_b)
+		 with the same URL as the info_inst.
+	"""
+	for saved_vuln in self.get(location_a, location_b):
+	    if saved_vuln.get_url() == info_inst.get_url():
+		return False
+	
+	return True
 
     def filter_var(self, location_a, location_b, info_inst):
-        """
-        :return: True if there is no other info in (location_a, location_b)
-                 with the same URL,Variable,DataContainer.keys() as the
-                 info_inst.
-        """
-        for saved_vuln in self.get(location_a, location_b):
-            
-            if saved_vuln.get_token_name() == info_inst.get_token_name() and\
-            saved_vuln.get_url() == info_inst.get_url():
-            
-                if saved_vuln.get_dc() is None and\
-                info_inst.get_dc() is None:
-                    return False
-                
-                if saved_vuln.get_dc() is not None and\
-                info_inst.get_dc() is not None:
-                    
-                    if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
-                        return False
-        
-        return True
+	"""
+	:return: True if there is no other info in (location_a, location_b)
+		 with the same URL,Variable,DataContainer.keys() as the
+		 info_inst.
+	"""
+	for saved_vuln in self.get(location_a, location_b):
+	    
+	    if saved_vuln.get_token_name() == info_inst.get_token_name() and\
+	    saved_vuln.get_url() == info_inst.get_url():
+	    
+		if saved_vuln.get_dc() is None and\
+		info_inst.get_dc() is None:
+		    return False
+		
+		if saved_vuln.get_dc() is not None and\
+		info_inst.get_dc() is not None:
+		    
+		    if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
+			return False
+	
+	return True
 
     def get_all_vulns(self):
-        """
-        :return: A list of all vulns reported by all plugins.
-        """
-        return self.get_all_entries_of_class(Vuln)
+	"""
+	:return: A list of all vulns reported by all plugins.
+	"""
+	return self.get_all_entries_of_class(Vuln)
 
     def get_all_infos(self):
-        """
-        :return: A list of all vulns reported by all plugins.
-        """
-        return self.get_all_entries_of_class(Info)
+	"""
+	:return: A list of all vulns reported by all plugins.
+	"""
+	return self.get_all_entries_of_class(Info)
 
     def get_all_shells(self, w3af_core=None):
-        """
-        :param w3af_core: The w3af_core used in the current scan
-        @see: Shell.__reduce__ to understand why we need the w3af_core 
-        :return: A list of all vulns reported by all plugins.
-        """
-        all_shells = []
+	"""
+	:param w3af_core: The w3af_core used in the current scan
+	@see: Shell.__reduce__ to understand why we need the w3af_core 
+	:return: A list of all vulns reported by all plugins.
+	"""
+	all_shells = []
 
-        for shell in self.get_all_entries_of_class(Shell):
-            if w3af_core is not None:
-                shell.set_url_opener(w3af_core.uri_opener)
-                shell.set_worker_pool(w3af_core.worker_pool)
+	for shell in self.get_all_entries_of_class(Shell):
+	    if w3af_core is not None:
+		shell.set_url_opener(w3af_core.uri_opener)
+		shell.set_worker_pool(w3af_core.worker_pool)
 
-            all_shells.append(shell)
+	    all_shells.append(shell)
 
-        return all_shells
+	return all_shells
 
     def _get_real_name(self, data):
-        if isinstance(data, basestring):
-            return data
-        else:
-            return data.get_name()
+	if isinstance(data, basestring):
+	    return data
+	else:
+	    return data.get_name()
 
     def append(self, location_a, location_b, value):
-        """
-        This method appends the location_b value to a dict.
-        """
-        raise NotImplementedError
+	"""
+	This method appends the location_b value to a dict.
+	"""
+	raise NotImplementedError
 
     def get(self, plugin_name, location_b=None):
-        """
-        :param plugin_name: The plugin that saved the data to the
-                                kb.info Typically the name of the plugin,
-                                but could also be the plugin instance.
+	"""
+	:param plugin_name: The plugin that saved the data to the
+				kb.info Typically the name of the plugin,
+				but could also be the plugin instance.
 
-        :param location_b: The name of the variables under which the vuln
-                                 objects were saved. Typically the same name of
-                                 the plugin, or something like "vulns", "errors",
-                                 etc. In most cases this is NOT None. When set
-                                 to None, a dict with all the vuln objects found
-                                 by the plugin_name is returned.
+	:param location_b: The name of the variables under which the vuln
+				 objects were saved. Typically the same name of
+				 the plugin, or something like "vulns", "errors",
+				 etc. In most cases this is NOT None. When set
+				 to None, a dict with all the vuln objects found
+				 by the plugin_name is returned.
 
-        :return: Returns the data that was saved by another plugin.
-        """
-        raise NotImplementedError
+	:return: Returns the data that was saved by another plugin.
+	"""
+	raise NotImplementedError
 
     def get_all_entries_of_class(self, klass):
-        """
-        :return: A list of all objects of class == klass that are saved in the
-                 kb.
-        """
-        raise NotImplementedError
+	"""
+	:return: A list of all objects of class == klass that are saved in the
+		 kb.
+	"""
+	raise NotImplementedError
 
     def update(self, old_vuln, update_vuln):
-        """
-        :return: The updated vulnerability/info instance stored in the kb.
-        """
-        raise NotImplementedError
+	"""
+	:return: The updated vulnerability/info instance stored in the kb.
+	"""
+	raise NotImplementedError
 
     def clear(self, location_a, location_b):
-        """
-        Clear any values stored in (location_a, location_b)
-        """
-        raise NotImplementedError
+	"""
+	Clear any values stored in (location_a, location_b)
+	"""
+	raise NotImplementedError
     
     def raw_write(self, location_a, location_b, value):
-        """
-        This method saves the value to (location_a,location_b)
-        """
-        raise NotImplementedError
+	"""
+	This method saves the value to (location_a,location_b)
+	"""
+	raise NotImplementedError
 
     def raw_read(self, location_a, location_b):
-        """
-        This method reads the value from (location_a,location_b)
-        """
-        raise NotImplementedError
+	"""
+	This method reads the value from (location_a,location_b)
+	"""
+	raise NotImplementedError
     
     def dump(self):
-        raise NotImplementedError
+	raise NotImplementedError
 
     def cleanup(self):
-        """
-        Cleanup all internal data.
-        """
-        raise NotImplementedError
+	"""
+	Cleanup all internal data.
+	"""
+	raise NotImplementedError
 
 
 class DBKnowledgeBase(BasicKnowledgeBase):
@@ -229,171 +229,171 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     """
 
     def __init__(self):
-        super(DBKnowledgeBase, self).__init__()
-        
-        self.urls = DiskSet(table_prefix='kb_urls')
-        self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
-        
-        self.db = get_default_persistent_db_instance()
+	super(DBKnowledgeBase, self).__init__()
+	
+	self.urls = DiskSet(table_prefix='kb_urls')
+	self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
+	
+	self.db = get_default_persistent_db_instance()
 
-        columns = [('location_a', 'TEXT'),
-                   ('location_b', 'TEXT'),
-                   ('uniq_id', 'TEXT'),
-                   ('pickle', 'BLOB')]
+	columns = [('location_a', 'TEXT'),
+		   ('location_b', 'TEXT'),
+		   ('uniq_id', 'TEXT'),
+		   ('pickle', 'BLOB')]
 
-        self.table_name = 'knowledge_base_' + rand_alpha(30)
-        self.db.create_table(self.table_name, columns)
-        self.db.create_index(self.table_name, ['location_a', 'location_b'])
-        self.db.create_index(self.table_name, ['uniq_id',])
-        self.db.commit()
-        
-        # TODO: Why doesn't this work with a WeakValueDictionary?
-        self.observers = {} #WeakValueDictionary()
-        self.type_observers = {} #WeakValueDictionary()
-        self.url_observers = []
-        self._observer_id = 0
+	self.table_name = 'knowledge_base_' + rand_alpha(30)
+	self.db.create_table(self.table_name, columns)
+	self.db.create_index(self.table_name, ['location_a', 'location_b'])
+	self.db.create_index(self.table_name, ['uniq_id',])
+	self.db.commit()
+	
+	# TODO: Why doesn't this work with a WeakValueDictionary?
+	self.observers = {} #WeakValueDictionary()
+	self.type_observers = {} #WeakValueDictionary()
+	self.url_observers = []
+	self._observer_id = 0
 
     def clear(self, location_a, location_b):
-        location_a = self._get_real_name(location_a)
-        
-        query = "DELETE FROM %s WHERE location_a = ? and location_b = ?"
-        params = (location_a, location_b)
-        self.db.execute(query % self.table_name, params)
+	location_a = self._get_real_name(location_a)
+	
+	query = "DELETE FROM %s WHERE location_a = ? and location_b = ?"
+	params = (location_a, location_b)
+	self.db.execute(query % self.table_name, params)
 
     def raw_write(self, location_a, location_b, value):
-        """
-        This method saves value to (location_a,location_b) but previously
-        clears any pre-existing values.
-        """
-        if isinstance(value, Info):
-            raise TypeError('Use append or append_uniq to store vulnerabilities')
-        
-        location_a = self._get_real_name(location_a)
-        
-        self.clear(location_a, location_b)
-        self.append(location_a, location_b, value, ignore_type=True)
+	"""
+	This method saves value to (location_a,location_b) but previously
+	clears any pre-existing values.
+	"""
+	if isinstance(value, Info):
+	    raise TypeError('Use append or append_uniq to store vulnerabilities')
+	
+	location_a = self._get_real_name(location_a)
+	
+	self.clear(location_a, location_b)
+	self.append(location_a, location_b, value, ignore_type=True)
 
     def raw_read(self, location_a, location_b):
-        """
-        This method reads the value from (location_a,location_b)
-        """
-        location_a = self._get_real_name(location_a)
-        result = self.get(location_a, location_b, check_types=False)
-        
-        if len(result) > 1:
-            msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
-            raise RuntimeError(msg % result)
-        elif len(result) == 0:
-            return []
-        else:
-            return result[0]
+	"""
+	This method reads the value from (location_a,location_b)
+	"""
+	location_a = self._get_real_name(location_a)
+	result = self.get(location_a, location_b, check_types=False)
+	
+	if len(result) > 1:
+	    msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
+	    raise RuntimeError(msg % result)
+	elif len(result) == 0:
+	    return []
+	else:
+	    return result[0]
     
     def _get_uniq_id(self, obj):
-        if isinstance(obj, Info):
-            return obj.get_uniq_id()
-        else:
-            if isinstance(obj, collections.Iterable):
-                concat_all = ''.join([str(i) for i in obj])
-                return str(hash(concat_all))
-            else:
-                return str(hash(obj))
+	if isinstance(obj, Info):
+	    return obj.get_uniq_id()
+	else:
+	    if isinstance(obj, collections.Iterable):
+		concat_all = ''.join([str(i) for i in obj])
+		return str(hash(concat_all))
+	    else:
+		return str(hash(obj))
 
     def append(self, location_a, location_b, value, ignore_type=False):
-        """
-        This method appends the location_b value to a dict.
-        """
-        if not ignore_type and not isinstance(value, (Info, Shell)):
-            msg = 'You MUST use raw_write/raw_read to store non-info objects'\
-                  ' to the KnowledgeBase.'
-            raise TypeError(msg)
-        
-        location_a = self._get_real_name(location_a)
-        uniq_id = self._get_uniq_id(value)
-        
-        pickled_obj = cpickle_dumps(value)
-        t = (location_a, location_b, uniq_id, pickled_obj)
-        
-        query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
-        self.db.execute(query, t)
-        self._notify(location_a, location_b, value)
+	"""
+	This method appends the location_b value to a dict.
+	"""
+	if not ignore_type and not isinstance(value, (Info, Shell)):
+	    msg = 'You MUST use raw_write/raw_read to store non-info objects'\
+		  ' to the KnowledgeBase.'
+	    raise TypeError(msg)
+	
+	location_a = self._get_real_name(location_a)
+	uniq_id = self._get_uniq_id(value)
+	
+	pickled_obj = cpickle_dumps(value)
+	t = (location_a, location_b, uniq_id, pickled_obj)
+	
+	query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
+	self.db.execute(query, t)
+	self._notify(location_a, location_b, value)
 
     def get(self, location_a, location_b, check_types=True):
-        """
-        :param location_a: The plugin that saved the data to the
-                           kb.info Typically the name of the plugin,
-                           but could also be the plugin instance.
+	"""
+	:param location_a: The plugin that saved the data to the
+			   kb.info Typically the name of the plugin,
+			   but could also be the plugin instance.
 
-        :param location_b: The name of the variables under which the vuln
-                           objects were saved. Typically the same name of
-                           the plugin, or something like "vulns", "errors",
-                           etc. In most cases this is NOT None. When set
-                           to None, a dict with all the vuln objects found
-                           by the plugin_name is returned.
+	:param location_b: The name of the variables under which the vuln
+			   objects were saved. Typically the same name of
+			   the plugin, or something like "vulns", "errors",
+			   etc. In most cases this is NOT None. When set
+			   to None, a dict with all the vuln objects found
+			   by the plugin_name is returned.
 
-        :return: Returns the data that was saved by another plugin.
-        """
-        location_a = self._get_real_name(location_a)
-        
-        if location_b is None:
-            query = 'SELECT pickle FROM %s WHERE location_a = ?'
-            params = (location_a,)
-        else:
-            query = 'SELECT pickle FROM %s WHERE location_a = ?'\
-                                           ' and location_b = ?'
-            params = (location_a, location_b)
-        
-        result_lst = []
-        
-        results = self.db.select(query % self.table_name, params)
-        for r in results:
-            obj = cPickle.loads(r[0])
-            
-            if check_types and not isinstance(obj, (Info, Shell)):
-                raise TypeError('Use raw_write and raw_read to query the'
-                                ' knowledge base for non-Info objects')
-            
-            result_lst.append(obj)
-        
-        return result_lst
+	:return: Returns the data that was saved by another plugin.
+	"""
+	location_a = self._get_real_name(location_a)
+	
+	if location_b is None:
+	    query = 'SELECT pickle FROM %s WHERE location_a = ?'
+	    params = (location_a,)
+	else:
+	    query = 'SELECT pickle FROM %s WHERE location_a = ?'\
+					   ' and location_b = ?'
+	    params = (location_a, location_b)
+	
+	result_lst = []
+	
+	results = self.db.select(query % self.table_name, params)
+	for r in results:
+	    obj = cPickle.loads(r[0])
+	    
+	    if check_types and not isinstance(obj, (Info, Shell)):
+		raise TypeError('Use raw_write and raw_read to query the'
+				' knowledge base for non-Info objects')
+	    
+	    result_lst.append(obj)
+	
+	return result_lst
 
     def get_by_uniq_id(self, uniq_id):
-        query = 'SELECT pickle FROM %s WHERE uniq_id = ?'
-        params = (uniq_id,)
-        
-        result = self.db.select_one(query % self.table_name, params)
-        
-        if result is not None:
-            result = cPickle.loads(result[0])
-        
-        return result
+	query = 'SELECT pickle FROM %s WHERE uniq_id = ?'
+	params = (uniq_id,)
+	
+	result = self.db.select_one(query % self.table_name, params)
+	
+	if result is not None:
+	    result = cPickle.loads(result[0])
+	
+	return result
 
     def update(self, old_info, update_info):
-        """
-        :param old_info: The info/vulnerability instance to be updated in the kb.
-        :param update_info: The info/vulnerability instance with new information
-        :return: Nothing
-        """
-        old_not_info = not isinstance(old_info, (Info, Shell))
-        update_not_info = not isinstance(update_info, (Info, Shell))
+	"""
+	:param old_info: The info/vulnerability instance to be updated in the kb.
+	:param update_info: The info/vulnerability instance with new information
+	:return: Nothing
+	"""
+	old_not_info = not isinstance(old_info, (Info, Shell))
+	update_not_info = not isinstance(update_info, (Info, Shell))
 
-        if old_not_info or update_not_info:
-            msg = 'You MUST use raw_write/raw_read to store non-info objects'\
-                  ' to the KnowledgeBase.'
-            raise TypeError(msg)
+	if old_not_info or update_not_info:
+	    msg = 'You MUST use raw_write/raw_read to store non-info objects'\
+		  ' to the KnowledgeBase.'
+	    raise TypeError(msg)
 
-        old_uniq_id = old_info.get_uniq_id()
-        new_uniq_id = update_info.get_uniq_id()
-        pickle = cpickle_dumps(update_info)
+	old_uniq_id = old_info.get_uniq_id()
+	new_uniq_id = update_info.get_uniq_id()
+	pickle = cpickle_dumps(update_info)
 
-        # Update the pickle and unique_id after finding by original uniq_id
-        query = "UPDATE %s SET pickle = ?, uniq_id = ? WHERE uniq_id = ?"
+	# Update the pickle and unique_id after finding by original uniq_id
+	query = "UPDATE %s SET pickle = ?, uniq_id = ? WHERE uniq_id = ?"
 
         params = (pickle, new_uniq_id, old_uniq_id)
         result = self.db.execute(query % self.table_name, params).result()
 
         if not result.rowcount:
-            ex = 'Failed to update() Info instance because'\
-                 ' the original unique_id (%s) does not exist in the DB,'\
+	    ex = 'Failed to update() Info instance because' \
+                 ' the original unique_id (%s) does not exist in the DB,' \
                  ' or the new unique_id (%s) is invalid.'
             raise DBException(ex % (old_uniq_id, new_uniq_id))
 

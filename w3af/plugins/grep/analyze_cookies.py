@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Cookie
+import copy
 import re
 
 import w3af.core.controllers.output_manager as om
@@ -198,6 +199,27 @@ class analyze_cookies(GrepPlugin):
         self._http_only(request, response, cookie_obj,
                         cookie_header_value, fingerprinted)
 
+    def _update_cookie_vulnerability(self, response, vulnerability):
+        # thread lock to escape race condition on db access
+        with self._plugin_lock:
+            vulns = kb.kb.get(self, 'security')
+        
+            if len(vulns) == 0:
+                    kb.kb.append(self, 'security', vulnerability)
+            elif len(vulns) >= 1:
+                old_vuln = vulns[0]
+                updated_vuln = copy.deepcopy(old_vuln)
+                if 'urls' not in updated_vuln.keys():
+                    updated_vuln['urls'] = [old_vuln.get_url()]
+                updated_vuln['urls'].append(response.get_url())
+                
+                kb.kb.update(old_vuln, updated_vuln)
+            else:
+                # error
+                raise ex.DBException('An error has occured retrieving' \
+                                     ' vulnerability for "%s"' % self.get_name())
+
+
     def _http_only(self, request, response, cookie_obj,
                    cookie_header_value, fingerprinted):
         """
@@ -216,7 +238,11 @@ class analyze_cookies(GrepPlugin):
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            key = cookie_obj.keys()[0]
+            # Handle case when cookie is empty
+            if not cookie_obj.keys():
+                key = ""
+            else:
+                key = cookie_obj.keys()[0]
             desc = 'Cookie "%s" without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
@@ -229,7 +255,7 @@ class analyze_cookies(GrepPlugin):
             
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            self._update_cookie_vulnerability(response, v)
 
     def _ssl_cookie_via_http(self, request, response):
         """
@@ -349,24 +375,7 @@ class analyze_cookies(GrepPlugin):
 
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            # thread lock to escape race condition on db access
-            with self._plugin_lock:
-                vulns = kb.kb.get(self, 'security')
-            
-                if len(vulns) > 1:
-                    # error
-                    raise ex.DBException('At most, one vulnerability should be' \
-                                         ' returned for "%s"' % self.get_name())
-                elif len(vulns) == 0:
-                        kb.kb.append(self, 'security', v)
-                else:
-                    old_vuln = vulns[0]
-                    updated_vuln = Vuln.from_vuln(old_vuln)
-                    if 'urls' not in updated_vuln.keys():
-                        updated_vuln['urls'] = [old_vuln.get_url()]
-                    updated_vuln['urls'].append(response.get_url())
-                    
-                    kb.kb.update(old_vuln.get_uniq_id(), updated_vuln)
+            self._update_cookie_vulnerability(response, v)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
@@ -383,7 +392,10 @@ class analyze_cookies(GrepPlugin):
 
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-            key = cookie_obj.keys()[0] 
+            if not cookie_obj.keys():
+                key = ""
+            else: 
+                key = cookie_obj.keys()[0]
             desc = 'Cookie "%s" without the secure flag sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
