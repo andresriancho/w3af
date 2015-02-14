@@ -205,7 +205,7 @@ class analyze_cookies(GrepPlugin):
             vulns = kb.kb.get(self, 'security')
         
             if len(vulns) == 0:
-                    kb.kb.append(self, 'security', vulnerability)
+                kb.kb.append(self, 'security', vulnerability)
             elif len(vulns) >= 1:
                 old_vuln = vulns[0]
                 updated_vuln = copy.deepcopy(old_vuln)
@@ -411,7 +411,7 @@ class analyze_cookies(GrepPlugin):
             v.set_url(response.get_url())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             
-            kb.kb.append(self, 'security', v)
+            self._update_cookie_vulnerability(response, v)
 
     def end(self):
         """

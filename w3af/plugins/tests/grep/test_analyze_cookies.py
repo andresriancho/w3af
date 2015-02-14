@@ -328,6 +328,21 @@ class TestAnalyzeCookies(unittest.TestCase):
 
     def test_update_without_httponly(self):
         body = ''
+        url = URL('http://www.w3af.com/')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"'}.items())
+
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        for i in range(0,2):
+            self.plugin.grep(request, response)
+
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 1)
+
+    def test_update_without_httponly_secure_over_https(self):
+        body = ''
         url = URL('https://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                             'Set-Cookie': 'name="adf"'}.items())
