@@ -38,7 +38,7 @@ from w3af.core.data.kb.shell import Shell
 from weakref import WeakValueDictionary
 
 
-class BasicKnowledgeBase(object):
+class BasicKnowledgeBase(object): 
     """
     This is a base class from which all implementations of KnowledgeBase will
     inherit. It has the basic utility methods that will be used.
@@ -180,7 +180,7 @@ class BasicKnowledgeBase(object):
     def get_all_entries_of_class(self, klass):
         """
         :return: A list of all objects of class == klass that are saved in the
-             kb.
+                 kb.
         """
         raise NotImplementedError
 
@@ -320,15 +320,15 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     def get(self, location_a, location_b, check_types=True):
         """
         :param location_a: The plugin that saved the data to the
-                               kb.info Typically the name of the plugin,
-                               but could also be the plugin instance.
+                           kb.info Typically the name of the plugin,
+                           but could also be the plugin instance.
 
         :param location_b: The name of the variables under which the vuln
-                               objects were saved. Typically the same name of
-                               the plugin, or something like "vulns", "errors",
-                               etc. In most cases this is NOT None. When set
-                               to None, a dict with all the vuln objects found
-                               by the plugin_name is returned.
+                           objects were saved. Typically the same name of
+                           the plugin, or something like "vulns", "errors",
+                           etc. In most cases this is NOT None. When set
+                           to None, a dict with all the vuln objects found
+                           by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
         """
@@ -339,7 +339,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             params = (location_a,)
         else:
             query = 'SELECT pickle FROM %s WHERE location_a = ?'\
-                           ' and location_b = ?'
+                                           ' and location_b = ?'
             params = (location_a, location_b)
 
         result_lst = []
