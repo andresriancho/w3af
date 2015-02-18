@@ -20,9 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Cookie
+import copy
 import re
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.controllers.exceptions as ex
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
@@ -47,6 +49,17 @@ class analyze_cookies(GrepPlugin):
     SECURE_RE = re.compile('; *?secure([\s;, ]|$)', re.I)
     HTTPONLY_RE = re.compile('; *?httponly([\s;, ]|$)', re.I)
 
+    # Extracts the key to match keys returned by cookie_obj
+    # Important when multiple cookies sent in a single response and
+    # wanting to match only the cookie with the appropriate attribute value
+    #
+    # BUGBUG work-around for cookie-obj leaving out
+    # attribute values in a SimpleCookie object
+    httponly_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?httponly([\s;, ]|$)'
+    secure_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?secure([\s;, ]|$)'
+    EXTRACT_HTTPONLY_RE = re.compile(httponly_capture, re.I)
+    EXTRACT_SECURE_RE = re.compile(secure_capture, re.I)
+    
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_reported_server = []
@@ -149,7 +162,6 @@ class analyze_cookies(GrepPlugin):
         #
         # Should read "if isinstance(rawdata, basestring)"
         cookie_header_value = cookie_header_value.encode('utf-8')
-        
         try:
             # Note to self: This line may print some chars to the console
             cookie_object.load(cookie_header_value)
@@ -187,6 +199,27 @@ class analyze_cookies(GrepPlugin):
         self._http_only(request, response, cookie_obj,
                         cookie_header_value, fingerprinted)
 
+    def _update_cookie_vulnerability(self, response, vulnerability):
+        # thread lock to escape race condition on db access
+        with self._plugin_lock:
+            vulns = kb.kb.get(self, 'security')
+        
+            if len(vulns) == 0:
+                kb.kb.append(self, 'security', vulnerability)
+            elif len(vulns) >= 1:
+                old_vuln = vulns[0]
+                updated_vuln = copy.deepcopy(old_vuln)
+                if 'urls' not in updated_vuln.keys():
+                    updated_vuln['urls'] = [old_vuln.get_url()]
+                updated_vuln['urls'].append(response.get_url())
+                
+                kb.kb.update(old_vuln, updated_vuln)
+            else:
+                # error
+                raise ex.DBException('An error has occured retrieving' \
+                                     ' vulnerability for "%s"' % self.get_name())
+
+
     def _http_only(self, request, response, cookie_obj,
                    cookie_header_value, fingerprinted):
         """
@@ -204,13 +237,17 @@ class analyze_cookies(GrepPlugin):
         :return: None
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
-            
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            desc = 'A cookie without the HttpOnly flag was sent when ' \
+            # Handle case when cookie is empty
+            if not cookie_obj.keys():
+                key = ""
+            else:
+                key = cookie_obj.keys()[0]
+            desc = 'Cookie "%s" without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
                    ' Cross-Site Scripting attacks.'
-            desc = desc % response.get_url()
+            desc = desc % (key, response.get_url())
             
             v = Vuln('Cookie without HttpOnly', desc,
                      vuln_severity, response.id, self.get_name())
@@ -218,7 +255,7 @@ class analyze_cookies(GrepPlugin):
             
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            self._update_cookie_vulnerability(response, v)
 
     def _ssl_cookie_via_http(self, request, response):
         """
@@ -245,8 +282,8 @@ class analyze_cookies(GrepPlugin):
 
                         desc = 'Cookie values that were set over HTTPS, are' \
                                ' then sent over an insecure channel in a' \
-                               ' request to "%s".'
-                        desc = desc % request.get_url()
+                               ' request to "%s", with cookie: %s.'
+                        desc = desc % (request.get_url(),key)
                     
                         v = Vuln('Secure cookies over insecure channel', desc,
                                  severity.HIGH, response.id, self.get_name())
@@ -254,7 +291,7 @@ class analyze_cookies(GrepPlugin):
                         v.set_url(response.get_url())
 
                         self._set_cookie_to_rep(v, cobj=cookie['cookie-object'])
-                        kb.kb.append(self, 'security', v)
+                        self._update_cookie_vulnerability(response, v)
 
     def _match_cookie_fingerprint(self, request, response, cookie_obj):
         """
@@ -320,14 +357,17 @@ class analyze_cookies(GrepPlugin):
         # And now, the code:
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
-            
-            desc = 'A cookie marked with the secure flag was sent over' \
+            # TODO: Match key with secure flag with the key pair in cookie_obj
+            #       test with multiple cookies, some with and some without
+            #       secure flag. Same should also be done for httponly
+            key = cookie_obj.keys()[0]
+            desc = 'Cookie "%s" marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
                    ' "%s", this usually means that the Web application was'\
                    ' designed to run over SSL and was deployed without'\
                    ' security or that the developer does not understand the'\
                    ' "secure" flag.'
-            desc = desc % response.get_url()
+            desc = desc % (key, response.get_url())
             
             v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
                      response.id, self.get_name())
@@ -335,7 +375,7 @@ class analyze_cookies(GrepPlugin):
 
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            self._update_cookie_vulnerability(response, v)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
@@ -352,21 +392,26 @@ class analyze_cookies(GrepPlugin):
 
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-
-            desc = 'A cookie without the secure flag was sent in an HTTPS' \
+            if not cookie_obj.keys():
+                key = ""
+            else: 
+                key = cookie_obj.keys()[0]
+            desc = 'Cookie "%s" without the secure flag sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
                    ' channel, thus preventing potential session hijacking' \
                    ' attacks.'
-            desc = desc % response.get_url()
+            desc = desc % (key,response.get_url())
             
+	        # Severity set to low, secure flag only protects
+	        # confidentiality which is already protected by SSL
             v = Vuln('Secure flag missing in HTTPS cookie', desc,
-                     severity.HIGH, response.id, self.get_name())
+                     severity.LOW, response.id, self.get_name())
 
             v.set_url(response.get_url())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             
-            kb.kb.append(self, 'security', v)
+            self._update_cookie_vulnerability(response, v)
 
     def end(self):
         """
