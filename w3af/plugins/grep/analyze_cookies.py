@@ -291,7 +291,7 @@ class analyze_cookies(GrepPlugin):
                         v.set_url(response.get_url())
 
                         self._set_cookie_to_rep(v, cobj=cookie['cookie-object'])
-                        kb.kb.append(self, 'security', v)
+                        self._update_cookie_vulnerability(response, v)
 
     def _match_cookie_fingerprint(self, request, response, cookie_obj):
         """
