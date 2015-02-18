@@ -50,7 +50,7 @@ class BasicKnowledgeBase(object):
         self._kb_lock = threading.RLock()
 
         self.FILTERS = {'URL': self.filter_url,
-                'VAR': self.filter_var}
+                        'VAR': self.filter_var}
 
     def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
         """
@@ -60,14 +60,14 @@ class BasicKnowledgeBase(object):
         Does this in a thread-safe manner.
 
         :param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
-                  (location_a, location_b) if there is NO OTHER info
-                  in that location with the same:
-                      - 'VAR': URL,Variable,DataContainer.keys()
-                      - 'URL': URL
+                          (location_a, location_b) if there is NO OTHER info
+                          in that location with the same:
+                              - 'VAR': URL,Variable,DataContainer.keys()
+                              - 'URL': URL
 
         :return: True if the vuln was added. False if there was already a
-             vulnerability in the KB location with the same URL and
-             parameter.
+                 vulnerability in the KB location with the same URL and
+                 parameter.
         """
         if not isinstance(info_inst, Info):
             raise ValueError('append_uniq requires an info object as parameter.')
@@ -88,7 +88,7 @@ class BasicKnowledgeBase(object):
     def filter_url(self, location_a, location_b, info_inst):
         """
         :return: True if there is no other info in (location_a, location_b)
-             with the same URL as the info_inst.
+                 with the same URL as the info_inst.
         """
         for saved_vuln in self.get(location_a, location_b):
             if saved_vuln.get_url() == info_inst.get_url():
@@ -99,8 +99,8 @@ class BasicKnowledgeBase(object):
     def filter_var(self, location_a, location_b, info_inst):
         """
         :return: True if there is no other info in (location_a, location_b)
-             with the same URL,Variable,DataContainer.keys() as the
-             info_inst.
+                 with the same URL,Variable,DataContainer.keys() as the
+                 info_inst.
         """
         for saved_vuln in self.get(location_a, location_b):
 
@@ -163,15 +163,15 @@ class BasicKnowledgeBase(object):
     def get(self, plugin_name, location_b=None):
         """
         :param plugin_name: The plugin that saved the data to the
-                    kb.info Typically the name of the plugin,
-                    but could also be the plugin instance.
+                                kb.info Typically the name of the plugin,
+                                but could also be the plugin instance.
 
         :param location_b: The name of the variables under which the vuln
-                     objects were saved. Typically the same name of
-                     the plugin, or something like "vulns", "errors",
-                     etc. In most cases this is NOT None. When set
-                     to None, a dict with all the vuln objects found
-                     by the plugin_name is returned.
+                                 objects were saved. Typically the same name of
+                                 the plugin, or something like "vulns", "errors",
+                                 etc. In most cases this is NOT None. When set
+                                 to None, a dict with all the vuln objects found
+                                 by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
         """
@@ -237,9 +237,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.db = get_default_persistent_db_instance()
 
         columns = [('location_a', 'TEXT'),
-               ('location_b', 'TEXT'),
-               ('uniq_id', 'TEXT'),
-               ('pickle', 'BLOB')]
+                   ('location_b', 'TEXT'),
+                   ('uniq_id', 'TEXT'),
+                   ('pickle', 'BLOB')]
 
         self.table_name = 'knowledge_base_' + rand_alpha(30)
         self.db.create_table(self.table_name, columns)
@@ -304,7 +304,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         if not ignore_type and not isinstance(value, (Info, Shell)):
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
-              ' to the KnowledgeBase.'
+                  ' to the KnowledgeBase.'
             raise TypeError(msg)
 
         location_a = self._get_real_name(location_a)
@@ -320,15 +320,15 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     def get(self, location_a, location_b, check_types=True):
         """
         :param location_a: The plugin that saved the data to the
-                   kb.info Typically the name of the plugin,
-                   but could also be the plugin instance.
+                               kb.info Typically the name of the plugin,
+                               but could also be the plugin instance.
 
         :param location_b: The name of the variables under which the vuln
-                   objects were saved. Typically the same name of
-                   the plugin, or something like "vulns", "errors",
-                   etc. In most cases this is NOT None. When set
-                   to None, a dict with all the vuln objects found
-                   by the plugin_name is returned.
+                               objects were saved. Typically the same name of
+                               the plugin, or something like "vulns", "errors",
+                               etc. In most cases this is NOT None. When set
+                               to None, a dict with all the vuln objects found
+                               by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
         """
