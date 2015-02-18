@@ -144,7 +144,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         security = kb.kb.get('analyze_cookies', 'security')
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 1)
+        self.assertEqual(len(security), 2)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
         msg = 'The remote platform is: "PHP"'
@@ -163,7 +163,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         security = kb.kb.get('analyze_cookies', 'security')
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 1)
+        self.assertEqual(len(security), 2)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
         msg = 'Cookie "abc" marked with the secure flag'
@@ -350,8 +350,8 @@ class TestAnalyzeCookies(unittest.TestCase):
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
-        for i in range(0,2):
+        for i in range(0, 2):
             self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 1)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 2)

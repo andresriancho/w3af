@@ -24,7 +24,6 @@ import copy
 import re
 
 import w3af.core.controllers.output_manager as om
-import w3af.core.controllers.exceptions as ex
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
@@ -203,21 +202,26 @@ class analyze_cookies(GrepPlugin):
         # thread lock to escape race condition on db access
         with self._plugin_lock:
             vulns = kb.kb.get(self, 'security')
-        
+
+            name = vulnerability.get_name()
+
             if len(vulns) == 0:
                 kb.kb.append(self, 'security', vulnerability)
-            elif len(vulns) >= 1:
-                old_vuln = vulns[0]
-                updated_vuln = copy.deepcopy(old_vuln)
-                if 'urls' not in updated_vuln.keys():
-                    updated_vuln['urls'] = [old_vuln.get_url()]
-                updated_vuln['urls'].append(response.get_url())
-                
-                kb.kb.update(old_vuln, updated_vuln)
             else:
-                # error
-                raise ex.DBException('An error has occured retrieving' \
-                                     ' vulnerability for "%s"' % self.get_name())
+                for vuln in vulns:
+                    # Check if vuln and vulnerability are the same type
+                    if vuln.get_name() == name:
+                        old_vuln = vuln
+                        updated_vuln = copy.deepcopy(old_vuln)
+                        if 'urls' not in updated_vuln.keys():
+                            updated_vuln['urls'] = [old_vuln.get_url()]
+                        updated_vuln['urls'].append(response.get_url())
+                        kb.kb.update(old_vuln, updated_vuln)
+                        return updated_vuln
+
+                # If no vulnerability of same type was found
+                # append the vulnerability passed by caller
+                kb.kb.append(self, 'security', vulnerability)
 
 
     def _http_only(self, request, response, cookie_obj,
