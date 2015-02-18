@@ -102,8 +102,7 @@ class Pool(ThreadPool):
         self._worker_handler = threading.Thread(
             target=Pool._handle_workers,
             args=(self, ),
-            name='PoolWorkerHandler'
-            )
+            name='PoolWorkerHandler')
         self._worker_handler.daemon = True
         self._worker_handler._state = RUN
         self._worker_handler.start()
@@ -112,8 +111,7 @@ class Pool(ThreadPool):
             target=Pool._handle_tasks,
             args=(self._taskqueue, self._quick_put, self._outqueue,
                   self._pool, self._cache),
-            name='PoolTaskHandler'
-            )
+            name='PoolTaskHandler')
         self._task_handler.daemon = True
         self._task_handler._state = RUN
         self._task_handler.start()
@@ -121,8 +119,7 @@ class Pool(ThreadPool):
         self._result_handler = threading.Thread(
             target=Pool._handle_results,
             args=(self._outqueue, self._quick_get, self._cache),
-            name='PoolResultHandler'
-            )
+            name='PoolResultHandler')
         self._result_handler.daemon = True
         self._result_handler._state = RUN
         self._result_handler.start()
@@ -132,8 +129,7 @@ class Pool(ThreadPool):
             args=(self._taskqueue, self._inqueue, self._outqueue, self._pool,
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
-            exitpriority=15
-            )
+            exitpriority=15)
     
     def _setup_queues(self):
         self._inqueue = Queue.Queue()
