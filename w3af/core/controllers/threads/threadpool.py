@@ -25,10 +25,11 @@ import time
 
 from functools import partial
 
-from multiprocessing.pool import ThreadPool, RUN
 from multiprocessing.dummy import Process
 from multiprocessing.util import Finalize
 from multiprocessing import cpu_count
+
+from .pool276 import ThreadPool, RUN
 
 
 __all__ = ['Pool']

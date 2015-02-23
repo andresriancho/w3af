@@ -1,10 +1,11 @@
 import os
 import threading
 
-from multiprocessing.pool import Pool, RUN, cpu_count, Finalize
+from multiprocessing.pool import cpu_count, Finalize
 from multiprocessing.process import Process, _cleanup, current_process
 
-from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
+from .silent_joinable_queue import SilentJoinableQueue
+from .pool276 import Pool, RUN
 
 
 class SubDaemonProcess(Process):
