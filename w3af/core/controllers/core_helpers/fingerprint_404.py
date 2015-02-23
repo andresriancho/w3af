@@ -253,59 +253,55 @@ class fingerprint_404(object):
         resp_body = get_clean_body(http_response)
         resp_content_type = http_response.doc_type
 
-        #
-        #   Compare this response to all the 404's I have in my DB
-        #
-        #   Copy the 404_responses deque in order to be able to iterate over
-        #   it from one thread, while it is changed in another.
-        #
-        copy_404_responses = copy.copy(self._404_responses)
-
-        for resp_404 in copy_404_responses:
-
-            # Since the fuzzy_equal function is CPU-intensive we want to avoid
-            # calling it for cases where we know it won't match, for example in
-            # comparing an image and an html
-            if resp_content_type != resp_404.doc_type:
-                continue
-
-            if fuzzy_equal(resp_404.get_body(), resp_body, IS_EQUAL_RATIO):
-                msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
-                fmt = (http_response.get_url(),
-                       http_response.id,
-                       IS_EQUAL_RATIO)
-                om.out.debug(msg % fmt)
-                return True
-
-        else:
+        with self._lock:
             #
-            #    I get here when the for ends and no body_404_db matched with
-            #    the resp_body that was sent as a parameter by the user. This
-            #    means one of two things:
-            #        * There is not enough knowledge in self._404_responses, or
-            #        * The answer is NOT a 404.
+            #   Compare this response to all the 404's I have in my DB
             #
-            #    Because we want to reduce the amount of "false positives" that
-            #    this method returns, we'll perform one extra check before
-            #    saying that this is NOT a 404.
-            domain_path = http_response.get_url().get_domain_path()
-            if domain_path not in self._fingerprinted_paths:
+            for resp_404 in self._404_responses:
 
-                if self._is_404_with_extra_request(http_response, resp_body):
-                    #
-                    #   Aha! It actually was a 404!
-                    #
-                    self._404_responses.append(http_response)
-                    self._fingerprinted_paths.add(domain_path)
+                # Since the fuzzy_equal function is CPU-intensive we want to
+                # avoid calling it for cases where we know it won't match, for
+                # example in comparing an image and an html
+                if resp_content_type != resp_404.doc_type:
+                    continue
 
-                    msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
-                          ' Adding new knowledge to the 404_bodies database'\
-                          ' (length=%s).'
-                    fmt = (http_response.get_url(), http_response.id,
-                           IS_EQUAL_RATIO, len(self._404_responses))
+                if fuzzy_equal(resp_404.get_body(), resp_body, IS_EQUAL_RATIO):
+                    msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
+                    fmt = (http_response.get_url(),
+                           http_response.id,
+                           IS_EQUAL_RATIO)
                     om.out.debug(msg % fmt)
-
                     return True
+
+            else:
+                #
+                # I get here when the for ends and no body_404_db matched with
+                # the resp_body that was sent as a parameter by the user. This
+                # means one of two things:
+                #     * There is not enough knowledge in self._404_responses, or
+                #     * The answer is NOT a 404.
+                #
+                # Because we want to reduce the amount of "false positives" that
+                # this method returns, we'll perform one extra check before
+                # saying that this is NOT a 404.
+                domain_path = http_response.get_url().get_domain_path()
+                if domain_path not in self._fingerprinted_paths:
+
+                    if self._is_404_with_extra_request(http_response, resp_body):
+                        #
+                        #   Aha! It actually was a 404!
+                        #
+                        self._404_responses.append(http_response)
+                        self._fingerprinted_paths.add(domain_path)
+
+                        msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
+                              ' Adding new knowledge to the 404_bodies database'\
+                              ' (length=%s).'
+                        fmt = (http_response.get_url(), http_response.id,
+                               IS_EQUAL_RATIO, len(self._404_responses))
+                        om.out.debug(msg % fmt)
+
+                        return True
 
             msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
             fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
