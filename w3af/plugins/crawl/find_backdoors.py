@@ -157,6 +157,11 @@ class find_backdoors(CrawlPlugin):
 
         # If no regex matched then try with keywords. At least 2 should be
         # contained in 'body_text' to succeed.
+        #
+        # TODO: Improve this for loop so that we only read the response once and
+        #       match all the known offensive words "at the same time", instead
+        #       of reading the same string N times (once for each item in
+        #       KNOWN_OFFENSIVE_WORDS)
         times = 0
         for back_kw in KNOWN_OFFENSIVE_WORDS:
             if re.search(back_kw, body_text, re.I):
