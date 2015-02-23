@@ -40,6 +40,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from w3af.core.controllers.misc.decorators import retry
 
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import URL_LIST
 from w3af.core.data.options.option_list import OptionList
@@ -335,8 +336,9 @@ class PluginTest(unittest.TestCase):
         # directory (when run on circle) and /tmp/ when run on our
         # workstation
         output_dir = os.environ.get('CIRCLE_ARTIFACTS', tempfile.gettempdir())
-        text_output = os.path.join(output_dir, 'output.txt')
-        http_output = os.path.join(output_dir, 'output-http.txt')
+        rnd = rand_alnum(6)
+        text_output = os.path.join(output_dir, 'output-%s.txt' % rnd)
+        http_output = os.path.join(output_dir, 'output-http-%s.txt' % rnd)
 
         text_file_inst = self.w3afcore.plugins.get_plugin_inst(ptype, pname)
 
@@ -388,7 +390,7 @@ class ReadExploitTest(PluginTest):
         # Now I start testing the shell itself!
         #
         shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
+        etc_passwd = shell.generic_user_input('read', ['/etc/passwd'])
         self.assertIn('root', etc_passwd)
         self.assertIn('/bin/bash', etc_passwd)
 
@@ -417,7 +419,7 @@ class ExecExploitTest(ReadExploitTest):
         shell = super(ExecExploitTest, self)._exploit_vuln(vuln_to_exploit_id,
                                                            exploit_plugin)
         
-        etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd',])
+        etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd'])
         self.assertIn('root', etc_passwd)
         self.assertIn('/bin/bash', etc_passwd)
         
@@ -490,7 +492,12 @@ class MockResponse(object):
         assert isinstance(url, (basestring, RE_COMPILE_TYPE))
 
     def __repr__(self):
-        return '<MockResponse (%s|%s)>' % (self.url, self.status)
+        if isinstance(self.url, RE_COMPILE_TYPE):
+            match = 're:"%s"' % self.url.pattern
+        else:
+            match = self.url
+
+        return '<MockResponse (%s|%s)>' % (match, self.status)
 
     def get_body(self, method, uri, headers):
         """
