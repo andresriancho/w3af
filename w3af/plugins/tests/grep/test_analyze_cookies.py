@@ -355,3 +355,37 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 2)
+
+    def test_multiple_vulnerability_reporting(self):
+        body = ''
+        # Vulnerability: without secure over https
+        url = URL('https://www.w3af.com/')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"; httponly'}.items())
+
+        response = [ HTTPResponse(200, body, headers, url, url, _id=1) ]
+        request = [ FuzzableRequest(url, method='GET') ]
+
+        # Vulnerability: without httponly
+        url = URL('https://www.w3af.com/a')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"; secure'}.items())
+
+        response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
+        request.append( FuzzableRequest(url, method='GET') )
+
+        # Vulnerability: secure over http
+        url = URL('http://www.w3af.com/b')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"; secure; httponly'}.items())
+
+        response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
+        request.append( FuzzableRequest(url, method='GET') )
+
+        for i, resp in enumerate(response): self.plugin.grep(request[i], resp)
+
+        security_vulns = kb.kb.get('analyze_cookies', 'security')
+        descriptions = [des.get_desc() for des in security_vulns]
+
+        self.assertEqual(len(security_vulns), 3, "Three security vulnerabilities should be reported")
+        for des in descriptions: self.assertIn("name", des, "Cookie name should appear in description")
