@@ -849,16 +849,18 @@ class php_eggs(InfrastructurePlugin):
 
     def _are_php_eggs(self, query_results):
         """
-        Now I analyze if this is really a PHP eggs thing, or simply a response that
-        changes a lot on each request. Before, I had something like this:
+        Now I analyze if this is really a PHP eggs thing, or simply a response
+        that changes a lot on each request. Before, I had something like this:
 
-            if relative_distance(original_response.get_body(), response.get_body()) < 0.1:
+            if relative_distance(original_response.get_body(),
+                                 response.get_body()) < 0.1:
 
-        But I got some reports about false positives with this approach, so now I'm
-        changing it to something a little bit more specific.
+        But I got some reports about false positives with this approach, so now
+        I'm changing it to something a little bit more specific.
         """
         images = 0
         not_images = 0
+
         for query_result in query_results:
             if 'image' in query_result.http_response.content_type:
                 images += 1
@@ -867,7 +869,8 @@ class php_eggs(InfrastructurePlugin):
 
         if images == 3 and not_images == 1:
             #
-            #   The remote web server has expose_php = On. Report all the findings.
+            # The remote web server has expose_php = On. Report all the
+            # findings.
             #
             for query_result in query_results:
                 desc = 'The PHP framework running on the remote server has a'\
@@ -875,7 +878,8 @@ class php_eggs(InfrastructurePlugin):
                        ' through the URL: "%s".'
                 desc = desc % (query_result.egg_desc, query_result.egg_URL)
                 
-                i = Info('PHP Egg', desc, query_result.http_response.id, self.get_name())
+                i = Info('PHP Egg', desc, query_result.http_response.id,
+                         self.get_name())
                 i.set_url(query_result.egg_URL)
                 
                 kb.kb.append(self, 'eggs', i)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -74,6 +74,7 @@ class POST_HINT:
     JSON_LIKE = "JSON-like"
     MULTIPART = "MULTIPART"
     XML = "XML (generic)"
+    ARRAY_LIKE = "Array-like"
 
 class HTTPMETHOD:
     GET = "GET"
@@ -165,6 +166,7 @@ class HTTP_HEADER:
     COOKIE = "Cookie"
     SET_COOKIE = "Set-Cookie"
     HOST = "Host"
+    LOCATION = "Location"
     PRAGMA = "Pragma"
     PROXY_AUTHORIZATION = "Proxy-Authorization"
     PROXY_CONNECTION = "Proxy-Connection"

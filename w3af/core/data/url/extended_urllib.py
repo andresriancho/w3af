@@ -27,6 +27,7 @@ import time
 import traceback
 import urllib
 import urllib2
+import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
@@ -52,8 +53,21 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body
+from w3af.core.data.url.constants import MAX_ERROR_COUNT
 
-MAX_ERROR_COUNT = 10
+
+try:
+    # 2.7.9 enabled certificate verification by default for stdlib http clients
+    # https://www.python.org/dev/peps/pep-0476/
+    #
+    # We don't want that, so we're disabling it globally
+    # https://github.com/andresriancho/w3af/issues/8115
+    #
+    # pylint: disable=E1101
+    ssl._create_default_https_context = ssl._create_unverified_context
+    # pylint: enable=E1101
+except AttributeError:
+    pass
 
 
 class ExtendedUrllib(object):
@@ -514,7 +528,7 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
         
-        except (socket.error, URLTimeoutError, ConnectionPoolException), e:
+        except (socket.error, URLTimeoutError, ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:

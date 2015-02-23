@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 
 from mock import Mock, call
 
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.exceptions import DBException
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.knowledge_base import kb, DBKnowledgeBase
@@ -31,6 +33,7 @@ from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -648,3 +651,38 @@ class TestKnowledgeBase(unittest.TestCase):
                          w3af_core.uri_opener)
 
         w3af_core.quit()
+
+    def test_update_info(self):
+        info = MockInfo()
+        kb.append('a', 'b', info)
+        update_info = copy.deepcopy(info)
+        update_info.set_name('a')
+        update_uniq_id = update_info.get_uniq_id()
+        kb.update(info, update_info)
+
+        self.assertNotEqual(update_info, info)
+        self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_vuln(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        update_vuln = copy.deepcopy(vuln)
+        update_vuln.set_name('a')
+        update_uniq_id = update_vuln.get_uniq_id()
+        kb.update(vuln, update_vuln)
+
+        self.assertNotEqual(update_vuln, vuln)
+        self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_exception(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        original_id = vuln.get_uniq_id()
+
+        # Cause error by changing vuln uniq_id
+        update_vuln = vuln
+        update_vuln.set_name('a')
+        modified_id = vuln.get_uniq_id()
+
+        self.assertNotEqual(original_id, modified_id)
+        self.assertRaises(DBException, kb.update, vuln, update_vuln)

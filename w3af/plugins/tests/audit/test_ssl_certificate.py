@@ -38,7 +38,7 @@ class TestSSLCertificate(PluginTest):
     local_target_url = 'https://localhost:%s/' % PORT
 
     remote_url = 'https://www.yandex.com/'
-    EXPECTED_STRINGS = ('yandex.ru', 'Moscow', 'RU', 'Yandex')
+    EXPECTED_STRINGS = ('yandex.ru', 'Moscow', 'RU', 'yandex')
 
     _run_configs = {
         'cfg': {
@@ -53,7 +53,7 @@ class TestSSLCertificate(PluginTest):
         # Start the HTTPS server
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
                                 'certs', 'invalid_cert.pem')
-        s = ssl_server('localhost', PORT, certfile)
+        s = SSLServer('localhost', PORT, certfile)
         s.start()
 
         cfg = self._run_configs['cfg']
@@ -93,11 +93,13 @@ class TestSSLCertificate(PluginTest):
             self.assertIn(estring, info.get_desc())
 
 
+HTTP_RESPONSE = "HTTP/1.1 200 Ok\r\n"\
+                "Connection: close\r\n"\
+                "Content-Type: text/html\r\n"\
+                "Content-Length: 3\r\n\r\nabc"
 
-HTTP_RESPONSE = """HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: 3\r\n\r\nabc"""
 
-
-class ssl_server(threading.Thread):
+class SSLServer(threading.Thread):
 
     def __init__(self, listen, port, certfile, proto=ssl.PROTOCOL_SSLv3):
         threading.Thread.__init__(self)
@@ -125,7 +127,7 @@ class ssl_server(threading.Thread):
         except:
             # The ssl certificate might request a connection with
             # SSL protocol v2 and that will "break" the handshake
-            pass
+            newsocket.close()
 
         #print 'Connection from ', fromaddr
         try:

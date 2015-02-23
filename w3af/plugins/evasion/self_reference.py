@@ -48,7 +48,8 @@ class self_reference(EvasionPlugin):
         new_url = request.url_object.copy()
         new_url.set_path(path)
         new_req = HTTPRequest(new_url, request.get_data(),
-                              request.headers, request.get_origin_req_host())
+                              request.headers, request.get_origin_req_host(),
+                              retries=request.retries_left)
 
         return new_req
 

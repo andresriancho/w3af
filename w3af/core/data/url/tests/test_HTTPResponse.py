@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os
 import unittest
 import cPickle
 import msgpack
@@ -27,9 +26,7 @@ import msgpack
 from random import choice
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
-from w3af import ROOT_PATH
 from w3af.core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.parsers.url import URL
@@ -61,7 +58,7 @@ class TestHTTPResponse(unittest.TestCase):
         """
         self.assertRaises(AssertionError, self.resp.get_body)
 
-    def test_rawread_is_none(self):
+    def test_raw_read_is_none(self):
         """
         Guarantee that the '_raw_body' attr is set to None after
         used (Memory optimization)
@@ -158,76 +155,6 @@ class TestHTTPResponse(unittest.TestCase):
                 resp.body
             )
 
-    def test_eval_xpath_in_dom(self):
-        html = """
-        <html>
-          <head>
-            <title>THE TITLE</title>
-          </head>
-          <body>
-            <input name="user" type="text">
-            <input name="pass" type="password">
-          </body>
-        </html>"""
-        headers = Headers([('Content-Type', 'text/xml')])
-        resp = self.create_resp(headers, html)
-        self.assertEquals(2, len(resp.get_dom().xpath('.//input')))
-
-    def test_dom_are_the_same(self):
-        resp = self.create_resp(Headers([('Content-Type', 'text/html')]),
-                                "<html/>")
-        domid = id(resp.get_dom())
-        self.assertEquals(domid, id(resp.get_dom()))
-
-    def test_get_clear_text_body(self):
-        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
-        clear_text = 'header ABC-DEF-XYZ footer'
-        headers = Headers([('Content-Type', 'text/html')])
-        resp = self.create_resp(headers, html)
-        self.assertEquals(clear_text, resp.get_clear_text_body())
-
-    def test_get_clear_text_body_memoized(self):
-        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
-        clear_text = 'header ABC-DEF-XYZ footer'
-        headers = Headers([('Content-Type', 'text/html')])
-        resp = self.create_resp(headers, html)
-
-        calculated_clear_text = resp.get_clear_text_body()
-        calculated_clear_text_2 = resp.get_clear_text_body()
-
-        self.assertEquals(clear_text, calculated_clear_text)
-        self.assertIs(calculated_clear_text_2, calculated_clear_text)
-
-    def test_get_clear_text_body_encodings(self):
-        for lang_desc, (body, encoding) in TEST_RESPONSES.iteritems():
-            encoding_header = 'text/html; charset=%s' % encoding
-            headers = Headers([('Content-Type', encoding_header)])
-
-            encoded_body = body.encode(encoding)
-            resp = self.create_resp(headers, encoded_body)
-            ct_body = resp.get_clear_text_body()
-
-            # These test strings don't really have tags
-            self.assertEqual(ct_body, body)
-
-    def test_get_clear_text_issue_4402(self):
-        """
-        :see: https://github.com/andresriancho/w3af/issues/4402
-        """
-        test_file_path = 'core/data/url/tests/data/encoding_4402.php'
-        test_file = os.path.join(ROOT_PATH, test_file_path)
-        body = file(test_file, 'rb').read()
-
-        sample_encodings = [encoding for _, (_, encoding) in TEST_RESPONSES.iteritems()]
-        sample_encodings.extend(['', 'utf-8'])
-
-        for encoding in sample_encodings:
-            encoding_header = 'text/html; charset=%s' % encoding
-            headers = Headers([('Content-Type', encoding_header)])
-
-            resp = self.create_resp(headers, body)
-            resp.get_clear_text_body()
-
     def test_get_lower_case_headers(self):
         headers = Headers([('Content-Type', 'text/html')])
         lcase_headers = Headers([('content-type', 'text/html')])
@@ -237,7 +164,7 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEqual(resp.get_lower_case_headers(), lcase_headers)
         self.assertIn('content-type', resp.get_lower_case_headers())
 
-    def test_pickleable_no_dom(self):
+    def test_pickleable_http_response(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
         resp = self.create_resp(headers, html)
@@ -246,30 +173,6 @@ class TestHTTPResponse(unittest.TestCase):
         unpickled_resp = cPickle.loads(pickled_resp)
         
         self.assertEqual(unpickled_resp, resp)
-
-    def test_pickleable_dom(self):
-        
-        msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
-              ' having a multiprocess process that will perform all HTTP' \
-              ' requests and return HTTP responses over a multiprocessing' \
-              ' Queue AND only process the DOM once. Of course I can set the' \
-              ' dom to None before pickling.'
-        raise SkipTest(msg)
-    
-        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
-        headers = Headers([('Content-Type', 'text/html')])
-        resp = self.create_resp(headers, html)
-        # This just calculates the DOM and stores it as an attribute, NEEDS
-        # to be done before pickling (dumps) to have a real test.
-        original_dom = resp.get_dom()
-        
-        pickled_resp = cPickle.dumps(resp)
-        unpickled_resp = cPickle.loads(pickled_resp)
-        
-        self.assertEqual(unpickled_resp, resp)
-        
-        unpickled_dom = unpickled_resp.get_dom()
-        self.assertEqual(unpickled_dom, original_dom)
 
     def test_from_dict(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'

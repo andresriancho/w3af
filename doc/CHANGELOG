@@ -1,3 +1,19 @@
+(19 Feb 2015)    Version 1.6.45
+===============================
+Github tag: https://github.com/andresriancho/w3af/tree/1.6.45
+Github milestone: https://github.com/andresriancho/w3af/issues?milestone=10
+
+* HTTP response parsers are now run in a different process
+* Added support for SSL's SNI using OpenSSL
+* Added support for scanning servers with specific SSL protocols disabled (poodle)
+* Added new platforms to the dependency check
+* Updated sqlmap
+* Performance improvements in core classes
+* Improved profiling capabilities (internal use only)
+* Improved exception handling to catch more descriptive tracebacks
+* Added new plugins for web sockets and RFD
+* Better error handling for HTTP requests
+
 (12 Jun 2014)    Version 1.6.0.3
 ================================
 Github tag: https://github.com/andresriancho/w3af/tree/1.6.0.3

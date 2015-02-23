@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -207,6 +207,7 @@ POST_HINT_CONTENT_TYPES = {
                                 POST_HINT.MULTIPART: "multipart/form-data",
                                 POST_HINT.SOAP: "application/soap+xml",
                                 POST_HINT.XML: "application/xml",
+                                POST_HINT.ARRAY_LIKE: "application/x-www-form-urlencoded; charset=utf-8",
                           }
 
 DEPRECATED_OPTIONS = {
@@ -214,6 +215,7 @@ DEPRECATED_OPTIONS = {
                         "--no-unescape": "use '--no-escape' instead",
                         "--binary": "use '--binary-fields' instead",
                         "--check-payload": None,
+                        "--check-waf": None,
                      }
 
 DUMP_DATA_PREPROCESS = {

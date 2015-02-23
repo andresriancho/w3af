@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -54,10 +54,12 @@ from lib.core.enums import HTTPMETHOD
 from lib.core.enums import NULLCONNECTION
 from lib.core.enums import PAYLOAD
 from lib.core.enums import PLACE
+from lib.core.enums import REDIRECTION
 from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapSilentQuitException
 from lib.core.exception import SqlmapUserQuitException
+from lib.core.settings import DEFAULT_GET_POST_DELIMITER
 from lib.core.settings import DUMMY_XSS_CHECK_APPENDIX
 from lib.core.settings import FORMAT_EXCEPTION_STRINGS
 from lib.core.settings import HEURISTIC_CHECK_ALPHABET
@@ -67,6 +69,7 @@ from lib.core.settings import URI_HTTP_HEADER
 from lib.core.settings import LOWER_RATIO_BOUND
 from lib.core.settings import UPPER_RATIO_BOUND
 from lib.core.settings import IDS_WAF_CHECK_PAYLOAD
+from lib.core.settings import IDS_WAF_CHECK_RATIO
 from lib.core.threads import getCurrentThreadData
 from lib.request.connect import Connect as Request
 from lib.request.inject import checkBooleanExpression
@@ -85,7 +88,13 @@ def checkSqlInjection(place, parameter, value):
     # Set the flag for SQL injection test mode
     kb.testMode = True
 
-    for test in getSortedInjectionTests():
+    paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
+
+    tests = getSortedInjectionTests()
+
+    while tests:
+        test = tests.pop(0)
+
         try:
             if kb.endDetection:
                 break
@@ -399,7 +408,7 @@ def checkSqlInjection(place, parameter, value):
 
                                 # Perform the test's False request
                                 if not falseResult:
-                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (place, parameter, title)
+                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (paramType, parameter, title)
                                     logger.info(infoMsg)
 
                                     injectable = True
@@ -410,7 +419,7 @@ def checkSqlInjection(place, parameter, value):
                                 candidates = filter(None, (_.strip() if _.strip() in (kb.pageTemplate or "") and _.strip() not in falsePage and _.strip() not in threadData.lastComparisonHeaders else None for _ in (trueSet - falseSet)))
                                 if candidates:
                                     conf.string = candidates[0]
-                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable (with --string=\"%s\")" % (place, parameter, title, repr(conf.string).lstrip('u').strip("'"))
+                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable (with --string=\"%s\")" % (paramType, parameter, title, repr(conf.string).lstrip('u').strip("'"))
                                     logger.info(infoMsg)
 
                                     injectable = True
@@ -433,7 +442,7 @@ def checkSqlInjection(place, parameter, value):
                                     result = output == "1"
 
                                     if result:
-                                        infoMsg = "%s parameter '%s' is '%s' injectable " % (place, parameter, title)
+                                        infoMsg = "%s parameter '%s' is '%s' injectable " % (paramType, parameter, title)
                                         logger.info(infoMsg)
 
                                         injectable = True
@@ -455,7 +464,7 @@ def checkSqlInjection(place, parameter, value):
                                 trueResult = Request.queryPage(reqPayload, place, timeBasedCompare=True, raise404=False)
 
                                 if trueResult:
-                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (place, parameter, title)
+                                    infoMsg = "%s parameter '%s' seems to be '%s' injectable " % (paramType, parameter, title)
                                     logger.info(infoMsg)
 
                                     injectable = True
@@ -491,7 +500,7 @@ def checkSqlInjection(place, parameter, value):
                             reqPayload, vector = unionTest(comment, place, parameter, value, prefix, suffix)
 
                             if isinstance(reqPayload, basestring):
-                                infoMsg = "%s parameter '%s' is '%s' injectable" % (place, parameter, title)
+                                infoMsg = "%s parameter '%s' is '%s' injectable" % (paramType, parameter, title)
                                 logger.info(infoMsg)
 
                                 injectable = True
@@ -597,6 +606,7 @@ def checkSqlInjection(place, parameter, value):
                     choice = readInput(msg, default=str(conf.verbose), checkBatch=False).strip()
                 conf.verbose = int(choice)
                 setVerbosity()
+                tests.insert(0, test)
             elif choice[0] in ("n", "N"):
                 return None
             elif choice[0] in ("e", "E"):
@@ -782,6 +792,8 @@ def heuristicCheckSqlInjection(place, parameter):
 
     origValue = conf.paramDict[place][parameter]
 
+    paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
+
     prefix = ""
     suffix = ""
 
@@ -807,8 +819,8 @@ def heuristicCheckSqlInjection(place, parameter):
     parseFilePaths(page)
     result = wasLastResponseDBMSError()
 
-    infoMsg = "heuristic (basic) test shows that %s " % place
-    infoMsg += "parameter '%s' might " % parameter
+    infoMsg = "heuristic (basic) test shows that %s parameter " % paramType
+    infoMsg += "'%s' might " % parameter
 
     def _(page):
         return any(_ in (page or "") for _ in FORMAT_EXCEPTION_STRINGS)
@@ -856,9 +868,11 @@ def heuristicCheckSqlInjection(place, parameter):
     payload = agent.payload(place, parameter, newValue=payload)
     page, _ = Request.queryPage(payload, place, content=True, raise404=False)
 
+    paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
+
     if value in (page or ""):
-        infoMsg = "heuristic (XSS) test shows that %s " % place
-        infoMsg += "parameter '%s' might " % parameter
+        infoMsg = "heuristic (XSS) test shows that %s parameter " % paramType
+        infoMsg += "'%s' might " % parameter
         infoMsg += "be vulnerable to XSS attacks"
         logger.info(infoMsg)
 
@@ -880,7 +894,9 @@ def checkDynParam(place, parameter, value):
     dynResult = None
     randInt = randomInt()
 
-    infoMsg = "testing if %s parameter '%s' is dynamic" % (place, parameter)
+    paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
+
+    infoMsg = "testing if %s parameter '%s' is dynamic" % (paramType, parameter)
     logger.info(infoMsg)
 
     try:
@@ -888,7 +904,7 @@ def checkDynParam(place, parameter, value):
         dynResult = Request.queryPage(payload, place, raise404=False)
 
         if not dynResult:
-            infoMsg = "confirming that %s parameter '%s' is dynamic" % (place, parameter)
+            infoMsg = "confirming that %s parameter '%s' is dynamic" % (paramType, parameter)
             logger.info(infoMsg)
 
             randInt = randomInt()
@@ -1080,59 +1096,35 @@ def checkWaf():
     Reference: http://seclists.org/nmap-dev/2011/q2/att-1005/http-waf-detect.nse
     """
 
-    if not conf.checkWaf:
-        return False
-
-    infoMsg = "heuristically checking if the target is protected by "
-    infoMsg += "some kind of WAF/IPS/IDS"
-    logger.info(infoMsg)
+    dbmMsg = "heuristically checking if the target is protected by "
+    dbmMsg += "some kind of WAF/IPS/IDS"
+    logger.debug(dbmMsg)
 
     retVal = False
-
-    backup = dict(conf.parameters)
-
     payload = "%d %s" % (randomInt(), IDS_WAF_CHECK_PAYLOAD)
 
-    conf.parameters = dict(backup)
-    conf.parameters[PLACE.GET] = "" if not conf.parameters.get(PLACE.GET) else conf.parameters[PLACE.GET] + "&"
-    conf.parameters[PLACE.GET] += "%s=%s" % (randomStr(), payload)
+    value = "" if not conf.parameters.get(PLACE.GET) else conf.parameters[PLACE.GET] + DEFAULT_GET_POST_DELIMITER
+    value += agent.addPayloadDelimiters("%s=%s" % (randomStr(), payload))
 
-    logger.log(CUSTOM_LOGGING.PAYLOAD, payload)
-
-    kb.matchRatio = None
-    Request.queryPage()
-
-    if kb.errorIsNone and kb.matchRatio is None:
-        kb.matchRatio = LOWER_RATIO_BOUND
-
-    conf.parameters = dict(backup)
-    conf.parameters[PLACE.GET] = "" if not conf.parameters.get(PLACE.GET) else conf.parameters[PLACE.GET] + "&"
-    conf.parameters[PLACE.GET] += "%s=%d" % (randomStr(), randomInt())
-
-    trueResult = Request.queryPage()
-
-    if trueResult:
-        conf.parameters = dict(backup)
-        conf.parameters[PLACE.GET] = "" if not conf.parameters.get(PLACE.GET) else conf.parameters[PLACE.GET] + "&"
-        conf.parameters[PLACE.GET] += "%s=%d %s" % (randomStr(), randomInt(), IDS_WAF_CHECK_PAYLOAD)
-
-        try:
-            falseResult = Request.queryPage()
-        except SqlmapConnectionException:
-            falseResult = None
-
-        if not falseResult:
-            retVal = True
-
-    conf.parameters = dict(backup)
+    try:
+        retVal = Request.queryPage(place=PLACE.GET, value=value, getRatioValue=True, noteResponseTime=False, silent=True)[1] < IDS_WAF_CHECK_RATIO
+    except SqlmapConnectionException:
+        retVal = True
+    finally:
+        kb.matchRatio = None
 
     if retVal:
-        warnMsg = "it appears that the target is protected. Please "
-        warnMsg += "consider usage of tamper scripts (option '--tamper')"
-        logger.warn(warnMsg)
-    else:
-        infoMsg = "it appears that the target is not protected"
-        logger.info(infoMsg)
+        warnMsg = "heuristics detected that the target "
+        warnMsg += "is protected by some kind of WAF/IPS/IDS"
+        logger.critical(warnMsg)
+
+        if not conf.identifyWaf:
+            message = "do you want sqlmap to try to detect backend "
+            message += "WAF/IPS/IDS? [y/N] "
+            output = readInput(message, default="N")
+
+            if output and output[0] in ("Y", "y"):
+                conf.identifyWaf = True
 
     return retVal
 
@@ -1150,6 +1142,8 @@ def identifyWaf():
     def _(*args, **kwargs):
         page, headers, code = None, None, None
         try:
+            pushValue(kb.redirectChoice)
+            kb.redirectChoice = REDIRECTION.NO
             if kwargs.get("get"):
                 kwargs["get"] = urlencode(kwargs["get"])
             kwargs["raise404"] = False
@@ -1157,6 +1151,8 @@ def identifyWaf():
             page, headers, code = Request.getPage(*args, **kwargs)
         except Exception:
             pass
+        finally:
+            kb.redirectChoice = popValue()
         return page or "", headers or {}, code
 
     retVal = False
@@ -1188,8 +1184,8 @@ def identifyWaf():
         if output and output[0] not in ("Y", "y"):
             raise SqlmapUserQuitException
     else:
-        infoMsg = "no WAF/IDS/IPS product has been identified"
-        logger.info(infoMsg)
+        warnMsg = "no WAF/IDS/IPS product has been identified"
+        logger.warn(warnMsg)
 
     kb.testType = None
     kb.testMode = False
@@ -1247,13 +1243,15 @@ def checkNullConnection():
 def checkConnection(suppressOutput=False):
     if not any((conf.proxy, conf.tor, conf.dummy)):
         try:
+            debugMsg = "resolving hostname '%s'" % conf.hostname
+            logger.debug(debugMsg)
             socket.getaddrinfo(conf.hostname, None)
         except socket.gaierror:
             errMsg = "host '%s' does not exist" % conf.hostname
             raise SqlmapConnectionException(errMsg)
         except socket.error, ex:
             errMsg = "problem occurred while "
-            errMsg += "resolving a host name '%s' ('%s')" % (conf.hostname, str(ex))
+            errMsg += "resolving a host name '%s' ('%s')" % (conf.hostname, getUnicode(ex))
             raise SqlmapConnectionException(errMsg)
 
     if not suppressOutput and not conf.dummy:

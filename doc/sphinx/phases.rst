@@ -58,7 +58,7 @@ Analyze HTTP requests and responses which are sent by other plugins and identify
 
 Output
 ------
-Are the way the framework and plugins communicate with the user. Output plugins save the data to a text, xml or html file. Debugging information is also sent to the output plugins and can be saved for analysis.
+The way the framework and plugins communicate with the user. Output plugins save the data to a text, xml or html file. Debugging information is also sent to the output plugins and can be saved for analysis.
 
 Messages sent to the output manager are sent to all enabled plugins, so if you have enabled ``text_file`` and ``xml_file`` output plugins, both will log any vulnerabilities found by an audit plugin.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,6 +10,7 @@ import os
 from lib.core.agent import agent
 from lib.core.common import dataToOutFile
 from lib.core.common import Backend
+from lib.core.common import checkFile
 from lib.core.common import decloakToTemp
 from lib.core.common import decodeHexValue
 from lib.core.common import isNumPosStrValue
@@ -255,6 +256,8 @@ class Filesystem:
 
     def writeFile(self, localFile, remoteFile, fileType=None, forceCheck=False):
         written = False
+
+        checkFile(localFile)
 
         self.checkDbmsOs()
 

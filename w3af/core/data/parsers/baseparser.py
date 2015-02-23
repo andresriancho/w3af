@@ -51,6 +51,18 @@ class BaseParser(object):
         self._rootDomain = url.get_root_domain()
         self._encoding = http_response.get_charset()
 
+        # Not all parsers have a DOM, but we'll over-generalize just to avoid
+        # having extra if statements all around the code.
+        self._dom = None
+
+        # Store the http response, this shouldn't be so bad since we're only
+        # storing ParserCache.LRU_LENGTH in memory and not storing responses
+        # which have more than ParserCache.MAX_CACHEABLE_BODY_LEN in length
+        self._http_response = http_response
+
+    def get_http_response(self):
+        return self._http_response
+
     @staticmethod
     def can_parse(http_resp):
         """
@@ -179,3 +191,25 @@ class BaseParser(object):
         At the class definition, and simply return an empty list.
         """
         return []
+
+    def get_clear_text_body(self):
+        """
+        :return: A clear text representation of the HTTP response body.
+        """
+        raise NotImplementedError('You should create your own parser class'
+                                  ' and implement the get_clear_text_body()'
+                                  ' method.')
+
+    def set_dom(self, dom_inst):
+        """
+        Set the dom attribute
+        :return: None
+        """
+        self._dom = dom_inst
+
+    def get_dom(self):
+        """
+        :return: The DOM, or None if the HTML normalization failed or this is
+                 not a SGML document.
+        """
+        return self._dom

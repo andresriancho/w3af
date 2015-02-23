@@ -24,7 +24,6 @@ from w3af.core.data.parsers.pdf import PDFParser
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.parsers.wml_parser import WMLParser
 from w3af.core.data.parsers.javascript import JavaScriptParser
-
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
@@ -47,6 +46,8 @@ class DocumentParser(object):
         which will return True to "can_parse" in lots of cases (even when we're
         unsure that the response is really an HTML document).
         """
+        self._parser = None
+
         if http_resp.is_image():
             msg = 'There is no parser for images.'
             raise BaseFrameworkException(msg)
@@ -55,7 +56,8 @@ class DocumentParser(object):
             if parser.can_parse(http_resp):
                 self._parser = parser(http_resp)
                 break
-        else:
+
+        if self._parser is None:
             msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise BaseFrameworkException(msg)
 
@@ -110,6 +112,19 @@ class DocumentParser(object):
         :return: A list of all meta tags.
         """
         return self._parser.get_meta_tags()
+
+    def get_dom(self):
+        """
+        :return: The DOM which holds the HTML. Not all parsers return something
+                 here. In some cases (like the PDF parser) this returns None.
+        """
+        return self._parser.get_dom()
+
+    def get_clear_text_body(self):
+        """
+        :return: Only the text, no tags, which is present in a document.
+        """
+        return self._parser.get_clear_text_body()
 
 
 def document_parser_factory(http_resp):

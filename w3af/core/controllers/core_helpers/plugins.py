@@ -38,6 +38,9 @@ class w3af_core_plugins(object):
         self._w3af_core = w3af_core
 
         self.initialized = False
+        self._plugins_names_dict = None
+        self._plugins_options = None
+        self.plugins = None
         self.zero_enabled_plugins()
 
     def zero_enabled_plugins(self):
@@ -71,7 +74,7 @@ class w3af_core_plugins(object):
         self.initialized = True
 
         # This is inited before all, to have a full logging support.
-        om.out.set_output_plugins(self._plugins_names_dict['output'])
+        om.manager.set_output_plugins(self._plugins_names_dict['output'])
 
         # Create an instance of each requested plugin and add it to the plugin
         # list. Plugins are added taking care of plugin dependencies and
@@ -96,7 +99,7 @@ class w3af_core_plugins(object):
         :return: No value is returned.
         """
         if plugin_type.lower() == 'output':
-            om.out.set_plugin_options(plugin_name, plugin_options)
+            om.manager.set_plugin_options(plugin_name, plugin_options)
 
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.

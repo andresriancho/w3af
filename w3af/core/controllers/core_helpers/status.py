@@ -32,7 +32,7 @@ class w3af_core_status(object):
     phases of the process will change the status (set) and the UI will be calling
     the different methods to (get) the information required.
     """
-    def __init__(self, w3af_core):
+    def __init__(self, w3af_core, scans_completed=0):
         # Store the core to be able to access the queues to get status
         self._w3af_core = w3af_core
         
@@ -40,7 +40,7 @@ class w3af_core_status(object):
         self._is_running = False
         self._paused = False
         self._start_time_epoch = None
-        self.scans_completed = 0
+        self.scans_completed = scans_completed
         
         # This indicates the plugin that is running right now for each
         # plugin_type

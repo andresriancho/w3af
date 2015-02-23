@@ -34,9 +34,11 @@ from w3af.core.controllers.daemons.proxy import Proxy
 
 class SQLMapWrapper(object):
 
+    OUTPUT_DIR = '%s/%s' % (tempfile.gettempdir(), os.getpid())
     DEBUG_ARGS = ['-v6']
-    DEFAULT_ARGS = [sys.executable, 'sqlmap.py',
-                    '--output-dir=%s' % tempfile.gettempdir()]
+    DEFAULT_ARGS = [sys.executable,
+                    'sqlmap.py',
+                    '--output-dir=%s' % OUTPUT_DIR]
 
     SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
@@ -61,6 +63,8 @@ class SQLMapWrapper(object):
         self.verified_vulnerable = False
         self.proxy = None
         self.local_proxy_url = None
+        self.last_stdout = None
+        self.last_stderr = None
 
         if uri_opener is not None:
             self.start_proxy(uri_opener)
@@ -127,6 +131,9 @@ class SQLMapWrapper(object):
         
         :return: A Popen object.
         """
+        if not os.path.exists(self.OUTPUT_DIR):
+            os.mkdir(self.OUTPUT_DIR)
+
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = self.DEFAULT_ARGS + final_params + target_params
@@ -192,13 +199,11 @@ class SQLMapWrapper(object):
         return self.run_sqlmap_with_pipes(extra_params)
     
     def get_wrapper_params(self, extra_params=[]):
-        params = []
-        
         # TODO: This one will dissapear the day I add stdin handling support
         #       for the wrapper. Please remember that this support will have to
         #       take care of stdin and all other inputs from other UIs
-        params.append('--batch')
-        
+        params = ['--batch']
+
         if not self.coloring:
             params.append('--disable-coloring')
         
@@ -222,23 +227,23 @@ class SQLMapWrapper(object):
         return self.last_command, process
         
     def dbs(self):
-        return self._wrap_param(['--dbs',])
+        return self._wrap_param(['--dbs'])
 
     def tables(self):
-        return self._wrap_param(['--tables',])
+        return self._wrap_param(['--tables'])
 
     def users(self):
-        return self._wrap_param(['--users',])
+        return self._wrap_param(['--users'])
 
     def dump(self):
-        return self._wrap_param(['--dump',])
+        return self._wrap_param(['--dump'])
 
     def read(self, filename):
         """
         :param filename: The file to be read
         :return: The contents of the file that was passed as parameter
         """
-        cmd, process = self._wrap_param(['--file-read=%s' % filename,])
+        cmd, process = self._wrap_param(['--file-read=%s' % filename])
         local_file_re = re.compile("the local file (.*?) and")
         # pylint: disable=E1101
         stdout = process.stdout.read()

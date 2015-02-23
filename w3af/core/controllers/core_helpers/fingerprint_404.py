@@ -250,7 +250,8 @@ class fingerprint_404(object):
 
         # 404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one in order to have a fair comparison
-        html_body = get_clean_body(http_response)
+        resp_body = get_clean_body(http_response)
+        resp_content_type = http_response.doc_type
 
         #
         #   Compare this response to all the 404's I have in my DB
@@ -262,7 +263,13 @@ class fingerprint_404(object):
 
         for resp_404 in copy_404_responses:
 
-            if fuzzy_equal(resp_404.get_body(), html_body, IS_EQUAL_RATIO):
+            # Since the fuzzy_equal function is CPU-intensive we want to avoid
+            # calling it for cases where we know it won't match, for example in
+            # comparing an image and an html
+            if resp_content_type != resp_404.doc_type:
+                continue
+
+            if fuzzy_equal(resp_404.get_body(), resp_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
                 fmt = (http_response.get_url(),
                        http_response.id,
@@ -273,7 +280,7 @@ class fingerprint_404(object):
         else:
             #
             #    I get here when the for ends and no body_404_db matched with
-            #    the html_body that was sent as a parameter by the user. This
+            #    the resp_body that was sent as a parameter by the user. This
             #    means one of two things:
             #        * There is not enough knowledge in self._404_responses, or
             #        * The answer is NOT a 404.
@@ -284,7 +291,7 @@ class fingerprint_404(object):
             domain_path = http_response.get_url().get_domain_path()
             if domain_path not in self._fingerprinted_paths:
 
-                if self._is_404_with_extra_request(http_response, html_body):
+                if self._is_404_with_extra_request(http_response, resp_body):
                     #
                     #   Aha! It actually was a 404!
                     #
@@ -385,7 +392,7 @@ class fingerprint_404(object):
 
         return final_result
 
-    def _is_404_with_extra_request(self, http_response, clean_html_body):
+    def _is_404_with_extra_request(self, http_response, clean_resp_body):
         """
         Performs a very simple check to verify if this response is a 404 or not.
 
@@ -395,7 +402,7 @@ class fingerprint_404(object):
         request is a 404.
 
         :param http_response: The original HTTP response
-        :param clean_html_body: The original HTML body you could find in
+        :param clean_resp_body: The original HTML body you could find in
                                 http_response after passing it by a cleaner
 
         :return: True if the original response was a 404 !
@@ -417,7 +424,7 @@ class fingerprint_404(object):
         url_404.get_domain_path() not in self._directory_uses_404_codes:
             self._directory_uses_404_codes.add(url_404.get_domain_path())
 
-        return fuzzy_equal(clean_response_404_body, clean_html_body,
+        return fuzzy_equal(clean_response_404_body, clean_resp_body,
                            IS_EQUAL_RATIO)
 
 

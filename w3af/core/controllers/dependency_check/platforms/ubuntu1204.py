@@ -34,7 +34,8 @@ class Ubuntu1204(Platform):
     CORE_SYSTEM_PACKAGES = ['python-pip', 'python2.7-dev',
                             'python-setuptools', 'build-essential',
                             'libsqlite3-dev', 'libssl-dev', 'git',
-                            'libxml2-dev', 'libxslt1-dev', 'libyaml-dev']
+                            'libxml2-dev', 'libxslt1-dev', 'libyaml-dev',
+                            'libffi-dev']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview2',

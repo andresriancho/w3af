@@ -26,12 +26,12 @@ from w3af.core.controllers.ci.moth import get_moth_http
 
 class TestDetailed(PluginTest):
 
-    target_url = get_moth_http('/auth/detailed/')
+    target_url = get_moth_http('/auth/auth_1/')
     
-    auth_url = URL(target_url + 'auth.py')
-    check_url = URL(target_url + 'home.py')
-    check_string = '<title>Home page</title>'
-    data_format = '%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85'
+    auth_url = URL(target_url + 'login_form.py')
+    check_url = URL(target_url + 'post_auth_xss.py')
+    check_string = 'or read your input'
+    data_format = '%u=%U&%p=%P&Login=Login'
     
     _run_config = {
         'target': target_url,
@@ -44,8 +44,8 @@ class TestDetailed(PluginTest):
         ),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('detailed',
-                                 ('username', 'admin', PluginConfig.STR),
-                                 ('password', 'nimda', PluginConfig.STR),
+                                 ('username', 'user@mail.com', PluginConfig.STR),
+                                 ('password', 'passw0rd', PluginConfig.STR),
                                  ('username_field', 'username', PluginConfig.STR),
                                  ('password_field', 'password', PluginConfig.STR),
                                  ('data_format', data_format, PluginConfig.STR),
@@ -58,7 +58,6 @@ class TestDetailed(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -67,6 +66,5 @@ class TestDetailed(PluginTest):
         self.assertEquals(len(vulns), 1, vulns)
 
         vuln = vulns[0]
-        self.assertEquals(vuln.get_name(),
-                          'Cross site scripting vulnerability')
-        self.assertEquals(vuln.get_token_name(), 'section')
+        self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
+        self.assertEquals(vuln.get_token_name(), 'text')

@@ -36,7 +36,7 @@ class OpenBSD5(Platform):
     #
     CORE_SYSTEM_PACKAGES = ['py-pip', 'python-2.7.3p0', 'py-setuptools',
                             'gcc', 'git', 'libxml', 'libxslt', 'py-pcapy',
-                            'py-libdnet']
+                            'py-libdnet', 'libffi']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'gtksourceview'])

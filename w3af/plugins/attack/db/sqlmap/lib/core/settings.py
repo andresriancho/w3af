@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -27,19 +27,21 @@ SITE = "http://sqlmap.org"
 ISSUES_PAGE = "https://github.com/sqlmapproject/sqlmap/issues/new"
 GIT_REPOSITORY = "git://github.com/sqlmapproject/sqlmap.git"
 GIT_PAGE = "https://github.com/sqlmapproject/sqlmap"
-ML = "sqlmap-users@lists.sourceforge.net"
 
 # colorful banner
 BANNER = """\033[01;33m         _
  ___ ___| |_____ ___ ___  \033[01;37m{\033[01;%dm%s\033[01;37m}\033[01;33m
 |_ -| . | |     | .'| . |
 |___|_  |_|_|_|_|__,|  _|
-      |_|           |_|   \033[0m\033[4m%s\033[0m\n
+      |_|           |_|   \033[0m\033[4;37m%s\033[0m\n
 """ % ((31 + hash(REVISION) % 6) if REVISION else 30, VERSION_STRING.split('/')[-1], SITE)
 
 # Minimum distance of ratio from kb.matchRatio to result in True
 DIFF_TOLERANCE = 0.05
 CONSTANT_RATIO = 0.9
+
+# Ratio used in heuristic check for WAF/IDS/IPS protected targets
+IDS_WAF_CHECK_RATIO = 0.5
 
 # Lower and upper values for match ratio in case of stable page
 LOWER_RATIO_BOUND = 0.02
@@ -78,6 +80,9 @@ TEXT_TAG_REGEX = r"(?si)<(abbr|acronym|b|blockquote|br|center|cite|code|dt|em|fo
 
 # Regular expression used for recognition of IP addresses
 IP_ADDRESS_REGEX = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+
+# Regular expression used for recognition of generic "your ip has been blocked" messages
+BLOCKED_IP_REGEX = r"(?i)(\A|\b)ip\b.*\b(banned|blocked|block list|firewall)"
 
 # Dumping characters used in GROUP_CONCAT MySQL technique
 CONCAT_ROW_DELIMITER = ','
@@ -207,6 +212,9 @@ DBMS_ALIASES = ((DBMS.MSSQL, MSSQL_ALIASES), (DBMS.MYSQL, MYSQL_ALIASES), (DBMS.
 USER_AGENT_ALIASES = ("ua", "useragent", "user-agent")
 REFERER_ALIASES = ("ref", "referer", "referrer")
 HOST_ALIASES = ("host",)
+
+# Names that can't be used to name files on Windows OS
+WINDOWS_RESERVED_NAMES = ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9")
 
 # Items displayed in basic help (-h) output
 BASIC_HELP_ITEMS = (
@@ -409,7 +417,7 @@ ITOA64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 DUMMY_SQL_INJECTION_CHARS = ";()'"
 
 # Simple check against dummy users
-DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b|\A-\d+\Z"
+DUMMY_USER_INJECTION = r"(?i)[^\w](AND|OR)\s+[^\s]+[=><]|\bUNION\b.+\bSELECT\b|\bSELECT\b.+\bFROM\b|\b(CONCAT|information_schema|SLEEP|DELAY)\b"
 
 # Extensions skipped by crawler
 CRAWL_EXCLUDE_EXTENSIONS = ("gif", "jpg", "jpeg", "image", "jar", "tif", "bmp", "war", "ear", "mpg", "mpeg", "wmv", "mpeg", "scm", "iso", "dmp", "dll", "cab", "so", "avi", "mkv", "bin", "iso", "tar", "png", "pdf", "ps", "wav", "mp3", "mp4", "au", "aiff", "aac", "zip", "rar", "7z", "gz", "flv", "mov", "doc", "docx", "xls", "dot", "dotx", "xlt", "xlsx", "ppt", "pps", "pptx")
@@ -424,7 +432,7 @@ BRUTE_TABLE_EXISTS_TEMPLATE = "EXISTS(SELECT %d FROM %s)"
 BRUTE_COLUMN_EXISTS_TEMPLATE = "EXISTS(SELECT %s FROM %s)"
 
 # Payload used for checking of existence of IDS/WAF (dummier the better)
-IDS_WAF_CHECK_PAYLOAD = "AND 1=1 UNION ALL SELECT 1,2,3,table_name FROM information_schema.tables WHERE 2>1"
+IDS_WAF_CHECK_PAYLOAD = "AND 1=1 UNION ALL SELECT 1,2,3,table_name FROM information_schema.tables WHERE 2>1-- ../../../etc/passwd"
 
 # Vectors used for provoking specific WAF/IDS/IPS behavior(s)
 WAF_ATTACK_VECTORS = (
@@ -438,8 +446,8 @@ WAF_ATTACK_VECTORS = (
 # Used for status representation in dictionary attack phase
 ROTATING_CHARS = ('\\', '|', '|', '/', '-')
 
-# Chunk length (in items) used by BigArray objects (only last chunk and cached one are held in memory)
-BIGARRAY_CHUNK_LENGTH = 4096
+# Approximate chunk length (in bytes) used by BigArray objects (only last chunk and cached one are held in memory)
+BIGARRAY_CHUNK_SIZE = 1024 * 1024
 
 # Only console display last n table rows
 TRIM_STDOUT_DUMP_SIZE = 256
@@ -473,6 +481,9 @@ DEFAULT_COOKIE_DELIMITER = ';'
 
 # Unix timestamp used for forcing cookie expiration when provided with --load-cookies
 FORCE_COOKIE_EXPIRATION_TIME = "9999999999"
+
+# Github OAuth token used for creating an automatic Issue for unhandled exceptions
+GITHUB_REPORT_OAUTH_TOKEN = "29f6bdf5ce4424fc17a19405bce75d6aca7dcd27"
 
 # Skip unforced HashDB flush requests below the threshold number of cached items
 HASHDB_FLUSH_THRESHOLD = 32
@@ -508,7 +519,7 @@ MAX_DNS_LABEL = 63
 DNS_BOUNDARIES_ALPHABET = re.sub("[a-fA-F]", "", string.ascii_letters)
 
 # Alphabet used for heuristic checks
-HEURISTIC_CHECK_ALPHABET = ('"', '\'', ')', '(', '[', ']', ',', '.')
+HEURISTIC_CHECK_ALPHABET = ('"', '\'', ')', '(', ',', '.')
 
 # String used for dummy XSS check of a tested parameter value
 DUMMY_XSS_CHECK_APPENDIX = "<'\">"
@@ -535,7 +546,7 @@ VALID_TIME_CHARS_RUN_THRESHOLD = 100
 CHECK_ZERO_COLUMNS_THRESHOLD = 10
 
 # Boldify all logger messages containing these "patterns"
-BOLD_PATTERNS = ("' injectable", "might be injectable", "' is vulnerable", "is not injectable", "test failed", "test passed", "live test final result", "test shows that")
+BOLD_PATTERNS = ("' injectable", "might be injectable", "' is vulnerable", "is not injectable", "test failed", "test passed", "live test final result", "test shows that", "the back-end DBMS is", "created Github", "blocked by the target server", "protection is involved")
 
 # Generic www root directory names
 GENERIC_DOC_ROOT_DIRECTORY_NAMES = ("htdocs", "httpdocs", "public", "wwwroot", "www")
@@ -573,6 +584,9 @@ JSON_LIKE_RECOGNITION_REGEX = r"(?s)\A(\s*\[)*\s*\{.*'[^']+'\s*:\s*('[^']+'|\d+)
 # Regular expression used for detecting multipart POST data
 MULTIPART_RECOGNITION_REGEX = r"(?i)Content-Disposition:[^;]+;\s*name="
 
+# Regular expression used for detecting Array-like POST data
+ARRAY_LIKE_RECOGNITION_REGEX = r"(\A|%s)(\w+)\[\]=.+%s\2\[\]=" % (DEFAULT_GET_POST_DELIMITER, DEFAULT_GET_POST_DELIMITER)
+
 # Default POST data content-type
 DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded; charset=utf-8"
 
@@ -597,8 +611,14 @@ MIN_ENCODED_LEN_CHECK = 5
 # Timeout in seconds in which Metasploit remote session has to be initialized
 METASPLOIT_SESSION_TIMEOUT = 300
 
+# Suffix used to mark variables having keyword names
+EVALCODE_KEYWORD_SUFFIX = "_KEYWORD"
+
 # Reference: http://www.cookiecentral.com/faq/#3.5
 NETSCAPE_FORMAT_HEADER_COOKIES = "# Netscape HTTP Cookie File."
+
+# Infixes used for automatic recognition of parameters carrying anti-CSRF tokens
+CSRF_TOKEN_PARAMETER_INFIXES = ("csrf", "xsrf")
 
 # Prefixes used in brute force search for web server document root
 BRUTE_DOC_ROOT_PREFIXES = {
@@ -614,6 +634,9 @@ BRUTE_DOC_ROOT_TARGET_MARK = "%TARGET%"
 
 # Character used as a boundary in kb.chars (preferably less frequent letter)
 KB_CHARS_BOUNDARY_CHAR = 'q'
+
+# Letters of lower frequency used in kb.chars
+KB_CHARS_LOW_FREQUENCY_ALPHABET = "zqxjkvbp"
 
 # CSS style used in HTML dump format
 HTML_DUMP_CSS_STYLE = """<style>

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import itertools
-import os
 
 from os import listdir as orig_listdir
 from nose.plugins.attrib import attr
@@ -43,213 +42,195 @@ class TestW3afCorePlugins(unittest.TestCase):
         self.listdir_mock = self.listdir_patch.start()
         self.listdir_mock.side_effect = listdir_remove_fs
 
+        self.core = w3afCore()
+
     def tearDown(self):
         super(TestW3afCorePlugins, self).tearDown()
 
         self.listdir_patch.stop()
+        self.core.worker_pool.terminate_join()
 
     def test_get_plugin_types(self):
-        w3af_core = w3afCore()
-        plugin_types = w3af_core.plugins.get_plugin_types()
+        plugin_types = self.core.plugins.get_plugin_types()
         expected = {'grep', 'output', 'mangle', 'audit', 'crawl', 'evasion',
                     'bruteforce', 'auth', 'infrastructure'}
         self.assertEquals(set(plugin_types), expected)
 
     def test_get_plugin_listAudit(self):
-        w3af_core = w3afCore()
-        plugin_list = w3af_core.plugins.get_plugin_list('audit')
+        plugin_list = self.core.plugins.get_plugin_list('audit')
 
         expected = {'sqli', 'xss', 'eval'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_listCrawl(self):
-        w3af_core = w3afCore()
-        plugin_list = w3af_core.plugins.get_plugin_list('crawl')
+        plugin_list = self.core.plugins.get_plugin_list('crawl')
 
         expected = {'web_spider', 'spider_man'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
     def test_get_plugin_inst(self):
-        w3af_core = w3afCore()
-        plugin_inst = w3af_core.plugins.get_plugin_inst('audit', 'sqli')
+        plugin_inst = self.core.plugins.get_plugin_inst('audit', 'sqli')
 
         self.assertEquals(plugin_inst.get_name(), 'sqli')
 
     def test_get_plugin_instAll(self):
-        w3af_core = w3afCore()
-
-        for plugin_type in itertools.chain(w3af_core.plugins.get_plugin_types(), ['attack']):
-            for plugin_name in w3af_core.plugins.get_plugin_list(plugin_type):
-                plugin_inst = w3af_core.plugins.get_plugin_inst(
+        for plugin_type in itertools.chain(self.core.plugins.get_plugin_types(), ['attack']):
+            for plugin_name in self.core.plugins.get_plugin_list(plugin_type):
+                plugin_inst = self.core.plugins.get_plugin_inst(
                     plugin_type, plugin_name)
                 self.assertEquals(plugin_inst.get_name(), plugin_name)
 
     def test_set_plugins(self):
-        w3af_core = w3afCore()
         enabled = ['sqli', ]
-        w3af_core.plugins.set_plugins(enabled, 'audit')
-        retrieved = w3af_core.plugins.get_enabled_plugins('audit')
+        self.core.plugins.set_plugins(enabled, 'audit')
+        retrieved = self.core.plugins.get_enabled_plugins('audit')
         self.assertEquals(enabled, retrieved)
 
     def test_set_plugins_negative(self):
-        w3af_core = w3afCore()
         enabled = ['fake', ]
-        self.assertRaises(ValueError, w3af_core.plugins.set_plugins, enabled, 'output')
+        self.assertRaises(ValueError, self.core.plugins.set_plugins, enabled, 'output')
 
     def test_set_plugins_negative_without_raise(self):
-        w3af_core = w3afCore()
         enabled = ['fake', ]
-        unknown_plugins = w3af_core.plugins.set_plugins(enabled, 'output', raise_on_error=False)
+        unknown_plugins = self.core.plugins.set_plugins(enabled, 'output',
+                                                        raise_on_error=False)
         self.assertEqual(enabled, unknown_plugins)
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.init_plugins()
 
     def test_get_all_enabled_plugins(self):
-        w3af_core = w3afCore()
         enabled_audit = ['sqli', 'xss']
         enabled_grep = ['private_ip']
-        w3af_core.plugins.set_plugins(enabled_audit, 'audit')
-        w3af_core.plugins.set_plugins(enabled_grep, 'grep')
+        self.core.plugins.set_plugins(enabled_audit, 'audit')
+        self.core.plugins.set_plugins(enabled_grep, 'grep')
 
-        all_enabled = w3af_core.plugins.get_all_enabled_plugins()
+        all_enabled = self.core.plugins.get_all_enabled_plugins()
 
         self.assertEquals(enabled_audit, all_enabled['audit'])
         self.assertEquals(enabled_grep, all_enabled['grep'])
 
     def test_plugin_options(self):
-        w3af_core = w3afCore()
-        plugin_inst = w3af_core.plugins.get_plugin_inst('crawl', 'web_spider')
+        plugin_inst = self.core.plugins.get_plugin_inst('crawl', 'web_spider')
         options_1 = plugin_inst.get_options()
 
-        w3af_core.plugins.set_plugin_options('crawl', 'web_spider', options_1)
-        options_2 = w3af_core.plugins.get_plugin_options('crawl', 'web_spider')
+        self.core.plugins.set_plugin_options('crawl', 'web_spider', options_1)
+        options_2 = self.core.plugins.get_plugin_options('crawl', 'web_spider')
 
         self.assertEquals(options_1, options_2)
 
     def test_plugin_options_invalid(self):
-        w3af_core = w3afCore()
-        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options,
+        self.assertRaises(TypeError, self.core.plugins.set_plugin_options,
                           'crawl', 'web_spider', None)
 
     def test_init_plugins(self):
-        w3af_core = w3afCore()
         enabled = ['web_spider']
-        w3af_core.plugins.set_plugins(enabled, 'crawl')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled, 'crawl')
+        self.core.plugins.init_plugins()
 
-        self.assertEquals(len(w3af_core.plugins.plugins['crawl']), 1,
-                          w3af_core.plugins.plugins['crawl'])
+        self.assertEquals(len(self.core.plugins.plugins['crawl']), 1,
+                          self.core.plugins.plugins['crawl'])
 
-        plugin_inst = list(w3af_core.plugins.plugins['crawl'])[0]
+        plugin_inst = list(self.core.plugins.plugins['crawl'])[0]
         self.assertEquals(plugin_inst.get_name(), 'web_spider')
 
     def test_enable_all(self):
-        w3af_core = w3afCore()
         enabled = ['all']
-        w3af_core.plugins.set_plugins(enabled, 'crawl')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled, 'crawl')
+        self.core.plugins.init_plugins()
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
-                          set(w3af_core.plugins.get_plugin_list('crawl')))
+        self.assertEquals(set(self.core.plugins.get_enabled_plugins('crawl')),
+                          set(self.core.plugins.get_plugin_list('crawl')))
 
-        self.assertEquals(len(set(w3af_core.plugins.get_enabled_plugins('crawl'))),
-                          len(set(w3af_core.plugins.get_plugin_list('crawl'))))
+        self.assertEquals(len(set(self.core.plugins.get_enabled_plugins('crawl'))),
+                          len(set(self.core.plugins.get_plugin_list('crawl'))))
 
     def test_enable_all_but_web_spider(self):
-        w3af_core = w3afCore()
         enabled = ['all', '!web_spider']
-        w3af_core.plugins.set_plugins(enabled, 'crawl')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled, 'crawl')
+        self.core.plugins.init_plugins()
 
-        all_plugins = w3af_core.plugins.get_plugin_list('crawl')
+        all_plugins = self.core.plugins.get_plugin_list('crawl')
         all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+        self.assertEquals(set(self.core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
     def test_enable_all_but_two(self):
-        w3af_core = w3afCore()
         enabled = ['all', '!web_spider', '!archive_dot_org']
-        w3af_core.plugins.set_plugins(enabled, 'crawl')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled, 'crawl')
+        self.core.plugins.init_plugins()
 
-        all_plugins = w3af_core.plugins.get_plugin_list('crawl')
+        all_plugins = self.core.plugins.get_plugin_list('crawl')
         all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
         all_plugins.remove('archive_dot_org')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+        self.assertEquals(set(self.core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
     def test_enable_not_web_spider_all(self):
-        w3af_core = w3afCore()
         enabled = ['!web_spider', 'all']
-        w3af_core.plugins.set_plugins(enabled, 'crawl')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled, 'crawl')
+        self.core.plugins.init_plugins()
 
-        all_plugins = w3af_core.plugins.get_plugin_list('crawl')
+        all_plugins = self.core.plugins.get_plugin_list('crawl')
         all_plugins = all_plugins[:]
         all_plugins.remove('web_spider')
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+        self.assertEquals(set(self.core.plugins.get_enabled_plugins('crawl')),
                           set(all_plugins))
 
     def test_enable_dependency_same_type(self):
-        w3af_core = w3afCore()
         enabled_infra = ['php_eggs', ]
-        w3af_core.plugins.set_plugins(enabled_infra, 'infrastructure')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled_infra, 'infrastructure')
+        self.core.plugins.init_plugins()
 
         enabled_infra.append('server_header')
 
         self.assertEquals(
-            set(w3af_core.plugins.get_enabled_plugins('infrastructure')),
+            set(self.core.plugins.get_enabled_plugins('infrastructure')),
             set(enabled_infra))
 
     def test_enable_dependency_same_type_order(self):
-        w3af_core = w3afCore()
         enabled_infra = ['php_eggs', ]
-        w3af_core.plugins.set_plugins(enabled_infra, 'infrastructure')
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.set_plugins(enabled_infra, 'infrastructure')
+        self.core.plugins.init_plugins()
 
-        self.assertEqual(w3af_core.plugins.get_enabled_plugins(
+        self.assertEqual(self.core.plugins.get_enabled_plugins(
             'infrastructure').index('server_header'), 0)
-        self.assertEqual(w3af_core.plugins.get_enabled_plugins(
+        self.assertEqual(self.core.plugins.get_enabled_plugins(
             'infrastructure').index('php_eggs'), 1)
 
-        self.assertEqual(w3af_core.plugins.plugins[
+        self.assertEqual(self.core.plugins.plugins[
                          'infrastructure'][0].get_name(), 'server_header')
-        self.assertEqual(w3af_core.plugins.plugins[
+        self.assertEqual(self.core.plugins.plugins[
                          'infrastructure'][1].get_name(), 'php_eggs')
 
     def test_enable_dependency_different_type(self):
-        w3af_core = w3afCore()
         enabled_crawl = ['url_fuzzer', ]
-        w3af_core.plugins.set_plugins(enabled_crawl, 'crawl')
+        self.core.plugins.set_plugins(enabled_crawl, 'crawl')
 
         enabled_infra = ['allowed_methods', ]
 
-        w3af_core.plugins.init_plugins()
+        self.core.plugins.init_plugins()
 
-        self.assertEquals(set(w3af_core.plugins.get_enabled_plugins('crawl')),
+        self.assertEquals(set(self.core.plugins.get_enabled_plugins('crawl')),
                           set(enabled_crawl))
 
         self.assertEquals(
-            set(w3af_core.plugins.get_enabled_plugins('infrastructure')),
+            set(self.core.plugins.get_enabled_plugins('infrastructure')),
             set(enabled_infra))
 
     def test_enable_all_all(self):
-        w3af_core = w3afCore()
+        for plugin_type in self.core.plugins.get_plugin_types():
+            self.core.plugins.set_plugins(['all', ], plugin_type)
 
-        for plugin_type in w3af_core.plugins.get_plugin_types():
-            w3af_core.plugins.set_plugins(['all', ], plugin_type)
+        self.core.plugins.init_plugins()
 
-        w3af_core.plugins.init_plugins()
-
-        for plugin_type in w3af_core.plugins.get_plugin_types():
-            enabled_plugins = w3af_core.plugins.get_enabled_plugins(
+        for plugin_type in self.core.plugins.get_plugin_types():
+            enabled_plugins = self.core.plugins.get_enabled_plugins(
                 plugin_type)
-            all_plugins = w3af_core.plugins.get_plugin_list(plugin_type)
+            all_plugins = self.core.plugins.get_plugin_list(plugin_type)
             self.assertEqual(set(enabled_plugins), set(all_plugins))
             self.assertEqual(len(enabled_plugins), len(all_plugins))
 

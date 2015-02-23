@@ -24,13 +24,12 @@ import Queue
 import threading
 import gobject
 
-from w3af.core.controllers.easy_contribution.github_issues import GithubIssues
-from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
-
-from w3af.core.ui.gui.helpers import end_threads
+from w3af.core.ui.gui.helpers import end_threads, Throbber
 from w3af.core.ui.gui.entries import EmailEntry
-from w3af.core.ui.gui.helpers import Throbber
 from w3af.core.ui.gui.constants import W3AF_ICON
+from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
+                                                                   OAUTH_TOKEN,
+                                                                   DEFAULT_BUG_QUERY_TEXT)
 
 
 class SimpleBaseWindow(gtk.Window):
@@ -228,9 +227,9 @@ class report_bug_show_result(gtk.MessageDialog):
 
 class dlg_ask_credentials(gtk.MessageDialog):
     """
-    A dialog that allows any exception handler to ask the user for his credentials
-    before sending any bug report information to the network. The supported types
-    of credentials are:
+    A dialog that allows any exception handler to ask the user for his
+    credentials before sending any bug report information to the network. The
+    supported types of credentials are:
 
         * Anonymous
         * Email
@@ -267,7 +266,6 @@ class dlg_ask_credentials(gtk.MessageDialog):
         """
         Setup the dialog and return the results to the invoker.
         """
-
         msg = _('\nChoose how to report the bug(s)')
 
         if self._invalid_login:
@@ -448,23 +446,6 @@ class dlg_ask_bug_info(gtk.MessageDialog):
         self.set_title('Bug information - Step 2/2')
 
     def run(self):
-
-        default_text = """What steps will reproduce the problem?
-1.
-2.
-3.
-
-What is the expected output? What do you see instead?
-
-
-What operating system are you using?
-
-
-Please provide any additional information below:
-
-
-"""
-
         msg = 'Please provide the following information about the bug\n'
         self.set_markup(msg)
 
@@ -478,7 +459,7 @@ Please provide any additional information below:
         description_text_view.set_size_request(240, 300)
         description_text_view.set_wrap_mode(gtk.WRAP_WORD)
         buffer = description_text_view.get_buffer()
-        buffer.set_text(default_text)
+        buffer.set_text(DEFAULT_BUG_QUERY_TEXT)
         sw.add(description_text_view)
 
         #create a horizontal box to pack the entry and a label

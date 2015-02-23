@@ -25,7 +25,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 class TestUserDir(PluginTest):
 
-    target_url = 'http://moth/'
+    target_url = 'http://httpretty/'
 
     _run_configs = {
         'cfg': {
@@ -52,8 +52,9 @@ class TestUserDir(PluginTest):
         EXPECTED_NAMES = {'Web user home directory',
                           'Fingerprinted operating system',
                           'Identified installed application'}
-        EXPECTED_URLS = {'http://moth/~www/', 'http://moth/~kmem/',
-                         'http://moth/xfs/'}
+        EXPECTED_URLS = {'http://httpretty/~www/',
+                         'http://httpretty/~kmem/',
+                         'http://httpretty/xfs/'}
 
         self.assertEqual(EXPECTED_NAMES, set(u.get_name() for u in users))
         self.assertEqual(EXPECTED_URLS, set(str(u.get_url()) for u in users))

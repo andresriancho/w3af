@@ -21,7 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import time
 import os
+
+from mock import patch, call, PropertyMock
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -60,6 +63,17 @@ class TestDocumentParserFactory(unittest.TestCase):
 
             self.assertIsInstance(parser, DocumentParser)
             self.assertIsInstance(parser._parser, HTMLParser)
+            self.assertEqual(parser.get_clear_text_body(), 'body')
+
+    def test_dom_is_not_None(self):
+        resp = _build_http_response('<html>body</html>', 'text/html')
+        parser = document_parser_factory(resp)
+
+        dom1 = parser.get_dom()
+        dom2 = parser.get_dom()
+
+        self.assertIsNotNone(dom1)
+        self.assertIs(dom1, dom2)
 
     def test_html_upper(self):
         parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))
@@ -109,3 +123,21 @@ class TestDocumentParserFactory(unittest.TestCase):
                           '/_vti_bin/search.asmx?disco='}
         
         self.assertEqual(expected_paths, set(paths))
+
+
+class DelayedParser(object):
+    def __init__(self, http_response):
+        """
+        According to the stopit docs it can't kill a thread running an
+        atomic python function such as time.sleep() , so I have to
+        create a function like this. I don't mind, since it's realistic
+        with what we do in w3af anyways.
+        """
+        total_delay = 3.0
+
+        for _ in xrange(100):
+            time.sleep(total_delay/100)
+
+    @staticmethod
+    def can_parse(*args):
+        return True

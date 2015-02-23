@@ -319,7 +319,7 @@ class ProxiedRequests(entries.RememberingWindow):
         else:
             self.proxy.start()
 
-    def _supervise_requests(self, *a):
+    def _supervise_requests(self, *args):
         """Supervise if there're requests to show.
 
         :return: True to gobject to keep calling it, False when all is done.
