@@ -58,6 +58,7 @@ and `w3af_gui`. To connect to a running container use `root` as username and
 scripts will connect to the container for you.
 
 Another way to debug the container is to run the script with the `-d` flag: 
+
 ```
 $ sudo ./w3af_console_docker -d
 root@a01aa9631945:~# 
