@@ -9,14 +9,20 @@ DOCKER_RUN = 'docker run -d -v ~/.w3af:/root/.w3af ' \
              '-v ~/w3af-shared:/root/w3af-shared andresriancho/w3af'
 
 
-def start_container():
+def start_container(tag):
     """
     Start a new w3af container so we can connect using SSH and run w3af
 
     :return: The container id we just started
     """
+
+    if tag is not None:
+        docker_run = DOCKER_RUN + ':%s' % tag
+    else:
+        docker_run = DOCKER_RUN
+
     try:
-        container_id = subprocess.check_output(DOCKER_RUN, shell=True)
+        container_id = subprocess.check_output(docker_run, shell=True)
     except subprocess.CalledProcessError, cpe:
         print('w3af container failed to start: "%s"' % cpe)
         sys.exit(1)

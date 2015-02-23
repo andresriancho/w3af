@@ -15,6 +15,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', help='Use bash to connect',
                         action='store_true')
+    parser.add_argument('-t', '--tag', help='Docker image tag to run',
+                        required=False)
     args = parser.parse_args()
     return args
 
@@ -24,7 +26,8 @@ if __name__ == '__main__':
 
     args = parse_args()
     create_volumes()
-    container_id = start_container()
+
+    container_id = start_container(args.tag)
 
     if args.debug:
         cmd = '/bin/bash'
