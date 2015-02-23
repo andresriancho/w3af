@@ -85,13 +85,14 @@ hard-coded SSH keys!
 
 ## TODO
 
-I still need to figure out (and add to this documentation) the best way for
+We still need to figure out (and add to this documentation) the best way for
 users to be able to perform these tasks:
  
  * Passing parameters to the docker: scripts, profiles, dictionary files
    (how do I run ./w3af_console -s foo.w3af ?). I believe that the helper script
    would have to "forward" the parameters to the docker run command.
- * [Run the GUI environment](http://stackoverflow.com/questions/16296753/can-you-run-gui-apps-in-a-docker)
- * Make the image smaller (docker-stash?)
- * Add docker usage to our official documentation at docs.w3af.org
+   [#8461](https://github.com/andresriancho/w3af/issues/8461)
+ * Run the GUI environment [#8460](https://github.com/andresriancho/w3af/issues/8460)
 
+Want to help? Just follow the link to the task and add a comment saying you'll
+be working on it.
