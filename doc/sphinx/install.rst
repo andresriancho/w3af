@@ -92,6 +92,27 @@ packaged version un-touched.
     * ``cd ~/w3af/ ; ./w3af_console`` will run the latest version
     * ``w3af_console`` will run the one packaged in Kali
 
+Installing using Docker
+-----------------------
+
+`Docker <https://www.docker.com/>`_ is awesome, it allows users to run ``w3af``
+without installing any of it's dependencies. The only pre-requisite is to
+`install docker <http://docs.docker.com/installation/>`_ , which is widely
+supported.
+
+Once the docker installation is running these steps will yield a running
+``w3af`` console:
+
+.. code-block:: console
+
+    $ git clone https://github.com/andresriancho/w3af.git
+    $ cd w3af/extras/docker/scripts/
+    $ sudo ./w3af_console_docker
+    w3af>>>
+
+For advanced usage of ``w3af``'s docker container please read the documentation
+ at the `registry hub <https://registry.hub.docker.com/u/andresriancho/w3af/>`_
+
 Installation in Mac OSX
 -----------------------
 In order to start the process, you need XCode and MacPorts installed. 
