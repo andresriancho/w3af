@@ -71,7 +71,8 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
 
     # Create the SSH connection command
     ssh_cmd = ['ssh', '-i', ssh_key, '-t', '-t', '-oStrictHostKeyChecking=no',
-               '-o UserKnownHostsFile=/dev/null']
+               '-o UserKnownHostsFile=/dev/null',
+               '-o LogLevel=quiet']
 
     # Add the extra ssh flags
     for extra_ssh_flag in extra_ssh_flags:
