@@ -382,6 +382,14 @@ class TestAnalyzeCookies(unittest.TestCase):
         response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
         request.append( FuzzableRequest(url, method='GET') )
 
+        # Vulnerability: secure over http with different url
+        url = URL('http://www.w3af.com/a')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"; secure; httponly'}.items())
+
+        response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
+        request.append( FuzzableRequest(url, method='GET') )
+
         for i, resp in enumerate(response): self.plugin.grep(request[i], resp)
 
         security_vulns = kb.kb.get('analyze_cookies', 'security')
@@ -389,3 +397,6 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(security_vulns), 3, "Three security vulnerabilities should be reported")
         for des in descriptions: self.assertIn("name", des, "Cookie name should appear in description")
+        for vuln in security_vulns:
+            if vuln.get_name() == 'Secure cookie over HTTP':
+                self.assertEqual(len(vuln['urls']), 2, "There should be two urls for Secure over HTTP")
