@@ -17,7 +17,7 @@ more features but also potential bugs.
 
 ```
 git clone https://github.com/andresriancho/w3af.git
-cd w3af/extras/scripts/
+cd w3af/extras/docker/scripts/
 sudo ./w3af_console_docker
 ```
 
@@ -64,7 +64,7 @@ provided build helper script:
 
 ```
 $ cd w3af
-$ # <changes to w3af here>
+$ # <your changes to w3af here>
 $ cd extras
 $ sudo ./docker-build.sh
 ...
@@ -74,7 +74,7 @@ This will build a local image named `andresriancho/w3af` with the latest git
 commit as tag. Run `docker images` to find the created tag and then:
 
 ```
-sudo ./w3af_console_docker -t 2c27390
+sudo ./w3af_console_docker -t <image-tag>
 ```
 
 ## Security
