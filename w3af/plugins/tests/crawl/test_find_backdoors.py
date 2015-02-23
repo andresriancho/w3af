@@ -70,7 +70,7 @@ class TestFalsePositiveFindBackdoor2017_1(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(re.compile('(.*)'), APACHE_403, status=403)]
 
-    def test_2017_false_positive_backdoor(self):
+    def test_2017_false_positive_backdoor_1(self):
         cfg = run_configs['base']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -90,7 +90,7 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
                       MockResponse(re.compile('http://.*?/forbidden/.*'),
                                    APACHE_403, status=403)]
 
-    def test_2017_false_positive_backdoor(self):
+    def test_2017_false_positive_backdoor_2(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -104,7 +104,7 @@ class TestFalsePositiveFindBackdoorNixWizardEmail(PluginTest):
 
     MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="cmd"/>')]
 
-    def test_false_positive_backdoor(self):
+    def test_false_positive_backdoor_3(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -118,7 +118,7 @@ class TestFalsePositiveFindBackdoorNixWizardEmailNot(PluginTest):
 
     MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="c1m2d"/>')]
 
-    def test_false_positive_backdoor(self):
+    def test_false_positive_backdoor_4(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 
