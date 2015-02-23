@@ -54,14 +54,13 @@ TICKET_URL_FMT = 'https://github.com/andresriancho/w3af/issues/%s'
 # This user will act as a "proxy" for w3af users that don't want to enter their
 # github credentials in the bug report window.
 #
-# Token generation:
-#
-# curl -u '1d3df9903ad' -d '{"scopes":["repo"],"note":"w3af issues"}' \
-# https://api.github.com/authorizations
+# Token generation after logging in with 1d3df9903ad, scopes: "repo".
+#       https://github.com/settings/tokens/new
 #
 # Password stored in lastpass. The token should never expire.
 #
-OAUTH_TOKEN = '34186d1cbdd2e55d593e6983fd672cc5a463387f'
+OAUTH_TOKEN = 'bab698f08a4fd15931c4aa44ae399666552ef9e5'
+OAUTH_TOKEN = OAUTH_TOKEN[::-1]
 
 
 class GithubIssues(object):
