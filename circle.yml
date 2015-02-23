@@ -31,6 +31,11 @@ machine:
 
 checkout:
   post:
+    # Since the auto_update feature needs the git repository history, we run
+    # this command which will retrieve it (since CircleCI doesn't for perf).
+    # In our case it is fine, and it will get cached.
+    - if [[ -e .git/shallow ]]; then git fetch --unshallow; fi
+
     # Nasty hack: Because we get a new clone of the repo, timestamps don't
     # correspond any more to when the file was last changed.
     # To rectify this, first set everything to a timestamp in the past and then
@@ -101,12 +106,6 @@ dependencies:
 
 
 test:
-  pre:
-    # Since the auto_update feature needs the git repository history, we run
-    # this command which will retrieve it (since CircleCI doesn't for perf).
-    # In our case it is fine, and it will get cached.
-    - if [[ -e .git/shallow ]]; then git fetch --unshallow; fi
-
   override:
     - w3af/core/controllers/ci/nosetests_wrapper/main.py:
         timeout: 360
