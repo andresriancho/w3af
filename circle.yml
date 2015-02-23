@@ -125,7 +125,7 @@ deployment:
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
 
-      - docker pull andresriancho/w3af:stable
+      - docker pull andresriancho/w3af:stable; true
       - cd extras/docker/ && ./docker-build.sh stable
       - docker push andresriancho/w3af:stable
 
@@ -136,6 +136,6 @@ deployment:
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
 
-      - docker pull andresriancho/w3af:unstable
+      - docker pull andresriancho/w3af:unstable; true
       - cd extras/docker/ && ./docker-build.sh unstable
       - docker push andresriancho/w3af:unstable
