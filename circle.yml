@@ -4,6 +4,41 @@
 #
 #   As a user you don't need to understand this file.
 #
+machine:
+  services:
+    - docker
+
+  python:
+    version: 2.7.3
+
+  # This is required to run WIVET
+  php:
+    version: 5.5.11
+
+  java:
+    version: oraclejdk7
+
+  post:
+    # This was required to avoid issues with different builds of python being
+    # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
+    # and the python which was put inside my virtualenv
+    - pyenv global system
+
+    # And we want to start the django-moth server
+    # https://circleci.com/docs/background-process
+    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
+
+
+checkout:
+  post:
+    # Nasty hack: Because we get a new clone of the repo, timestamps don't
+    # correspond any more to when the file was last changed.
+    # To rectify this, first set everything to a timestamp in the past and then
+    # update the timestamp for all git-tracked files based on their last
+    # committed change.
+    - find . -exec touch -t 201401010000 {} \;
+    - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
+
 
 dependencies:
   cache_directories:
@@ -18,7 +53,8 @@ dependencies:
     - "php-moth"
 
   pre:
-    - sudo apt-get update; sudo apt-get install python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2 python-dbus python-pygame python-opencv python-scipy python-numpy stunnel4 libffi-dev
+    - sudo apt-get update
+    - sudo apt-get install python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2 python-dbus python-pygame python-opencv python-scipy python-numpy stunnel4 libffi-dev
     
     # Install the core/console dependencies
     - pip install --upgrade pip
@@ -53,6 +89,9 @@ dependencies:
         background: true
         pwd: pico-wavsep
 
+    # Save docker hub credentials to file
+    - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < docker/dockercfg.template > ~/.dockercfg
+
     # Wait for the daemon to be available to run the tests
     - w3af/core/controllers/ci/wait_for_moth.py
 
@@ -60,27 +99,7 @@ dependencies:
     - pip --version
     - pip freeze
 
-machine:
-  python:
-    version: 2.7.3
 
-  # This is required to run WIVET
-  php:
-    version: 5.5.11
-
-  java:
-    version: oraclejdk7
-
-  post:
-    # This was required to avoid issues with different builds of python being
-    # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
-    # and the python which was put inside my virtualenv
-    - pyenv global system
-    
-    # And we want to start the django-moth server
-    # https://circleci.com/docs/background-process
-    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
-    
 test:
   pre:
     # Since the auto_update feature needs the git repository history, we run
@@ -107,6 +126,9 @@ deployment:
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
 
+      - docker pull andresriancho/w3af:stable
+      - cd extras/docker/ && ./docker-build.sh stable
+      - docker push andresriancho/w3af:stable
 
   staging:
     branch: develop
@@ -115,3 +137,6 @@ deployment:
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
 
+      - docker pull andresriancho/w3af:unstable
+      - cd extras/docker/ && ./docker-build.sh unstable
+      - docker push andresriancho/w3af:unstable
