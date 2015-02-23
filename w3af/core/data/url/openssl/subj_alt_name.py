@@ -54,6 +54,7 @@ class RelativeDistinguishedName(univ.SetOf):
     """ASN.1 Realtive distinguished name"""
     componentType = AttributeTypeAndValue()
 
+
 class RDNSequence(univ.SequenceOf):
     """ASN.1 RDN sequence class"""
     componentType = RelativeDistinguishedName()
