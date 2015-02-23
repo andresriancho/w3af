@@ -141,7 +141,7 @@ class wordnet(CrawlPlugin):
                 result.extend(synset.hypernyms())
                 result.extend(synset.hyponyms())
                 result.extend(synset.member_holonyms())
-                result.extend(synset.lemmas[0].antonyms())
+                result.extend(synset.lemmas()[0].antonyms())
 
         # Now I have a results list filled up with a lot of words, the problem
         # is that this words are really Synset objects, so I'll transform them
