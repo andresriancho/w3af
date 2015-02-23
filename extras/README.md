@@ -33,6 +33,16 @@ home directory:
  * `~/w3af-shared` from your host is mapped to `/root/w3af-shared` in the container.
  Use this directory to save your scan results and provide input files to w3af.
 
+## Updating w3af-docker installation
+
+When you first run `sudo ./w3af_console_docker` the helper script downloaded the
+latest available docker image for w3af. Since we're improving our scanner almost
+every week, you might want to get the latest docker image by running:
+
+```
+sudo docker pull andresriancho/w3af
+```
+
 ## Debugging the container
 
 The container runs a SSH daemon, which can be used to both run the `w3af_console`
