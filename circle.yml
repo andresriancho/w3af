@@ -90,7 +90,7 @@ dependencies:
         pwd: pico-wavsep
 
     # Save docker hub credentials to file
-    - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < docker/dockercfg.template > ~/.dockercfg
+    - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
 
     # Wait for the daemon to be available to run the tests
     - w3af/core/controllers/ci/wait_for_moth.py
