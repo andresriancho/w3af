@@ -53,9 +53,35 @@ scripts will connect to the container for you.
 Another way to debug the container is to run the script with the `-d` flag: 
 ```
 $ sudo ./w3af_console_docker -d
-Warning: Permanently added '172.17.0.150' (ECDSA) to the list of known hosts.
 root@a01aa9631945:~# 
 ```
+
+## Building a new container
+
+The docker container provided at the public docker hub is enough for most users,
+but if you want to customize or improve the container we recommend using the
+provided build helper script:
+
+```
+$ cd w3af
+$ # <changes to w3af here>
+$ cd extras
+$ sudo ./docker-build.sh
+...
+```
+
+This will build a local image named `andresriancho/w3af` with the latest git
+commit as tag. Run `docker images` to find the created tag and then:
+
+```
+sudo ./w3af_console_docker -t 2c27390
+```
+
+## Security
+
+Don't bind w3af's docker image to a public IP address unless you really know
+what you're doing! Anyone will be able to SSH into the docker image using the
+hard-coded SSH keys! 
 
 ## TODO
 

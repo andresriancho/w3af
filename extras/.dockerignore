@@ -1,0 +1,22 @@
+.git
+.dockerignore
+
+### Python ###
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache/
+nosetests.xml
+coverage.xml
+
+# Documentation
+doc/
+
+# PyBuilder
+target/

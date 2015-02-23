@@ -30,7 +30,8 @@ RUN useradd w3af
 # Get ssh package ready
 RUN mkdir /var/run/sshd
 RUN echo 'root:w3af' | chpasswd
-ADD scripts/w3af-docker.pub /home/w3af/.ssh/
+RUN mkdir /home/w3af/.ssh/
+RUN echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDjXxcHjyVkwHT+dSYwS3vxhQxZAit6uZAFhuzA/dQ2vFu6jmPk1ewMGIYVO5D7xV3fo7/RXeCARzqHl6drw18gaxDoBG3ERI6LxVspIQYjDt5Vsqd1Lv++Jzyp/wkXDdAdioLTJyOerw7SOmznxqDj1QMPCQni4yhrE+pYH4XKxNx5SwxZTPgQWnQS7dasY23bv55OPgztI6KJzZidMEzzJVKBXHy1Ru/jjhmWBghiXYU5RBDLDYyT8gAoWedYgzVDmMZelLR6Y6ggNLOtMGiGYfPWDUz9Z6iDAUsOQBtCJy8Sj8RwSQNpmOgSzBanqnhed14hLwdYhnKWcPNMry71 w3af@w3af-docker.org' > /home/w3af/.ssh/w3af-docker.pub
 RUN mkdir -p /root/.ssh/
 RUN cat /home/w3af/.ssh/w3af-docker.pub >> /root/.ssh/authorized_keys
 
@@ -42,14 +43,14 @@ RUN pip install --upgrade pip
 RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==0.3.2.RC1 pybloomfiltermmap==0.3.11 esmre==0.3.1 phply==0.9.1 stopit==1.1.0 nltk==2.0.4 chardet==2.1.1 pdfminer==20110515 futures==2.1.5 pyOpenSSL==0.13.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 msgpack-python==0.2.4 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5
 
 # Install w3af
-RUN git clone https://github.com/andresriancho/w3af.git
+ADD . /home/w3af/w3af
 WORKDIR /home/w3af/w3af
-RUN git checkout feature/stopit
 RUN ./w3af_console ; true
 
 # Change the install script to add the -y and not require input
 RUN sed 's/sudo //g' -i /tmp/w3af_dependency_install.sh
 RUN sed 's/apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
+RUN sed 's/pip install/pip install --upgrade/g' -i /tmp/w3af_dependency_install.sh
 
 # Run the dependency installer
 RUN /tmp/w3af_dependency_install.sh
@@ -58,10 +59,11 @@ RUN /tmp/w3af_dependency_install.sh
 RUN ./w3af_gui ; true
 RUN sed 's/sudo //g' -i /tmp/w3af_dependency_install.sh
 RUN sed 's/apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
+RUN sed 's/pip install/pip install --upgrade/g' -i /tmp/w3af_dependency_install.sh
 RUN /tmp/w3af_dependency_install.sh
 
 # Compile the py files into pyc in order to speed-up w3af's start
-RUN python -m compileall .
+RUN python -m compileall -q .
 
 # Cleanup to make the image smaller
 RUN rm /tmp/w3af_dependency_install.sh
