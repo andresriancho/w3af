@@ -31,14 +31,19 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
                      PIPDependency('phply', 'phply', '0.9.1'),
                      PIPDependency('stopit', 'stopit', '1.1.0'),
-                     PIPDependency('nltk', 'nltk', '2.0.5'),
+                     PIPDependency('nltk', 'nltk', '3.0.1'),
                      PIPDependency('chardet', 'chardet', '2.1.1'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '2.1.5'),
                      PIPDependency('OpenSSL', 'pyOpenSSL', '0.13.1'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
-                     PIPDependency('pyasn1', 'pyasn1', '0.1.7'),
+
+                     # There is a newer pyasn1 release, but we're requiring this
+                     # one to make Kali packaging easier, see:
+                     # https://github.com/andresriancho/w3af/issues/8339
+                     PIPDependency('pyasn1', 'pyasn1', '0.1.3'),
+
                      PIPDependency('lxml', 'lxml', '2.3.2'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
                      PIPDependency('guess_language', 'guess-language', '0.2'),
