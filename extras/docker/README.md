@@ -21,6 +21,13 @@ cd w3af/extras/docker/scripts/
 sudo ./w3af_console_docker
 ```
 
+Running the `unstable` version is trivial (but dangerous since it might yield
+unexpected results):
+
+```
+sudo ./w3af_console_docker -t unstable
+```
+
 ## Sharing data with the container
 
 When starting w3af using the `w3af_console_docker` or `w3af_gui_docker` commands
