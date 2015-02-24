@@ -386,6 +386,14 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+    def test_bad_file_descriptor_8125(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/8125
+        """
+        url = URL('https://www.factoriadigital.com/hosting/wordpress')
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertIn('Soporte', http_response.body)
+
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.01, 0.4)
 
