@@ -46,8 +46,8 @@ class SSLSocket(object):
         self.connection = connection
         self.sock = sock
 
-    def makefile(self, mode, bufsize=-1):
-        return socket._fileobject(self.connection, mode, bufsize)
+    def makefile(self, *args, **kwargs):
+        return socket._fileobject(self.connection, *args, **kwargs)
 
     def getpeercert(self, binary_form=False):
         x509 = self.connection.get_peer_certificate()
@@ -89,8 +89,11 @@ class SSLSocket(object):
             'subjectAltName': dns_name
         }
 
-    # Pass any un-handle function calls on to connection
     def __getattr__(self, name):
+        """
+        Pass any un-handled function calls on to connection
+        """
+        #print 'Calling SSLSocket.%s' % name
         try:
             return getattr(self.connection, name)
         except AttributeError:
