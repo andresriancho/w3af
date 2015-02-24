@@ -159,6 +159,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
             sock.close()
 
         else:
+            debug('Successful connection using protocol %s' % protocol)
             self.sock = ssl_sock
             with _protocols_lock:
                 _protocols.remove(protocol)
