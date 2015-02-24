@@ -81,9 +81,6 @@ class SSLSocket(object):
         except AttributeError:
             return getattr(self.sock, name)
 
-    def shutdown(self, how=1):
-        self.ssl_conn.shutdown()
-
     def makefile(self, mode, bufsize):
         """
         We need to use socket._fileobject Because SSL.Connection
