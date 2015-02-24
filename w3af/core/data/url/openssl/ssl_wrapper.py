@@ -92,7 +92,7 @@ class SSLSocket(object):
         socket object and don't actually close until its count is 0.
         """
         self.close_refcount += 1
-        return socket._fileobject(self.ssl_conn, mode, bufsize, close=True)
+        return socket._fileobject(self, mode, bufsize, close=True)
 
     def close(self):
         if self.closed:
@@ -101,15 +101,13 @@ class SSLSocket(object):
         self.close_refcount -= 1
         if self.close_refcount == 0:
             self.shutdown()
-            # This (most likely) leaks open ssl connections, but well... it
-            # fixes #8125 ;)
-            #self.ssl_conn.close()
+            self.ssl_conn.close()
             self.closed = True
 
     def getpeercert(self, binary_form=False):
         x509 = self.ssl_conn.get_peer_certificate()
         if not x509:
-            raise ssl.SSLError('')
+            raise ssl.SSLError('No peer certificate')
 
         if binary_form:
             return OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_ASN1,
@@ -152,9 +150,10 @@ class OpenSSLReformattedError(Exception):
 
     def __str__(self):
         try:
-            return '*:%s:%s (glob)' % (self.e.args[0][0][1], self.e.args[0][0][2])
+            return '*:%s:%s (glob)' % (self.e.args[0][0][1],
+                                       self.e.args[0][0][2])
         except Exception:
-            return '%s'%self.e
+            return '%s' % self.e
 
 
 def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
