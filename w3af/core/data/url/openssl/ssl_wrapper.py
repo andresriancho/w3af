@@ -42,22 +42,81 @@ _openssl_cert_reqs = {
 
 
 class SSLSocket(object):
-    def __init__(self, connection, sock):
-        self.connection = connection
-        self.sock = sock
+    """
+    This class was required to avoid the issue of "Bad file descriptor" which
+    is generated when the remote server returns a connection: close header,
+    which will trigger a self.close() in httplib's:
 
-    def makefile(self, *args, **kwargs):
-        return socket._fileobject(self.connection, *args, **kwargs)
+    def getresponse(self, buffering=False):
+        ...
+        if response.will_close:
+            # this effectively passes the connection to the response
+            self.close()
+
+    Calling that self.close() will close the openssl connection, which we then
+    read() to retrieve the http response body.
+
+    Connection is not yet a new-style class, so I'm making a proxy instead of
+    subclassing. Inspiration for this class comes from certmaster's source code
+
+    :see: https://github.com/andresriancho/w3af/issues/8125
+    :see: https://github.com/mpdehaan/certmaster/blob/master/certmaster/SSLConnection.py
+    """
+    def __init__(self, ssl_connection, sock):
+        """
+        :param ssl_connection: The established openssl connection
+        :param sock: The underlying tcp/ip connection
+        """
+        self.ssl_conn = ssl_connection
+        self.sock = sock
+        self.close_refcount = 0
+        self.closed = False
+
+    def __getattr__(self, name):
+        """
+        Pass any un-handled function calls on to connection
+        """
+        try:
+            return getattr(self.ssl_conn, name)
+        except AttributeError:
+            return getattr(self.sock, name)
+
+    def shutdown(self, how=1):
+        self.ssl_conn.shutdown()
+
+    def makefile(self, mode, bufsize):
+        """
+        We need to use socket._fileobject Because SSL.Connection
+        doesn't have a 'dup'. Not exactly sure WHY this is, but
+        this is backed up by comments in socket.py and SSL/connection.c
+
+        Since httplib.HTTPSResponse/HTTPConnection depend on the
+        socket being duplicated when they close it, we refcount the
+        socket object and don't actually close until its count is 0.
+        """
+        self.close_refcount += 1
+        return socket._fileobject(self.ssl_conn, mode, bufsize, close=True)
+
+    def close(self):
+        if self.closed:
+            return
+
+        self.close_refcount -= 1
+        if self.close_refcount == 0:
+            self.shutdown()
+            # This (most likely) leaks open ssl connections, but well... it
+            # fixes #8125 ;)
+            #self.ssl_conn.close()
+            self.closed = True
 
     def getpeercert(self, binary_form=False):
-        x509 = self.connection.get_peer_certificate()
+        x509 = self.ssl_conn.get_peer_certificate()
         if not x509:
             raise ssl.SSLError('')
 
         if binary_form:
-            return OpenSSL.crypto.dump_certificate(
-                OpenSSL.crypto.FILETYPE_ASN1,
-                x509)
+            return OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_ASN1,
+                                                   x509)
 
         dns_name = []
         general_names = subj_alt_name.SubjectAltName()
@@ -89,16 +148,6 @@ class SSLSocket(object):
             'subjectAltName': dns_name
         }
 
-    def __getattr__(self, name):
-        """
-        Pass any un-handled function calls on to connection
-        """
-        #print 'Calling SSLSocket.%s' % name
-        try:
-            return getattr(self.connection, name)
-        except AttributeError:
-            return getattr(self.sock, name)
-
 
 class OpenSSLReformattedError(Exception):
     def __init__(self, e):
@@ -116,6 +165,12 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
                 ca_certs=None, do_handshake_on_connect=True,
                 suppress_ragged_eofs=True, server_hostname=None,
                 timeout=None):
+    """
+    Make a classic socket SSL aware
+
+    :param sock: The classic TCP/IP socket
+    :return: An SSLSocket instance
+    """
     cert_reqs = _openssl_cert_reqs[cert_reqs]
     ssl_version = _openssl_versions[ssl_version]
 
