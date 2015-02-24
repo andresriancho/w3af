@@ -52,7 +52,7 @@ dependencies:
 
     # These are inside the w3af directory
     - "xpresser"
-    - "wivet-svn"
+    - "wivet"
     - "pico-wavsep"
     - "sqlmap-testenv"
     - "php-moth"
