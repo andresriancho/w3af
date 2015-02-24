@@ -56,6 +56,7 @@ class TestXUrllib(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
+        self.uri_opener.settings.set_max_http_retries(0)
     
     def tearDown(self):
         self.uri_opener.end()
