@@ -112,6 +112,9 @@ class SSLSocket(object):
                     # This was needed to support SSLServer (ssl_daemon.py)
                     # but will also be useful for other real-life cases
                     pass
+                else:
+                    # We don't know what's here, raise!
+                    raise
 
             # Close doesn't seem to mind if the remote end already closed the
             # connection
