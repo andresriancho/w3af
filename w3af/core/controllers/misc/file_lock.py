@@ -1,5 +1,5 @@
 """
-FileLock.py
+file_lock.py
 
 Copyright 2011 Andres Riancho
 
@@ -29,11 +29,12 @@ class FileLockException(Exception):
 
 
 class FileLock(object):
-    """ A file locking mechanism that has context-manager support so
-        you can use it in a with statement. This should be relatively cross
-        compatible as it doesn't rely on msvcrt or fcntl for the locking.
+    """
+    A file locking mechanism that has context-manager support so
+    you can use it in a with statement. This should be relatively cross
+    compatible as it doesn't rely on msvcrt or fcntl for the locking.
 
-        Original recipe:
+    Original recipe:
         http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/
     """
 
@@ -81,7 +82,7 @@ class FileLock(object):
                 # an error is raised when I try to close an unknown file
                 # descriptor
                 pass
-            
+
             os.unlink(self.lockfile)
             self.is_locked = False
 
@@ -108,13 +109,14 @@ class FileLock(object):
 
 
 class FileLockRead(FileLock):
-    """ A file locking mechanism that has context-manager support so
-        you can use it in a with statement. This should be relatively cross
-        compatible as it doesn't rely on msvcrt or fcntl for the locking.
+    """
+    A file locking mechanism that has context-manager support so
+    you can use it in a with statement. This should be relatively cross
+    compatible as it doesn't rely on msvcrt or fcntl for the locking.
 
-        This lock allows multiple threads to access the file for reading.
+    This lock allows multiple threads to access the file for reading.
 
-        Original recipe:
+    Original recipe:
         http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/
     """
     def __init__(self, file_name, timeout=10, delay=.05):
@@ -122,12 +124,11 @@ class FileLockRead(FileLock):
 
     def acquire(self):
         """
-            Wait until the write finishes and then access the file. No lock
-            file is created, since we want to have the possibility of reading
-            the same file from multiple threads.
+        Wait until the write finishes and then access the file. No lock
+        file is created, since we want to have the possibility of reading
+        the same file from multiple threads.
 
-            If `timeout` number of seconds is exceeded it throws
-            an exception.
+        If `timeout` number of seconds is exceeded it throws an exception.
         """
 
         for _ in xrange(int(self.timeout / self.delay)):
