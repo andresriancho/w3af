@@ -173,7 +173,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertFalse(is_older, msg)
     
     def test_not_too_many_ignores(self):
-        config = Config(['/cgi-bin/'],[],[],[],[])
+        config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -190,7 +190,7 @@ class TestNiktoTestParser(PluginTest):
         make sure that DB upgrades with update_scan_db.py do not break the code
         at pykto.py.
         """
-        config = Config(['/cgi-bin/'],[],[],[],[])
+        config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -225,7 +225,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(cart32_test_from_db.message, nikto_test.message)
 
     def test_parse_db_line_junk(self):
-        config = Config(['/cgi-bin/'],[],[],[],[])
+        config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -242,7 +242,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(len('/docs/') + 5, len(nikto_test.uri.get_path()))
 
     def test_parse_db_line_no_vars(self):
-        config = Config([],[],[],[],[])
+        config = Config([], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -258,7 +258,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual('/docs/', nikto_test.uri.get_path())
 
     def test_parse_db_line_cgidirs(self):
-        config = Config(['/cgi-bin/'],[],[],[],[])
+        config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -309,7 +309,7 @@ class TestNiktoTestParser(PluginTest):
                          [nt.uri.get_path() for nt in nikto_tests])
         
     def test_parse_db_line_raw_bytes(self):
-        config = Config(['/cgi-bin/'],[],[],[],[])
+        config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._db_file, config, url)
@@ -332,7 +332,7 @@ class TestNiktoTestParser(PluginTest):
         
         https://github.com/andresriancho/w3af/issues/317
         """
-        config = Config([],[],[],[],[])
+        config = Config([], [], [], [], [])
         url = URL('http://moth/')
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
         nikto_parser = NiktoTestParser(pykto_inst._extra_db_file, config, url)
