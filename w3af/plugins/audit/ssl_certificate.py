@@ -138,7 +138,8 @@ class ssl_certificate(AuditPlugin):
                 tag = 'invalid_ssl_cert'
             else:
                 # We use here Info instead of Vuln because it is too common case
-                desc = '"%s" has an invalid SSL configuration. Technical details: "%s"'
+                desc = '"%s" has an invalid SSL configuration. ' \
+                       'Technical details: "%s"'
                 desc = desc % (domain, details)
                 
                 v = Info('Invalid SSL connection', desc, 1, self.get_name())
