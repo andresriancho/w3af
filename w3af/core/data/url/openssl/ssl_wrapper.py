@@ -69,7 +69,7 @@ class SSLSocket(object):
         """
         self.ssl_conn = ssl_connection
         self.sock = sock
-        self.close_refcount = 0
+        self.close_refcount = 1
         self.closed = False
 
     def __getattr__(self, name):
@@ -105,6 +105,9 @@ class SSLSocket(object):
             self.closed = True
 
     def getpeercert(self, binary_form=False):
+        """
+        :return: The remote peer certificate in a tuple
+        """
         x509 = self.ssl_conn.get_peer_certificate()
         if not x509:
             raise ssl.SSLError('No peer certificate')
