@@ -387,13 +387,41 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+    @attr('internet')
     def test_bad_file_descriptor_8125(self):
         """
+        8125 is basically an issue with the way HTTP SSL connections handle the
+        Connection: Close header. If at any point the URL in this test starts
+        to fail, I just need to find another which sends that header.
+
+        Also, see the test_bad_file_descriptor_8125_mock test.
+
         :see: https://github.com/andresriancho/w3af/issues/8125
         """
         url = URL('https://www.factoriadigital.com/hosting/wordpress')
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('Soporte', http_response.body)
+
+    @httpretty.activate
+    def test_bad_file_descriptor_8125_mock(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/8125
+        """
+        # TODO: Code!
+        raise SkipTest('It would be nice to have a test for 8125 which uses'
+                       ' httpretty, but it requires some changes to that'
+                       ' library which I can\'t work on now.')
+
+        mock_url = 'https://mock/'
+        body = 'Body.'
+        httpretty.register_uri(httpretty.GET, mock_url, body=body,
+                               adding_headers={'connection': 'close'})
+
+        url = URL(mock_url)
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertEqual(body, http_response.body)
+
+        httpretty.reset()
 
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.01, 0.4)
