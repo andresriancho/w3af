@@ -100,7 +100,21 @@ class SSLSocket(object):
 
         self.close_refcount -= 1
         if self.close_refcount == 0:
-            self.shutdown()
+
+            try:
+                self.shutdown()
+            except OpenSSL.SSL.Error, ssl_error:
+                if not ssl_error.message:
+                    # We get here when the remote end already close the
+                    # connection. The shutdown() call to the OpenSSLConnection
+                    # simply fails with an exception without a message
+                    #
+                    # This was needed to support SSLServer (ssl_daemon.py)
+                    # but will also be useful for other real-life cases
+                    pass
+
+            # Close doesn't seem to mind if the remote end already closed the
+            # connection
             self.ssl_conn.close()
             self.closed = True
 
