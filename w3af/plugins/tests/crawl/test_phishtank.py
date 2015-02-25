@@ -18,14 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import datetime
 import re
+import csv
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest
+from w3af.plugins.crawl.phishtank import phishtank
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.constants.severity import MEDIUM
+from w3af.core.data.misc.file_utils import days_since_file_update
 
 
 class TestPhishtank(PluginTest):
@@ -42,41 +44,31 @@ class TestPhishtank(PluginTest):
 
         self.assertEqual(len(vulns), 0, vulns)
 
-    def get_vulnerable_url(self, phishtank_inst):
-        url_re = re.compile('<url>(.*?)</url>')
+    def get_vulnerable_url(self):
+        pt_csv_reader = csv.reader(file(phishtank.PHISHTANK_DB), delimiter=' ',
+                                   quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        for line in file(phishtank_inst.PHISHTANK_DB):
-            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
-            if '</url>' in line:
-                match = url_re.search(line)
-                if match and 'CDATA' not in line:
-                    return match.group(1)
+        for phishing_url, phishtank_detail_url in pt_csv_reader:
+            return phishing_url
 
-    def get_last_vulnerable_url(self, phishtank_inst):
-        url_re = re.compile('<url>(.*?)</url>')
+    def get_last_vulnerable_url(self):
+        pt_csv_reader = csv.reader(file(phishtank.PHISHTANK_DB), delimiter=' ',
+                                   quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        for line in reversed(file(phishtank_inst.PHISHTANK_DB).readlines()):
-            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
-            if '</url>' in line:
-                match = url_re.search(line)
-                if match and 'CDATA' not in line:
-                    return match.group(1)
+        for phishing_url, phishtank_detail_url in pt_csv_reader:
+            pass
 
-    def get_total_urls(self, phishtank_inst):
-        total = 0
+        return phishing_url
 
-        for line in file(phishtank_inst.PHISHTANK_DB):
-            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
-            if '</url>' in line:
-                total += 1
+    def test_total_urls(self):
+        total_lines = len(file(phishtank.PHISHTANK_DB).read().split('\n'))
+        self.assertGreater(total_lines, 5000)
 
-        return total
-
-    def test_phishtank_match(self):
+    def test_phishtank_match_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
         
-        vuln_url = URL(self.get_vulnerable_url(phishtank_inst))
+        vuln_url = URL(self.get_vulnerable_url())
         phishtank_inst.crawl(FuzzableRequest(vuln_url))
 
         vulns = self.kb.get('phishtank', 'phishtank')
@@ -88,62 +80,28 @@ class TestPhishtank(PluginTest):
         self.assertEqual(vuln.get_severity(), MEDIUM)
         self.assertEqual(vuln.get_url().get_domain(), vuln_url.get_domain())
 
-    def test_xml_parsing(self):
+    def test_phishtank_match_last_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
 
-        vuln_url_str = self.get_vulnerable_url(phishtank_inst)
-        total_pt_urls = self.get_total_urls(phishtank_inst)
-        pt_handler = phishtank_inst._is_in_phishtank([vuln_url_str, ])
+        vuln_url = URL(self.get_last_vulnerable_url())
+        phishtank_inst.crawl(FuzzableRequest(vuln_url))
 
-        self.assertEqual(pt_handler.url_count, total_pt_urls)
-        self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
+        vulns = self.kb.get('phishtank', 'phishtank')
 
-        ptm = pt_handler.matches[0]
-        self.assertEqual(ptm.url.url_string, vuln_url_str)
-        self.assertTrue(ptm.more_info_url.url_string.startswith(self.phish_detail))
+        self.assertEqual(len(vulns), 1, vulns)
+        vuln = vulns[0]
 
-    def test_xml_parsing_last_url(self):
-        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
-                                                               'phishtank')
+        self.assertEqual(vuln.get_name(), 'Phishing scam')
+        self.assertEqual(vuln.get_severity(), MEDIUM)
+        self.assertEqual(vuln.get_url().get_domain(), vuln_url.get_domain())
 
-        vuln_url_str = self.get_last_vulnerable_url(phishtank_inst)
-        total_pt_urls = self.get_total_urls(phishtank_inst)
-        last_domain = URL(vuln_url_str).get_domain()
-        pt_handler = phishtank_inst._is_in_phishtank([last_domain])
+    def test_too_old_db(self):
+        is_older = days_since_file_update(phishtank.PHISHTANK_DB, 30)
 
-        self.assertEqual(pt_handler.url_count, total_pt_urls)
-        self.assertEqual(len(pt_handler.matches), 1, pt_handler.matches)
-
-        ptm = pt_handler.matches[0]
-        self.assertEqual(ptm.url.url_string, URL(vuln_url_str).url_string)
-        self.assertTrue(ptm.more_info_url.url_string.startswith(self.phish_detail))
-        
-    def test_too_old_xml(self):
-        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
-                                                               'phishtank')
-
-        # Example: <generated_at>2012-11-01T11:00:13+00:00</generated_at>
-        generated_at_re = re.compile('<generated_at>(.*?)</generated_at>')
-        mo = generated_at_re.search(file(phishtank_inst.PHISHTANK_DB).read())
-
-        if mo is None:
-            self.assertTrue(False, 'Error while parsing XML file.')
-        else:
-            # Example: 2012-11-01T11:00:13+00:00
-            time_fmt = '%Y-%m-%dT%H:%M:%S+00:00'
-            generated_time = mo.group(1)
-            gen_date_time = datetime.datetime.strptime(
-                generated_time, time_fmt)
-            gen_date = gen_date_time.date()
-
-            today_date = datetime.date.today()
-
-            time_delta = today_date - gen_date
-
-            msg = 'The phishtank database is too old, in order to update it'\
-                  ' please follow these steps:\n'\
-                  'wget -q -O- --header\="Accept-Encoding: gzip" http://data.phishtank.com/data/online-valid/ | gunzip > w3af/plugins/crawl/phishtank/index.xml\n'\
-                  'git commit -m "Updating phishtank database." w3af/plugins/crawl/phishtank/index.xml\n'\
-                  'git push\n'
-            self.assertTrue(time_delta.days < 30, msg)
+        msg = 'The phishtank database is too old, in order to update it'\
+              ' please follow these steps:\n'\
+              'w3af/plugins/crawl/phishtank/update.py\n'\
+              'git commit -m "Updating phishtank database." w3af/plugins/crawl/phishtank/index.csv\n'\
+              'git push\n'
+        self.assertFalse(is_older, msg)

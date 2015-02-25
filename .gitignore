@@ -69,3 +69,7 @@ Dockerfile
 # To make testing easier
 test.w3af
 output-w3af.txt
+
+# Ignore intermediate XML file
+w3af/plugins/crawl/phishtank/index.xml
+
