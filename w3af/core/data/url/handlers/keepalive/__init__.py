@@ -403,7 +403,7 @@ class KeepAliveHandler(object):
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException):
             r = None
-        except:
+        except Exception, e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection
             # and remove it first.  We previously got into a nasty loop where
@@ -411,8 +411,8 @@ class KeepAliveHandler(object):
             # On the next try, the same exception was raised, etc. The tradeoff
             # is that it's now possible this call will raise a DIFFERENT
             # exception
-            msg = "unexpected exception - closing connection to %s (%d)"
-            error(msg % (host, id(conn)))
+            msg = 'unexpected exception "%s" - closing connection to %s (%d)'
+            error(msg % (e, host, id(conn)))
 
             self._cm.remove_connection(conn, host)
             raise

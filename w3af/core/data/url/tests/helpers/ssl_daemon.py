@@ -20,10 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import SocketServer
+import threading
+import socket
 import ssl
 import os
 
 from .upper_daemon import UpperDaemon, UpperTCPHandler
+
+HTTP_RESPONSE = "HTTP/1.1 200 Ok\r\n"\
+                "Connection: close\r\n"\
+                "Content-Type: text/html\r\n"\
+                "Content-Length: 3\r\n\r\nabc"
 
 
 class RawSSLDaemon(UpperDaemon):
@@ -53,3 +60,60 @@ class RawSSLDaemon(UpperDaemon):
         self.server.serve_forever()
 
 
+class SSLServer(threading.Thread):
+
+    def __init__(self, listen, port, certfile, proto=ssl.PROTOCOL_SSLv3,
+                 http_response=HTTP_RESPONSE):
+        threading.Thread.__init__(self)
+        self.listen = listen
+        self.port = port
+        self.cert = certfile
+        self.proto = proto
+        self.http_response = http_response
+        self.sock = socket.socket()
+        self.sock.bind((listen, port))
+        self.sock.listen(5)
+
+    def accept(self):
+        self.sock = ssl.wrap_socket(self.sock,
+                                    server_side=True,
+                                    certfile=self.cert,
+                                    cert_reqs=ssl.CERT_NONE,
+                                    ssl_version=self.proto,
+                                    do_handshake_on_connect=False,
+                                    suppress_ragged_eofs=True)
+
+        newsocket, fromaddr = self.sock.accept()
+
+        try:
+            newsocket.do_handshake()
+        except:
+            # The ssl certificate might request a connection with
+            # SSL protocol v2 and that will "break" the handshake
+            newsocket.close()
+
+        #print 'Connection from ', fromaddr
+        try:
+            newsocket.send(self.http_response)
+        except:
+            pass
+            #print 'Connection closed by remote end.'
+        finally:
+            newsocket.close()
+
+    def run(self):
+        self.should_stop = False
+        while not self.should_stop:
+            self.accept()
+
+    def stop(self):
+        self.should_stop = True
+        try:
+            self.sock.close()
+
+            # Connection to force stop,
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((self.listen, self.port))
+            s.close()
+        except:
+            pass

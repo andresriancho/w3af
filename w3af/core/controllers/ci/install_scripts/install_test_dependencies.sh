@@ -3,13 +3,7 @@
 #
 # Install all libs required to run our tests (which are available at pypi)
 #
-pip install pylint==0.28.0 mock==1.0.1 psutil==1.2.1
-pip install logilab-astng==0.24.3 SOAPpy==0.12.5 Pillow==1.7.8 SimpleCV==1.3
-pip install termcolor==1.1.0 yanc==0.2.4 futures==2.1.5 fabric==1.8.0
-pip install xunitparser==1.2.0
-
-# Install requirements for coveralls
-pip install coverage==3.6 nose-cov==1.6 coveralls==0.2
+pip install --upgrade -r w3af/tests/requirements.txt
 
 pip install --upgrade 'git+https://github.com/andresriancho/nose.git#egg=nose'
 pip install --upgrade 'git+https://github.com/andresriancho/HTTPretty.git'
