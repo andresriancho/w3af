@@ -54,8 +54,8 @@ class analyze_cookies(GrepPlugin):
     #
     # BUGBUG work-around for cookie-obj leaving out
     # attribute values in a SimpleCookie object
-    httponly_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?httponly([\s;, ]|$)'
-    secure_capture = ': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?secure([\s;, ]|$)'
+    httponly_capture = r': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?httponly([\s;, ]|$)'
+    secure_capture = r': *?([\w!$%+.&*#`~\-\|\^]*)=[\w!$%+.&*#`~\-\|\^\"]*; *?secure([\s;, ]|$)'
     EXTRACT_HTTPONLY_RE = re.compile(httponly_capture, re.I)
     EXTRACT_SECURE_RE = re.compile(secure_capture, re.I)
     
@@ -215,9 +215,23 @@ class analyze_cookies(GrepPlugin):
                         updated_vuln = copy.deepcopy(old_vuln)
                         if 'urls' not in updated_vuln.keys():
                             updated_vuln['urls'] = [old_vuln.get_url()]
-                        updated_vuln['urls'].append(response.get_url())
-                        kb.kb.update(old_vuln, updated_vuln)
-                        return updated_vuln
+                            kb.kb.update(old_vuln, updated_vuln)
+                            return updated_vuln
+                        # Do not update vulnerability with same name and URL
+                        elif vulnerability.get_url() in vuln['urls']:
+                            kb.kb.update(old_vuln, updated_vuln)
+                            return updated_vuln
+                        else:
+                            updated_vuln['urls'].append(response.get_url())
+                            desc = updated_vuln.get_desc(False)
+                            urlen = len(updated_vuln['urls'])
+                            url_re = r'(\"http[:\/\?\[\]\'\(\)\*\+#@!$&,;%=~_\-\w\.]*\")'
+                            url_sub = r'\1 and %s other url\(s\)' % (urlen - 1)
+                            updated_desc = re.sub(url_re, url_sub, desc)
+                            updated_vuln.set_desc(updated_desc)
+
+                            kb.kb.update(old_vuln, updated_vuln)
+                            return updated_vuln
 
                 # If no vulnerability of same type was found
                 # append the vulnerability passed by caller

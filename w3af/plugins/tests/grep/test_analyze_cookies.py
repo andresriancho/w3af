@@ -390,6 +390,14 @@ class TestAnalyzeCookies(unittest.TestCase):
         response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
         request.append( FuzzableRequest(url, method='GET') )
 
+        # Vulnerability: secure over http with same url
+        url = URL('http://www.w3af.com/a')
+        headers = Headers({'content-type': 'text/html',
+                            'Set-Cookie': 'name="adf"; secure; httponly'}.items())
+
+        response.append( HTTPResponse(200, body, headers, url, url, _id=1) )
+        request.append( FuzzableRequest(url, method='GET') )
+
         for i, resp in enumerate(response): self.plugin.grep(request[i], resp)
 
         security_vulns = kb.kb.get('analyze_cookies', 'security')
