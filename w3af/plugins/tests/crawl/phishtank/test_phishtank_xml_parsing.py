@@ -24,9 +24,7 @@ import unittest
 import lxml.etree as etree
 
 from nose.plugins.skip import SkipTest
-
 from w3af import ROOT_PATH
-from w3af.plugins.crawl.phishtank import PhishTankHandler
 
 PHISHTANK_DB = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'phishtank',
                             'index.xml')
