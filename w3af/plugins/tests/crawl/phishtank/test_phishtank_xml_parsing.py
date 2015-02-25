@@ -36,6 +36,7 @@ class TestPhishTankParseMethods(unittest.TestCase):
 
         phishtank_db_fd = file(PHISHTANK_DB)
 
+        # pylint: disable=E0602
         pt_handler = PhishTankHandler([])
         parser = etree.HTMLParser(recover=True, target=pt_handler)
         etree.parse(phishtank_db_fd, parser)
