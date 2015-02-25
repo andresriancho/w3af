@@ -128,7 +128,7 @@ class phishtank(CrawlPlugin):
         pt_handler = PhishTankHandler(to_check)
         parser = etree.HTMLParser(recover=True, target=pt_handler)
 
-        om.out.debug('Starting the phishtank XML parsing. ')
+        om.out.debug('Starting the phishtank XML parsing.')
 
         try:
             etree.parse(phishtank_db_fd, parser)
@@ -136,7 +136,7 @@ class phishtank(CrawlPlugin):
             msg = 'XML parsing error in phishtank DB, exception: "%s".'
             raise BaseFrameworkException(msg % e)
 
-        om.out.debug('Finished XML parsing. ')
+        om.out.debug('Finished XML parsing.')
 
         return pt_handler
 
