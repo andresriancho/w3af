@@ -1,4 +1,4 @@
-(19 Feb 2015)    Version 1.6.45
+(26 Feb 2015)    Version 1.6.45
 ===============================
 Github tag: https://github.com/andresriancho/w3af/tree/1.6.45
 Github milestone: https://github.com/andresriancho/w3af/issues?milestone=10
@@ -13,6 +13,7 @@ Github milestone: https://github.com/andresriancho/w3af/issues?milestone=10
 * Improved exception handling to catch more descriptive tracebacks
 * Added new plugins for web sockets and RFD
 * Better error handling for HTTP requests
+* Huge reducion of memory usage in phishtank plugin 
 
 (12 Jun 2014)    Version 1.6.0.3
 ================================
