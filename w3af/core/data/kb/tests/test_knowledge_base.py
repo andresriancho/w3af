@@ -717,8 +717,10 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append('a', 'b', vuln)
         kb_vuln = kb.get_one('a', 'b')
 
+        #pylint: disable=E1103
         self.assertEqual(kb_vuln.get_uniq_id(), vuln.get_uniq_id())
         self.assertEqual(kb_vuln, vuln)
+        #pylint: enable=E1103
 
     def test_get_one_none_found(self):
         empty_list = kb.get_one('a', 'b')
