@@ -53,7 +53,7 @@ class TestSSLCertificate(PluginTest):
         s.start()
 
         cfg = self._run_configs['cfg']
-        self._scan(self.local_target_url, cfg['plugins'], debug=True)
+        self._scan(self.local_target_url, cfg['plugins'])
 
         s.stop()
 
