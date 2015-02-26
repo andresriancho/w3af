@@ -688,7 +688,12 @@ class URL(DiskItem):
 
     def url_decode(self):
         """
-        @see: Unittests at test_url.py
+        Decode the URL, this will transform things like
+            http://host.tld/?id=%2Fhome
+        into,
+            http://host.tld/?id=/home
+
+        :see: Unittests at test_url.py
         :return: A URL that represents the current URL without URL
                  encoded characters.
         """
