@@ -35,8 +35,8 @@ class OutputFileOption(BaseOption):
         :param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
-        Based on the value parameter and the option type, I have to create a nice
-        looking object like True or ['a','b','c'].
+        Based on the value parameter and the option type, I have to create a
+        nice looking object like True or ['a','b','c'].
         """
         self._value = self.validate(value)
 
@@ -44,13 +44,18 @@ class OutputFileOption(BaseOption):
         
         expanded_path = os.path.expanduser(value)
         directory = os.path.abspath(os.path.dirname(expanded_path))
-        if not os.path.isdir(directory):
-            msg = 'Invalid file option value "%s", the directory does not'\
-                  ' exist.'
+
+        if os.path.isdir(expanded_path):
+            msg = 'Invalid output file "%s", it must not be a the directory.'
             raise BaseFrameworkException(msg % value)
 
+        if not os.path.isdir(directory):
+            msg = 'Invalid file option "%s", the directory "%s" does'\
+                  ' not exist.'
+            raise BaseFrameworkException(msg % (directory, value))
+
         if not os.access(directory, os.W_OK):
-            msg = 'Invalid file option value "%s", the user doesn\'t have' \
+            msg = 'Invalid file option "%s", the user does not have' \
                   ' enough permissions to write to the specified directory.'
             raise BaseFrameworkException(msg % value)
 
