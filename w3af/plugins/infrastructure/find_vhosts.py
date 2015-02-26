@@ -181,6 +181,10 @@ class find_vhosts(InfrastructurePlugin):
                     # raises exception when it's not found
                     if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
                         yield domain
+                except:
+                    # We get here on other exceptions, an example is when the
+                    # domain contains non-alnum chars
+                    pass
 
     def _generic_vhosts(self, fuzzable_request):
         """
