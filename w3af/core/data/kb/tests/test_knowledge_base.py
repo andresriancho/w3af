@@ -738,9 +738,10 @@ class TestKnowledgeBase(unittest.TestCase):
             pass
 
         vuln = MockVuln()
-        info_set = kb.append_uniq_group('a', 'b', vuln, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
 
         self.assertIsInstance(info_set, InfoSet)
+        self.assertTrue(created)
         self.assertEqual(info_set.get_urls(), [vuln.get_url()])
         self.assertEqual(info_set.get_name(), vuln.get_name())
         self.assertEqual(info_set.get_ids(), vuln.get_id())
@@ -752,8 +753,9 @@ class TestKnowledgeBase(unittest.TestCase):
 
         vuln = MockVuln()
         kb.append_uniq_group('a', 'b', vuln, filter_func)
-        info_set = kb.append_uniq_group('a', 'b', vuln, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
 
+        self.assertFalse(created)
         self.assertIsInstance(info_set, InfoSet)
         self.assertEqual(len(info_set.infos), 2)
 
@@ -764,9 +766,10 @@ class TestKnowledgeBase(unittest.TestCase):
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
         kb.append_uniq_group('a', 'b', vuln1, filter_func)
-        info_set = kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln2, filter_func)
 
         self.assertIsInstance(info_set, InfoSet)
+        self.assertTrue(created)
         self.assertEqual(len(info_set.infos), 1)
 
         raw_data = kb.get('a', 'b')

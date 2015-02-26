@@ -143,7 +143,17 @@ class Plugin(Configurable):
 
         if added_to_kb:
             om.out.report_finding(info)
-        
+
+    def kb_append_uniq_group(self, location_a, location_b, info, filter_func):
+        """
+        kb.kb.append_uniq_group a vulnerability to the KB
+        """
+        info_set, created = kb.kb.append_uniq_group(location_a, location_b,
+                                                    info, filter_func)
+
+        if created:
+            om.out.report_finding(info_set.first_info)
+
     def kb_append(self, location_a, location_b, info):
         """
         kb.kb.append a vulnerability to the KB

@@ -56,16 +56,24 @@ class TestCrossDomainJS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        infos = self.kb.get('cross_domain_js', 'cross_domain_js')
-        self.assertEquals(3, len(infos), infos)
+        info_sets = self.kb.get('cross_domain_js', 'cross_domain_js')
+        self.assertEquals(2, len(info_sets), info_sets)
 
-        EXPECTED = {'cross_domain_script_mixed.html',
-                    'cross_domain_script_with_type.html',
-                    'cross_domain_script.html'}
-        found_fnames = set([i.get_url().get_file_name() for i in infos])
+        self.assertEqual(set([i.get_attribute('domain') for i in info_sets]),
+                         {'moth', 'www.w3af.org'})
 
-        self.assertEquals(EXPECTED,
-                          found_fnames)
+        self.assertEqual(set([i.get_name() for i in info_sets]),
+                         {'Cross-domain javascript source'})
+
+        all_files = {'cross_domain_script_mixed.html',
+                     'cross_domain_script_with_type.html',
+                     'cross_domain_script.html'}
+        found_files = set()
+        for info_set in info_sets:
+            for info in info_set.infos:
+                found_files.add(info.get_url().get_file_name())
+
+        self.assertEqual(all_files, found_files)
 
 
 class TestCrossDomainJSRaw(unittest.TestCase):
@@ -103,3 +111,19 @@ class TestCrossDomainJSRaw(unittest.TestCase):
 
         infos = kb.kb.get('cross_domain_js', 'cross_domain_js')
         self.assertEquals(len(infos), 1)
+
+    def test_cross_domain_third_party_is_insecure_group_info_set(self):
+        body = '<script src="https://cdn.akamai-wannabe.net/foo.js"></script>'
+        url_1 = URL('http://www.w3af.com/1')
+        url_2 = URL('http://www.w3af.com/2')
+        headers = Headers([('content-type', 'text/html')])
+        request = FuzzableRequest(url_1, method='GET')
+        resp_1 = HTTPResponse(200, body, headers, url_1, url_1, _id=1)
+        resp_2 = HTTPResponse(200, body, headers, url_2, url_2, _id=1)
+
+        self.plugin.grep(request, resp_1)
+        self.plugin.grep(request, resp_2)
+        self.plugin.end()
+
+        info_set = kb.kb.get_one('cross_domain_js', 'cross_domain_js')
+        self.assertEqual(set(info_set.get_urls()), {url_1, url_2})

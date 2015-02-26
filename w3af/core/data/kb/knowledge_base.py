@@ -136,7 +136,8 @@ class BasicKnowledgeBase(object):
         :param info_inst: The Info instance we want to store
         :param filter_func: The function used to match the InfoSets
         :param group_klass: If required, will be used to create a new InfoSet
-        :return: The updated/created InfoSet, as stored in the kb
+        :return: (The updated/created InfoSet, as stored in the kb,
+                  True if a new InfoSet was created)
         """
         if not isinstance(info_inst, Info):
             raise TypeError('append_uniq_group requires an Info instance'
@@ -155,13 +156,13 @@ class BasicKnowledgeBase(object):
                     old_info_set = copy.deepcopy(info_set)
                     info_set.add(info_inst)
                     self.update(old_info_set, info_set)
-                    return info_set
+                    return info_set, False
             else:
                 # No pre-existing InfoSet instance matched, let's create one
                 # for the info_inst
                 info_set = group_klass([info_inst])
                 self.append(location_a, location_b, info_set)
-                return info_set
+                return info_set, True
 
     def get_all_vulns(self):
         """

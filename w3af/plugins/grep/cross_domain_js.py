@@ -108,6 +108,7 @@ class cross_domain_js(GrepPlugin):
                     return
 
             to_highlight = etree.tostring(script_src_tag)
+            itag = 'domain'
             desc = 'The URL: "%s" has a script tag with a source that points' \
                    ' to a third party site ("%s"). This practice is not' \
                    ' recommended, the security of the current site is being' \
@@ -118,8 +119,10 @@ class cross_domain_js(GrepPlugin):
                      response.id, self.get_name())
             i.set_url(url)
             i.add_to_highlight(to_highlight)
+            i[itag] = script_domain
 
-            self.kb_append_uniq(self, 'cross_domain_js', i, 'URL')
+            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+            self.kb_append_uniq_group(self, 'cross_domain_js', i, ff)
 
     def set_options(self, options_list):
         """
