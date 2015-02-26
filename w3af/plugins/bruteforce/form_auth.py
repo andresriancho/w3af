@@ -52,7 +52,7 @@ class form_auth(BruteforcePlugin):
 
     def audit(self, freq):
         """
-        Tries to bruteforce a form auth. This aint fast!
+        Tries to bruteforce a form auth. This is slow!
 
         :param freq: A FuzzableRequest
         """
@@ -61,6 +61,9 @@ class form_auth(BruteforcePlugin):
 
         mutant = form_pointer_factory(freq)
         if not self._is_login_form(mutant):
+            # Not a login form, login forms have these fields:
+            #   * username/password
+            #   * password
             return
 
         self._already_tested.append(mutant.get_url())
