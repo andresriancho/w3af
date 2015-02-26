@@ -61,9 +61,10 @@ class SimpleTextView(gtk.TextView):
     def set_text(self, newtext, use_repr=False):
         """Sets a new text in the pane, repr'ing it if needed.
 
-        :param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
-        escapes new lines, and tabs, but we would like to keep those as they can be represented
-        properly in a textview.
+        :param use_repr: Use similar to repr() or not. We don't use repr()
+                         because repr() also escapes new lines, and tabs, but
+                         we would like to keep those as they can be represented
+                         properly in a textview.
 
         :param newtext: the new text of the pane.
         """
@@ -73,11 +74,10 @@ class SimpleTextView(gtk.TextView):
         if use_repr:
             newtext = self._repr(newtext)
         else:
-            #    Better handling of the newtext data to avoid issues
-            #    when decoding stuff that can NOT be represented in unicode. Example:
-            #    base64 decode /w== returns \xff which raises an exception here if we
-            #    use unicode(newtext)
-
+            # Better handling of the newtext data to avoid issues
+            # when decoding stuff that can NOT be represented in unicode.
+            # Example: base64 decode /w== returns \xff which raises an exception
+            # here if we use unicode(newtext)
             newtext = newtext.replace('\0', '\\x00')
 
             try:
@@ -229,10 +229,10 @@ class ThreadedProc(threading.Thread):
             self.event.set()
 
 
-# A helper function for the decoding functions
-
 def _get_nibbles(char):
     """
+    A helper function for the decoding functions
+
     :return: The first ans second nibble of the ascii value of the char
     """
     try:

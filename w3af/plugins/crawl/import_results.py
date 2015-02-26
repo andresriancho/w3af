@@ -24,6 +24,7 @@ import base64
 import os
 
 from lxml import etree
+from lxml.etree import XMLSyntaxError
 
 import w3af.core.controllers.output_manager as om
 
@@ -112,8 +113,7 @@ class import_results(CrawlPlugin):
             return
 
         try:
-            fuzzable_request_list = self._objs_from_burp_log(
-                self._input_burp)
+            fuzzable_request_list = self._objs_from_burp_log(self._input_burp)
         except BaseFrameworkException, e:
             msg = 'An error was found while trying to read the Burp log' \
                   ' file (%s): "%s".'
@@ -151,62 +151,17 @@ class import_results(CrawlPlugin):
         """
         Read a burp log (XML) and extract the information.
         """
-        class XMLParser(object):
-            """
-            TODO: Support protocol (http|https) and port extraction. Now it only
-            works with http and 80.
-            """
-            requests = []
-            parsing_request = False
-            current_is_base64 = False
-
-            def start(self, tag, attrib):
-                """
-                <request base64="true"><![CDATA[R0VUI...4zDQoNCg==]]></request>
-
-                or
-
-                <request base64="false"><![CDATA[GET /w3af/ HTTP/1.1
-                Host: moth
-                ...
-                ]]></request>
-                """
-                if tag == 'request':
-                    self.parsing_request = True
-
-                    if not 'base64' in attrib:
-                        # Invalid file?
-                        return
-
-                    use_base64 = attrib['base64']
-                    if use_base64.lower() == 'true':
-                        self.current_is_base64 = True
-                    else:
-                        self.current_is_base64 = False
-
-            def data(self, data):
-                if self.parsing_request:
-                    if not self.current_is_base64:
-                        request_text = data
-                        head, postdata = request_text.split('\n\n', 1)
-                    else:
-                        request_text_b64 = data
-                        request_text = base64.b64decode(request_text_b64)
-                        head, postdata = request_text.split('\r\n\r\n', 1)
-
-                    fuzzable_request = http_request_parser(head, postdata)
-                    self.requests.append(fuzzable_request)
-
-            def end(self, tag):
-                if tag == 'request':
-                    self.parsing_request = False
-
-            def close(self):
-                return self.requests
-
-        xp = XMLParser()
+        xp = BurpParser()
         parser = etree.XMLParser(target=xp)
-        requests = etree.fromstring(file(burp_file).read(), parser)
+
+        try:
+            requests = etree.fromstring(file(burp_file).read(), parser)
+        except XMLSyntaxError, xse:
+            msg = 'The Burp input file is not a valid XML document. The' \
+                  ' parser error is: "%s"'
+            om.out.error(msg % xse)
+            return []
+
         return requests
 
     def get_options(self):
@@ -255,3 +210,57 @@ class import_results(CrawlPlugin):
         One or more of these need to be configured in order for this plugin to
         yield any results.
         """
+
+
+class BurpParser(object):
+    """
+    TODO: Support protocol (http|https) and port extraction. Now it only
+          works with http and 80.
+    """
+    requests = []
+    parsing_request = False
+    current_is_base64 = False
+
+    def start(self, tag, attrib):
+        """
+        <request base64="true"><![CDATA[R0VUI...4zDQoNCg==]]></request>
+
+        or
+
+        <request base64="false"><![CDATA[GET /w3af/ HTTP/1.1
+        Host: moth
+        ...
+        ]]></request>
+        """
+        if tag == 'request':
+            self.parsing_request = True
+
+            if not 'base64' in attrib:
+                # Invalid file?
+                return
+
+            use_base64 = attrib['base64']
+            if use_base64.lower() == 'true':
+                self.current_is_base64 = True
+            else:
+                self.current_is_base64 = False
+
+    def data(self, data):
+        if self.parsing_request:
+            if not self.current_is_base64:
+                request_text = data
+                head, postdata = request_text.split('\n\n', 1)
+            else:
+                request_text_b64 = data
+                request_text = base64.b64decode(request_text_b64)
+                head, postdata = request_text.split('\r\n\r\n', 1)
+
+            fuzzable_request = http_request_parser(head, postdata)
+            self.requests.append(fuzzable_request)
+
+    def end(self, tag):
+        if tag == 'request':
+            self.parsing_request = False
+
+    def close(self):
+        return self.requests

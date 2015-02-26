@@ -36,6 +36,7 @@ ALL_MUTANTS = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
                HeadersMutant, JSONMutant, CookieMutant, FileContentMutant,
                XmlRpcMutant)
 
+
 def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
                    orig_resp=None, mutant_tuple=ALL_MUTANTS):
     """
@@ -83,8 +84,8 @@ def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
     #
     # This is very impressing, but the performance enhancement is only
     # possible IF the remote server sends the ETag header, and for example
-    # Apache+PHP doesn't send that tag by default (only sent if the PHP developer
-    # added some code to his PHP to do it).
+    # Apache+PHP doesn't send that tag by default (only sent if the PHP
+    # developer added some code to his PHP to do it).
     #
     if orig_resp is not None:
 
@@ -102,6 +103,14 @@ def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
     return result
 
 
+CONF_KEYS = [('fuzzable_headers', []),
+             ('fuzz_cookies', False),
+             ('fuzz_url_filenames', False),
+             ('fuzzed_files_extension', 'gif'),
+             ('fuzz_form_files', False),
+             ('fuzz_url_parts', False)]
+
+
 def _get_fuzzer_config():
     """
     :return: This function verifies the configuration, and creates a map of
@@ -109,13 +118,6 @@ def _get_fuzzer_config():
     """
     config = cf.cf
     fuzzer_config = {}
-
-    CONF_KEYS = [('fuzzable_headers', []),
-                 ('fuzz_cookies', False),
-                 ('fuzz_url_filenames', False),
-                 ('fuzzed_files_extension', 'gif'),
-                 ('fuzz_form_files', False),
-                 ('fuzz_url_parts', False),]
 
     for conf_name, default in CONF_KEYS:
         fuzzer_config[conf_name] = config.get(conf_name, default)

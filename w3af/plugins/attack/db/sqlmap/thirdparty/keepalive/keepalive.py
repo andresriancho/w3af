@@ -209,6 +209,7 @@ class HTTPHandler(urllib2.HTTPHandler):
     def http_open(self, req):
         return self.do_open(HTTPConnection, req)
 
+
 class HTTPResponse(httplib.HTTPResponse):
 
     # we need to subclass HTTPResponse in order to
@@ -228,7 +229,6 @@ class HTTPResponse(httplib.HTTPResponse):
     # although read() never adds to the buffer.
     # Both readline and readlines have been stolen with almost no
     # modification from socket.py
-
 
     def __init__(self, sock, debuglevel=0, strict=0, method=None):
         if method: # the httplib in python 2.3 uses the method arg

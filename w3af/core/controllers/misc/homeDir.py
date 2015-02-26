@@ -43,7 +43,13 @@ def create_home_dir():
         try:
             os.makedirs(home_path)
         except OSError:
-            return False
+            # Handle some really strange cases where there is a race-condition
+            # where multiple w3af processes are starting and creating the same
+            # directory
+            #
+            # https://circleci.com/gh/andresriancho/w3af/1347
+            if not os.path.exists(home_path):
+                return False
 
     # webroot for some plugins
     webroot = os.path.join(home_path, 'webroot')
@@ -51,7 +57,13 @@ def create_home_dir():
         try:
             os.makedirs(webroot)
         except OSError:
-            return False
+            # Handle some really strange cases where there is a race-condition
+            # where multiple w3af processes are starting and creating the same
+            # directory
+            #
+            # https://circleci.com/gh/andresriancho/w3af/1347
+            if not os.path.exists(webroot):
+                return False
 
     # and the profile directory
     home_profiles = os.path.join(home_path, 'profiles')

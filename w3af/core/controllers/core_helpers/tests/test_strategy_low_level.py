@@ -45,7 +45,7 @@ class TestStrategy(unittest.TestCase):
         target['target'].set_value(self.TARGET_URL)
         core.target.set_options(target)
         
-        core.plugins.set_plugins(['sqli',], 'audit')        
+        core.plugins.set_plugins(['sqli'], 'audit')
         core.plugins.init_plugins()
         
         core.verify_environment()
@@ -81,16 +81,14 @@ class TestStrategy(unittest.TestCase):
         Makes sure that the threads which are living in my process are the
         ones that I want.
         """
-        # PASS: nosetests test_strategy_low_level.py:TestStrategy.test_strategy_run
-        # FAIL: nosetests test_strategy_low_level.py
-        raise SkipTest('This fails if you run multiple tests.')
+        threads = [t for t in threading.enumerate()]
+        thread_names = [t.name for t in threads]
 
-        thread_names = [t.name for t in threading.enumerate()]
-        thread_names = set(thread_names)
-        
-        expected_names = {'MainThread', 'SQLiteExecutor', 'OutputManager'}
-        
-        self.assertEqual(thread_names, expected_names)
+        thread_names_set = set(thread_names)
+        expected_names = {'MainThread', 'SQLiteExecutor',
+                          'OutputManager', 'QueueFeederThread'}
+
+        self.assertEqual(thread_names_set, expected_names)
 
     def test_strategy_exception(self):
         core = w3afCore()
@@ -99,7 +97,7 @@ class TestStrategy(unittest.TestCase):
         target['target'].set_value(self.TARGET_URL)
         core.target.set_options(target)
         
-        core.plugins.set_plugins(['sqli',], 'audit')        
+        core.plugins.set_plugins(['sqli'], 'audit')
         core.plugins.init_plugins()
         
         core.verify_environment()
@@ -117,7 +115,7 @@ class TestStrategy(unittest.TestCase):
         
         core.exploit_phase_prerequisites = lambda: 42
         core.scan_end_hook()
-        
+
         self._assert_thread_names()
         
     def test_strategy_verify_target_server(self):

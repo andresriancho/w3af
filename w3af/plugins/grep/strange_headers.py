@@ -47,17 +47,22 @@ class strange_headers(GrepPlugin):
         "CONTENT-TYPE",
         "CONTENT-SCRIPT-TYPE",
         "CONTENT-STYLE-TYPE",
+        "CONTENT-SECURITY-POLICY",
+        "CONTENT-SECURITY-POLICY-REPORT-ONLY",
         "CONTENT-LANGUAGE",
         "CONTENT-LOCATION",
         "CACHE-CONTROL",
         "DATE",
         "EXPIRES",
         "ETAG",
+        "FRAME-OPTIONS",
         "KEEP-ALIVE",
         "LAST-MODIFIED",
         "LOCATION",
         "P3P",
         "PUBLIC",
+        "PUBLIC-KEY-PINS",
+        "PUBLIC-KEY-PINS-REPORT-ONLY",
         "PRAGMA",
         "PROXY-CONNECTION",
         "SET-COOKIE",
@@ -74,7 +79,7 @@ class strange_headers(GrepPlugin):
         "X-CACHE",
         "X-UA-COMPATIBLE",
         "X-PAD",
-        "X-XSS-Protection"]
+        "X-XSS-PROTECTION"]
     )
 
     def __init__(self):

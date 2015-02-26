@@ -58,4 +58,5 @@ class test_route(PayloadTestHelper):
                             iface.startswith('ppp') or
                             iface.startswith('vbox') or
                             iface.startswith('lxcbr') or
+                            iface.startswith('docker') or
                             iface.startswith('lo'), iface)

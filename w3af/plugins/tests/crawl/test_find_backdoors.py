@@ -63,17 +63,14 @@ class TestFalsePositiveFindBackdoor2017_1(PluginTest):
     """
     :see: https://github.com/andresriancho/w3af/issues/2017
     """
-    # TODO: Here I'm appending "-1" because of some strange cache issue with
-    # the previous test. I need to debug and fix this issue to prevent other
-    # unittests from breaking!
-    domain = 'httpretty-mock-1'
+    domain = 'httpretty-mock'
     target_url = 'http://%s/' % domain
 
     APACHE_403 = get_apache_403('/foobar', domain)
 
     MOCK_RESPONSES = [MockResponse(re.compile('(.*)'), APACHE_403, status=403)]
 
-    def test_2017_false_positive_backdoor(self):
+    def test_2017_false_positive_backdoor_1(self):
         cfg = run_configs['base']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -83,7 +80,7 @@ class TestFalsePositiveFindBackdoor2017_1(PluginTest):
 
 
 class TestFalsePositiveFindBackdoor2017_2(PluginTest):
-    domain = 'httpretty-mock-2'
+    domain = 'httpretty-mock'
     target_url = 'http://%s/' % domain
 
     APACHE_403 = get_apache_403('/forbidden/foobar', domain)
@@ -93,7 +90,7 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
                       MockResponse(re.compile('http://.*?/forbidden/.*'),
                                    APACHE_403, status=403)]
 
-    def test_2017_false_positive_backdoor(self):
+    def test_2017_false_positive_backdoor_2(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -103,11 +100,11 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
 
 
 class TestFalsePositiveFindBackdoorNixWizardEmail(PluginTest):
-    target_url = 'http://httpretty-mock-3/'
+    target_url = 'http://httpretty-mock/'
 
     MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="cmd"/>')]
 
-    def test_false_positive_backdoor(self):
+    def test_false_positive_backdoor_3(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 
@@ -117,11 +114,11 @@ class TestFalsePositiveFindBackdoorNixWizardEmail(PluginTest):
 
 
 class TestFalsePositiveFindBackdoorNixWizardEmailNot(PluginTest):
-    target_url = 'http://httpretty-mock-4/'
+    target_url = 'http://httpretty-mock/'
 
     MOCK_RESPONSES = [MockResponse('/cmd.php', '<input name="c1m2d"/>')]
 
-    def test_false_positive_backdoor(self):
+    def test_false_positive_backdoor_4(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -14,6 +14,7 @@ from lib.core.common import isNoneValue
 from lib.core.common import isNumPosStrValue
 from lib.core.common import isTechniqueAvailable
 from lib.core.common import safeSQLIdentificatorNaming
+from lib.core.common import unArrayizeValue
 from lib.core.common import unsafeSQLIdentificatorNaming
 from lib.core.data import conf
 from lib.core.data import kb
@@ -49,6 +50,8 @@ class Enumeration(GenericEnumeration):
             users = kb.data.cachedUsers
 
         for user in users:
+            user = unArrayizeValue(user)
+
             if user is None:
                 continue
 
@@ -102,7 +105,7 @@ class Enumeration(GenericEnumeration):
 
                 if not isNoneValue(value):
                     value = filter(None, arrayizeValue(value))
-                    value = [safeSQLIdentificatorNaming(_, True) for _ in value]
+                    value = [safeSQLIdentificatorNaming(unArrayizeValue(_), True) for _ in value]
                     kb.data.cachedTables[db] = value
 
         if not kb.data.cachedTables and isInferenceAvailable() and not conf.direct:

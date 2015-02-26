@@ -55,9 +55,8 @@ class bug_report_menu(menu):
             self._cmd_help(['list'])
             return
 
-        table = []
-        table.append(('ID', 'Phase', 'Plugin', 'Exception'))
-        table.append(())
+        table = [('ID', 'Phase', 'Plugin', 'Exception'),
+                 ()]
         eid = 0
         for edata in all_edata:
             if edata.phase == ptype or ptype == 'all':
@@ -118,7 +117,7 @@ class bug_report_menu(menu):
                         report_bug_eids.append(eid)
 
         # default to reporting all exceptions if none was specified
-        if report_bug_eids == []:
+        if not report_bug_eids:
             report_bug_eids = range(len(all_edata))
 
         for num, eid in enumerate(report_bug_eids):

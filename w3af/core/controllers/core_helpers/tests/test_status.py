@@ -29,7 +29,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 
 
 class TestStatus(unittest.TestCase):
-    
+
     def test_simple(self):
         s = w3af_core_status(Mock())
         
@@ -64,7 +64,8 @@ class TestStatus(unittest.TestCase):
         self.assertFalse(s.is_running())
     
     def test_queue_status_not_started(self):
-        s = w3af_core_status(w3afCore())
+        core = w3afCore()
+        s = w3af_core_status(core)
         
         self.assertEqual(s.get_crawl_input_speed(), None)
         self.assertEqual(s.get_crawl_output_speed(), None)
@@ -78,3 +79,4 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_audit_current_fr(), None)
         self.assertEqual(s.get_audit_eta(), None)
 
+        core.worker_pool.terminate_join()

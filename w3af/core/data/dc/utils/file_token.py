@@ -52,8 +52,15 @@ class FileDataToken(DataToken):
         return self._payload
 
     def build_file(self, value):
-
-        if isinstance(value, basestring):
+        #
+        # We don't want to create a new file if value is already a NamedStringIO
+        # but if it is a string, we should create a new NamedStringIO instance
+        # and return it
+        #
+        # The last "not isinstance" is important due to the fact that
+        # NamedStringIO is a basestring subclass
+        #
+        if isinstance(value, basestring) and not isinstance(value, NamedStringIO):
             _, file_content, fname = get_template_with_payload(self._extension,
                                                                value)
 

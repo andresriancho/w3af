@@ -26,6 +26,7 @@ import threading
 import traceback
 import pprint
 
+import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
@@ -38,7 +39,8 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
 
-from w3af.core.controllers.output_manager import fresh_output_manager_inst
+from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
+                                                  log_sink_factory)
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
@@ -74,7 +76,8 @@ class w3afCore(object):
         Create the URI opener.
         """
         # Make sure we get a fresh new instance of the output manager
-        fresh_output_manager_inst()
+        manager = fresh_output_manager_inst()
+        log_sink_factory(manager.get_in_queue())
 
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
@@ -107,7 +110,7 @@ class w3afCore(object):
         # FIXME: In the future, when the output_manager is not an awful singleton
         # anymore, this line should be removed and the output_manager object
         # should take a w3afCore object as a parameter in its __init__
-        om.out.set_w3af_core(self)
+        om.manager.set_w3af_core(self)
         
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
@@ -146,7 +149,8 @@ class w3afCore(object):
         self.strategy = w3af_core_strategy(self)
         
         # And create this again just to clear the internal states
-        self.status = w3af_core_status(self)
+        scans_completed = self.status.scans_completed
+        self.status = w3af_core_status(self, scans_completed=scans_completed)
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -178,8 +182,8 @@ class w3afCore(object):
 
         # Let the output plugins know what kind of plugins we're
         # using during the scan
-        om.out.log_enabled_plugins(self.plugins.get_all_enabled_plugins(),
-                                   self.plugins.get_all_plugin_options())
+        om.manager.log_enabled_plugins(self.plugins.get_all_enabled_plugins(),
+                                       self.plugins.get_all_plugin_options())
 
         self._first_scan = False
         
@@ -191,8 +195,8 @@ class w3afCore(object):
                   ' to stop.'
             om.out.error(msg)
             raise
-        except threading.ThreadError:
-            handle_threading_error(self.status.scans_completed)
+        except threading.ThreadError, te:
+            handle_threading_error(self.status.scans_completed, te)
         except HTTPRequestException, hre:
             # TODO: These exceptions should never reach this level
             #       adding the exception handler to raise them and fix any
@@ -261,6 +265,10 @@ class w3afCore(object):
                                      worker_names='WorkerThread')
 
         if not self._worker_pool.is_running():
+            # Clean-up the old worker pool
+            self._worker_pool.terminate_join()
+
+            # Create a new one
             self._worker_pool = Pool(self.WORKER_THREADS,
                                      worker_names='WorkerThread')
 
@@ -290,6 +298,9 @@ class w3afCore(object):
         
         # Clean all data that is stored in the kb
         kb.cleanup()
+
+        # Stop the parser subprocess
+        parser_cache.dpc.stop_workers()
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
@@ -329,8 +340,9 @@ class w3afCore(object):
             self.strategy.stop()
 
         stop_start_time = time.time()
-        
-        wait_max = 10 # seconds
+
+        # seconds
+        wait_max = 10
         loop_delay = 0.5
         for _ in xrange(int(wait_max/loop_delay)):
             if not self.status.is_running():
@@ -349,6 +361,9 @@ class w3afCore(object):
             msg %= wait_max
         
         om.out.debug(msg)
+
+        # Finally we terminate+join the worker pool
+        self.worker_pool.terminate_join()
     
     def quit(self):
         """
@@ -357,7 +372,9 @@ class w3afCore(object):
         self.stop()
         self.uri_opener.end()
         remove_temp_dir(ignore_errors=True)
-        
+        # Stop the parser subprocess
+        parser_cache.dpc.stop_workers()
+
     def pause(self, pause_yes_no):
         """
         Pauses/Un-Pauses scan.
@@ -392,17 +409,18 @@ class w3afCore(object):
         """
         This method is called when the process ends normally or by an error.
         """
-        # The scan has ended, and we've already joined() the workers in the
-        # strategy (in a nice way, waiting for them to finish before returning
-        # from strategy.start call), so there is no need to call this:
+        # The scan has ended, and we've already joined() the consumer threads
+        # from strategy (in a nice way, waiting for them to finish before
+        # returning from strategy.start call), so this terminate and join call
+        # should return really quick:
         #
-        #self.worker_pool.terminate_join()
+        self.worker_pool.terminate_join()
 
         try:
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
-            om.out.end_output_plugins()
+            om.manager.end_output_plugins()
             
             # Note that running "self.uri_opener.end()" here is a bad idea
             # since it will clear all the history items from the DB and remove
@@ -429,6 +447,9 @@ class w3afCore(object):
 
             # Finish the profiling
             stop_profiling(self)
+
+            # Stop the parser subprocess
+            parser_cache.dpc.stop_workers()
 
     def exploit_phase_prerequisites(self):
         """
@@ -477,7 +498,7 @@ class w3afCore(object):
             sys.exit(-3)
 
 
-def handle_threading_error(scans_completed):
+def handle_threading_error(scans_completed, threading_error):
     """
     Catch threading errors such as "error: can't start new thread"
     and handle them in a specific way
@@ -491,7 +512,8 @@ def handle_threading_error(scans_completed):
     
     pprint_threads = nice_thread_repr(threading.enumerate())
     
-    msg = 'An error occurred while trying to start a new thread.\n'\
+    msg = 'A "%s" threading error was found.\n'\
           ' The current process has a total of %s active threads and has'\
           ' completed %s scans. The complete list of threads follows:\n\n%s'
-    raise Exception(msg % (active_threads, scans_completed, pprint_threads))
+    raise Exception(msg % (threading_error, active_threads,
+                           scans_completed, pprint_threads))

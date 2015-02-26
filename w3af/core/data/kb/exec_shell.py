@@ -40,7 +40,7 @@ class ExecShell(Shell):
     """
 
     def __init__(self, vuln, uri_opener, worker_pool):
-        super(ExecShell, self).__init__(vuln, uri_opener, worker_pool)
+        Shell.__init__(self, vuln, uri_opener, worker_pool)
 
         # For writing files to the remote server
         self._transfer_handler = None

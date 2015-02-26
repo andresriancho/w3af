@@ -29,6 +29,7 @@ from w3af import ROOT_PATH
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 
+from w3af.core.controllers.misc.file_lock import FileLock
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 
@@ -52,6 +53,12 @@ class TestConsoleBugReport(ConsoleTestHelper):
                                 'failing_spider.py')
         self.dst = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                 'failing_spider.py')
+
+        # This lock prevents others (which also implement the locking) from
+        # removing our file
+        self.lock = FileLock(self.dst, timeout=60)
+        self.lock.acquire()
+
         shutil.copy(self.src, self.dst)
 
         super(TestConsoleBugReport, self).setUp()
@@ -63,6 +70,9 @@ class TestConsoleBugReport(ConsoleTestHelper):
         # pyc file
         if os.path.exists(self.dst + 'c'):
             os.remove(self.dst + 'c')
+
+        # Allow others to create the failing_spider.py file
+        self.lock.release()
 
         super(TestConsoleBugReport, self).tearDown()
         

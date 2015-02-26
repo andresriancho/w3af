@@ -75,5 +75,5 @@ class BasePayloadTransfer(object):
             m.update(file_content)
             return hash_ == m.hexdigest()
 
-        #    TODO: Hmmmmmmm....
+        # TODO: Hmmmmmmm....
         return True

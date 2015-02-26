@@ -99,7 +99,7 @@ class rfi(AuditPlugin):
         if not config_ok and not self._error_reported:
             # Report error to the user only once
             self._error_reported = True
-            om.out.error(self.CONFIG_ERROR_MSG)
+            om.out.error(self.CONFIG_ERROR_MSG % config_message)
             return
         
         # 2- create a request that will include a file from a local web server

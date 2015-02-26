@@ -37,7 +37,8 @@ URL_REGEX = re.compile('((http|ftp|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)',
 
 
 @attr('internet')
-class test_google(unittest.TestCase):
+@attr('fails')
+class TestGoogle(unittest.TestCase):
     """
     This unittest verifies that the Google class works. Remember that this class
     internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to avoid
@@ -101,6 +102,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
     def tearDown(self):
         self.opener.end()
 
+    @attr('fails')
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:
             return
@@ -145,6 +147,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
 
         self.assertTrue(related > 5, related)
 
+    @attr('fails')
     def test_links_results_domain(self):
         if self.GoogleApiSearcher is None:
             return
@@ -179,13 +182,18 @@ class BaseGoogleAPISearch(unittest.TestCase):
 
 
 @attr('internet')
+@attr('fails')
 class TestGAjaxSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GAjaxSearch
 
+
 @attr('internet')
+@attr('fails')
 class TestGMobileSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GMobileSearch
 
+
 @attr('internet')
+@attr('fails')
 class TestGStandardSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GStandardSearch

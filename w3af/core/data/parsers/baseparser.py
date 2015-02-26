@@ -25,6 +25,9 @@ import urllib
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.misc.encoding import is_known_encoding
 
+NOT_IMPLEMENTED_FMT = 'You should create your own parser class ' \
+                      'and implement the %s() method.'
+
 
 class BaseParser(object):
     """
@@ -50,6 +53,18 @@ class BaseParser(object):
         self._baseDomain = url.get_domain()
         self._rootDomain = url.get_root_domain()
         self._encoding = http_response.get_charset()
+
+        # Not all parsers have a DOM, but we'll over-generalize just to avoid
+        # having extra if statements all around the code.
+        self._dom = None
+
+        # Store the http response, this shouldn't be so bad since we're only
+        # storing ParserCache.LRU_LENGTH in memory and not storing responses
+        # which have more than ParserCache.MAX_CACHEABLE_BODY_LEN in length
+        self._http_response = http_response
+
+    def get_http_response(self):
+        return self._http_response
 
     @staticmethod
     def can_parse(http_resp):
@@ -121,8 +136,7 @@ class BaseParser(object):
         """
         :return: A list of forms.
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_forms() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_forms')
 
     def get_references(self):
         """
@@ -138,36 +152,31 @@ class BaseParser(object):
                  came out of a regular expression. The second list if less
                  trustworthy.
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_references() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_references')
 
     def get_emails(self, domain=None):
         """
         :return: A set with email addresses
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_emails() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_emails')
 
     def get_comments(self):
         """
         :return: A list of comments.
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_comments() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_comments')
 
     def get_meta_redir(self):
         """
         :return: Returns list of meta redirections.
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_meta_redir() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_meta_redir')
 
     def get_meta_tags(self):
         """
         :return: Returns list of all meta tags.
         """
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the get_meta_tags() method.')
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_meta_tags')
 
     def _return_empty_list(self, *args, **kwds):
         """
@@ -179,3 +188,23 @@ class BaseParser(object):
         At the class definition, and simply return an empty list.
         """
         return []
+
+    def get_clear_text_body(self):
+        """
+        :return: A clear text representation of the HTTP response body.
+        """
+        raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_clear_text_body')
+
+    def set_dom(self, dom_inst):
+        """
+        Set the dom attribute
+        :return: None
+        """
+        self._dom = dom_inst
+
+    def get_dom(self):
+        """
+        :return: The DOM, or None if the HTML normalization failed or this is
+                 not a SGML document.
+        """
+        return self._dom

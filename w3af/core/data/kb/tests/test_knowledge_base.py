@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 
 from mock import Mock, call
 
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.exceptions import DBException
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.kb.knowledge_base import kb, DBKnowledgeBase
@@ -45,7 +47,7 @@ from w3af.plugins.attack.dav import DAVShell
 from w3af.plugins.attack.eval import EvalShell
 from w3af.plugins.attack.file_upload import FileUploadShell
 from w3af.plugins.attack.local_file_reader import FileReaderShell
-from w3af.plugins.attack.rfi import RFIShell
+from w3af.plugins.attack.rfi import RFIShell, PortScanShell
 from w3af.plugins.attack.xpath import XPathReader, IsErrorResponse
 from w3af.plugins.attack.os_commanding import (OSCommandingShell,
                                                BasicExploitStrategy)
@@ -616,6 +618,32 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    def test_kb_list_shells_rfi_port_scan_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+
+        vuln = MockVuln()
+        url = URL('http://moth/?a=1')
+        freq = FuzzableRequest(url)
+        exploit_mutant = QSMutant.create_mutants(freq, [''], [], False, {})[0]
+
+        shell = PortScanShell(vuln, w3af_core.uri_opener, w3af_core.worker_pool,
+                              exploit_mutant)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell._exploit_mutant, exploit_mutant)
+
+        w3af_core.quit()
+
     def test_kb_list_shells_xpath_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -648,3 +676,38 @@ class TestKnowledgeBase(unittest.TestCase):
                          w3af_core.uri_opener)
 
         w3af_core.quit()
+
+    def test_update_info(self):
+        info = MockInfo()
+        kb.append('a', 'b', info)
+        update_info = copy.deepcopy(info)
+        update_info.set_name('a')
+        update_uniq_id = update_info.get_uniq_id()
+        kb.update(info, update_info)
+
+        self.assertNotEqual(update_info, info)
+        self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_vuln(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        update_vuln = copy.deepcopy(vuln)
+        update_vuln.set_name('a')
+        update_uniq_id = update_vuln.get_uniq_id()
+        kb.update(vuln, update_vuln)
+
+        self.assertNotEqual(update_vuln, vuln)
+        self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
+
+    def test_update_exception(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        original_id = vuln.get_uniq_id()
+
+        # Cause error by changing vuln uniq_id
+        update_vuln = vuln
+        update_vuln.set_name('a')
+        modified_id = vuln.get_uniq_id()
+
+        self.assertNotEqual(original_id, modified_id)
+        self.assertRaises(DBException, kb.update, vuln, update_vuln)

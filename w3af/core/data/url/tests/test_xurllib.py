@@ -20,23 +20,30 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import ssl
 import time
-import unittest
 import Queue
-import SocketServer
 import types
+import unittest
+import httpretty
+import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from mock import Mock
+from nose.plugins.skip import SkipTest
+from mock import Mock, patch
+
+from w3af import ROOT_PATH
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
+from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
 
+from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
@@ -176,10 +183,74 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         
         self.uri_opener.settings.set_timeout(1)
-        
+        start = time.time()
+
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
-        
+
+        end = time.time()
         self.uri_opener.settings.set_default_values()
+        self.assertLess(end-start, 3)
+
+    def test_timeout_ssl(self):
+        ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        self.uri_opener.settings.set_timeout(1)
+        start = time.time()
+
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+
+        end = time.time()
+        self.uri_opener.settings.set_default_values()
+
+        #   We Skip this part because openssl doesn't allow us to use timeouts
+        #   https://github.com/andresriancho/w3af/issues/7989
+        #
+        #   Don't Skip at the beginning of the test because we want to be able
+        #   to test that timeout exceptions are at least handled by xurllib
+        raise SkipTest('See https://github.com/andresriancho/w3af/issues/7989')
+        #self.assertLess(end-start, 3)
+
+    def test_ssl_tls_1_0(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_TLSv1)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_v23(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv23)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_v3(self):
+        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv3)
+        ssl_daemon.start()
+        ssl_daemon.wait_for_start()
+
+        port = ssl_daemon.get_port()
+
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        resp = self.uri_opener.GET(url)
+        self.assertEqual(resp.get_body(), Ok200Handler.body)
 
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
@@ -318,6 +389,46 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+    @attr('internet')
+    def test_bad_file_descriptor_8125(self):
+        """
+        8125 is basically an issue with the way HTTP SSL connections handle the
+        Connection: Close header. If at any point the URL in this test starts
+        to fail, I just need to find another which sends that header.
+
+        Also, see the test_bad_file_descriptor_8125_mock test.
+
+        :see: https://github.com/andresriancho/w3af/issues/8125
+        """
+        self.uri_opener.settings.set_max_http_retries(0)
+        url = URL('https://www.factoriadigital.com/hosting/wordpress')
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertIn('Soporte', http_response.body)
+
+    def test_bad_file_descriptor_8125_local(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/8125
+        """
+        port = get_unused_port()
+        raw_http_response = "HTTP/1.1 200 Ok\r\n"\
+                            "Connection: close\r\n"\
+                            "Content-Type: text/html\r\n"\
+                            "Content-Length: 3\r\n\r\nabc"
+        certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
+                                'certs', 'invalid_cert.pem')
+
+        s = SSLServer('localhost', port, certfile,
+                      http_response=raw_http_response)
+        s.start()
+
+        body = 'abc'
+        mock_url = 'https://localhost:%s/' % port
+        url = URL(mock_url)
+        http_response = self.uri_opener.GET(url, cache=False)
+
+        self.assertEqual(body, http_response.body)
+        s.stop()
+
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.01, 0.4)
 
@@ -327,18 +438,23 @@ class TestXUrllib(unittest.TestCase):
     def test_rate_limit_zero(self):
         self.rate_limit_generic(0, 0.01, 0.4)
 
+    @httpretty.activate
     def rate_limit_generic(self, max_requests_per_second, _min, _max):
-        url = URL(get_moth_http())
+        mock_url = 'http://mock/'
+        url = URL(mock_url)
+        httpretty.register_uri(httpretty.GET, mock_url, body='Body')
 
-        self.uri_opener.settings.set_max_requests_per_second(max_requests_per_second)
         start_time = time.time()
 
-        self.uri_opener.GET(url, cache=False)
-        self.uri_opener.GET(url, cache=False)
+        with patch.object(self.uri_opener.settings, 'get_max_requests_per_second') as mrps_mock:
+            mrps_mock.return_value = max_requests_per_second
+
+            self.uri_opener.GET(url, cache=False)
+            self.uri_opener.GET(url, cache=False)
+
+        httpretty.reset()
 
         end_time = time.time()
-        self.uri_opener.settings.set_default_values()
-
         elapsed_time = end_time - start_time
         self.assertGreaterEqual(elapsed_time, _min)
         self.assertLessEqual(elapsed_time, _max)
@@ -355,3 +471,14 @@ class TimeoutTCPHandler(SocketServer.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         time.sleep(60)
         self.request.sendall('')
+
+
+class Ok200Handler(SocketServer.BaseRequestHandler):
+    body = 'abc'
+
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        self.request.sendall('HTTP/1.0 200 Ok\r\n'
+                             'Connection: Close\r\n'
+                             'Content-Length: 3\r\n'
+                             '\r\n' + self.body)

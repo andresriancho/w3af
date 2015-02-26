@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import cgi
 import urllib
+
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -41,6 +42,7 @@ def new_no_content_resp(uri, add_id=False):
         no_content_response.id = consecutive_number_generator.inc()
 
     return no_content_response
+
 
 def get_clean_body(mutant, response):
     """

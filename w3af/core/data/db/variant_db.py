@@ -53,6 +53,20 @@ class VariantDB(object):
             else:
                 self._disk_dict[clean_reference] = 1
 
+    def append_fr(self, fuzzable_request):
+        """
+        See append()'s documentation
+        """
+        clean_fuzzable_request = self._clean_fuzzable_request(fuzzable_request)
+
+        with self._db_lock:
+            count = self._disk_dict.get(clean_fuzzable_request, None)
+
+            if count is not None:
+                self._disk_dict[clean_fuzzable_request] = count + 1
+            else:
+                self._disk_dict[clean_fuzzable_request] = 1
+
     def need_more_variants(self, reference):
         """
         :return: True if there are not enough variants associated with
@@ -72,6 +86,21 @@ class VariantDB(object):
         else:
             return True
 
+    def need_more_variants_for_fr(self, fuzzable_request):
+        """
+        :return: True if there are not enough variants associated with
+        this reference in the DB.
+        """
+        clean_fuzzable_request = self._clean_fuzzable_request(fuzzable_request)
+
+        # I believe this is atomic enough...
+        count = self._disk_dict.get(clean_fuzzable_request, 0)
+
+        if count >= self.max_variants:
+            return False
+        else:
+            return True
+
     def _clean_reference(self, reference):
         """
         This method is VERY dependent on the are_variants method from
@@ -81,22 +110,52 @@ class VariantDB(object):
         What this method does is to "normalize" any input reference string so
         that they can be compared very simply using string match.
 
+        Since this is a reference (link) we'll prepend '(GET)-' to the result,
+        which will help us add support for forms/fuzzable requests with
+        '(POST)-' in the future.
         """
-        res = reference.get_domain_path() + reference.get_file_name()
+        res = '(GET)-'
+        res += reference.get_domain_path() + reference.get_file_name()
 
         if reference.has_query_string():
-
-            res += '?'
-            qs = copy.deepcopy(reference.querystring)
-
-            for key, value, path, setter in qs.iter_setters():
-
-                if value.isdigit():
-                    setter('number')
-                else:
-                    setter('string')
-
-            res += str(qs)
+            res += '?' + self._clean_data_container(reference.querystring)
 
         return res
 
+    def _clean_data_container(self, data_container):
+        """
+        A simplified/serialized version of the query string
+        """
+        dc = copy.deepcopy(data_container)
+
+        for key, value, path, setter in dc.iter_setters():
+
+            if value.isdigit():
+                setter('number')
+            else:
+                setter('string')
+
+        return str(dc)
+
+    def _clean_fuzzable_request(self, fuzzable_request):
+        """
+        Very similar to _clean_reference but we receive a fuzzable request
+        instead. The output includes the HTTP method and any parameters which
+        might be sent over HTTP post-data in the request are appended to the
+        result as query string params.
+
+        :param fuzzable_request: The fuzzable request instance to clean
+        :return: See _clean_reference
+        """
+        res = '(%s)-' % fuzzable_request.get_method().upper()
+
+        uri = fuzzable_request.get_uri()
+        res += uri.get_domain_path() + uri.get_file_name()
+
+        if uri.has_query_string():
+            res += '?' + self._clean_data_container(uri.querystring)
+
+        if fuzzable_request.get_raw_data():
+            res += '!' + self._clean_data_container(fuzzable_request.get_raw_data())
+
+        return res

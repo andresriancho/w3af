@@ -93,7 +93,8 @@ class TestW3afCore(unittest.TestCase):
         """
         def outer():
             try:
-                t = DummyProcess(target=start_w3af_core)
+                t = DummyProcess(target=start_w3af_core,
+                                 args=(self._exception_handler,))
                 t.start()
             except AttributeError:
                 pass

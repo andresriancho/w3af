@@ -1,0 +1,43 @@
+plugins
+output console,text_file
+output config text_file
+set output_file output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+
+crawl web_spider
+crawl config web_spider
+set only_forward True
+set ignore_regex .*logout.*
+back
+
+auth detailed
+auth config detailed
+set username user@mail.com
+set password passw0rd
+set username_field username
+set password_field password
+set data_format %u=%U&%p=%P&Login=Login
+set auth_url http://127.0.0.1:8000/auth/auth_1/login_form.py
+set method POST
+set check_url http://127.0.0.1:8000/auth/auth_1/post_auth_xss.py
+set check_string 'or read your input'
+back
+
+# from plugin
+back
+
+target
+set target http://127.0.0.1:8000/auth/auth_1/
+back
+
+start
+
+
+
+exit

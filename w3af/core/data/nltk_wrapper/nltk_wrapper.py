@@ -49,7 +49,7 @@ class wordnet_loader(LazyCorpusLoader):
         root = ZipFilePathPointer(zip_location, 'wordnet/')
 
         # Load the corpus.
-        corpus = self.__reader_cls(root, *self.__args, **self.__kwargs)
+        corpus = self.__reader_cls(root, None, *self.__args, **self.__kwargs)
 
         # This is where the magic happens!  Transform ourselves into
         # the corpus by modifying our own __dict__ and __class__ to

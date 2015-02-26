@@ -26,29 +26,14 @@ import unittest
 
 import w3af.core.data.kb.config as cf
 
-from nose.plugins.attrib import attr
 from w3af.core.controllers.payload_transfer.clientless_reverse_http import ClientlessReverseHTTP
 from w3af.core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.plugins.tests.helper import onlyroot
 
 
 class TestClientlessReverseHTTP(unittest.TestCase):
-
-    def get_usable_port(self, address):
-        for listen_port in xrange(48488, 48497):
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            try:
-                s.bind((address, listen_port))
-            except socket.error:
-                continue
-            else:
-                s.close()
-                del s
-                return listen_port
-
-        return None
 
     def test_upload_file_mock(self):
         exec_method = commands.getoutput
@@ -57,7 +42,7 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         create_temp_dir()
         cf.cf.save('interface', 'lo')
         cf.cf.save('local_ip_address', '127.0.0.1')
-        inbound_port = self.get_usable_port('127.0.0.1')
+        inbound_port = get_unused_port()
         echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
 
         self.assertTrue(echo_linux.can_transfer())

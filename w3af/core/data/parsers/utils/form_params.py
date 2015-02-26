@@ -199,6 +199,8 @@ class FormParameters(OrderedDict):
         # missing in the tag) and the default value to an empty string (if
         # missing)
         attr_type = self.get_value_by_key(attrs, 'type') or self.INPUT_TYPE_TEXT
+        attr_type = attr_type.lower()
+
         value = self.get_value_by_key(attrs, 'value') or ''
 
         if attr_type == self.INPUT_TYPE_SUBMIT:

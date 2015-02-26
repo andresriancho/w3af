@@ -36,15 +36,16 @@ GOOGLE_SORRY_PAGE = 'http://www.google.com/support/bin/answer.py?answer=86640'
 
 # Set the order in which the Google API searchers will be called by the
 # google class
-GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
+GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch',
+                              'GMobileSearch',
                               'GStandardSearch',)
 
 
 class google(SearchEngine):
     """
     This class is a wrapper for doing google searches. It allows the user to do
-    GET requests to the mobile version, the Ajax API and the standard www.google.com
-    page.
+    GET requests to the mobile version, the Ajax API and the standard
+    www.google.com page.
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
     :author: Floyd Fuh (floyd_fuh@yahoo.de)

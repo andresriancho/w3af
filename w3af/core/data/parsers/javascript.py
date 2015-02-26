@@ -77,6 +77,12 @@ class JavaScriptParser(BaseParser):
         """
         return [], list(self._re_urls)
 
+    def get_clear_text_body(self):
+        """
+        :return: Since this "is already clear text", we'll return the whole body
+        """
+        return self.get_http_response().body
+
     get_references_of_tag = get_forms = BaseParser._return_empty_list
     get_comments = BaseParser._return_empty_list
     get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list

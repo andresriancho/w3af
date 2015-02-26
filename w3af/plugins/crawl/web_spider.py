@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import itertools
 import re
 
-from functools import partial
-
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
@@ -365,7 +363,14 @@ class web_spider(CrawlPlugin):
         referer = original_response.get_url().base_url().url_string
         headers = Headers([('Referer', referer)])
 
-        resp = self._uri_opener.GET(reference, cache=True, headers=headers)
+        # Note: We're not grep'ing this HTTP request/response now because it
+        #       has high probability of being a 404, and the grep plugins
+        #       already got enough 404 responses to analyze (from is_404 for
+        #       example). If it's not a 404 then we'll push it to the core
+        #       and it will come back to this plugin's crawl() where it will
+        #       be requested with grep=True
+        resp = self._uri_opener.GET(reference, cache=True, headers=headers,
+                                    grep=False)
 
         if is_404(resp):
             # Note: I WANT to follow links that are in the 404 page, but

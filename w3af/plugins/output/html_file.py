@@ -84,8 +84,7 @@ class html_file(OutputPlugin):
                 #self._file = open( self._output_file_name, "w" )
             except IOError, io:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
-                msg = msg % (
-                    os.path.abspath(self._output_file_name), io.strerror)
+                msg %= (os.path.abspath(self._output_file_name), io.strerror)
                 raise BaseFrameworkException(msg)
             except Exception, e:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'

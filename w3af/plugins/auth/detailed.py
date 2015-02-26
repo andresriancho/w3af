@@ -49,7 +49,6 @@ class detailed(AuthPlugin):
         """
         Login to the application.
         """
-
         msg = 'Logging into the application using %s/%s' % (self.username,
                                                             self.password)
         om.out.debug(msg)
@@ -76,9 +75,9 @@ class detailed(AuthPlugin):
     def _get_data_from_format(self):
         """
         :return: A string with all the information to send to the login URL.
-        This string contains the username, password, and all the other information
-        that was provided by the user and needs to be transmitted to the remote
-        web application.
+        This string contains the username, password, and all the other
+        information that was provided by the user and needs to be transmitted to
+        the remote web application.
         """
         result = self.data_format
         result = result.replace('%u', self.username_field)
@@ -111,37 +110,64 @@ class detailed(AuthPlugin):
         :return: A list of option objects for this plugin.
         """
         options = [
-            ('username', self.username, 'string',
+            ('username',
+             self.username,
+             'string',
              'Username for using in the authentication process'),
-            ('password', self.password, 'string',
+
+            ('password',
+             self.password,
+             'string',
              'Password for using in the authentication process'),
-            ('username_field', self.username_field,
+
+            ('username_field',
+             self.username_field,
              'string', 'Username parameter name (ie. "uname" if the HTML looks'
                        ' like <input type="text" name="uname">...)'),
-            ('password_field', self.password_field,
+
+            ('password_field',
+             self.password_field,
              'string', 'Password parameter name (ie. "pwd" if the HTML looks'
                        ' like <input type="password" name="pwd">...)'),
-            ('auth_url', self.auth_url, 'url',
+
+            ('auth_url',
+             self.auth_url,
+             'url',
              'URL where the username and password will be sent using the'
              ' configured request method'),
-            ('check_url', self.check_url, 'url',
+
+            ('check_url',
+             self.check_url,
+             'url',
              'URL used to verify if the session is still active by looking for'
              ' the check_string.'),
-            ('check_string', self.check_string, 'string',
+
+            ('check_string',
+             self.check_string,
+             'string',
              'String for searching on check_url page to determine if the'
              'current session is active.'),
-            ('data_format', self.data_format, 'string',
+
+            ('data_format',
+             self.data_format,
+             'string',
              'The format for the POST-data or query string. The following are'
              ' valid formatting values:\n'
              '    - %u for the username parameter name value\n'
              '    - %U for the username value\n'
              '    - %p for the password parameter name value\n'
              '    - %P for the password value\n'),
-            ('method', self.method, 'string', 'The HTTP method to use'),
+
+            ('method',
+             self.method,
+             'string',
+             'The HTTP method to use'),
         ]
+
         ol = OptionList()
         for o in options:
             ol.add(opt_factory(o[0], o[1], o[3], o[2], help=o[3]))
+
         return ol
 
     def set_options(self, options_list):
@@ -173,10 +199,11 @@ class detailed(AuthPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This authentication plugin can login to web application with more detailed
-        and complex authentication schemas where the generic plugin does not work.
+        This authentication plugin can login to web application with more
+        detailed and complex authentication schemas where the generic plugin
+        does not work.
 
-        Nine configurable parameters exist:
+        These configurable parameters exist:
             - username
             - password
             - username_field

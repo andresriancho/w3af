@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2014 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import os
+import re
 import shlex
 import sys
 
@@ -24,6 +25,7 @@ from lib.core.data import logger
 from lib.core.defaults import defaults
 from lib.core.enums import AUTOCOMPLETE_TYPE
 from lib.core.exception import SqlmapShellQuitException
+from lib.core.exception import SqlmapSyntaxException
 from lib.core.settings import BASIC_HELP_ITEMS
 from lib.core.settings import DUMMY_URL
 from lib.core.settings import IS_WIN
@@ -41,7 +43,7 @@ def cmdLineParser():
 
     checkSystemEncoding()
 
-    _ = os.path.normpath(sys.argv[0])
+    _ = getUnicode(os.path.basename(sys.argv[0]), encoding=sys.getfilesystemencoding())
 
     usage = "%s%s [options]" % ("python " if not IS_WIN else "", \
             "\"%s\"" % _ if " " in _ else _)
@@ -90,6 +92,9 @@ def cmdLineParser():
         request = OptionGroup(parser, "Request", "These options can be used "
                               "to specify how to connect to the target URL")
 
+        request.add_option("--method", dest="method",
+                           help="Force usage of given HTTP method (e.g. PUT)")
+
         request.add_option("--data", dest="data",
                            help="Data string to be sent through POST")
 
@@ -135,6 +140,9 @@ def cmdLineParser():
 
         request.add_option("--auth-private", dest="authPrivate",
                            help="HTTP authentication PEM private key file")
+
+        request.add_option("--ignore-401", dest="ignore401", action="store_true",
+                          help="Ignore HTTP Error 401 (Unauthorized)")
 
         request.add_option("--proxy", dest="proxy",
                            help="Use a proxy to connect to the target URL")
@@ -186,6 +194,12 @@ def cmdLineParser():
         request.add_option("--skip-urlencode", dest="skipUrlEncode",
                            action="store_true",
                            help="Skip URL encoding of payload data")
+
+        request.add_option("--csrf-token", dest="csrfToken",
+                           help="Parameter used to hold anti-CSRF token")
+
+        request.add_option("--csrf-url", dest="csrfUrl",
+                           help="URL address to visit to extract anti-CSRF token")
 
         request.add_option("--force-ssl", dest="forceSSL",
                            action="store_true",
@@ -460,7 +474,7 @@ def cmdLineParser():
         enumeration.add_option("--sql-file", dest="sqlFile",
                                help="Execute SQL statements from given file(s)")
 
-        # User-defined function options
+        # Brute force options
         brute = OptionGroup(parser, "Brute force", "These "
                           "options can be used to run brute force "
                           "checks")
@@ -662,10 +676,6 @@ def cmdLineParser():
         miscellaneous.add_option("--beep", dest="beep", action="store_true",
                                   help="Make a beep sound when SQL injection is found")
 
-        miscellaneous.add_option("--check-waf", dest="checkWaf",
-                                  action="store_true",
-                                  help="Heuristically check for WAF/IPS/IDS protection")
-
         miscellaneous.add_option("--cleanup", dest="cleanup",
                                   action="store_true",
                                   help="Clean up the DBMS from sqlmap specific "
@@ -728,9 +738,6 @@ def cmdLineParser():
         parser.add_option("--force-dns", dest="forceDns", action="store_true",
                           help=SUPPRESS_HELP)
 
-        parser.add_option("--ignore-401", dest="ignore401", action="store_true",
-                          help=SUPPRESS_HELP)
-
         parser.add_option("--smoke-test", dest="smokeTest", action="store_true",
                           help=SUPPRESS_HELP)
 
@@ -781,8 +788,17 @@ def cmdLineParser():
         prompt = False
         advancedHelp = True
 
-        for arg in sys.argv:
-            argv.append(getUnicode(arg, system=True))
+        _ = sys.argv
+
+        # Python on Windows has problems with quote/whitespace cases like: python -c "import sys; print sys.argv" --dummy='foo: bar'  # ['-c', "--dummy='foo:", "bar'"]
+        if IS_WIN:
+            try:
+                _ = shlex.split(" ".join(sys.argv), posix=False)
+            except ValueError:
+                pass
+
+        for arg in _:
+            argv.append(getUnicode(arg, encoding=sys.getfilesystemencoding()))
 
         checkDeprecatedOptions(argv)
 
@@ -810,6 +826,7 @@ def cmdLineParser():
 
                 try:
                     command = raw_input("sqlmap-shell> ").strip()
+                    command = getUnicode(command, encoding=sys.stdin.encoding)
                 except (KeyboardInterrupt, EOFError):
                     print
                     raise SqlmapShellQuitException
@@ -830,13 +847,19 @@ def cmdLineParser():
                     loadHistory(AUTOCOMPLETE_TYPE.SQLMAP)
                     break
 
-            for arg in shlex.split(command):
-                argv.append(getUnicode(arg, system=True))
+            try:
+                for arg in shlex.split(command):
+                    argv.append(getUnicode(arg, encoding=sys.stdin.encoding))
+            except ValueError, ex:
+                raise SqlmapSyntaxException, "something went wrong during command line parsing ('%s')" % ex
 
         # Hide non-basic options in basic help case
         for i in xrange(len(argv)):
             if argv[i] == "-hh":
                 argv[i] = "-h"
+            elif re.match(r"\A\d+!\Z", argv[i]) and argv[max(0, i - 1)] == "--threads" or re.match(r"\A--threads.+\d+!\Z", argv[i]):
+                argv[i] = argv[i][:-1]
+                conf.skipThreadCheck = True
             elif argv[i] == "--version":
                 print VERSION_STRING.split('/')[-1]
                 raise SystemExit
@@ -854,6 +877,9 @@ def cmdLineParser():
 
         try:
             (args, _) = parser.parse_args(argv)
+        except UnicodeEncodeError, ex:
+            print "\n[!] %s" % ex.object.encode("unicode-escape")
+            raise SystemExit
         except SystemExit:
             if "-h" in argv and not advancedHelp:
                 print "\n[!] to see full list of options run with '-hh'"

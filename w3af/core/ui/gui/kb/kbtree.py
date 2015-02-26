@@ -188,8 +188,8 @@ class KBTree(gtk.TreeView):
         
         vuln_id = info_inst.get_id()
         
-        InfoData = namedtuple('InfoData', 'location_a location_b obj_name'\
-                                          ' obj_type color_level idinstance'\
+        InfoData = namedtuple('InfoData', 'location_a location_b obj_name'
+                                          ' obj_type color_level idinstance'
                                           ' severity vuln_id')
         data = InfoData(location_a, location_b, obj_name, obj_type, color_level,
                         idinstance, obj_severity, vuln_id)

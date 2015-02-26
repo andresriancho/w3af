@@ -41,22 +41,22 @@ class TestOptionFactory(unittest.TestCase):
         input_file = self.INPUT_FILE
         output_file = self.INPUT_FILE
 
-        data = {BOOL: [('true', True),],
-                INT: [('1', 1),],
-                POSITIVE_INT: [('2', 2),],
-                FLOAT: [('1.0', 1.0),],
-                STRING: [('hello world', 'hello world'),],
-                URL: [('http://moth/', URL_KLASS('http://moth/')),],
+        data = {BOOL: [('true', True)],
+                INT: [('1', 1)],
+                POSITIVE_INT: [('2', 2)],
+                FLOAT: [('1.0', 1.0)],
+                STRING: [('hello world', 'hello world')],
+                URL: [('http://moth/', URL_KLASS('http://moth/'))],
                 URL_LIST: [('http://moth/1 , http://moth/2',
                            [URL_KLASS('http://moth/1'),
-                            URL_KLASS('http://moth/2')]),],
-                IPPORT: [('127.0.0.1:8080', '127.0.0.1:8080'),],
-                LIST: [('a,b,c', ['a', 'b', 'c']),],
-                REGEX: [('.*', '.*'),],
-                COMBO: [(['a', 'b', 'c'], 'a'),],
-                INPUT_FILE: [(input_file, input_file),],
-                OUTPUT_FILE: [(output_file, output_file),],
-                PORT: [('12345', 12345),],
+                            URL_KLASS('http://moth/2')])],
+                IPPORT: [('127.0.0.1:8080', '127.0.0.1:8080')],
+                LIST: [('a,b,c', ['a', 'b', 'c'])],
+                REGEX: [('.*', '.*')],
+                COMBO: [(['a', 'b', 'c'], 'a')],
+                INPUT_FILE: [(input_file, input_file)],
+                OUTPUT_FILE: [(output_file, output_file)],
+                PORT: [('12345', 12345)],
                 IP: [('127.0.0.1', '127.0.0.1'),
                      (None, None)]
                 }
@@ -89,17 +89,17 @@ class TestOptionFactory(unittest.TestCase):
         output_file = input_file
 
         data = {BOOL: ['rucula'],
-                INT: ['0x32',],
+                INT: ['0x32'],
                 POSITIVE_INT: ['-1'],
-                FLOAT: ['1x2',],
+                FLOAT: ['1x2'],
                 URL: ['http://', '/', ''],
-                URL_LIST: ['http://moth/1 , http://moth:333333',],
-                IPPORT: ['127.0.0.1',],
+                URL_LIST: ['http://moth/1 , http://moth:333333'],
+                IPPORT: ['127.0.0.1'],
                 IP: ['127.0.0.', '127.0.0', '3847398740'],
-                REGEX: ['.*(',],
-                INPUT_FILE: [input_file,],
-                OUTPUT_FILE: [output_file,],
-                PORT: ['65536',]
+                REGEX: ['.*('],
+                INPUT_FILE: [input_file, '/'],
+                OUTPUT_FILE: [output_file, '/'],
+                PORT: ['65536']
                 }
 
         for _type in data:

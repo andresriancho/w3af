@@ -48,9 +48,8 @@ class generic(AuthPlugin):
         """
         Login to the application.
         """
-
-        msg = 'Logging into the application using %s/%s' % (
-            self.username, self.password)
+        msg = 'Logging into the application using %s/%s' % (self.username,
+                                                            self.password)
         om.out.debug(msg)
 
         try:
@@ -63,8 +62,8 @@ class generic(AuthPlugin):
                 raise Exception("Can't login into web application as %s/%s"
                                 % (self.username, self.password))
             else:
-                om.out.debug('Login success for %s/%s' % (
-                    self.username, self.password))
+                om.out.debug('Login success for %s/%s' % (self.username,
+                                                          self.password))
                 return True
         except Exception, e:
             if self._login_error:
@@ -77,7 +76,9 @@ class generic(AuthPlugin):
         return None
 
     def is_logged(self):
-        """Check user session."""
+        """
+        Check user session.
+        """
         try:
             http_response = self._uri_opener.GET(self.check_url, grep=False,
                                                  cache=False)
@@ -142,9 +143,8 @@ class generic(AuthPlugin):
 
         for o in options_list:
             if not o.get_value():
-                raise BaseFrameworkException(
-                    "All parameters are required and can't be empty."
-                )
+                msg = "All parameters are required and can't be empty."
+                raise BaseFrameworkException(msg)
 
     def get_long_desc(self):
         """

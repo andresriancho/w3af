@@ -1,0 +1,24 @@
+# pylint
+pylint==0.28.0
+logilab-astng==0.24.3
+
+# Nose
+nose==1.3.4
+termcolor==1.1.0
+yanc==0.2.4
+xunitparser==1.2.0
+
+# Install requirements for coveralls
+coverage==3.6
+nose-cov==1.6
+coveralls==0.2
+
+# Other
+mock==1.0.1
+psutil==1.2.1
+SOAPpy==0.12.5
+Pillow==1.7.8
+SimpleCV==1.3
+futures==2.1.5
+fabric==1.8.0
+

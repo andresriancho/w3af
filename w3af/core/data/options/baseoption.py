@@ -38,7 +38,8 @@ class BaseOption(object):
         :param _help: The help of the option; a large description of the option
         :param tabid: The tab id of the option
         """
-        self._value = None # To be set by set_value and to avoid pylint error
+        # To be set by set_value and to avoid pylint error
+        self._value = None
         self.set_value(default_value)
         self._default_value = self._value
 
