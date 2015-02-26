@@ -51,6 +51,8 @@ class strange_headers(GrepPlugin):
         "CONTENT-SECURITY-POLICY-REPORT-ONLY",
         "CONTENT-LANGUAGE",
         "CONTENT-LOCATION",
+        "CONTENT-SECURITY-POLICY",
+        "CONTENT-SECURITY-POLICY-REPORT-ONLY",
         "CACHE-CONTROL",
         "DATE",
         "EXPIRES",
