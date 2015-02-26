@@ -51,7 +51,13 @@ class InfoSet(object):
         if not len(info_instances):
             raise ValueError('Empty InfoSets are not allowed')
 
+        if not isinstance(info_instances, list):
+            raise TypeError('info_instances must be a list')
+
         self.infos = info_instances
+
+    def add(self, info):
+        self.infos.append(info)
 
     @property
     def first_info(self):
@@ -71,3 +77,23 @@ class InfoSet(object):
 
     def get_plugin_name(self):
         return self.first_info.get_plugin_name()
+
+    def get_uniq_id(self):
+        """
+        :return: A uniq identifier for this InfoSet instance. Since InfoSets are
+                 persisted to SQLite and then re-generated for showing them to
+                 the user, we can't use id() to know if two info objects are
+                 the same or not.
+        """
+        concat_all = ''
+
+        for info in self.infos:
+            concat_all += info.get_uniq_id()
+
+        return str(hash(concat_all))
+
+    def __eq__(self, other):
+        return self.get_uniq_id() == other.get_uniq_id()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

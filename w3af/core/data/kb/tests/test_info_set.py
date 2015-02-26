@@ -52,3 +52,24 @@ class TestInfoSet(unittest.TestCase):
         i = MockInfo()
         iset = InfoSet([i])
         self.assertEqual(iset.get_plugin_name(), 'plugin_name')
+
+    def test_add(self):
+        i1 = MockInfo(ids=1)
+        i2 = MockInfo(ids=2)
+        iset = InfoSet([i1])
+        iset.add(i2)
+        self.assertEqual(iset.get_ids(), [1, 2])
+
+    def test_get_uniq_id(self):
+        i = MockInfo()
+        iset = InfoSet([i])
+        self.assertIsNotNone(iset.get_uniq_id())
+
+    def test_eq(self):
+        i = MockInfo()
+        iset1 = InfoSet([i])
+
+        i = MockInfo()
+        iset2 = InfoSet([i])
+
+        self.assertEqual(iset1, iset2)
