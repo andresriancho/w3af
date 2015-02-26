@@ -70,7 +70,7 @@ class find_vhosts(InfrastructurePlugin):
             self._first_exec = False
             vhost_list.extend(self._generic_vhosts(fuzzable_request))
 
-        # I also test for ""dead links"" that the web programmer left in the
+        # I also test for ""dead links"" that the web developer left in the
         # page. For example, If w3af finds a link to
         # "http://corporative.intranet.corp/" it will try to resolve the dns
         # name, if it fails, it will try to request that page from the server
@@ -93,7 +93,7 @@ class find_vhosts(InfrastructurePlugin):
                    ' virtual host name is: "%s". To access this site' \
                    ' you might need to change your DNS resolution settings'\
                    ' in order to point "%s" to the IP address of "%s".'
-            desc = desc % (vhost, vhost, domain)
+            desc %= (vhost, vhost, domain)
 
             v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
                              request_id, self.get_name(), fuzzable_request)
@@ -176,11 +176,11 @@ class find_vhosts(InfrastructurePlugin):
                 self._already_queried.add(domain)
 
                 try:
-                    # raises exception when it's not found
-                    # socket.gaierror: (-5, 'No address associated with hostname')
                     socket.gethostbyname(domain)
-                except:
-                    yield domain
+                except socket.gaierror, se:
+                    # raises exception when it's not found
+                    if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
+                        yield domain
 
     def _generic_vhosts(self, fuzzable_request):
         """
@@ -202,7 +202,7 @@ class find_vhosts(InfrastructurePlugin):
 
             # If they are *really* different (not just different by some chars)
             if fuzzy_not_equal(vhost_resp_body, orig_resp_body, 0.35) and \
-                    fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
+            fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((vhost, vhost_response.id))
 
         return res
@@ -211,8 +211,7 @@ class find_vhosts(InfrastructurePlugin):
         base_url_repeater = repeat(base_url)
         args_iterator = izip(base_url_repeater, vhosts)
         http_get = return_args(one_to_many(self._http_get_vhost))
-        pool_results = self.worker_pool.imap_unordered(http_get,
-                                                          args_iterator)
+        pool_results = self.worker_pool.imap_unordered(http_get, args_iterator)
 
         for ((base_url, vhost),), vhost_response in pool_results:
             yield vhost, vhost_response
@@ -223,8 +222,7 @@ class find_vhosts(InfrastructurePlugin):
         :return: HTTPResponse object.
         """
         headers = Headers([('Host', vhost)])
-        return self._uri_opener.GET(base_url, cache=False,
-                                    headers=headers)
+        return self._uri_opener.GET(base_url, cache=False, headers=headers)
 
     def _get_non_exist(self, fuzzable_request):
         base_url = fuzzable_request.get_url().base_url()
