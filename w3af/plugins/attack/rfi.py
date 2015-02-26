@@ -431,9 +431,6 @@ class RFIShell(ExecShell, PortScanShell):
     the RFI and a XSS vulnerability was actually found.
     """
     def __init__(self, vuln, uri_opener, worker_pool, exploit_mutant):
-        """
-        Create the obj
-        """
         PortScanShell.__init__(self, vuln, uri_opener, worker_pool,
                                exploit_mutant)
         ExecShell.__init__(self, vuln, uri_opener, worker_pool)

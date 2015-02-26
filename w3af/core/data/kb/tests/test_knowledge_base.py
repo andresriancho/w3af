@@ -33,7 +33,6 @@ from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info import Info
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -48,7 +47,7 @@ from w3af.plugins.attack.dav import DAVShell
 from w3af.plugins.attack.eval import EvalShell
 from w3af.plugins.attack.file_upload import FileUploadShell
 from w3af.plugins.attack.local_file_reader import FileReaderShell
-from w3af.plugins.attack.rfi import RFIShell
+from w3af.plugins.attack.rfi import RFIShell, PortScanShell
 from w3af.plugins.attack.xpath import XPathReader, IsErrorResponse
 from w3af.plugins.attack.os_commanding import (OSCommandingShell,
                                                BasicExploitStrategy)
@@ -606,6 +605,32 @@ class TestKnowledgeBase(unittest.TestCase):
 
         shell = RFIShell(vuln, w3af_core.uri_opener, w3af_core.worker_pool,
                          exploit_mutant)
+        kb.append('a', 'b', shell)
+
+        shells = kb.get_all_shells(w3af_core=w3af_core)
+        self.assertEqual(len(shells), 1)
+        unpickled_shell = shells[0]
+
+        self.assertEqual(shell, unpickled_shell)
+        self.assertIs(unpickled_shell._uri_opener, w3af_core.uri_opener)
+        self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
+        self.assertEqual(unpickled_shell._exploit_mutant, exploit_mutant)
+
+        w3af_core.quit()
+
+    def test_kb_list_shells_rfi_port_scan_2181(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/2181
+        """
+        w3af_core = w3afCore()
+
+        vuln = MockVuln()
+        url = URL('http://moth/?a=1')
+        freq = FuzzableRequest(url)
+        exploit_mutant = QSMutant.create_mutants(freq, [''], [], False, {})[0]
+
+        shell = PortScanShell(vuln, w3af_core.uri_opener, w3af_core.worker_pool,
+                              exploit_mutant)
         kb.append('a', 'b', shell)
 
         shells = kb.get_all_shells(w3af_core=w3af_core)
