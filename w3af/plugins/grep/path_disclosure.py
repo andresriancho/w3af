@@ -147,7 +147,14 @@ class path_disclosure(GrepPlugin):
         if self._is_attr_value(match, response):
             return True
 
-        #   There is a rare bug also, which is triggered in cases like this one:
+        # https://github.com/andresriancho/w3af/issues/6640
+        url_list = kb.kb.get_all_known_urls()
+        for url in url_list:
+            path_and_file = url.get_path()
+            if match == path_and_file:
+                return True
+
+        # There is a rare bug also, which is triggered in cases like this one:
         #
         #   >>> import re
         #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
@@ -161,8 +168,8 @@ class path_disclosure(GrepPlugin):
             if match_reported.endswith(match):
                 break
         else:
-            #   Note to self: I get here when "break" is NOT executed.
-            #   It's a new one, report!
+            # Note to self: I get here when "break" is NOT executed.
+            # It's a new one, report!
             return False
 
         return True

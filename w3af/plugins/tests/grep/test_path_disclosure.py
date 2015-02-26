@@ -48,7 +48,6 @@ class TestPathDisclosure(unittest.TestCase):
         return HTTPResponse(200, body, self.header, self.url, self.url, _id=1)
 
     def test_path_disclosure(self):
-
         res = self._create_response('header body footer')
         self.plugin.grep(self.request, res)
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
@@ -63,6 +62,19 @@ class TestPathDisclosure(unittest.TestCase):
 
         path = infos[0]['path']
         self.assertEqual(path, '/etc/passwd')
+
+    def test_path_disclosure_false_positive_6640(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/6640
+        """
+        path = '/media/js/spotlight.js'
+        kb.kb.add_url(URL('http://mock%s' % path))
+
+        res = self._create_response('header %s footer' % path)
+        self.plugin.grep(self.request, res)
+
+        infos = kb.kb.get('path_disclosure', 'path_disclosure')
+        self.assertEquals(len(infos), 0)
 
     def test_path_disclosure_calculated_webroot(self):
         kb.kb.add_url(self.url)
