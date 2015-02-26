@@ -204,7 +204,7 @@ class rfi(AttackPlugin):
 
             # Create the portscan shell object
             shell_obj = PortScanShell(vuln_obj, self._uri_opener,
-                                      self.worker_pool)
+                                      self.worker_pool, self._exploit_mutant)
             return shell_obj
 
         else:
@@ -378,18 +378,18 @@ class PortScanShell(Shell):
     RFIShell, AND the "include()" method is showing errors, allowing me to
     determine if a port is open or not.
     """
-    def __init__(self, vuln, uri_opener, worker_pool):
+    def __init__(self, vuln, uri_opener, worker_pool, exploit_mutant):
         """
         Create the obj
         """
         super(PortScanShell, self).__init__(vuln, uri_opener, worker_pool)
+        self._exploit_mutant = exploit_mutant
 
     def is_open_port(self, host, port):
         """
         :return: True if the host:port is open.
         """
-        mutant = self.get_mutant()
-        mutant = mutant.copy()
+        mutant = self._exploit_mutant.copy()
         mutant.set_token_value('http://%s:%s/' % (host, port))
 
         try:
@@ -400,10 +400,10 @@ class PortScanShell(Shell):
             return 'Unhandled exception, "%s"' % e
         else:
             if 'HTTP request failed!' in http_response.get_body():
-                #    The port is open but it's not an HTTP daemon
+                # The port is open but it's not an HTTP daemon
                 return True
             elif 'failed to open stream' not in http_response.get_body():
-                #    Open port, AND HTTP daemon
+                # Open port, AND HTTP daemon
                 return True
             else:
                 return False
@@ -414,8 +414,14 @@ class PortScanShell(Shell):
     def identify_os(self):
         self._rOS = 'unknown'
         self._rSystem = 'PHP'
-        self._rUser = 'web-server'
+        self._rUser = 'unknown'
         self._rSystemName = 'unknown'
+
+    def __reduce__(self):
+        """
+        @see: Shell.__reduce__ to understand why this is required.
+        """
+        return self.__class__, (self._vuln, None, None, self._exploit_mutant)
 
 
 class RFIShell(ExecShell, PortScanShell):
@@ -428,10 +434,9 @@ class RFIShell(ExecShell, PortScanShell):
         """
         Create the obj
         """
-        PortScanShell.__init__(self, vuln, uri_opener, worker_pool)
+        PortScanShell.__init__(self, vuln, uri_opener, worker_pool,
+                               exploit_mutant)
         ExecShell.__init__(self, vuln, uri_opener, worker_pool)
-
-        self._exploit_mutant = exploit_mutant
 
     @exec_debug
     def execute(self, command):
