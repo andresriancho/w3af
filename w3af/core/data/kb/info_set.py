@@ -75,6 +75,18 @@ class InfoSet(object):
             all_ids.extend(info.get_id())
         return list(set(all_ids))
 
+    def get_urls(self):
+        all_urls = []
+        for info in self.infos:
+            all_urls.append(info.get_url())
+        return list(set(all_urls))
+
+    def get_uris(self):
+        all_urls = []
+        for info in self.infos:
+            all_urls.append(info.get_uri())
+        return list(set(all_urls))
+
     def get_plugin_name(self):
         return self.first_info.get_plugin_name()
 
@@ -92,8 +104,15 @@ class InfoSet(object):
 
         return str(hash(concat_all))
 
+    def get_attribute(self, attr_name):
+        return self.first_info[attr_name]
+
     def __eq__(self, other):
         return self.get_uniq_id() == other.get_uniq_id()
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __repr__(self):
+        return '<info_set instance for: "%s" - len: %s>' % (self.get_name(),
+                                                            len(self.infos))

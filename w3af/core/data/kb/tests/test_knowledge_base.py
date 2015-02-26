@@ -33,6 +33,7 @@ from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -731,3 +732,95 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append('a', 'b', vuln)
         kb.append('a', 'b', vuln)
         self.assertRaises(RuntimeError, kb.get_one, 'a', 'b')
+
+    def test_append_uniq_group_empty_address(self):
+        def filter_func(*args):
+            pass
+
+        vuln = MockVuln()
+        info_set = kb.append_uniq_group('a', 'b', vuln, filter_func)
+
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertEqual(info_set.get_urls(), [vuln.get_url()])
+        self.assertEqual(info_set.get_name(), vuln.get_name())
+        self.assertEqual(info_set.get_ids(), vuln.get_id())
+        self.assertEqual(info_set.get_plugin_name(), vuln.get_plugin_name())
+
+    def test_append_uniq_group_match_filter_func(self):
+        def filter_func(*args):
+            return True
+
+        vuln = MockVuln()
+        kb.append_uniq_group('a', 'b', vuln, filter_func)
+        info_set = kb.append_uniq_group('a', 'b', vuln, filter_func)
+
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertEqual(len(info_set.infos), 2)
+
+    def test_append_uniq_group_no_match_filter_func(self):
+        def filter_func(*args):
+            return False
+
+        vuln1 = MockVuln(name='Foos')
+        vuln2 = MockVuln(name='Bars')
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        info_set = kb.append_uniq_group('a', 'b', vuln2, filter_func)
+
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertEqual(len(info_set.infos), 1)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].first_info.get_name(), 'Foos')
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
+
+    def test_append_uniq_group_filter_func_specific(self):
+        def filter_func(info_set, info_inst):
+            return info_inst.get_name() == info_set.get_name()
+
+        vuln1 = MockVuln(name='Foos')
+        vuln2 = MockVuln(name='Bars')
+        vuln3 = MockVuln(name='Foos', _id=42)
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].get_name(), 'Foos')
+        self.assertEqual(len(raw_data[0].infos), 2)
+        self.assertEqual(raw_data[0].infos[1].get_id(), [42])
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
+
+    def test_append_uniq_group_filter_func_attribute_match(self):
+        def filter_func(info_set, info_inst):
+            return info_inst['tag'] == info_set.get_attribute('tag')
+
+        vuln1 = MockVuln(name='Foos')
+        vuln1['tag'] = 'foo'
+
+        vuln2 = MockVuln(name='Bars')
+        vuln2['tag'] = 'bar'
+
+        vuln3 = MockVuln(_id=42)
+        vuln3['tag'] = 'foo'
+
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].get_name(), 'Foos')
+        self.assertEqual(len(raw_data[0].infos), 2)
+        self.assertEqual(raw_data[0].infos[1].get_id(), [42])
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')

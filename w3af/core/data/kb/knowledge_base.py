@@ -19,10 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import collections
 import threading
 import cPickle
 import types
-import collections
+import copy
 
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
@@ -34,6 +35,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
+from w3af.core.data.kb.info_set import InfoSet
 from weakref import WeakValueDictionary
 
 
@@ -117,6 +119,49 @@ class BasicKnowledgeBase(object):
                         return False
 
         return True
+
+    def append_uniq_group(self, location_a, location_b, info_inst, filter_func,
+                          group_klass=InfoSet):
+        """
+        This function will append a Info instance to an existing InfoSet which
+        is stored in (location_a, location_b) and matches the filter_func.
+
+        If filter_func doesn't match any existing InfoSet instances, then a new
+        one is created using `group_klass` and `info_inst` is appended to it.
+
+        :see: https://github.com/andresriancho/w3af/issues/3955
+
+        :param location_a: The "a" address
+        :param location_b: The "b" address
+        :param info_inst: The Info instance we want to store
+        :param filter_func: The function used to match the InfoSets
+        :param group_klass: If required, will be used to create a new InfoSet
+        :return: The updated/created InfoSet, as stored in the kb
+        """
+        if not isinstance(info_inst, Info):
+            raise TypeError('append_uniq_group requires an Info instance'
+                            ' as parameter.')
+
+        if not issubclass(group_klass, InfoSet):
+            raise TypeError('append_uniq_group requires an InfoSet subclass'
+                            ' as parameter.')
+
+        if not callable(filter_func):
+            raise TypeError('append_uniq_group requires a callable filter_func')
+
+        with self._kb_lock:
+            for info_set in self.get(location_a, location_b):
+                if filter_func(info_set, info_inst):
+                    old_info_set = copy.deepcopy(info_set)
+                    info_set.add(info_inst)
+                    self.update(old_info_set, info_set)
+                    return info_set
+            else:
+                # No pre-existing InfoSet instance matched, let's create one
+                # for the info_inst
+                info_set = group_klass([info_inst])
+                self.append(location_a, location_b, info_set)
+                return info_set
 
     def get_all_vulns(self):
         """
@@ -281,7 +326,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         if len(result) > 1:
             msg = 'Incorrect use of raw_write/raw_read, found %s results.'
-            raise RuntimeError(msg % result)
+            raise RuntimeError(msg % len(result))
         elif len(result) == 0:
             return []
         else:
@@ -308,7 +353,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             return result[0]
 
     def _get_uniq_id(self, obj):
-        if isinstance(obj, Info):
+        if isinstance(obj, (Info, InfoSet)):
             return obj.get_uniq_id()
         else:
             if isinstance(obj, collections.Iterable):
@@ -321,7 +366,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         This method appends the location_b value to a dict.
         """
-        if not ignore_type and not isinstance(value, (Info, Shell)):
+        if not ignore_type and not isinstance(value, (Info, Shell, InfoSet)):
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
             raise TypeError(msg)
@@ -367,7 +412,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         for r in results:
             obj = cPickle.loads(r[0])
 
-            if check_types and not isinstance(obj, (Info, Shell)):
+            if check_types and not isinstance(obj, (Info, InfoSet, Shell)):
                 raise TypeError('Use raw_write and raw_read to query the'
                                 ' knowledge base for non-Info objects')
 
@@ -392,8 +437,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         :param update_info: The info/vuln instance with new information
         :return: Nothing
         """
-        old_not_info = not isinstance(old_info, (Info, Shell))
-        update_not_info = not isinstance(update_info, (Info, Shell))
+        old_not_info = not isinstance(old_info, (Info, InfoSet, Shell))
+        update_not_info = not isinstance(update_info, (Info, InfoSet, Shell))
 
         if old_not_info or update_not_info:
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
@@ -411,10 +456,12 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         result = self.db.execute(query % self.table_name, params).result()
 
         if not result.rowcount:
-            ex = 'Failed to update() Info instance because' \
+            ex = 'Failed to update() %s instance because' \
                  ' the original unique_id (%s) does not exist in the DB,' \
                  ' or the new unique_id (%s) is invalid.'
-            raise DBException(ex % (old_uniq_id, new_uniq_id))
+            raise DBException(ex % (old_info.__class__.__name__,
+                                    old_uniq_id,
+                                    new_uniq_id))
 
     def add_observer(self, location_a, location_b, observer):
         """
