@@ -125,5 +125,7 @@ class TestCrossDomainJSRaw(unittest.TestCase):
         self.plugin.grep(request, resp_2)
         self.plugin.end()
 
+        # pylint: disable=E1103
         info_set = kb.kb.get_one('cross_domain_js', 'cross_domain_js')
         self.assertEqual(set(info_set.get_urls()), {url_1, url_2})
+        # pylint: enable=E1103
