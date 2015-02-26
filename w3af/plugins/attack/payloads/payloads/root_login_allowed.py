@@ -23,6 +23,8 @@ class root_login_allowed(Payload):
         securetty = self.shell.read('/etc/securetty')
         if securetty:
             result['securetty_root_login'] = parse_securetty(securetty)
+        else:
+            result['securetty_root_login'] = False
 
         return result
 
