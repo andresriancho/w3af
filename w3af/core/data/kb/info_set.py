@@ -59,6 +59,9 @@ class InfoSet(object):
     def add(self, info):
         self.infos.append(info)
 
+    def extend(self, infos):
+        self.infos.extend(infos)
+
     @property
     def first_info(self):
         return self.infos[0]
