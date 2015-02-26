@@ -30,7 +30,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.plugins.grep.path_disclosure import path_disclosure
 
 
-class test_path_disclosure(unittest.TestCase):
+class TestPathDisclosure(unittest.TestCase):
 
     def setUp(self):
         kb.kb.cleanup()
