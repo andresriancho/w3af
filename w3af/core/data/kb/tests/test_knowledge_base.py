@@ -711,3 +711,21 @@ class TestKnowledgeBase(unittest.TestCase):
 
         self.assertNotEqual(original_id, modified_id)
         self.assertRaises(DBException, kb.update, vuln, update_vuln)
+
+    def test_get_one(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        kb_vuln = kb.get_one('a', 'b')
+
+        self.assertEqual(kb_vuln.get_uniq_id(), vuln.get_uniq_id())
+        self.assertEqual(kb_vuln, vuln)
+
+    def test_get_one_none_found(self):
+        empty_list = kb.get_one('a', 'b')
+        self.assertEqual(empty_list, [])
+
+    def test_get_one_more_than_one_found(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        kb.append('a', 'b', vuln)
+        self.assertRaises(RuntimeError, kb.get_one, 'a', 'b')

@@ -274,13 +274,33 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     def raw_read(self, location_a, location_b):
         """
-        This method reads the value from (location_a,location_b)
+        This method reads the value from (location_a, location_b)
         """
         location_a = self._get_real_name(location_a)
         result = self.get(location_a, location_b, check_types=False)
 
         if len(result) > 1:
-            msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
+            msg = 'Incorrect use of raw_write/raw_read, found %s results.'
+            raise RuntimeError(msg % result)
+        elif len(result) == 0:
+            return []
+        else:
+            return result[0]
+
+    def get_one(self, location_a, location_b):
+        """
+        This method reads the value from (location_a, location_b), checking it's
+        type and making sure only one is stored at that address.
+
+        Similar to raw_read, but checking types.
+
+        :see: https://github.com/andresriancho/w3af/issues/3955
+        """
+        location_a = self._get_real_name(location_a)
+        result = self.get(location_a, location_b, check_types=True)
+
+        if len(result) > 1:
+            msg = 'Incorrect use of get_one(), found %s results.'
             raise RuntimeError(msg % result)
         elif len(result) == 0:
             return []
