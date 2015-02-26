@@ -41,7 +41,7 @@ class path_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._already_added = DiskList(table_prefix='path_disclosure')
+        self._reported = DiskList(table_prefix='path_disclosure')
 
         # Compile all regular expressions and store information to avoid
         # multiple queries to the same function
@@ -54,9 +54,9 @@ class path_disclosure(GrepPlugin):
         :return: None, the result is saved in self._path_disc_regex_list
         """
         #
-        #    I tried to enhance the performance of this plugin by putting
-        #    all the regular expressions in one (1|2|3|4...|N)
-        #    That gave no visible result.
+        # I tried to enhance the performance of this plugin by putting
+        # all the regular expressions in one (1|2|3|4...|N)
+        # That gave no visible result.
         #
         for path_disclosure_string in self._common_directories:
             regex_string = '(%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
@@ -75,15 +75,11 @@ class path_disclosure(GrepPlugin):
         to 1/8 of the time in cases where no potential disclosures are found,
         and around 1/3 when potential disclosures *are* found.
 
-        :return: A list of the potential path disclosures
+        :return: Potential path disclosures
         """
-        potential_disclosures = []
-
         for path_disclosure_string in self._common_directories:
             if path_disclosure_string in html_string:
-                potential_disclosures.append(path_disclosure_string)
-
-        return potential_disclosures
+                yield path_disclosure_string
 
     def grep(self, request, response):
         """
@@ -96,8 +92,10 @@ class path_disclosure(GrepPlugin):
         if not response.is_text_or_html():
             return
         
-        if self.find_path_disclosure(request, response):
-            self._update_KB_path_list()
+        vuln = self.find_path_disclosure(request, response)
+
+        if vuln:
+            self._update_kb_path_list()
         
     def find_path_disclosure(self, request, response):
         """
@@ -110,33 +108,44 @@ class path_disclosure(GrepPlugin):
             path_disc_regex = self._compiled_regexes[potential_disclosure]
             match_list = path_disc_regex.findall(html_string)
 
-            #   Sort by the longest match, this is needed for filtering out
-            #   some false positives please read the note below.
-            match_list.sort(self._longest)
+            # Sort by the longest match, this is needed for filtering out
+            # some false positives please read the note below.
+            match_list.sort(longest_cmp)
+            real_url = response.get_url().url_decode()
 
             for match in match_list:
-                if self._analyze_match(match, request, response):
-                    return True
+                # Avoid duplicated reports
+                if (real_url, match) in self._reported:
+                    continue
 
-        return False
+                # Remove false positives
+                if not self._is_false_positive(match, request, response):
+                    self._reported.append((real_url, match))
 
-    def _analyze_match(self, match, request, response):
+                    desc = 'The URL: "%s" has a path disclosure'\
+                           ' vulnerability which discloses "%s".'
+                    desc = desc % (response.get_url(), match)
+
+                    v = Vuln('Path disclosure vulnerability', desc,
+                             severity.LOW, response.id, self.get_name())
+
+                    v.set_url(real_url)
+                    v['path'] = match
+                    v.add_to_highlight(match)
+
+                    self.kb_append(self, 'path_disclosure', v)
+                    return v
+
+    def _is_false_positive(self, match, request, response):
+        """
+        :return: True if the match is a false positive
+        """
         # This if is to avoid false positives
         if request.sent(match):
-            return False
+            return True
 
         if self._is_attr_value(match, response):
-            return False
-
-        # Decode the URL, this will transform things like
-        #     http://host.tld/?id=%2Fhome
-        # into,
-        #     http://host.tld/?id=/home
-        realurl = response.get_url().url_decode()
-
-        # Check for dups
-        if (realurl, match) in self._already_added:
-            return False
+            return True
 
         #   There is a rare bug also, which is triggered in cases like this one:
         #
@@ -148,37 +157,15 @@ class path_disclosure(GrepPlugin):
         #   >>>
         #
         #   What I need to do here, is to keep the longest match.
-        for realurl_added, match_added in self._already_added:
-            if match_added.endswith(match):
+        for real_url_reported, match_reported in self._reported:
+            if match_reported.endswith(match):
                 break
         else:
             #   Note to self: I get here when "break" is NOT executed.
             #   It's a new one, report!
-            self._already_added.append((realurl, match))
+            return False
 
-            desc = 'The URL: "%s" has a path disclosure'\
-                   ' vulnerability which discloses "%s".'
-            desc = desc % (response.get_url(), match)
-
-            v = Vuln('Path disclosure vulnerability', desc, severity.LOW,
-                     response.id, self.get_name())
-
-            v.set_url(realurl)
-            v['path'] = match
-            v.add_to_highlight(match)
-
-            self.kb_append(self, 'path_disclosure', v)
-            return True
-
-        return False
-
-    def _longest(self, a, b):
-        """
-        :param a: A string.
-        :param a: Another string.
-        :return: The longest string.
-        """
-        return cmp(len(a), len(b))
+        return True
 
     def _is_attr_value(self, path_disclosure_string, response):
         """
@@ -193,7 +180,7 @@ class path_disclosure(GrepPlugin):
             return: True
 
             path_disclosure_string = '/home/image.png'
-            response_body = '...<b>Error while processing /home/image.png</b>...'
+            response_body = '...<b>Error while checking /home/image.png</b>...'
             return: False
         """
         dom = response.get_dom()
@@ -207,7 +194,7 @@ class path_disclosure(GrepPlugin):
 
         return False
 
-    def _update_KB_path_list(self):
+    def _update_kb_path_list(self):
         """
         If a path disclosure was found, I can create a list of full paths to
         all URLs ever visited. This method updates that list.
@@ -262,7 +249,7 @@ class path_disclosure(GrepPlugin):
         kb.kb.raw_write(self, 'webroot', webroot)
 
     def end(self):
-        self._already_added.cleanup()
+        self._reported.cleanup()
 
     def get_long_desc(self):
         """
@@ -277,3 +264,12 @@ class path_disclosure(GrepPlugin):
         The results are saved to the KB, and used by all the plugins that need
         to know the location of a file inside the remote web server.
         """
+
+
+def longest_cmp(a, b):
+    """
+    :param a: A string.
+    :param a: Another string.
+    :return: The longest string.
+    """
+    return cmp(len(a), len(b))
