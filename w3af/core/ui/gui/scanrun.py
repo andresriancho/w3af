@@ -433,7 +433,7 @@ class URLsTree(gtk.TreeView):
 
         # get the queue and go live
         self.urls = Queue.Queue()
-        kb.kb.add_observer(URLObserver())
+        kb.kb.add_observer(URLObserver(self))
         gobject.timeout_add(250, self.add_url)
         self.show()
 
