@@ -47,28 +47,20 @@ class TestAllFP(PluginTest):
                 }
             }
 
-            # I tried to do this in the right way, with nosetest test generators,
-            # but they have a bug with unittest.TestCase
+            # I tried to do this in the right way, with nosetests test
+            # generators, but they have a bug with unittest.TestCase
             self.setUp()
 
             target = run_config['target']
             plugins = run_config['plugins']
             self._scan(target, plugins)
 
-            vulns = self.kb.get_all_vulns()
-            infos = self.kb.get_all_infos()
+            infos = [str(i) for i in self.kb.get_all_infos()]
 
-            vulns = [str(v) for v in vulns]
-            infos = [str(i) for i in infos]
-
-            msg_v = 'audit.%s found a vulnerability in "%s"' % (
-                audit_plugin, ','.join(vulns))
-            msg_i = 'audit.%s found a vulnerability in "%s"' % (
-                audit_plugin, ','.join(infos))
-
-            self.assertEquals(len(vulns), 0, msg_v)
+            msg_i = 'audit.%s found a vulnerability in "%s"' % (audit_plugin,
+                                                                ','.join(infos))
             self.assertEquals(len(infos), 0, msg_i)
 
-            # I tried to do this in the right way, with nosetest test generators,
-            # but they have a bug with unittest.TestCase
+            # I tried to do this in the right way, with nosetests test
+            # generators, but they have a bug with unittest.TestCase
             self.tearDown()

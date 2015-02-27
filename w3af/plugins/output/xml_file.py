@@ -291,8 +291,8 @@ class xml_file(OutputPlugin):
         # significant loss of data for any scenario?
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
 
-        # Add the vulnerability results
-        vulns = kb.kb.get_all_vulns()
+        # Add the vulnerability/information results
+        vulns = kb.kb.get_all_infos()
         for i in vulns:
             message_node = self._xmldoc.createElement("vulnerability")
             message_node.setAttribute("severity", str(i.get_severity()))
@@ -310,8 +310,7 @@ class xml_file(OutputPlugin):
             if i.get_id():
                 message_node.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement(
-                    'http-transactions')
+                transaction_set = self._xmldoc.createElement('http-transactions')
                 message_node.appendChild(transaction_set)
 
                 for request_id in i.get_id():
@@ -331,48 +330,6 @@ class xml_file(OutputPlugin):
                         action_set.appendChild(request_node)
 
                         response_node = self._xmldoc.createElement("httpresponse")
-                        self.report_http_action(response_node, details.response)
-                        action_set.appendChild(response_node)
-
-            self._topElement.appendChild(message_node)
-
-        # Add the information results
-        infos = kb.kb.get_all_infos()
-        for i in infos:
-            message_node = self._xmldoc.createElement("information")
-            message_node.setAttribute("url", str(i.get_url()))
-            message_node.setAttribute("name", str(i.get_name()))
-            message_node.setAttribute("plugin", str(i.get_plugin_name()))
-            # Wrap the description in a description element and put it above
-            # the request/response details
-            description_node = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.get_desc())
-            description_node.appendChild(description)
-            message_node.appendChild(description_node)
-            if i.get_id():
-                message_node.setAttribute("id", str(i.get_id()))
-                # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement(
-                    'http-transactions')
-                message_node.appendChild(transaction_set)
-                for request_id in i.get_id():
-                    try:
-                        details = self._history.read(request_id)
-                    except DBException:
-                        msg = 'Failed to retrieve request with id %s from DB.'
-                        print(msg % request_id)
-                    else:
-                        # Wrap the entire http transaction in a single block
-                        action_set = self._xmldoc.createElement("http-transaction")
-                        action_set.setAttribute("id", str(request_id))
-                        transaction_set.appendChild(action_set)
-                        # create a node for the request content
-                        request_node = self._xmldoc.createElement("httprequest")
-                        self.report_http_action(request_node, details.request)
-                        action_set.appendChild(request_node)
-                        # create a node for the response content
-                        response_node = self._xmldoc.createElement("httpresponse")
-                        response_node.setAttribute("id", str(request_id))
                         self.report_http_action(response_node, details.response)
                         action_set.appendChild(response_node)
 

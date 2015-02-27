@@ -77,7 +77,7 @@ class TestXMLOutput(PluginTest):
             set(sorted([v.get_plugin_name() for v in file_vulns]))
         )
 
-        self.assertEqual(validate_XML(file(self.FILENAME).read(), self.XSD),
+        self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD),
                          '')
 
     def _from_xml_get_vulns(self):
@@ -94,7 +94,7 @@ class TestXMLOutput(PluginTest):
             pass
 
 
-class XMLParser:
+class XMLParser(object):
     
     vulns = []
 
@@ -142,7 +142,7 @@ class XMLParser:
         return self.vulns
 
 
-def validate_XML(content, schema_content):
+def validate_xml(content, schema_content):
     """
     Validate an XML against an XSD.
 

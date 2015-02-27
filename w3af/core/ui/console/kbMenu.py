@@ -24,7 +24,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.vuln_templates.utils import (get_template_names,
-                                               get_template_by_name)
+                                                    get_template_by_name)
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
 from w3af.core.ui.console.config import ConfigMenu
@@ -35,6 +35,7 @@ class kbMenu(menu):
     """
     This menu is used to display information from the knowledge base
     and (in the nearest future) to manipulate it.
+
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
     def __init__(self, name, console, w3afcore, parent=None, **other):
@@ -57,14 +58,11 @@ class kbMenu(menu):
 
     def _list_objects(self, descriptor, objs):
         colNames = descriptor[0]
-        result = []
-        result.append(colNames)
+        result = [colNames]
 
         for obj in objs:
             result.append([])
-            row = []
-            row.append(obj.get_name())
-            row.append(obj.get_desc())
+            row = [obj.get_name(), obj.get_desc()]
 
             result.append(row)
 
@@ -120,6 +118,7 @@ class kbMenu(menu):
 
         return suggest(get_template_names(), part)
 
+
 class StoreOnBackConfigMenu(ConfigMenu):
     def _cmd_back(self, tokens):
         try:
@@ -140,4 +139,3 @@ class StoreOnBackConfigMenu(ConfigMenu):
             om.out.console('Stored "%s" in the knowledge base.' % vuln_name)
             
         return self._console.back
-    
