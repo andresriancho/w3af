@@ -41,10 +41,10 @@ class private_ip(GrepPlugin):
             '[0-9]?)|192\.168|169\.254|172\.0?(?:1[6-9]|2[0-9]|3[01]))' \
             '(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}(?!\d)(?!\.)'
 
+    RE_LIST = [re.compile(IP_RE)]
+
     def __init__(self):
         GrepPlugin.__init__(self)
-
-        self._regex_list = [re.compile(self.IP_RE)]
 
         self._already_inspected = ScalableBloomFilter()
         self._ignore_if_match = None
@@ -77,26 +77,41 @@ class private_ip(GrepPlugin):
         # Get the headers string
         headers_string = response.dump_headers()
 
-        #   Match the regular expressions
-        for regex in self._regex_list:
-            for match in regex.findall(headers_string):
+        # Match the regular expressions
+        for regex in self.RE_LIST:
+            for ip_address in regex.findall(headers_string):
+                ip_address = ip_address.strip()
 
                 # If i'm requesting 192.168.2.111 then I don't want to be
                 # alerted about it
-                if match in self._ignore_if_match:
+                if ip_address in self._ignore_if_match:
                     continue
 
-                desc = 'The URL: "%s" returned an HTTP header with a private' \
-                       ' IP address: "%s".'
-                desc = desc % (response.get_url(), match)
+                # I want to know the header name, this shouldn't consume much
+                # CPU since we're only doing it when the headers already match
+                # the initial regex run
+                for header_name, header_value in response.get_headers().iteritems():
+                    for header_ip_address in regex.findall(header_value):
+                        if header_ip_address == ip_address:
+                            break
+                else:
+                    header_name = None
+
+                itag = 'group_by'
+                desc = 'The URL "%s" returned the private IP address: "%s"'\
+                       ' in the HTTP response header "%s"'
+                desc = desc % (response.get_url(), ip_address, header_name)
+
                 v = Vuln('Private IP disclosure vulnerability', desc,
                          severity.LOW, response.id, self.get_name())
 
                 v.set_url(response.get_url())
+                v.add_to_highlight(ip_address)
+                v['ip_address'] = ip_address
+                v[itag] = (ip_address, header_name)
 
-                v['IP'] = match
-                v.add_to_highlight(match)
-                self.kb_append(self, 'header', v)
+                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+                self.kb_append_uniq_group(self, 'header', v, ff)
 
     def _analyze_html(self, request, response):
         """
@@ -110,36 +125,38 @@ class private_ip(GrepPlugin):
                ('192.168.' in response) or ('169.254.' in response)):
             return
 
-        for regex in self._regex_list:
-            for match in regex.findall(response.get_body()):
-                match = match.strip()
+        for regex in self.RE_LIST:
+            for ip_address in regex.findall(response.get_body()):
+                ip_address = ip_address.strip()
 
                 # Some proxy servers will return errors that include headers
                 # in the body along with the client IP which we want to ignore
-                if re.search("^.*X-Forwarded-For: .*%s" % match,
+                if re.search("^.*X-Forwarded-For: .*%s" % ip_address,
                              response.get_body(), re.M):
                     continue
 
                 # If i'm requesting 192.168.2.111 then I don't want to be
                 # alerted about it
-                if match in self._ignore_if_match:
+                if ip_address in self._ignore_if_match:
                     continue
 
                 # Don't match things I've sent
-                if request.sent(match):
+                if request.sent(ip_address):
                     continue
 
-                desc = 'The URL: "%s" returned an HTML document with a' \
-                       ' private IP address: "%s".'
-                desc = desc % (response.get_url(), match)
+                itag = 'ip_address'
+                desc = 'The URL: "%s" returned an HTML document which' \
+                       ' contains the private IP address: "%s".'
+                desc = desc % (response.get_url(), ip_address)
                 v = Vuln('Private IP disclosure vulnerability', desc,
                          severity.LOW, response.id, self.get_name())
 
                 v.set_url(response.get_url())
+                v.add_to_highlight(ip_address)
+                v[itag] = ip_address
 
-                v['IP'] = match
-                v.add_to_highlight(match)
-                self.kb_append(self, 'HTML', v)
+                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+                self.kb_append_uniq_group(self, 'HTML', v, ff)
 
     def _generate_ignores(self, response):
         """

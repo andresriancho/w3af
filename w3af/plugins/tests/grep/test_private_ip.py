@@ -87,6 +87,47 @@ class test_private_ip(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'header')), 1)
 
+    def test_private_ip_find_header_group(self):
+        body = 'header content footer'
+        headers = Headers([('content-type', 'text/html'),
+                           ('x-via', '10.3.4.5')])
+
+        url_1 = URL('http://www.w3af.com/1')
+        response_1 = HTTPResponse(200, body, headers, url_1, url_1, _id=1)
+        request_1 = FuzzableRequest(url_1, method='GET')
+        self.plugin.grep(request_1, response_1)
+
+        url_2 = URL('http://www.w3af.com/2')
+        response_2 = HTTPResponse(200, body, headers, url_2, url_2, _id=2)
+        request_2 = FuzzableRequest(url_2, method='GET')
+        self.plugin.grep(request_2, response_2)
+
+        info_sets = kb.kb.get('private_ip', 'header')
+        self.assertEquals(len(info_sets), 1)
+
+        info_set = info_sets[0]
+        self.assertEqual(info_set.get_id(), [1, 2])
+
+    def test_private_ip_find_header_no_group(self):
+        body = 'header content footer'
+
+        url_1 = URL('http://www.w3af.com/1')
+        headers_1 = Headers([('content-type', 'text/html'),
+                             ('x-via', '10.3.4.5')])
+        response_1 = HTTPResponse(200, body, headers_1, url_1, url_1, _id=1)
+        request_1 = FuzzableRequest(url_1, method='GET')
+        self.plugin.grep(request_1, response_1)
+
+        url_2 = URL('http://www.w3af.com/2')
+        headers_2 = Headers([('content-type', 'text/html'),
+                             ('x-via', '10.6.6.6')]) # Changed the ip address
+        response_2 = HTTPResponse(200, body, headers_2, url_2, url_2, _id=2)
+        request_2 = FuzzableRequest(url_2, method='GET')
+        self.plugin.grep(request_2, response_2)
+
+        info_sets = kb.kb.get('private_ip', 'header')
+        self.assertEquals(len(info_sets), 2)
+
     def test_private_ip_no(self):
         body = '<script> 1010.2.3.4 </script>'
         url = URL('http://www.w3af.com/')
