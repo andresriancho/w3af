@@ -97,7 +97,7 @@ class websockets_links(GrepPlugin):
             msg = 'The url %s has signs of websockets usage, ' \
                   'but couldn\'t find any useful links.\n' \
                   'Perhaps links are dynamically created using javascript.\n' \
-                  'Manual inspection of the page is required!'
+                  'Manual inspection of the page is recommended.'
             om.out.information(msg % url)
             return
 
