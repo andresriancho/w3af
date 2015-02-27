@@ -65,9 +65,9 @@ class xml_file(OutputPlugin):
         # User configured parameters
         self._file_name = '~/report.xml'
         self._timeFormat = '%a %b %d %H:%M:%S %Y'
-        self._longTimestampString = str(
-            time.strftime(self._timeFormat, time.localtime()))
         self._timestampString = str(int(time.time()))
+        self._longTimestampString = str(time.strftime(self._timeFormat,
+                                                      time.localtime()))
 
         # List with additional xml elements
         self._errorXML = []
@@ -113,12 +113,12 @@ class xml_file(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
         """
-        messageNode = self._xmldoc.createElement("error")
-        messageNode.setAttribute("caller", str(self.get_caller()))
+        message_node = self._xmldoc.createElement("error")
+        message_node.setAttribute("caller", str(self.get_caller()))
         description = self._xmldoc.createTextNode(message)
-        messageNode.appendChild(description)
+        message_node.appendChild(description)
 
-        self._errorXML.append(messageNode)
+        self._errorXML.append(message_node)
 
     def set_options(self, option_list):
         """
@@ -145,52 +145,52 @@ class xml_file(OutputPlugin):
 
         return ol
 
-    def _buildPluginScanInfo(self, groupName, pluginList, optionsDict):
+    def _buildPluginScanInfo(self, groupName, pluginList, options_dict):
         """
         This method builds the xml structure for the plugins
         and their configuration
         """
         node = self._xmldoc.createElement(str(groupName))
         for plugin_name in pluginList:
-            pluginNode = self._xmldoc.createElement("plugin")
-            pluginNode.setAttribute("name", str(plugin_name))
+            plugin_node = self._xmldoc.createElement("plugin")
+            plugin_node.setAttribute("name", str(plugin_name))
 
-            if plugin_name in optionsDict:
-                for plugin_option in optionsDict[plugin_name]:
-                    configNode = self._xmldoc.createElement("config")
-                    configNode.setAttribute(
-                        "parameter", str(plugin_option.get_name()))
-                    configNode.setAttribute(
-                        "value", str(plugin_option.get_value()))
-                    pluginNode.appendChild(configNode)
-            node.appendChild(pluginNode)
+            if plugin_name in options_dict:
+                for plugin_option in options_dict[plugin_name]:
+                    config_node = self._xmldoc.createElement("config")
+                    config_node.setAttribute("parameter",
+                                             str(plugin_option.get_name()))
+                    config_node.setAttribute("value",
+                                             str(plugin_option.get_value()))
+                    plugin_node.appendChild(config_node)
+            node.appendChild(plugin_node)
         self._scanInfo.appendChild(node)
 
-    def log_enabled_plugins(self, pluginsDict, optionsDict):
+    def log_enabled_plugins(self, plugins_dict, options_dict):
         """
         This method is called from the output manager object. This method should
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
 
-        :param pluginsDict: A dict with all the plugin types and the enabled
+        :param plugins_dict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
-        :param optionsDict: A dict with the options for every plugin.
+        :param options_dict: A dict with the options for every plugin.
         """
         # Add the user configured targets to scaninfo
-        strTargets = ''
+        str_targets = ''
         for url in cf.cf.get('targets'):
-            strTargets += str(url) + ","
-        self._scanInfo.setAttribute("target", strTargets[:-1])
+            str_targets += str(url) + ","
+        self._scanInfo.setAttribute("target", str_targets[:-1])
 
         # Add enabled plugins and their configuration to scaninfo
-        for plugin_type in pluginsDict:
-            self._buildPluginScanInfo(plugin_type, pluginsDict[plugin_type],
-                                      optionsDict[plugin_type])
+        for plugin_type in plugins_dict:
+            self._buildPluginScanInfo(plugin_type, plugins_dict[plugin_type],
+                                      options_dict[plugin_type])
 
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
 
-    def report_http_action(self, parentNode, action):
+    def report_http_action(self, parent_node, action):
         """
         Write out the request/response in a more parseable XML format will
         factor anything with a content-type not prefixed with a text/ in a
@@ -199,12 +199,12 @@ class xml_file(OutputPlugin):
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
         """
-        headers, body = self.handle_headers(parentNode, action)
+        headers, body = self.handle_headers(parent_node, action)
         
         if body:
-            self.handle_body(parentNode, headers, body)
+            self.handle_body(parent_node, headers, body)
 
-    def handle_headers(self, parentNode, action):
+    def handle_headers(self, parent_node, action):
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
         if isinstance(action, HTTPRequest):
             headers = action.get_headers()
@@ -216,29 +216,29 @@ class xml_file(OutputPlugin):
             status = action.get_status_line()
 
         # Put out the status as an element
-        actionStatusNode = self._xmldoc.createElement("status")
+        action_status_node = self._xmldoc.createElement("status")
         # strip is to try and remove the extraneous newline
         actionStatus = self._xmldoc.createTextNode(status.strip())
-        actionStatusNode.appendChild(actionStatus)
-        parentNode.appendChild(actionStatusNode)
+        action_status_node.appendChild(actionStatus)
+        parent_node.appendChild(action_status_node)
 
         # Put out the headers as XML entity
-        actionHeadersNode = self._xmldoc.createElement("headers")
+        action_headers_node = self._xmldoc.createElement("headers")
         for (header, header_content) in headers.iteritems():
             headerdetail = self._xmldoc.createElement("header")
             headerdetail.setAttribute("content", str(header_content))
             headerdetail.setAttribute("field", str(header))
-            actionHeadersNode.appendChild(headerdetail)
-        parentNode.appendChild(actionHeadersNode)
+            action_headers_node.appendChild(headerdetail)
+        parent_node.appendChild(action_headers_node)
 
         return headers, body
     
-    def handle_body(self, parentNode, headers, body):
+    def handle_body(self, parent_node, headers, body):
         """
         Create the XML tags that hold the http request or response body
         """
-        actionBodyNode = self._xmldoc.createElement("body")
-        actionBodyNode.setAttribute('content-encoding', 'text')
+        action_body_node = self._xmldoc.createElement("body")
+        action_body_node.setAttribute('content-encoding', 'text')
         
         # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
         # the ']]>', which in some cases would end up in a CDATA section and
@@ -247,8 +247,8 @@ class xml_file(OutputPlugin):
             # irrespective of the mimetype; if the NULL char is present; then
             # base64.encode it
             encoded = base64.encodestring(body)
-            actionBodyContent = self._xmldoc.createTextNode(encoded)
-            actionBodyNode.setAttribute('content-encoding', 'base64')
+            action_body_content = self._xmldoc.createTextNode(encoded)
+            action_body_node.setAttribute('content-encoding', 'base64')
         
         else:
             # try and extract the Content-Type header
@@ -265,22 +265,22 @@ class xml_file(OutputPlugin):
                 sub_type = 'octet-stream'
 
             if mime_type == 'text':
-                actionBodyContent = self._xmldoc.createTextNode(body)
+                action_body_content = self._xmldoc.createTextNode(body)
                 
             elif mime_type == 'application' and sub_type in NON_BIN:
                 # Textual type application, eg json, javascript
                 # which for readability we'd rather not base64.encode
-                actionBodyContent = self._xmldoc.createCDATASection(body)
+                action_body_content = self._xmldoc.createCDATASection(body)
                 
             else:
                 # either known (image, audio, video) or unknown binary format
                 # Write it as base64encoded text
                 encoded = base64.encodestring(body)
-                actionBodyContent = self._xmldoc.createTextNode(encoded)
-                actionBodyNode.setAttribute('content-encoding', 'base64')
+                action_body_content = self._xmldoc.createTextNode(encoded)
+                action_body_node.setAttribute('content-encoding', 'base64')
 
-        actionBodyNode.appendChild(actionBodyContent)
-        parentNode.appendChild(actionBodyNode)
+        action_body_node.appendChild(action_body_content)
+        parent_node.appendChild(action_body_node)
 
     def end(self):
         """
@@ -291,92 +291,47 @@ class xml_file(OutputPlugin):
         # significant loss of data for any scenario?
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
 
-        # Add the vulnerability results
-        vulns = kb.kb.get_all_vulns()
-        for i in vulns:
-            messageNode = self._xmldoc.createElement("vulnerability")
-            messageNode.setAttribute("severity", str(i.get_severity()))
-            messageNode.setAttribute("method", str(i.get_method()))
-            messageNode.setAttribute("url", str(i.get_url()))
-            messageNode.setAttribute("var", str(i.get_token_name()))
-            messageNode.setAttribute("name", str(i.get_name()))
-            messageNode.setAttribute("plugin", str(i.get_plugin_name()))
+        for i in kb.kb.get_all_findings():
+            message_node = self._xmldoc.createElement("vulnerability")
+            message_node.setAttribute("severity", str(i.get_severity()))
+            message_node.setAttribute("method", str(i.get_method()))
+            message_node.setAttribute("url", str(i.get_url()))
+            message_node.setAttribute("var", str(i.get_token_name()))
+            message_node.setAttribute("name", str(i.get_name()))
+            message_node.setAttribute("plugin", str(i.get_plugin_name()))
             # Wrap description in a <description> element and put it above the
             # request/response elements
-            descriptionNode = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.get_desc())
-            descriptionNode.appendChild(description)
-            messageNode.appendChild(descriptionNode)
+            description_node = self._xmldoc.createElement('description')
+            description = self._xmldoc.createTextNode(i.get_desc(with_id=False))
+            description_node.appendChild(description)
+            message_node.appendChild(description_node)
             if i.get_id():
-                messageNode.setAttribute("id", str(i.get_id()))
+                message_node.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement(
-                    'http-transactions')
-                messageNode.appendChild(transaction_set)
+                transaction_set = self._xmldoc.createElement('http-transactions')
+                message_node.appendChild(transaction_set)
 
-                for requestid in i.get_id():
+                for request_id in i.get_id():
                     try:
-                        details = self._history.read(requestid)
+                        details = self._history.read(request_id)
                     except DBException:
                         msg = 'Failed to retrieve request with id %s from DB.'
-                        print(msg % requestid)
+                        print(msg % request_id)
                     else:
                         # Wrap the entire http transaction in a single block
-                        actionset = self._xmldoc.createElement("http-transaction")
-                        actionset.setAttribute("id", str(requestid))
-                        transaction_set.appendChild(actionset)
+                        action_set = self._xmldoc.createElement("http-transaction")
+                        action_set.setAttribute("id", str(request_id))
+                        transaction_set.appendChild(action_set)
 
-                        requestNode = self._xmldoc.createElement("httprequest")
-                        self.report_http_action(requestNode, details.request)
-                        actionset.appendChild(requestNode)
+                        request_node = self._xmldoc.createElement("httprequest")
+                        self.report_http_action(request_node, details.request)
+                        action_set.appendChild(request_node)
 
-                        responseNode = self._xmldoc.createElement("httpresponse")
-                        self.report_http_action(responseNode, details.response)
-                        actionset.appendChild(responseNode)
+                        response_node = self._xmldoc.createElement("httpresponse")
+                        self.report_http_action(response_node, details.response)
+                        action_set.appendChild(response_node)
 
-            self._topElement.appendChild(messageNode)
-
-        # Add the information results
-        infos = kb.kb.get_all_infos()
-        for i in infos:
-            messageNode = self._xmldoc.createElement("information")
-            messageNode.setAttribute("url", str(i.get_url()))
-            messageNode.setAttribute("name", str(i.get_name()))
-            messageNode.setAttribute("plugin", str(i.get_plugin_name()))
-            # Wrap the description in a description element and put it above
-            # the request/response details
-            descriptionNode = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.get_desc())
-            descriptionNode.appendChild(description)
-            messageNode.appendChild(descriptionNode)
-            if i.get_id():
-                messageNode.setAttribute("id", str(i.get_id()))
-                # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement(
-                    'http-transactions')
-                messageNode.appendChild(transaction_set)
-                for requestid in i.get_id():
-                    try:
-                        details = self._history.read(requestid)
-                    except DBException:
-                        msg = 'Failed to retrieve request with id %s from DB.'
-                        print(msg % requestid)
-                    else:
-                        # Wrap the entire http transaction in a single block
-                        actionset = self._xmldoc.createElement("http-transaction")
-                        actionset.setAttribute("id", str(requestid))
-                        transaction_set.appendChild(actionset)
-                        # create a node for the request content
-                        requestNode = self._xmldoc.createElement("httprequest")
-                        self.report_http_action(requestNode, details.request)
-                        actionset.appendChild(requestNode)
-                        # create a node for the response content
-                        responseNode = self._xmldoc.createElement("httpresponse")
-                        responseNode.setAttribute("id", str(requestid))
-                        self.report_http_action(responseNode, details.response)
-                        actionset.appendChild(responseNode)
-
-            self._topElement.appendChild(messageNode)
+            self._topElement.appendChild(message_node)
 
         # Add additional information results
         for node in self._errorXML:

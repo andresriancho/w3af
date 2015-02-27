@@ -34,9 +34,11 @@ from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
 
 class MockInfo(Info):
-    def __init__(self):
-        long_desc = 'Foo bar spam eggs' * 10
-        super(MockInfo, self).__init__('TestCase', long_desc, 1, 'plugin_name')
+    LONG_DESC = 'Foo bar spam eggs' * 10
+
+    def __init__(self, ids=1):
+        super(MockInfo, self).__init__('TestCase', self.LONG_DESC, ids,
+                                       'plugin_name')
 
 
 @attr('smoke')

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import csv
-import itertools
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
@@ -54,9 +53,6 @@ class csv_file(OutputPlugin):
         Exports the vulnerabilities and information to the user configured
         file.
         """
-        all_vulns = kb.kb.get_all_vulns()
-        all_info = kb.kb.get_all_infos()
-
         self.output_file = os.path.expanduser(self.output_file)
 
         try:
@@ -76,9 +72,10 @@ class csv_file(OutputPlugin):
             output_handler.close()
             return
 
-        for info in itertools.chain(all_vulns, all_info):
+        for info in kb.kb.get_all_findings():
             try:
-                row = [info.get_name(),
+                row = [info.get_severity(),
+                       info.get_name(),
                        info.get_method(),
                        info.get_uri(),
                        info.get_token_name(),
@@ -91,7 +88,7 @@ class csv_file(OutputPlugin):
                       ' vulnerabilities to the output file. Exception: "%s"'
                 om.out.error(msg % e)
                 output_handler.close()
-                print e
+                print(e)
                 return
 
         output_handler.close()

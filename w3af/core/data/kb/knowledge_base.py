@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import collections
 import threading
 import cPickle
-import types
-import collections
+import copy
 
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
@@ -34,6 +34,8 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
+from w3af.core.data.kb.info_set import InfoSet
+from w3af.core.data.constants.severity import (INFORMATION, LOW, MEDIUM, HIGH)
 from weakref import WeakValueDictionary
 
 
@@ -44,6 +46,9 @@ class BasicKnowledgeBase(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    UPDATE = 'update'
+    APPEND = 'append'
+    ADD_URL = 'add_url'
 
     def __init__(self):
         self._kb_lock = threading.RLock()
@@ -118,17 +123,68 @@ class BasicKnowledgeBase(object):
 
         return True
 
+    def append_uniq_group(self, location_a, location_b, info_inst, filter_func,
+                          group_klass=InfoSet):
+        """
+        This function will append a Info instance to an existing InfoSet which
+        is stored in (location_a, location_b) and matches the filter_func.
+
+        If filter_func doesn't match any existing InfoSet instances, then a new
+        one is created using `group_klass` and `info_inst` is appended to it.
+
+        :see: https://github.com/andresriancho/w3af/issues/3955
+
+        :param location_a: The "a" address
+        :param location_b: The "b" address
+        :param info_inst: The Info instance we want to store
+        :param filter_func: The function used to match the InfoSets
+        :param group_klass: If required, will be used to create a new InfoSet
+        :return: (The updated/created InfoSet, as stored in the kb,
+                  True if a new InfoSet was created)
+        """
+        if not isinstance(info_inst, Info):
+            raise TypeError('append_uniq_group requires an Info instance'
+                            ' as parameter.')
+
+        if not issubclass(group_klass, InfoSet):
+            raise TypeError('append_uniq_group requires an InfoSet subclass'
+                            ' as parameter.')
+
+        if not callable(filter_func):
+            raise TypeError('append_uniq_group requires a callable filter_func')
+
+        with self._kb_lock:
+            for info_set in self.get(location_a, location_b):
+                if filter_func(info_set, info_inst):
+                    old_info_set = copy.deepcopy(info_set)
+                    info_set.add(info_inst)
+                    self.update(old_info_set, info_set)
+                    return info_set, False
+            else:
+                # No pre-existing InfoSet instance matched, let's create one
+                # for the info_inst
+                info_set = group_klass([info_inst])
+                self.append(location_a, location_b, info_set)
+                return info_set, True
+
     def get_all_vulns(self):
         """
-        :return: A list of all vulns reported by all plugins.
+        :return: A list of all info instances with severity in (LOW, MEDIUM,
+                 HIGH)
         """
-        return self.get_all_entries_of_class(Vuln)
+        raise NotImplementedError
 
     def get_all_infos(self):
         """
-        :return: A list of all vulns reported by all plugins.
+        :return: A list of all info instances with severity eq INFORMATION
         """
-        return self.get_all_entries_of_class(Info)
+        raise NotImplementedError
+
+    def get_all_findings(self):
+        """
+        :return: A list of all findings, including Info, Vuln and InfoSet.
+        """
+        return self.get_all_entries_of_class((Info, InfoSet, Vuln))
 
     def get_all_shells(self, w3af_core=None):
         """
@@ -159,7 +215,7 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
-    def get(self, plugin_name, location_b=None):
+    def get(self, plugin_name, location_b, check_types=True):
         """
         :param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
@@ -248,8 +304,6 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         # TODO: Why doesn't this work with a WeakValueDictionary?
         self.observers = {} #WeakValueDictionary()
-        self.type_observers = {} #WeakValueDictionary()
-        self.url_observers = []
         self._observer_id = 0
 
     def clear(self, location_a, location_b):
@@ -274,13 +328,33 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     def raw_read(self, location_a, location_b):
         """
-        This method reads the value from (location_a,location_b)
+        This method reads the value from (location_a, location_b)
         """
         location_a = self._get_real_name(location_a)
         result = self.get(location_a, location_b, check_types=False)
 
         if len(result) > 1:
-            msg = 'Incorrect use of raw_write/raw_read, found %s rows.'
+            msg = 'Incorrect use of raw_write/raw_read, found %s results.'
+            raise RuntimeError(msg % len(result))
+        elif len(result) == 0:
+            return []
+        else:
+            return result[0]
+
+    def get_one(self, location_a, location_b):
+        """
+        This method reads the value from (location_a, location_b), checking it's
+        type and making sure only one is stored at that address.
+
+        Similar to raw_read, but checking types.
+
+        :see: https://github.com/andresriancho/w3af/issues/3955
+        """
+        location_a = self._get_real_name(location_a)
+        result = self.get(location_a, location_b, check_types=True)
+
+        if len(result) > 1:
+            msg = 'Incorrect use of get_one(), found %s results.'
             raise RuntimeError(msg % result)
         elif len(result) == 0:
             return []
@@ -288,7 +362,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             return result[0]
 
     def _get_uniq_id(self, obj):
-        if isinstance(obj, Info):
+        if isinstance(obj, (Info, InfoSet)):
             return obj.get_uniq_id()
         else:
             if isinstance(obj, collections.Iterable):
@@ -301,7 +375,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         This method appends the location_b value to a dict.
         """
-        if not ignore_type and not isinstance(value, (Info, Shell)):
+        if not ignore_type and not isinstance(value, (Info, Shell, InfoSet)):
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
                   ' to the KnowledgeBase.'
             raise TypeError(msg)
@@ -314,7 +388,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
         self.db.execute(query, t)
-        self._notify(location_a, location_b, value)
+        self._notify_observers(self.APPEND, location_a, location_b, value,
+                               ignore_type=ignore_type)
 
     def get(self, location_a, location_b, check_types=True):
         """
@@ -347,7 +422,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         for r in results:
             obj = cPickle.loads(r[0])
 
-            if check_types and not isinstance(obj, (Info, Shell)):
+            if check_types and not isinstance(obj, (Info, InfoSet, Shell)):
                 raise TypeError('Use raw_write and raw_read to query the'
                                 ' knowledge base for non-Info objects')
 
@@ -372,8 +447,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         :param update_info: The info/vuln instance with new information
         :return: Nothing
         """
-        old_not_info = not isinstance(old_info, (Info, Shell))
-        update_not_info = not isinstance(update_info, (Info, Shell))
+        old_not_info = not isinstance(old_info, (Info, InfoSet, Shell))
+        update_not_info = not isinstance(update_info, (Info, InfoSet, Shell))
 
         if old_not_info or update_not_info:
             msg = 'You MUST use raw_write/raw_read to store non-info objects'\
@@ -390,54 +465,28 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         params = (pickle, new_uniq_id, old_uniq_id)
         result = self.db.execute(query % self.table_name, params).result()
 
-        if not result.rowcount:
-            ex = 'Failed to update() Info instance because' \
+        if result.rowcount:
+            self._notify_observers(self.UPDATE, old_info, update_info)
+        else:
+            ex = 'Failed to update() %s instance because' \
                  ' the original unique_id (%s) does not exist in the DB,' \
                  ' or the new unique_id (%s) is invalid.'
-            raise DBException(ex % (old_uniq_id, new_uniq_id))
+            raise DBException(ex % (old_info.__class__.__name__,
+                                    old_uniq_id,
+                                    new_uniq_id))
 
-    def add_observer(self, location_a, location_b, observer):
+    def add_observer(self, observer):
         """
-        Add the observer function to the observer list. The function will be
-        called when there is a change in (location_a, location_b).
-
-        You can use None in location_a or location_b as wildcards.
-
-        The observer function needs to be a function which takes three params:
-            * location_a
-            * location_b
-            * value that's added to the kb location
-
-        :return: None
+        Add the observer instance to the list.
         """
-        if not isinstance(location_a, (basestring, types.NoneType)) or \
-        not isinstance(location_a, (basestring, types.NoneType)):
-            raise TypeError('Observer locations need to be strings or None.')
-
         observer_id = self.get_observer_id()
-        self.observers[(location_a, location_b, observer_id)] = observer
-
-    def add_types_observer(self, type_filter, observer):
-        """
-        Add the observer function to the list of functions to be called when a
-        new object that is of type "type_filter" is added to the KB.
-
-        The type_filter must be one of Info, Vuln or Shell.
-
-        :return: None
-        """
-        if type_filter not in (Info, Vuln, Shell):
-            msg = 'The type_filter needs to be one of Info, Vuln or Shell'
-            raise TypeError(msg)
-
-        observer_id = self.get_observer_id()
-        self.type_observers[(type_filter, observer_id)] = observer
+        self.observers[observer_id] = observer
 
     def get_observer_id(self):
         self._observer_id += 1
         return self._observer_id
 
-    def _notify(self, location_a, location_b, value):
+    def _notify_observers(self, method, *args, **kwargs):
         """
         Call the observer if the location_a/location_b matches with the
         configured observers.
@@ -446,23 +495,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         # Note that I copy the items list in order to iterate though it without
         # any issues like the size changing
-        for (obs_loc_a, obs_loc_b, _), observer in self.observers.items()[:]:
-
-            if obs_loc_a is None and obs_loc_b is None:
-                observer(location_a, location_b, value)
-                continue
-
-            if obs_loc_a == location_a and obs_loc_b is None:
-                observer(location_a, location_b, value)
-                continue
-
-            if obs_loc_a == location_a and obs_loc_b == location_b:
-                observer(location_a, location_b, value)
-                continue
-
-        for (type_filter, _), observer in self.type_observers.items()[:]:
-            if isinstance(value, type_filter):
-                observer(location_a, location_b, value)
+        for _, observer in self.observers.items()[:]:
+            functor = getattr(observer, method)
+            functor(*args, **kwargs)
 
     def get_all_entries_of_class(self, klass):
         """
@@ -478,6 +513,43 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             obj = cPickle.loads(r[0])
             if isinstance(obj, klass):
                 result_lst.append(obj)
+
+        return result_lst
+
+    def get_all_vulns(self):
+        """
+        :return: A list of all info instances with severity in (LOW, MEDIUM,
+                 HIGH)
+        """
+        query = 'SELECT pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+
+        result_lst = []
+
+        for r in results:
+            obj = cPickle.loads(r[0])
+            if hasattr(obj, 'get_severity'):
+                severity = obj.get_severity()
+                if severity in (LOW, MEDIUM, HIGH):
+                    result_lst.append(obj)
+
+        return result_lst
+
+    def get_all_infos(self):
+        """
+        :return: A list of all info instances with severity eq INFORMATION
+        """
+        query = 'SELECT pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+
+        result_lst = []
+
+        for r in results:
+            obj = cPickle.loads(r[0])
+            if hasattr(obj, 'get_severity'):
+                severity = obj.get_severity()
+                if severity in (INFORMATION,):
+                    result_lst.append(obj)
 
         return result_lst
 
@@ -526,20 +598,6 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         return self.urls
 
-    def add_url_observer(self, observer):
-        self.url_observers.append(observer)
-
-    def _notify_url_observers(self, new_url):
-        """
-        Call the observer with new_url.
-
-        :return: None
-        """
-        # Note that I copy the items list in order to iterate though it without
-        # any issues like the size changing
-        for observer in self.url_observers[:]:
-            observer(new_url)
-
     def add_url(self, url):
         """
         :return: True if the URL was previously unknown
@@ -548,7 +606,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             msg = 'add_url requires a URL as parameter got %s instead.'
             raise TypeError(msg % type(url))
 
-        self._notify_url_observers(url)
+        self._notify_observers(self.ADD_URL, url)
         return self.urls.add(url)
 
     def get_all_known_fuzzable_requests(self):

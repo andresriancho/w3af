@@ -197,7 +197,7 @@ class text_file(OutputPlugin):
 
     def console(self, message, new_line=True):
         """
-        This method is used by the w3af console to print messages to the outside.
+        This method is used by the w3af console to print messages to the outside
         """
         self.write(message, 'console', new_line)
 

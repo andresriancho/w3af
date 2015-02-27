@@ -33,6 +33,7 @@ from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -224,6 +225,25 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', 'abc')
         self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
+    def test_all_of_info_vuln(self):
+        i1 = MockInfo()
+        i2 = MockInfo()
+
+        v1 = MockVuln()
+        v2 = MockVuln()
+
+        iset = InfoSet([i2])
+        vset = InfoSet([v2])
+
+        kb.append('a', 'b', i1)
+        kb.append('w', 'z', iset)
+        kb.append('x', 'y', v1)
+        kb.append('4', '2', vset)
+
+        self.assertEqual(kb.get_all_vulns(), [v1, vset])
+        self.assertEqual(kb.get_all_infos(), [i1, iset])
+        self.assertEqual(kb.get_all_findings(), [i1, iset, v1, vset])
+
     def test_dump_empty(self):
         empty = kb.dump()
         self.assertEqual(empty, {})
@@ -260,82 +280,47 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertFalse(db.table_exists(table_name))
 
-    def test_types_observer(self):
-        observer = Mock()
-        info_inst = MockInfo()
-        
-        kb.add_types_observer(Info, observer)
-        kb.append('a', 'b', info_inst)
-        observer.assert_called_once_with('a', 'b', info_inst)
-        observer.reset_mock()
-        
-        info_inst = MockInfo()
-        kb.append('a', 'c', info_inst)
-        observer.assert_called_with('a', 'c', info_inst)
-        observer.reset_mock()
+    def test_observer_append(self):
+        observer1 = Mock()
+        info = MockInfo()
 
-        # Should NOT call it because it is NOT an Info instance        
-        some_int = 3
-        kb.raw_write('a', 'd', some_int)
-        self.assertEqual(observer.call_count, 0)
-        
-    def test_observer_all(self):
-        observer = Mock()
-        
-        kb.add_observer(None, None, observer)
-        kb.raw_write('a', 'b', 1)
-        
-        observer.assert_called_once_with('a', 'b', 1)
-        observer.reset_mock()
-        
-        i = MockInfo()
-        kb.append('a', 'c', i)
-        observer.assert_called_with('a', 'c', i)
-        
-    def test_observer_location_a(self):
-        observer = Mock()
-        
-        kb.add_observer('a', None, observer)
-        kb.raw_write('a', 'b', 1)
-        
-        observer.assert_called_once_with('a', 'b', 1)
-        observer.reset_mock()
-        
-        # Shouldn't call the observer
-        kb.raw_write('xyz', 'b', 1)
-        self.assertFalse(observer.called)
-        
-        i = MockInfo()
-        kb.append('a', 'c', i)
-        observer.assert_called_with('a', 'c', i)
-        
-    def test_observer_location_b(self):
-        observer = Mock()
-        
-        kb.add_observer('a', 'b', observer)
-        kb.raw_write('a', 'b', 1)
-        
-        observer.assert_called_once_with('a', 'b', 1)
-        observer.reset_mock()
-        
-        # Shouldn't call the observer
-        kb.raw_write('a', 'xyz', 1)
-        self.assertFalse(observer.called)
-        
-        i = MockInfo()
-        kb.append('a', 'b', i)
-        observer.assert_called_with('a', 'b', i)
+        kb.add_observer(observer1)
+        kb.append('a', 'b', info)
+
+        observer1.append.assert_called_once_with('a', 'b', info,
+                                                 ignore_type=False)
+
+    def test_observer_update(self):
+        observer1 = Mock()
+        info = MockInfo()
+
+        kb.add_observer(observer1)
+        kb.append('a', 'b', info)
+        old_info = copy.deepcopy(info)
+        info.set_name('new name')
+        kb.update(old_info, info)
+
+        observer1.update.assert_called_once_with(old_info, info)
+
+    def test_observer_add_url(self):
+        observer1 = Mock()
+        url = URL('http://www.w3af.org/')
+
+        kb.add_observer(observer1)
+        kb.add_url(url)
+
+        observer1.add_url.assert_called_once_with(url)
 
     def test_observer_multiple_observers(self):
         observer1 = Mock()
         observer2 = Mock()
         
-        kb.add_observer(None, None, observer1)
-        kb.add_observer(None, None, observer2)
+        kb.add_observer(observer1)
+        kb.add_observer(observer2)
         kb.raw_write('a', 'b', 1)
 
-        observer1.assert_called_once_with('a', 'b', 1)
-        observer2.assert_called_once_with('a', 'b', 1)
+        observer1.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
+        observer2.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
         
     def test_pickleable_info(self):
         original_info = MockInfo()
@@ -419,32 +404,9 @@ class TestKnowledgeBase(unittest.TestCase):
         """
         Test for _get_uniq_id which needs to be able to hash any object type.
         """
-        kb.raw_write('a', 'b', [1,2,3])
-        self.assertEqual(kb.raw_read('a','b'), [1,2,3])
+        kb.raw_write('a', 'b', [1, 2, 3])
+        self.assertEqual(kb.raw_read('a', 'b'), [1, 2, 3])
     
-    def test_url_observer(self):
-        observer = Mock()
-        kb.add_url_observer(observer)
-        
-        url = URL('http://w3af.org/')
-        kb.add_url(url)
-        
-        self.assertEqual(observer.call_count, 1)
-        self.assertEqual(observer.call_args, call(url,))
-        self.assertIs(observer.call_args[0][0], url)
-
-    def test_url_observer_multiple(self):
-        observer_1 = Mock()
-        observer_2 = Mock()
-        kb.add_url_observer(observer_1)
-        kb.add_url_observer(observer_2)
-        
-        url = URL('http://w3af.org/')
-        kb.add_url(url)
-        
-        self.assertEqual(observer_1.call_count, 1)
-        self.assertEqual(observer_2.call_count, 1)
-
     def test_kb_list_shells_empty(self):
         self.assertEqual(kb.get_all_shells(), [])
 
@@ -711,3 +673,118 @@ class TestKnowledgeBase(unittest.TestCase):
 
         self.assertNotEqual(original_id, modified_id)
         self.assertRaises(DBException, kb.update, vuln, update_vuln)
+
+    def test_get_one(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        kb_vuln = kb.get_one('a', 'b')
+
+        #pylint: disable=E1103
+        self.assertEqual(kb_vuln.get_uniq_id(), vuln.get_uniq_id())
+        self.assertEqual(kb_vuln, vuln)
+        #pylint: enable=E1103
+
+    def test_get_one_none_found(self):
+        empty_list = kb.get_one('a', 'b')
+        self.assertEqual(empty_list, [])
+
+    def test_get_one_more_than_one_found(self):
+        vuln = MockVuln()
+        kb.append('a', 'b', vuln)
+        kb.append('a', 'b', vuln)
+        self.assertRaises(RuntimeError, kb.get_one, 'a', 'b')
+
+    def test_append_uniq_group_empty_address(self):
+        def filter_func(*args):
+            pass
+
+        vuln = MockVuln()
+        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
+
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertTrue(created)
+        self.assertEqual(info_set.get_urls(), [vuln.get_url()])
+        self.assertEqual(info_set.get_name(), vuln.get_name())
+        self.assertEqual(info_set.get_id(), vuln.get_id())
+        self.assertEqual(info_set.get_plugin_name(), vuln.get_plugin_name())
+
+    def test_append_uniq_group_match_filter_func(self):
+        def filter_func(*args):
+            return True
+
+        vuln = MockVuln()
+        kb.append_uniq_group('a', 'b', vuln, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
+
+        self.assertFalse(created)
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertEqual(len(info_set.infos), 2)
+
+    def test_append_uniq_group_no_match_filter_func(self):
+        def filter_func(*args):
+            return False
+
+        vuln1 = MockVuln(name='Foos')
+        vuln2 = MockVuln(name='Bars')
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln2, filter_func)
+
+        self.assertIsInstance(info_set, InfoSet)
+        self.assertTrue(created)
+        self.assertEqual(len(info_set.infos), 1)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].first_info.get_name(), 'Foos')
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
+
+    def test_append_uniq_group_filter_func_specific(self):
+        def filter_func(info_set, info_inst):
+            return info_inst.get_name() == info_set.get_name()
+
+        vuln1 = MockVuln(name='Foos')
+        vuln2 = MockVuln(name='Bars')
+        vuln3 = MockVuln(name='Foos', _id=42)
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].get_name(), 'Foos')
+        self.assertEqual(len(raw_data[0].infos), 2)
+        self.assertEqual(raw_data[0].infos[1].get_id(), [42])
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
+
+    def test_append_uniq_group_filter_func_attribute_match(self):
+        def filter_func(info_set, info_inst):
+            return info_inst['tag'] == info_set.get_attribute('tag')
+
+        vuln1 = MockVuln(name='Foos')
+        vuln1['tag'] = 'foo'
+
+        vuln2 = MockVuln(name='Bars')
+        vuln2['tag'] = 'bar'
+
+        vuln3 = MockVuln(_id=42)
+        vuln3['tag'] = 'foo'
+
+        kb.append_uniq_group('a', 'b', vuln1, filter_func)
+        kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+
+        raw_data = kb.get('a', 'b')
+        self.assertEqual(len(raw_data), 2)
+        self.assertIsInstance(raw_data[0], InfoSet)
+        self.assertIsInstance(raw_data[1], InfoSet)
+
+        self.assertEqual(raw_data[0].get_name(), 'Foos')
+        self.assertEqual(len(raw_data[0].infos), 2)
+        self.assertEqual(raw_data[0].infos[1].get_id(), [42])
+        self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')

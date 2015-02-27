@@ -85,8 +85,8 @@ class error_500(GrepPlugin):
         """
         all_vuln_ids = set()
 
-        for vuln in kb.kb.get_all_vulns():
-            for _id in vuln.get_id():
+        for info in kb.kb.get_all_findings():
+            for _id in info.get_id():
                 all_vuln_ids.add(_id)
 
         for request, error_500_response_id in self._error_500_responses:
@@ -115,8 +115,8 @@ class error_500(GrepPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin greps every page for error 500 pages that have'nt been caught
-        by other plugins. By enabling this, you are enabling a "safety net" that
-        will catch all interesting HTTP responses which might lead to a bug or
-        vulnerability.
+        This plugin greps every page for error 500 pages that have'nt been
+        caught by other plugins. By enabling this, you are enabling a "safety
+        net" that will catch all interesting HTTP responses which might lead to
+        a bug or vulnerability.
         """

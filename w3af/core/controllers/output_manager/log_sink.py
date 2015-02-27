@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import functools
 
+from w3af.core.data.constants.severity import INFORMATION
+
 
 class LogSink(object):
     """
@@ -50,19 +52,16 @@ class LogSink(object):
 
         :param info_inst: An Info class or subclass.
         """
-        from w3af.core.data.kb.info import Info
-        from w3af.core.data.kb.vuln import Vuln
+        if INFORMATION == info_inst.get_severity():
+            self.information(info_inst.get_desc())
 
-        if isinstance(info_inst, Vuln):
+        else:
             self.vulnerability(info_inst.get_desc(),
                                severity=info_inst.get_severity())
 
-        elif isinstance(info_inst, Info):
-            self.information(info_inst.get_desc())
-
-    def _add_to_queue(self, *args, **kwds):
+    def _add_to_queue(self, *args, **kwargs):
         try:
-            self.om_queue.put((args, kwds))
+            self.om_queue.put((args, kwargs))
         except IOError:
             print('LogSink queue communication lost. Some log messages will'
                   ' be lost.')
@@ -80,4 +79,5 @@ class LogSink(object):
         if name in self.METHODS:
             return functools.partial(self._add_to_queue, name)
         else:
-            raise AttributeError("'LogSink' object has no attribute '%s'" % name)
+            msg = "'LogSink' object has no attribute '%s'"
+            raise AttributeError(msg % name)

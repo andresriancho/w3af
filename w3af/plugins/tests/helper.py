@@ -121,7 +121,7 @@ class PluginTest(unittest.TestCase):
         )
 
     def tokenize_kb_vulns(self):
-        all_info = self.kb.get_all_infos()
+        all_info = self.kb.get_all_findings()
         info_tokens = set()
 
         for info in all_info:
