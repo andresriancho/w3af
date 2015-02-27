@@ -64,7 +64,7 @@ class html_file(OutputPlugin):
 
         # These attributes hold the file pointers
         self._file = None
-        self._aditional_info = DiskList(table_prefix='html_file')
+        self._additional_info = DiskList(table_prefix='html_file')
 
         # User configured parameters
         self._verbose = False
@@ -200,13 +200,14 @@ class html_file(OutputPlugin):
         msg = '<tr><td class="content">%s</td>\n'\
               '    <td class="content">%s</td>\n' \
               '    <td class="content">%s</td></tr>'
-        self._aditional_info.append(msg % (the_time, msg_type, message))
+        self._additional_info.append(msg % (the_time, msg_type, message))
 
     def set_options(self, option_list):
         """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
-        using the XML Options that was retrieved from the plugin using get_options()
+        using the XML Options that was retrieved from the plugin using
+        get_options()
 
         This method MUST be implemented on every plugin.
 
@@ -322,7 +323,7 @@ class html_file(OutputPlugin):
             '<td class="sub" width="65%">Message</td>',
             '</tr>')
 
-        for line in self._aditional_info:
+        for line in self._additional_info:
             self._write_to_file(line)
 
         # Close the debug table
@@ -335,7 +336,7 @@ class html_file(OutputPlugin):
         if self._file is not None:
             self._file.close()
         
-        self._aditional_info.clear()
+        self._additional_info.clear()
 
     def get_long_desc(self):
         """

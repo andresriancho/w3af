@@ -31,7 +31,8 @@ from w3af.core.data.options.option_list import OptionList
 
 
 class email_report(OutputPlugin):
-    """Email report to specified addresses.
+    """
+    Email report to specified addresses.
 
     :author: Taras (oxdef@oxdef.info)
     """
@@ -52,7 +53,7 @@ class email_report(OutputPlugin):
         self.toAddrs = ''
         self.fromAddr = ''
 
-    def log_enabled_plugins(self, pluginsDict, optionsDict):
+    def log_enabled_plugins(self, plugins_dict, options_dict):
         self.targets = cf.cf.get('targets')
 
     def set_options(self, option_list):
@@ -64,7 +65,8 @@ class email_report(OutputPlugin):
     def get_options(self):
         ol = OptionList()
 
-        d = 'SMTP server ADDRESS to send notifications through, e.g. smtp.yourdomain.com'
+        d = 'SMTP server ADDRESS to send notifications through, e.g.' \
+            ' smtp.yourdomain.com'
         o = opt_factory('smtpServer', self.smtpServer, d, 'string')
         ol.add(o)
 
