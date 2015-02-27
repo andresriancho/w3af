@@ -227,13 +227,22 @@ class TestKnowledgeBase(unittest.TestCase):
 
     def test_all_of_info_vuln(self):
         i1 = MockInfo()
+        i2 = MockInfo()
+
         v1 = MockVuln()
+        v2 = MockVuln()
+
+        iset = InfoSet([i2])
+        vset = InfoSet([v2])
 
         kb.append('a', 'b', i1)
+        kb.append('w', 'z', iset)
         kb.append('x', 'y', v1)
+        kb.append('4', '2', vset)
 
-        self.assertEqual(kb.get_all_vulns(), [v1])
-        self.assertEqual(kb.get_all_infos(), [i1, v1])
+        self.assertEqual(kb.get_all_vulns(), [v1, vset])
+        self.assertEqual(kb.get_all_infos(), [i1, iset])
+        self.assertEqual(kb.get_all_findings(), [i1, iset, v1, vset])
 
     def test_dump_empty(self):
         empty = kb.dump()

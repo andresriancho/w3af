@@ -35,6 +35,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info_set import InfoSet
+from w3af.core.data.constants.severity import (INFORMATION, LOW, MEDIUM, HIGH)
 from weakref import WeakValueDictionary
 
 
@@ -168,15 +169,22 @@ class BasicKnowledgeBase(object):
 
     def get_all_vulns(self):
         """
-        :return: A list of all vulns reported by all plugins.
+        :return: A list of all info instances with severity in (LOW, MEDIUM,
+                 HIGH)
         """
-        return self.get_all_entries_of_class(Vuln)
+        raise NotImplementedError
 
     def get_all_infos(self):
         """
-        :return: A list of all vulns reported by all plugins.
+        :return: A list of all info instances with severity eq INFORMATION
         """
-        return self.get_all_entries_of_class(Info)
+        raise NotImplementedError
+
+    def get_all_findings(self):
+        """
+        :return: A list of all findings, including Info, Vuln and InfoSet.
+        """
+        return self.get_all_entries_of_class((Info, InfoSet, Vuln))
 
     def get_all_shells(self, w3af_core=None):
         """
@@ -505,6 +513,43 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             obj = cPickle.loads(r[0])
             if isinstance(obj, klass):
                 result_lst.append(obj)
+
+        return result_lst
+
+    def get_all_vulns(self):
+        """
+        :return: A list of all info instances with severity in (LOW, MEDIUM,
+                 HIGH)
+        """
+        query = 'SELECT pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+
+        result_lst = []
+
+        for r in results:
+            obj = cPickle.loads(r[0])
+            if hasattr(obj, 'get_severity'):
+                severity = obj.get_severity()
+                if severity in (LOW, MEDIUM, HIGH):
+                    result_lst.append(obj)
+
+        return result_lst
+
+    def get_all_infos(self):
+        """
+        :return: A list of all info instances with severity eq INFORMATION
+        """
+        query = 'SELECT pickle FROM %s'
+        results = self.db.select(query % self.table_name)
+
+        result_lst = []
+
+        for r in results:
+            obj = cPickle.loads(r[0])
+            if hasattr(obj, 'get_severity'):
+                severity = obj.get_severity()
+                if severity in (INFORMATION,):
+                    result_lst.append(obj)
 
         return result_lst
 
