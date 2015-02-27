@@ -148,6 +148,8 @@ class cors_origin(AuditPlugin):
                 self.kb_append(self, 'cors_origin', v)
                 return [v, ]
 
+        return []
+
     def _analyze_server_response(self, forged_req, url, origin, response,
                                  allow_origin, allow_credentials, allow_methods):
         """Analyze the server response and identify vulnerabilities which are'
@@ -234,6 +236,8 @@ class cors_origin(AuditPlugin):
             return self._filter_report('_allow_methods_counter',
                                        'sensitive and uncommon methods',
                                        severity.LOW, [v, ])
+
+        return []
 
     def _universal_allow(self, forged_req, url, origin, response,
                          allow_origin, allow_credentials, allow_methods):
@@ -356,7 +360,8 @@ class cors_origin(AuditPlugin):
             self.kb_append(self, 'cors_origin', v)
 
             return self._filter_report('_universal_origin_allow_creds_counter',
-                                       'withCredentials CORS implementation error',
+                                       'withCredentials CORS implementation'
+                                       ' error',
                                        severity.INFORMATION, [v, ])
 
         return []
