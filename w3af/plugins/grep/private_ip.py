@@ -1,7 +1,7 @@
 """
 private_ip.py
 
-Copyright 2006 Andres Riancho
+Copyright 2015 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -36,18 +36,15 @@ class private_ip(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    # More info regarding this regular expression: http://bit.ly/185DFJc
+    IP_RE = '(?<!\.)(?<!\d)(?:(?:10|127)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]' \
+            '[0-9]?)|192\.168|169\.254|172\.0?(?:1[6-9]|2[0-9]|3[01]))' \
+            '(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}(?!\d)(?!\.)'
 
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        # For more info regarding this regular expression, please see:
-        # https://sourceforge.net/mailarchive/forum.php?thread_name=1955593874.20090122023644%40
-        #mlists.olympos.org&forum_name=w3af-develop
-        regex_str = '(?<!\.)(?<!\d)(?:(?:10|127)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|192\.168|169\.'
-        regex_str += '254|172\.0?(?:1[6-9]|2[0-9]|3[01]))(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-'
-        regex_str += '9]?)){2}(?!\d)(?!\.)'
-        self._private_ip_address = re.compile(regex_str)
-        self._regex_list = [self._private_ip_address, ]
+        self._regex_list = [re.compile(self.IP_RE)]
 
         self._already_inspected = ScalableBloomFilter()
         self._ignore_if_match = None
@@ -73,7 +70,6 @@ class private_ip(GrepPlugin):
         self._analyze_headers(request, response)
         self._analyze_html(request, response)
         
-        
     def _analyze_headers(self, request, response):
         """
         Search for IP addresses in HTTP headers
@@ -87,18 +83,20 @@ class private_ip(GrepPlugin):
 
                 # If i'm requesting 192.168.2.111 then I don't want to be
                 # alerted about it
-                if match not in self._ignore_if_match:
-                    desc = 'The URL: "%s" returned an HTTP header with a'\
-                           ' private IP address: "%s".'
-                    desc = desc % (response.get_url(), match)
-                    v = Vuln('Private IP disclosure vulnerability', desc,
-                             severity.LOW, response.id, self.get_name())
+                if match in self._ignore_if_match:
+                    continue
 
-                    v.set_url(response.get_url())
+                desc = 'The URL: "%s" returned an HTTP header with a private' \
+                       ' IP address: "%s".'
+                desc = desc % (response.get_url(), match)
+                v = Vuln('Private IP disclosure vulnerability', desc,
+                         severity.LOW, response.id, self.get_name())
 
-                    v['IP'] = match
-                    v.add_to_highlight(match)
-                    self.kb_append(self, 'header', v)
+                v.set_url(response.get_url())
+
+                v['IP'] = match
+                v.add_to_highlight(match)
+                self.kb_append(self, 'header', v)
 
     def _analyze_html(self, request, response):
         """
@@ -116,25 +114,32 @@ class private_ip(GrepPlugin):
             for match in regex.findall(response.get_body()):
                 match = match.strip()
 
-                # Some proxy servers will return errors that include headers in the body
-                # along with the client IP which we want to ignore
-                if re.search("^.*X-Forwarded-For: .*%s" % match, response.get_body(), re.M):
+                # Some proxy servers will return errors that include headers
+                # in the body along with the client IP which we want to ignore
+                if re.search("^.*X-Forwarded-For: .*%s" % match,
+                             response.get_body(), re.M):
                     continue
 
-                # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                if match not in self._ignore_if_match and \
-                not request.sent(match):
-                    desc = 'The URL: "%s" returned an HTML document'\
-                           ' with a private IP address: "%s".'
-                    desc = desc % (response.get_url(), match)
-                    v = Vuln('Private IP disclosure vulnerability', desc,
-                             severity.LOW, response.id, self.get_name())
+                # If i'm requesting 192.168.2.111 then I don't want to be
+                # alerted about it
+                if match in self._ignore_if_match:
+                    continue
 
-                    v.set_url(response.get_url())
+                # Don't match things I've sent
+                if request.sent(match):
+                    continue
 
-                    v['IP'] = match
-                    v.add_to_highlight(match)
-                    self.kb_append(self, 'HTML', v)
+                desc = 'The URL: "%s" returned an HTML document with a' \
+                       ' private IP address: "%s".'
+                desc = desc % (response.get_url(), match)
+                v = Vuln('Private IP disclosure vulnerability', desc,
+                         severity.LOW, response.id, self.get_name())
+
+                v.set_url(response.get_url())
+
+                v['IP'] = match
+                v.add_to_highlight(match)
+                self.kb_append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
         """
