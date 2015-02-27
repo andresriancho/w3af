@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
+from w3af.core.data.kb.info import Info
 
 
 class InfoSet(object):
@@ -61,7 +63,13 @@ class InfoSet(object):
         if not isinstance(info_instances, list):
             raise TypeError('info_instances must be a list')
 
+        for info in info_instances:
+            if not isinstance(info, Info):
+                raise TypeError('info_instances list items must be Info sub'
+                                '-classes, found "%r" instead' % info)
+
         self.infos = info_instances
+        self._mutant = EmptyMutant()
 
     def add(self, info):
         self.infos.append(info)
@@ -76,8 +84,8 @@ class InfoSet(object):
     def get_name(self):
         return self.first_info.get_name()
 
-    def get_desc(self):
-        return self.first_info.get_desc(with_id=False)
+    def get_desc(self, with_id=False):
+        return self.first_info.get_desc(with_id=with_id)
 
     def get_ids(self):
         all_ids = []
@@ -97,8 +105,59 @@ class InfoSet(object):
             all_urls.append(info.get_uri())
         return list(set(all_urls))
 
+    def get_mutant(self):
+        """
+        :return: An EmptyMutant instance. Note that there is no setter for
+                 self._mutant, this is correct since we always want to return
+                 an empty mutant
+
+                 This method was added mostly to ease the initial implementation
+                 and avoid major changes in output plugins which were already
+                 handling Info instances.
+        """
+        return self._mutant
+
+    def get_method(self):
+        return self.first_info.get_method()
+
+    def get_url(self):
+        """
+        :return: One of the potentially many URLs which are related to this
+                 InfoSet. Use with care, usually as an example of a vulnerable
+                 URL to show to the user.
+
+                 For the complete list of URLs see get_urls()
+        """
+        return self.first_info.get_url()
+
+    def get_uri(self):
+        """
+        :return: One of the potentially many URIs which are related to this
+                 InfoSet. Use with care, usually as an example of a vulnerable
+                 URL to show to the user.
+
+                 For the complete list of URLs see get_uris()
+        """
+        return self.first_info.get_uri()
+
     def get_plugin_name(self):
         return self.first_info.get_plugin_name()
+
+    def get_token_name(self):
+        """
+        :return: None, since the Info objects stored in this InfoSet might have
+                 completely different values for it, and it's not possible to
+                 return one that represents all.
+        """
+        return None
+
+    def get_token(self):
+        """
+        :return: None, since the Info objects stored in this InfoSet might have
+                 completely different values for it, and it's not possible to
+                 return one that represents all.
+        """
+        return None
 
     def get_uniq_id(self):
         """
