@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class strange_headers(GrepPlugin):
@@ -51,53 +50,40 @@ class strange_headers(GrepPlugin):
                       'X-ASPNET-VERSION', 'X-CACHE', 'X-UA-COMPATIBLE', 'X-PAD',
                       'X-XSS-PROTECTION'}
 
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
     def grep(self, request, response):
         """
-        Plugin entry point.
+        Check if the header names are common or not
 
         :param request: The HTTP request object.
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
-        # Check if the header names are common or not
+        # Check for protocol anomalies
+        self._content_location_not_300(request, response)
+
+        # Check header names
         for header_name in response.get_headers().keys():
             if header_name.upper() not in self.COMMON_HEADERS:
 
-                # Check if the kb already has a info object with this code:
-                strange_header_infos = kb.kb.get('strange_headers',
-                                                 'strange_headers')
+                # Create a new info object and save it to the KB
+                hvalue = response.get_headers()[header_name]
 
-                for info_obj in strange_header_infos:
-                    if info_obj['header_name'] == header_name:
-                        # Work with the "old" info object:
-                        id_list = info_obj.get_id()
-                        id_list.append(response.id)
-                        info_obj.set_id(id_list)
-                        break
-                else:
-                    # Create a new info object from scratch and save it to
-                    # the kb:
-                    hvalue = response.get_headers()[header_name]
-                    
-                    desc = 'The remote web server sent the HTTP header: "%s"'\
-                           ' with value: "%s", which is quite uncommon and'\
-                           ' requires manual analysis.'
-                    desc = desc % (header_name, hvalue)
+                itag = 'header_name'
+                desc = 'The remote web server sent the HTTP header: "%s"'\
+                       ' with value: "%s", which is quite uncommon and'\
+                       ' requires manual analysis.'
+                desc = desc % (header_name, hvalue)
 
-                    i = Info('Strange header', desc, response.id,
-                             self.get_name())
-                    i.set_url(response.get_url())
-                    i['header_name'] = header_name
-                    i['header_value'] = hvalue
-                    i.add_to_highlight(hvalue, header_name)
-                    
-                    kb.kb.append(self, 'strange_headers', i)
+                i = Info('Strange header', desc, response.id,
+                         self.get_name())
+                i.set_url(response.get_url())
+                i[itag] = header_name
+                i['header_value'] = hvalue
+                i.add_to_highlight(hvalue, header_name)
 
-        # Now check for protocol anomalies
-        self._content_location_not_300(request, response)
+                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+                self.kb_append_uniq_group(self, 'strange_headers', i, ff,
+                                          group_klass=StrangeHeaderInfoSet)
 
     def _content_location_not_300(self, request, response):
         """
@@ -123,36 +109,6 @@ class strange_headers(GrepPlugin):
             
             kb.kb.append(self, 'anomaly', i)
 
-    def end(self):
-        """
-        This method is called when the plugin wont be used anymore.
-        """
-        headers = kb.kb.get('strange_headers', 'strange_headers')
-        # This is how I saved the data:
-        #    i['header_name'] = header_name
-        #    i['header_value'] = response.get_headers()[header_name]
-
-        # Group correctly
-        tmp = []
-        for i in headers:
-            tmp.append((i['header_name'], i.get_url()))
-
-        # And don't print duplicates
-        tmp = list(set(tmp))
-
-        res_dict, item_index = group_by_min_key(tmp)
-        if item_index == 0:
-            # Grouped by header_name
-            msg = 'The header: "%s" was sent by these URLs:'
-        else:
-            # Grouped by URL
-            msg = 'The URL: "%s" sent these strange headers:'
-
-        for k in res_dict:
-            om.out.information(msg % k)
-            for i in res_dict[k]:
-                om.out.information('- ' + i)
-
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
@@ -161,3 +117,16 @@ class strange_headers(GrepPlugin):
         This plugin greps all headers for non-common headers. This could be
         useful to identify special modules and features added to the server.
         """
+
+
+class StrangeHeaderInfoSet(InfoSet):
+    TEMPLATE = (
+        'The remote web server sent {{ uris|length }} HTTP responses with'
+        ' the uncommon response header "{{ header_name }}", one of the received'
+        ' header values is "{{ header_value }}". The first ten URLs which sent'
+        ' the uncommon header are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
