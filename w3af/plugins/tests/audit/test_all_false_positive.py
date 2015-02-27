@@ -55,7 +55,7 @@ class TestAllFP(PluginTest):
             plugins = run_config['plugins']
             self._scan(target, plugins)
 
-            infos = [str(i) for i in self.kb.get_all_infos()]
+            infos = [str(i) for i in self.kb.get_all_findings()]
 
             msg_i = 'audit.%s found a vulnerability in "%s"' % (audit_plugin,
                                                                 ','.join(infos))

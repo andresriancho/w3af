@@ -85,8 +85,7 @@ class error_500(GrepPlugin):
         """
         all_vuln_ids = set()
 
-        # get_all_infos also includes Vuln instances
-        for info in kb.kb.get_all_infos():
+        for info in kb.kb.get_all_findings():
             for _id in info.get_id():
                 all_vuln_ids.add(_id)
 

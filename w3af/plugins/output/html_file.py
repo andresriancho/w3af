@@ -31,9 +31,9 @@ import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.constants.severity import LOW, MEDIUM, HIGH
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -267,12 +267,10 @@ class html_file(OutputPlugin):
             '<td class="sub" width="80%">Issue </td>',
             '</tr>')
 
-        # Writes the vulnerabilities and informations to the results table
-        infos = kb.kb.get_all_infos()
+        # Writes the vulnerabilities and information instances to the table
+        for i in kb.kb.get_all_findings():
 
-        for i in infos:
-
-            #   Get all the information I'll be using
+            # Get all the information I'll be using
             desc = cgi.escape(i.get_desc())
             severity = cgi.escape(i.get_severity())
 
@@ -284,7 +282,7 @@ class html_file(OutputPlugin):
                 port = 'There is no port associated with this item.'
                 escaped_url = 'There is no URL associated with this item.'
 
-            if isinstance(i, Vuln):
+            if i.get_severity() in (LOW, MEDIUM, HIGH):
                 color = 'red'
                 i_class = 'Vulnerability'
             else:

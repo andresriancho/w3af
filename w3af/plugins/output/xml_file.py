@@ -291,9 +291,7 @@ class xml_file(OutputPlugin):
         # significant loss of data for any scenario?
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
 
-        # Add the vulnerability/information results
-        vulns = kb.kb.get_all_infos()
-        for i in vulns:
+        for i in kb.kb.get_all_findings():
             message_node = self._xmldoc.createElement("vulnerability")
             message_node.setAttribute("severity", str(i.get_severity()))
             message_node.setAttribute("method", str(i.get_method()))
@@ -304,7 +302,7 @@ class xml_file(OutputPlugin):
             # Wrap description in a <description> element and put it above the
             # request/response elements
             description_node = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.get_desc())
+            description = self._xmldoc.createTextNode(i.get_desc(with_id=False))
             description_node.appendChild(description)
             message_node.appendChild(description_node)
             if i.get_id():

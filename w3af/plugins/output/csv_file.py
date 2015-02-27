@@ -72,8 +72,7 @@ class csv_file(OutputPlugin):
             output_handler.close()
             return
 
-        # The output of get_all_infos() also includes Vuln instances
-        for info in kb.kb.get_all_infos():
+        for info in kb.kb.get_all_findings():
             try:
                 row = [info.get_severity(),
                        info.get_name(),
