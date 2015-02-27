@@ -705,7 +705,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertTrue(created)
         self.assertEqual(info_set.get_urls(), [vuln.get_url()])
         self.assertEqual(info_set.get_name(), vuln.get_name())
-        self.assertEqual(info_set.get_ids(), vuln.get_id())
+        self.assertEqual(info_set.get_id(), vuln.get_id())
         self.assertEqual(info_set.get_plugin_name(), vuln.get_plugin_name())
 
     def test_append_uniq_group_match_filter_func(self):

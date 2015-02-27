@@ -44,11 +44,11 @@ class TestInfoSet(unittest.TestCase):
         iset = InfoSet([i])
         self.assertEqual(iset.get_desc(), MockInfo.LONG_DESC)
 
-    def test_get_ids(self):
+    def test_get_id(self):
         i1 = MockInfo(ids=1)
         i2 = MockInfo(ids=2)
         iset = InfoSet([i2, i1])
-        self.assertEqual(iset.get_ids(), [1, 2])
+        self.assertEqual(iset.get_id(), [1, 2])
 
     def test_get_plugin_name(self):
         i = MockInfo()
@@ -60,7 +60,7 @@ class TestInfoSet(unittest.TestCase):
         i2 = MockInfo(ids=2)
         iset = InfoSet([i1])
         iset.add(i2)
-        self.assertEqual(iset.get_ids(), [1, 2])
+        self.assertEqual(iset.get_id(), [1, 2])
 
     def test_get_uniq_id(self):
         i = MockInfo()

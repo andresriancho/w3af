@@ -87,7 +87,7 @@ class InfoSet(object):
     def get_desc(self, with_id=False):
         return self.first_info.get_desc(with_id=with_id)
 
-    def get_ids(self):
+    def get_id(self):
         all_ids = []
         for info in self.infos:
             all_ids.extend(info.get_id())
