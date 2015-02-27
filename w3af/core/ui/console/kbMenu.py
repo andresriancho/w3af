@@ -57,8 +57,8 @@ class kbMenu(menu):
         }
 
     def _list_objects(self, descriptor, objs):
-        colNames = descriptor[0]
-        result = [colNames]
+        col_names = descriptor[0]
+        result = [col_names]
 
         for obj in objs:
             result.append([])
