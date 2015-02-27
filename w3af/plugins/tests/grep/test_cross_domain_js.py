@@ -37,7 +37,6 @@ from w3af.plugins.grep.cross_domain_js import cross_domain_js
 
 @attr('smoke')
 class TestCrossDomainJS(PluginTest):
-
     target_url = get_moth_http('/grep/cross_domain_js/')
 
     _run_configs = {
@@ -77,7 +76,6 @@ class TestCrossDomainJS(PluginTest):
 
 
 class TestCrossDomainJSRaw(unittest.TestCase):
-
     def setUp(self):
         create_temp_dir()
         kb.kb.cleanup()
@@ -125,7 +123,17 @@ class TestCrossDomainJSRaw(unittest.TestCase):
         self.plugin.grep(request, resp_2)
         self.plugin.end()
 
+        expected_desc = u'The application contains 2 different URLs with a' \
+                        u' script tag which includes JavaScript source from' \
+                        u' the potentially insecure "cdn.akamai-wannabe.net"' \
+                        u' third party site. This practice is not recommended' \
+                        u' because it delegates the security of the site to' \
+                        u' an external entity. The first ten vulnerable URLs' \
+                        u' are:\n - http://www.w3af.com/2\n' \
+                        u' - http://www.w3af.com/1\n'
+
         # pylint: disable=E1103
         info_set = kb.kb.get_one('cross_domain_js', 'cross_domain_js')
         self.assertEqual(set(info_set.get_urls()), {url_1, url_2})
+        self.assertEqual(info_set.get_desc(), expected_desc)
         # pylint: enable=E1103
