@@ -63,27 +63,27 @@ class strange_headers(GrepPlugin):
 
         # Check header names
         for header_name in response.get_headers().keys():
-            if header_name.upper() not in self.COMMON_HEADERS:
+            if header_name.upper() in self.COMMON_HEADERS:
+                continue
 
-                # Create a new info object and save it to the KB
-                hvalue = response.get_headers()[header_name]
+            # Create a new info object and save it to the KB
+            hvalue = response.get_headers()[header_name]
 
-                itag = 'header_name'
-                desc = 'The remote web server sent the HTTP header: "%s"'\
-                       ' with value: "%s", which is quite uncommon and'\
-                       ' requires manual analysis.'
-                desc = desc % (header_name, hvalue)
+            itag = 'header_name'
+            desc = 'The remote web server sent the HTTP header: "%s"'\
+                   ' with value: "%s", which is quite uncommon and'\
+                   ' requires manual analysis.'
+            desc = desc % (header_name, hvalue)
 
-                i = Info('Strange header', desc, response.id,
-                         self.get_name())
-                i.set_url(response.get_url())
-                i[itag] = header_name
-                i['header_value'] = hvalue
-                i.add_to_highlight(hvalue, header_name)
+            i = Info('Strange header', desc, response.id, self.get_name())
+            i.add_to_highlight(hvalue, header_name)
+            i.set_url(response.get_url())
+            i[itag] = header_name
+            i['header_value'] = hvalue
 
-                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'strange_headers', i, ff,
-                                          group_klass=StrangeHeaderInfoSet)
+            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+            self.kb_append_uniq_group(self, 'strange_headers', i, ff,
+                                      group_klass=StrangeHeaderInfoSet)
 
     def _content_location_not_300(self, request, response):
         """
