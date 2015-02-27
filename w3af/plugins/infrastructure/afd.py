@@ -157,18 +157,17 @@ class afd(InfrastructurePlugin):
         """
         :return: A list of strings that will be filtered by most IPS devices.
         """
-        res = []
-        res.append('../../../../etc/passwd')
-        res.append('./../../../etc/motd\0html')
-        res.append('id;uname -a')
-        res.append('<? passthru("id");?>')
-        res.append('../../WINNT/system32/cmd.exe?dir+c:\\')
-        res.append('type+c:\\winnt\\repair\\sam._')
-        res.append('ps -aux;')
-        res.append('../../../../bin/chgrp nobody /etc/shadow|')
-        res.append('SELECT TOP 1 name FROM sysusers')
-        res.append('exec master..xp_cmdshell dir')
-        res.append('exec xp_cmdshell dir')
+        res = ['../../../../etc/passwd',
+               './../../../etc/motd\0html',
+               'id;uname -a',
+               '<? passthru("id");?>',
+               '../../WINNT/system32/cmd.exe?dir+c:\\',
+               'type+c:\\winnt\\repair\\sam._',
+               'ps -aux;',
+               '../../../../bin/chgrp nobody /etc/shadow|',
+               'SELECT TOP 1 name FROM sysusers',
+               'exec master..xp_cmdshell dir',
+               'exec xp_cmdshell dir']
 
         res = [urllib.quote_plus(x) for x in res]
 

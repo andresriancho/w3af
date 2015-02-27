@@ -41,7 +41,7 @@ class un_ssl(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal variables
-        self._run = True
+        self._should_run = True
 
     def audit(self, freq, orig_response):
         """
@@ -52,70 +52,69 @@ class un_ssl(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        if not self._run:
+        if not self._should_run:
             return
+
+        # Define some variables
+        initial_uri = freq.get_uri()
+        insecure_uri = initial_uri.copy()
+        secure_uri = initial_uri.copy()
+
+        insecure_uri.set_protocol('http')
+        insecure_fr = copy.deepcopy(freq)
+        insecure_fr.set_url(insecure_uri)
+
+        secure_uri.set_protocol('https')
+        secure_fr = copy.deepcopy(freq)
+        secure_fr.set_url(secure_uri)
+
+        # Make sure that we ignore errors during this test
+        send_mutant = self._uri_opener.send_mutant
+        kwargs = {'grep': False, 'ignore_errors': True}
+
+        try:
+            insecure_response = send_mutant(insecure_fr, **kwargs)
+            secure_response = send_mutant(secure_fr,  **kwargs)
+        except (HTTPRequestException, ScanMustStopException):
+            # No vulnerability to report since one of these threw an error
+            # (because there is nothing listening on that port). It makes
+            # no sense to keep running since we already got an error
+            self._should_run = False
+
         else:
-            # Define some variables
-            initial_uri = freq.get_uri()
-            insecure_uri = initial_uri.copy()
-            secure_uri = initial_uri.copy()
+            if insecure_response is None or secure_response is None:
+                # No vulnerability to report since one of these threw an
+                # error (because there is nothing listening on that port).
+                # It makes no sense to keep running since we already got an
+                # error
+                self._should_run = False
+                return
 
-            insecure_uri.set_protocol('http')
-            insecure_fr = copy.deepcopy(freq)
-            insecure_fr.set_url(insecure_uri)
+            if self._redirects_to_secure(insecure_response, secure_response):
+                return
 
-            secure_uri.set_protocol('https')
-            secure_fr = copy.deepcopy(freq)
-            secure_fr.set_url(secure_uri)
+            if insecure_response.get_code() == secure_response.get_code()\
+            and relative_distance_boolean(insecure_response.get_body(),
+                                          secure_response.get_body(),
+                                          0.95):
+                desc = 'Secure content can be accessed using the insecure'\
+                       ' protocol HTTP. The vulnerable URLs are:'\
+                       ' "%s" - "%s" .'
+                desc = desc % (secure_uri, insecure_uri)
 
-            # Make sure that we ignore errors during this test
-            send_mutant = self._uri_opener.send_mutant
-            kwargs = {'grep': False, 'ignore_errors': True}
+                response_ids = [insecure_response.id, secure_response.id]
 
-            try:
-                insecure_response = send_mutant(insecure_fr, **kwargs)
-                secure_response = send_mutant(secure_fr,  **kwargs)
-            except (HTTPRequestException, ScanMustStopException):
-                # No vulnerability to report since one of these threw an error
-                # (because there is nothing listening on that port). It makes
-                # no sense to keep running since we already got an error
-                self._run = False
+                v = Vuln.from_fr('Secure content over insecure channel',
+                                 desc, severity.MEDIUM, response_ids,
+                                 self.get_name(), freq)
 
-            else:
-                if insecure_response is None or secure_response is None:
-                    # No vulnerability to report since one of these threw an
-                    # error (because there is nothing listening on that port).
-                    # It makes no sense to keep running since we already got an
-                    # error
-                    self._run = False
-                    return
+                self.kb_append(self, 'un_ssl', v)
 
-                if self._redirects_to_secure(insecure_response, secure_response):
-                    return
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
-                if insecure_response.get_code() == secure_response.get_code()\
-                and relative_distance_boolean(insecure_response.get_body(),
-                                              secure_response.get_body(),
-                                              0.95):
-                    desc = 'Secure content can be accessed using the insecure'\
-                           ' protocol HTTP. The vulnerable URLs are:'\
-                           ' "%s" - "%s" .'
-                    desc = desc % (secure_uri, insecure_uri)
-                    
-                    response_ids = [insecure_response.id, secure_response.id]
-                    
-                    v = Vuln.from_fr('Secure content over insecure channel',
-                                     desc, severity.MEDIUM, response_ids,
-                                     self.get_name(), freq)
-
-                    self.kb_append(self, 'un_ssl', v)
-                    
-                    om.out.vulnerability(v.get_desc(),
-                                         severity=v.get_severity())
-                    
-                    # In most cases, when one resource is available, all are
-                    # so we just stop searching for this vulnerability
-                    self._run = False
+                # In most cases, when one resource is available, all are
+                # so we just stop searching for this vulnerability
+                self._should_run = False
 
     def handle_url_error(self, uri, url_error):
         """
@@ -144,7 +143,7 @@ class un_ssl(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin verifies that URL's that are available using HTTPS aren't
+        This plugin verifies that URLs that are available using HTTPS aren't
         available over an insecure HTTP protocol.
 
         To detect this, the plugin simply requests "https://abc/a.asp" and

@@ -93,7 +93,7 @@ class csrf(AuditPlugin):
         # Ok, we have found vulnerable to CSRF attack request
         msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
         
-        v = Vuln.from_fr('CSRF vulnerability', msg, severity.HIGH,
+        v = Vuln.from_fr('CSRF vulnerability', msg, severity.MEDIUM,
                          orig_response.id, self.get_name(), freq)
         
         self.kb_append_uniq(self, 'csrf', v)
@@ -203,7 +203,7 @@ class csrf(AuditPlugin):
         # trivial validations)
         #
         # Only create mutants that modify the token parameter name 
-        mutants = create_mutants(freq, [token_value[::-1],], False, token_pname_lst)
+        mutants = create_mutants(freq, [token_value[::-1]], False, token_pname_lst)
         
         for mutant in mutants:
             mutant_response = self._uri_opener.send_mutant(mutant)
@@ -260,9 +260,9 @@ class csrf(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.
+        This plugin finds Cross Site Request Forgeries (CSRF) vulnerabilities.
 
-        The simplest type of csrf is checked to be vulnerable, the web application
-        must have sent a permanent cookie, and the aplicacion must have query
-        string parameters.
+        The simplest type of csrf is checked to be vulnerable, the web
+        application must have sent a permanent cookie, and the aplicacion must
+        have query string parameters.
         """
