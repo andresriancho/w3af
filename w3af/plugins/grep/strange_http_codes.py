@@ -19,10 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class strange_http_codes(GrepPlugin):
@@ -31,14 +30,7 @@ class strange_http_codes(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    COMMON_HTTP_CODES = set([200,
-                             301, 302, 303, 304,
-                             401, 403, 404,
-                             500, 501])
-
-    def __init__(self):
-        GrepPlugin.__init__(self)
+    COMMON_HTTP_CODES = {200, 301, 302, 303, 304, 401, 403, 404, 500, 501}
 
     def grep(self, request, response):
         """
@@ -51,35 +43,21 @@ class strange_http_codes(GrepPlugin):
         if response.get_code() in self.COMMON_HTTP_CODES:
             return
 
-        # I check if the kb already has a info object with this code:
-        strange_code_infos = kb.kb.get('strange_http_codes',
-                                       'strange_http_codes')
+        # Create a new info object from scratch and save it to the kb
+        itag = 'code'
+        desc = 'The remote Web server sent a strange HTTP response code:'\
+               ' "%s" with the message: "%s", manual inspection is recommended.'
+        desc = desc % (response.get_code(), response.get_msg())
 
-        corresponding_info = None
-        for info_obj in strange_code_infos:
-            if info_obj['code'] == response.get_code():
-                corresponding_info = info_obj
-                break
+        i = Info('Strange HTTP response code', desc, response.id, self.get_name())
+        i.add_to_highlight(str(response.get_code()), response.get_msg())
+        i.set_url(response.get_url())
+        i[itag] = response.get_code()
+        i['message'] = response.get_msg()
 
-        if corresponding_info:
-            # Work with the "old" info object:
-            id_list = corresponding_info.get_id()
-            id_list.append(response.id)
-            corresponding_info.set_id(id_list)
-
-        else:
-            # Create a new info object from scratch and save it to the kb:
-            desc = 'The remote Web server sent a strange HTTP response code:'\
-                   ' "%s" with the message: "%s", manual inspection is advised.'
-            desc = desc % (response.get_code(), response.get_msg())
-            
-            i = Info('Strange HTTP response code', desc,
-                     response.id, self.get_name())
-            i.set_url(response.get_url())
-            i['code'] = response.get_code()
-            i.add_to_highlight(str(response.get_code()), response.get_msg())
-            
-            self.kb_append_uniq(self, 'strange_http_codes', i, 'URL')
+        ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+        self.kb_append_uniq_group(self, 'strange_http_codes', i, ff,
+                                  group_klass=StrangeCodesInfoSet)
 
     def get_long_desc(self):
         """
@@ -89,3 +67,16 @@ class strange_http_codes(GrepPlugin):
         Analyze HTTP response codes sent by the remote web application and
         report uncommon findings.
         """
+
+
+class StrangeCodesInfoSet(InfoSet):
+    TEMPLATE = (
+        'The remote web server sent {{ uris|length }} HTTP responses with'
+        ' the uncommon response status code {{ code }} using "{{ message }}"'
+        ' as message. The first ten URLs which sent the uncommon status code'
+        ' are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
