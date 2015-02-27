@@ -45,6 +45,13 @@ class InfoSet(object):
     it would have been harder to refactor the whole code and the end result
     would have been difficult to read.
 
+    Note that:
+        * It can hold both Info and Vuln instances.
+
+        * It's going to use the first Info instance to retrieve important things
+          such as severity, name, description, etc. Those should all be common
+          to the set being hold here.
+
     :see: https://github.com/andresriancho/w3af/issues/3955
     """
     def __init__(self, info_instances):
@@ -109,6 +116,9 @@ class InfoSet(object):
 
     def get_attribute(self, attr_name):
         return self.first_info[attr_name]
+
+    def get_severity(self):
+        return self.first_info.get_severity()
 
     def __eq__(self, other):
         return self.get_uniq_id() == other.get_uniq_id()
