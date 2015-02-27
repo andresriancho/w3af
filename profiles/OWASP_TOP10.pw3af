@@ -118,8 +118,6 @@ diff_ratio = 0.35
 
 [grep.file_upload]
 
-[grep.ajax]
-
 [infrastructure.fingerprint_WAF]
 
 [grep.error_500]

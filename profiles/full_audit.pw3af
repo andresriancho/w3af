@@ -167,8 +167,6 @@ only_target_domain = True
 
 [grep.strange_reason]
 
-[grep.ajax]
-
 [grep.strange_headers]
 
 [grep.ssn]
