@@ -225,6 +225,16 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', 'abc')
         self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
+    def test_all_of_info_vuln(self):
+        i1 = MockInfo()
+        v1 = MockVuln()
+
+        kb.append('a', 'b', i1)
+        kb.append('x', 'y', v1)
+
+        self.assertEqual(kb.get_all_vulns(), [v1])
+        self.assertEqual(kb.get_all_infos(), [i1, v1])
+
     def test_dump_empty(self):
         empty = kb.dump()
         self.assertEqual(empty, {})
