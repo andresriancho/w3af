@@ -19,6 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import textwrap
+
+from jinja2 import Template, StrictUndefined
+
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.kb.info import Info
 
@@ -56,6 +60,8 @@ class InfoSet(object):
 
     :see: https://github.com/andresriancho/w3af/issues/3955
     """
+    TEMPLATE = None
+
     def __init__(self, info_instances):
         if not len(info_instances):
             raise ValueError('Empty InfoSets are not allowed')
@@ -85,7 +91,24 @@ class InfoSet(object):
         return self.first_info.get_name()
 
     def get_desc(self, with_id=False):
-        return self.first_info.get_desc(with_id=with_id)
+        if self.TEMPLATE is None:
+            return self.first_info.get_desc(with_id=with_id)
+
+        # We render the template using the information set data
+        context = {'urls': [str(u) for u in self.get_urls()],
+                   'uris': [str(u) for u in self.get_uris()],
+                   'severity': self.get_severity(),
+                   'name': self.get_name(),
+                   'id': self.get_id(),
+                   'method': self.get_method(),
+                   'plugin': self.get_plugin_name()}
+        context.update(self.first_info.items())
+
+        template = Template(textwrap.dedent(self.TEMPLATE),
+                            undefined=StrictUndefined,
+                            trim_blocks=True,
+                            lstrip_blocks=True)
+        return template.render(context)
 
     def get_id(self):
         all_ids = []

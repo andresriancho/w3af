@@ -28,6 +28,7 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class private_ip(GrepPlugin):
@@ -69,7 +70,16 @@ class private_ip(GrepPlugin):
         
         self._analyze_headers(request, response)
         self._analyze_html(request, response)
-        
+
+    def _get_header_name(self, response, ip_address, regex):
+        for header_name, header_value in response.get_headers().iteritems():
+            for header_ip_address in regex.findall(header_value):
+                header_ip_address = header_ip_address.strip()
+                if header_ip_address == ip_address:
+                    return header_name
+
+        return None
+
     def _analyze_headers(self, request, response):
         """
         Search for IP addresses in HTTP headers
@@ -90,12 +100,7 @@ class private_ip(GrepPlugin):
                 # I want to know the header name, this shouldn't consume much
                 # CPU since we're only doing it when the headers already match
                 # the initial regex run
-                for header_name, header_value in response.get_headers().iteritems():
-                    for header_ip_address in regex.findall(header_value):
-                        if header_ip_address == ip_address:
-                            break
-                else:
-                    header_name = None
+                header_name = self._get_header_name(response, ip_address, regex)
 
                 itag = 'group_by'
                 desc = 'The URL "%s" returned the private IP address: "%s"'\
@@ -108,10 +113,12 @@ class private_ip(GrepPlugin):
                 v.set_url(response.get_url())
                 v.add_to_highlight(ip_address)
                 v['ip_address'] = ip_address
+                v['header_name'] = header_name
                 v[itag] = (ip_address, header_name)
 
                 ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'header', v, ff)
+                self.kb_append_uniq_group(self, 'header', v, ff,
+                                          group_klass=HeaderPrivateIPInfoSet)
 
     def _analyze_html(self, request, response):
         """
@@ -156,7 +163,8 @@ class private_ip(GrepPlugin):
                 v[itag] = ip_address
 
                 ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'HTML', v, ff)
+                self.kb_append_uniq_group(self, 'HTML', v, ff,
+                                          group_klass=HTMLPrivateIPInfoSet)
 
     def _generate_ignores(self, response):
         """
@@ -185,3 +193,27 @@ class private_ip(GrepPlugin):
         return """
         This plugin greps every page body and headers for private IP addresses.
         """
+
+
+class HTMLPrivateIPInfoSet(InfoSet):
+    TEMPLATE = (
+        'A total of {{ uris|length }} HTTP responses contained the private IP'
+        ' address {{ ip_address }} in the response body. The first ten'
+        ' matching URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class HeaderPrivateIPInfoSet(InfoSet):
+    TEMPLATE = (
+        'A total of {{ uris|length }} HTTP responses contained the private IP'
+        ' address {{ ip_address }} in the "{{ header_name }}" response header.'
+        ' The first ten matching URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
