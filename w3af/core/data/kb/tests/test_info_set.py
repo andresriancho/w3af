@@ -103,5 +103,5 @@ class TestInfoSet(unittest.TestCase):
 
 class TemplatedInfoSet(InfoSet):
     TEMPLATE = '''\
-    Foos and bars {{ total_count }}
+    Foos and bars {{ uris|length }}
     '''
