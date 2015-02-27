@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import collections
 import threading
 import cPickle
-import types
 import copy
 
 from w3af.core.data.fuzzer.utils import rand_alpha
@@ -46,6 +45,9 @@ class BasicKnowledgeBase(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    UPDATE = 'update'
+    APPEND = 'append'
+    ADD_URL = 'add_url'
 
     def __init__(self):
         self._kb_lock = threading.RLock()
@@ -205,7 +207,7 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
-    def get(self, plugin_name, location_b=None):
+    def get(self, plugin_name, location_b, check_types=True):
         """
         :param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
@@ -294,8 +296,6 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         # TODO: Why doesn't this work with a WeakValueDictionary?
         self.observers = {} #WeakValueDictionary()
-        self.type_observers = {} #WeakValueDictionary()
-        self.url_observers = []
         self._observer_id = 0
 
     def clear(self, location_a, location_b):
@@ -380,7 +380,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
         self.db.execute(query, t)
-        self._notify(location_a, location_b, value)
+        self._notify_observers(self.APPEND, location_a, location_b, value,
+                               ignore_type=ignore_type)
 
     def get(self, location_a, location_b, check_types=True):
         """
@@ -456,7 +457,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         params = (pickle, new_uniq_id, old_uniq_id)
         result = self.db.execute(query % self.table_name, params).result()
 
-        if not result.rowcount:
+        if result.rowcount:
+            self._notify_observers(self.UPDATE, old_info, update_info)
+        else:
             ex = 'Failed to update() %s instance because' \
                  ' the original unique_id (%s) does not exist in the DB,' \
                  ' or the new unique_id (%s) is invalid.'
@@ -464,48 +467,18 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                                     old_uniq_id,
                                     new_uniq_id))
 
-    def add_observer(self, location_a, location_b, observer):
+    def add_observer(self, observer):
         """
-        Add the observer function to the observer list. The function will be
-        called when there is a change in (location_a, location_b).
-
-        You can use None in location_a or location_b as wildcards.
-
-        The observer function needs to be a function which takes three params:
-            * location_a
-            * location_b
-            * value that's added to the kb location
-
-        :return: None
+        Add the observer instance to the list.
         """
-        if not isinstance(location_a, (basestring, types.NoneType)) or \
-        not isinstance(location_a, (basestring, types.NoneType)):
-            raise TypeError('Observer locations need to be strings or None.')
-
         observer_id = self.get_observer_id()
-        self.observers[(location_a, location_b, observer_id)] = observer
-
-    def add_types_observer(self, type_filter, observer):
-        """
-        Add the observer function to the list of functions to be called when a
-        new object that is of type "type_filter" is added to the KB.
-
-        The type_filter must be one of Info, Vuln or Shell.
-
-        :return: None
-        """
-        if type_filter not in (Info, Vuln, Shell):
-            msg = 'The type_filter needs to be one of Info, Vuln or Shell'
-            raise TypeError(msg)
-
-        observer_id = self.get_observer_id()
-        self.type_observers[(type_filter, observer_id)] = observer
+        self.observers[observer_id] = observer
 
     def get_observer_id(self):
         self._observer_id += 1
         return self._observer_id
 
-    def _notify(self, location_a, location_b, value):
+    def _notify_observers(self, method, *args, **kwargs):
         """
         Call the observer if the location_a/location_b matches with the
         configured observers.
@@ -514,23 +487,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         # Note that I copy the items list in order to iterate though it without
         # any issues like the size changing
-        for (obs_loc_a, obs_loc_b, _), observer in self.observers.items()[:]:
-
-            if obs_loc_a is None and obs_loc_b is None:
-                observer(location_a, location_b, value)
-                continue
-
-            if obs_loc_a == location_a and obs_loc_b is None:
-                observer(location_a, location_b, value)
-                continue
-
-            if obs_loc_a == location_a and obs_loc_b == location_b:
-                observer(location_a, location_b, value)
-                continue
-
-        for (type_filter, _), observer in self.type_observers.items()[:]:
-            if isinstance(value, type_filter):
-                observer(location_a, location_b, value)
+        for _, observer in self.observers.items()[:]:
+            functor = getattr(observer, method)
+            functor(*args, **kwargs)
 
     def get_all_entries_of_class(self, klass):
         """
@@ -594,20 +553,6 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         return self.urls
 
-    def add_url_observer(self, observer):
-        self.url_observers.append(observer)
-
-    def _notify_url_observers(self, new_url):
-        """
-        Call the observer with new_url.
-
-        :return: None
-        """
-        # Note that I copy the items list in order to iterate though it without
-        # any issues like the size changing
-        for observer in self.url_observers[:]:
-            observer(new_url)
-
     def add_url(self, url):
         """
         :return: True if the URL was previously unknown
@@ -616,7 +561,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             msg = 'add_url requires a URL as parameter got %s instead.'
             raise TypeError(msg % type(url))
 
-        self._notify_url_observers(url)
+        self._notify_observers(self.ADD_URL, url)
         return self.urls.add(url)
 
     def get_all_known_fuzzable_requests(self):
