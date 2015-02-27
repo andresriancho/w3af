@@ -53,7 +53,6 @@ class console(OutputPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self):
         OutputPlugin.__init__(self)
 
