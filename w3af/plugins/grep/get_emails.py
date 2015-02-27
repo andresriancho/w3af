@@ -25,9 +25,11 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class get_emails(GrepPlugin):
@@ -42,6 +44,7 @@ class get_emails(GrepPlugin):
 
         # User configured variables
         self._only_target_domain = True
+        self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
         """
@@ -74,7 +77,7 @@ class get_emails(GrepPlugin):
             om.out.debug(msg % response.get_url())
             return
 
-        emails = dp.get_emails(domain)
+        emails = set(dp.get_emails(domain))
 
         for mail_address in emails:
             # Reduce false positives
@@ -84,46 +87,28 @@ class get_emails(GrepPlugin):
             # Email address are case insensitive
             mail_address = mail_address.lower()
             url = response.get_url()
+            uniq_key = (mail_address, url)
 
-            email_map = {}
-            for info_obj in kb.kb.get('emails', 'emails'):
-                mail_string = info_obj['mail']
-                email_map[mail_string] = info_obj
+            if uniq_key in self._already_reported:
+                continue
 
-            if mail_address not in email_map:
-                # Create a new info object, and report it
-                desc = 'The mail account: "%s" was found in: \n- %s'\
-                       ' - In request with id: %s.'
-                desc = desc % (mail_address, url, response.id)
+            # Avoid dups
+            self._already_reported.add(uniq_key)
 
-                i = Info('Exposed email address', desc, response.id,
-                         self.get_name())
-                i.set_url(url)
-                i['mail'] = mail_address
-                i['url_list'] = set([url,])
-                i['user'] = mail_address.split('@')[0]
-                i.add_to_highlight(mail_address)
-                
-                self.kb_append('emails', kb_key, i)
+            # Create a new info object, and report it
+            itag = 'mail'
+            desc = 'The mail account: "%s" was found at "%s".'
+            desc = desc % (mail_address, url)
 
-            else:
+            i = Info('Exposed email address', desc, response.id, self.get_name())
+            i.add_to_highlight(mail_address)
+            i.set_url(url)
+            i[itag] = mail_address
+            i['user'] = mail_address.split('@')[0]
 
-                # Get the corresponding info object.
-                i = email_map[mail_address]
-                # And work
-                if url not in i['url_list']:
-                    # This email was already found in some other URL
-                    # I'm just going to modify the url_list and the description
-                    # message of the information object.
-                    id_list_of_info = i.get_id()
-                    id_list_of_info.append(response.id)
-                    i.set_id(id_list_of_info)
-                    i.set_url(url)
-                    desc = i.get_desc()
-                    desc += '\n- %s - In request with id: %s.'
-                    desc = desc % (url, response.id)
-                    i.set_desc(desc)
-                    i['url_list'].add(url)
+            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+            self.kb_append_uniq_group('emails', kb_key, i, ff,
+                                      group_klass=EmailInfoSet)
 
     def set_options(self, options_list):
         self._only_target_domain = options_list['only_target_domain'].get_value()
@@ -150,3 +135,15 @@ class get_emails(GrepPlugin):
         places, like bruteforce plugins, and are of great value when doing a
         complete information security assessment.
         """
+
+
+class EmailInfoSet(InfoSet):
+    TEMPLATE = (
+        'The application discloses the "{{ mail }}" email address in'
+        ' {{ uris|length }} different HTTP responses. The first ten URLs'
+        ' which sent the email are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
