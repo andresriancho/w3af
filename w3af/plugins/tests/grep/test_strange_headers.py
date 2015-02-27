@@ -31,7 +31,7 @@ from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.plugins.grep.strange_headers import strange_headers
 
 
-class test_strange_headers(unittest.TestCase):
+class TestStrangeHeaders(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()

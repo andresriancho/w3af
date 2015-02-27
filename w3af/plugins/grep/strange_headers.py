@@ -33,54 +33,23 @@ class strange_headers(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     # Remember that this headers are only the ones SENT BY THE SERVER TO THE
     # CLIENT. Headers must be uppercase in order to compare them
-    COMMON_HEADERS = set([
-        "ACCEPT-RANGES",
-        "AGE",
-        "ALLOW",
-        "CONNECTION",
-        "CONTENT-DISPOSITION",
-        "CONTENT-ENCODING",
-        "CONTENT-LENGTH",
-        "CONTENT-TYPE",
-        "CONTENT-SCRIPT-TYPE",
-        "CONTENT-STYLE-TYPE",
-        "CONTENT-SECURITY-POLICY",
-        "CONTENT-SECURITY-POLICY-REPORT-ONLY",
-        "CONTENT-LANGUAGE",
-        "CONTENT-LOCATION",
-        "CACHE-CONTROL",
-        "DATE",
-        "EXPIRES",
-        "ETAG",
-        "FRAME-OPTIONS",
-        "KEEP-ALIVE",
-        "LAST-MODIFIED",
-        "LOCATION",
-        "P3P",
-        "PUBLIC",
-        "PUBLIC-KEY-PINS",
-        "PUBLIC-KEY-PINS-REPORT-ONLY",
-        "PRAGMA",
-        "PROXY-CONNECTION",
-        "SET-COOKIE",
-        "SERVER",
-        "STRICT-TRANSPORT-SECURITY",
-        "TRANSFER-ENCODING",
-        "VIA",
-        "VARY",
-        "WWW-AUTHENTICATE",
-        "X-FRAME-OPTIONS",
-        "X-CONTENT-TYPE-OPTIONS",
-        "X-POWERED-BY",
-        "X-ASPNET-VERSION",
-        "X-CACHE",
-        "X-UA-COMPATIBLE",
-        "X-PAD",
-        "X-XSS-PROTECTION"]
-    )
+    COMMON_HEADERS = {'ACCEPT-RANGES', 'AGE', 'ALLOW', 'CONNECTION',
+                      'CONTENT-DISPOSITION', 'CONTENT-ENCODING',
+                      'CONTENT-LENGTH', 'CONTENT-TYPE', 'CONTENT-SCRIPT-TYPE',
+                      'CONTENT-STYLE-TYPE', 'CONTENT-SECURITY-POLICY',
+                      'CONTENT-SECURITY-POLICY-REPORT-ONLY', 'CONTENT-LANGUAGE',
+                      'CONTENT-LOCATION', 'CACHE-CONTROL', 'DATE', 'EXPIRES',
+                      'ETAG', 'FRAME-OPTIONS', 'KEEP-ALIVE', 'LAST-MODIFIED',
+                      'LOCATION', 'P3P', 'PUBLIC', 'PUBLIC-KEY-PINS',
+                      'PUBLIC-KEY-PINS-REPORT-ONLY', 'PRAGMA',
+                      'PROXY-CONNECTION', 'SET-COOKIE', 'SERVER',
+                      'STRICT-TRANSPORT-SECURITY', 'TRANSFER-ENCODING', 'VIA',
+                      'VARY', 'WWW-AUTHENTICATE', 'X-FRAME-OPTIONS',
+                      'X-CONTENT-TYPE-OPTIONS', 'X-POWERED-BY',
+                      'X-ASPNET-VERSION', 'X-CACHE', 'X-UA-COMPATIBLE', 'X-PAD',
+                      'X-XSS-PROTECTION'}
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -132,19 +101,20 @@ class strange_headers(GrepPlugin):
 
     def _content_location_not_300(self, request, response):
         """
-        Check if the response has a content-location header and the response code
-        is not in the 300 range.
+        Check if the response has a content-location header and the response
+        code is not in the 300 range.
 
         :return: None, all results are saved in the kb.
         """
-        if 'content-location' in response.get_lower_case_headers() \
-        and response.get_code() > 300\
-        and response.get_code() < 310:
+        headers = response.get_headers()
+        header_value, header_name = headers.iget('content-location')
+
+        if header_value is not None and 300 < response.get_code() < 310:
             desc = 'The URL: "%s" sent the HTTP header: "content-location"'\
                    ' with value: "%s" in an HTTP response with code %s which'\
                    ' is a violation to the RFC.'
             desc = desc % (response.get_url(),
-                           response.get_lower_case_headers()['content-location'],
+                           header_value,
                            response.get_code())
             i = Info('Content-Location HTTP header anomaly', desc,
                      response.id, self.get_name())
@@ -170,17 +140,17 @@ class strange_headers(GrepPlugin):
         # And don't print duplicates
         tmp = list(set(tmp))
 
-        resDict, itemIndex = group_by_min_key(tmp)
-        if itemIndex == 0:
+        res_dict, item_index = group_by_min_key(tmp)
+        if item_index == 0:
             # Grouped by header_name
             msg = 'The header: "%s" was sent by these URLs:'
         else:
             # Grouped by URL
             msg = 'The URL: "%s" sent these strange headers:'
 
-        for k in resDict:
+        for k in res_dict:
             om.out.information(msg % k)
-            for i in resDict[k]:
+            for i in res_dict[k]:
                 om.out.information('- ' + i)
 
     def get_long_desc(self):
@@ -188,6 +158,6 @@ class strange_headers(GrepPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin greps all headers for non-common headers. This could be useful
-        to identify special modules and features added to the server.
+        This plugin greps all headers for non-common headers. This could be
+        useful to identify special modules and features added to the server.
         """
