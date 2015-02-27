@@ -31,6 +31,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.kb_observer import KBObserver
+from w3af.core.data.constants.severity import INFORMATION, MEDIUM, HIGH, LOW
 
 
 class _Guarded(object):
@@ -99,15 +100,13 @@ class VulnerabilityCountObserver(KBObserver):
         """
         if isinstance(value, Shell):
             self.found_count_guardian.shll.inc()
-            return
 
-        if isinstance(value, Vuln):
-            self.found_count_guardian.vuln.inc()
-            return
+        elif hasattr(value, 'get_severity'):
+            if value.get_severity() in (LOW, MEDIUM, HIGH):
+                self.found_count_guardian.vuln.inc()
 
-        if isinstance(value, Info):
-            self.found_count_guardian.info.inc()
-            return
+            elif value.get_severity() == INFORMATION:
+                self.found_count_guardian.info.inc()
 
 
 class FoundExceptionsStatusBar(gtk.EventBox):
