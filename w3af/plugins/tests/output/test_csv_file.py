@@ -90,9 +90,9 @@ class TestCSVFile(PluginTest):
         vuln_reader = csv.reader(open(self.OUTPUT_FILE, 'rb'), delimiter=',',
                                  quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        for name, method, uri, var, post_data, _id, desc in vuln_reader:
+        for severity, name, method, uri, var, post_data, _id, desc in vuln_reader:
             mutant = create_mutant_from_params(method, uri, var, post_data)
-            v = Vuln.from_mutant(name, desc, 'High', json.loads(_id),
+            v = Vuln.from_mutant(name, desc, severity, json.loads(_id),
                                  'TestCase', mutant)
             file_vulns.append(v)
 
