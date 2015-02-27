@@ -174,7 +174,7 @@ class InfoSet(object):
         return str(hash(concat_all))
 
     def get_attribute(self, attr_name):
-        return self.first_info[attr_name]
+        return self.first_info.get(attr_name, None)
 
     def get_severity(self):
         return self.first_info.get_severity()
