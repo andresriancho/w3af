@@ -87,7 +87,6 @@ class csrf(AuditPlugin):
 
         # Does the request have CSRF token in query string or POST payload?
         if self._find_csrf_token(freq):
-            om.out.debug('Token for %s exists and was checked' % freq.get_url())
             return
 
         # Ok, we have found vulnerable to CSRF attack request
@@ -164,9 +163,8 @@ class csrf(AuditPlugin):
 
     def _find_csrf_token(self, freq):
         """
-        :return: A dict with the first identified token
+        :return: A tuple with the first identified csrf token and value
         """
-        result = {}
         post_data = freq.get_raw_data()
         querystring = freq.get_querystring()
         
@@ -174,16 +172,12 @@ class csrf(AuditPlugin):
             
             if self.is_csrf_token(token.get_name(), token.get_value()):
 
-                result[token.get_name()] = token.get_value()
-
                 msg = 'Found CSRF token %s in parameter %s for URL %s.'
                 om.out.debug(msg % (token.get_value(),
                                     token.get_name(),
                                     freq.get_url()))
 
-                return result
-        
-        return result
+                return token.get_name(), token.get_value()
 
     def _is_token_checked(self, freq, token, orig_response):
         """
