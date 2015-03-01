@@ -148,10 +148,10 @@ class TestKeepalive(unittest.TestCase):
         We want to use different instances of the ConnectionManager for HTTP
         and HTTPS.
         """
-        conn_mgr_http = id(HTTPHandler()._cm)
-        conn_mgr_https = id(HTTPSHandler(':')._cm)
+        conn_mgr_http = HTTPHandler()._cm
+        conn_mgr_https = HTTPSHandler(':')._cm
         
-        self.assertNotEqual(conn_mgr_http, conn_mgr_https)
+        self.assertIsNot(conn_mgr_http, conn_mgr_https)
 
     def test_close_all_established_sockets(self):
         self.close_all_sockets(0)
