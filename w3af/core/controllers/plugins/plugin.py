@@ -36,6 +36,7 @@ from w3af.core.controllers.misc.decorators import memoized
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.url.helpers import new_no_content_resp
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class Plugin(Configurable):
@@ -144,12 +145,14 @@ class Plugin(Configurable):
         if added_to_kb:
             om.out.report_finding(info)
 
-    def kb_append_uniq_group(self, location_a, location_b, info, filter_func):
+    def kb_append_uniq_group(self, location_a, location_b, info,
+                             group_klass=InfoSet):
         """
         kb.kb.append_uniq_group a vulnerability to the KB
         """
         info_set, created = kb.kb.append_uniq_group(location_a, location_b,
-                                                    info, filter_func)
+                                                    info,
+                                                    group_klass=group_klass)
 
         if created:
             om.out.report_finding(info_set.first_info)

@@ -39,10 +39,25 @@ class TestInfoSet(unittest.TestCase):
         iset = InfoSet([i])
         self.assertEqual(iset.get_name(), 'TestCase')
 
-    def test_get_desc(self):
+    def test_get_desc_no_template(self):
         i = MockInfo()
         iset = InfoSet([i])
         self.assertEqual(iset.get_desc(), MockInfo.LONG_DESC)
+
+    def test_get_desc_template(self):
+        i = MockInfo()
+        tiset = TemplatedInfoSet([i])
+        self.assertEqual(tiset.get_desc(), 'Foos and bars 1')
+
+    def test_get_desc_template_info_attr_access(self):
+        value = 'Yuuup!'
+
+        i = MockInfo()
+        i['tag'] = value
+        iset = InfoSet([i])
+        iset.TEMPLATE = '{{ tag }}'
+
+        self.assertEqual(iset.get_desc(), value)
 
     def test_get_id(self):
         i1 = MockInfo(ids=1)
@@ -84,3 +99,9 @@ class TestInfoSet(unittest.TestCase):
         iset1_clone = loads(pickled_iset1)
 
         self.assertEqual(iset1.get_uniq_id(), iset1_clone.get_uniq_id())
+
+
+class TemplatedInfoSet(InfoSet):
+    TEMPLATE = '''\
+    Foos and bars {{ uris|length }}
+    '''

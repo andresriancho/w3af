@@ -106,7 +106,13 @@ class test_private_ip(unittest.TestCase):
         self.assertEquals(len(info_sets), 1)
 
         info_set = info_sets[0]
+        expected_desc = 'A total of 2 HTTP responses contained the private IP' \
+                        ' address 10.3.4.5 in the "x-via" response header. The' \
+                        ' first ten matching URLs are:\n' \
+                        ' - http://www.w3af.com/2\n' \
+                        ' - http://www.w3af.com/1\n'
         self.assertEqual(info_set.get_id(), [1, 2])
+        self.assertEqual(info_set.get_desc(), expected_desc)
 
     def test_private_ip_find_header_no_group(self):
         body = 'header content footer'

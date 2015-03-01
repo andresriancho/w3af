@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import copy
 
-from mock import Mock, call
+from mock import Mock
 
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.exceptions import DBException
@@ -32,7 +32,6 @@ from w3af.core.data.kb.knowledge_base import kb, DBKnowledgeBase
 from w3af.core.data.kb.tests.test_info import MockInfo
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.shell import Shell
-from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
@@ -695,11 +694,8 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertRaises(RuntimeError, kb.get_one, 'a', 'b')
 
     def test_append_uniq_group_empty_address(self):
-        def filter_func(*args):
-            pass
-
         vuln = MockVuln()
-        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln)
 
         self.assertIsInstance(info_set, InfoSet)
         self.assertTrue(created)
@@ -709,25 +705,21 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(info_set.get_plugin_name(), vuln.get_plugin_name())
 
     def test_append_uniq_group_match_filter_func(self):
-        def filter_func(*args):
-            return True
-
         vuln = MockVuln()
-        kb.append_uniq_group('a', 'b', vuln, filter_func)
-        info_set, created = kb.append_uniq_group('a', 'b', vuln, filter_func)
+        kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetTrue)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln,
+                                                 group_klass=MockInfoSetTrue)
 
         self.assertFalse(created)
         self.assertIsInstance(info_set, InfoSet)
         self.assertEqual(len(info_set.infos), 2)
 
     def test_append_uniq_group_no_match_filter_func(self):
-        def filter_func(*args):
-            return False
-
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
-        kb.append_uniq_group('a', 'b', vuln1, filter_func)
-        info_set, created = kb.append_uniq_group('a', 'b', vuln2, filter_func)
+        kb.append_uniq_group('a', 'b', vuln1, group_klass=MockInfoSetFalse)
+        info_set, created = kb.append_uniq_group('a', 'b', vuln2,
+                                                 group_klass=MockInfoSetFalse)
 
         self.assertIsInstance(info_set, InfoSet)
         self.assertTrue(created)
@@ -742,15 +734,12 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
     def test_append_uniq_group_filter_func_specific(self):
-        def filter_func(info_set, info_inst):
-            return info_inst.get_name() == info_set.get_name()
-
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
         vuln3 = MockVuln(name='Foos', _id=42)
-        kb.append_uniq_group('a', 'b', vuln1, filter_func)
-        kb.append_uniq_group('a', 'b', vuln2, filter_func)
-        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+        kb.append_uniq_group('a', 'b', vuln1, group_klass=MockInfoSetNames)
+        kb.append_uniq_group('a', 'b', vuln2, group_klass=MockInfoSetNames)
+        kb.append_uniq_group('a', 'b', vuln3, group_klass=MockInfoSetNames)
 
         raw_data = kb.get('a', 'b')
         self.assertEqual(len(raw_data), 2)
@@ -763,9 +752,6 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
     def test_append_uniq_group_filter_func_attribute_match(self):
-        def filter_func(info_set, info_inst):
-            return info_inst['tag'] == info_set.get_attribute('tag')
-
         vuln1 = MockVuln(name='Foos')
         vuln1['tag'] = 'foo'
 
@@ -775,9 +761,9 @@ class TestKnowledgeBase(unittest.TestCase):
         vuln3 = MockVuln(_id=42)
         vuln3['tag'] = 'foo'
 
-        kb.append_uniq_group('a', 'b', vuln1, filter_func)
-        kb.append_uniq_group('a', 'b', vuln2, filter_func)
-        kb.append_uniq_group('a', 'b', vuln3, filter_func)
+        kb.append_uniq_group('a', 'b', vuln1, group_klass=MockInfoSetITag)
+        kb.append_uniq_group('a', 'b', vuln2, group_klass=MockInfoSetITag)
+        kb.append_uniq_group('a', 'b', vuln3, group_klass=MockInfoSetITag)
 
         raw_data = kb.get('a', 'b')
         self.assertEqual(len(raw_data), 2)
@@ -788,3 +774,22 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(len(raw_data[0].infos), 2)
         self.assertEqual(raw_data[0].infos[1].get_id(), [42])
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
+
+
+class MockInfoSetITag(InfoSet):
+    ITAG = 'tag'
+
+
+class MockInfoSetNames(InfoSet):
+    def match(self, info):
+        return info.get_name() == self.get_name()
+
+
+class MockInfoSetFalse(InfoSet):
+    def match(self, info):
+        return False
+
+
+class MockInfoSetTrue(InfoSet):
+    def match(self, info):
+        return True

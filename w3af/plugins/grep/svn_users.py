@@ -25,6 +25,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class svn_users(GrepPlugin):
@@ -33,18 +34,14 @@ class svn_users(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
-        # Add the regex to match something like this:
-        #
-        #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $
-        #   $Id: file name, version, timestamp, creator Exp $
-        #
-        regex = '\$.{1,12}: .*? .*? \d{4}[-/]\d{1,2}[-/]\d{1,2}'
-        regex += ' \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$'
-        self._regex_list = [re.compile(regex), ]
+    # Add the regex to match something like this:
+    #
+    #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $
+    #   $Id: file name, version, timestamp, creator Exp $
+    #
+    SVN_RE = '\$.{1,12}: .*? .*? \d{4}[-/]\d{1,2}[-/]\d{1,2}' \
+             ' \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$'
+    RE_LIST = [re.compile(SVN_RE)]
 
     def grep(self, request, response):
         """
@@ -59,31 +56,43 @@ class svn_users(GrepPlugin):
 
         uri = response.get_uri()
 
-        for regex in self._regex_list:
+        for regex in self.RE_LIST:
             for m in regex.findall(response.get_body()):
                 user = m[0]
-                
+
                 desc = 'The URL: "%s" contains a SVN versioning signature'\
                        ' with the username "%s".'
                 desc = desc % (uri, user)
                 
                 v = Vuln('SVN user disclosure vulnerability', desc,
                          severity.LOW, response.id, self.get_name())
-
-                v.set_uri(uri)
-                v['user'] = user
                 v.add_to_highlight(user)
+                v.set_uri(uri)
+                v[SVNUserInfoSet.ITAG] = user
                 
-                self.kb_append_uniq(self, 'users', v, 'URL')
+                self.kb_append_uniq_group(self, 'users', v,
+                                          group_klass=SVNUserInfoSet)
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin greps every page for users of the versioning system. Sometimes
-        the HTML pages are versioned using CVS or SVN, if the header of the
-        versioning system is saved as a comment in this page, the user that edited
-        the page will be saved on that header and will be added to the knowledge
-        base.
+        This plugin greps every page for users of the versioning system.
+        Sometimes the HTML pages are versioned using CVS or SVN, if the header
+        of the versioning system is saved as a comment in this page, the user
+        that edited the page will be saved on that header and will be added to
+        the knowledge base.
         """
+
+
+class SVNUserInfoSet(InfoSet):
+    ITAG = 'user'
+    TEMPLATE = (
+        'The application returned {{ uris|length }} HTTP responses containing'
+        ' the SVN username "{{ user }}". The first ten vulnerable URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
