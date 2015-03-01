@@ -60,7 +60,6 @@ class svn_users(GrepPlugin):
             for m in regex.findall(response.get_body()):
                 user = m[0]
 
-                itag = 'user'
                 desc = 'The URL: "%s" contains a SVN versioning signature'\
                        ' with the username "%s".'
                 desc = desc % (uri, user)
@@ -69,10 +68,9 @@ class svn_users(GrepPlugin):
                          severity.LOW, response.id, self.get_name())
                 v.add_to_highlight(user)
                 v.set_uri(uri)
-                v[user] = user
+                v[SVNUserInfoSet.ITAG] = user
                 
-                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'users', v, ff,
+                self.kb_append_uniq_group(self, 'users', v,
                                           group_klass=SVNUserInfoSet)
 
     def get_long_desc(self):
@@ -89,6 +87,7 @@ class svn_users(GrepPlugin):
 
 
 class SVNUserInfoSet(InfoSet):
+    ITAG = 'user'
     TEMPLATE = (
         'The application returned {{ uris|length }} HTTP responses containing'
         ' the SVN username "{{ user }}". The first ten vulnerable URLs are:\n'

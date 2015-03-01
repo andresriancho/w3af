@@ -52,7 +52,6 @@ class strange_reason(GrepPlugin):
             return
 
         # Create a new info object from scratch and save it to the kb:
-        itag = 'reason'
         desc = 'The remote Web server sent a strange HTTP reason'\
                'message "%s", manual inspection is recommended.'
         desc = desc % response.get_msg()
@@ -60,10 +59,9 @@ class strange_reason(GrepPlugin):
         i = Info('Strange HTTP Reason message', desc, response.id, self.get_name())
         i.set_url(response.get_url())
         i.add_to_highlight(response.get_msg())
-        i[itag] = response.get_msg()
+        i[StrangeHeaderInfoSet.ITAG] = response.get_msg()
 
-        ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-        self.kb_append_uniq_group(self, 'strange_reason', i, ff,
+        self.kb_append_uniq_group(self, 'strange_reason', i,
                                   group_klass=StrangeHeaderInfoSet)
 
     def get_long_desc(self):
@@ -77,6 +75,7 @@ class strange_reason(GrepPlugin):
 
 
 class StrangeHeaderInfoSet(InfoSet):
+    ITAG = 'reason'
     TEMPLATE = (
         'The remote web server sent {{ uris|length }} HTTP responses with'
         ' the uncommon status message "{{ reason }}", manual inspection is'

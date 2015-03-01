@@ -123,7 +123,7 @@ class BasicKnowledgeBase(object):
 
         return True
 
-    def append_uniq_group(self, location_a, location_b, info_inst, filter_func,
+    def append_uniq_group(self, location_a, location_b, info_inst,
                           group_klass=InfoSet):
         """
         This function will append a Info instance to an existing InfoSet which
@@ -137,7 +137,6 @@ class BasicKnowledgeBase(object):
         :param location_a: The "a" address
         :param location_b: The "b" address
         :param info_inst: The Info instance we want to store
-        :param filter_func: The function used to match the InfoSets
         :param group_klass: If required, will be used to create a new InfoSet
         :return: (The updated/created InfoSet, as stored in the kb,
                   True if a new InfoSet was created)
@@ -150,12 +149,12 @@ class BasicKnowledgeBase(object):
             raise TypeError('append_uniq_group requires an InfoSet subclass'
                             ' as parameter.')
 
-        if not callable(filter_func):
-            raise TypeError('append_uniq_group requires a callable filter_func')
-
         with self._kb_lock:
             for info_set in self.get(location_a, location_b):
-                if filter_func(info_set, info_inst):
+                if not isinstance(info_set, InfoSet):
+                    continue
+
+                if info_set.match(info_inst):
                     old_info_set = copy.deepcopy(info_set)
                     info_set.add(info_inst)
                     self.update(old_info_set, info_set)

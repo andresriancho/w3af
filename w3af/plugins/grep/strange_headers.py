@@ -69,7 +69,6 @@ class strange_headers(GrepPlugin):
             # Create a new info object and save it to the KB
             hvalue = response.get_headers()[header_name]
 
-            itag = 'header_name'
             desc = 'The remote web server sent the HTTP header: "%s"'\
                    ' with value: "%s", which is quite uncommon and'\
                    ' requires manual analysis.'
@@ -78,11 +77,10 @@ class strange_headers(GrepPlugin):
             i = Info('Strange header', desc, response.id, self.get_name())
             i.add_to_highlight(hvalue, header_name)
             i.set_url(response.get_url())
-            i[itag] = header_name
+            i[StrangeHeaderInfoSet.ITAG] = header_name
             i['header_value'] = hvalue
 
-            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-            self.kb_append_uniq_group(self, 'strange_headers', i, ff,
+            self.kb_append_uniq_group(self, 'strange_headers', i,
                                       group_klass=StrangeHeaderInfoSet)
 
     def _content_location_not_300(self, request, response):
@@ -120,6 +118,7 @@ class strange_headers(GrepPlugin):
 
 
 class StrangeHeaderInfoSet(InfoSet):
+    ITAG = 'header_name'
     TEMPLATE = (
         'The remote web server sent {{ uris|length }} HTTP responses with'
         ' the uncommon response header "{{ header_name }}", one of the received'

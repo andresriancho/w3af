@@ -53,8 +53,7 @@ class xss_protection_header(GrepPlugin):
             i.add_to_highlight('X-XSS-Protection')
             i.set_uri(response.get_uri())
             
-            ff = lambda iset, info: True
-            self.kb_append_uniq_group(self, 'xss_protection_header', i, ff,
+            self.kb_append_uniq_group(self, 'xss_protection_header', i,
                                       group_klass=XSSProtectionInfoSet)
 
     def get_long_desc(self):
@@ -78,3 +77,6 @@ class XSSProtectionInfoSet(InfoSet):
         ' - {{ url }}\n'
         '{% endfor %}'
     )
+
+    def match(self, info):
+        return True

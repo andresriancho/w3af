@@ -96,18 +96,16 @@ class get_emails(GrepPlugin):
             self._already_reported.add(uniq_key)
 
             # Create a new info object, and report it
-            itag = 'mail'
             desc = 'The mail account: "%s" was found at "%s".'
             desc = desc % (mail_address, url)
 
             i = Info('Exposed email address', desc, response.id, self.get_name())
             i.add_to_highlight(mail_address)
             i.set_url(url)
-            i[itag] = mail_address
+            i[EmailInfoSet.ITAG] = mail_address
             i['user'] = mail_address.split('@')[0]
 
-            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-            self.kb_append_uniq_group('emails', kb_key, i, ff,
+            self.kb_append_uniq_group('emails', kb_key, i,
                                       group_klass=EmailInfoSet)
 
     def set_options(self, options_list):
@@ -138,6 +136,7 @@ class get_emails(GrepPlugin):
 
 
 class EmailInfoSet(InfoSet):
+    ITAG = 'mail'
     TEMPLATE = (
         'The application discloses the "{{ mail }}" email address in'
         ' {{ uris|length }} different HTTP responses. The first ten URLs'

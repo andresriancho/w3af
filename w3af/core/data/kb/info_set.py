@@ -61,6 +61,7 @@ class InfoSet(object):
     :see: https://github.com/andresriancho/w3af/issues/3955
     """
     TEMPLATE = None
+    ITAG = None
 
     def __init__(self, info_instances):
         if not len(info_instances):
@@ -201,6 +202,22 @@ class InfoSet(object):
 
     def get_severity(self):
         return self.first_info.get_severity()
+
+    def match(self, info):
+        """
+        When an Info sub-class wants to know if it should be added to an InfoSet
+        it calls InfoSet.match(Info).
+
+        In case it's not clear, this is the method which controls how Infos are
+        grouped in InfoSets.
+
+        :param info: The Info instance which wants to know if it matches this
+                     InfoSet
+
+        :return: True if they do match
+        """
+        assert self.ITAG is not None, 'Need to specify unique id tag'
+        return info[self.ITAG] == self.get_attribute(self.ITAG)
 
     def __eq__(self, other):
         return self.get_uniq_id() == other.get_uniq_id()

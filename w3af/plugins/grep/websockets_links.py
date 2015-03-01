@@ -104,18 +104,16 @@ class websockets_links(GrepPlugin):
             om.out.debug(msg % url)
 
         for ws_link in ws_links:
-            itag = 'ws_link'
             desc = 'The URL: "%s" uses HTML5 websocket "%s"'
             desc = desc % (url, ws_link)
 
             i = Info('HTML5 WebSocket detected', desc, response.id,
                      self.get_name())
             i.set_url(url)
-            i[itag] = ws_link
+            i[WebSocketInfoSet.ITAG] = ws_link
 
             # Store found links
-            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-            self.kb_append_uniq_group(self, 'websockets_links', i, ff,
+            self.kb_append_uniq_group(self, 'websockets_links', i,
                                       group_klass=WebSocketInfoSet)
 
     def get_long_desc(self):
@@ -128,6 +126,7 @@ class websockets_links(GrepPlugin):
 
 
 class WebSocketInfoSet(InfoSet):
+    ITAG = 'ws_link'
     TEMPLATE = (
         'The application uses the HTML5 WebSocket URL {{ ws_link }} in'
         ' {{ uris|length }} different URLs. The first ten URLs are:\n'

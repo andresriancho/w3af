@@ -102,7 +102,6 @@ class private_ip(GrepPlugin):
                 # the initial regex run
                 header_name = self._get_header_name(response, ip_address, regex)
 
-                itag = 'group_by'
                 desc = 'The URL "%s" returned the private IP address: "%s"'\
                        ' in the HTTP response header "%s"'
                 desc = desc % (response.get_url(), ip_address, header_name)
@@ -114,10 +113,9 @@ class private_ip(GrepPlugin):
                 v.add_to_highlight(ip_address)
                 v['ip_address'] = ip_address
                 v['header_name'] = header_name
-                v[itag] = (ip_address, header_name)
+                v[HeaderPrivateIPInfoSet.ITAG] = (ip_address, header_name)
 
-                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'header', v, ff,
+                self.kb_append_uniq_group(self, 'header', v,
                                           group_klass=HeaderPrivateIPInfoSet)
 
     def _analyze_html(self, request, response):
@@ -151,7 +149,6 @@ class private_ip(GrepPlugin):
                 if request.sent(ip_address):
                     continue
 
-                itag = 'ip_address'
                 desc = 'The URL: "%s" returned an HTML document which' \
                        ' contains the private IP address: "%s".'
                 desc = desc % (response.get_url(), ip_address)
@@ -160,10 +157,9 @@ class private_ip(GrepPlugin):
 
                 v.set_url(response.get_url())
                 v.add_to_highlight(ip_address)
-                v[itag] = ip_address
+                v[HTMLPrivateIPInfoSet.ITAG] = ip_address
 
-                ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-                self.kb_append_uniq_group(self, 'HTML', v, ff,
+                self.kb_append_uniq_group(self, 'HTML', v,
                                           group_klass=HTMLPrivateIPInfoSet)
 
     def _generate_ignores(self, response):
@@ -196,6 +192,7 @@ class private_ip(GrepPlugin):
 
 
 class HTMLPrivateIPInfoSet(InfoSet):
+    ITAG = 'ip_address'
     TEMPLATE = (
         'A total of {{ uris|length }} HTTP responses contained the private IP'
         ' address {{ ip_address }} in the response body. The first ten'
@@ -208,6 +205,7 @@ class HTMLPrivateIPInfoSet(InfoSet):
 
 
 class HeaderPrivateIPInfoSet(InfoSet):
+    ITAG = 'group_by'
     TEMPLATE = (
         'A total of {{ uris|length }} HTTP responses contained the private IP'
         ' address {{ ip_address }} in the "{{ header_name }}" response header.'

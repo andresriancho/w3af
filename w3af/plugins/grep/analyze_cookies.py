@@ -116,7 +116,6 @@ class analyze_cookies(GrepPlugin):
         i = CookieInfo('Cookie', desc, response.id, self.get_name())
         i.set_url(response.get_url())
         i.set_cookie_object(cookie_object)
-        itag = COOKIE_KEYS
 
         """
         The expiration date tells the browser when to delete the
@@ -129,8 +128,7 @@ class analyze_cookies(GrepPlugin):
         """
         i['persistent'] = 'expires' in cookie_object
 
-        ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-        self.kb_append_uniq_group(self, 'cookies', i, ff,
+        self.kb_append_uniq_group(self, 'cookies', i,
                                   group_klass=CollectedCookieInfoSet)
 
     def _parse_cookie(self, request, response, cookie_header_value):
@@ -198,7 +196,6 @@ class analyze_cookies(GrepPlugin):
         if not self.HTTPONLY_RE.search(cookie_header_value):
 
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            itag = COOKIE_KEYS
             desc = 'A cookie without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
@@ -210,8 +207,7 @@ class analyze_cookies(GrepPlugin):
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
-            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-            self.kb_append_uniq_group(self, 'http_only', v, ff,
+            self.kb_append_uniq_group(self, 'http_only', v,
                                       group_klass=HttpOnlyCookieInfoSet)
 
     def _ssl_cookie_via_http(self, request, response):
@@ -349,7 +345,6 @@ class analyze_cookies(GrepPlugin):
         """
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-            itag = COOKIE_KEYS
             desc = 'A cookie without the secure flag was sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
@@ -362,8 +357,7 @@ class analyze_cookies(GrepPlugin):
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
-            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-            self.kb_append_uniq_group(self, 'secure', v, ff,
+            self.kb_append_uniq_group(self, 'secure', v,
                                       group_klass=NotSecureFlagCookieInfoSet)
 
     def get_long_desc(self):
@@ -404,6 +398,7 @@ class CookieVuln(Vuln, CookieMixIn):
 
 
 class CollectedCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
     TEMPLATE = (
         'The application sent the "{{ cookie_keys|join(\', \') }}" cookie in'
         ' {{ uris|length }} different URLs. The first ten URLs are:\n'
@@ -415,6 +410,7 @@ class CollectedCookieInfoSet(InfoSet):
 
 
 class HttpOnlyCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
     TEMPLATE = (
         'The application sent the "{{ cookie_keys|join(\', \') }}" cookie'
         ' without the HttpOnly flag in {{ uris|length }} different responses.'
@@ -429,6 +425,7 @@ class HttpOnlyCookieInfoSet(InfoSet):
 
 
 class NotSecureFlagCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
     TEMPLATE = (
         'The application sent the "{{ cookie_keys|join(\', \') }}" cookie'
         ' without the Secure flag set in {{ uris|length }} different URLs.'

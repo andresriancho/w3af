@@ -44,7 +44,6 @@ class strange_http_codes(GrepPlugin):
             return
 
         # Create a new info object from scratch and save it to the kb
-        itag = 'code'
         desc = 'The remote Web server sent a strange HTTP response code:'\
                ' "%s" with the message: "%s", manual inspection is recommended.'
         desc = desc % (response.get_code(), response.get_msg())
@@ -52,11 +51,10 @@ class strange_http_codes(GrepPlugin):
         i = Info('Strange HTTP response code', desc, response.id, self.get_name())
         i.add_to_highlight(str(response.get_code()), response.get_msg())
         i.set_url(response.get_url())
-        i[itag] = response.get_code()
+        i[StrangeCodesInfoSet.ITAG] = response.get_code()
         i['message'] = response.get_msg()
 
-        ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
-        self.kb_append_uniq_group(self, 'strange_http_codes', i, ff,
+        self.kb_append_uniq_group(self, 'strange_http_codes', i,
                                   group_klass=StrangeCodesInfoSet)
 
     def get_long_desc(self):
@@ -70,6 +68,7 @@ class strange_http_codes(GrepPlugin):
 
 
 class StrangeCodesInfoSet(InfoSet):
+    ITAG = 'code'
     TEMPLATE = (
         'The remote web server sent {{ uris|length }} HTTP responses with'
         ' the uncommon response status code {{ code }} using "{{ message }}"'
