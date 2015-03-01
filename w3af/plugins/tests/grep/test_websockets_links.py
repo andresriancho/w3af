@@ -37,7 +37,7 @@ class TestWebsocketsLinks(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    def test_SL1(self, *args):
+    def test_sl_1(self, *args):
         """
         Static link 1, ws link in the second tag
         """
@@ -54,9 +54,9 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 1)
 
-    def test_SL2(self, *args):
+    def test_sl_2(self, *args):
         """
-        Static link 2, double url
+        Static link 2, report two different InfoSets, one for each URL
         """
         body = 'header<script>' \
                'ws1 = ' \
@@ -70,9 +70,9 @@ class TestWebsocketsLinks(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('websockets_links',
-                                       'websockets_links')), 1)
+                                       'websockets_links')), 2)
 
-    def test_SL3(self, *args):
+    def test_sl_3(self, *args):
         """
         Static link 3, text/javascript
         """
@@ -87,7 +87,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 1)
 
-    def test_DL2(self, *args):
+    def test_dl_1(self, *args):
         """
         ws link is dynamically created
         """
@@ -106,7 +106,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
-    def test_FL1(self, *args):
+    def test_fl_1(self, *args):
         """
         False links, must not be detected
         """
@@ -123,7 +123,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
-    def test_NL1(self, *args):
+    def test_no_link(self, *args):
         """
         No websockets link
         """
@@ -136,3 +136,38 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
+    def test_static_link_group_by_ws_url(self, *args):
+        """
+        Find the WS url, create an InfoSet and if others are found then add
+        the knowledge to the existing InfoSet. Avoids multiple reports of the
+        same WS url.
+        """
+        body = 'header' \
+               '<script>ws = ' \
+               'new WebSocket("ws://www.example.com:8080/socketserver");' \
+               '</script>footer'
+
+        url = URL('https://www.w3af.com/1')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+
+        url = URL('https://www.w3af.com/2')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url, _id=2)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+
+        ws_info_sets = kb.kb.get('websockets_links', 'websockets_links')
+        self.assertEqual(len(ws_info_sets), 1)
+
+        info_set = ws_info_sets[0]
+        expected_desc = u'The application uses the HTML5 WebSocket URL' \
+                        u' "ws://www.example.com:8080/socketserver" in' \
+                        u' 2 different URLs. The first ten URLs are:\n' \
+                        u' - https://www.w3af.com/1\n' \
+                        u' - https://www.w3af.com/2\n'
+        self.assertEqual(len(info_set.infos), 2)
+        self.assertEqual(info_set.get_id(), [1, 2])
+        self.assertEqual(info_set.get_desc(), expected_desc)
