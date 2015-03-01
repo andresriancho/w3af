@@ -200,6 +200,13 @@ class InfoSet(object):
     def get_attribute(self, attr_name):
         return self.first_info.get(attr_name, None)
 
+    def __getitem__(self, item):
+        """
+        Does the same as get_attribute but with a different signature, had to
+        add it to make the InfoSet behave more like an Info
+        """
+        return self.first_info[item]
+
     def get_severity(self):
         return self.first_info.get_severity()
 
