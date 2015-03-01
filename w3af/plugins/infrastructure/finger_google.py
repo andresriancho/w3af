@@ -149,7 +149,6 @@ class finger_google(InfrastructurePlugin):
                     i['url_list'] = {response.get_uri()}
 
                     self.kb_append('emails', 'emails', i)
-                    self.kb_append(self, 'emails', i)
 
     def get_options(self):
         """

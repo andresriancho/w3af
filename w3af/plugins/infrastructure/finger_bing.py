@@ -111,7 +111,6 @@ class finger_bing(InfrastructurePlugin):
                         i['url_list'] = {page.URL}
                         
                         self.kb_append('emails', 'emails', i)
-                        self.kb_append('finger_bing', 'emails', i)
 
     def get_options(self):
         """

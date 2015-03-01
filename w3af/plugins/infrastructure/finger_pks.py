@@ -62,11 +62,9 @@ class finger_pks(InfrastructurePlugin):
             i['mail'] = mail
             i['user'] = result.username
             i['name'] = result.name
-            i['url_list'] = set([URL(pks_url), ])
+            i['url_list'] = {URL(pks_url)}
             
             kb.kb.append('emails', 'emails', i)
-            #   Don't save duplicated information in the KB. It's useless.
-            #kb.kb.append( self, 'emails', i )
             om.out.information(i.get_desc())
 
     def get_long_desc(self):
