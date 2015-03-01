@@ -318,23 +318,6 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
         """
-        # BUGBUG: http://bugs.python.org/issue1028088
-        #
-        # I workaround this issue by using the raw string from the HTTP
-        # response instead of the parsed:
-        #
-        #        cookie_obj_str = cookie_obj.output(header='')
-        #
-        # Bug can be reproduced like this:
-        # >>> import Cookie
-        # >>> cookie_object = Cookie.SimpleCookie()
-        # >>> cookie_object.load('a=b; secure; httponly')
-        # >>> cookie_object.output(header='')
-        # ' a=b'
-        #
-        # Note the missing secure/httponly in the output return
-
-        # And now, the code:
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
 
@@ -364,12 +347,9 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
         """
-        # BUGBUG: See other reference in this file for
-        # http://bugs.python.org/issue1028088
-
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-
+            itag = COOKIE_KEYS
             desc = 'A cookie without the secure flag was sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
@@ -378,11 +358,13 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Secure flag missing in HTTPS cookie', desc,
-                           severity.HIGH, response.id, self.get_name())
+                           severity.MEDIUM, response.id, self.get_name())
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            ff = lambda iset, info: iset.get_attribute(itag) == info[itag]
+            self.kb_append_uniq_group(self, 'secure', v, ff,
+                                      group_klass=NotSecureFlagCookieInfoSet)
 
     def get_long_desc(self):
         """
@@ -439,6 +421,21 @@ class HttpOnlyCookieInfoSet(InfoSet):
         ' The HttpOnly flag prevents potential intruders from accessing the'
         ' cookie value through Cross-Site Scripting attacks. The first ten'
         ' URLs which sent the insecure cookie are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class NotSecureFlagCookieInfoSet(InfoSet):
+    TEMPLATE = (
+        'The application sent the "{{ cookie_keys|join(\', \') }}" cookie'
+        ' without the Secure flag set in {{ uris|length }} different URLs.'
+        ' The Secure flag prevents the browser from sending cookies over'
+        ' insecure HTTP connections, thus preventing potential session'
+        ' hijacking attacks. The first ten URLs which sent the insecure'
+        ' cookie are:\n'
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'

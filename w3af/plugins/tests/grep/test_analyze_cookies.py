@@ -253,6 +253,7 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
     def test_analyze_cookies_with_httponly_case_sensitive(self):
         body = ''
@@ -294,7 +295,8 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
     def test_analyze_cookies_https_value_over_http(self):
         body = ''
@@ -324,3 +326,31 @@ class TestAnalyzeCookies(unittest.TestCase):
         
         names = [i.get_name() for i in secure_via_http]
         self.assertIn('Secure cookies over insecure channel', names)
+
+    def test_analyze_ssl_cookie_without_secure_flag(self):
+        body = ''
+        url = URL('https://www.w3af.com/')
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def; httponly'}.items())
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        self.plugin.grep(request, response)
+
+        secure_info_sets = kb.kb.get('analyze_cookies', 'secure')
+
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
+        self.assertEqual(len(secure_info_sets), 1)
+
+        info_set = secure_info_sets[0]
+        expected_desc = u'The application sent the "abc" cookie without the' \
+                        u' Secure flag set in 1 different URLs. The Secure ' \
+                        u'flag prevents the browser from sending cookies ' \
+                        u'over insecure HTTP connections, thus preventing' \
+                        u' potential session hijacking attacks. The first' \
+                        u' ten URLs which sent the insecure cookie are:\n' \
+                        u' - https://www.w3af.com/\n'
+        self.assertEqual(len(info_set.infos), 1)
+        self.assertEqual(info_set.get_id(), [1])
+        self.assertEqual(info_set.get_desc(), expected_desc)
