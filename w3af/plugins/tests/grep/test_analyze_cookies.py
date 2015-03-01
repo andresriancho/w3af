@@ -47,8 +47,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 0)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
     def test_analyze_cookies_simple_cookie(self):
         body = ''
@@ -60,27 +59,69 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
         
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
-    def test_analyze_cookies_collect(self):
+    def test_analyze_cookies_collect_no_group(self):
         body = ''
         url = URL('http://www.w3af.com/')
-        headers = Headers(
-            {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}.items())
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def'}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
-        headers = Headers(
-            {'content-type': 'text/html', 'Set-Cookie': '123=456'}.items())
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': '123=456'}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 2)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+
+    def test_analyze_cookies_collect_one(self):
+        body = ''
+        url = URL('http://www.w3af.com/')
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def'}.items())
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+
+        cookie_infosets = kb.kb.get('analyze_cookies', 'cookies')
+        self.assertEqual(len(cookie_infosets), 1)
+
+        expected_desc = u'The application sent the "abc" cookie in 1 ' \
+                        u'different URLs. The first ten URLs are:\n' \
+                        u' - http://www.w3af.com/\n'
+        info_set = cookie_infosets[0]
+        self.assertEqual(len(info_set.infos), 1)
+        self.assertEqual(info_set.get_desc(), expected_desc)
+
+    def test_analyze_cookies_collect_group_by_key(self):
+        body = ''
+        url_1 = URL('http://www.w3af.com/1')
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def'}.items())
+        response = HTTPResponse(200, body, headers, url_1, url_1, _id=1)
+        request = FuzzableRequest(url_1, method='GET')
+        self.plugin.grep(request, response)
+
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=456'}.items())
+        url_2 = URL('http://www.w3af.com/2')
+        response = HTTPResponse(200, body, headers, url_2, url_2, _id=1)
+        request = FuzzableRequest(url_2, method='GET')
+        self.plugin.grep(request, response)
+
+        cookie_infosets = kb.kb.get('analyze_cookies', 'cookies')
+        self.assertEqual(len(cookie_infosets), 1)
+
+        expected_desc = u'The application sent the "abc" cookie in 2' \
+                        u' different URLs. The first ten URLs are:\n' \
+                        u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n'
+        info_set = cookie_infosets[0]
+        self.assertEqual(len(info_set.infos), 2)
+        self.assertEqual(info_set.get_desc(), expected_desc)
 
     def test_analyze_cookies_collect_uniq(self):
         body = ''
@@ -104,8 +145,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 2)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
     def test_analyze_cookies_secure_httponly(self):
         body = ''
@@ -116,20 +156,18 @@ class TestAnalyzeCookies(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
     def test_analyze_cookies_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
-        headers = Headers(
-            {'content-type': 'text/html', 'Set-Cookie': ''}.items())
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': ''}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(
-            len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
     def test_analyze_cookies_fingerprint(self):
         body = ''
@@ -141,14 +179,14 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
 
-        security = kb.kb.get('analyze_cookies', 'security')
+        fingerprint = kb.kb.get('analyze_cookies', 'fingerprint')
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 2)
+        self.assertEqual(len(fingerprint), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
         msg = 'The remote platform is: "PHP"'
-        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
+        self.assertTrue(any([True for i in fingerprint if msg in i.get_desc()]))
 
     def test_analyze_cookies_secure_over_http(self):
         body = ''
@@ -160,33 +198,48 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
 
-        security = kb.kb.get('analyze_cookies', 'security')
+        false_secure = kb.kb.get('analyze_cookies', 'false_secure')
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 2)
+        self.assertEqual(len(false_secure), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
         msg = 'A cookie marked with the secure flag'
-        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
+        self.assertTrue(any([True for i in false_secure if msg in i.get_desc()]))
 
     def test_analyze_cookies_no_httponly(self):
         body = ''
-        url = URL('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/1')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def'}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
-
         self.plugin.grep(request, response)
 
-        security = kb.kb.get('analyze_cookies', 'security')
+        url = URL('http://www.w3af.com/2')
+        headers = Headers({'content-type': 'text/html',
+                           'Set-Cookie': 'abc=def'}.items())
+        response = HTTPResponse(200, body, headers, url, url, _id=2)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
 
+        http_only = kb.kb.get('analyze_cookies', 'http_only')
+
+        self.assertEqual(len(http_only), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
-        msg = 'A cookie without the HttpOnly flag'
-        self.assertTrue(any([True for i in security if msg in i.get_desc()]))
+        info_set = http_only[0]
+        expected_desc = u'The application sent the "abc" cookie without the' \
+                        u' HttpOnly flag in 2 different responses. The' \
+                        u' HttpOnly flag prevents potential intruders from' \
+                        u' accessing the cookie value through Cross-Site' \
+                        u' Scripting attacks. The first ten URLs which sent' \
+                        u' the insecure cookie are:\n' \
+                        u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n'
+        self.assertEqual(info_set.get_desc(), expected_desc)
+        self.assertEqual(info_set.get_id(), [1, 2])
+        self.assertEqual(len(info_set.infos), 2)
 
     def test_analyze_cookies_with_httponly(self):
         body = ''
@@ -199,7 +252,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
 
     def test_analyze_cookies_with_httponly_case_sensitive(self):
         body = ''
@@ -212,7 +265,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
 
     def test_analyze_cookies_with_httponly_secure(self):
         body = ''
@@ -225,7 +278,8 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(kb.kb.get('analyze_cookies', 'security')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
+        self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
     def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
         body = ''
@@ -245,7 +299,7 @@ class TestAnalyzeCookies(unittest.TestCase):
     def test_analyze_cookies_https_value_over_http(self):
         body = ''
         url = URL('https://www.w3af.com/')
-        c = 'abc=defjkluio; secure; httponly;'
+        c = 'abc=foobarspam; secure; httponly;'
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': c}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
@@ -254,7 +308,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         # Receive the cookie over HTTPS
         self.plugin.grep(request, response)
 
-        url = URL('http://www.w3af.com/?id=defjkluio')
+        url = URL('http://www.w3af.com/?id=foobarspam')
         headers = Headers({'content-type': 'text/html'}.items())
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
@@ -262,11 +316,11 @@ class TestAnalyzeCookies(unittest.TestCase):
         # Send the cookie over HTTP as a parameter value
         self.plugin.grep(request, response)
 
-        security = kb.kb.get('analyze_cookies', 'security')
+        secure_via_http = kb.kb.get('analyze_cookies', 'secure_via_http')
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
-        self.assertEqual(len(security), 1)
+        self.assertEqual(len(secure_via_http), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         
-        names = [i.get_name() for i in security]
+        names = [i.get_name() for i in secure_via_http]
         self.assertIn('Secure cookies over insecure channel', names)
