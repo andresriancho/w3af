@@ -19,13 +19,22 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from mock import patch
+
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 @attr('smoke')
 class TestPHPEggs(PluginTest):
 
-    moth_url = 'http://moth/'
+    target_url = 'http://mock/'
+    MOCK_RESPONSES = [MockResponse('?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000', '1'),
+                      MockResponse('?=PHPE9568F34-D428-11d2-A769-00AA001ACF42',
+                                   '2', content_type='image/png'),
+                      MockResponse('?=PHPE9568F35-D428-11d2-A769-00AA001ACF42',
+                                   '3', content_type='image/png'),
+                      MockResponse('?=PHPE9568F36-D428-11d2-A769-00AA001ACF42',
+                                   '4', content_type='image/png')]
 
     _run_configs = {
         'cfg': {
@@ -34,10 +43,17 @@ class TestPHPEggs(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_php_eggs_fingerprinted(self):
         cfg = self._run_configs['cfg']
-        self._scan(self.moth_url, cfg['plugins'])
+
+        with patch('w3af.plugins.infrastructure.php_eggs.md5_hash') as md5mock:
+            def side_effect(body):
+                return {'1': 'a4c057b11fa0fba98c8e26cd7bb762a8',
+                        '2': 'c48b07899917dfb5d591032007041ae3',
+                        '3': 'fb3bbd9ccc4b3d9e0b3be89c5ff98a14',
+                        '4': '7675f1d01c927f9e6a4752cf182345a2'}.get(body)
+            md5mock.side_effect = side_effect
+            self._scan(self.target_url, cfg['plugins'])
 
         eggs = self.kb.get('php_eggs', 'eggs')
         self.assertEqual(len(eggs), 4, eggs)
@@ -49,4 +65,29 @@ class TestPHPEggs(PluginTest):
         self.assertEqual(len(php_version), 1, php_version)
 
         php_version = php_version[0]
-        self.assertEqual(php_version['version'], ['5.3.10'])
+        self.assertEqual(php_version['version'], [u'5.3.2', u'5.3.1'])
+
+
+@attr('smoke')
+class TestPHPEggsNoFingerprint(PluginTest):
+
+    target_url = 'http://mock/'
+    MOCK_RESPONSES = [MockResponse('/', 'Index is not empty')]
+
+    _run_configs = {
+        'cfg': {
+            'target': None,
+            'plugins': {'infrastructure': (PluginConfig('php_eggs'),)}
+        }
+    }
+
+    def test_php_eggs_fingerprinted(self):
+        cfg = self._run_configs['cfg']
+
+        self._scan(self.target_url, cfg['plugins'])
+
+        eggs = self.kb.get('php_eggs', 'eggs')
+        php_version = self.kb.get('php_eggs', 'version')
+
+        self.assertEqual(len(eggs), 0, eggs)
+        self.assertEqual(len(php_version), 0, php_version)
