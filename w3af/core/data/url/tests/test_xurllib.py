@@ -293,6 +293,44 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(http_request_e, 5)
         self.assertEqual(scan_stop_e, 1)
 
+    def test_delay_on_errors(self):
+        return_empty_daemon = UpperDaemon(EmptyTCPHandler)
+        return_empty_daemon.start()
+        return_empty_daemon.wait_for_start()
+
+        port = return_empty_daemon.get_port()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        previous_time = 0.0
+        total_time = 0.0
+
+        for _ in xrange(MAX_ERROR_COUNT):
+            start = time.time()
+            try:
+                self.uri_opener.GET(url)
+            except HTTPRequestException:
+                self.assertTrue(True)
+                end = time.time()
+
+                self.assertGreater(end - start, previous_time)
+                previous_time = end - start
+                total_time += previous_time
+
+            except ScanMustStopException:
+                self.assertTrue(True)
+                break
+            except Exception, e:
+                msg = 'Not expecting: "%s"'
+                self.assertTrue(False, msg % e.__class__.__name__)
+        else:
+            self.assertTrue(False)
+
+        expected_total_delay = 0.0
+        for i in xrange(MAX_ERROR_COUNT):
+            expected_total_delay += ExtendedUrllib.SOCKET_ERROR_DELAY * i
+
+        self.assertGreater(expected_total_delay, total_time)
+
     def test_ignore_errors(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
