@@ -304,10 +304,18 @@ class TestXUrllib(unittest.TestCase):
         previous_time = 0.0
         total_time = 0.0
 
-        for _ in xrange(MAX_ERROR_COUNT):
+        # Force the uri_opener into an error state
+        for _ in xrange(3):
+            try:
+                self.uri_opener.GET(url, cache=False)
+            except:
+                pass
+
+        # Not check the delays
+        for i in xrange(MAX_ERROR_COUNT):
             start = time.time()
             try:
-                self.uri_opener.GET(url)
+                self.uri_opener.GET(url, cache=False)
             except HTTPRequestException:
                 self.assertTrue(True)
                 end = time.time()
