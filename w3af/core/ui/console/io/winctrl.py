@@ -19,9 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
 import sys
-import msvcrt
+
+try:
+    import msvcrt
+except ImportError:
+    # This only works on windows, and was PASSing before because of a bug (+x
+    # in the winctrl.py file). Now that I've removed the +x nosetests does load/
+    # import this file and builds fail.
+    #
+    # Create a mock just to allow nosetests/pylint to PASS
+    #
+    # https://circleci.com/gh/andresriancho/w3af/1495
+    class msvcrt(object):
+        @staticmethod
+        def getch():
+            pass
+
 from w3af.core.ui.console.io.common import *
 
 
