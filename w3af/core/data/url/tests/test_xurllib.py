@@ -185,7 +185,15 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.settings.set_timeout(1)
         start = time.time()
 
-        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+        try:
+            self.uri_opener.GET(url)
+        except HTTPRequestException, hre:
+            self.assertEqual(hre.message, 'HTTP timeout error.')
+        except Exception, e:
+            msg = 'Not expecting: "%s"'
+            self.assertTrue(False, msg % e.__class__.__name__)
+        else:
+            self.assertTrue(False, 'Expected HTTPRequestException.')
 
         end = time.time()
         self.uri_opener.settings.set_default_values()
@@ -268,9 +276,9 @@ class TestXUrllib(unittest.TestCase):
         for _ in xrange(MAX_ERROR_COUNT):
             try:
                 self.uri_opener.GET(url)
-            except HTTPRequestException:
+            except HTTPRequestException, hre:
                 http_request_e += 1
-                self.assertTrue(True)
+                self.assertEqual(hre.message, 'HTTP timeout error.')
             except ScanMustStopException:
                 scan_stop_e += 1
                 self.assertTrue(True)
