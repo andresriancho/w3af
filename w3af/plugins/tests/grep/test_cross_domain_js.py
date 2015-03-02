@@ -128,7 +128,7 @@ class TestCrossDomainJSRaw(unittest.TestCase):
                         u' the potentially insecure "cdn.akamai-wannabe.net"' \
                         u' third party site. This practice is not recommended' \
                         u' because it delegates the security of the site to' \
-                        u' an external entity. The first ten vulnerable URLs' \
+                        u' an external entity. The first two vulnerable URLs' \
                         u' are:\n - http://www.w3af.com/2\n' \
                         u' - http://www.w3af.com/1\n'
 

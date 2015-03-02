@@ -21,10 +21,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import textwrap
 
-from jinja2 import Template, StrictUndefined
+from jinja2 import StrictUndefined, Environment
 
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.kb.info import Info
+from w3af.core.controllers.misc.human_number import human_number
+
+
+def sample_count(value):
+    """
+    Filter function used to render some InfoSets
+    """
+    len_uris = len(value)
+    if len_uris == 1:
+        return 'ten'
+    if len_uris > 10:
+        return 'ten'
+    else:
+        return human_number(len_uris)
 
 
 class InfoSet(object):
@@ -62,6 +76,12 @@ class InfoSet(object):
     """
     TEMPLATE = None
     ITAG = None
+
+    JINJA2_ENV = Environment(undefined=StrictUndefined,
+                             trim_blocks=True,
+                             lstrip_blocks=True)
+    JINJA2_ENV.filters['human_number'] = human_number
+    JINJA2_ENV.filters['sample_count'] = sample_count
 
     def __init__(self, info_instances):
         if not len(info_instances):
@@ -105,10 +125,7 @@ class InfoSet(object):
                    'plugin': self.get_plugin_name()}
         context.update(self.first_info.items())
 
-        template = Template(textwrap.dedent(self.TEMPLATE),
-                            undefined=StrictUndefined,
-                            trim_blocks=True,
-                            lstrip_blocks=True)
+        template = self.JINJA2_ENV.from_string(textwrap.dedent(self.TEMPLATE))
         return template.render(context)
 
     def get_id(self):
