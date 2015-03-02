@@ -18,9 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.output_manager import out
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
+from w3af.core.data.url.helpers import new_no_content_resp
 
 
 class ExactDelayController(DelayMixIn):
@@ -116,7 +118,7 @@ class ExactDelayController(DelayMixIn):
     def delay_for(self, delay, original_wait_time):
         """
         Sends a request to the remote end that "should" delay the response in
-        :param seconds.
+        :param delay.
 
         :param original_wait_time: The time that it takes to perform the
                                    request without adding any delays.
@@ -129,11 +131,22 @@ class ExactDelayController(DelayMixIn):
         mutant = self.mutant.copy()
         mutant.set_token_value(delay_str)
 
-        #    Send, it is important to notice that we don't use the cache
-        #    to avoid any interference
-        response = self.uri_opener.send_mutant(mutant, cache=False)
+        # Send, it is important to notice that we don't use the cache
+        # to avoid any interference
+        try:
+            response = self.uri_opener.send_mutant(mutant, cache=False)
+        except HTTPRequestException, hre:
+            # NOTE: In some cases where the remote web server timeouts we reach
+            #       this code section. The handling of that situation is done
+            #       with the new_no_content_resp() below.
+            #
+            # TODO: There is a potential issue here between the opener settings
+            #       timeout setting and the tests we send with DELAY_SECONDS.
+            #       If the user configures a timeout that's lower than the max
+            #       DELAY_SECONDS, then we'll get timeouts instead of delays.
+            return False, new_no_content_resp(self.mutant.get_uri())
 
-        #    Test
+        # Test
         delta = original_wait_time * self.DELTA_PERCENT
         current_response_wait_time = response.get_wait_time()
 
