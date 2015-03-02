@@ -528,7 +528,8 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
         
-        except (socket.error, URLTimeoutError, ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
+        except (socket.error, URLTimeoutError,
+                ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
@@ -681,17 +682,19 @@ class ExtendedUrllib(object):
         msg = ('w3af found too many consecutive errors while performing'
                ' HTTP requests. In most cases this means that the remote web'
                ' server is not reachable anymore, the network is down, or'
-               ' a WAF is blocking our tests. The last error message was "%s".')
+               ' a WAF is blocking our tests. The last exception message '
+               'was "%s" (%s).')
 
         reason_msg = self.get_exception_reason(error)
+        args = (error, error.__class__.__name__)
 
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
             # Stop using ExtendedUrllib instance
-            e = ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
+            e = ScanMustStopByKnownReasonExc(msg % args, reason=reason_msg)
 
         else:
-            e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
+            e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
         self._stop_exception = e
         # pylint: disable=E0702
@@ -737,7 +740,7 @@ class ExtendedUrllib(object):
             if isinstance(reason_err, socket.error):
                 reason_msg = self.get_socket_exception_reason(error)
 
-        elif isinstance(error, ssl.SSLError):
+        elif isinstance(error, (ssl.SSLError, socket.sslerror)):
             socket_reason = self.get_socket_exception_reason(error)
             if socket_reason:
                 reason_msg = 'SSL Error: %s' % socket_reason
