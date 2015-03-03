@@ -403,6 +403,11 @@ class KeepAliveHandler(object):
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException):
             r = None
+        except OpenSSL.SSL.ZeroReturnError:
+            # According to the pyOpenSSL docs ZeroReturnError means that the
+            # SSL connection has been closed cleanly
+            self._cm.remove_connection(conn, host)
+            r = None
         except Exception, e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection
