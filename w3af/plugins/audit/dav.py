@@ -177,9 +177,14 @@ class dav(AuditPlugin):
 
         # Report some common errors
         elif put_response.get_code() == 403:
+            # handle false positive when PUT method is not supported
+            # https://github.com/andresriancho/w3af/pull/2724/files
+            if 'supported' in put_response.get_body().lower():
+                return
+            
             msg = 'DAV seems to be correctly configured and allowing you to'\
                   ' use the PUT method but the directory does not have the'\
-                  ' correct permissions that would allow the web server to'\
+                  ' right permissions that would allow the web server to'\
                   ' write to it. This error was found at: "%s".'
             msg = msg % put_response.get_url()
             
