@@ -269,6 +269,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
     def test_drop_table(self):
         kb = DBKnowledgeBase()
+        kb.setup()
         table_name = kb.table_name
         
         db = get_default_persistent_db_instance()

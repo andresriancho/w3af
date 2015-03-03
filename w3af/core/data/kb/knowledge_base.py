@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import collections
+import functools
 import threading
 import cPickle
 import copy
@@ -272,6 +273,18 @@ class BasicKnowledgeBase(object):
         raise NotImplementedError
 
 
+def requires_setup(_method):
+
+    @functools.wraps(_method)
+    def decorated(self, *args, **kwargs):
+        if not self.initialized:
+            self.setup()
+
+        return _method(self, *args, **kwargs)
+
+    return decorated
+
+
 class DBKnowledgeBase(BasicKnowledgeBase):
     """
     This class saves the data that is sent to it by plugins. It is the only way
@@ -281,30 +294,45 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    COLUMNS = [('location_a', 'TEXT'),
+               ('location_b', 'TEXT'),
+               ('uniq_id', 'TEXT'),
+               ('pickle', 'BLOB')]
 
     def __init__(self):
         super(DBKnowledgeBase, self).__init__()
+        self.initialized = False
+
+        # TODO: Why doesn't this work with a WeakValueDictionary?
+        self.observers = {} #WeakValueDictionary()
+        self._observer_id = 0
+
+    def setup(self):
+        """
+        Setup all the required backend stores. This was mostly created to avoid
+        starting any threads during __init__() which is called during python's
+        import phase and dead-locks in some cases.
+
+        :return: None
+        """
+        # Only initialize once
+        if self.initialized:
+            return
+
+        self.initialized = True
 
         self.urls = DiskSet(table_prefix='kb_urls')
         self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
 
         self.db = get_default_persistent_db_instance()
 
-        columns = [('location_a', 'TEXT'),
-                   ('location_b', 'TEXT'),
-                   ('uniq_id', 'TEXT'),
-                   ('pickle', 'BLOB')]
-
         self.table_name = 'knowledge_base_' + rand_alpha(30)
-        self.db.create_table(self.table_name, columns)
+        self.db.create_table(self.table_name, self.COLUMNS)
         self.db.create_index(self.table_name, ['location_a', 'location_b'])
-        self.db.create_index(self.table_name, ['uniq_id',])
+        self.db.create_index(self.table_name, ['uniq_id'])
         self.db.commit()
 
-        # TODO: Why doesn't this work with a WeakValueDictionary?
-        self.observers = {} #WeakValueDictionary()
-        self._observer_id = 0
-
+    @requires_setup
     def clear(self, location_a, location_b):
         location_a = self._get_real_name(location_a)
 
@@ -312,6 +340,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         params = (location_a, location_b)
         self.db.execute(query % self.table_name, params)
 
+    @requires_setup
     def raw_write(self, location_a, location_b, value):
         """
         This method saves value to (location_a,location_b) but previously
@@ -325,6 +354,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.clear(location_a, location_b)
         self.append(location_a, location_b, value, ignore_type=True)
 
+    @requires_setup
     def raw_read(self, location_a, location_b):
         """
         This method reads the value from (location_a, location_b)
@@ -340,6 +370,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         else:
             return result[0]
 
+    @requires_setup
     def get_one(self, location_a, location_b):
         """
         This method reads the value from (location_a, location_b), checking it's
@@ -370,6 +401,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             else:
                 return str(hash(obj))
 
+    @requires_setup
     def append(self, location_a, location_b, value, ignore_type=False):
         """
         This method appends the location_b value to a dict.
@@ -390,6 +422,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self._notify_observers(self.APPEND, location_a, location_b, value,
                                ignore_type=ignore_type)
 
+    @requires_setup
     def get(self, location_a, location_b, check_types=True):
         """
         :param location_a: The plugin that saved the data to the
@@ -429,6 +462,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result_lst
 
+    @requires_setup
     def get_by_uniq_id(self, uniq_id):
         query = 'SELECT pickle FROM %s WHERE uniq_id = ?'
         params = (uniq_id,)
@@ -440,6 +474,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result
 
+    @requires_setup
     def update(self, old_info, update_info):
         """
         :param old_info: The info/vuln instance to be updated in the kb.
@@ -498,6 +533,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             functor = getattr(observer, method)
             functor(*args, **kwargs)
 
+    @requires_setup
     def get_all_entries_of_class(self, klass):
         """
         :return: A list of all objects of class == klass that are saved in the
@@ -515,6 +551,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result_lst
 
+    @requires_setup
     def get_all_vulns(self):
         """
         :return: A list of all info instances with severity in (LOW, MEDIUM,
@@ -534,6 +571,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result_lst
 
+    @requires_setup
     def get_all_infos(self):
         """
         :return: A list of all info instances with severity eq INFORMATION
@@ -552,6 +590,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result_lst
 
+    @requires_setup
     def dump(self):
         result_dict = {}
 
@@ -570,6 +609,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result_dict
 
+    @requires_setup
     def cleanup(self):
         """
         Cleanup internal data.
@@ -585,18 +625,21 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         self.observers.clear()
 
+    @requires_setup
     def remove(self):
         self.db.drop_table(self.table_name)
         self.urls.cleanup()
         self.fuzzable_requests.cleanup()
         self.observers.clear()
 
+    @requires_setup
     def get_all_known_urls(self):
         """
         :return: A DiskSet with all the known URLs as URL objects.
         """
         return self.urls
 
+    @requires_setup
     def add_url(self, url):
         """
         :return: True if the URL was previously unknown
@@ -608,12 +651,14 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self._notify_observers(self.ADD_URL, url)
         return self.urls.add(url)
 
+    @requires_setup
     def get_all_known_fuzzable_requests(self):
         """
         :return: A DiskSet with all the known URLs as URL objects.
         """
         return self.fuzzable_requests
 
+    @requires_setup
     def add_fuzzable_request(self, fuzzable_request):
         """
         :return: True if the FuzzableRequest was previously unknown
@@ -625,6 +670,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         self.add_url(fuzzable_request.get_url())
         return self.fuzzable_requests.add(fuzzable_request)
+
+
 
 
 KnowledgeBase = DBKnowledgeBase
