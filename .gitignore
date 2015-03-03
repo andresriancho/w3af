@@ -75,3 +75,16 @@ w3af/plugins/crawl/phishtank/index.xml
 
 # For debian package build
 .pc/
+debian/files
+debian/w3af-console.debhelper.log
+debian/w3af-console.postinst.debhelper
+debian/w3af-console.prerm.debhelper
+debian/w3af-console.substvars
+debian/w3af-console/
+debian/w3af.debhelper.log
+debian/w3af.postinst.debhelper
+debian/w3af.postrm.debhelper
+debian/w3af.prerm.debhelper
+debian/w3af.substvars
+debian/w3af/
+docker/kali-debootstrap
