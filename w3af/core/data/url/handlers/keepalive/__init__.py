@@ -476,6 +476,7 @@ class KeepAliveHandler(object):
 class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
     def __init__(self):
         KeepAliveHandler.__init__(self)
+        urllib2.HTTPHandler.__init__(self, debuglevel=0)
 
     def http_open(self, req):
         return self.do_open(req)
@@ -487,6 +488,8 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, proxy):
         KeepAliveHandler.__init__(self)
+        urllib2.HTTPSHandler.__init__(self, debuglevel=0)
+
         self._proxy = proxy
         try:
             host, port = self._proxy.split(':')

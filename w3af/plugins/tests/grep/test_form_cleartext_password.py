@@ -19,12 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+
 import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.plugins.grep.form_cleartext_password import form_cleartext_password
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.url import URL
+
 
 class TestFormCleartextPassword(unittest.TestCase):
 
@@ -36,7 +39,7 @@ class TestFormCleartextPassword(unittest.TestCase):
         self.plugin.end()
 
     #Vulnerable to insecure form data submission over HTTP
-    def test_VS1(self, *args):
+    def test_vs1(self, *args):
         body = 'header <form action="http://www.w3af.com/">' \
                '<input type="password" name="passwd">' \
                '<input type="textarea"></form>footer'
@@ -48,11 +51,10 @@ class TestFormCleartextPassword(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('form_cleartext_password',
                                        'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
-            [0].get_name() =='Insecure password submission over HTTP', 1)
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
+            [0].get_name() == 'Insecure password submission over HTTP', 1)
 
-
-    def test_VS2(self, *args):
+    def test_vs2(self, *args):
         body = 'header <form action="http://www.w3af.com/">' \
                '<input type="password" name="passwd" /></form>footer'
         url = URL('http://www.w3af.com/')
@@ -67,7 +69,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             kb.kb.get('form_cleartext_password','form_cleartext_password')
             [0].get_name() =='Insecure password submission over HTTP', 1)
 
-    def test_VS3(self, *args):
+    def test_vs3(self, *args):
         body = 'header <form><input type="password" name="passwd" />' \
                '</form>footer'
         url = URL('http://www.w3af.com/')
@@ -82,7 +84,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             kb.kb.get('form_cleartext_password','form_cleartext_password')
             [0].get_name() == 'Insecure password submission over HTTP', 1)
 
-    def test_VS4(self, *args):
+    def test_vs4(self, *args):
         body = 'header <form action="http://www.w3af.com/"><div>' \
                '<input type="password" name="passwd" /></div></form>footer'
         url = URL('https://www.w3af.com/')
@@ -97,7 +99,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             kb.kb.get('form_cleartext_password','form_cleartext_password')
             [0].get_name() == 'Insecure password submission over HTTP', 1)
 
-    def test_VS5(self, *args):
+    def test_vs5(self, *args):
         body = 'header <form action="http://www.w3af.com/"><div></div>' \
                '</form><input type="password" name="passwd" />footer'
         url = URL('https://www.w3af.com/')
@@ -112,8 +114,10 @@ class TestFormCleartextPassword(unittest.TestCase):
             kb.kb.get('form_cleartext_password','form_cleartext_password')
             [0].get_name() =='Insecure password submission over HTTP', 1)
 
-    #Vulnerable to MITM since login form was submitted over HTTP
-    def test_M1(self, *args):
+    def test_m1(self, *args):
+        """
+        Vulnerable to MITM since login form was submitted over HTTP
+        """
         body = 'header <form action="https://www.w3af.com/">' \
                '<input type="password" name="passwd" /></form>footer'
         url = URL('http://www.w3af.com/')
@@ -126,10 +130,12 @@ class TestFormCleartextPassword(unittest.TestCase):
                           'form_cleartext_password')), 1)
         self.assertEqual(
             kb.kb.get('form_cleartext_password','form_cleartext_password')
-            [0].get_name() == 'MITM', 1)
+            [0].get_name() == 'Insecure password form access over HTTP', 1)
 
-    #Vulnerable to MITM with double password input
-    def test_D1(self, *args):
+    def test_d1(self, *args):
+        """
+        Vulnerable to MITM with double password input
+        """
         body = 'header <form action="https://www.w3af.com/">' \
                '<input type="password" name="passwd1" />' \
                '<input type="password" name="passwd2" />' \
@@ -143,11 +149,13 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
-            [0].get_name() == 'MITM', 1)
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
+            [0].get_name() == 'Insecure password form access over HTTP', 1)
 
-    #Not vulnarable
-    def test_N1(self, *args):
+    def test_n1(self, *args):
+        """
+        Not vulnerable
+        """
         body = 'header <form action="https://www.w3af.com/">' \
                '<input type="text" /></form>footer'
         url = URL('http://www.w3af.com/')
@@ -159,7 +167,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N2(self, *args):
+    def test_n2(self, *args):
         body = 'header <form action="https://www.w3af.com/"> ' \
                '<input type="password" name="passwd" /></form>footer'
         url = URL('https://www.w3af.com/')
@@ -171,7 +179,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N3(self, *args):
+    def test_n3(self, *args):
         body = 'header <form action="https://www.notw3af.com/">' \
                '<input type="password" name="passwd"></form>footer'
         url = URL('https://www.w3af.com/')
@@ -183,7 +191,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N4(self, *args):
+    def test_n4(self, *args):
         body = 'header <form action="/">' \
                '<input type="password" name="passwd"></form>footer'
         url = URL('https://www.w3af.com/')
@@ -195,7 +203,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N5(self, *args):
+    def test_n5(self, *args):
         body = 'header <form>' \
                '<input type="password" name="passwd"></form>footer'
         url = URL('https://www.w3af.com/')
@@ -207,7 +215,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N6(self, *args):
+    def test_n6(self, *args):
         body = 'header <form>' \
                '<input type="password" name="passwd"></form>footer'
         url = URL('https://www.w3af.com/')
@@ -219,7 +227,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N7(self, *args):
+    def test_n7(self, *args):
         body = 'header <form><div>' \
                '<input type="password" name="passwd" /></div></form>footer'
         url = URL('https://www.w3af.com/')
@@ -231,7 +239,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 0)
 
-    def test_N8(self, *args):
+    def test_n8(self, *args):
         body = 'header <form><div></div></form>' \
                '<input type="password" name="passwd" />footer'
         url = URL('https://www.w3af.com/')

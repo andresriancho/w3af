@@ -87,13 +87,12 @@ class csrf(AuditPlugin):
 
         # Does the request have CSRF token in query string or POST payload?
         if self._find_csrf_token(freq):
-            om.out.debug('Token for %s exists and was checked' % freq.get_url())
             return
 
         # Ok, we have found vulnerable to CSRF attack request
         msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
         
-        v = Vuln.from_fr('CSRF vulnerability', msg, severity.HIGH,
+        v = Vuln.from_fr('CSRF vulnerability', msg, severity.MEDIUM,
                          orig_response.id, self.get_name(), freq)
         
         self.kb_append_uniq(self, 'csrf', v)
@@ -164,9 +163,8 @@ class csrf(AuditPlugin):
 
     def _find_csrf_token(self, freq):
         """
-        :return: A dict with the first identified token
+        :return: A tuple with the first identified csrf token and value
         """
-        result = {}
         post_data = freq.get_raw_data()
         querystring = freq.get_querystring()
         
@@ -174,16 +172,12 @@ class csrf(AuditPlugin):
             
             if self.is_csrf_token(token.get_name(), token.get_value()):
 
-                result[token.get_name()] = token.get_value()
-
                 msg = 'Found CSRF token %s in parameter %s for URL %s.'
                 om.out.debug(msg % (token.get_value(),
                                     token.get_name(),
                                     freq.get_url()))
 
-                return result
-        
-        return result
+                return token.get_name(), token.get_value()
 
     def _is_token_checked(self, freq, token, orig_response):
         """
@@ -203,7 +197,7 @@ class csrf(AuditPlugin):
         # trivial validations)
         #
         # Only create mutants that modify the token parameter name 
-        mutants = create_mutants(freq, [token_value[::-1],], False, token_pname_lst)
+        mutants = create_mutants(freq, [token_value[::-1]], False, token_pname_lst)
         
         for mutant in mutants:
             mutant_response = self._uri_opener.send_mutant(mutant)
@@ -260,9 +254,9 @@ class csrf(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.
+        This plugin finds Cross Site Request Forgeries (CSRF) vulnerabilities.
 
-        The simplest type of csrf is checked to be vulnerable, the web application
-        must have sent a permanent cookie, and the aplicacion must have query
-        string parameters.
+        The simplest type of csrf is checked to be vulnerable, the web
+        application must have sent a permanent cookie, and the aplicacion must
+        have query string parameters.
         """

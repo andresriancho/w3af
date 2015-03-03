@@ -42,8 +42,6 @@ verbose = False
 
 [grep.file_upload]
 
-[grep.ajax]
-
 [grep.credit_cards]
 
 [grep.error_500]

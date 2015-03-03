@@ -30,6 +30,8 @@ from w3af.core.ui.gui.exception_handling import handled
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
+from w3af.core.data.kb.kb_observer import KBObserver
+from w3af.core.data.constants.severity import INFORMATION, MEDIUM, HIGH, LOW
 
 
 class _Guarded(object):
@@ -82,26 +84,29 @@ class FoundObjectsGuardian(gtk.HBox):
         self.pack_start(self.shll.label, False, False, padding=2)
 
         # go live
-        kb.kb.add_observer(None, None, self._update)
+        kb.kb.add_observer(VulnerabilityCountObserver(self))
         self.show_all()
 
-    def _update(self, location_a, location_b, value):
+
+class VulnerabilityCountObserver(KBObserver):
+    def __init__(self, found_count_guardian):
+        self.found_count_guardian = found_count_guardian
+
+    def append(self, location_a, location_b, value, ignore_type=False):
         """
-        Updates the objects shown.
-        
+        Updates the object count shown.
+
         Called by the knowledge base when a new item is added to it.
         """
         if isinstance(value, Shell):
-            self.shll.inc()
-            return
-        
-        if isinstance(value, Vuln):
-            self.vuln.inc()
-            return
+            self.found_count_guardian.shll.inc()
 
-        if isinstance(value, Info):
-            self.info.inc()
-            return
+        elif hasattr(value, 'get_severity'):
+            if value.get_severity() in (LOW, MEDIUM, HIGH):
+                self.found_count_guardian.vuln.inc()
+
+            elif value.get_severity() == INFORMATION:
+                self.found_count_guardian.info.inc()
 
 
 class FoundExceptionsStatusBar(gtk.EventBox):

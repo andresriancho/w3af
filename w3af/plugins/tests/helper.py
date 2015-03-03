@@ -45,7 +45,8 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import URL_LIST
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.kb.read_shell import ReadShell 
+from w3af.core.data.kb.read_shell import ReadShell
+from w3af.core.data.kb.info_set import InfoSet
 
 os.chdir(W3AF_LOCAL_PATH)
 RE_COMPILE_TYPE = type(re.compile(''))
@@ -102,10 +103,21 @@ class PluginTest(unittest.TestCase):
     def tearDown(self):
         self.w3afcore.quit()
         self.kb.cleanup()
+        self.assert_all_get_desc_work()
 
         if self.MOCK_RESPONSES:
             httpretty.disable()
             httpretty.reset()
+
+    def assert_all_get_desc_work(self):
+        """
+        Since the InfoSet does some custom rendering at get_desc(), I want to
+        make sure that any InfoSets render properly, some of my tests might not
+        be calling it implicitly, so we call it here.
+        """
+        for info in self.kb.get_all_findings():
+            if isinstance(info, InfoSet):
+                info.get_desc()
 
     def assertAllVulnNamesEqual(self, vuln_name, vulns):
         for vuln in vulns:
@@ -121,7 +133,7 @@ class PluginTest(unittest.TestCase):
         )
 
     def tokenize_kb_vulns(self):
-        all_info = self.kb.get_all_infos()
+        all_info = self.kb.get_all_findings()
         info_tokens = set()
 
         for info in all_info:

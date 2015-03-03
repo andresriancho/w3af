@@ -76,6 +76,7 @@ class ExtendedUrllib(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    SOCKET_ERROR_DELAY = 0.15
 
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
@@ -121,7 +122,55 @@ class ExtendedUrllib(object):
             - Memory debugging features
         """
         self._pause_and_stop()
+        self._pause_on_http_error()
         self._rate_limit()
+
+    def _pause_on_http_error(self):
+        """
+        This method will pause the scan for an increasing period of time based
+        on the number of HTTP errors received. HTTP errors are timeouts,
+        network unreachable, etc.
+
+        The objective of this method is to give the remote server, or local
+        connection, the chance to recover from their errors without killing the
+        w3af scan.
+
+        Successful requests reset the counter and allow faster request rates.
+        Failed requests increase the counter and make this method delay requests
+
+        The counter is multiplied by SOCKET_ERROR_DELAY to get the real delay.
+
+        Counter starts at zero.
+
+        In the worse case scenario, where MAX_ERROR_COUNT errors occur, the
+        requests are going to be delayed as follows (considering MAX_ERROR_COUNT
+        10 and SOCKET_ERROR_DELAY 0.1):
+            1-  No delay
+            2-  SOCKET_ERROR_DELAY * 1 == 0.1
+            3-  SOCKET_ERROR_DELAY * 2 == 0.2
+            ...
+            10- SOCKET_ERROR_DELAY * 9 == 0.9
+
+        The total time added by this method (considering the above values) is
+        4.5 seconds. That's the time we give the remote server to recover.
+
+        :return: None, but might delay the requests which go out to the network
+        :see: https://github.com/andresriancho/w3af/issues/4811
+        """
+        if len(self._last_errors):
+            self._rate_limit_lock.acquire()
+
+            # Logging
+            error_total = len(self._last_errors)
+            error_sleep = self.SOCKET_ERROR_DELAY * error_total
+            msg = 'Sleeping for %s seconds before sending HTTP request after' \
+                  ' receiving URL/socket error. The total error count is at %s.'
+            om.out.debug(msg % (error_sleep, error_total))
+
+            # The actual delay
+            time.sleep(error_sleep)
+
+            self._rate_limit_lock.release()
 
     def _rate_limit(self):
         """
@@ -400,11 +449,12 @@ class ExtendedUrllib(object):
         """
         This method was previously used in the framework to perform a HEAD
         request before each GET/POST (ouch!) and get the size of the response.
-        The bad thing was that I was performing two requests for each resource...
-        I moved the "protection against big files" to the keepalive.py module.
+        The bad thing was that I was performing two requests for each
+        resource... I moved the "protection against big files" to the
+        keepalive.py module.
 
-        I left it here because maybe I want to use it at some point... Mainly
-        to call it directly or something.
+        I left it here because maybe I want to use it at some point. Mainly
+        to call it directly.
 
         :return: The file size of the remote file.
         """
@@ -528,7 +578,8 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
         
-        except (socket.error, URLTimeoutError, ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
+        except (socket.error, URLTimeoutError,
+                ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
@@ -681,17 +732,19 @@ class ExtendedUrllib(object):
         msg = ('w3af found too many consecutive errors while performing'
                ' HTTP requests. In most cases this means that the remote web'
                ' server is not reachable anymore, the network is down, or'
-               ' a WAF is blocking our tests. The last error message was "%s".')
+               ' a WAF is blocking our tests. The last exception message '
+               'was "%s" (%s).')
 
         reason_msg = self.get_exception_reason(error)
+        args = (error, error.__class__.__name__)
 
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
             # Stop using ExtendedUrllib instance
-            e = ScanMustStopByKnownReasonExc(msg % error, reason=reason_msg)
+            e = ScanMustStopByKnownReasonExc(msg % args, reason=reason_msg)
 
         else:
-            e = ScanMustStopByUnknownReasonExc(msg % error, errs=last_errors)
+            e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
         self._stop_exception = e
         # pylint: disable=E0702
@@ -737,7 +790,7 @@ class ExtendedUrllib(object):
             if isinstance(reason_err, socket.error):
                 reason_msg = self.get_socket_exception_reason(error)
 
-        elif isinstance(error, ssl.SSLError):
+        elif isinstance(error, (ssl.SSLError, socket.sslerror)):
             socket_reason = self.get_socket_exception_reason(error)
             if socket_reason:
                 reason_msg = 'SSL Error: %s' % socket_reason

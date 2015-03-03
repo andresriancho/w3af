@@ -31,9 +31,9 @@ import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.constants.severity import LOW, MEDIUM, HIGH
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -64,7 +64,7 @@ class html_file(OutputPlugin):
 
         # These attributes hold the file pointers
         self._file = None
-        self._aditional_info = DiskList(table_prefix='html_file')
+        self._additional_info = DiskList(table_prefix='html_file')
 
         # User configured parameters
         self._verbose = False
@@ -200,13 +200,14 @@ class html_file(OutputPlugin):
         msg = '<tr><td class="content">%s</td>\n'\
               '    <td class="content">%s</td>\n' \
               '    <td class="content">%s</td></tr>'
-        self._aditional_info.append(msg % (the_time, msg_type, message))
+        self._additional_info.append(msg % (the_time, msg_type, message))
 
     def set_options(self, option_list):
         """
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
-        using the XML Options that was retrieved from the plugin using get_options()
+        using the XML Options that was retrieved from the plugin using
+        get_options()
 
         This method MUST be implemented on every plugin.
 
@@ -266,12 +267,10 @@ class html_file(OutputPlugin):
             '<td class="sub" width="80%">Issue </td>',
             '</tr>')
 
-        # Writes the vulnerabilities and informations to the results table
-        infos = kb.kb.get_all_infos()
+        # Writes the vulnerabilities and information instances to the table
+        for i in kb.kb.get_all_findings():
 
-        for i in infos:
-
-            #   Get all the information I'll be using
+            # Get all the information I'll be using
             desc = cgi.escape(i.get_desc())
             severity = cgi.escape(i.get_severity())
 
@@ -283,7 +282,7 @@ class html_file(OutputPlugin):
                 port = 'There is no port associated with this item.'
                 escaped_url = 'There is no URL associated with this item.'
 
-            if isinstance(i, Vuln):
+            if i.get_severity() in (LOW, MEDIUM, HIGH):
                 color = 'red'
                 i_class = 'Vulnerability'
             else:
@@ -322,7 +321,7 @@ class html_file(OutputPlugin):
             '<td class="sub" width="65%">Message</td>',
             '</tr>')
 
-        for line in self._aditional_info:
+        for line in self._additional_info:
             self._write_to_file(line)
 
         # Close the debug table
@@ -335,7 +334,7 @@ class html_file(OutputPlugin):
         if self._file is not None:
             self._file.close()
         
-        self._aditional_info.clear()
+        self._additional_info.clear()
 
     def get_long_desc(self):
         """

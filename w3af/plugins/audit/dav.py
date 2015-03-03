@@ -204,9 +204,9 @@ class dav(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds WebDAV configuration errors. These errors are generally
-        server configuration errors rather than a web application errors. To
-        check for vulnerabilities of this kind, the plugin will try to PUT a
-        file on a directory that has WebDAV enabled, if the file is uploaded
-        successfully, then we have found a bug.
+        This plugin finds WebDAV configuration errors. These errors are
+        generally server configuration errors rather than a web application
+        errors. To check for vulnerabilities of this kind, the plugin will try
+        to PUT a file on a directory that has WebDAV enabled, if the file is
+        uploaded successfully, then we have found a bug.
         """

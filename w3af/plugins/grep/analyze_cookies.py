@@ -22,15 +22,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import Cookie
 import re
 
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.kb.info_set import InfoSet
+from w3af.core.data.parsers.cookie_parser import parse_cookie, COOKIE_HEADERS
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.constants.cookies import COOKIE_FINGERPRINT
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
+
+COOKIE_KEYS = 'cookie_keys'
+COOKIE_OBJECT = 'cookie_object'
+COOKIE_STRING = 'cookie_string'
 
 
 class analyze_cookies(GrepPlugin):
@@ -39,17 +44,15 @@ class analyze_cookies(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')
-
-    COOKIE_FINGERPRINT = COOKIE_FINGERPRINT
-
     SECURE_RE = re.compile('; *?secure([\s;, ]|$)', re.I)
     HTTPONLY_RE = re.compile('; *?httponly([\s;, ]|$)', re.I)
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_reported_server = []
+
+        self._cookie_key_failed_fingerprint = set()
+        self._already_reported_fingerprint = set()
+        self._already_reported_cookies = ScalableBloomFilter()
 
     def grep(self, request, response):
         """
@@ -68,7 +71,7 @@ class analyze_cookies(GrepPlugin):
         headers = response.get_headers()
 
         for header_name in headers:
-            if header_name.lower() in self.COOKIE_HEADERS:
+            if header_name.lower() in COOKIE_HEADERS:
 
                 cookie_header_value = headers[header_name].strip()
                 cookie_object = self._parse_cookie(request, response,
@@ -90,41 +93,43 @@ class analyze_cookies(GrepPlugin):
         """
         Store (unique) cookies in the KB for later analysis.
         """
-        for cookie_info in kb.kb.get(self, 'cookies'):
-            stored_cookie_obj = cookie_info['cookie-object']
-            # Cookie class has an __eq__ which compares Cookies' keys for
-            # equality, not the values, so these two cookies are equal:
-            #        a=1;
-            #        a=2;
-            # And these two are not:
-            #        a=1;
-            #        b=1;
-            if cookie_object == stored_cookie_obj:
-                break
-        else:
-            cstr = cookie_object.output(header='')
-            desc = 'The URL: "%s" sent the cookie: "%s".'
-            desc = desc % (response.get_url(), cstr)
+        # Cookie class has an __eq__ which compares Cookies' keys for
+        # equality, not the values, so these two cookies are equal:
+        #        a=1;
+        #        a=2;
+        # And these two are not:
+        #        a=1;
+        #        b=1;
+        cookie_keys = tuple(cookie_object.keys())
+        uniq_id = (cookie_keys, response.get_url())
+        if uniq_id in self._already_reported_cookies:
+            return
 
-            i = Info('Cookie', desc, response.id, self.get_name())
-            i.set_url(response.get_url())
+        # No duplicates
+        self._already_reported_cookies.add(uniq_id)
 
-            self._set_cookie_to_rep(i, cstr=cookie_header_value)
+        # Create the info and store it in the KB
+        cstr = cookie_object.output(header='').strip()
+        desc = 'The URL: "%s" sent the cookie: "%s".'
+        desc = desc % (response.get_url(), cstr)
 
-            i['cookie-object'] = cookie_object
+        i = CookieInfo('Cookie', desc, response.id, self.get_name())
+        i.set_url(response.get_url())
+        i.set_cookie_object(cookie_object)
 
-            """
-            The expiration date tells the browser when to delete the
-            cookie. If no expiration date is provided, the cookie is
-            deleted at the end of the user session, that is, when the
-            user quits the browser. As a result, specifying an expiration
-            date is a means for making cookies to survive across
-            browser sessions. For this reason, cookies that have an
-            expiration date are called persistent.
-            """
-            i['persistent'] = 'expires' in cookie_object
-            i.add_to_highlight(i['cookie-string'])
-            kb.kb.append(self, 'cookies', i)
+        """
+        The expiration date tells the browser when to delete the
+        cookie. If no expiration date is provided, the cookie is
+        deleted at the end of the user session, that is, when the
+        user quits the browser. As a result, specifying an expiration
+        date is a means for making cookies to survive across
+        browser sessions. For this reason, cookies that have an
+        expiration date are called persistent.
+        """
+        i['persistent'] = 'expires' in cookie_object
+
+        self.kb_append_uniq_group(self, 'cookies', i,
+                                  group_klass=CollectedCookieInfoSet)
 
     def _parse_cookie(self, request, response, cookie_header_value):
         """
@@ -140,36 +145,21 @@ class analyze_cookies(GrepPlugin):
 
         :return: The cookie object or None if the parsing failed
         """
-        cookie_object = Cookie.SimpleCookie()
-        
-        # FIXME: Workaround for bug in Python's Cookie.py
-        #
-        # if type(rawdata) == type(""):
-        #     self.__ParseString(rawdata)
-        #
-        # Should read "if isinstance(rawdata, basestring)"
-        cookie_header_value = cookie_header_value.encode('utf-8')
-        
         try:
             # Note to self: This line may print some chars to the console
-            cookie_object.load(cookie_header_value)
+            return parse_cookie(cookie_header_value)
         except Cookie.CookieError:
             desc = 'The remote Web application sent a cookie with an' \
                    ' incorrect format: "%s" that does NOT respect the RFC.'
             desc = desc % cookie_header_value
-            
-            i = Vuln('Invalid cookie', desc,
-                     severity.HIGH, response.id, self.get_name())
-            i.set_url(response.get_url())
 
-            self._set_cookie_to_rep(i, cstr=cookie_header_value)
+            i = CookieInfo('Invalid cookie', desc, response.id, self.get_name())
+            i.set_url(response.get_url())
+            i.set_cookie_string(cookie_header_value)
 
             # The cookie is invalid, this is worth mentioning ;)
             kb.kb.append(self, 'invalid-cookies', i)
             return None
-
-        else:
-            return cookie_object
 
     def _analyze_cookie_security(self, request, response, cookie_obj,
                                  cookie_header_value):
@@ -204,21 +194,21 @@ class analyze_cookies(GrepPlugin):
         :return: None
         """
         if not self.HTTPONLY_RE.search(cookie_header_value):
-            
+
             vuln_severity = severity.MEDIUM if fingerprinted else severity.LOW
             desc = 'A cookie without the HttpOnly flag was sent when ' \
                    ' requesting "%s". The HttpOnly flag prevents potential' \
                    ' intruders from accessing the cookie value through' \
                    ' Cross-Site Scripting attacks.'
             desc = desc % response.get_url()
-            
-            v = Vuln('Cookie without HttpOnly', desc,
-                     vuln_severity, response.id, self.get_name())
-            v.set_url(response.get_url())
-            
-            self._set_cookie_to_rep(v, cobj=cookie_obj)
 
-            kb.kb.append(self, 'security', v)
+            v = CookieVuln('Cookie without HttpOnly', desc, vuln_severity,
+                           response.id, self.get_name())
+            v.set_url(response.get_url())
+            v.set_cookie_object(cookie_obj)
+
+            self.kb_append_uniq_group(self, 'http_only', v,
+                                      group_klass=HttpOnlyCookieInfoSet)
 
     def _ssl_cookie_via_http(self, request, response):
         """
@@ -229,32 +219,39 @@ class analyze_cookies(GrepPlugin):
         """
         if request.get_url().get_protocol().lower() == 'https':
             return
-        
-        for cookie in kb.kb.get('analyze_cookies', 'cookies'):
-            if cookie.get_url().get_protocol().lower() == 'https' and \
-            request.get_url().get_domain() == cookie.get_url().get_domain():
+
+        # Pre-calculate to avoid CPU usage
+        request_dump = request.dump()
+
+        for info_set in kb.kb.get(self, 'cookies'):
+            for info in info_set.infos:
+                if info.get_url().get_protocol().lower() != 'https':
+                    continue
+
+                if request.get_url().get_domain() != info.get_url().get_domain():
+                    continue
 
                 # The cookie was sent using SSL, I'll check if the current
                 # request, is using these values in the POSTDATA / QS / COOKIE
-                for key in cookie['cookie-object'].keys():
+                for key in info[COOKIE_KEYS]:
 
-                    value = cookie['cookie-object'][key].value
+                    value = info.get_cookie_object()[key].value
 
                     # This if is to create less false positives
-                    if len(value) > 6 and value in request.dump():
+                    if len(value) > 6 and value in request_dump:
 
                         desc = 'Cookie values that were set over HTTPS, are' \
                                ' then sent over an insecure channel in a' \
                                ' request to "%s".'
                         desc = desc % request.get_url()
-                    
-                        v = Vuln('Secure cookies over insecure channel', desc,
-                                 severity.HIGH, response.id, self.get_name())
 
+                        v = CookieVuln('Secure cookies over insecure channel',
+                                       desc, severity.HIGH, response.id,
+                                       self.get_name())
                         v.set_url(response.get_url())
+                        v.set_cookie_object(info.get_cookie_object())
 
-                        self._set_cookie_to_rep(v, cobj=cookie['cookie-object'])
-                        kb.kb.append(self, 'security', v)
+                        kb.kb.append(self, 'secure_via_http', v)
 
     def _match_cookie_fingerprint(self, request, response, cookie_obj):
         """
@@ -263,27 +260,43 @@ class analyze_cookies(GrepPlugin):
 
         :return: True if the cookie was fingerprinted
         """
-        cookie_obj_str = cookie_obj.output(header='')
+        cookie_keys = cookie_obj.keys()
+        for cookie_key in cookie_keys:
+            if cookie_key in self._cookie_key_failed_fingerprint:
+                cookie_keys.remove(cookie_key)
 
-        for cookie_str_db, system_name in self.COOKIE_FINGERPRINT:
-            if cookie_str_db in cookie_obj_str:
-                if system_name not in self._already_reported_server:
-                    desc = 'A cookie matching the cookie fingerprint DB'\
-                           ' has been found when requesting "%s".'\
-                           ' The remote platform is: "%s".'
-                    desc = desc % (response.get_url(), system_name)
+            if cookie_key in self._already_reported_fingerprint:
+                cookie_keys.remove(cookie_key)
 
-                    i = Info('Identified cookie', desc,
-                             response.id, self.get_name())
+        for cookie_key in cookie_keys:
+            for cookie_str_db, system_name in COOKIE_FINGERPRINT:
+                if cookie_str_db not in cookie_key:
+                    continue
 
-                    i.set_url(response.get_url())
-                    i['httpd'] = system_name
-                                        
-                    self._set_cookie_to_rep(i, cobj=cookie_obj)
+                if cookie_key in self._already_reported_fingerprint:
+                    continue
 
-                    kb.kb.append(self, 'security', i)
-                    self._already_reported_server.append(system_name)
-                    return True
+                # Unreported match!
+                self._already_reported_fingerprint.add(cookie_key)
+
+                desc = 'A cookie matching the cookie fingerprint DB'\
+                       ' has been found when requesting "%s".'\
+                       ' The remote platform is: "%s".'
+                desc = desc % (response.get_url(), system_name)
+
+                i = CookieInfo('Identified cookie', desc, response.id,
+                               self.get_name())
+                i.set_cookie_object(cookie_obj)
+                i.set_url(response.get_url())
+                i['httpd'] = system_name
+
+                kb.kb.append(self, 'fingerprint', i)
+                return True
+        else:
+            # No match was found, we store the keys so we don't try to match
+            # them again against the COOKIE_FINGERPRINT
+            for cookie_key in cookie_keys:
+                self._cookie_key_failed_fingerprint.add(cookie_key)
 
         return False
 
@@ -301,26 +314,9 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
         """
-        # BUGBUG: http://bugs.python.org/issue1028088
-        #
-        # I workaround this issue by using the raw string from the HTTP
-        # response instead of the parsed:
-        #
-        #        cookie_obj_str = cookie_obj.output(header='')
-        #
-        # Bug can be reproduced like this:
-        # >>> import Cookie
-        # >>> cookie_object = Cookie.SimpleCookie()
-        # >>> cookie_object.load('a=b; secure; httponly')
-        # >>> cookie_object.output(header='')
-        # ' a=b'
-        #
-        # Note the missing secure/httponly in the output return
-
-        # And now, the code:
         if self.SECURE_RE.search(cookie_header_value) and \
         response.get_url().get_protocol().lower() == 'http':
-            
+
             desc = 'A cookie marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
                    ' "%s", this usually means that the Web application was'\
@@ -328,14 +324,13 @@ class analyze_cookies(GrepPlugin):
                    ' security or that the developer does not understand the'\
                    ' "secure" flag.'
             desc = desc % response.get_url()
-            
-            v = Vuln('Secure cookie over HTTP', desc, severity.HIGH,
-                     response.id, self.get_name())
+
+            v = CookieVuln('Secure cookie over HTTP', desc, severity.HIGH,
+                           response.id, self.get_name())
             v.set_url(response.get_url())
+            v.set_cookie_object(cookie_obj)
 
-            self._set_cookie_to_rep(v, cobj=cookie_obj)
-
-            kb.kb.append(self, 'security', v)
+            kb.kb.append(self, 'false_secure', v)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
                                cookie_header_value):
@@ -348,66 +343,22 @@ class analyze_cookies(GrepPlugin):
         :param cookie_header_value: The cookie, as sent in the HTTP response
         :return: None
         """
-        # BUGBUG: See other reference in this file for http://bugs.python.org/issue1028088
-
         if response.get_url().get_protocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
-
             desc = 'A cookie without the secure flag was sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
                    ' channel, thus preventing potential session hijacking' \
                    ' attacks.'
             desc = desc % response.get_url()
-            
-            v = Vuln('Secure flag missing in HTTPS cookie', desc,
-                     severity.HIGH, response.id, self.get_name())
 
+            v = CookieVuln('Secure flag missing in HTTPS cookie', desc,
+                           severity.MEDIUM, response.id, self.get_name())
             v.set_url(response.get_url())
-            self._set_cookie_to_rep(v, cobj=cookie_obj)
-            
-            kb.kb.append(self, 'security', v)
+            v.set_cookie_object(cookie_obj)
 
-    def end(self):
-        """
-        This method is called when the plugin wont be used anymore.
-        """
-        cookies = kb.kb.get('analyze_cookies', 'cookies')
-        tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
-
-        res_dict, item_idx = group_by_min_key(tmp)
-
-        if item_idx:
-            # Grouped by URLs
-            msg = u'The URL: "%s" sent these cookies:'
-        else:
-            # Grouped by cookies
-            msg = u'The cookie: "%s" was sent by these URLs:'
-
-        for k in res_dict:
-            to_print = msg % k
-
-            for i in res_dict[k]:
-                # Switch depending on the type of grouping returned by
-                # group_by_min_key
-                if isinstance(i, unicode):
-                    # it's the cookie as string
-                    to_print += u'\n- ' + i
-                else:
-                    # it's a URL
-                    to_print += u'\n- ' + i.url_string.decode('utf-8',
-                                                              errors='ignore')
-
-            om.out.information(to_print)
-
-    def _set_cookie_to_rep(self, info_inst, cobj=None, cstr=None):
-        if cobj is not None:
-            info_inst['cookie-object'] = cobj
-            cstr = cobj.output(header='')
-
-        if cstr is not None:
-            info_inst['cookie-string'] = cstr
-            info_inst.add_to_highlight(cstr)
+            self.kb_append_uniq_group(self, 'secure', v,
+                                      group_klass=NotSecureFlagCookieInfoSet)
 
     def get_long_desc(self):
         """
@@ -419,3 +370,71 @@ class analyze_cookies(GrepPlugin):
         potential vulnerabilities, the remote web application framework and
         other interesting information.
         """
+
+
+class CookieMixIn(object):
+    def set_cookie_keys(self, keys):
+        self[COOKIE_KEYS] = keys
+
+    def set_cookie_string(self, cookie_string):
+        self[COOKIE_STRING] = cookie_string
+        self.add_to_highlight(cookie_string)
+
+    def set_cookie_object(self, cookie_object):
+        self[COOKIE_OBJECT] = cookie_object
+        self.set_cookie_string(cookie_object.output(header='').strip())
+        self.set_cookie_keys(cookie_object.keys())
+
+    def get_cookie_object(self):
+        return self[COOKIE_OBJECT]
+    
+
+class CookieInfo(Info, CookieMixIn):
+    pass
+
+
+class CookieVuln(Vuln, CookieMixIn):
+    pass
+
+
+class CollectedCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
+    TEMPLATE = (
+        'The application sent the "{{ cookie_keys|join(\', \') }}" cookie in'
+        ' {{ uris|length }} different URLs. The first ten URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class HttpOnlyCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
+    TEMPLATE = (
+        'The application sent the "{{ cookie_keys|join(\', \') }}" cookie'
+        ' without the HttpOnly flag in {{ uris|length }} different responses.'
+        ' The HttpOnly flag prevents potential intruders from accessing the'
+        ' cookie value through Cross-Site Scripting attacks. The first ten'
+        ' URLs which sent the insecure cookie are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class NotSecureFlagCookieInfoSet(InfoSet):
+    ITAG = COOKIE_KEYS
+    TEMPLATE = (
+        'The application sent the "{{ cookie_keys|join(\', \') }}" cookie'
+        ' without the Secure flag set in {{ uris|length }} different URLs.'
+        ' The Secure flag prevents the browser from sending cookies over'
+        ' insecure HTTP connections, thus preventing potential session'
+        ' hijacking attacks. The first ten URLs which sent the insecure'
+        ' cookie are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )

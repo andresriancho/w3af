@@ -117,6 +117,9 @@ class sqlmap(AttackPlugin):
                 if sqlmap.is_vulnerable():
                     self._sqlmap = sqlmap
                     return True
+                else:
+                    self._sqlmap = None
+                    sqlmap.cleanup()
         
         return False
 

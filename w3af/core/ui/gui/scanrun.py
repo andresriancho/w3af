@@ -36,6 +36,7 @@ from w3af.core.ui.gui.misc.xdot_wrapper import WrappedDotWidget
 
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.kb_observer import KBObserver
 from w3af.core.controllers.exceptions import DBException
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -396,6 +397,14 @@ User-Agent: w3af.org
 """
 
 
+class URLObserver(KBObserver):
+    def __init__(self, urls_tree):
+        self.urls_tree = urls_tree
+
+    def add_url(self, url):
+        self.urls_tree.urls.put(url)
+
+
 class URLsTree(gtk.TreeView):
     """Show the URLs that the system discovers.
 
@@ -424,7 +433,7 @@ class URLsTree(gtk.TreeView):
 
         # get the queue and go live
         self.urls = Queue.Queue()
-        kb.kb.add_url_observer(self.urls.put)
+        kb.kb.add_observer(URLObserver(self))
         gobject.timeout_add(250, self.add_url)
         self.show()
 

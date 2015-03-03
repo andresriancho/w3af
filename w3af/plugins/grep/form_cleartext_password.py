@@ -19,22 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.kb.vuln import Vuln
-from w3af.core.controllers.exceptions import BaseFrameworkException
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.constants.severity as severity
 
-# Find all input elements which type's lower-case value
-# equals-case-sensitive 'password'
+from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+from w3af.core.data.kb.vuln import Vuln
+from w3af.core.controllers.exceptions import BaseFrameworkException
+
 
 class form_cleartext_password(GrepPlugin):
     """
-    Finds forms with password inputs on every page and checks if they
-    are secure.
+    Finds forms with password inputs on every page and checks if they are secure
     :author: Dmitry Roshchin (nixwizard@gmail.com)
     """
-
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -65,28 +62,26 @@ class form_cleartext_password(GrepPlugin):
                     action_proto = action.get_protocol()
                     # form is to be submitted over http
                     if action_proto == 'http':
-                        desc = 'The the URL: "%s" has an insecure <form> ' \
-                               'element and is vulnerable to insecure ' \
-                               'password submission over HTTP!'
+                        desc = 'The URL: "%s" contains a <form> tag' \
+                               ' which submits credentials over HTTP'
                         desc = desc % url_string
                         v = Vuln('Insecure password submission over HTTP', desc,
                                  severity.MEDIUM, response.id, self.get_name())
                         v.set_url(response.get_url())
-                        self.kb_append_uniq(self,
-                                            'form_cleartext_password', v)
+                        self.kb_append_uniq(self, 'form_cleartext_password', v)
                         break
+
                     else:
-                        #form was recieved over http
-                        if proto == "http":
-                            desc = 'The the URL: "%s" delivered over http ' \
-                                   'and has <form> element with password ' \
-                                   'input is vulnerable to MITM!'
+                        # form was received over http
+                        if proto == 'http':
+                            desc = 'The URL: "%s" was delivered over the' \
+                                   ' insecure HTTP protocol and has <form>' \
+                                   ' which contains a password input'
                             desc = desc % url_string
-                            v = Vuln('MITM', desc,
-                                     severity.MEDIUM, response.id,
+                            v = Vuln('Insecure password form access over HTTP',
+                                     desc, severity.MEDIUM, response.id,
                                      self.get_name())
-                            self.kb_append_uniq(self,
-                                                'form_cleartext_password',v)
+                            self.kb_append_uniq(self, 'form_cleartext_password', v)
                             break
 
     def get_long_desc(self):
