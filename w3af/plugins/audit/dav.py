@@ -177,19 +177,20 @@ class dav(AuditPlugin):
 
         # Report some common errors
         elif put_response.get_code() == 403:
-            msg = 'DAV seems to be correctly configured and allowing you to'\
-                  ' use the PUT method but the directory does not have the'\
-                  ' correct permissions that would allow the web server to'\
-                  ' write to it. This error was found at: "%s".'
-            msg = msg % put_response.get_url()
-            
-            i = Info('DAV incorrect configuration', msg,
-                     [put_response.id, res.id], self.get_name())
+            if "Unsupported Method" not in put_response.get_body():
+                msg = 'DAV seems to be correctly configured and allowing you to'\
+                      ' use the PUT method but the directory does not have the'\
+                      ' correct permissions that would allow the web server to'\
+                      ' write to it. This error was found at: "%s".'
+                msg = msg % put_response.get_url()
+                
+                i = Info('DAV incorrect configuration', msg,
+                         [put_response.id, res.id], self.get_name())
 
-            i.set_url(url)
-            i.set_method('PUT')
-            
-            self.kb_append(self, 'dav', i)
+                i.set_url(url)
+                i.set_method('PUT')
+                
+                self.kb_append(self, 'dav', i)
 
     def get_plugin_deps(self):
         """
