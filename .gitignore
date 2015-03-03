@@ -88,3 +88,4 @@ debian/w3af.prerm.debhelper
 debian/w3af.substvars
 debian/w3af/
 docker/kali-debootstrap
+*.deb
