@@ -72,6 +72,7 @@ def create_home_dir():
     # a module. Note the gen_data_files.py code in the w3af-module.
     default_profiles_paths = [os.path.join(W3AF_LOCAL_PATH, 'profiles'),
                               os.path.join(ROOT_PATH, 'profiles'),
+                              os.path.join(ROOT_PATH, '../profiles'),
                               os.path.join(sys.prefix, 'profiles'),
                               os.path.join(sys.exec_prefix, 'profiles'),
                               # https://github.com/andresriancho/w3af-module/issues/4
