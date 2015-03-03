@@ -191,20 +191,24 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     ssl_version = _openssl_versions[ssl_version]
 
     ctx = OpenSSL.SSL.Context(ssl_version)
+
     if certfile:
         ctx.use_certificate_file(certfile)
+
     if keyfile:
         ctx.use_privatekey_file(keyfile)
+
     if cert_reqs != OpenSSL.SSL.VERIFY_NONE:
         ctx.set_verify(cert_reqs, lambda a, b, err_no, c, d: err_no == 0)
+
     if timeout is not None:
         ctx.set_timeout(timeout)
+
     if ca_certs:
         try:
             ctx.load_verify_locations(ca_certs, None)
         except OpenSSL.SSL.Error, e:
-            raise ssl.SSLError('Bad ca_certs: %r' % ca_certs,
-                               OpenSSLReformattedError(e))
+            raise ssl.SSLError('Bad ca_certs: %r' % ca_certs, e)
 
     cnx = OpenSSL.SSL.Connection(ctx, sock)
 
@@ -217,8 +221,7 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     try:
         cnx.do_handshake()
     except OpenSSL.SSL.Error, e:
-        raise ssl.SSLError('Bad handshake',
-                           OpenSSLReformattedError(e))
+        raise ssl.SSLError('Bad handshake', e)
 
     return SSLSocket(cnx, sock)
 
