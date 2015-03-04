@@ -16,3 +16,13 @@ specific directory. In order to achieve this task follow these steps:
 
 Using this configuration the crawler will only yield URLs which are inside ``/directory``.
 Then audit plugins will only scan the URLs inside that directory.
+
+Saving URLs and using them as input for other scans
+---------------------------------------------------
+Crawling can be an expensive process, which in some cases requires manual
+intervention (spider man plugin). In order to save all the URLs found during a
+scan it's possible to use the ``output.export_requests`` plugin which will write
+the URLs to a user configured file.
+
+Loading the saved data is achieved using the ``import_results`` plugin, which
+reads all the information and feeds it into w3af's core.
