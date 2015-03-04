@@ -410,8 +410,8 @@ class profile(object):
         """
         if not self._profile_file_name:
             if not file_name:
-                raise BaseFrameworkException('Error while saving profile, you'
-                                             'didn\'t specified the file name.')
+                raise BaseFrameworkException('Error saving profile, profile'
+                                             ' file name is required.')
             else:  # The user's specified a file_name!
                 if not file_name.endswith('.pw3af'):
                     file_name += '.pw3af'
