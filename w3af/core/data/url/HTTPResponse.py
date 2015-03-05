@@ -624,7 +624,7 @@ class HTTPResponse(object):
         dumped_headers = self.dump_headers()
 
         try:
-            dump_head = "%s%s" % (status_line, dumped_headers)
+            dump_head = '%s%s' % (status_line, dumped_headers)
         except UnicodeDecodeError, ude:
             msg = 'UnicodeDecodeError found at dump_response_head(). Original'\
                   ' exception was: "%s". The response charset is: "%s", the'\

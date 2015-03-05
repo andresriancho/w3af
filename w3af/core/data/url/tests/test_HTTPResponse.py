@@ -243,5 +243,6 @@ class TestHTTPResponse(unittest.TestCase):
 
         expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'
 
-        self.assertEqual(resp.dump_response_head(), expected_dump)
+        self.assertEqual(unicode(resp.dump_response_head()),
+                         expected_dump)
 
