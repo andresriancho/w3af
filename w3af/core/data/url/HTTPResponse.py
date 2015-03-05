@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
 import re
+import copy
 import httplib
-import threading
 import urllib2
+import threading
 
 from itertools import imap
 
@@ -118,7 +118,7 @@ class HTTPResponse(object):
         self._redirected_uri = geturl.uri2url()
 
         # Set the rest
-        self._msg = msg
+        self._msg = smart_unicode(msg)
         self._time = time
         self._alias = alias
         self._doc_type = None
