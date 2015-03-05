@@ -67,6 +67,9 @@ try:
 except AttributeError:
     pass
 
+# Used to log responses in deque
+SUCCESS = 'Success'
+
 
 class ExtendedUrllib(object):
     """
@@ -81,8 +84,7 @@ class ExtendedUrllib(object):
         self._opener = None
 
         # For error handling
-        self._last_request_failed = False
-        self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
+        self._last_responses = deque(maxlen=100)
         self._count_lock = threading.RLock()
 
         # For rate limiting
@@ -112,7 +114,7 @@ class ExtendedUrllib(object):
         """
         self._user_stopped = True
 
-    def _before_send_hook(self):
+    def _before_send_hook(self, request):
         """
         This is a method that is called before every request is sent. I'm using
         it as a hook implement:
@@ -120,25 +122,26 @@ class ExtendedUrllib(object):
             - Memory debugging features
         """
         self._pause_and_stop()
-        self._pause_on_http_error()
+        self._pause_on_http_error(request)
         self._rate_limit()
 
-    def _pause_on_http_error(self):
+    def _pause_on_http_error(self, request):
         """
         This method will pause the scan for an increasing period of time based
-        on the number of HTTP errors received. HTTP errors are timeouts,
-        network unreachable, etc.
+        on the HTTP error rate. HTTP errors are timeouts, network unreachable,
+        etc. things like 404, 403, 500 are NOT considered errors.
 
         The objective of this method is to give the remote server, or local
         connection, the chance to recover from their errors without killing the
         w3af scan.
 
-        Successful requests reset the counter and allow faster request rates.
-        Failed requests increase the counter and make this method delay requests
+        Successful requests lower the error rate and allow faster request rates.
+        Failed requests increase the rate and make this method delay requests
 
-        The counter is multiplied by SOCKET_ERROR_DELAY to get the real delay.
+        The rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
+        in seconds.
 
-        Counter starts at zero.
+        The error rate starts at zero, so no delay is added at the beginning
 
         In the worse case scenario, where MAX_ERROR_COUNT errors occur, the
         requests are going to be delayed as follows (considering MAX_ERROR_COUNT
@@ -155,15 +158,16 @@ class ExtendedUrllib(object):
         :return: None, but might delay the requests which go out to the network
         :see: https://github.com/andresriancho/w3af/issues/4811
         """
-        if len(self._last_errors):
+        error_rate = self._get_error_rate()
+        if error_rate:
             self._rate_limit_lock.acquire()
 
             # Logging
-            error_total = len(self._last_errors)
-            error_sleep = self.SOCKET_ERROR_DELAY * error_total
-            msg = 'Sleeping for %s seconds before sending HTTP request after' \
-                  ' receiving URL/socket error. The total error count is at %s.'
-            om.out.debug(msg % (error_sleep, error_total))
+            error_sleep = self.SOCKET_ERROR_DELAY * error_rate
+            msg = 'Sleeping for %s seconds before sending HTTP request to' \
+                  ' "%s" after receiving URL/socket error. The ExtendedUrllib' \
+                  ' error rate is at %s%%.'
+            om.out.debug(msg % (request.get_url(), error_sleep, error_rate))
 
             # The actual delay
             time.sleep(error_sleep)
@@ -559,7 +563,7 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         # This is the place where I hook the pause and stop feature
-        self._before_send_hook()
+        self._before_send_hook(req)
 
         # Sanitize the URL
         self._check_uri(req)
@@ -598,7 +602,7 @@ class ExtendedUrllib(object):
         Our strategy for handling these errors is simple
         """
         if not req.ignore_errors:
-            self._increment_global_error_count(exception)
+            self._log_failed_response(exception)
 
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
@@ -610,7 +614,7 @@ class ExtendedUrllib(object):
         also possible when auth credentials are wrong for the URI
         """
         if not req.ignore_errors:
-            self._increment_global_error_count(exception)
+            self._log_failed_response(exception)
 
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
@@ -671,7 +675,7 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
-        self._zero_global_error_count()
+        self._log_successful_response()
 
         if grep:
             self._grep(req, http_resp)
@@ -700,33 +704,69 @@ class ExtendedUrllib(object):
             error_str = get_exception_reason(url_error) or str(url_error)
             raise HTTPRequestException(error_str, request=req)
 
-    def _increment_global_error_count(self, error):
+    def _log_failed_response(self, error):
         """
-        Increment the error count, and if we got a lot of failures raise a
-        "ScanMustStopException" subtype.
+        Add the failed response to the self._last_responses log, and if we got a
+        lot of failures raise a "ScanMustStopException" subtype.
 
         :param error: Exception object.
         """
-        if self._last_request_failed:
-            reason = get_exception_reason(error)
-            self._last_errors.append(reason or str(error))
-        else:
-            self._last_request_failed = True
+        reason = get_exception_reason(error)
+        reason = reason or str(error)
+        self._last_responses.append((False, reason))
 
-        error_total = len(self._last_errors)
-        om.out.debug('Incrementing global error count. GEC: %s' % error_total)
+        self._log_error_rate()
 
         with self._count_lock:
-            if error_total >= MAX_ERROR_COUNT:
-                self._handle_error_on_increment(error, self._last_errors)
-    
-    def _handle_error_on_increment(self, error, last_errors):
+            if self._should_stop_scan():
+                self._handle_error_count_exceeded(error)
+
+    def _should_stop_scan(self):
         """
-        Handle the error
+        :return: True if we should stop the scan due to too many consecutive
+                 errors being received from the server.
         """
-        #
+        last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
+        for successful, reason in last_n_responses:
+            if successful:
+                # If in the last MAX_ERROR_COUNT responses there was at least
+                # one which was successful, then we shouldn't stop.
+                return False
+
+        return True
+
+    def _get_error_rate(self):
+        """
+        :return: The error rate as an integer 0-100
+        """
+        last_responses = list(self._last_responses)
+        total_failed = 0.0
+        total = len(last_responses)
+
+        if total == 0:
+            return total
+
+        for successful, reason in last_responses:
+            if not successful:
+                total_failed += 1
+
+        return (total_failed / total) * 100
+
+    def _log_error_rate(self):
+        """
+        Logs the error rate to the debug() log, useful to understand why a scan
+        fails with "Too many consecutive errors"
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
+        """
+        error_rate = self._get_error_rate()
+        om.out.debug('ExtendedUrllib error rate is at %i%%' % error_rate)
+
+    def _handle_error_count_exceeded(self, error):
+        """
+        Handle the case where we exceeded MAX_ERROR_COUNT
+        """
         # Create a detailed exception message
-        #
         msg = ('w3af found too many consecutive errors while performing'
                ' HTTP requests. In most cases this means that the remote web'
                ' server is not reachable anymore, the network is down, or'
@@ -742,6 +782,12 @@ class ExtendedUrllib(object):
             e = ScanMustStopByKnownReasonExc(msg % args, reason=reason_msg)
 
         else:
+            last_errors = []
+            last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
+
+            for successful, reason in last_n_responses:
+                last_errors.append(reason)
+
             e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
         self._stop_exception = e
@@ -749,11 +795,8 @@ class ExtendedUrllib(object):
         raise self._stop_exception
         # pylint: enable=E0702
 
-    def _zero_global_error_count(self):
-        if self._last_request_failed or self._last_errors:
-            self._last_request_failed = False
-            self._last_errors.clear()
-            om.out.debug('Resetting global error count. GEC: 0')
+    def _log_successful_response(self):
+        self._last_responses.append((True, SUCCESS))
 
     def set_grep_queue_put(self, grep_queue_put):
         self._grep_queue_put = grep_queue_put

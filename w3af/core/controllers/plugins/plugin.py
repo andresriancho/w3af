@@ -259,7 +259,7 @@ class UrlOpenerProxy(object):
                       '_handle_error_on_increment'
                       '_generic_send_error_handler',
                       '_increment_global_error_count',
-                      '_zero_global_error_count'}
+                      '_log_successful_response'}
 
     def __init__(self, url_opener, plugin_inst):
         self._url_opener = url_opener
