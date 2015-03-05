@@ -231,3 +231,17 @@ class TestHTTPResponse(unittest.TestCase):
         expected_dump = 'HTTP/1.1 200 OK\r\nContent-Type: \xc3\xb3\r\n'
 
         self.assertEqual(resp.dump_response_head(), expected_dump)
+
+    def test_dump_response_head_5416(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/5416
+        """
+        url = URL('http://w3af.com')
+        headers = Headers()
+        msg = 'D\xe9plac\xe9 Temporairement'
+        resp = HTTPResponse(200, '', headers, url, url, msg=msg)
+
+        expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'
+
+        self.assertEqual(resp.dump_response_head(), expected_dump)
+
