@@ -58,7 +58,7 @@ class rfd(AuditPlugin):
 
             if 'filename' in cd:
                 #yes filename exists
-                om.out.debug('url %s is not vulnerable to RFD because of '
+                om.out.debug('URL "%s" is not vulnerable to RFD because of '
                              'explicit filename in content-disposition header,'
                              ' response id %s' %
                              (freq.get_url(), orig_response.id))
@@ -68,11 +68,11 @@ class rfd(AuditPlugin):
 
         else:
             if ct in NOT_VULNERABLE_TYPES:
-                om.out.debug('url %s is not vulnerable to RFD because '
-                             'response content-type is %s while '
+                om.out.debug('URL "%s" is not vulnerable to RFD because '
+                             'response content-type is "%s" and '
                              'content-disposition header is missing, '
-                             'responses id %s' %
-                             (freq.get_url, ct, orig_response.id))
+                             'response id %s' %
+                             (freq.get_url(), ct, orig_response.id))
                 return
             else:
                 self._test(freq)
