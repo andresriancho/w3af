@@ -20,8 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import cgi
+import ssl
+import socket
 import urllib
+import urllib2
+import httplib
 
+from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
+                   ENETUNREACH, ETIMEDOUT, ENOSPC)
+
+from w3af.core.controllers.exceptions import HTTPRequestException
+from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -75,3 +84,74 @@ def get_clean_body(mutant, response):
         body = body.replace(cgi.escape(urllib.unquote_plus(mod_value)), '')
 
     return body
+
+
+def get_socket_exception_reason(error):
+    """
+    :param error: The socket.error exception instance
+    :return: The reason/message associated with that exception
+    """
+    if not isinstance(error, socket.error):
+        return
+
+    # Known reason errors. See errno module for more info on these errors
+    EUNKNSERV = -2      # Name or service not known error
+    EINVHOSTNAME = -5   # No address associated with hostname
+    known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
+                    ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT, ENOSPC)
+
+    if error[0] in known_errors:
+        return str(error)
+
+    return
+
+
+def get_exception_reason(error):
+    """
+    :param error: The exception instance
+    :return: The reason/message associated with that exception (if known)
+             else we return None.
+    """
+    reason_msg = None
+
+    if isinstance(error, URLTimeoutError):
+        # New exception type raised by keepalive handler
+        reason_msg = error.message
+
+    # Exceptions may be of type httplib.HTTPException or socket.error
+    # We're interested on handling them in different ways
+    elif isinstance(error, urllib2.URLError):
+        reason_err = error.reason
+
+        if isinstance(reason_err, socket.error):
+            reason_msg = get_socket_exception_reason(error)
+
+    elif isinstance(error, (ssl.SSLError, socket.sslerror)):
+        socket_reason = get_socket_exception_reason(error)
+        if socket_reason:
+            reason_msg = 'SSL Error: %s' % socket_reason
+
+    elif isinstance(error, socket.error):
+        reason_msg = get_socket_exception_reason(error)
+
+    elif isinstance(error, HTTPRequestException):
+        reason_msg = error.value
+
+    elif isinstance(error, httplib.BadStatusLine):
+        reason_msg = 'Bad HTTP response status line: %s' % error.line
+
+    elif isinstance(error, httplib.HTTPException):
+        #
+        # Here we catch:
+        #
+        #    ResponseNotReady, CannotSendHeader, CannotSendRequest,
+        #    ImproperConnectionState,
+        #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
+        #    UnknownProtocol, InvalidURL, NotConnected.
+        #
+        #    TODO: Maybe we're being TOO generic in this isinstance?
+        #
+        reason_msg = '%s: %s' % (error.__class__.__name__,
+                                 error.args)
+
+    return reason_msg

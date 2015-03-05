@@ -31,8 +31,6 @@ import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
-from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
-                   ENETUNREACH, ETIMEDOUT, ENOSPC)
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -52,7 +50,7 @@ from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
-from w3af.core.data.url.helpers import get_clean_body
+from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.constants import MAX_ERROR_COUNT
 
 
@@ -621,7 +619,7 @@ class ExtendedUrllib(object):
         if req.ignore_errors:
             msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
             om.out.debug(msg % (req.get_method(), original_url, exception))
-            error_str = self.get_exception_reason(exception) or str(exception)
+            error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
 
         # Log the error
@@ -699,7 +697,7 @@ class ExtendedUrllib(object):
             # Actually we get here if one request fails three times to be sent
             # but that might be because of the http request itself and not a
             # fault of the framework/server/network.
-            error_str = self.get_exception_reason(url_error) or str(url_error)
+            error_str = get_exception_reason(url_error) or str(url_error)
             raise HTTPRequestException(error_str, request=req)
 
     def _increment_global_error_count(self, error):
@@ -710,7 +708,7 @@ class ExtendedUrllib(object):
         :param error: Exception object.
         """
         if self._last_request_failed:
-            reason = self.get_exception_reason(error)
+            reason = get_exception_reason(error)
             self._last_errors.append(reason or str(error))
         else:
             self._last_request_failed = True
@@ -735,7 +733,7 @@ class ExtendedUrllib(object):
                ' a WAF is blocking our tests. The last exception message '
                'was "%s" (%s).')
 
-        reason_msg = self.get_exception_reason(error)
+        reason_msg = get_exception_reason(error)
         args = (error, error.__class__.__name__)
 
         # If I got a reason, it means that it is a known exception.
@@ -750,75 +748,6 @@ class ExtendedUrllib(object):
         # pylint: disable=E0702
         raise self._stop_exception
         # pylint: enable=E0702
-
-    def get_socket_exception_reason(self, error):
-        """
-        :param error: The socket.error exception instance
-        :return: The reason/message associated with that exception
-        """
-        if not isinstance(error, socket.error):
-            return
-
-        # Known reason errors. See errno module for more info on these errors
-        EUNKNSERV = -2      # Name or service not known error
-        EINVHOSTNAME = -5   # No address associated with hostname
-        known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
-                        ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT, ENOSPC)
-
-        if error[0] in known_errors:
-            return str(error)
-
-        return
-
-    def get_exception_reason(self, error):
-        """
-        :param error: The exception instance
-        :return: The reason/message associated with that exception (if known)
-                 else we return None.
-        """
-        reason_msg = None
-
-        if isinstance(error, URLTimeoutError):
-            # New exception type raised by keepalive handler
-            reason_msg = error.message
-
-        # Exceptions may be of type httplib.HTTPException or socket.error
-        # We're interested on handling them in different ways
-        elif isinstance(error, urllib2.URLError):
-            reason_err = error.reason
-
-            if isinstance(reason_err, socket.error):
-                reason_msg = self.get_socket_exception_reason(error)
-
-        elif isinstance(error, (ssl.SSLError, socket.sslerror)):
-            socket_reason = self.get_socket_exception_reason(error)
-            if socket_reason:
-                reason_msg = 'SSL Error: %s' % socket_reason
-
-        elif isinstance(error, socket.error):
-            reason_msg = self.get_socket_exception_reason(error)
-
-        elif isinstance(error, HTTPRequestException):
-            reason_msg = error.value
-
-        elif isinstance(error, httplib.BadStatusLine):
-            reason_msg = 'Bad HTTP response status line: %s' % error.line
-
-        elif isinstance(error, httplib.HTTPException):
-            #
-            # Here we catch:
-            #
-            #    ResponseNotReady, CannotSendHeader, CannotSendRequest,
-            #    ImproperConnectionState,
-            #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
-            #    UnknownProtocol, InvalidURL, NotConnected.
-            #
-            #    TODO: Maybe we're being TOO generic in this isinstance?
-            #
-            reason_msg = '%s: %s' % (error.__class__.__name__,
-                                     error.args)
-
-        return reason_msg
 
     def _zero_global_error_count(self):
         if self._last_request_failed or self._last_errors:
