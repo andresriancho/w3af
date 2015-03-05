@@ -322,7 +322,10 @@ class w3af_core_strategy(object):
                 except ScanMustStopByUserRequest:
                     # Not a real error, the user stopped the scan
                     raise
-                except Exception:
+                except Exception, e:
+                    dbg = 'Exception found during verify_target_server: "%s"'
+                    om.out.debug(dbg % e)
+
                     raise ScanMustStopException(msg)
                 else:
                     sent_requests += 1
