@@ -62,18 +62,23 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
     Connect to a running container, start one if not running.
     """
     try:
-        cont_data = subprocess.check_output('docker inspect %s' % container_id, shell=True)
+        cont_data = subprocess.check_output('docker inspect %s' % container_id,
+                                            shell=True)
     except subprocess.CalledProcessError:
         print('Failed to inspect container with id %s' % container_id)
         sys.exit(1)
 
     try:
         ip_address = json.loads(cont_data)[0]['NetworkSettings']['IPAddress']
-    except:
+    except ValueError:
         print('Invalid JSON output from inspect command')
         sys.exit(1)
 
     ssh_key = os.path.join(ROOT_PATH, 'w3af-docker.prv')
+
+    # git can't store this
+    # https://stackoverflow.com/questions/11230171
+    os.chmod(ssh_key, 600)
 
     # Create the SSH connection command
     ssh_cmd = ['ssh', '-i', ssh_key, '-t', '-t', '-oStrictHostKeyChecking=no',
