@@ -104,7 +104,13 @@ class cross_domain_js(GrepPlugin):
         if script_domain != response.get_url().get_domain():
 
             for secure_domain in self._secure_js_domains:
-                if script_domain.endswith(secure_domain):
+                # We do a "in" because the secure js domains list contains
+                # entries such as ".google." which should be match. This is to
+                # take into account things like ".google.com.br" without having
+                # to list all of them.
+                #
+                # Not the best, could raise some false negatives, but... bleh!
+                if secure_domain in script_domain:
                     # It's a third party that we trust
                     return
 
