@@ -167,7 +167,8 @@ class ExtendedUrllib(object):
             msg = 'Sleeping for %s seconds before sending HTTP request to' \
                   ' "%s" after receiving URL/socket error. The ExtendedUrllib' \
                   ' error rate is at %s%%.'
-            om.out.debug(msg % (request.get_url(), error_sleep, error_rate))
+            args = (error_sleep, request.url_object, error_rate)
+            om.out.debug(msg % args)
 
             # The actual delay
             time.sleep(error_sleep)
