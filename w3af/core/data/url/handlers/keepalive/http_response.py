@@ -1,5 +1,6 @@
 import httplib
 
+from .utils import debug
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.kb.config import cf
 
@@ -206,3 +207,40 @@ class HTTPResponse(httplib.HTTPResponse):
         plugins
         """
         self._multiread = data
+
+    def _check_close(self):
+        """
+        Overriding to add "max" support
+        http://tools.ietf.org/id/draft-thomson-hybi-http-timeout-01.html#p-max
+        """
+        conn = self.msg.getheader('connection')
+
+        # Is the remote end saying we need to close the connection?
+        if conn and 'close' in conn.lower():
+            return True
+
+        # Some HTTP/1.0 implementations have support for persistent
+        # connections, using rules different than HTTP/1.1.
+        keep_alive = self.msg.getheader('keep-alive')
+
+        # For older HTTP, Keep-Alive indicates persistent connection.
+        if keep_alive:
+            # We close one before the deadline
+            if keep_alive.lower().endswith('max=1'):
+                debug('will_close set to True because of max=1')
+                return True
+
+            return False
+
+        # At least Akamai returns a "Connection: Keep-Alive" header,
+        # which was supposed to be sent by the client.
+        if conn and "keep-alive" in conn.lower():
+            return False
+
+        # Proxy-Connection is a netscape hack.
+        pconn = self.msg.getheader('proxy-connection')
+        if pconn and "keep-alive" in pconn.lower():
+            return False
+
+        # otherwise, assume it will close
+        return True
