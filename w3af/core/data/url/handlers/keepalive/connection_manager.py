@@ -59,8 +59,8 @@ class ConnectionManager(object):
                         break
 
             if not removed_from_hostmap:
-                msg = 'Connection %s was NOT removed from hostmap pool.'
-                debug(msg % conn.id)
+                msg = '%s was NOT removed from hostmap pool.'
+                debug(msg % conn)
 
             removed_from_free_or_used = False
             for lst in (self._free_conns, self._used_cons):
@@ -76,16 +76,16 @@ class ConnectionManager(object):
                     removed_from_free_or_used = True
 
             if not removed_from_free_or_used:
-                msg = 'Connection %s was NOT in free/used connection lists.'
-                debug(msg % conn.id)
+                msg = '%s was NOT in free/used connection lists.'
+                debug(msg % conn)
 
             # If no more conns for 'host', remove it from mapping
             conn_total = self.get_connections_total(host)
             if host and host in self._hostmap and not conn_total:
                 del self._hostmap[host]
 
-            msg = 'Removed connection %s, reason %s, %s pool size is %s'
-            debug(msg % (conn.id, reason, host, conn_total))
+            msg = 'Removed %s, reason %s, %s pool size is %s'
+            debug(msg % (conn, reason, host, conn_total))
 
     def free_connection(self, conn):
         """
@@ -118,8 +118,8 @@ class ConnectionManager(object):
             self._used_cons.append(new_conn)
 
             # Log
-            args = (bad_conn.id, new_conn.id)
-            debug('Replaced bad connection %s with the new %s' % args)
+            args = (bad_conn, new_conn)
+            debug('Replaced broken %s with the new %s' % args)
 
             return new_conn
 
@@ -145,8 +145,8 @@ class ConnectionManager(object):
                     else:
                         self._used_cons.append(conn)
 
-                        msg = 'Reusing free conn %s to use in new request'
-                        debug(msg % conn.id)
+                        msg = 'Reusing free %s to use in new request'
+                        debug(msg % conn)
 
                         return conn
 
@@ -160,8 +160,8 @@ class ConnectionManager(object):
                     self._hostmap[host].append(conn)
 
                     # logging
-                    msg = 'Added conn %s to pool, current %s pool size: %s'
-                    debug(msg % (conn.id, host, conn_total + 1))
+                    msg = 'Added %s to pool, current %s pool size: %s'
+                    debug(msg % (conn, host, conn_total + 1))
 
                     return conn
 

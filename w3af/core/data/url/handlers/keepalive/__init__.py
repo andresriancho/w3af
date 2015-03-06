@@ -117,7 +117,7 @@ class KeepAliveHandler(object):
         This request is now closed and that the connection is ready for another
         request
         """
-        debug('Add %s to free-to-use connection list' % connection.id)
+        debug('Add %s to free-to-use connection list' % connection)
         self._cm.free_connection(connection)
 
     def _remove_connection(self, host, conn):
@@ -170,6 +170,9 @@ class KeepAliveHandler(object):
         if resp.will_close:
             self._cm.remove_connection(conn, host, reason='will close')
 
+        # How many requests were sent with this connection?
+        conn.inc_req_count()
+
         # This response seems to be fine
         resp._handler = self
         resp._host = host
@@ -194,7 +197,7 @@ class KeepAliveHandler(object):
         elapsed = time.time() - start
         resp.set_wait_time(elapsed)
 
-        debug("HTTP response: %s, %s" % (resp.status, resp.reason))
+        debug("HTTP response: %s - %s with %s" % (resp.status, resp.reason, conn))
         return resp
 
     def _get_response(self, conn, request):
@@ -242,8 +245,8 @@ class KeepAliveHandler(object):
             # On the next try, the same exception was raised, etc. The tradeoff
             # is that it's now possible this call will raise a DIFFERENT
             # exception
-            msg = 'unexpected exception "%s" - closing connection to %s (%s)'
-            error(msg % (e, host, conn.id))
+            msg = 'Unexpected exception "%s" - closing %s to %s)'
+            error(msg % (e, conn, host))
 
             self._cm.remove_connection(conn, host, reason='unexpected %s' % e)
             raise
@@ -253,13 +256,13 @@ class KeepAliveHandler(object):
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            msg = 'Failed to re-use connection %s to %s due to exception "%s"'
-            args = (conn.id, host, reason)
+            msg = 'Failed to re-use %s to %s due to exception "%s"'
+            args = (conn, host, reason)
             debug(msg % args)
 
             resp = None
         else:
-            debug('Re-using connection %s to %s' % (conn.id, host))
+            debug('Re-using %s to %s' % (conn, host))
             resp._multiread = None
 
         return resp

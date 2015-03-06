@@ -22,9 +22,20 @@ class UniqueID(object):
         else:
             self.id = None
 
+        self.req_count = 0
+
+    def inc_req_count(self):
+        self.req_count += 1
+
     def __repr__(self):
         # Only makes sense when DEBUG is True
-        return '<KeepAliveHTTPConnection %s>' % self.id
+        return '<KeepAliveHTTPConnection %s - Request #%s>' % (self.id,
+                                                               self.req_count)
+
+    def __str__(self):
+        # Only makes sense when DEBUG is True
+        args = (self.id, self.req_count)
+        return 'Connection(id:%s, req_count:%s)' % args
 
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
