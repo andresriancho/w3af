@@ -74,6 +74,7 @@ class ConnectionManager(object):
     # Used in get_available_connection
     GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.25
     GET_AVAILABLE_CONNECTION_RETRY_NUM = 25
+    UNKNOWN = 'unknown'
 
     def __init__(self):
         self._lock = threading.RLock()
@@ -82,7 +83,7 @@ class ConnectionManager(object):
         self._used_cons = []   # connections being used per host
         self._free_conns = []  # available connections
 
-    def remove_connection(self, conn, host=None):
+    def remove_connection(self, conn, host=None, reason=UNKNOWN):
         """
         Remove a connection, it was closed by the server.
 
@@ -123,8 +124,8 @@ class ConnectionManager(object):
             if host and host in self._hostmap and not conn_total:
                 del self._hostmap[host]
             
-            msg = 'Removed connection %s, len(self._hostmap["%s"]): %s'
-            debug(msg % (id(conn), host, conn_total))
+            msg = 'Removed connection %s, reason %s, %s pool size is %s'
+            debug(msg % (id(conn), reason, host, conn_total))
 
     def free_connection(self, conn):
         """
@@ -143,12 +144,15 @@ class ConnectionManager(object):
         :param conn_factory: The factory function for new connection creation.
         """
         with self._lock:
-            self.remove_connection(bad_conn, host)
-            debug('Replacing bad connection with a new one')
+            self.remove_connection(bad_conn, host, reason='replace connection')
             new_conn = conn_factory(host)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
             self._used_cons.append(new_conn)
+
+            args = (id(bad_conn), id(new_conn))
+            debug('Replaced bad connection %s with the new %s' % args)
+
             return new_conn
 
     def get_available_connection(self, host, conn_factory):
@@ -184,7 +188,7 @@ class ConnectionManager(object):
                     self._hostmap[host].append(conn)
 
                     # logging
-                    msg = 'Added conn %s to pool, len(self._hostmap["%s"]): %s'
+                    msg = 'Added conn %s to pool, current %s pool size: %s'
                     debug(msg % (id(conn), host, conn_total + 1))
 
                     return conn
@@ -281,7 +285,7 @@ class KeepAliveHandler(object):
         no error occurs if there is no connection to that host.
         """
         for conn in self._cm.get_all(host):
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='close connection')
 
     def close_all(self):
         """
@@ -289,7 +293,7 @@ class KeepAliveHandler(object):
         """
         for conns in self._cm.get_all().values():
             for conn in conns:
-                self._cm.remove_connection(conn)
+                self._cm.remove_connection(conn, reason='close all connections')
 
     def _request_closed(self, connection):
         """
@@ -300,7 +304,7 @@ class KeepAliveHandler(object):
         self._cm.free_connection(connection)
 
     def _remove_connection(self, host, conn):
-        self._cm.remove_connection(conn, host)
+        self._cm.remove_connection(conn, host, reason='remove connection')
 
     def do_open(self, req):
         """
@@ -323,49 +327,34 @@ class KeepAliveHandler(object):
 
         try:
             if conn.is_fresh:
-                # First of all, call the request method. This is needed for
-                # HTTPS Proxy
-                if isinstance(conn, ProxyHTTPConnection):
-                    conn.proxy_setup(req.get_full_url())
-
-                conn.is_fresh = False
-                start = time.time()
-                self._start_transaction(conn, req)
-                resp = conn.getresponse()
+                resp, start = self._get_response(conn, req)
             else:
                 # We'll try to use a previously created connection
                 start = time.time()
                 resp = self._reuse_connection(conn, req, host)
+
                 # If the resp is None it means that connection is bad. It was
                 # possibly closed by the server. Replace it with a new one.
                 if resp is None:
                     conn.close()
-                    conn = self._cm.replace_connection(conn, host,
-                                                       conn_factory)
-                    # First of all, call the request method. This is needed for
-                    # HTTPS Proxy
-                    if isinstance(conn, ProxyHTTPConnection):
-                        conn.proxy_setup(req.get_full_url())
+                    new_conn = self._cm.replace_connection(conn, host,
+                                                           conn_factory)
 
-                    # Try again with the fresh one
-                    conn.is_fresh = False
-                    start = time.time()
-                    self._start_transaction(conn, req)
-                    resp = conn.getresponse()
+                    resp, start = self._get_response(new_conn, req)
 
         except socket.timeout:
             # We better discard this connection
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='socket timeout')
             raise URLTimeoutError()
 
         except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='socket error')
             raise
 
         # If not a persistent connection, don't try to reuse it
         if resp.will_close:
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='will close')
 
         # This response seems to be fine
         resp._handler = self
@@ -384,7 +373,7 @@ class KeepAliveHandler(object):
             # better understand it.
             #
             # https://github.com/andresriancho/w3af/issues/2074
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
 
         # We measure time here because it's the best place we know of
@@ -394,6 +383,19 @@ class KeepAliveHandler(object):
         debug("HTTP response: %s, %s" % (resp.status, resp.reason))
         return resp
 
+    def _get_response(self, conn, request):
+        # First of all, call the request method. This is needed for
+        # HTTPS Proxy
+        if isinstance(conn, ProxyHTTPConnection):
+            conn.proxy_setup(request.get_full_url())
+
+        conn.is_fresh = False
+        start = time.time()
+        self._start_transaction(conn, request)
+        resp = conn.getresponse()
+
+        return resp, start
+
     def _reuse_connection(self, conn, req, host):
         """
         Start the transaction with a re-used connection
@@ -402,18 +404,22 @@ class KeepAliveHandler(object):
         it returns.  However, if an unexpected exception occurs, it
         will close and remove the connection before re-raising.
         """
+        reason = None
+
         try:
             self._start_transaction(conn, req)
-            r = conn.getresponse()
+            resp = conn.getresponse()
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
-        except (socket.error, httplib.HTTPException):
-            r = None
-        except OpenSSL.SSL.ZeroReturnError:
+        except (socket.error, httplib.HTTPException), e:
+            resp = None
+            reason = e
+        except OpenSSL.SSL.ZeroReturnError, e:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
-            self._cm.remove_connection(conn, host)
-            r = None
+            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            resp = None
+            reason = e
         except Exception, e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection
@@ -425,21 +431,24 @@ class KeepAliveHandler(object):
             msg = 'unexpected exception "%s" - closing connection to %s (%d)'
             error(msg % (e, host, id(conn)))
 
-            self._cm.remove_connection(conn, host)
+            self._cm.remove_connection(conn, host, reason='unexpected %s' % e)
             raise
 
-        if r is None or r.version == 9:
+        if resp is None or resp.version == 9:
             # httplib falls back to assuming HTTP 0.9 if it gets a
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            debug("Failed to re-use connection %d to %s" % (id(conn), host))
-            r = None
-        else:
-            debug("Re-using connection %d to %s" % (id(conn), host))
-            r._multiread = None
+            msg = 'Failed to re-use connection %d to %s due to exception "%s"'
+            args = (id(conn), host, reason)
+            debug(msg % args)
 
-        return r
+            resp = None
+        else:
+            debug('Re-using connection %d to %s' % (id(conn), host))
+            resp._multiread = None
+
+        return resp
 
     def _start_transaction(self, conn, req):
         """
