@@ -44,8 +44,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException)
 
 
-# Config
-# Max connections allowed per host.
+# Max connections allowed per host
 MAX_CONNECTIONS = 50
 
 
@@ -79,8 +78,8 @@ class ConnectionManager(object):
     def __init__(self):
         self._lock = threading.RLock()
         self._host_pool_size = MAX_CONNECTIONS
-        self._hostmap = {}  # map hosts to a list of connections
-        self._used_cons = []  # connections being used per host
+        self._hostmap = {}     # map hosts to a list of connections
+        self._used_cons = []   # connections being used per host
         self._free_conns = []  # available connections
 
     def remove_connection(self, conn, host=None):
@@ -124,9 +123,8 @@ class ConnectionManager(object):
             if host and host in self._hostmap and not conn_total:
                 del self._hostmap[host]
             
-            msg = 'keepalive: removed one connection,' \
-                  ' len(self._hostmap["%s"]): %s'
-            debug(msg % (host, conn_total))
+            msg = 'Removed connection %s, len(self._hostmap["%s"]): %s'
+            debug(msg % (id(conn), host, conn_total))
 
     def free_connection(self, conn):
         """
@@ -146,7 +144,7 @@ class ConnectionManager(object):
         """
         with self._lock:
             self.remove_connection(bad_conn, host)
-            debug('keepalive: replacing bad connection with a new one')
+            debug('Replacing bad connection with a new one')
             new_conn = conn_factory(host)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
@@ -180,15 +178,22 @@ class ConnectionManager(object):
                 # create a new one.
                 conn_total = self.get_connections_total(host)
                 if conn_total < self._host_pool_size:
-                    msg = 'keepalive: added one connection,'\
-                          'len(self._hostmap["%s"]): %s'
-                    debug(msg % (host, conn_total + 1))
+                    # Add the connection
                     conn = conn_factory(host)
                     self._used_cons.append(conn)
                     self._hostmap[host].append(conn)
+
+                    # logging
+                    msg = 'Added conn %s to pool, len(self._hostmap["%s"]): %s'
+                    debug(msg % (id(conn), host, conn_total + 1))
+
                     return conn
 
                 else:
+                    args = (conn_total, self._host_pool_size)
+                    msg = 'No free connections in pool with size %s/%s. Wait...'
+                    debug(msg % args)
+
                     # Well, the connection pool for this host is full, this
                     # means that many threads are sending request to the host
                     # and using the connections. This is not bad, just shows
@@ -288,9 +293,10 @@ class KeepAliveHandler(object):
 
     def _request_closed(self, connection):
         """
-        Tells us that this request is now closed and that the
-        connection is ready for another request
+        This request is now closed and that the connection is ready for another
+        request
         """
+        debug('Free connection %s' % id(connection))
         self._cm.free_connection(connection)
 
     def _remove_connection(self, host, conn):
@@ -357,11 +363,12 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host)
             raise
 
-        # This response seems to be fine
         # If not a persistent connection, don't try to reuse it
+        debug('resp.will_close: %s' % resp.will_close)
         if resp.will_close:
             self._cm.remove_connection(conn, host)
 
+        # This response seems to be fine
         resp._handler = self
         resp._host = host
         resp._url = req.get_full_url()
@@ -427,10 +434,10 @@ class KeepAliveHandler(object):
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            debug("failed to re-use connection to %s (%d)" % (host, id(conn)))
+            debug("Failed to re-use connection %d to %s" % (id(conn), host))
             r = None
         else:
-            debug("re-using connection to %s (%d)" % (host, id(conn)))
+            debug("Re-using connection %d to %s" % (id(conn), host))
             r._multiread = None
 
         return r
@@ -440,11 +447,19 @@ class KeepAliveHandler(object):
         The real workhorse.
         """
         try:
+            conn.putrequest(req.get_method(), req.get_selector(),
+                            skip_host=1, skip_accept_encoding=1)
+
+            # We're always sending HTTP/1.1, which makes connection keep alive a
+            # default, BUT since the browsers (Chrome at least) send this header
+            # in their HTTP/1.1 requests we're going to do the same just to make
+            # sure we behave like a browser
+            if not req.has_header('Connection'):
+                conn.putheader('Connection', 'keep-alive')
+
             data = req.get_data()
             if data is not None:
                 data = str(data)
-                conn.putrequest(req.get_method(), req.get_selector(),
-                                skip_host=1, skip_accept_encoding=1)
 
                 if not req.has_header('Content-type'):
                     conn.putheader('Content-type',
@@ -452,9 +467,6 @@ class KeepAliveHandler(object):
 
                 if not req.has_header('Content-length'):
                     conn.putheader('Content-length', '%d' % len(data))
-            else:
-                conn.putrequest(req.get_method(), req.get_selector(),
-                                skip_host=1, skip_accept_encoding=1)
         except (socket.error, httplib.HTTPException):
             raise
         else:
