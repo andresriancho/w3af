@@ -364,7 +364,6 @@ class KeepAliveHandler(object):
             raise
 
         # If not a persistent connection, don't try to reuse it
-        debug('resp.will_close: %s' % resp.will_close)
         if resp.will_close:
             self._cm.remove_connection(conn, host)
 
