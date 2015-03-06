@@ -215,8 +215,12 @@ class HTTPResponse(httplib.HTTPResponse):
         """
         conn = self.msg.getheader('connection')
 
+        # Is the remote end saying we need to keep the connection open?
+        if conn and 'keep-alive' in conn.lower():
+            return False
+
         # Is the remote end saying we need to close the connection?
-        if conn and 'close' in conn.lower():
+        elif conn and 'close' in conn.lower():
             return True
 
         # Some HTTP/1.0 implementations have support for persistent
@@ -230,11 +234,6 @@ class HTTPResponse(httplib.HTTPResponse):
                 debug('will_close set to True because of max=1')
                 return True
 
-            return False
-
-        # At least Akamai returns a "Connection: Keep-Alive" header,
-        # which was supposed to be sent by the client.
-        if conn and "keep-alive" in conn.lower():
             return False
 
         # Proxy-Connection is a netscape hack.
