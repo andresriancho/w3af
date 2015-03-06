@@ -1,21 +1,37 @@
 import threading
+import binascii
 import httplib
 import urllib
 import socket
 import ssl
+import os
 
 from .http_response import HTTPResponse
-from .utils import debug
+from .utils import debug, DEBUG
 
 from w3af.core.data.kb.config import cf
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 
-class _HTTPConnection(httplib.HTTPConnection):
+class UniqueID(object):
+    def __init__(self):
+        if DEBUG:
+            # Only do the extra id stuff when debugging
+            self.id = binascii.hexlify(os.urandom(8))
+        else:
+            self.id = None
+
+    def __repr__(self):
+        # Only makes sense when DEBUG is True
+        return '<KeepAliveHTTPConnection %s>' % self.id
+
+
+class _HTTPConnection(httplib.HTTPConnection, UniqueID):
 
     def __init__(self, host, port=None, strict=None,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        UniqueID.__init__(self)
         httplib.HTTPConnection.__init__(self, host, port, strict,
                                         timeout=timeout)
         self.is_fresh = True
@@ -95,7 +111,7 @@ _protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
 _protocols_lock = threading.RLock()
 
 
-class SSLNegotiatorConnection(httplib.HTTPSConnection):
+class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
     """
     Connection class that enables usage of newer SSL protocols.
 
@@ -106,6 +122,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
     """
     def __init__(self, *args, **kwargs):
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
+        UniqueID.__init__(self)
 
     def connect(self):
         """
@@ -181,6 +198,7 @@ class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
         ProxyHTTPConnection.__init__(self, host, port, strict=strict)
+        UniqueID.__init__(self)
         self.key_file = key_file
         self.cert_file = cert_file
 

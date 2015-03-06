@@ -41,11 +41,13 @@ class ConnectionManager(object):
         conn.close()
 
         with self._lock:
+            removed_from_hostmap = False
 
             if host:
                 if host in self._hostmap:
                     if conn in self._hostmap[host]:
                         self._hostmap[host].remove(conn)
+                        removed_from_hostmap = True
 
             else:
                 # We don't know the host. Need to find it by looping
@@ -53,8 +55,14 @@ class ConnectionManager(object):
                     if conn in conns:
                         host = _host
                         conns.remove(conn)
+                        removed_from_hostmap = True
                         break
 
+            if not removed_from_hostmap:
+                msg = 'Connection %s was NOT removed from hostmap pool.'
+                debug(msg % conn.id)
+
+            removed_from_free_or_used = False
             for lst in (self._free_conns, self._used_cons):
                 try:
                     lst.remove(conn)
@@ -64,22 +72,29 @@ class ConnectionManager(object):
                     # of a thread locking issue (basically, someone is not
                     # locking before moving connections around).
                     pass
+                else:
+                    removed_from_free_or_used = True
 
-            # No more conns for 'host', remove it from mapping
+            if not removed_from_free_or_used:
+                msg = 'Connection %s was NOT in free/used connection lists.'
+                debug(msg % conn.id)
+
+            # If no more conns for 'host', remove it from mapping
             conn_total = self.get_connections_total(host)
             if host and host in self._hostmap and not conn_total:
                 del self._hostmap[host]
 
             msg = 'Removed connection %s, reason %s, %s pool size is %s'
-            debug(msg % (id(conn), reason, host, conn_total))
+            debug(msg % (conn.id, reason, host, conn_total))
 
     def free_connection(self, conn):
         """
         Recycle a connection. Mark it as available for being reused.
         """
-        if conn in self._used_cons:
-            self._used_cons.remove(conn)
-            self._free_conns.append(conn)
+        with self._lock:
+            if conn in self._used_cons:
+                self._used_cons.remove(conn)
+                self._free_conns.append(conn)
 
     def replace_connection(self, bad_conn, host, conn_factory):
         """
@@ -89,14 +104,21 @@ class ConnectionManager(object):
         :param host: The host for the connection
         :param conn_factory: The factory function for new connection creation.
         """
+        # This connection is dead anyways
+        bad_conn.close()
+
         with self._lock:
+            # Remove
             self.remove_connection(bad_conn, host, reason='replace connection')
+
+            # Create the new one
             new_conn = conn_factory(host)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
             self._used_cons.append(new_conn)
 
-            args = (id(bad_conn), id(new_conn))
+            # Log
+            args = (bad_conn.id, new_conn.id)
             debug('Replaced bad connection %s with the new %s' % args)
 
             return new_conn
@@ -122,6 +144,10 @@ class ConnectionManager(object):
                         continue
                     else:
                         self._used_cons.append(conn)
+
+                        msg = 'Reusing free conn %s to use in new request'
+                        debug(msg % conn.id)
+
                         return conn
 
                 # No? Well, if the connection pool is not full let's try to
@@ -135,7 +161,7 @@ class ConnectionManager(object):
 
                     # logging
                     msg = 'Added conn %s to pool, current %s pool size: %s'
-                    debug(msg % (id(conn), host, conn_total + 1))
+                    debug(msg % (conn.id, host, conn_total + 1))
 
                     return conn
 
