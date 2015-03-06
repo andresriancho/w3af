@@ -197,7 +197,11 @@ class KeepAliveHandler(object):
         elapsed = time.time() - start
         resp.set_wait_time(elapsed)
 
-        debug("HTTP response: %s - %s with %s" % (resp.status, resp.reason, conn))
+        debug("HTTP response: %s - %s - %s with %s" % (req.get_selector(),
+                                                       resp.status,
+                                                       resp.reason,
+                                                       conn))
+
         return resp
 
     def _get_response(self, conn, request):
