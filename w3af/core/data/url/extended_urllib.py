@@ -51,7 +51,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
-from w3af.core.data.url.constants import MAX_ERROR_COUNT
+from w3af.core.data.url.constants import MAX_ERROR_COUNT, MAX_RESPONSE_COLLECT
 
 
 try:
@@ -84,7 +84,7 @@ class ExtendedUrllib(object):
         self._opener = None
 
         # For error handling
-        self._last_responses = deque(maxlen=100)
+        self._last_responses = deque(maxlen=MAX_RESPONSE_COLLECT)
         self._count_lock = threading.RLock()
 
         # For rate limiting

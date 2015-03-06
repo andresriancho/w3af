@@ -101,8 +101,14 @@ class MultipleTimeoutsTCPHandler(SocketServer.BaseRequestHandler):
         fake_file = self.request.makefile()
         header = fake_file.readline()
 
+        # Note the space after the =, these requests are to get the original
+        # response and shouldn't be delayed
+        if '?f= ' in header:
+            body = 'Empty parameter'
+            self.request.sendall(self.RESPONSE % (len(body), body))
+
         # Handling of the delayed+keep-alive responses
-        if '?f=' in header:
+        elif '?f=' in header:
             time.sleep(TIMEOUT_SECS * 3)
             body = 'Slow response'
             self.request.sendall(self.KA_RESPONSE % (len(body), body))
