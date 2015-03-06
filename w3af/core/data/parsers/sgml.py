@@ -141,9 +141,18 @@ class SGMLParser(BaseParser):
         """
         Parse the HTTP response body
         """
-        # Start parsing!
-        parser = etree.HTMLParser(target=self, recover=True)
         resp_body = http_resp.body
+
+        # HTML Parser raises XMLSyntaxError on empty response body #8695
+        # https://github.com/andresriancho/w3af/issues/8695
+        if not resp_body:
+            # Simply return, don't even try to parse this response, it's empty
+            # anyways. The result of this return is to have an empty SGMLParser
+            # which won't have any links, forms, etc. (correct for a response
+            # body which is empty).
+            return
+
+        parser = etree.HTMLParser(target=self, recover=True)
 
         try:
             # Note: Given that the parser has target != None, this call does not
@@ -160,22 +169,29 @@ class SGMLParser(BaseParser):
                                       recover=True,
                                       encoding=http_resp.charset)
             etree.fromstring(resp_body, parser)
-        except etree.XMLSyntaxError:
+        except etree.XMLSyntaxError, xse:
             msg = 'An error occurred while parsing "%s",'\
                   ' original exception: "%s"'
-            om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
+            om.out.debug(msg % (http_resp.get_url(), xse))
 
     def get_dom(self):
         """
         :return: The DOM instance
         """
         if self._dom is None:
+            http_resp = self.get_http_response()
+            resp_body = http_resp.get_body()
+
+            # HTML Parser raises XMLSyntaxError on empty response body #8695
+            # https://github.com/andresriancho/w3af/issues/8695
+            if not resp_body:
+                # Simply return None, don't even try to parse this response,
+                # it's empty anyways
+                return self._dom
+
             # Start parsing, using a parser without target so we get the DOM
             # instance as result of our call to fromstring
             parser = etree.HTMLParser(recover=True)
-
-            http_resp = self.get_http_response()
-            resp_body = http_resp.get_body()
 
             try:
                 self._dom = etree.fromstring(resp_body, parser)
@@ -189,10 +205,10 @@ class SGMLParser(BaseParser):
                 parser = etree.HTMLParser(recover=True,
                                           encoding=http_resp.charset)
                 self._dom = etree.fromstring(resp_body, parser)
-            except etree.XMLSyntaxError:
+            except etree.XMLSyntaxError, xse:
                 msg = 'An error occurred while parsing "%s",'\
                       ' original exception: "%s"'
-                om.out.debug(msg % (http_resp.get_url(), etree.XMLSyntaxError))
+                om.out.debug(msg % (http_resp.get_url(), xse))
 
         return self._dom
 

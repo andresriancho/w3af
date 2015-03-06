@@ -386,6 +386,7 @@ class KeepAliveHandler(object):
         resp.set_wait_time(elapsed)
 
         debug("HTTP response: %s, %s" % (resp.status, resp.reason))
+        self.close_all()
         return resp
 
     def _reuse_connection(self, conn, req, host):
