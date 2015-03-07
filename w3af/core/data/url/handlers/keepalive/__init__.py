@@ -58,9 +58,9 @@ class URLTimeoutError(urllib2.URLError):
     def __str__(self):
         default_timeout = socket.getdefaulttimeout()
         if default_timeout is not None:
-            return 'HTTP timeout error after %s seconds.' % default_timeout
+            return 'HTTP timeout error after %s seconds' % default_timeout
         else:
-            return 'HTTP timeout error.'
+            return 'HTTP timeout error'
 
 
 class KeepAliveHandler(object):
