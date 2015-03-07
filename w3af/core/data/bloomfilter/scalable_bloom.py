@@ -63,7 +63,7 @@ class ScalableBloomFilter(object):
         >>> b.add("hello")
         True
         >>> "hello" in b
-        False
+        True
 
         """
         for f in reversed(self.filters):
