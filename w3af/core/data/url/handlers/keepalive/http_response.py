@@ -213,27 +213,29 @@ class HTTPResponse(httplib.HTTPResponse):
         Overriding to add "max" support
         http://tools.ietf.org/id/draft-thomson-hybi-http-timeout-01.html#p-max
         """
+        keep_alive = self.msg.getheader('keep-alive')
+
+        if keep_alive and keep_alive.lower().endswith('max=1'):
+            # We close right before the "max" deadline
+            debug('will_close = True due to max=1')
+            return True
+
         conn = self.msg.getheader('connection')
 
         # Is the remote end saying we need to keep the connection open?
         if conn and 'keep-alive' in conn.lower():
+            debug('will_close = False due to Connection: keep-alive')
             return False
 
         # Is the remote end saying we need to close the connection?
         elif conn and 'close' in conn.lower():
+            debug('will_close = False due to Connection: close')
             return True
 
-        # Some HTTP/1.0 implementations have support for persistent
-        # connections, using rules different than HTTP/1.1.
-        keep_alive = self.msg.getheader('keep-alive')
-
-        # For older HTTP, Keep-Alive indicates persistent connection.
-        if keep_alive:
-            # We close one before the deadline
-            if keep_alive.lower().endswith('max=1'):
-                debug('will_close set to True because of max=1')
-                return True
-
+        if self.version == 11:
+            # An HTTP/1.1 connection is assumed to stay open unless explicitly
+            # closed.
+            debug('will_close = False due to default keep-alive in 1.1')
             return False
 
         # Proxy-Connection is a netscape hack.

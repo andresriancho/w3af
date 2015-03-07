@@ -88,9 +88,11 @@ class TestKeepalive(unittest.TestCase):
 
         ## Verify ##
         kah._start_transaction.assert_called_once_with(conn, req)
-        conn_mgr_mock.get_available_connection.assert_called_once_with(
-            host, conn_factory)
-        conn_mgr_mock.remove_connection.assert_called_once_with(conn, host)
+        conn_mgr_mock.get_available_connection.assert_called_once_with(host,
+                                                                       conn_factory)
+        conn_mgr_mock.remove_connection.assert_called_once_with(conn,
+                                                                host,
+                                                                reason='will close')
 
     def test_timeout(self):
         """
