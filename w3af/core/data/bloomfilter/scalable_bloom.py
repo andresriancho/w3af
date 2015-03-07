@@ -61,9 +61,9 @@ class ScalableBloomFilter(object):
         >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
                                     mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> b.add("hello")
-        False
-        >>> "hello" in b
         True
+        >>> "hello" in b
+        False
 
         """
         for f in reversed(self.filters):
