@@ -72,20 +72,22 @@ class ScalableBloomFilter(object):
         return False
 
     def add(self, key):
-        """Adds a key to this bloom filter.
-        If the key already exists in this filter it will return True.
-        Otherwise False.
+        """
+        Adds a key to this bloom filter.
+
+        If the key already exists in this filter it will return False (because
+        it failed to add it to the filter). Otherwise True.
 
         >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
                                     mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> b.add("hello")
-        False
-        >>> b.add("hello")
         True
+        >>> b.add("hello")
+        False
 
         """
         if key in self:
-            return True
+            return False
 
         _filter = self.filters[-1] if self.filters else None
         if _filter is None or len(_filter) >= _filter.capacity:
@@ -99,7 +101,7 @@ class ScalableBloomFilter(object):
 
             self.filters.append(_filter)
         _filter.add(key)
-        return False
+        return True
 
     @property
     def capacity(self):
