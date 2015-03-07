@@ -89,7 +89,7 @@ class ExtendedUrllib(object):
 
         # For rate limiting
         self._rate_limit_last_time_called = 0.0
-        self._rate_limit_lock = threading.Lock()
+        self._rate_limit_lock = threading.RLock()
 
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -158,7 +158,7 @@ class ExtendedUrllib(object):
         :return: None, but might delay the requests which go out to the network
         :see: https://github.com/andresriancho/w3af/issues/4811
         """
-        error_rate = self._get_error_rate()
+        error_rate = self.get_error_rate()
         if error_rate:
             self._rate_limit_lock.acquire()
 
@@ -277,10 +277,8 @@ class ExtendedUrllib(object):
         responses that were generated with different mutants.
 
         :param mutant: The mutant to send to the network.
-        :return: (
-                    HTTP response,
-                    Sanitized HTTP response body,
-                 )
+        :return: (HTTP response,
+                  Sanitized HTTP response body)
         """
         http_response = self.send_mutant(mutant, cache=False)
         clean_body = get_clean_body(mutant, http_response)
@@ -602,9 +600,6 @@ class ExtendedUrllib(object):
 
         Our strategy for handling these errors is simple
         """
-        if not req.ignore_errors:
-            self._log_failed_response(exception)
-
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
         
@@ -614,9 +609,6 @@ class ExtendedUrllib(object):
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
         """
-        if not req.ignore_errors:
-            self._log_failed_response(exception)
-
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
         
@@ -630,8 +622,19 @@ class ExtendedUrllib(object):
         # Log the error
         msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
         om.out.debug(msg % (req.get_method(), original_url, exception))
-        om.out.debug('Traceback for this error: %s' % traceback.format_exc())
-        
+
+        # Don't make a lot of noise on URLTimeoutError which is pretty common
+        # and properly handled by this library
+        if not isinstance(exception, URLTimeoutError):
+            msg = 'Traceback for this error: %s'
+            om.out.debug(msg % traceback.format_exc())
+
+        with self._count_lock:
+            self._log_failed_response(exception, req)
+
+            if self._should_stop_scan(req):
+                self._handle_error_count_exceeded(exception)
+
         # Then retry!
         req._Request__original = original_url
         return self._retry(req, grep, exception)
@@ -705,7 +708,7 @@ class ExtendedUrllib(object):
             error_str = get_exception_reason(url_error) or str(url_error)
             raise HTTPRequestException(error_str, request=req)
 
-    def _log_failed_response(self, error):
+    def _log_failed_response(self, error, request):
         """
         Add the failed response to the self._last_responses log, and if we got a
         lot of failures raise a "ScanMustStopException" subtype.
@@ -718,25 +721,99 @@ class ExtendedUrllib(object):
 
         self._log_error_rate()
 
-        with self._count_lock:
-            if self._should_stop_scan():
-                self._handle_error_count_exceeded(error)
-
-    def _should_stop_scan(self):
+    def _should_stop_scan(self, request):
         """
+        If the last MAX_ERROR_COUNT - 1 responses are errors then we check if
+        the remote server root path is still reachable. If it is, we add
+        (True, SUCCESS) to the last responses and continue; else we return False
+        because we're in a case where:
+              * The user's connection is dead
+              * The remote server is unreachable
+
         :return: True if we should stop the scan due to too many consecutive
                  errors being received from the server.
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
         """
+        #
+        # We're looking for this pattern in the last_responses:
+        #   True, False, False, False, ..., False
+        #
+        # Which means that at some point we were able to reach the remote server
+        # but now we're having problems doing so and need to check if the remote
+        # server is still reachable.
+        #
+        # Any other patterns we don't care in this method:
+        #   False, True, False, True, False, True
+        #       Unstable connection, _pause_on_http_error should help with it
+        #
+        #   True, True, True, False, False, False, ..., False
+        #       Looks like the remote server is unreachable and we're going
+        #       towards the pattern we look for, but nothing to do here for now
+        #
+        #   False, True, True, True, True, ..., True
+        #       A server error and then it recovered, keep scanning.
+        #
+        # Note that we can only find the desired pattern if we lock the write
+        # and check access to the _last_responses, otherwise the threads will
+        # "break" it
         last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
-        for successful, reason in last_n_responses:
+        first_result = last_n_responses[0][0]
+        all_following_failed = True
+
+        for successful, reason in last_n_responses[1:]:
             if successful:
-                # If in the last MAX_ERROR_COUNT responses there was at least
-                # one which was successful, then we shouldn't stop.
+                all_following_failed = False
+                break
+
+        if first_result and all_following_failed:
+            # Found the pattern we were looking for, we want to test if the
+            # remote server is reachable
+            if self._server_root_path_is_reachable(request):
+                # We don't need to add (True, SUCCESS) to the last_responses
+                # manually since in _server_root_path_is_reachable we use _send
+                # which (on success) calls _log_successful_response and does
+                # that for us
                 return False
 
-        return True
+            # Stop the scan!
+            return True
 
-    def _get_error_rate(self):
+        # If we don't find the pattern we look for, then we just continue with
+        # the scan as usual
+        return False
+
+    def _server_root_path_is_reachable(self, request):
+        """
+        Sends an HTTP GET to the server's root path to verify that it's
+        reachable from our location.
+
+        :param request: The original HTTP request
+        :return: True if we were able to get a response
+        """
+        uri = request.get_uri()
+        root_url = uri.base_url()
+
+        req = HTTPRequest(root_url, cookies=True, cache=False,
+                          ignore_errors=True, method='GET', retries=0)
+        req = self._add_headers(req)
+
+        try:
+            self._send(req, grep=False)
+        except HTTPRequestException, e:
+            msg = 'Remote server is UNREACHABLE due to: "%s"'
+            om.out.debug(msg % e)
+            return False
+        except Exception, e:
+            msg = 'Internal error makes server UNREACHABLE due to: "%s"'
+            om.out.debug(msg % e)
+            return False
+        else:
+            msg = 'Remote server is reachable'
+            om.out.debug(msg)
+            return True
+
+    def get_error_rate(self):
         """
         :return: The error rate as an integer 0-100
         """
@@ -751,7 +828,7 @@ class ExtendedUrllib(object):
             if not successful:
                 total_failed += 1
 
-        return (total_failed / total) * 100
+        return int((total_failed / total) * 100)
 
     def _log_error_rate(self):
         """
@@ -760,7 +837,7 @@ class ExtendedUrllib(object):
 
         :see: https://github.com/andresriancho/w3af/issues/8698
         """
-        error_rate = self._get_error_rate()
+        error_rate = self.get_error_rate()
         om.out.debug('ExtendedUrllib error rate is at %i%%' % error_rate)
 
     def _handle_error_count_exceeded(self, error):
