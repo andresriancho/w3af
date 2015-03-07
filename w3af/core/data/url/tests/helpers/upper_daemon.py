@@ -80,3 +80,20 @@ class UpperDaemon(threading.Thread):
         self.server.RequestHandlerClass.requests = []
         self.server.shutdown()
 
+
+class ThreadingUpperDaemon(UpperDaemon):
+    def run(self):
+        # Zero in the port means: bind to any free port
+        self.server = ThreadingServer(self.server_address, self.handler)
+        self.server.serve_forever()
+
+
+class ThreadingServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    # Ctrl-C will cleanly kill all spawned threads
+    daemon_threads = True
+
+    # much faster rebinding
+    allow_reuse_address = True
+
+    def __init__(self, server_address, handler_klass):
+        SocketServer.TCPServer.__init__(self, server_address, handler_klass)
