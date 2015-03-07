@@ -120,6 +120,9 @@ class PluginTest(unittest.TestCase):
                 info.get_desc()
 
     def assertAllVulnNamesEqual(self, vuln_name, vulns):
+        if not vulns:
+            self.assertTrue(False, 'No vulnerabilities found to match')
+
         for vuln in vulns:
             self.assertEqual(vuln.get_name(), vuln_name)
 
