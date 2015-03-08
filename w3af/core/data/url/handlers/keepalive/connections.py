@@ -40,11 +40,10 @@ class UniqueID(object):
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
 
-    def __init__(self, host, port=None, strict=None,
-                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+    def __init__(self, host, port=None, strict=None, timeout=None):
         UniqueID.__init__(self)
         httplib.HTTPConnection.__init__(self, host, port, strict,
-                                        timeout=timeout)
+                                        timeout=cf.get('timeout'))
         self.is_fresh = True
 
 
