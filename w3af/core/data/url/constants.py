@@ -14,7 +14,7 @@ MAX_HTTP_RETRIES = 2
 # Used to calculate the timeout based on the average response time from the
 # remote site. timeout = average_response_time * TIMEOUT_MULT_CONST
 # https://github.com/andresriancho/w3af/issues/8698
-TIMEOUT_MULT_CONST = 10
+TIMEOUT_MULT_CONST = 6.5
 
 #
 # I've found some websites that check the user-agent string, and don't allow you
@@ -27,3 +27,7 @@ USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
 # The error rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
 # in seconds.
 SOCKET_ERROR_DELAY = 0.15
+
+# When we start scanning a site and w3af is configured to use auto-adjustable
+# timeouts we actually need *some* timeout to start from, this is the value:
+DEFAULT_TIMEOUT = 6

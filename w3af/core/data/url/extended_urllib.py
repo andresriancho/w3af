@@ -50,9 +50,11 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
-from w3af.core.data.url.constants import (MAX_ERROR_COUNT, MAX_RESPONSE_COLLECT,
-                                          SOCKET_ERROR_DELAY)
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
+from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
+                                          MAX_RESPONSE_COLLECT,
+                                          SOCKET_ERROR_DELAY,
+                                          TIMEOUT_MULT_CONST)
 
 
 class ExtendedUrllib(object):
@@ -114,6 +116,21 @@ class ExtendedUrllib(object):
         that w3af needs to auto-adjust it based on the HTTP request/response
         RTT. This method takes care of the process of adjusting the socket
         timeout.
+
+        The objective of auto-adjusting the timeout is to "fail fast" on
+        requests which are going to fail anyways. In previous versions of w3af
+        the default timeout was 15 seconds, which made the scanner delay A LOT
+        on URLs which (for some reason like heavy processing on the server side)
+        failed anyways.
+
+        We calculate and adjust the new timeout every 50 successful requests.
+
+        The timeout is calculated using average(RTT) * TIMEOUT_MULT_CONST , then
+        for example if the average RTT is 0.3 seconds and the TIMEOUT_MULT_CONST
+        is at 6.5 we end up with a real socket timeout of 1.95
+
+        The TIMEOUT_MULT_CONST might be lowered by advanced users to achieve
+        faster scans in scenarios where timeouts are slowing down the scans.
 
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute

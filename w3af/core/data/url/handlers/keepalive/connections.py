@@ -43,7 +43,7 @@ class _HTTPConnection(httplib.HTTPConnection, UniqueID):
     def __init__(self, host, port=None, strict=None, timeout=None):
         UniqueID.__init__(self)
         httplib.HTTPConnection.__init__(self, host, port, strict,
-                                        timeout=cf.get('timeout'))
+                                        timeout=cf.get_timeout())
         self.is_fresh = True
 
 
@@ -170,7 +170,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
                                    certfile=self.cert_file,
                                    ssl_version=protocol,
                                    server_hostname=self.host,
-                                   timeout=cf.get('timeout'))
+                                   timeout=cf.get_timeout())
         except ssl.SSLError, ssl_exc:
             msg = "SSL connection error occurred with protocol %s: '%s'"
             debug(msg % (protocol, ssl_exc))
@@ -234,7 +234,7 @@ class HTTPConnection(_HTTPConnection):
         _HTTPConnection.__init__(self, host,
                                  port=port,
                                  strict=strict,
-                                 timeout=cf.get('timeout'))
+                                 timeout=cf.get_timeout())
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
