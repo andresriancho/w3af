@@ -62,8 +62,8 @@ class OpenerSettings(Configurable):
         # Set the openers to None
         self._basicAuthHandler = None
         self._proxy_handler = None
-        self._kAHTTP = None
-        self._kAHTTPS = None
+        self._ka_http = None
+        self._ka_https = None
         self._url_parameterHandler = None
         self._ntlmAuthHandler = None
         self._cache_hdler = None
@@ -173,7 +173,7 @@ class OpenerSettings(Configurable):
             om.out.debug('Added the following header: %s:%s' % (h, v))
 
     def close_connections(self):
-        handlers = (self._kAHTTP, self._kAHTTPS)
+        handlers = (self._ka_http, self._ka_https)
         for handler in handlers:
             if handler is not None:
                 handler.close_all()
@@ -379,15 +379,15 @@ class OpenerSettings(Configurable):
         om.out.debug('Called build_openers')
 
         # Instantiate the handlers passing the proxy as parameter
-        self._kAHTTP = kAHTTP()
-        self._kAHTTPS = kAHTTPS(self.get_proxy())
+        self._ka_http = kAHTTP()
+        self._ka_https = kAHTTPS(self.get_proxy())
         self._cache_hdler = CacheHandler()
 
         # Prepare the list of handlers
         handlers = []
         for handler in [self._proxy_handler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookie_handler,
-                        NormalizeHandler, self._kAHTTP, self._kAHTTPS,
+                        NormalizeHandler, self._ka_http, self._ka_https,
                         OutputManagerHandler, HTTP30XHandler, BlacklistHandler,
                         MangleHandler(self._mangle_plugins),
                         HTTPGzipProcessor, self._url_parameterHandler,
