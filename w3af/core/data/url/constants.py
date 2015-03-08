@@ -31,3 +31,6 @@ SOCKET_ERROR_DELAY = 0.15
 # When we start scanning a site and w3af is configured to use auto-adjustable
 # timeouts we actually need *some* timeout to start from, this is the value:
 DEFAULT_TIMEOUT = 6
+
+# Run the timeout adjustment every N HTTP requests
+ADJUST_LIMIT = 25

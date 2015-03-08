@@ -54,7 +54,8 @@ from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
 from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           MAX_RESPONSE_COLLECT,
                                           SOCKET_ERROR_DELAY,
-                                          TIMEOUT_MULT_CONST)
+                                          TIMEOUT_MULT_CONST,
+                                          ADJUST_LIMIT)
 
 
 class ExtendedUrllib(object):
@@ -74,6 +75,9 @@ class ExtendedUrllib(object):
         # For rate limiting
         self._rate_limit_last_time_called = 0.0
         self._rate_limit_lock = threading.RLock()
+
+        # For timeout auto adjust
+        self._total_requests = 0
 
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -135,7 +139,40 @@ class ExtendedUrllib(object):
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute
         """
-        pass
+        if not self._should_auto_adjust_now():
+            return
+
+        average_rtt = self.get_average_rtt(ADJUST_LIMIT)
+        timeout = average_rtt * TIMEOUT_MULT_CONST
+
+        self.settings.set_timeout(timeout)
+
+    def get_average_rtt(self, count=ADJUST_LIMIT):
+        """
+        :param count: The number of HTTP requests to sample the RTT from
+        :return: The average RTT from the last `count` requests
+        """
+        assert len(self._last_responses) >= count, 'Not enough samples'
+
+        last_n_responses = list(self._last_responses)[-count:]
+        rtt_sum = sum([resp_meta.rtt for resp_meta in last_n_responses])
+        return float(rtt_sum) / count
+
+    def _should_auto_adjust_now(self):
+        """
+        :return: True if we need to auto adjust the timeout now
+        """
+        if self.settings.get_configured_timeout() != 0:
+            # The user disabled the timeout auto-adjust feature
+            return False
+
+        if self._total_requests == 0:
+            return False
+
+        if self._total_requests % ADJUST_LIMIT == 0:
+            return True
+
+        return False
 
     def _pause_on_http_error(self, request):
         """
@@ -237,7 +274,9 @@ class ExtendedUrllib(object):
         analyze_state()
 
     def clear(self):
-        """Clear all status set during the scanner run"""
+        """
+        Clear all status set during the scanner run
+        """
         self._user_stopped = False
         self._user_paused = False
         self._stop_exception = None
@@ -887,6 +926,7 @@ class ExtendedUrllib(object):
         # pylint: enable=E0702
 
     def _log_successful_response(self, response):
+        self._total_requests += 1
         self._last_responses.append(ResponseMeta(True,
                                                  SUCCESS,
                                                  response.get_wait_time()))
