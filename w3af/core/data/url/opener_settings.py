@@ -258,6 +258,7 @@ class OpenerSettings(Configurable):
         Sets the timeout to use in HTTP requests, usually called by the auto
         timeout adjust feature in extended_urllib.py
         """
+        om.out.debug('Setting timeout to %s seconds' % timeout)
         cfg.save('timeout', timeout)
 
     def get_timeout(self):
