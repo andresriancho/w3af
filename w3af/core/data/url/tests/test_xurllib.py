@@ -328,7 +328,7 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertGreater(expected_total_delay, total_time)
 
-    def test_ignore_errors(self):
+    def test_error_handling_disable(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
         upper_daemon.wait_for_start()
@@ -341,7 +341,7 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
 
         try:
-            self.uri_opener.GET(url, ignore_errors=True)
+            self.uri_opener.GET(url, error_handling=False)
         except HTTPRequestException:
             self.assertEqual(self.uri_opener._retry.call_count, 0)
         else:

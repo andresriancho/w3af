@@ -68,9 +68,11 @@ class un_ssl(AuditPlugin):
         secure_fr = copy.deepcopy(freq)
         secure_fr.set_url(secure_uri)
 
-        # Make sure that we ignore errors during this test
+        # Make sure that we disable error handling during these tests, we want
+        # the requests to fail quickly and without affecting the library's error
+        # rate
         send_mutant = self._uri_opener.send_mutant
-        kwargs = {'grep': False, 'ignore_errors': True}
+        kwargs = {'grep': False, 'error_handling': False}
 
         try:
             insecure_response = send_mutant(insecure_fr, **kwargs)

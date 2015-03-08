@@ -319,7 +319,7 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, ignore_errors=False):
+                    cookies=True, error_handling=True):
         """
         Sends a mutant to the remote web server.
 
@@ -350,7 +350,7 @@ class ExtendedUrllib(object):
             'grep': grep,
             'cache': cache,
             'cookies': cookies,
-            'ignore_errors': ignore_errors,
+            'error_handling': error_handling,
         }
         method = mutant.get_method()
 
@@ -367,7 +367,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            ignore_errors=False):
+            error_handling=True):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -400,7 +400,7 @@ class ExtendedUrllib(object):
             uri.querystring = data
 
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
-                          ignore_errors=ignore_errors, method='GET',
+                          error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys())
         req = self._add_headers(req, headers)
 
@@ -408,7 +408,7 @@ class ExtendedUrllib(object):
             return self._send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, ignore_errors=False):
+             cookies=True, error_handling=True):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -438,7 +438,7 @@ class ExtendedUrllib(object):
         data = str(data)
 
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          ignore_errors=ignore_errors, method='POST',
+                          error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys())
         req = self._add_headers(req, headers)
 
@@ -498,7 +498,7 @@ class ExtendedUrllib(object):
                 self._method = method
 
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True, ignore_errors=False):
+                         grep=True, cookies=True, error_handling=True):
                 """
                 :return: An HTTPResponse object that's the result of
                     sending the request with a method different from
@@ -518,7 +518,7 @@ class ExtendedUrllib(object):
 
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method,
-                                  ignore_errors=ignore_errors,
+                                  error_handling=error_handling,
                                   retries=max_retries)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
@@ -611,8 +611,9 @@ class ExtendedUrllib(object):
                                                 original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
-        if req.ignore_errors:
-            msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
+        if not req.error_handling:
+            msg = 'Raising HTTP error "%s" "%s". Reason: "%s". Error handling' \
+                  ' was disabled for this request.'
             om.out.debug(msg % (req.get_method(), original_url, exception))
             error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
@@ -793,7 +794,7 @@ class ExtendedUrllib(object):
         root_url = uri.base_url()
 
         req = HTTPRequest(root_url, cookies=True, cache=False,
-                          ignore_errors=True, method='GET', retries=0)
+                          error_handling=False, method='GET', retries=0)
         req = self._add_headers(req)
 
         try:
