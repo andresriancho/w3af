@@ -52,6 +52,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.constants import MAX_ERROR_COUNT, MAX_RESPONSE_COLLECT
+from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
 
 
 try:
@@ -66,9 +67,6 @@ try:
     # pylint: enable=E1101
 except AttributeError:
     pass
-
-# Used to log responses in deque
-SUCCESS = 'Success'
 
 
 class ExtendedUrllib(object):
@@ -679,7 +677,7 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
-        self._log_successful_response()
+        self._log_successful_response(http_resp)
 
         if grep:
             self._grep(req, http_resp)
@@ -717,7 +715,7 @@ class ExtendedUrllib(object):
         """
         reason = get_exception_reason(error)
         reason = reason or str(error)
-        self._last_responses.append((False, reason))
+        self._last_responses.append(ResponseMeta(False, reason))
 
         self._log_error_rate()
 
@@ -758,15 +756,15 @@ class ExtendedUrllib(object):
         # and check access to the _last_responses, otherwise the threads will
         # "break" it
         last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
-        first_result = last_n_responses[0][0]
+        first_result = last_n_responses[0]
         all_following_failed = True
 
-        for successful, reason in last_n_responses[1:]:
-            if successful:
+        for response_meta in last_n_responses[1:]:
+            if response_meta.successful:
                 all_following_failed = False
                 break
 
-        if first_result and all_following_failed:
+        if first_result.successful and all_following_failed:
             # Found the pattern we were looking for, we want to test if the
             # remote server is reachable
             if self._server_root_path_is_reachable(request):
@@ -824,8 +822,8 @@ class ExtendedUrllib(object):
         if total == 0:
             return total
 
-        for successful, reason in last_responses:
-            if not successful:
+        for response_meta in last_responses:
+            if not response_meta.successful:
                 total_failed += 1
 
         return int((total_failed / total) * 100)
@@ -863,8 +861,8 @@ class ExtendedUrllib(object):
             last_errors = []
             last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
 
-            for successful, reason in last_n_responses:
-                last_errors.append(reason)
+            for response_meta in last_n_responses:
+                last_errors.append(response_meta.message)
 
             e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
@@ -873,8 +871,10 @@ class ExtendedUrllib(object):
         raise self._stop_exception
         # pylint: enable=E0702
 
-    def _log_successful_response(self):
-        self._last_responses.append((True, SUCCESS))
+    def _log_successful_response(self, response):
+        self._last_responses.append(ResponseMeta(True,
+                                                 SUCCESS,
+                                                 response.get_wait_time()))
 
     def set_grep_queue_put(self, grep_queue_put):
         self._grep_queue_put = grep_queue_put

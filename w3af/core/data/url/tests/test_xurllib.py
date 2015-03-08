@@ -150,16 +150,12 @@ class TestXUrllib(unittest.TestCase):
                 self.uri_opener.GET(url)
             except HTTPRequestException:
                 http_request_e += 1
-                self.assertTrue(True)
-            except ScanMustStopException:
+            except ScanMustStopException, smse:
                 scan_must_stop_e += 1
-                self.assertTrue(True)
                 break
             except Exception, e:
                 msg = 'Not expecting "%s".'
                 self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
 
         self.assertEqual(scan_must_stop_e, 1)
         self.assertEqual(http_request_e, 5)
@@ -303,13 +299,6 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         previous_time = 0.0
         total_time = 0.0
-
-        # Force the uri_opener into an error state
-        for _ in xrange(3):
-            try:
-                self.uri_opener.GET(url, cache=False)
-            except:
-                pass
 
         # Not check the delays
         for i in xrange(MAX_ERROR_COUNT):
