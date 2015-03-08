@@ -16,3 +16,14 @@ MAX_HTTP_RETRIES = 2
 # https://github.com/andresriancho/w3af/issues/8698
 TIMEOUT_MULT_CONST = 10
 
+#
+# I've found some websites that check the user-agent string, and don't allow you
+# to access if you don't have IE (mostly ASP.NET applications do this). So now
+# we use the following user-agent string in w3af:
+#
+USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
+             ' Trident/4.0; w3af.org)'
+
+# The error rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
+# in seconds.
+SOCKET_ERROR_DELAY = 0.15

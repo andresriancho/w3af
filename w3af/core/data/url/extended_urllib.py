@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import ssl
 import httplib
 import socket
 import threading
@@ -51,22 +50,9 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
-from w3af.core.data.url.constants import MAX_ERROR_COUNT, MAX_RESPONSE_COLLECT
+from w3af.core.data.url.constants import (MAX_ERROR_COUNT, MAX_RESPONSE_COLLECT,
+                                          SOCKET_ERROR_DELAY)
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
-
-
-try:
-    # 2.7.9 enabled certificate verification by default for stdlib http clients
-    # https://www.python.org/dev/peps/pep-0476/
-    #
-    # We don't want that, so we're disabling it globally
-    # https://github.com/andresriancho/w3af/issues/8115
-    #
-    # pylint: disable=E1101
-    ssl._create_default_https_context = ssl._create_unverified_context
-    # pylint: enable=E1101
-except AttributeError:
-    pass
 
 
 class ExtendedUrllib(object):
@@ -75,8 +61,6 @@ class ExtendedUrllib(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    SOCKET_ERROR_DELAY = 0.15
-
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
@@ -122,6 +106,19 @@ class ExtendedUrllib(object):
         self._pause_and_stop()
         self._pause_on_http_error(request)
         self._rate_limit()
+        self._auto_adjust_timeout()
+
+    def _auto_adjust_timeout(self):
+        """
+        By default the timeout value at OpenerSettings is set to 0, which means
+        that w3af needs to auto-adjust it based on the HTTP request/response
+        RTT. This method takes care of the process of adjusting the socket
+        timeout.
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
+        :return: None, we adjust the value at the "settings" attribute
+        """
+        pass
 
     def _pause_on_http_error(self, request):
         """
@@ -161,7 +158,7 @@ class ExtendedUrllib(object):
             self._rate_limit_lock.acquire()
 
             # Logging
-            error_sleep = self.SOCKET_ERROR_DELAY * error_rate
+            error_sleep = SOCKET_ERROR_DELAY * error_rate
             msg = 'Sleeping for %s seconds before sending HTTP request to' \
                   ' "%s" after receiving URL/socket error. The ExtendedUrllib' \
                   ' error rate is at %s%%.'
@@ -242,7 +239,7 @@ class ExtendedUrllib(object):
     def restart(self):
         self.end()
 
-    def _init(self):
+    def setup(self):
         if self.settings.need_update or self._opener is None:
             self.settings.need_update = False
             self.settings.build_openers()
@@ -393,7 +390,7 @@ class ExtendedUrllib(object):
                             ' be of Headers type.')
 
         # Validate what I'm sending, init the library (if needed)
-        self._init()
+        self.setup()
 
         if data:
             uri = uri.copy()
@@ -426,7 +423,7 @@ class ExtendedUrllib(object):
                             ' be of Headers type.')
 
         #    Validate what I'm sending, init the library (if needed)
-        self._init()
+        self.setup()
 
         #
         #    Create and send the request
@@ -512,7 +509,7 @@ class ExtendedUrllib(object):
                     raise TypeError('The headers parameter of AnyMethod.'
                                     '__call__() must be of Headers type.')
 
-                self._xurllib._init()
+                self._xurllib.setup()
 
                 max_retries = self._xurllib.settings.get_max_retrys()
 

@@ -24,7 +24,6 @@ import urlparse
 import cookielib
 
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.url.handlers.ntlm_auth as HTTPNtlmAuthHandler
 
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -32,13 +31,14 @@ from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.url.constants import MAX_HTTP_RETRIES
+from w3af.core.data.url.constants import MAX_HTTP_RETRIES, USER_AGENT
 
+from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
 from w3af.core.data.url.handlers.gzip_handler import HTTPGzipProcessor
-from w3af.core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
-from w3af.core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
+from w3af.core.data.url.handlers.keepalive import HTTPHandler
+from w3af.core.data.url.handlers.keepalive import HTTPSHandler
 from w3af.core.data.url.handlers.output_manager import OutputManagerHandler
 from w3af.core.data.url.handlers.redirect import HTTP30XHandler
 from w3af.core.data.url.handlers.url_parameter import URLParameterHandler
@@ -77,22 +77,13 @@ class OpenerSettings(Configurable):
 
         # Some internal variables
         self.need_update = True
-
-        #
-        #    I've found some websites that check the user-agent string, and
-        #    don't allow you to access if you don't have IE (mostly ASP.NET
-        #    applications do this). So now we use the following user-agent
-        #    string in w3af:
-        #
-        user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
-                     ' Trident/4.0; w3af.org)'
         
         # to use random Agent in http requests
         self.rand_user_agent = False
         
         #   which basically is the UA for IE8 running in Windows 7, plus our
         #   website :)    
-        self.header_list = [('User-Agent', user_agent)]
+        self.header_list = [('User-Agent', USER_AGENT)]
                 
         # By default, don't mangle any request/responses
         self._mangle_plugins = []
@@ -103,13 +94,12 @@ class OpenerSettings(Configurable):
             self.set_default_values()
     
     def set_default_values(self):
-        cfg.save('timeout', 15)
+        cfg.save('timeout', 0)
         cfg.save('headers_file', '')
         cfg.save('cookie_jar_file', '')
         cfg.save('user_agent', 'w3af.org')
         cfg.save('rand_user_agent', False)
 
-        
         cfg.save('proxy_address', '')
         cfg.save('proxy_port', 8080)
 
@@ -141,26 +131,28 @@ class OpenerSettings(Configurable):
         following structure :
             - HEADER:VALUE_OF_HEADER
 
-        :param headers_file: The filename where the special headers are specified
+        :param headers_file: The filename where the additional headers are
+                             specified
         :return: No value is returned.
         """
-        om.out.debug('Called SetHeaders()')
-        if headers_file != '':
-            try:
-                f = open(headers_file, 'r')
-            except:
-                raise BaseFrameworkException(
-                    'Unable to open headers file: ' + headers_file)
+        if not headers_file:
+            return
 
-            header_list = []
-            for line in f:
-                header_name = line.split(':')[0]
-                header_value = ':'.join(line.split(':')[1:])
-                header_value = header_value.strip()
-                header_list.append((header_name, header_value))
+        try:
+            f = open(headers_file, 'r')
+        except:
+            msg = 'Unable to open headers file: "%s"'
+            raise BaseFrameworkException(msg % headers_file)
 
-            self.set_header_list(header_list)
-            cfg.save('headers_file', headers_file)
+        header_list = []
+        for line in f:
+            header_name = line.split(':')[0]
+            header_value = ':'.join(line.split(':')[1:])
+            header_value = header_value.strip()
+            header_list.append((header_name, header_value))
+
+        self.set_header_list(header_list)
+        cfg.save('headers_file', headers_file)
 
     def set_header_list(self, header_list):
         """
@@ -304,8 +296,8 @@ class OpenerSettings(Configurable):
         # Makes no sense, because urllib2.ProxyHandler doesn't support HTTPS
         # proxies with CONNECT. The proxying with CONNECT is implemented in
         # keep-alive handler. (nasty!)
-        proxyMap = {'http': "http://" + ip + ":" + str(port)}
-        self._proxy_handler = urllib2.ProxyHandler(proxyMap)
+        proxy_map = {'http': "http://" + ip + ":" + str(port)}
+        self._proxy_handler = urllib2.ProxyHandler(proxy_map)
 
     def get_proxy(self):
         return cfg.get('proxy_address') + ':' + str(cfg.get('proxy_port'))
@@ -353,13 +345,10 @@ class OpenerSettings(Configurable):
         return res
 
     def set_ntlm_auth(self, url, ntlm_domain, username, password):
-
         cfg.save('ntlm_auth_passwd', password)
         cfg.save('ntlm_auth_domain', ntlm_domain)
         cfg.save('ntlm_auth_user', username)
         cfg.save('ntlm_auth_url', url)
-
-        om.out.debug('Called SetNtlmAuth')
 
         if not hasattr(self, '_password_mgr'):
             # create a new password manager
@@ -370,17 +359,14 @@ class OpenerSettings(Configurable):
         username = ntlm_domain + '\\' + username
 
         self._password_mgr.add_password(None, url, username, password)
-        self._ntlmAuthHandler = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(
-            self._password_mgr)
+        self._ntlmAuthHandler = HTTPNtlmAuthHandler(self._password_mgr)
 
         self.need_update = True
 
     def build_openers(self):
-        om.out.debug('Called build_openers')
-
         # Instantiate the handlers passing the proxy as parameter
-        self._ka_http = kAHTTP()
-        self._ka_https = kAHTTPS(self.get_proxy())
+        self._ka_http = HTTPHandler()
+        self._ka_https = HTTPSHandler(self.get_proxy())
         self._cache_hdler = CacheHandler()
 
         # Prepare the list of handlers
@@ -433,11 +419,11 @@ class OpenerSettings(Configurable):
     def get_max_file_size(self):
         return cfg.get('max_file_size')
 
-    def set_max_file_size(self, fsize):
-        cfg.save('max_file_size', fsize)
+    def set_max_file_size(self, max_file_size):
+        cfg.save('max_file_size', max_file_size)
 
-    def set_max_http_retries(self, retryN):
-        cfg.save('max_http_retries', retryN)
+    def set_max_http_retries(self, retry_num):
+        cfg.save('max_http_retries', retry_num)
 
     def set_max_requests_per_second(self, max_requests_per_second):
         cfg.save('max_requests_per_second', max_requests_per_second)
@@ -454,7 +440,7 @@ class OpenerSettings(Configurable):
         url_param = url_param.replace("\"", "")
         url_param = url_param.lstrip().rstrip()
 
-        if url_param != '':
+        if url_param:
             cfg.save('url_parameter', url_param)
             self._url_parameterHandler = URLParameterHandler(url_param)
 
@@ -686,4 +672,4 @@ class OpenerSettings(Configurable):
 
     def get_desc(self):
         return ('This section is used to configure URL settings that '
-                'affect the core and all plugins.')
+                'affect the core and plugins.')
