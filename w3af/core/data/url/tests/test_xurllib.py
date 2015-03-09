@@ -30,7 +30,6 @@ import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 from mock import Mock, patch
 
 from w3af import ROOT_PATH

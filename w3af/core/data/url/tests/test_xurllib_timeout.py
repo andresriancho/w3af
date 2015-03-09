@@ -25,6 +25,7 @@ import unittest
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon
@@ -38,6 +39,12 @@ from w3af.core.controllers.exceptions import (HTTPRequestException,
 @attr('moth')
 @attr('smoke')
 class TestXUrllibTimeout(unittest.TestCase):
+
+    def setUp(self):
+        self.uri_opener = ExtendedUrllib()
+
+    def tearDown(self):
+        self.uri_opener.end()
 
     def test_timeout(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
