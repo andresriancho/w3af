@@ -142,6 +142,28 @@ class ExtendedUrllib(object):
         The TIMEOUT_MULT_CONST might be lowered by advanced users to achieve
         faster scans in scenarios where timeouts are slowing down the scans.
 
+        TODO
+        ====
+
+        After implementing this feature I noticed that there is a big mismatch
+        between what I wanted to achieve and what's actually happening in real
+        life. When I set the timeout it is used for creating new
+        HTTPConnections. Those connections are use to send ~100 requests each.
+        If w3af adjusts the timeout every 25 requests, it doesn't matter much
+        since the change will only take effect when a new HTTPConnection is
+        created in the pool.
+
+        I'm not sure how to fix the issue above, so I'm documenting some things
+        that will NOT work just in case:
+
+            * Increasing/decreasing the TIMEOUT_ADJUST_LIMIT
+
+            * Setting timeouts for specific HTTP Requests using the timeout arg
+
+            * Forcing HTTPConnections to be closed in the pool each time the
+              timeout is updated could work, but that will slow down the scan
+              and make the keep alive handler less efficient
+
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute
         """
