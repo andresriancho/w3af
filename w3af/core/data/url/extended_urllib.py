@@ -481,8 +481,8 @@ class ExtendedUrllib(object):
             uri = uri.copy()
             uri.querystring = data
 
-        timeout = self.settings.get_timeout() if timeout is None else timeout
         new_connection = True if timeout is not None else False
+        timeout = self.settings.get_timeout() if timeout is None else timeout
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
@@ -523,8 +523,8 @@ class ExtendedUrllib(object):
         #
         data = str(data)
 
-        timeout = self.settings.get_timeout() if timeout is None else timeout
         new_connection = True if timeout is not None else False
+        timeout = self.settings.get_timeout() if timeout is None else timeout
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
@@ -605,8 +605,8 @@ class ExtendedUrllib(object):
 
                 max_retries = self._xurllib.settings.get_max_retrys()
 
-                timeout = self._xurllib.settings.get_timeout() if timeout is None else timeout
                 new_connection = True if timeout is not None else False
+                timeout = self._xurllib.settings.get_timeout() if timeout is None else timeout
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method,
                                   error_handling=error_handling,

@@ -161,15 +161,20 @@ class ConnectionManager(object):
                             debug(msg % conn)
 
                             return conn
+                else:
+                    debug('Forcing the use of a new HTTPConnection')
 
                 # No? Well, if the connection pool is not full let's try to
                 # create a new one.
                 conn_total = self.get_connections_total(host)
                 if conn_total < self._host_pool_size:
-                    # Add the connection
+                    # Create a new connection
                     conn = conn_factory(req)
+
+                    # Store it internally
                     self._used_cons.append(conn)
-                    self._hostmap[host].append(conn)
+                    hostmap = self._hostmap.setdefault(host, [])
+                    hostmap.append(conn)
 
                     # logging
                     msg = 'Added %s to pool, current %s pool size: %s'
