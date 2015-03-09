@@ -131,10 +131,10 @@ class KeepAliveHandler(object):
         if not host:
             raise urllib2.URLError('no host given')
 
-        conn_factory = self._get_connection
+        conn_factory = self.get_connection
 
         try:
-            conn = self._cm.get_available_connection(host, conn_factory)
+            conn = self._cm.get_available_connection(req, conn_factory)
         except ConnectionPoolException:
             # When `self._cm.get_available_connection(host, conn_factory)` does
             # not return a conn, it will raise this exception. So we either get
@@ -153,7 +153,7 @@ class KeepAliveHandler(object):
                 # If the resp is None it means that connection is bad. It was
                 # possibly closed by the server. Replace it with a new one.
                 if resp is None:
-                    conn = self._cm.replace_connection(conn, host, conn_factory)
+                    conn = self._cm.replace_connection(conn, req, conn_factory)
                     resp, start = self._get_response(conn, req)
 
         except socket.timeout:
@@ -318,9 +318,9 @@ class KeepAliveHandler(object):
             if data is not None:
                 conn.send(data)
 
-    def _get_connection(self, host):
+    def get_connection(self, host):
         """
-        "Abstract" method.
+        "Abstract" method which needs to be implemented in the sub-classes
         """
         raise NotImplementedError()
 
@@ -333,8 +333,8 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
     def http_open(self, req):
         return self.do_open(req)
 
-    def _get_connection(self, host):
-        return HTTPConnection(host)
+    def get_connection(self, request):
+        return HTTPConnection(request.get_host(), timeout=request.get_timeout())
 
 
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
@@ -356,11 +356,14 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def https_open(self, req):
         return self.do_open(req)
 
-    def _get_connection(self, host):
+    def get_connection(self, request):
         if self._proxy:
-            proxy_host, port = self._proxy.split(':')
-            return ProxyHTTPSConnection(proxy_host, port)
+            proxy_host, proxy_port = self._proxy.split(':')
+            return ProxyHTTPSConnection(proxy_host,
+                                        proxy_port,
+                                        timeout=request.get_timeout())
         else:
-            return HTTPSConnection(host)
+            return HTTPSConnection(request.get_host(),
+                                   timeout=request.get_timeout())
 
 

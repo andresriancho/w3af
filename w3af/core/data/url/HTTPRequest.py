@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import copy
+import socket
 import urllib2
 
 from w3af.core.data.dc.headers import Headers
@@ -34,7 +35,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
                  cookies=True, cache=False, method=None,
-                 error_handling=True, retries=MAX_HTTP_RETRIES):
+                 error_handling=True, retries=MAX_HTTP_RETRIES,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -50,6 +52,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.get_from_cache = cache
         self.error_handling = error_handling
         self.retries_left = retries
+        self.timeout = timeout
 
         self.method = method
         if self.method is None:
@@ -97,6 +100,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         headers = Headers(self.headers.items())
         headers.update(self.unredirected_hdrs.items())
         return headers
+
+    def get_timeout(self):
+        return self.timeout
     
     def to_dict(self):
         serializable_dict = {}

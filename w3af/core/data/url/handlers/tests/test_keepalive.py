@@ -70,7 +70,8 @@ class TestKeepalive(unittest.TestCase):
         # Override KeepAliveHandler._start_transaction
         kah._start_transaction = MagicMock(return_value=None)
 
-        conn_factory = kah._get_connection
+        conn_factory = kah.get_connection
+
         # Mock conn's getresponse()
         resp = HTTPResponse(socket.socket())
         resp.will_close = True
@@ -88,7 +89,7 @@ class TestKeepalive(unittest.TestCase):
 
         ## Verify ##
         kah._start_transaction.assert_called_once_with(conn, req)
-        conn_mgr_mock.get_available_connection.assert_called_once_with(host,
+        conn_mgr_mock.get_available_connection.assert_called_once_with(req,
                                                                        conn_factory)
         conn_mgr_mock.remove_connection.assert_called_once_with(conn,
                                                                 host,
@@ -108,8 +109,6 @@ class TestKeepalive(unittest.TestCase):
 
         # Override KeepAliveHandler._start_transaction - raises timeout
         kah._start_transaction = MagicMock(side_effect=socket.timeout())
-
-        conn_factory = kah._get_connection
 
         # The connection mgr
         conn_mgr = Mock()

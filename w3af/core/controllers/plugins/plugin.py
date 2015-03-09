@@ -251,7 +251,7 @@ class UrlOpenerProxy(object):
     # I noticed this issue when #8705 was reported
     # https://github.com/andresriancho/w3af/issues/8705
     NO_WRAPPER_FOR = {'send_clean', 'clear', 'end', 'restart', 'get_headers',
-                      'get_cookies', 'get_remote_file_size', '_add_headers',
+                      'get_cookies', 'get_remote_file_size', 'add_headers',
                       '_check_uri',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',

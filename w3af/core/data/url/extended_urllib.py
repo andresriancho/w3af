@@ -333,7 +333,7 @@ class ExtendedUrllib(object):
                 the library when sending a request to uri.
         """
         req = HTTPRequest(uri)
-        req = self._add_headers(req)
+        req = self.add_headers(req)
         return Headers(req.headers)
 
     def get_cookies(self):
@@ -396,7 +396,7 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, error_handling=True):
+                    cookies=True, error_handling=True, timeout=None):
         """
         Sends a mutant to the remote web server.
 
@@ -428,6 +428,7 @@ class ExtendedUrllib(object):
             'cache': cache,
             'cookies': cookies,
             'error_handling': error_handling,
+            'timeout': timeout
         }
         method = mutant.get_method()
 
@@ -444,7 +445,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            error_handling=True):
+            error_handling=True, timeout=None):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -457,6 +458,10 @@ class ExtendedUrllib(object):
         :param cache: Should the library search the local cache for a response
                       before sending it to the wire?
         :param grep: Should grep plugins be applied to this request/response?
+        :param timeout: If None we'll use the configured (opener settings)
+                        timeout or the auto-adjusted value. Otherwise we'll use
+                        the defined timeout as the socket timeout value for this
+                        request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
 
         :return: An HTTPResponse object.
@@ -476,22 +481,25 @@ class ExtendedUrllib(object):
             uri = uri.copy()
             uri.querystring = data
 
+        timeout = self.settings.get_timeout() if timeout is None else timeout
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
                           error_handling=error_handling, method='GET',
-                          retries=self.settings.get_max_retrys())
-        req = self._add_headers(req, headers)
+                          retries=self.settings.get_max_retrys(),
+                          timeout=timeout)
+        req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
-            return self._send(req, grep=grep)
+            return self.send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, error_handling=True):
+             cookies=True, error_handling=True, timeout=None):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
 
         :param uri: This is the url where to post.
         :param data: A string with the data for the POST.
+        :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
         if not isinstance(uri, URL):
@@ -514,12 +522,14 @@ class ExtendedUrllib(object):
         #
         data = str(data)
 
+        timeout = self.settings.get_timeout() if timeout is None else timeout
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
-                          retries=self.settings.get_max_retrys())
-        req = self._add_headers(req, headers)
+                          retries=self.settings.get_max_retrys(),
+                          timeout=timeout)
+        req = self.add_headers(req, headers)
 
-        return self._send(req, grep=grep)
+        return self.send(req, grep=grep)
 
     def get_remote_file_size(self, req, cache=True):
         """
@@ -575,11 +585,11 @@ class ExtendedUrllib(object):
                 self._method = method
 
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True, error_handling=True):
+                         grep=True, cookies=True, error_handling=True,
+                         timeout=None):
                 """
-                :return: An HTTPResponse object that's the result of
-                    sending the request with a method different from
-                    "GET" or "POST".
+                :return: An HTTPResponse object that's the result of sending
+                         the request with a method different from GET or POST.
                 """
                 if not isinstance(uri, URL):
                     raise TypeError('The uri parameter of AnyMethod.'
@@ -593,16 +603,18 @@ class ExtendedUrllib(object):
 
                 max_retries = self._xurllib.settings.get_max_retrys()
 
+                timeout = self._xurllib.settings.get_timeout() if timeout is None else timeout
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method,
                                   error_handling=error_handling,
-                                  retries=max_retries)
-                req = self._xurllib._add_headers(req, headers or {})
+                                  retries=max_retries,
+                                  timeout=timeout)
+                req = self._xurllib.add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
 
         return AnyMethod(self, method_name)
 
-    def _add_headers(self, req, headers=Headers()):
+    def add_headers(self, req, headers=Headers()):
         """
         Add all custom Headers() if they exist
         """
@@ -629,7 +641,7 @@ class ExtendedUrllib(object):
         else:
             return False
 
-    def _send(self, req, grep=True):
+    def send(self, req, grep=True):
         """
         Actually send the request object.
 
@@ -772,7 +784,7 @@ class ExtendedUrllib(object):
         if req.retries_left > 0:
             msg = 'Re-sending request "%s" after initial exception: "%s"'
             om.out.debug(msg % (req, url_error))
-            return self._send(req, grep=grep)
+            return self.send(req, grep=grep)
         
         else:
             # Please note that I'm raising HTTPRequestException and not a
@@ -872,11 +884,12 @@ class ExtendedUrllib(object):
         root_url = uri.base_url()
 
         req = HTTPRequest(root_url, cookies=True, cache=False,
-                          error_handling=False, method='GET', retries=0)
-        req = self._add_headers(req)
+                          error_handling=False, method='GET', retries=0,
+                          timeout=self.settings.get_timeout())
+        req = self.add_headers(req)
 
         try:
-            self._send(req, grep=False)
+            self.send(req, grep=False)
         except HTTPRequestException, e:
             msg = 'Remote server is UNREACHABLE due to: "%s"'
             om.out.debug(msg % e)

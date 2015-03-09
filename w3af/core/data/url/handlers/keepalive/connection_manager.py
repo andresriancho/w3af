@@ -96,23 +96,25 @@ class ConnectionManager(object):
                 self._used_cons.remove(conn)
                 self._free_conns.append(conn)
 
-    def replace_connection(self, bad_conn, host, conn_factory):
+    def replace_connection(self, bad_conn, req, conn_factory):
         """
         Re-create a mal-functioning connection.
 
         :param bad_conn: The bad connection
-        :param host: The host for the connection
+        :param req: The request we want to send using the new connection
         :param conn_factory: The factory function for new connection creation.
         """
         # This connection is dead anyways
         bad_conn.close()
+
+        host = req.get_host()
 
         with self._lock:
             # Remove
             self.remove_connection(bad_conn, host, reason='replace connection')
 
             # Create the new one
-            new_conn = conn_factory(host)
+            new_conn = conn_factory(req)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
             self._used_cons.append(new_conn)
@@ -123,16 +125,17 @@ class ConnectionManager(object):
 
             return new_conn
 
-    def get_available_connection(self, host, conn_factory):
+    def get_available_connection(self, req, conn_factory):
         """
         Return an available connection ready to be reused
 
-        :param host: Host for the connection.
+        :param req: Request we want to send using the connection.
         :param conn_factory: Factory function for connection creation. Receives
-                             <host> as parameter.
+                             req as parameter.
         """
         with self._lock:
             retry_count = self.GET_AVAILABLE_CONNECTION_RETRY_NUM
+            host = req.get_host()
 
             while retry_count > 0:
                 # First check if we can reuse an existing free connection from
@@ -155,7 +158,7 @@ class ConnectionManager(object):
                 conn_total = self.get_connections_total(host)
                 if conn_total < self._host_pool_size:
                     # Add the connection
-                    conn = conn_factory(host)
+                    conn = conn_factory(req)
                     self._used_cons.append(conn)
                     self._hostmap[host].append(conn)
 
