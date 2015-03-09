@@ -33,3 +33,7 @@ class ResponseMeta(object):
         self.successful = successful
         self.message = message
         self.rtt = rtt
+
+    def __str__(self):
+        args = (self.successful, self.message, self.rtt)
+        return '<ResponseMeta (successful: %s, message: %s, rtt: %s)' % args
