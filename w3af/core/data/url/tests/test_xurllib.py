@@ -158,7 +158,7 @@ class TestXUrllib(unittest.TestCase):
                 self.assertTrue(False, msg % e.__class__.__name__)
 
         self.assertEqual(scan_must_stop_e, 1)
-        self.assertEqual(http_request_e, 5)
+        self.assertEqual(http_request_e, 9)
 
     def test_get_wait_time(self):
         """
