@@ -167,7 +167,6 @@ class ExtendedUrllib(object):
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute
         """
-        return
         if not self._should_auto_adjust_now():
             return
 

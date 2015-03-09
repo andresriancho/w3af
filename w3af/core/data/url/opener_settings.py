@@ -94,11 +94,10 @@ class OpenerSettings(Configurable):
         if cfg.get('user_agent') is None:
             # This is the first time we are executed...
             self.set_default_values()
-    
+
     def set_default_values(self):
-        self.set_configured_timeout(15)
-        #cfg.save('timeout', DEFAULT_TIMEOUT)
-        #cfg.save('configured_timeout', 15)
+        cfg.save('timeout', DEFAULT_TIMEOUT)
+        cfg.save('configured_timeout', 15)
         cfg.save('headers_file', '')
         cfg.save('cookie_jar_file', '')
         cfg.save('user_agent', 'w3af.org')
