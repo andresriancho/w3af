@@ -19,14 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import httplib
-import socket
-import threading
 import time
-import traceback
 import urllib
+import socket
 import urllib2
+import httplib
 import OpenSSL
+import threading
+import traceback
+import functools
 
 from contextlib import contextmanager
 from collections import deque
@@ -580,43 +581,39 @@ class ExtendedUrllib(object):
         :param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
-        class AnyMethod(object):
+        def any_method(uri_opener, method, uri, data=None, headers=Headers(),
+                       cache=False, grep=True, cookies=True,
+                       error_handling=True, timeout=None):
+            """
+            :return: An HTTPResponse object that's the result of sending
+                     the request with a method different from GET or POST.
+            """
+            if not isinstance(uri, URL):
+                raise TypeError('The uri parameter of any_method must be'
+                                ' of url.URL type.')
 
-            def __init__(self, xu, method):
-                self._xurllib = xu
-                self._method = method
+            if not isinstance(headers, Headers):
+                raise TypeError('The headers parameter of any_method must be'
+                                ' of Headers type.')
 
-            def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True, error_handling=True,
-                         timeout=None):
-                """
-                :return: An HTTPResponse object that's the result of sending
-                         the request with a method different from GET or POST.
-                """
-                if not isinstance(uri, URL):
-                    raise TypeError('The uri parameter of AnyMethod.'
-                                    '__call__() must be of url.URL type.')
+            uri_opener.setup()
 
-                if not isinstance(headers, Headers):
-                    raise TypeError('The headers parameter of AnyMethod.'
-                                    '__call__() must be of Headers type.')
+            max_retries = uri_opener.settings.get_max_retrys()
 
-                self._xurllib.setup()
+            new_connection = True if timeout is not None else False
+            timeout = uri_opener.settings.get_timeout() if timeout is None else timeout
+            req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
+                              method=method,
+                              error_handling=error_handling,
+                              retries=max_retries,
+                              timeout=timeout,
+                              new_connection=new_connection)
+            req = uri_opener.add_headers(req, headers or {})
+            return uri_opener.send(req, grep=grep)
 
-                max_retries = self._xurllib.settings.get_max_retrys()
-
-                new_connection = True if timeout is not None else False
-                timeout = self._xurllib.settings.get_timeout() if timeout is None else timeout
-                req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
-                                  method=self._method,
-                                  error_handling=error_handling,
-                                  retries=max_retries,
-                                  timeout=timeout,
-                                  new_connection=new_connection)
-                req = self._xurllib.add_headers(req, headers or {})
-                return self._xurllib._send(req, grep=grep)
-
-        return AnyMethod(self, method_name)
+        method_partial = functools.partial(any_method, self, method_name)
+        method_partial.__doc__ = 'Send %s HTTP request' % method_name
+        return method_partial
 
     def add_headers(self, req, headers=Headers()):
         """
