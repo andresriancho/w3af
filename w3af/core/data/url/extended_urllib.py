@@ -341,6 +341,7 @@ class ExtendedUrllib(object):
         self.clear()
         self.settings.clear_cookies()
         self.settings.clear_cache()
+        self.settings.clear_timeout()
         self.settings.close_connections()
 
     def restart(self):

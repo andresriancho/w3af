@@ -97,7 +97,7 @@ class OpenerSettings(Configurable):
 
     def set_default_values(self):
         cfg.save('timeout', DEFAULT_TIMEOUT)
-        cfg.save('configured_timeout', 15)
+        cfg.save('configured_timeout', 0)
         cfg.save('headers_file', '')
         cfg.save('cookie_jar_file', '')
         cfg.save('user_agent', 'w3af.org')
@@ -247,6 +247,23 @@ class OpenerSettings(Configurable):
             # The user disabled the auto timeout adjust feature by setting a
             # specific timeout
             self.set_timeout(timeout)
+
+    def clear_timeout(self):
+        """
+        Called when the scan has finished  / this opener settings won't be used
+        anymore
+
+        :return: None
+        """
+        configured_timeout = self.get_configured_timeout()
+
+        if configured_timeout != 0:
+            # This might be redundant, but let's do it anyways
+            self.set_timeout(configured_timeout)
+        else:
+            # Get ready for the next scan, which we don't want to be affected
+            # by the timeout set in the previous scan
+            self.set_timeout(DEFAULT_TIMEOUT)
 
     def get_configured_timeout(self):
         """
