@@ -69,8 +69,10 @@ class ExtendedUrllib(object):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
 
-        # For error handling
+        # For error handling, the first "last response" is set to SUCCESS to
+        # allow the _should_stop_scan method to match it's "SFFFF...FFF" pattern
         self._last_responses = deque(maxlen=MAX_RESPONSE_COLLECT)
+        self._last_responses.append(ResponseMeta(True, SUCCESS))
         self._count_lock = threading.RLock()
 
         # For rate limiting
@@ -849,9 +851,15 @@ class ExtendedUrllib(object):
         # "break" it
         last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
         first_result = last_n_responses[0]
+        last_n_without_first = last_n_responses[1:]
+
+        if len(last_n_without_first) != (MAX_ERROR_COUNT - 1):
+            # Not enough last_responses to tell if we should stop the scan
+            return False
+
         all_following_failed = True
 
-        for response_meta in last_n_responses[1:]:
+        for response_meta in last_n_without_first:
             if response_meta.successful:
                 all_following_failed = False
                 break

@@ -20,15 +20,96 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
+import unittest
 import SocketServer
 
 from mock import Mock, patch, call
+from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.url.tests.helpers.upper_daemon import ThreadingUpperDaemon
+from w3af.core.data.url.tests.test_xurllib import (EmptyTCPHandler,
+                                                   TimeoutTCPHandler)
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
+from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
+from w3af.core.data.parsers.url import URL
+from w3af.core.controllers.exceptions import (HTTPRequestException,
+                                              ScanMustStopException)
 
 TIMEOUT_SECS = 1
+
+
+@attr('moth')
+@attr('smoke')
+class TestXUrllibDelayOnError(unittest.TestCase):
+
+    def setUp(self):
+        self.uri_opener = ExtendedUrllib()
+
+    def tearDown(self):
+        self.uri_opener.end()
+
+    def test_delay_on_errors(self):
+        return_empty_daemon = UpperDaemon(EmptyTCPHandler)
+        return_empty_daemon.start()
+        return_empty_daemon.wait_for_start()
+
+        port = return_empty_daemon.get_port()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        previous_time = 0.0
+        total_time = 0.0
+
+        # Not check the delays
+        for i in xrange(MAX_ERROR_COUNT):
+            start = time.time()
+            try:
+                self.uri_opener.GET(url, cache=False)
+            except HTTPRequestException:
+                self.assertTrue(True)
+                end = time.time()
+
+                self.assertGreater(end - start, previous_time)
+                previous_time = end - start
+                total_time += previous_time
+
+            except ScanMustStopException:
+                self.assertTrue(True)
+                break
+            except Exception, e:
+                msg = 'Not expecting: "%s"'
+                self.assertTrue(False, msg % e.__class__.__name__)
+        else:
+            self.assertTrue(False)
+
+        expected_total_delay = 0.0
+        for i in xrange(MAX_ERROR_COUNT):
+            expected_total_delay += SOCKET_ERROR_DELAY * i
+
+        self.assertGreater(expected_total_delay, total_time)
+
+    def test_error_handling_disable(self):
+        upper_daemon = UpperDaemon(TimeoutTCPHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        self.uri_opener.settings.set_configured_timeout(1)
+        self.uri_opener._retry = Mock()
+
+        url = URL('http://127.0.0.1:%s/' % port)
+
+        try:
+            self.uri_opener.GET(url, error_handling=False)
+        except HTTPRequestException:
+            self.assertEqual(self.uri_opener._retry.call_count, 0)
+        else:
+            self.assertTrue(False, 'Exception not raised')
+
+        self.uri_opener.settings.set_default_values()
 
 
 class TestXUrllibErrorHandling(PluginTest):
@@ -57,7 +138,7 @@ class TestXUrllibErrorHandling(PluginTest):
 
     def test_do_not_reach_must_stop_exception(self):
         # Configure low timeout to have faster test
-        self.w3afcore.uri_opener.settings.set_timeout(TIMEOUT_SECS)
+        self.w3afcore.uri_opener.settings.set_configured_timeout(TIMEOUT_SECS)
 
         # Setup the server
         upper_daemon = ThreadingUpperDaemon(MultipleTimeoutsTCPHandler)

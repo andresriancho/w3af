@@ -24,6 +24,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
+from mock import Mock
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.constants import MAX_ERROR_COUNT
@@ -55,7 +56,9 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         url = URL('http://127.0.0.1:%s/' % port)
 
-        self.uri_opener.settings.set_configured_timeout(1)
+        self.uri_opener.settings.set_configured_timeout(0.5)
+        # We can mock this because it's being tested at TestXUrllibDelayOnError
+        self.uri_opener._pause_on_http_error = Mock()
         start = time.time()
 
         try:
@@ -70,7 +73,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         end = time.time()
         self.uri_opener.settings.set_default_values()
-        self.assertLess(end-start, 3)
+        self.assertLess(end-start, 1.5)
 
     def test_timeout_ssl(self):
         ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
@@ -104,7 +107,9 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         port = upper_daemon.get_port()
 
-        self.uri_opener.settings.set_configured_timeout(1)
+        self.uri_opener.settings.set_configured_timeout(0.5)
+        # We can mock this because it's being tested at TestXUrllibDelayOnError
+        self.uri_opener._pause_on_http_error = Mock()
 
         url = URL('http://127.0.0.1:%s/' % port)
         http_request_e = 0
@@ -123,9 +128,11 @@ class TestXUrllibTimeout(unittest.TestCase):
             except Exception, e:
                 msg = 'Not expecting: "%s"'
                 self.assertTrue(False, msg % e.__class__.__name__)
+            else:
+                self.assertTrue(False, 'Expecting timeout')
         else:
-            self.assertTrue(False)
+            self.assertTrue(False, 'Expected ScanMustStopException')
 
         self.uri_opener.settings.set_default_values()
-        self.assertEqual(http_request_e, 5)
+        self.assertEqual(http_request_e, 4)
         self.assertEqual(scan_stop_e, 1)

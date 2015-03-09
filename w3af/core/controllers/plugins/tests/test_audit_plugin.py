@@ -85,7 +85,7 @@ class TestAuditPlugin(unittest.TestCase):
         freq = FuzzableRequest(url)
 
         plugin_inst = self.w3af.plugins.get_plugin_inst('audit', 'sqli')
-        plugin_inst._uri_opener.settings.set_timeout(1)
+        plugin_inst._uri_opener.settings.set_configured_timeout(1)
 
         # We expect the server to timeout and the response to be a 204
         resp = plugin_inst.get_original_response(freq)
