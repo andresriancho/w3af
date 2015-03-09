@@ -33,4 +33,4 @@ TIMEOUT_ADJUST_LIMIT = 25
 # Used to calculate the timeout based on the average response time from the
 # remote site. timeout = average_response_time * TIMEOUT_MULT_CONST
 # https://github.com/andresriancho/w3af/issues/8698
-TIMEOUT_MULT_CONST = 6.5
+TIMEOUT_MULT_CONST = 15
