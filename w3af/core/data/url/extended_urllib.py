@@ -56,7 +56,7 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           MAX_RESPONSE_COLLECT,
                                           SOCKET_ERROR_DELAY,
                                           TIMEOUT_MULT_CONST,
-                                          ADJUST_LIMIT)
+                                          TIMEOUT_ADJUST_LIMIT)
 
 
 class ExtendedUrllib(object):
@@ -148,9 +148,9 @@ class ExtendedUrllib(object):
         if not self._should_auto_adjust_now():
             return
 
-        average_rtt, num_samples = self.get_average_rtt(ADJUST_LIMIT)
+        average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT)
 
-        if num_samples < (ADJUST_LIMIT / 2):
+        if num_samples < (TIMEOUT_ADJUST_LIMIT / 2):
             msg = 'Not enough samples collected (%s) to adjust timeout.' \
                   ' Keeping the current value of %s seconds'
             om.out.debug(msg % (num_samples, self.settings.get_timeout()))
@@ -158,7 +158,7 @@ class ExtendedUrllib(object):
             timeout = average_rtt * TIMEOUT_MULT_CONST
             self.settings.set_timeout(timeout)
 
-    def get_average_rtt(self, count=ADJUST_LIMIT):
+    def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT):
         """
         :param count: The number of HTTP requests to sample the RTT from
         :return: Tuple with (average RTT from the last `count` requests,
@@ -189,7 +189,7 @@ class ExtendedUrllib(object):
         if self.get_total_requests() == 0:
             return False
 
-        if self.get_total_requests() % ADJUST_LIMIT == 0:
+        if self.get_total_requests() % TIMEOUT_ADJUST_LIMIT == 0:
             return True
 
         return False
