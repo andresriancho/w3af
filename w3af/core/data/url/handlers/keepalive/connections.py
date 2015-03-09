@@ -35,8 +35,8 @@ class UniqueID(object):
     def __str__(self):
         # Only makes sense when DEBUG is True
         timeout = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
-        args = (self.id, self.req_count, timeout)
-        return 'Connection(id:%s, req_count:%s, timeout:%s)' % args
+        args = (self.__class__.__name__, self.id, self.req_count, timeout)
+        return '%s(id:%s, req_count:%s, timeout:%s)' % args
 
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
