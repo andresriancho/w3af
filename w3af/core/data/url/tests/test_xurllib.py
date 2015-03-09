@@ -35,7 +35,8 @@ from mock import Mock, patch
 
 from w3af import ROOT_PATH
 
-from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
 from w3af.core.data.parsers.url import URL
@@ -324,7 +325,7 @@ class TestXUrllib(unittest.TestCase):
 
         expected_total_delay = 0.0
         for i in xrange(MAX_ERROR_COUNT):
-            expected_total_delay += ExtendedUrllib.SOCKET_ERROR_DELAY * i
+            expected_total_delay += SOCKET_ERROR_DELAY * i
 
         self.assertGreater(expected_total_delay, total_time)
 
