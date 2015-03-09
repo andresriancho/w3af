@@ -22,6 +22,7 @@ class UniqueID(object):
             self.id = None
 
         self.req_count = 0
+        self.timeout = None
 
     def inc_req_count(self):
         self.req_count += 1
@@ -33,8 +34,9 @@ class UniqueID(object):
 
     def __str__(self):
         # Only makes sense when DEBUG is True
-        args = (self.id, self.req_count)
-        return 'Connection(id:%s, req_count:%s)' % args
+        timeout = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
+        args = (self.id, self.req_count, timeout)
+        return 'Connection(id:%s, req_count:%s, timeout:%s)' % args
 
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
@@ -132,8 +134,8 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
         https://gist.github.com/flandr/74be22d1c3d7c1dfefdd
     """
     def __init__(self, *args, **kwargs):
-        httplib.HTTPSConnection.__init__(self, *args, **kwargs)
         UniqueID.__init__(self)
+        httplib.HTTPSConnection.__init__(self, *args, **kwargs)
 
     def connect(self):
         """
@@ -208,9 +210,9 @@ class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        UniqueID.__init__(self)
         ProxyHTTPConnection.__init__(self, host, port, strict=strict,
                                      timeout=timeout)
-        UniqueID.__init__(self)
         self.key_file = key_file
         self.cert_file = cert_file
 

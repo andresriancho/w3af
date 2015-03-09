@@ -34,6 +34,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.constants import (MAX_HTTP_RETRIES, USER_AGENT,
                                           DEFAULT_TIMEOUT)
 
+from w3af.core.data.url.director import CustomOpenerDirector, build_opener
 from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
@@ -413,7 +414,7 @@ class OpenerSettings(Configurable):
         if cfg.get('ignore_session_cookies'):
             handlers.remove(self._cookie_handler)
 
-        self._uri_opener = urllib2.build_opener(*handlers)
+        self._uri_opener = build_opener(CustomOpenerDirector, handlers)
 
         # Prevent the urllib from putting his user-agent header
         self._uri_opener.addheaders = [('Accept', '*/*')]

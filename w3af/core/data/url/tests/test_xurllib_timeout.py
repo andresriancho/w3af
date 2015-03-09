@@ -55,7 +55,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         url = URL('http://127.0.0.1:%s/' % port)
 
-        self.uri_opener.settings.set_timeout(1)
+        self.uri_opener.settings.set_configured_timeout(1)
         start = time.time()
 
         try:
@@ -81,7 +81,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         url = URL('https://127.0.0.1:%s/' % port)
 
-        self.uri_opener.settings.set_timeout(1)
+        self.uri_opener.settings.set_configured_timeout(1)
         start = time.time()
 
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
@@ -104,7 +104,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         port = upper_daemon.get_port()
 
-        self.uri_opener.settings.set_timeout(1)
+        self.uri_opener.settings.set_configured_timeout(1)
 
         url = URL('http://127.0.0.1:%s/' % port)
         http_request_e = 0

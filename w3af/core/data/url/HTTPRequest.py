@@ -70,10 +70,11 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         RequestMixIn.__init__(self)
     
     def __eq__(self, other):
-        return self.get_method() == other.get_method() and\
-               self.get_uri() == other.get_uri() and\
-               self.get_headers() == other.get_headers() and\
-               self.get_data() == other.get_data()
+        return self.get_method() == other.get_method() and \
+               self.get_uri() == other.get_uri() and \
+               self.get_headers() == other.get_headers() and \
+               self.get_data() == other.get_data() and \
+               self.get_timeout() == other.get_timeout()
 
     def add_header(self, key, val):
         """
