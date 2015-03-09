@@ -170,57 +170,6 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertNotEqual(http_response.get_wait_time(), DEFAULT_WAIT_TIME)
 
-    def test_timeout(self):
-        upper_daemon = UpperDaemon(TimeoutTCPHandler)
-        upper_daemon.start()
-        upper_daemon.wait_for_start()
-
-        port = upper_daemon.get_port()
-        
-        url = URL('http://127.0.0.1:%s/' % port)
-        
-        self.uri_opener.settings.set_timeout(1)
-        start = time.time()
-
-        try:
-            self.uri_opener.GET(url)
-        except HTTPRequestException, hre:
-            self.assertEqual(hre.message, 'HTTP timeout error')
-        except Exception, e:
-            msg = 'Not expecting: "%s"'
-            self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False, 'Expected HTTPRequestException.')
-
-        end = time.time()
-        self.uri_opener.settings.set_default_values()
-        self.assertLess(end-start, 3)
-
-    def test_timeout_ssl(self):
-        ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
-        ssl_daemon.start()
-        ssl_daemon.wait_for_start()
-
-        port = ssl_daemon.get_port()
-
-        url = URL('https://127.0.0.1:%s/' % port)
-
-        self.uri_opener.settings.set_timeout(1)
-        start = time.time()
-
-        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
-
-        end = time.time()
-        self.uri_opener.settings.set_default_values()
-
-        #   We Skip this part because openssl doesn't allow us to use timeouts
-        #   https://github.com/andresriancho/w3af/issues/7989
-        #
-        #   Don't Skip at the beginning of the test because we want to be able
-        #   to test that timeout exceptions are at least handled by xurllib
-        raise SkipTest('See https://github.com/andresriancho/w3af/issues/7989')
-        #self.assertLess(end-start, 3)
-
     def test_ssl_tls_1_0(self):
         ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_TLSv1)
         ssl_daemon.start()
@@ -256,39 +205,6 @@ class TestXUrllib(unittest.TestCase):
 
         resp = self.uri_opener.GET(url)
         self.assertEqual(resp.get_body(), Ok200Handler.body)
-
-    def test_timeout_many(self):
-        upper_daemon = UpperDaemon(TimeoutTCPHandler)
-        upper_daemon.start()
-        upper_daemon.wait_for_start()
-
-        port = upper_daemon.get_port()
-
-        self.uri_opener.settings.set_timeout(1)
-
-        url = URL('http://127.0.0.1:%s/' % port)
-        http_request_e = 0
-        scan_stop_e = 0
-
-        for _ in xrange(MAX_ERROR_COUNT):
-            try:
-                self.uri_opener.GET(url)
-            except HTTPRequestException, hre:
-                http_request_e += 1
-                self.assertEqual(hre.message, 'HTTP timeout error')
-            except ScanMustStopException:
-                scan_stop_e += 1
-                self.assertTrue(True)
-                break
-            except Exception, e:
-                msg = 'Not expecting: "%s"'
-                self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
-
-        self.uri_opener.settings.set_default_values()
-        self.assertEqual(http_request_e, 5)
-        self.assertEqual(scan_stop_e, 1)
 
     def test_delay_on_errors(self):
         return_empty_daemon = UpperDaemon(EmptyTCPHandler)
