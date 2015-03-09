@@ -21,13 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
 import unittest
+import SocketServer
 
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 from mock import Mock
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import MAX_ERROR_COUNT
+from w3af.core.data.url.constants import (MAX_ERROR_COUNT, DEFAULT_TIMEOUT,
+                                          TIMEOUT_ADJUST_LIMIT,
+                                          TIMEOUT_MULT_CONST)
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon
 from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
@@ -136,3 +139,56 @@ class TestXUrllibTimeout(unittest.TestCase):
         self.uri_opener.settings.set_default_values()
         self.assertEqual(http_request_e, 4)
         self.assertEqual(scan_stop_e, 1)
+
+    def test_timeout_auto_adjust(self):
+        upper_daemon = UpperDaemon(Ok200SmallDelayHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        # Enable timeout auto-adjust
+        self.uri_opener.settings.set_configured_timeout(0)
+
+        # We can mock this because it's being tested at TestXUrllibDelayOnError
+        self.uri_opener._pause_on_http_error = Mock()
+
+        # Mock to verify the calls
+        self.uri_opener.settings.set_timeout = Mock()
+
+        # Make sure we start from the desired timeout value
+        self.assertEqual(self.uri_opener.settings.get_timeout(),
+                         DEFAULT_TIMEOUT)
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        sent_requests = 0
+
+        for _ in xrange(TIMEOUT_ADJUST_LIMIT * 2):
+            try:
+                self.uri_opener.GET(url)
+            except Exception, e:
+                msg = 'Not expecting: "%s"'
+                self.assertTrue(False, msg % e.__class__.__name__)
+            else:
+                sent_requests += 1
+
+        adjusted_tout = self.uri_opener.settings.set_timeout.call_args[0][0]
+        expected_tout = TIMEOUT_MULT_CONST * self.uri_opener.get_average_rtt()[0]
+
+        self.assertEqual(self.uri_opener.settings.set_timeout.call_count, 1)
+        self.assertGreater(adjusted_tout, expected_tout)
+        self.assertLess(adjusted_tout, DEFAULT_TIMEOUT)
+        self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT * 2)
+
+
+class Ok200SmallDelayHandler(SocketServer.BaseRequestHandler):
+    body = 'abc'
+    sleep = 0.1
+
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        time.sleep(self.sleep)
+        self.request.sendall('HTTP/1.0 200 Ok\r\n'
+                             'Connection: Close\r\n'
+                             'Content-Length: 3\r\n'
+                             '\r\n' + self.body)
