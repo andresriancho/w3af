@@ -307,6 +307,8 @@ class ExtendedUrllib(object):
         self._user_stopped = False
         self._user_paused = False
         self._stop_exception = None
+        self._total_requests = 0
+        self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
 
     def end(self):
         """
