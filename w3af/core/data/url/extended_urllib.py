@@ -482,10 +482,11 @@ class ExtendedUrllib(object):
             uri.querystring = data
 
         timeout = self.settings.get_timeout() if timeout is None else timeout
+        new_connection = True if timeout is not None else False
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
-                          timeout=timeout)
+                          timeout=timeout, new_connection=new_connection)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
@@ -523,10 +524,11 @@ class ExtendedUrllib(object):
         data = str(data)
 
         timeout = self.settings.get_timeout() if timeout is None else timeout
+        new_connection = True if timeout is not None else False
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
-                          timeout=timeout)
+                          timeout=timeout, new_connection=new_connection)
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
@@ -604,11 +606,13 @@ class ExtendedUrllib(object):
                 max_retries = self._xurllib.settings.get_max_retrys()
 
                 timeout = self._xurllib.settings.get_timeout() if timeout is None else timeout
+                new_connection = True if timeout is not None else False
                 req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                                   method=self._method,
                                   error_handling=error_handling,
                                   retries=max_retries,
-                                  timeout=timeout)
+                                  timeout=timeout,
+                                  new_connection=new_connection)
                 req = self._xurllib.add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
 

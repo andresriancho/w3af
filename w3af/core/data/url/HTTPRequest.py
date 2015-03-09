@@ -36,7 +36,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                  origin_req_host=None, unverifiable=False,
                  cookies=True, cache=False, method=None,
                  error_handling=True, retries=MAX_HTTP_RETRIES,
-                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT, new_connection=False):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -53,6 +53,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.error_handling = error_handling
         self.retries_left = retries
         self.timeout = timeout
+        self.new_connection = new_connection
 
         self.method = method
         if self.method is None:
@@ -114,6 +115,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['data'] = self.get_data()
         sdict['cookies'] = self.cookies
         sdict['cache'] = self.get_from_cache
+        sdict['timeout'] = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
+        sdict['new_connection'] = self.new_connection
             
         return serializable_dict
 
@@ -148,12 +151,15 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         headers, data = udict['headers'], udict['data']
         cookies = udict['cookies']
         cache = udict['cache']
-        
+        timeout = socket._GLOBAL_DEFAULT_TIMEOUT if udict['timeout'] is None else udict['timeout']
+        new_connection = udict['new_connection']
+
         headers_inst = Headers(headers.items())
         url = URL(uri)
         
         return cls(url, data=data, headers=headers_inst,
-                   cookies=cookies, cache=cache, method=method)
+                   cookies=cookies, cache=cache, method=method,
+                   timeout=timeout, new_connection=new_connection)
 
     def copy(self):
         return copy.deepcopy(self)

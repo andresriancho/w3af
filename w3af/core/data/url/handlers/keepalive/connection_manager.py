@@ -138,20 +138,29 @@ class ConnectionManager(object):
             host = req.get_host()
 
             while retry_count > 0:
-                # First check if we can reuse an existing free connection from
-                # the connection pool
-                for conn in self._hostmap.setdefault(host, []):
-                    try:
-                        self._free_conns.remove(conn)
-                    except ValueError:
-                        continue
-                    else:
-                        self._used_cons.append(conn)
+                if not req.new_connection:
+                    # If the user is not specifying that he needs a new HTTP
+                    # connection for this request then check if we can reuse an
+                    # existing free connection from the connection pool
+                    #
+                    # By default req.new_connection is False, meaning that we'll
+                    # most likely re-use the connections
+                    #
+                    # A user sets req.new_connection to True when he wants to
+                    # do something special with the connection (such as setting
+                    # a specific timeout)
+                    for conn in self._hostmap.setdefault(host, []):
+                        try:
+                            self._free_conns.remove(conn)
+                        except ValueError:
+                            continue
+                        else:
+                            self._used_cons.append(conn)
 
-                        msg = 'Reusing free %s to use in new request'
-                        debug(msg % conn)
+                            msg = 'Reusing free %s to use in new request'
+                            debug(msg % conn)
 
-                        return conn
+                            return conn
 
                 # No? Well, if the connection pool is not full let's try to
                 # create a new one.
