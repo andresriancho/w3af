@@ -291,6 +291,7 @@ class w3afCore(object):
         # scan has finished to give the user access to the HTTP request and
         # response associated with a vulnerability
         self.uri_opener.restart()
+        self.uri_opener.set_exploit_mode(False)
     
         # If this is not the first scan, I want to clear the old bug data
         # that might be stored in the exception_handler.
@@ -421,16 +422,6 @@ class w3afCore(object):
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
             om.manager.end_output_plugins()
-            
-            # Note that running "self.uri_opener.end()" here is a bad idea
-            # since it will clear all the history items from the DB and remove
-            # any cookies I've stored.
-            #
-            # History items are required for the GUI to show vulnerability data
-            # and logs.
-            #
-            # Cookies could be used by attack plugins
-            
         except Exception:
             raise
 
@@ -464,6 +455,9 @@ class w3afCore(object):
         # https://github.com/andresriancho/w3af/issues/2704
         # https://github.com/andresriancho/w3af/issues/2711
         self.uri_opener.clear()
+
+        # Disable some internal checks so the exploits can "bend" the matrix
+        self.uri_opener.set_exploit_mode(True)
 
     def _home_directory(self):
         """

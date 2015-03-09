@@ -69,6 +69,9 @@ class ExtendedUrllib(object):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
 
+        # In exploit mode we disable some timeout/delay/error handling stuff
+        self.exploit_mode = False
+
         # For error handling, the first "last response" is set to SUCCESS to
         # allow the _should_stop_scan method to match it's "SFFFF...FFF" pattern
         self._last_responses = deque(maxlen=MAX_RESPONSE_COLLECT)
@@ -114,11 +117,16 @@ class ExtendedUrllib(object):
         """
         self._pause_and_stop()
         self._pause_on_http_error(request)
-        self._rate_limit()
-        self._auto_adjust_timeout()
+        
+        if not self.exploit_mode:
+            self._rate_limit()
+            self._auto_adjust_timeout()
 
         # Increase the request count
         self._total_requests += 1
+
+    def set_exploit_mode(self, exploit_mode):
+        self.exploit_mode = exploit_mode
 
     def _auto_adjust_timeout(self):
         """
@@ -330,6 +338,7 @@ class ExtendedUrllib(object):
         self._user_paused = False
         self._stop_exception = None
         self._total_requests = 0
+        self.set_exploit_mode(False)
         self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
 
     def end(self):
