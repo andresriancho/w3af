@@ -161,6 +161,12 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason='socket timeout')
             raise URLTimeoutError()
 
+        except OpenSSL.SSL.ZeroReturnError:
+            # According to the pyOpenSSL docs ZeroReturnError means that the
+            # SSL connection has been closed cleanly
+            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            raise
+
         except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
             self._cm.remove_connection(conn, host, reason='socket error')
