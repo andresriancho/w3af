@@ -114,6 +114,9 @@ class ExtendedUrllib(object):
         self._rate_limit()
         self._auto_adjust_timeout()
 
+        # Increase the request count
+        self._total_requests += 1
+
     def _auto_adjust_timeout(self):
         """
         By default the timeout value at OpenerSettings is set to 0, which means
@@ -142,21 +145,37 @@ class ExtendedUrllib(object):
         if not self._should_auto_adjust_now():
             return
 
-        average_rtt = self.get_average_rtt(ADJUST_LIMIT)
-        timeout = average_rtt * TIMEOUT_MULT_CONST
+        average_rtt, num_samples = self.get_average_rtt(ADJUST_LIMIT)
 
-        self.settings.set_timeout(timeout)
+        if num_samples < (ADJUST_LIMIT / 2):
+            msg = 'Not enough samples collected (%s) to adjust timeout.' \
+                  ' Keeping the current value of %s seconds'
+            om.out.debug(msg % (num_samples, self.settings.get_timeout()))
+        else:
+            timeout = average_rtt * TIMEOUT_MULT_CONST
+            self.settings.set_timeout(timeout)
 
     def get_average_rtt(self, count=ADJUST_LIMIT):
         """
         :param count: The number of HTTP requests to sample the RTT from
-        :return: The average RTT from the last `count` requests
+        :return: Tuple with (average RTT from the last `count` requests,
+                             the number of successful responses, which contain
+                             an RTT, and were used to calculate the average RTT)
         """
         assert len(self._last_responses) >= count, 'Not enough samples'
 
         last_n_responses = list(self._last_responses)[-count:]
-        rtt_sum = sum([resp_meta.rtt for resp_meta in last_n_responses])
-        return float(rtt_sum) / count
+        rtt_sum = 0.0
+        add_count = 0
+
+        for response_meta in last_n_responses:
+            if response_meta.rtt is not None:
+                rtt_sum += response_meta.rtt
+                add_count += 1
+
+        average_rtt = float(rtt_sum) / add_count
+
+        return average_rtt, add_count
 
     def _should_auto_adjust_now(self):
         """
@@ -166,13 +185,20 @@ class ExtendedUrllib(object):
             # The user disabled the timeout auto-adjust feature
             return False
 
-        if self._total_requests == 0:
+        if self.get_total_requests() == 0:
             return False
 
-        if self._total_requests % ADJUST_LIMIT == 0:
+        if self.get_total_requests() % ADJUST_LIMIT == 0:
             return True
 
         return False
+
+    def get_total_requests(self):
+        """
+        :return: The number of requests sent (successful, timeout, failed, all
+                 are counted here).
+        """
+        return self._total_requests
 
     def _pause_on_http_error(self, request):
         """
@@ -927,7 +953,6 @@ class ExtendedUrllib(object):
         # pylint: enable=E0702
 
     def _log_successful_response(self, response):
-        self._total_requests += 1
         self._last_responses.append(ResponseMeta(True,
                                                  SUCCESS,
                                                  response.get_wait_time()))
