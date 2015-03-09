@@ -162,11 +162,9 @@ class ExtendedUrllib(object):
                              the number of successful responses, which contain
                              an RTT, and were used to calculate the average RTT)
         """
-        assert len(self._last_responses) >= count, 'Not enough samples'
-
-        last_n_responses = list(self._last_responses)[-count:]
         rtt_sum = 0.0
         add_count = 0
+        last_n_responses = list(self._last_responses)[-count:]
 
         for response_meta in last_n_responses:
             if response_meta.rtt is not None:
