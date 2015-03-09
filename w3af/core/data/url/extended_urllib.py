@@ -72,7 +72,7 @@ class ExtendedUrllib(object):
         # For error handling, the first "last response" is set to SUCCESS to
         # allow the _should_stop_scan method to match it's "SFFFF...FFF" pattern
         self._last_responses = deque(maxlen=MAX_RESPONSE_COLLECT)
-        self._last_responses.append(ResponseMeta(True, SUCCESS))
+        self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
         self._count_lock = threading.RLock()
 
         # For rate limiting

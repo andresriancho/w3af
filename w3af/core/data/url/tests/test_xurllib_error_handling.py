@@ -32,7 +32,7 @@ from w3af.core.data.url.tests.test_xurllib import (EmptyTCPHandler,
                                                    TimeoutTCPHandler)
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
+from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.exceptions import (HTTPRequestException,
@@ -51,7 +51,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
     def tearDown(self):
         self.uri_opener.end()
 
-    def test_delay_on_errors(self):
+    def test_increasing_delay_on_errors(self):
         return_empty_daemon = UpperDaemon(EmptyTCPHandler)
         return_empty_daemon.start()
         return_empty_daemon.wait_for_start()
@@ -59,38 +59,45 @@ class TestXUrllibDelayOnError(unittest.TestCase):
         port = return_empty_daemon.get_port()
 
         url = URL('http://127.0.0.1:%s/' % port)
-        previous_time = 0.0
-        total_time = 0.0
+        http_exception_count = 0
+        must_stop_exception_count = 0
 
         # Not check the delays
-        for i in xrange(MAX_ERROR_COUNT):
-            start = time.time()
-            try:
-                self.uri_opener.GET(url, cache=False)
-            except HTTPRequestException:
-                self.assertTrue(True)
-                end = time.time()
+        with patch('w3af.core.data.url.extended_urllib.time.sleep') as sleepm:
+            for i in xrange(MAX_ERROR_COUNT):
+                try:
+                    self.uri_opener.GET(url, cache=False)
+                except HTTPRequestException:
+                    http_exception_count += 1
+                except ScanMustStopException:
+                    must_stop_exception_count += 1
+                    break
+                except Exception, e:
+                    msg = 'Not expecting: "%s"'
+                    self.assertTrue(False, msg % e.__class__.__name__)
+                else:
+                    self.assertTrue(False, 'Expecting HTTPRequestException')
+            else:
+                self.assertTrue(False)
 
-                self.assertGreater(end - start, previous_time)
-                previous_time = end - start
-                total_time += previous_time
+            # Note that the timeouts are increasing based on the error rate and
+            # SOCKET_ERROR_DELAY
+            expected_calls = [call(0.15),
+                              call(0.3),
+                              call(0.44999999999999996),
+                              call(0.6),
+                              call(0.75),
+                              call(0.8999999999999999),
+                              call(1.05),
+                              call(1.2),
+                              call(1.3499999999999999),
+                              call(1.5)]
+            self.assertEqual(expected_calls, sleepm.call_args_list)
 
-            except ScanMustStopException:
-                self.assertTrue(True)
-                break
-            except Exception, e:
-                msg = 'Not expecting: "%s"'
-                self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
+            self.assertEqual(http_exception_count, 4)
+            self.assertEqual(must_stop_exception_count, 1)
 
-        expected_total_delay = 0.0
-        for i in xrange(MAX_ERROR_COUNT):
-            expected_total_delay += SOCKET_ERROR_DELAY * i
-
-        self.assertGreater(expected_total_delay, total_time)
-
-    def test_error_handling_disable(self):
+    def test_error_handling_disable_per_request(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
         upper_daemon.wait_for_start()
