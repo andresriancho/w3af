@@ -28,7 +28,8 @@ import webbrowser
 
 from multiprocessing.dummy import Process, Event
 
-from w3af.core.ui.gui import httpLogTab, reqResViewer, entries
+from w3af.core.ui.gui import httpLogTab, entries
+from w3af.core.ui.gui.reqResViewer import ReqResViewer
 from w3af.core.ui.gui.kb.kbtree import KBTree
 from w3af.core.ui.gui.tools.fuzzy_requests import FuzzyRequests
 from w3af.core.ui.gui.tools.manual_requests import ManualRequests
@@ -218,7 +219,7 @@ class KBBrowser(entries.RememberingHPaned):
         scrollwin22.show()
 
         # The request/response viewer
-        self.rrV = reqResViewer.reqResViewer(w3af, withAudit=False)
+        self.rrV = ReqResViewer(w3af, withAudit=False)
         self.rrV.set_sensitive(False)
 
         # Create the title label to show the request id

@@ -91,7 +91,7 @@ class PreviewWindow(entries.RememberingWindow):
         self.set_transient_for(parent)
 
         # content
-        self.panes = reqResViewer.requestPart(self, w3af, editable=False,
+        self.panes = ReqResViewer.RequestPart(self, w3af, editable=False,
                                               widgname="fuzzypreview")
         self.vbox.pack_start(self.panes)
         self.panes.show()
@@ -153,7 +153,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self._fix_content_lengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPart(self, w3af,
+        self.originalReq = ReqResViewer.RequestPart(self, w3af,
                                                     [analyzBut.set_sensitive,
                                                      self.sendPlayBut.set_sensitive,
                                                      functools.partial(
@@ -219,7 +219,7 @@ class FuzzyRequests(entries.RememberingWindow):
         vbox.pack_start(self.title0, False, True)
 
         # result itself
-        self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False,
+        self.resultReqResp = ReqResViewer.reqResViewer(w3af, withFuzzy=False,
                                                        editableRequest=False,
                                                        editableResponse=False)
         self.resultReqResp.set_sensitive(False)

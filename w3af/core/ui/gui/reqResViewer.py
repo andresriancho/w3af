@@ -1,5 +1,5 @@
 """
-reqResViewer.py
+ReqResViewer.py
 
 Copyright 2008 Andres Riancho
 
@@ -64,7 +64,7 @@ def sigsegv_handler(signum, frame):
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
 
-class reqResViewer(gtk.VBox):
+class ReqResViewer(gtk.VBox):
     """
     A widget with the request and the response inside.
 
@@ -77,14 +77,14 @@ class reqResViewer(gtk.VBox):
                  editableRequest=False, editableResponse=False,
                  widgname="default", layout='Tabbed'):
         
-        super(reqResViewer, self).__init__()
+        super(ReqResViewer, self).__init__()
         self.w3af = w3af
         # Request
-        self.request = requestPart(self, w3af, enableWidget, editableRequest,
+        self.request = RequestPart(self, w3af, enableWidget, editableRequest,
                                    widgname=widgname)
         self.request.show()
         # Response
-        self.response = responsePart(self, w3af, editableResponse,
+        self.response = ResponsePart(self, w3af, editableResponse,
                                      widgname=widgname)
         self.response.show()
         self.layout = layout
@@ -297,12 +297,12 @@ class reqResViewer(gtk.VBox):
         self.response.set_sensitive(how)
 
 
-class requestResponsePart(gtk.Notebook):
+class RequestResponsePart(gtk.Notebook):
     """Request/response common class."""
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
                  widgname="default"):
-        super(requestResponsePart, self).__init__()
+        super(RequestResponsePart, self).__init__()
         self._parent = parent
         self._obj = None
         self.w3af = w3af
@@ -317,10 +317,10 @@ class requestResponsePart(gtk.Notebook):
     def show(self):
         for view in self._views:
             view.show()
-        super(requestResponsePart, self).show()
+        super(RequestResponsePart, self).show()
 
     def set_sensitive(self, how):
-        super(requestResponsePart, self).set_sensitive(how)
+        super(RequestResponsePart, self).set_sensitive(how)
         for but in self.childButtons:
             but.set_sensitive(how)
 
@@ -395,11 +395,11 @@ class requestResponsePart(gtk.Notebook):
             view.highlight(text, sev)
 
 
-class requestPart(requestResponsePart):
+class RequestPart(RequestResponsePart):
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
                  widgname="default"):
-        requestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
+        RequestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
                                      widgname=widgname + "request")
 
         self.raw_view = HttpRawView(w3af, self, editable)
@@ -420,9 +420,9 @@ class requestPart(requestResponsePart):
         self.synchronize()
 
 
-class responsePart(requestResponsePart):
+class ResponsePart(RequestResponsePart):
     def __init__(self, parent, w3af, editable, widgname="default"):
-        requestResponsePart.__init__(self, parent, w3af, editable=editable,
+        RequestResponsePart.__init__(self, parent, w3af, editable=editable,
                                      widgname=widgname + "response")
         http = HttpRawView(w3af, self, editable)
         http.is_request = False
@@ -454,7 +454,7 @@ class reqResWindow(RememberingWindow):
                                    "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
-        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy,
+        rrViewer = ReqResViewer(w3af, enableWidget, withManual, withFuzzy,
                                 withCompare, withAudit, editableRequest,
                                 editableResponse, widgname)
 
@@ -540,7 +540,7 @@ class ThreadedURLImpact(threading.Thread):
             self.exception = e
             #
             #   This is for debugging errors in the audit button of the
-            #   reqResViewer
+            #   ReqResViewer
             #
             #import traceback
             #print traceback.format_exc()

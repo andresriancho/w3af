@@ -24,9 +24,10 @@ import gobject
 import pango
 
 # The elements to create the req/res viewer
-from w3af.core.ui.gui import reqResViewer, entries
-from w3af.core.ui.gui.entries import EasyTable
-from w3af.core.ui.gui.entries import wrapperWidgets, TextInput
+from w3af.core.ui.gui.reqResViewer import ReqResViewer
+from w3af.core.ui.gui.entries import (EasyTable, RememberingHPaned,
+                                      RememberingVPaned, wrapperWidgets,
+                                      TextInput)
 from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.options.preferences import Preferences
@@ -34,7 +35,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 
 
-class httpLogTab(entries.RememberingHPaned):
+class httpLogTab(RememberingHPaned):
     """
     A tab that shows all HTTP requests and responses made by the framework.
 
@@ -63,10 +64,9 @@ class httpLogTab(entries.RememberingHPaned):
 
     def _initReqResViewer(self, mainvbox):
         """Create the req/res viewer."""
-        self._reqResViewer = reqResViewer.reqResViewer(self.w3af,
-                                                       editableRequest=False,
-                                                       editableResponse=False)
-        self._reqResViewer.set_sensitive(False)
+        self._req_res_viewer = ReqResViewer(self.w3af, editableRequest=False,
+                                            editableResponse=False)
+        self._req_res_viewer.set_sensitive(False)
         # Create the req/res selector (when a search with more
         # than one result is done, this window appears)
         self._sw = gtk.ScrolledWindow()
@@ -98,9 +98,9 @@ class httpLogTab(entries.RememberingHPaned):
         #self._sw.set_sensitive(False)
         self._sw.show_all()
         # I want all sections to be resizable
-        self._vpan = entries.RememberingVPaned(self.w3af, "pane-swandrRV", 100)
+        self._vpan = RememberingVPaned(self.w3af, "pane-swandrRV", 100)
         self._vpan.pack1(self._sw)
-        self._vpan.pack2(self._reqResViewer)
+        self._vpan.pack2(self._req_res_viewer)
         self._vpan.show()
         mainvbox.pack_start(self._vpan)
 
@@ -409,7 +409,7 @@ class httpLogTab(entries.RememberingHPaned):
             self._show_list_view(searchResultObjects, appendMode=refresh)
             
             self._sw.set_sensitive(True)
-            self._reqResViewer.set_sensitive(True)
+            self._req_res_viewer.set_sensitive(True)
             
             if not refresh:
                 self._lstoreTreeview.set_cursor((0,))
@@ -418,9 +418,9 @@ class httpLogTab(entries.RememberingHPaned):
 
     def _empty_results(self):
         """Empty all panes."""
-        self._reqResViewer.request.clear_panes()
-        self._reqResViewer.response.clear_panes()
-        self._reqResViewer.set_sensitive(False)
+        self._req_res_viewer.request.clear_panes()
+        self._req_res_viewer.response.clear_panes()
+        self._req_res_viewer.set_sensitive(False)
         self._sw.set_sensitive(False)
         self._lstore.clear()
 
@@ -485,15 +485,15 @@ class httpLogTab(entries.RememberingHPaned):
 
         # Now we know that these two lines will work and we won't trigger
         # https://github.com/andresriancho/w3af/issues/1101
-        self._reqResViewer.request.show_object(history_item.request)
-        self._reqResViewer.response.show_object(history_item.response)
+        self._req_res_viewer.request.show_object(history_item.request)
+        self._req_res_viewer.response.show_object(history_item.response)
         if history_item.info:
-            buff = self._reqResViewer.info.get_buffer()
+            buff = self._req_res_viewer.info.get_buffer()
             buff.set_text(history_item.info)
-            self._reqResViewer.info.show()
+            self._req_res_viewer.info.show()
         else:
-            self._reqResViewer.info.hide()
-        self._reqResViewer.set_sensitive(True)
+            self._req_res_viewer.info.hide()
+        self._req_res_viewer.set_sensitive(True)
 
 
 class FilterOptions(gtk.HBox, Preferences):

@@ -104,7 +104,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self._prev_ip_port = None
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
-        self.reqresp = reqResViewer.reqResViewer(w3af,
+        self.reqresp = ReqResViewer.reqResViewer(w3af,
                                                  [self.bt_drop.set_sensitive,
                                                   self.bt_send.set_sensitive],
                                                  editableRequest=True, layout=self._layout)

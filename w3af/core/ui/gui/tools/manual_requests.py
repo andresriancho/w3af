@@ -63,7 +63,7 @@ class ManualRequests(entries.RememberingWindow):
         self._fix_content_len_cb.show()
         
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af,
+        self.reqresp = ReqResViewer.reqResViewer(w3af,
                                                  [self.send_but.set_sensitive],
                                                  withManual=False,
                                                  editableRequest=True)
