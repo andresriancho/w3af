@@ -179,7 +179,8 @@ class TestKeepalive(unittest.TestCase):
         connections_before = p.get_connections()
         
         keep_alive_http.close_all()
-        
+
+        time.sleep(1)
         connections_after = p.get_connections()
         
         self.assertLess(len(connections_after), len(connections_before))
