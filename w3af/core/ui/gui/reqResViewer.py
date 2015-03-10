@@ -75,7 +75,7 @@ class ReqResViewer(gtk.VBox):
     def __init__(self, w3af, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True,
                  editableRequest=False, editableResponse=False,
-                 widgname="default", layout='Tabbed'):
+                 widgname='default', layout='Tabbed'):
         
         super(ReqResViewer, self).__init__()
         self.w3af = w3af
@@ -251,11 +251,11 @@ class ReqResViewer(gtk.VBox):
                     continue
 
                 for itemId in result.get_id():
-                    historyItem = HistoryItem()
-                    historyItem.load(itemId)
-                    historyItem.update_tag(historyItem.tag + result.plugin_name)
-                    historyItem.info = result.get_desc()
-                    historyItem.save()
+                    history_item = HistoryItem()
+                    history_item.load(itemId)
+                    history_item.update_tag(history_item.tag + result.plugin_name)
+                    history_item.info = result.get_desc()
+                    history_item.save()
         else:
             if isinstance(impact.exception, HTTPRequestException):
                 msg = 'Exception found while sending HTTP request. Original' \
@@ -301,7 +301,7 @@ class RequestResponsePart(gtk.Notebook):
     """Request/response common class."""
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
-                 widgname="default"):
+                 widgname='default'):
         super(RequestResponsePart, self).__init__()
         self._parent = parent
         self._obj = None
@@ -398,7 +398,7 @@ class RequestResponsePart(gtk.Notebook):
 class RequestPart(RequestResponsePart):
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
-                 widgname="default"):
+                 widgname='default'):
         RequestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
                                      widgname=widgname + "request")
 
@@ -421,7 +421,7 @@ class RequestPart(RequestResponsePart):
 
 
 class ResponsePart(RequestResponsePart):
-    def __init__(self, parent, w3af, editable, widgname="default"):
+    def __init__(self, parent, w3af, editable, widgname='default'):
         RequestResponsePart.__init__(self, parent, w3af, editable=editable,
                                      widgname=widgname + "response")
         http = HttpRawView(w3af, self, editable)
@@ -445,8 +445,9 @@ class reqResWindow(RememberingWindow):
     A window to show a request/response pair.
     """
     def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
-                 withFuzzy=True, withCompare=True, withAudit=True, editableRequest=False,
-                 editableResponse=False, widgname="default"):
+                 withFuzzy=True, withCompare=True, withAudit=True,
+                 editableRequest=False, editableResponse=False,
+                 widgname='default'):
 
         # Create the window
         RememberingWindow.__init__(self, w3af, "reqResWin",
@@ -454,19 +455,19 @@ class reqResWindow(RememberingWindow):
                                    "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
-        rrViewer = ReqResViewer(w3af, enableWidget, withManual, withFuzzy,
-                                withCompare, withAudit, editableRequest,
-                                editableResponse, widgname)
+        rr_viewer = ReqResViewer(w3af, enableWidget, withManual, withFuzzy,
+                                 withCompare, withAudit, editableRequest,
+                                 editableResponse, widgname)
 
         # Search the id in the DB
-        historyItem = HistoryItem()
-        historyItem.load(request_id)
+        history_item = HistoryItem()
+        history_item.load(request_id)
 
         # Set
-        rrViewer.request.show_object(historyItem.request)
-        rrViewer.response.show_object(historyItem.response)
-        rrViewer.show()
-        self.vbox.pack_start(rrViewer)
+        rr_viewer.request.show_object(history_item.request)
+        rr_viewer.response.show_object(history_item.response)
+        rr_viewer.show()
+        self.vbox.pack_start(rr_viewer)
 
         # Show the window
         self.show()
@@ -491,7 +492,7 @@ class ThreadedURLImpact(threading.Thread):
     def run(self):
         """Start the thread."""
         try:
-            # First, we check if the user choosed 'All audit plugins'
+            # First, we check if the user choose 'All audit plugins'
             if self.plugin_type == 'audit_all':
 
                 #
