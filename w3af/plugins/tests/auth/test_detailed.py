@@ -18,13 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from httpretty import httpretty
+
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 
 
-class TestDetailed(PluginTest):
+class TestDetailedBasic(PluginTest):
 
     target_url = get_moth_http('/auth/auth_1/')
     
@@ -37,11 +38,11 @@ class TestDetailed(PluginTest):
         'target': target_url,
         'plugins': {
         'crawl': (
-        PluginConfig('web_spider',
-                     ('only_forward', True, PluginConfig.BOOL),
-                     ('ignore_regex', '.*logout.*', PluginConfig.STR)),
+            PluginConfig('web_spider',
+                         ('only_forward', True, PluginConfig.BOOL),
+                         ('ignore_regex', '.*logout.*', PluginConfig.STR)),
 
-        ),
+            ),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('detailed',
                                  ('username', 'user@mail.com', PluginConfig.STR),
@@ -53,6 +54,7 @@ class TestDetailed(PluginTest):
                                  ('method', 'POST', PluginConfig.STR),
                                  ('check_url', check_url, PluginConfig.URL),
                                  ('check_string', check_string, PluginConfig.STR),
+                                 ('follow_redirects', False, PluginConfig.BOOL),
                                   ),
                          ),
         }
@@ -68,3 +70,116 @@ class TestDetailed(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
         self.assertEquals(vuln.get_token_name(), 'text')
+
+
+class TestDetailedRedirect(PluginTest):
+
+    target_url = 'http://mock/auth/'
+
+    auth_url = URL(target_url + 'login_form.py')
+    check_url = URL(target_url + 'verify.py')
+    check_string = 'Logged in'
+    data_format = '%u=%U&%p=%P&Login=Login'
+
+    MOCK_RESPONSES = [MockResponse('/auth/login_form.py', '', status=302,
+                                   headers={'Location': '/confirm/?token=123'},
+                                   method='POST'),
+                      MockResponse('/confirm/?token=123', 'Login success',
+                                   status=302,
+                                   headers={'Location': '/auth/home.py'}),
+                      MockResponse('/auth/home.py', 'Home page'),
+                      MockResponse('/auth/verify.py', 'Not logged in')]
+
+    _run_config = {
+        'target': target_url,
+        'plugins': {
+            'audit': (PluginConfig('xss'),),
+            'auth': (PluginConfig('detailed',
+                                 ('username', 'user@mail.com', PluginConfig.STR),
+                                 ('password', 'passw0rd', PluginConfig.STR),
+                                 ('username_field', 'username', PluginConfig.STR),
+                                 ('password_field', 'password', PluginConfig.STR),
+                                 ('data_format', data_format, PluginConfig.STR),
+                                 ('auth_url', auth_url, PluginConfig.URL),
+                                 ('method', 'POST', PluginConfig.STR),
+                                 ('check_url', check_url, PluginConfig.URL),
+                                 ('check_string', check_string, PluginConfig.STR),
+                                 ('follow_redirects', True, PluginConfig.BOOL),),),
+        }
+    }
+
+    def test_redirect_login(self):
+        self._scan(self._run_config['target'], self._run_config['plugins'])
+
+        all_paths = set()
+        for request in httpretty.latest_requests:
+            all_paths.add(request.path)
+
+        # Followed two redirects
+        self.assertIn('/confirm/?token=123', all_paths)
+        self.assertIn('/auth/home.py', all_paths)
+
+        # Send the POST to login
+        self.assertIn('/auth/login_form.py', all_paths)
+
+
+class TestDetailedRedirectLoop(PluginTest):
+
+    target_url = 'http://mock/auth/'
+
+    auth_url = URL(target_url + 'login_form.py')
+    check_url = URL(target_url + 'verify.py')
+    check_string = 'Logged in'
+    data_format = '%u=%U&%p=%P&Login=Login'
+
+    MOCK_RESPONSES = [MockResponse('/auth/login_form.py', '', status=302,
+                                   headers={'Location': '/confirm/?token=123'},
+                                   method='POST'),
+
+                      # Redirect loop #1
+                      MockResponse('/confirm/?token=123', 'Created new token',
+                                   status=302,
+                                   headers={'Location': '/confirm/?token=abc'}),
+
+                      # Redirect loop #2
+                      MockResponse('/confirm/?token=abc', 'Token is not new',
+                                   status=302,
+                                   headers={'Location': '/confirm/?token=123'}),
+
+                      MockResponse('/auth/home.py', 'Home page'),
+                      MockResponse('/auth/verify.py', 'Not logged in')]
+
+    _run_config = {
+        'target': target_url,
+        'plugins': {
+            'audit': (PluginConfig('xss'),),
+            'auth': (PluginConfig('detailed',
+                                 ('username', 'user@mail.com', PluginConfig.STR),
+                                 ('password', 'passw0rd', PluginConfig.STR),
+                                 ('username_field', 'username', PluginConfig.STR),
+                                 ('password_field', 'password', PluginConfig.STR),
+                                 ('data_format', data_format, PluginConfig.STR),
+                                 ('auth_url', auth_url, PluginConfig.URL),
+                                 ('method', 'POST', PluginConfig.STR),
+                                 ('check_url', check_url, PluginConfig.URL),
+                                 ('check_string', check_string, PluginConfig.STR),
+                                 ('follow_redirects', True, PluginConfig.BOOL),),),
+        }
+    }
+
+    def test_redirect_loop_in_login(self):
+        """
+        The main test here is that the plugin finishes
+        """
+        self._scan(self._run_config['target'], self._run_config['plugins'])
+
+        all_paths = set()
+        for request in httpretty.latest_requests:
+            all_paths.add(request.path)
+
+        # Followed two redirects which are in a loop
+        self.assertIn('/confirm/?token=123', all_paths)
+        self.assertIn('/confirm/?token=abc', all_paths)
+
+        # Send the POST to login
+        self.assertIn('/auth/login_form.py', all_paths)
