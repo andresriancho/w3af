@@ -241,7 +241,7 @@ class TestHTTPResponse(unittest.TestCase):
         msg = 'D\xe9plac\xe9 Temporairement'
         resp = HTTPResponse(200, '', headers, url, url, msg=msg)
 
-        expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'
+        expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'.encode('utf8')
 
         self.assertEqual(resp.dump_response_head(), expected_dump)
 
