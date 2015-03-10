@@ -61,7 +61,7 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2
     - sudo apt-get install -y python-dbus python-pygame python-opencv python-scipy python-numpy
-    - sudo apt-get install -y stunnel4 libffi-dev tcpdump
+    - sudo apt-get install -y stunnel4 libffi-dev tcpdump joe
     
     # Install the core/console dependencies
     - pip install --upgrade pip
