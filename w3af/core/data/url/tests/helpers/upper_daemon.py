@@ -60,7 +60,12 @@ class UpperDaemon(threading.Thread):
         self.server = SocketServer.TCPServer(self.server_address,
                                              self.handler)
     
-        self.server.serve_forever()
+        try:
+            self.server.serve_forever()
+        except AttributeError:
+            # Catch some ugly tracebacks on shutdown
+            # https://circleci.com/gh/andresriancho/w3af/1568
+            pass
     
     def get_port(self):
         if self.server is not None:
