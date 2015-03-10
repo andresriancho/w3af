@@ -36,14 +36,6 @@ checkout:
     # In our case it is fine, and it will get cached.
     - if [[ -e .git/shallow ]]; then git fetch --unshallow; fi
 
-    # Nasty hack: Because we get a new clone of the repo, timestamps don't
-    # correspond any more to when the file was last changed.
-    # To rectify this, first set everything to a timestamp in the past and then
-    # update the timestamp for all git-tracked files based on their last
-    # committed change.
-    - find . -exec touch -t 201401010000 {} \;
-    - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
-
 
 dependencies:
   cache_directories:
@@ -127,6 +119,18 @@ deployment:
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
 
+      # Nasty hack required for docker cache sanity: Because we get a new clone
+      # of the repo, timestamps don't correspond any more to when the file was
+      # last changed. To rectify this, first set everything to a timestamp in
+      # the past and then update the timestamp for all git-tracked files based
+      # on their last committed change.
+      #
+      # This takes ~1min to run, so we're doing it here in order to run it only
+      # when the build is successful AND we're in master/develop where it's
+      # really needed
+      - find . -exec touch -t 201401010000 {} \;
+      - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
+
       - docker pull andresriancho/w3af:stable; true
       - cd extras/docker/ && ./docker-build.sh stable
       - docker push andresriancho/w3af:stable
@@ -137,6 +141,18 @@ deployment:
     commands:
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
+
+      # Nasty hack required for docker cache sanity: Because we get a new clone
+      # of the repo, timestamps don't correspond any more to when the file was
+      # last changed. To rectify this, first set everything to a timestamp in
+      # the past and then update the timestamp for all git-tracked files based
+      # on their last committed change.
+      #
+      # This takes ~1min to run, so we're doing it here in order to run it only
+      # when the build is successful AND we're in master/develop where it's
+      # really needed
+      - find . -exec touch -t 201401010000 {} \;
+      - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
 
       - docker pull andresriancho/w3af:unstable; true
       - cd extras/docker/ && ./docker-build.sh unstable
