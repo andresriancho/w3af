@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import gobject
 
-from w3af.core.ui.gui import reqResViewer, helpers, entries, httpLogTab
+from w3af.core.ui.gui import helpers, entries, httpLogTab
+from w3af.core.ui.gui.reqResViewer import ReqResViewer
 from w3af.core.ui.gui.entries import ConfigOptions, StatusBar
 
 from w3af.core.controllers.exceptions import BaseFrameworkException, ProxyException
@@ -104,10 +105,9 @@ class ProxiedRequests(entries.RememberingWindow):
         self._prev_ip_port = None
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
-        self.reqresp = reqResViewer.reqResViewer(w3af,
-                                                 [self.bt_drop.set_sensitive,
-                                                  self.bt_send.set_sensitive],
-                                                 editableRequest=True, layout=self._layout)
+        self.reqresp = ReqResViewer(w3af, [self.bt_drop.set_sensitive,
+                                           self.bt_send.set_sensitive],
+                                    editableRequest=True, layout=self._layout)
         self.reqresp.set_sensitive(False)
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)

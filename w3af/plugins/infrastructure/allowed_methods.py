@@ -63,8 +63,8 @@ class allowed_methods(InfrastructurePlugin):
 
         # Methods
         self._supported_methods = self.DAV_METHODS | self.COMMON_METHODS | \
-            self.UNCOMMON_METHODS | self.PROPOSED_METHODS | \
-            self.EXTRA_METHODS | self.VERSION_CONTROL
+                                  self.UNCOMMON_METHODS | self.PROPOSED_METHODS | \
+                                  self.EXTRA_METHODS | self.VERSION_CONTROL
 
         # User configured variables
         self._exec_one_time = True
@@ -151,9 +151,9 @@ class allowed_methods(InfrastructurePlugin):
         and get_response.get_body() == non_exist_response.get_body():
 
             desc = 'The remote Web server has a custom configuration, in'\
-                  ' which any not implemented methods that are invoked are'\
-                  ' defaulted to GET instead of returning a "Not Implemented"'\
-                  ' response.'
+                   ' which any not implemented methods that are invoked are' \
+                   ' defaulted to GET instead of returning a "Not Implemented"'\
+                   ' response.'
             response_ids = [non_exist_response.get_id(), get_response.get_id()]
             i = Info('Non existent methods default to GET', desc, response_ids,
                      self.get_name())
@@ -200,7 +200,7 @@ class allowed_methods(InfrastructurePlugin):
             # Save the results in the KB so that other plugins can use this
             # information
             desc = 'The URL "%s" has the following allowed methods. These'\
-                  ' include DAV methods and should be disabled: %s' 
+                   ' include DAV methods and should be disabled: %s'
             desc = desc % (url, ', '.join(allowed_methods))
             
             i = Info('DAV methods enabled', desc, id_list, self.get_name())

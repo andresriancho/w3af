@@ -96,5 +96,4 @@ class grep(BaseConsumer):
         if not response.get_url().get_domain() in self.TARGET_DOMAINS:
             return False
 
-        was_analyzed = self._already_analyzed.add(response.get_uri())
-        return not was_analyzed
+        return self._already_analyzed.add(response.get_uri())

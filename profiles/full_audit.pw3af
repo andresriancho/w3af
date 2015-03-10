@@ -231,7 +231,7 @@ msf_location = /opt/metasploit3/bin/
 fuzz_cookies = False
 
 [http-settings]
-timeout = 10
+timeout = 0
 headers_file = 
 basic_auth_user = 
 basic_auth_passwd = 

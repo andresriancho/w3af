@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import copy
+import socket
 import urllib2
 
 from w3af.core.data.dc.headers import Headers
@@ -34,7 +35,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
                  cookies=True, cache=False, method=None,
-                 ignore_errors=False, retries=MAX_HTTP_RETRIES):
+                 error_handling=True, retries=MAX_HTTP_RETRIES,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT, new_connection=False):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -48,8 +50,10 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.url_object = url
         self.cookies = cookies
         self.get_from_cache = cache
-        self.ignore_errors = ignore_errors
+        self.error_handling = error_handling
         self.retries_left = retries
+        self.timeout = timeout
+        self.new_connection = new_connection
 
         self.method = method
         if self.method is None:
@@ -66,10 +70,11 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         RequestMixIn.__init__(self)
     
     def __eq__(self, other):
-        return self.get_method() == other.get_method() and\
-               self.get_uri() == other.get_uri() and\
-               self.get_headers() == other.get_headers() and\
-               self.get_data() == other.get_data()
+        return self.get_method() == other.get_method() and \
+               self.get_uri() == other.get_uri() and \
+               self.get_headers() == other.get_headers() and \
+               self.get_data() == other.get_data() and \
+               self.get_timeout() == other.get_timeout()
 
     def add_header(self, key, val):
         """
@@ -97,6 +102,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         headers = Headers(self.headers.items())
         headers.update(self.unredirected_hdrs.items())
         return headers
+
+    def get_timeout(self):
+        return self.timeout
     
     def to_dict(self):
         serializable_dict = {}
@@ -108,6 +116,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['data'] = self.get_data()
         sdict['cookies'] = self.cookies
         sdict['cache'] = self.get_from_cache
+        sdict['timeout'] = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
+        sdict['new_connection'] = self.new_connection
             
         return serializable_dict
 
@@ -142,12 +152,15 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         headers, data = udict['headers'], udict['data']
         cookies = udict['cookies']
         cache = udict['cache']
-        
+        timeout = socket._GLOBAL_DEFAULT_TIMEOUT if udict['timeout'] is None else udict['timeout']
+        new_connection = udict['new_connection']
+
         headers_inst = Headers(headers.items())
         url = URL(uri)
         
         return cls(url, data=data, headers=headers_inst,
-                   cookies=cookies, cache=cache, method=method)
+                   cookies=cookies, cache=cache, method=method,
+                   timeout=timeout, new_connection=new_connection)
 
     def copy(self):
         return copy.deepcopy(self)

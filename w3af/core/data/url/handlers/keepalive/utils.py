@@ -13,6 +13,8 @@ def to_utf8_raw(unicode_or_str):
 
 def debug(msg):
     if DEBUG:
+        msg = '[keepalive] %s' % msg
+        
         out.debug(msg)
 
         if is_running_tests():
@@ -21,6 +23,7 @@ def debug(msg):
 
 def error(msg):
     if DEBUG:
+        msg = '[keepalive] %s' % msg
         out.error(msg)
 
         if is_running_tests():

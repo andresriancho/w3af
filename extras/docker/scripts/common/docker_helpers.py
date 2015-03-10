@@ -92,7 +92,11 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
     ssh_cmd.append('root@' + ip_address)
     ssh_cmd.append(cmd)
 
-    subprocess.call(ssh_cmd)
+    try:
+        subprocess.call(ssh_cmd)
+    finally:
+        # revert previous chmod to avoid annoying git change
+        os.chmod(ssh_key, 436)
 
 
 def check_root():

@@ -30,6 +30,8 @@ from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.url.HTTPRequest import HTTPRequest
+from w3af.core.data.parsers.url import URL
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                                    ConnectionManager,
@@ -70,7 +72,8 @@ class TestKeepalive(unittest.TestCase):
         # Override KeepAliveHandler._start_transaction
         kah._start_transaction = MagicMock(return_value=None)
 
-        conn_factory = kah._get_connection
+        conn_factory = kah.get_connection
+
         # Mock conn's getresponse()
         resp = HTTPResponse(socket.socket())
         resp.will_close = True
@@ -88,9 +91,11 @@ class TestKeepalive(unittest.TestCase):
 
         ## Verify ##
         kah._start_transaction.assert_called_once_with(conn, req)
-        conn_mgr_mock.get_available_connection.assert_called_once_with(
-            host, conn_factory)
-        conn_mgr_mock.remove_connection.assert_called_once_with(conn, host)
+        conn_mgr_mock.get_available_connection.assert_called_once_with(req,
+                                                                       conn_factory)
+        conn_mgr_mock.remove_connection.assert_called_once_with(conn,
+                                                                host,
+                                                                reason='will close')
 
     def test_timeout(self):
         """
@@ -106,8 +111,6 @@ class TestKeepalive(unittest.TestCase):
 
         # Override KeepAliveHandler._start_transaction - raises timeout
         kah._start_transaction = MagicMock(side_effect=socket.timeout())
-
-        conn_factory = kah._get_connection
 
         # The connection mgr
         conn_mgr = Mock()
@@ -164,9 +167,10 @@ class TestKeepalive(unittest.TestCase):
         keep_alive_http = HTTPHandler()
 
         uri_opener = urllib2.build_opener(keep_alive_http)
-        
-        response = uri_opener.open(get_moth_http())
-        html = response.read()
+
+        request = HTTPRequest(URL(get_moth_http()))
+        response = uri_opener.open(request)
+        response.read()
 
         time.sleep(wait)
         
@@ -175,7 +179,8 @@ class TestKeepalive(unittest.TestCase):
         connections_before = p.get_connections()
         
         keep_alive_http.close_all()
-        
+
+        time.sleep(1)
         connections_after = p.get_connections()
         
         self.assertLess(len(connections_after), len(connections_before))
@@ -185,45 +190,83 @@ class TestConnectionMgr(unittest.TestCase):
 
     def setUp(self):
         self.cm = ConnectionManager()
-        self.host = Mock()
+        self.request = Mock()
 
     def test_get_available_conn(self):
         """
         Play with the pool, test, test... and test
         """
+        # We don't need a new HTTPConnection for each request
+        self.request.new_connection = False
+
         self.cm._host_pool_size = 1  # Only a single connection
         self.assertEquals(0, len(self.cm._hostmap))
         self.assertEquals(0, len(self.cm._used_cons))
         self.assertEquals(0, len(self.cm._free_conns))
+
         # Get connection
         cf = lambda h: Mock()
-        conn = self.cm.get_available_connection(self.host, cf)
+        conn_1 = self.cm.get_available_connection(self.request, cf)
         self.assertEquals(1, len(self.cm._hostmap))
         self.assertEquals(1, len(self.cm._used_cons))
         self.assertEquals(0, len(self.cm._free_conns))
+
         # Return it to the pool
-        self.cm.free_connection(conn)
+        self.cm.free_connection(conn_1)
         self.assertEquals(1, len(self.cm._hostmap))
         self.assertEquals(0, len(self.cm._used_cons))
         self.assertEquals(1, len(self.cm._free_conns))
-        # Ask for a conn again
-        conn = self.cm.get_available_connection(self.host, cf)
+
+        # Ask for a conn again, since we don't need a new connection, it should
+        # return one from the pool
+        conn_2 = self.cm.get_available_connection(self.request, cf)
+        self.assertIs(conn_2, conn_1)
+
         t0 = time.time()
-        self.assertRaises(
-            BaseFrameworkException, self.cm.get_available_connection, self.host, cf)
-        self.assertTrue(
-            time.time() - t0 >= 2.9, "Method returned before expected time")
+        self.assertRaises(BaseFrameworkException,
+                          self.cm.get_available_connection, self.request, cf)
+        self.assertTrue(time.time() - t0 >= 2.9,
+                        "Method returned before expected time")
+
+    def test_get_available_conn_new_connection_requested(self):
+        # We want a new HTTPConnection for each request
+        self.request.new_connection = True
+
+        self.cm._host_pool_size = 2
+        self.assertEquals(0, len(self.cm._hostmap))
+        self.assertEquals(0, len(self.cm._used_cons))
+        self.assertEquals(0, len(self.cm._free_conns))
+
+        # Get connection
+        cf = lambda h: Mock()
+        conn_1 = self.cm.get_available_connection(self.request, cf)
+        self.assertEquals(1, len(self.cm._hostmap))
+        self.assertEquals(1, len(self.cm._used_cons))
+        self.assertEquals(0, len(self.cm._free_conns))
+
+        # Return it to the pool
+        self.cm.free_connection(conn_1)
+        self.assertEquals(1, len(self.cm._hostmap))
+        self.assertEquals(0, len(self.cm._used_cons))
+        self.assertEquals(1, len(self.cm._free_conns))
+
+        # Ask for another connection, it should return a new one
+        conn_2 = self.cm.get_available_connection(self.request, cf)
+        self.assertIsNot(conn_1, conn_2)
 
     def test_replace_conn(self):
         cf = lambda h: Mock()
         bad_conn = Mock()
-        self.cm.replace_connection( bad_conn, self.host, cf)
-        bad_conn = self.cm.get_available_connection(self.host, cf)
+        self.cm.replace_connection(bad_conn, self.request, cf)
+        bad_conn = self.cm.get_available_connection(self.request, cf)
         old_len = self.cm.get_connections_total()
+
         # Replace bad with a new one
-        new_conn = self.cm.replace_connection(bad_conn, self.host, cf)
+        new_conn = self.cm.replace_connection(bad_conn, self.request, cf)
+
         # Must be different conn objects
         self.assertNotEquals(bad_conn, new_conn)
+
         # The len must be the same
         self.assertEquals(self.cm.get_connections_total(), old_len)
 
@@ -233,12 +276,12 @@ class TestConnectionMgr(unittest.TestCase):
         """
         self.assertEqual(self.cm.get_connections_total(), 0)
 
-        conn = self.cm.get_available_connection(self.host, lambda h: Mock())
+        conn = self.cm.get_available_connection(self.request, lambda h: Mock())
         self.assertEqual(self.cm.get_connections_total(), 0)
         non_exist_host = "non_host"
 
         # Remove ok
         self.cm.remove_connection(conn, non_exist_host)
-        self.cm.remove_connection(conn, self.host)
+        self.cm.remove_connection(conn, self.request)
 
         self.assertEqual(self.cm.get_connections_total(), 0)

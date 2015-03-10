@@ -4,7 +4,7 @@
   This file contains identification data to identify WordPress versions.
   http://wordpress.org/download/release-archive/
 
-  Position is important, DO NOT change anything unless you know what you are doing :p
+  Position is important, DO NOT change anything unless you know what you are doing
 -->
 
 <wp-versions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

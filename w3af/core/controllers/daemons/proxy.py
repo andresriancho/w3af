@@ -175,14 +175,15 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             return res
 
-    def _send_error(self, exceptionObj, trace=None):
+    def _send_error(self, exception_inst, trace=None):
         """
         Send an error to the browser.
 
         Important methods used here:
-            - self.send_header : Sends a header to the browser
-            - self.end_headers : Ends the headers section
-            - self.wfile : A file like object that represents the body of the response
+            - self.send_header: Sends a header to the browser
+            - self.end_headers: Ends the headers section
+            - self.wfile: A file like object that represents the body of the
+                          response
         """
         try:
             self.send_response(400)
@@ -191,7 +192,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             # FIXME: Make this error look nicer
             self.wfile.write(
-                'w3af proxy error: ' + str(exceptionObj) + '<br/><br/>')
+                'w3af proxy error: ' + str(exception_inst) + '<br/><br/>')
             if trace:
                 self.wfile.write('Traceback for this error: <br/><br/>' +
                                  trace.replace('\n', '<br/>'))
@@ -392,10 +393,10 @@ class Proxy(Process):
     Or if you don't want a different thread, you can simply call the run method:
         ws.run()
 
-    The proxy handler class is the place where you'll perform all the magic stuff,
-    like intercepting requests, modifying them, etc. A good idea if you want to
-    code your own proxy handler is to inherit from the proxy handler that is
-    already defined in this file (see: w3afProxyHandler).
+    The proxy handler class is the place where you'll perform all the magic
+    stuff, like intercepting requests, modifying them, etc. A good idea if you
+    want to code your own proxy handler is to inherit from the proxy handler
+    that is already defined in this file (see: w3afProxyHandler).
 
     What you basically have to do is to inherit from it:
         class myProxyHandler(w3afProxyHandler):
@@ -610,9 +611,11 @@ def wrap(socket_obj, ssl_connection, fun, *params):
             raise SSL.ZeroReturnError
         except SSL.Error, ssl_error:
             # This is raised when the browser abruptly closes the
-            # connection, in order to show the user the "false" w3af MITM certificate
-            # and ask if he/she trusts it.
-            # Error: [('SSL routines', 'SSL3_READ_BYTES', 'ssl handshake failure')]
+            # connection, in order to show the user the "false" w3af MITM
+            # certificate and ask if he/she trusts it.
+            # Error: [('SSL routines',
+            #          'SSL3_READ_BYTES',
+            #          'ssl handshake failure')]
             try:
                 msg = ssl_error[0][0][2]
             except Exception:
@@ -692,8 +695,8 @@ class SSLConnectionFile(object):
                 to_read = amount
             self._read_buffer = self._sslCon.recv(to_read)
 
-        result, self._read_buffer = self._read_buffer[0:
-                                                      amount], self._read_buffer[amount:]
+        result = self._read_buffer[0:amount]
+        self._read_buffer = self._read_buffer[amount:]
         return result
 
     def write(self, data):

@@ -118,7 +118,7 @@ class ExactDelayController(DelayMixIn):
     def delay_for(self, delay, original_wait_time):
         """
         Sends a request to the remote end that "should" delay the response in
-        :param delay.
+        `delay` seconds.
 
         :param original_wait_time: The time that it takes to perform the
                                    request without adding any delays.
@@ -131,28 +131,25 @@ class ExactDelayController(DelayMixIn):
         mutant = self.mutant.copy()
         mutant.set_token_value(delay_str)
 
-        # Send, it is important to notice that we don't use the cache
-        # to avoid any interference
-        try:
-            response = self.uri_opener.send_mutant(mutant, cache=False)
-        except HTTPRequestException, hre:
-            # NOTE: In some cases where the remote web server timeouts we reach
-            #       this code section. The handling of that situation is done
-            #       with the new_no_content_resp() below.
-            #
-            # TODO: There is a potential issue here between the opener settings
-            #       timeout setting and the tests we send with DELAY_SECONDS.
-            #       If the user configures a timeout that's lower than the max
-            #       DELAY_SECONDS, then we'll get timeouts instead of delays.
-            return False, new_no_content_resp(self.mutant.get_uri())
-
-        # Test
+        # Set the upper and lower bounds
         delta = original_wait_time * self.DELTA_PERCENT
-        current_response_wait_time = response.get_wait_time()
 
         upper_bound = (delay * 2) + original_wait_time + delta
         lower_bound = original_wait_time + delay - delta
 
+        # Send, it is important to notice that we don't use the cache
+        # to avoid any interference
+        try:
+            response = self.uri_opener.send_mutant(mutant, cache=False,
+                                                   timeout=upper_bound)
+        except HTTPRequestException, hre:
+            # NOTE: In some cases where the remote web server timeouts we reach
+            #       this code section. The handling of that situation is done
+            #       with the new_no_content_resp() below.
+            return False, new_no_content_resp(self.mutant.get_uri())
+
+        # Test if the delay worked
+        current_response_wait_time = response.get_wait_time()
         args = (id(self), upper_bound, current_response_wait_time, lower_bound)
         out.debug('(Test id: %s) %s > %s > %s' % args)
 

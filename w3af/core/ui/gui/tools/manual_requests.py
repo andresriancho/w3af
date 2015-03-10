@@ -23,7 +23,8 @@ import gtk
 import gobject
 import threading
 
-from w3af.core.ui.gui import reqResViewer, helpers, entries
+from w3af.core.ui.gui import helpers, entries
+from w3af.core.ui.gui.reqResViewer import ReqResViewer
 from w3af.core.ui.gui.tools.helpers import ThreadedURLImpact
 
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
@@ -63,10 +64,8 @@ class ManualRequests(entries.RememberingWindow):
         self._fix_content_len_cb.show()
         
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af,
-                                                 [self.send_but.set_sensitive],
-                                                 withManual=False,
-                                                 editableRequest=True)
+        self.reqresp = ReqResViewer(w3af, [self.send_but.set_sensitive],
+                                    withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
         
         self.vbox.pack_start(self.reqresp, True, True)

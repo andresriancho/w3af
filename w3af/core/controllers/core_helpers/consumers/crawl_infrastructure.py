@@ -47,10 +47,13 @@ class crawl_infrastructure(BaseConsumer):
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
                  max_discovery_time):
         """
-        :param in_queue: The input queue that will feed the crawl_infrastructure plugins
-        :param crawl_infrastructure_plugins: Instances of crawl_infrastructure plugins in a list
+        :param in_queue: The input queue that will feed the crawl_infrastructure
+                         plugins
+        :param crawl_infrastructure_plugins: Instances of crawl_infrastructure
+                                             plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
-        :param max_discovery_time: The max time (in seconds) to use for the discovery phase
+        :param max_discovery_time: The max time (in seconds) to use for the
+                                   discovery phase
         """
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
@@ -63,6 +66,7 @@ class crawl_infrastructure(BaseConsumer):
         self._disabled_plugins = set()
         self._running = True
         self._report_max_time = True
+        self._reported_found_urls = ScalableBloomFilter()
 
     def run(self):
         """
@@ -224,7 +228,9 @@ class crawl_infrastructure(BaseConsumer):
         self.show_summary()
 
     def cleanup(self):
-        """Remove the crawl and bruteforce plugins from memory."""
+        """
+        Remove the crawl and bruteforce plugins from memory.
+        """
         self._w3af_core.plugins.plugins['crawl'] = []
         self._w3af_core.plugins.plugins['infrastructure'] = []
 
@@ -362,9 +368,14 @@ class crawl_infrastructure(BaseConsumer):
         if self._variant_db.need_more_variants_for_fr(fuzzable_request):
             self._variant_db.append_fr(fuzzable_request)
 
-            msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
-                                                        fuzzable_request.get_url())
-            om.out.information(msg)
+            # Log the new finding to the user, without dups
+            # https://github.com/andresriancho/w3af/issues/8496
+            url = fuzzable_request.get_url()
+            if self._reported_found_urls.add(url):
+                msg = 'New URL found by %s plugin: "%s"'
+                args = (plugin.get_name(), url)
+                om.out.information(msg % args)
+
             return True
 
         return False
@@ -373,12 +384,14 @@ class crawl_infrastructure(BaseConsumer):
     def _discover_worker(self, function_id, plugin, fuzzable_request):
         """
         This method runs @plugin with FuzzableRequest as parameter and returns
-        new fuzzable requests and/or stores vulnerabilities in the knowledge base.
+        new fuzzable requests and/or stores vulnerabilities in the knowledge
+        base.
 
         Since threadpool's apply_async runs the callback only when the call to
-        this method ends without any exceptions, it is *very important* to handle
-        exceptions correctly here. Failure to do so will end up in _task_done not
-        called, which will make has_pending_work always return True.
+        this method ends without any exceptions, it is *very important* to
+        handle exceptions correctly here. Failure to do so will end up in
+        _task_done not called, which will make has_pending_work always return
+        True.
 
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.

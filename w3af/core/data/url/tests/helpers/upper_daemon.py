@@ -60,7 +60,12 @@ class UpperDaemon(threading.Thread):
         self.server = SocketServer.TCPServer(self.server_address,
                                              self.handler)
     
-        self.server.serve_forever()
+        try:
+            self.server.serve_forever()
+        except AttributeError:
+            # Catch some ugly tracebacks on shutdown
+            # https://circleci.com/gh/andresriancho/w3af/1568
+            pass
     
     def get_port(self):
         if self.server is not None:
@@ -80,3 +85,20 @@ class UpperDaemon(threading.Thread):
         self.server.RequestHandlerClass.requests = []
         self.server.shutdown()
 
+
+class ThreadingUpperDaemon(UpperDaemon):
+    def run(self):
+        # Zero in the port means: bind to any free port
+        self.server = ThreadingServer(self.server_address, self.handler)
+        self.server.serve_forever()
+
+
+class ThreadingServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    # Ctrl-C will cleanly kill all spawned threads
+    daemon_threads = True
+
+    # much faster rebinding
+    allow_reuse_address = True
+
+    def __init__(self, server_address, handler_klass):
+        SocketServer.TCPServer.__init__(self, server_address, handler_klass)

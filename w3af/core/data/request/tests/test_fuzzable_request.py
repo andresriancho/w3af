@@ -169,7 +169,7 @@ class TestFuzzableRequest(unittest.TestCase):
                                         post_data='a=1&b=3&a=2',
                                         headers=headers)
         expected = 'Method: GET | http://www.w3af.com/ | URL encoded ' \
-                   'form: (a,a,b)'
+                   'form: (a, a, b)'
         self.assertEqual(str(fr), expected)
 
     def test_repr(self):

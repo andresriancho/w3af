@@ -1525,4 +1525,58 @@ Author: @felmoltor
 
 -- 
 Felipe Molina de la Torre
+</textualDescription></signature><signature><signatureReferenceNumber>3986</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3986/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=inurl:&quot;security/xamppdirpasswd.txt&quot;</querystring><shortDescription>inurl:&quot;security/xamppdirpasswd.txt&quot;</shortDescription><textualDescription>This dork shows the plain text password saved in a XAMPP installation when
+the administrator configures &quot;Security Console MySQL &amp; XAMPP directory
+protection&quot;:
+
+inurl:&quot;security/xamppdirpasswd.txt&quot;
+
+Author: @felmoltor
+
+-- 
+Felipe Molina de la Torre
+</textualDescription></signature><signature><signatureReferenceNumber>3987</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3987/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:xml inurl:/WEB-INF/ inurl:ftp:// -www</querystring><shortDescription>filetype:xml inurl:/WEB-INF/ inurl:ftp:// -www</shortDescription><textualDescription>Hi,
+
+This google dork to find sensitive and interesting information under
+WEB-INF directory via ftp protocol, for example:
+
+* Website map
+* Sensitive information  (user name and password for webdave)
+* Deployment descriptor in java (web.xml)
+* Servlet mapping url pattern
+
+
+Keyword:
+filetype:xml inurl:/WEB-INF/ inurl:ftp:// -www
+
+-- 
+Fahad Altamimi
+</textualDescription></signature><signature><signatureReferenceNumber>3988</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3988/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=&quot;.git&quot; intitle:&quot;Index of&quot;</querystring><shortDescription>&quot;.git&quot; intitle:&quot;Index of&quot;</shortDescription><textualDescription>Shows publicly browsable .git directories
+</textualDescription></signature><signature><signatureReferenceNumber>3989</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3989/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:.cgi-bin/webproc</querystring><shortDescription>inurl:.cgi-bin/webproc</shortDescription><textualDescription>inurl:.cgi-bin/webproc
+Login for various type of router.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3990</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3990/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:.cgi-bin/luci</querystring><shortDescription>inurl:.cgi-bin/luci</shortDescription><textualDescription>Directory &quot; Powered by LuCI Trunk&quot;.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3991</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3991/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=&quot;jos_users&quot; intitle:&quot;Index of&quot;</querystring><shortDescription>&quot;jos_users&quot; intitle:&quot;Index of&quot;</shortDescription><textualDescription>&quot;jos_users&quot; intitle:&quot;Index of&quot;
+Files of configuration of user Joomla servers.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3992</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3992/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;AP Router New Generation&quot; intext:&quot;Status do AP Router&quot;</querystring><shortDescription>intitle:&quot;AP Router New Generation&quot; intext:&quot;Status do AP Router&quot;</shortDescription><textualDescription>intitle:&quot;AP Router New Generation&quot; intext:&quot;Status do AP Router&quot;
+
+Share-Link
+</textualDescription></signature><signature><signatureReferenceNumber>3993</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3993/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=&quot;Config&quot; intitle:&quot;Index of&quot; intext:vpn</querystring><shortDescription>&quot;Config&quot; intitle:&quot;Index of&quot; intext:vpn</shortDescription><textualDescription>Directory with keys of vpn servers.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>3994</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3994/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=inurl:/wp-content/wpbackitup_backups</querystring><shortDescription>inurl:/wp-content/wpbackitup_backups</shortDescription><textualDescription>Relates to https://wordpress.org/plugins/wp-backitup/
+
+Sensitive data/site rips/db rips in public accessible folders
+
+Mr T3st3r
+</textualDescription></signature><signature><signatureReferenceNumber>3995</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3995/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=allinurl:moadmin.php -google -github</querystring><shortDescription>allinurl:moadmin.php -google -github</shortDescription><textualDescription>The dork &quot;allinurl:moadmin.php -google -github&quot; show all the sites that
+uses Mongo DB
+and the moadmin module to amministrate it.
+
+Some versions of this module allow non autenticated user to execute
+arbitrary Unix commands sending a special POST request documented here:
+http://www.exploit-db.com/exploits/36251/
+
+PsyDel
 </textualDescription></signature></searchEngineSignature>

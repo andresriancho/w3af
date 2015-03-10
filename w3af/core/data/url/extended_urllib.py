@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import ssl
-import httplib
-import socket
-import threading
 import time
-import traceback
 import urllib
+import socket
 import urllib2
+import httplib
 import OpenSSL
+import threading
+import traceback
+import functools
 
 from contextlib import contextmanager
 from collections import deque
@@ -51,21 +51,13 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
-from w3af.core.data.url.constants import MAX_ERROR_COUNT
-
-
-try:
-    # 2.7.9 enabled certificate verification by default for stdlib http clients
-    # https://www.python.org/dev/peps/pep-0476/
-    #
-    # We don't want that, so we're disabling it globally
-    # https://github.com/andresriancho/w3af/issues/8115
-    #
-    # pylint: disable=E1101
-    ssl._create_default_https_context = ssl._create_unverified_context
-    # pylint: enable=E1101
-except AttributeError:
-    pass
+from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
+from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
+                                          MAX_RESPONSE_COLLECT,
+                                          SOCKET_ERROR_DELAY,
+                                          TIMEOUT_MULT_CONST,
+                                          TIMEOUT_ADJUST_LIMIT,
+                                          TIMEOUT_MIN, DEFAULT_TIMEOUT)
 
 
 class ExtendedUrllib(object):
@@ -74,20 +66,29 @@ class ExtendedUrllib(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    SOCKET_ERROR_DELAY = 0.15
-
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
 
-        # For error handling
-        self._last_request_failed = False
-        self._last_errors = deque(maxlen=MAX_ERROR_COUNT)
+        # In exploit mode we disable some timeout/delay/error handling stuff
+        self.exploit_mode = False
+
+        # For error handling, the first "last response" is set to SUCCESS to
+        # allow the _should_stop_scan method to match it's "SFFFF...FFF" pattern
+        self._last_responses = deque(maxlen=MAX_RESPONSE_COLLECT)
+        self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
         self._count_lock = threading.RLock()
 
         # For rate limiting
         self._rate_limit_last_time_called = 0.0
-        self._rate_limit_lock = threading.Lock()
+        self._rate_limit_lock = threading.RLock()
+
+        # For timeout auto adjust and general stats
+        self._total_requests = 0
+
+        # Timeout is kept by host
+        self._host_timeout = {}
+        self._global_timeout = DEFAULT_TIMEOUT
 
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -112,7 +113,7 @@ class ExtendedUrllib(object):
         """
         self._user_stopped = True
 
-    def _before_send_hook(self):
+    def _before_send_hook(self, request):
         """
         This is a method that is called before every request is sent. I'm using
         it as a hook implement:
@@ -120,25 +121,192 @@ class ExtendedUrllib(object):
             - Memory debugging features
         """
         self._pause_and_stop()
-        self._pause_on_http_error()
-        self._rate_limit()
+        self._pause_on_http_error(request)
 
-    def _pause_on_http_error(self):
+        if not self.exploit_mode:
+            self._rate_limit()
+            self._auto_adjust_timeout(request)
+
+        # Increase the request count
+        self._total_requests += 1
+
+    def set_exploit_mode(self, exploit_mode):
+        self.exploit_mode = exploit_mode
+
+        # Set the timeout to DEFAULT_TIMEOUT
+        self.clear_timeout()
+
+        # Closes all HTTPConnections so all new requests are sent using the
+        # DEFAULT_TIMEOUT
+        self.settings.close_connections()
+
+    def set_timeout(self, timeout, host):
+        """
+        Sets the timeout to use in HTTP requests, usually called by the auto
+        timeout adjust feature in extended_urllib.py
+        """
+        msg = 'Updating socket timeout for %s from %s to %s seconds'
+        om.out.debug(msg % (host, self.get_timeout(host), timeout))
+
+        self._host_timeout[host] = timeout
+
+    def get_timeout(self, host):
+        """
+        :return: The timeout to use in HTTP requests, will be equal to the user
+                 configured setting if the auto timeout adjust feature is
+                 disabled, but when enabled this value will change during the
+                 scan.
+        """
+        return self._host_timeout.get(host, self._global_timeout)
+
+    def clear_timeout(self):
+        """
+        Called when the scan has finished/this opener settings won't be used
+        anymore.
+
+        :return: None
+        """
+        self._host_timeout = {}
+        configured_timeout = self.settings.get_configured_timeout()
+
+        if configured_timeout != 0:
+            self._global_timeout = configured_timeout
+        else:
+            # Get ready for the next scan, which we don't want to be affected
+            # by the timeout set in the previous scan
+            self._global_timeout = DEFAULT_TIMEOUT
+
+    def _auto_adjust_timeout(self, request):
+        """
+        By default the timeout value at OpenerSettings is set to 0, which means
+        that w3af needs to auto-adjust it based on the HTTP request/response
+        RTT. This method takes care of the process of adjusting the socket
+        timeout.
+
+        The objective of auto-adjusting the timeout is to "fail fast" on
+        requests which are going to fail anyways. In previous versions of w3af
+        the default timeout was 15 seconds, which made the scanner delay A LOT
+        on URLs which (for some reason like heavy processing on the server side)
+        failed anyways.
+
+        We calculate and adjust the new timeout every 50 successful requests.
+
+        The timeout is calculated using average(RTT) * TIMEOUT_MULT_CONST , then
+        for example if the average RTT is 0.3 seconds and the TIMEOUT_MULT_CONST
+        is at 6.5 we end up with a real socket timeout of 1.95
+
+        The TIMEOUT_MULT_CONST might be lowered by advanced users to achieve
+        faster scans in scenarios where timeouts are slowing down the scans.
+
+        TODO
+        ====
+
+        After implementing this feature I noticed that there is a big mismatch
+        between what I wanted to achieve and what's actually happening in real
+        life. When I set the timeout it is used for creating new
+        HTTPConnections. Those connections are use to send ~100 requests each.
+        If w3af adjusts the timeout every 25 requests, it doesn't matter much
+        since the change will only take effect when a new HTTPConnection is
+        created in the pool.
+
+        I'm not sure how to fix the issue above, so I'm documenting some things
+        that will NOT work just in case:
+
+            * Increasing/decreasing the TIMEOUT_ADJUST_LIMIT
+
+            * Setting timeouts for specific HTTP Requests using the timeout arg
+
+            * Forcing HTTPConnections to be closed in the pool each time the
+              timeout is updated could work, but that will slow down the scan
+              and make the keep alive handler less efficient
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
+        :return: None, we adjust the value at the "settings" attribute
+        """
+        if not self._should_auto_adjust_now():
+            return
+
+        host = request.get_host()
+        average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT,
+                                                        host)
+
+        if num_samples < (TIMEOUT_ADJUST_LIMIT / 2):
+            msg = 'Not enough samples collected (%s) to adjust timeout.' \
+                  ' Keeping the current value of %s seconds'
+            om.out.debug(msg % (num_samples, self.get_timeout(host)))
+        else:
+            timeout = average_rtt * TIMEOUT_MULT_CONST
+            timeout = max(timeout, TIMEOUT_MIN)
+            self.set_timeout(timeout, host)
+
+    def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT, host=None):
+        """
+        :param count: The number of HTTP requests to sample the RTT from
+        :param host: If specified filter the requests by host before calculating
+                     the average RTT
+        :return: Tuple with (average RTT from the last `count` requests,
+                             the number of successful responses, which contain
+                             an RTT, and were used to calculate the average RTT)
+        """
+        rtt_sum = 0.0
+        add_count = 0
+        last_n_responses = list(self._last_responses)[-count:]
+
+        for response_meta in last_n_responses:
+            if host is not None:
+                if response_meta.host != host:
+                    continue
+
+            if response_meta.rtt is not None:
+                rtt_sum += response_meta.rtt
+                add_count += 1
+
+        if not add_count:
+            return None, 0
+        else:
+            average_rtt = float(rtt_sum) / add_count
+            return average_rtt, add_count
+
+    def _should_auto_adjust_now(self):
+        """
+        :return: True if we need to auto adjust the timeout now
+        """
+        if self.settings.get_configured_timeout() != 0:
+            # The user disabled the timeout auto-adjust feature
+            return False
+
+        if self.get_total_requests() == 0:
+            return False
+
+        if self.get_total_requests() % TIMEOUT_ADJUST_LIMIT == 0:
+            return True
+
+        return False
+
+    def get_total_requests(self):
+        """
+        :return: The number of requests sent (successful, timeout, failed, all
+                 are counted here).
+        """
+        return self._total_requests
+
+    def _pause_on_http_error(self, request):
         """
         This method will pause the scan for an increasing period of time based
-        on the number of HTTP errors received. HTTP errors are timeouts,
-        network unreachable, etc.
+        on the HTTP error rate. HTTP errors are timeouts, network unreachable,
+        etc. things like 404, 403, 500 are NOT considered errors.
 
         The objective of this method is to give the remote server, or local
         connection, the chance to recover from their errors without killing the
         w3af scan.
 
-        Successful requests reset the counter and allow faster request rates.
-        Failed requests increase the counter and make this method delay requests
+        Successful requests lower the error rate and allow faster request rates.
+        Failed requests increase the rate and make this method delay requests
 
-        The counter is multiplied by SOCKET_ERROR_DELAY to get the real delay.
+        The rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
+        in seconds.
 
-        Counter starts at zero.
+        The error rate starts at zero, so no delay is added at the beginning
 
         In the worse case scenario, where MAX_ERROR_COUNT errors occur, the
         requests are going to be delayed as follows (considering MAX_ERROR_COUNT
@@ -155,15 +323,17 @@ class ExtendedUrllib(object):
         :return: None, but might delay the requests which go out to the network
         :see: https://github.com/andresriancho/w3af/issues/4811
         """
-        if len(self._last_errors):
+        error_rate = self.get_error_rate()
+        if error_rate:
             self._rate_limit_lock.acquire()
 
             # Logging
-            error_total = len(self._last_errors)
-            error_sleep = self.SOCKET_ERROR_DELAY * error_total
-            msg = 'Sleeping for %s seconds before sending HTTP request after' \
-                  ' receiving URL/socket error. The total error count is at %s.'
-            om.out.debug(msg % (error_sleep, error_total))
+            error_sleep = SOCKET_ERROR_DELAY * error_rate
+            msg = 'Sleeping for %s seconds before sending HTTP request to' \
+                  ' "%s" after receiving URL/socket error. The ExtendedUrllib' \
+                  ' error rate is at %s%%.'
+            args = (error_sleep, request.url_object, error_rate)
+            om.out.debug(msg % args)
 
             # The actual delay
             time.sleep(error_sleep)
@@ -220,10 +390,15 @@ class ExtendedUrllib(object):
         analyze_state()
 
     def clear(self):
-        """Clear all status set during the scanner run"""
+        """
+        Clear all status set during the scanner run
+        """
         self._user_stopped = False
         self._user_paused = False
         self._stop_exception = None
+        self._total_requests = 0
+        self.set_exploit_mode(False)
+        self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
 
     def end(self):
         """
@@ -234,16 +409,19 @@ class ExtendedUrllib(object):
         self.clear()
         self.settings.clear_cookies()
         self.settings.clear_cache()
+        self.clear_timeout()
         self.settings.close_connections()
 
     def restart(self):
         self.end()
 
-    def _init(self):
+    def setup(self):
         if self.settings.need_update or self._opener is None:
             self.settings.need_update = False
             self.settings.build_openers()
             self._opener = self.settings.get_custom_opener()
+
+            self.clear_timeout()
 
     def get_headers(self, uri):
         """
@@ -253,7 +431,7 @@ class ExtendedUrllib(object):
                 the library when sending a request to uri.
         """
         req = HTTPRequest(uri)
-        req = self._add_headers(req)
+        req = self.add_headers(req)
         return Headers(req.headers)
 
     def get_cookies(self):
@@ -272,10 +450,8 @@ class ExtendedUrllib(object):
         responses that were generated with different mutants.
 
         :param mutant: The mutant to send to the network.
-        :return: (
-                    HTTP response,
-                    Sanitized HTTP response body,
-                 )
+        :return: (HTTP response,
+                  Sanitized HTTP response body)
         """
         http_response = self.send_mutant(mutant, cache=False)
         clean_body = get_clean_body(mutant, http_response)
@@ -318,7 +494,7 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, ignore_errors=False):
+                    cookies=True, error_handling=True, timeout=None):
         """
         Sends a mutant to the remote web server.
 
@@ -349,7 +525,8 @@ class ExtendedUrllib(object):
             'grep': grep,
             'cache': cache,
             'cookies': cookies,
-            'ignore_errors': ignore_errors,
+            'error_handling': error_handling,
+            'timeout': timeout
         }
         method = mutant.get_method()
 
@@ -366,7 +543,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            ignore_errors=False):
+            error_handling=True, timeout=None):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -379,6 +556,10 @@ class ExtendedUrllib(object):
         :param cache: Should the library search the local cache for a response
                       before sending it to the wire?
         :param grep: Should grep plugins be applied to this request/response?
+        :param timeout: If None we'll use the configured (opener settings)
+                        timeout or the auto-adjusted value. Otherwise we'll use
+                        the defined timeout as the socket timeout value for this
+                        request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
 
         :return: An HTTPResponse object.
@@ -392,28 +573,33 @@ class ExtendedUrllib(object):
                             ' be of Headers type.')
 
         # Validate what I'm sending, init the library (if needed)
-        self._init()
+        self.setup()
 
         if data:
             uri = uri.copy()
             uri.querystring = data
 
+        new_connection = True if timeout is not None else False
+        host = uri.get_domain()
+        timeout = self.get_timeout(host) if timeout is None else timeout
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
-                          ignore_errors=ignore_errors, method='GET',
-                          retries=self.settings.get_max_retrys())
-        req = self._add_headers(req, headers)
+                          error_handling=error_handling, method='GET',
+                          retries=self.settings.get_max_retrys(),
+                          timeout=timeout, new_connection=new_connection)
+        req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
-            return self._send(req, grep=grep)
+            return self.send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, ignore_errors=False):
+             cookies=True, error_handling=True, timeout=None):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
 
         :param uri: This is the url where to post.
         :param data: A string with the data for the POST.
+        :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
         if not isinstance(uri, URL):
@@ -425,7 +611,7 @@ class ExtendedUrllib(object):
                             ' be of Headers type.')
 
         #    Validate what I'm sending, init the library (if needed)
-        self._init()
+        self.setup()
 
         #
         #    Create and send the request
@@ -436,12 +622,16 @@ class ExtendedUrllib(object):
         #
         data = str(data)
 
+        new_connection = True if timeout is not None else False
+        host = uri.get_domain()
+        timeout = self.get_timeout(host) if timeout is None else timeout
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          ignore_errors=ignore_errors, method='POST',
-                          retries=self.settings.get_max_retrys())
-        req = self._add_headers(req, headers)
+                          error_handling=error_handling, method='POST',
+                          retries=self.settings.get_max_retrys(),
+                          timeout=timeout, new_connection=new_connection)
+        req = self.add_headers(req, headers)
 
-        return self._send(req, grep=grep)
+        return self.send(req, grep=grep)
 
     def get_remote_file_size(self, req, cache=True):
         """
@@ -490,41 +680,42 @@ class ExtendedUrllib(object):
         :param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
-        class AnyMethod(object):
+        def any_method(uri_opener, method, uri, data=None, headers=Headers(),
+                       cache=False, grep=True, cookies=True,
+                       error_handling=True, timeout=None):
+            """
+            :return: An HTTPResponse object that's the result of sending
+                     the request with a method different from GET or POST.
+            """
+            if not isinstance(uri, URL):
+                raise TypeError('The uri parameter of any_method must be'
+                                ' of url.URL type.')
 
-            def __init__(self, xu, method):
-                self._xurllib = xu
-                self._method = method
+            if not isinstance(headers, Headers):
+                raise TypeError('The headers parameter of any_method must be'
+                                ' of Headers type.')
 
-            def __call__(self, uri, data=None, headers=Headers(), cache=False,
-                         grep=True, cookies=True, ignore_errors=False):
-                """
-                :return: An HTTPResponse object that's the result of
-                    sending the request with a method different from
-                    "GET" or "POST".
-                """
-                if not isinstance(uri, URL):
-                    raise TypeError('The uri parameter of AnyMethod.'
-                                    '__call__() must be of url.URL type.')
+            uri_opener.setup()
 
-                if not isinstance(headers, Headers):
-                    raise TypeError('The headers parameter of AnyMethod.'
-                                    '__call__() must be of Headers type.')
+            max_retries = uri_opener.settings.get_max_retrys()
 
-                self._xurllib._init()
+            new_connection = True if timeout is not None else False
+            host = uri.get_domain()
+            timeout = uri_opener.get_timeout(host) if timeout is None else timeout
+            req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
+                              method=method,
+                              error_handling=error_handling,
+                              retries=max_retries,
+                              timeout=timeout,
+                              new_connection=new_connection)
+            req = uri_opener.add_headers(req, headers or {})
+            return uri_opener.send(req, grep=grep)
 
-                max_retries = self._xurllib.settings.get_max_retrys()
+        method_partial = functools.partial(any_method, self, method_name)
+        method_partial.__doc__ = 'Send %s HTTP request' % method_name
+        return method_partial
 
-                req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
-                                  method=self._method,
-                                  ignore_errors=ignore_errors,
-                                  retries=max_retries)
-                req = self._xurllib._add_headers(req, headers or {})
-                return self._xurllib._send(req, grep=grep)
-
-        return AnyMethod(self, method_name)
-
-    def _add_headers(self, req, headers=Headers()):
+    def add_headers(self, req, headers=Headers()):
         """
         Add all custom Headers() if they exist
         """
@@ -551,7 +742,7 @@ class ExtendedUrllib(object):
         else:
             return False
 
-    def _send(self, req, grep=True):
+    def send(self, req, grep=True):
         """
         Actually send the request object.
 
@@ -559,7 +750,7 @@ class ExtendedUrllib(object):
         :return: An HTTPResponse object.
         """
         # This is the place where I hook the pause and stop feature
-        self._before_send_hook()
+        self._before_send_hook(req)
 
         # Sanitize the URL
         self._check_uri(req)
@@ -577,7 +768,8 @@ class ExtendedUrllib(object):
                                              original_url_inst)
         
         except (socket.error, URLTimeoutError,
-                ConnectionPoolException, OpenSSL.SSL.SysCallError), e:
+                ConnectionPoolException, OpenSSL.SSL.SysCallError,
+                OpenSSL.SSL.ZeroReturnError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
@@ -597,9 +789,6 @@ class ExtendedUrllib(object):
 
         Our strategy for handling these errors is simple
         """
-        if not req.ignore_errors:
-            self._increment_global_error_count(exception)
-
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
         
@@ -609,15 +798,13 @@ class ExtendedUrllib(object):
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
         """
-        if not req.ignore_errors:
-            self._increment_global_error_count(exception)
-
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
-        if req.ignore_errors:
-            msg = 'Ignoring HTTP error "%s" "%s". Reason: "%s"'
+        if not req.error_handling:
+            msg = 'Raising HTTP error "%s" "%s". Reason: "%s". Error handling' \
+                  ' was disabled for this request.'
             om.out.debug(msg % (req.get_method(), original_url, exception))
             error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
@@ -625,8 +812,19 @@ class ExtendedUrllib(object):
         # Log the error
         msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
         om.out.debug(msg % (req.get_method(), original_url, exception))
-        om.out.debug('Traceback for this error: %s' % traceback.format_exc())
-        
+
+        # Don't make a lot of noise on URLTimeoutError which is pretty common
+        # and properly handled by this library
+        if not isinstance(exception, URLTimeoutError):
+            msg = 'Traceback for this error: %s'
+            om.out.debug(msg % traceback.format_exc())
+
+        with self._count_lock:
+            self._log_failed_response(exception, req)
+
+            if self._should_stop_scan(req):
+                self._handle_error_count_exceeded(exception)
+
         # Then retry!
         req._Request__original = original_url
         return self._retry(req, grep, exception)
@@ -671,7 +869,7 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
 
         # Clear the log of failed requests; this request is DONE!
-        self._zero_global_error_count()
+        self._log_successful_response(http_resp)
 
         if grep:
             self._grep(req, http_resp)
@@ -687,7 +885,7 @@ class ExtendedUrllib(object):
         if req.retries_left > 0:
             msg = 'Re-sending request "%s" after initial exception: "%s"'
             om.out.debug(msg % (req, url_error))
-            return self._send(req, grep=grep)
+            return self.send(req, grep=grep)
         
         else:
             # Please note that I'm raising HTTPRequestException and not a
@@ -700,33 +898,152 @@ class ExtendedUrllib(object):
             error_str = get_exception_reason(url_error) or str(url_error)
             raise HTTPRequestException(error_str, request=req)
 
-    def _increment_global_error_count(self, error):
+    def _log_failed_response(self, error, request):
         """
-        Increment the error count, and if we got a lot of failures raise a
-        "ScanMustStopException" subtype.
+        Add the failed response to the self._last_responses log, and if we got a
+        lot of failures raise a "ScanMustStopException" subtype.
 
         :param error: Exception object.
         """
-        if self._last_request_failed:
-            reason = get_exception_reason(error)
-            self._last_errors.append(reason or str(error))
+        reason = get_exception_reason(error)
+        reason = reason or str(error)
+        self._last_responses.append(ResponseMeta(False, reason,
+                                                 host=request.get_host()))
+
+        self._log_error_rate()
+
+    def _should_stop_scan(self, request):
+        """
+        If the last MAX_ERROR_COUNT - 1 responses are errors then we check if
+        the remote server root path is still reachable. If it is, we add
+        (True, SUCCESS) to the last responses and continue; else we return False
+        because we're in a case where:
+              * The user's connection is dead
+              * The remote server is unreachable
+
+        :return: True if we should stop the scan due to too many consecutive
+                 errors being received from the server.
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
+        """
+        #
+        # We're looking for this pattern in the last_responses:
+        #   True, False, False, False, ..., False
+        #
+        # Which means that at some point we were able to reach the remote server
+        # but now we're having problems doing so and need to check if the remote
+        # server is still reachable.
+        #
+        # Any other patterns we don't care in this method:
+        #   False, True, False, True, False, True
+        #       Unstable connection, _pause_on_http_error should help with it
+        #
+        #   True, True, True, False, False, False, ..., False
+        #       Looks like the remote server is unreachable and we're going
+        #       towards the pattern we look for, but nothing to do here for now
+        #
+        #   False, True, True, True, True, ..., True
+        #       A server error and then it recovered, keep scanning.
+        #
+        # Note that we can only find the desired pattern if we lock the write
+        # and check access to the _last_responses, otherwise the threads will
+        # "break" it
+        last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
+        first_result = last_n_responses[0]
+        last_n_without_first = last_n_responses[1:]
+
+        if len(last_n_without_first) != (MAX_ERROR_COUNT - 1):
+            # Not enough last_responses to tell if we should stop the scan
+            return False
+
+        all_following_failed = True
+
+        for response_meta in last_n_without_first:
+            if response_meta.successful:
+                all_following_failed = False
+                break
+
+        if first_result.successful and all_following_failed:
+            # Found the pattern we were looking for, we want to test if the
+            # remote server is reachable
+            if self._server_root_path_is_reachable(request):
+                # We don't need to add (True, SUCCESS) to the last_responses
+                # manually since in _server_root_path_is_reachable we use _send
+                # which (on success) calls _log_successful_response and does
+                # that for us
+                return False
+
+            # Stop the scan!
+            return True
+
+        # If we don't find the pattern we look for, then we just continue with
+        # the scan as usual
+        return False
+
+    def _server_root_path_is_reachable(self, request):
+        """
+        Sends an HTTP GET to the server's root path to verify that it's
+        reachable from our location.
+
+        :param request: The original HTTP request
+        :return: True if we were able to get a response
+        """
+        uri = request.get_uri()
+        root_url = uri.base_url()
+        host = uri.get_domain()
+
+        req = HTTPRequest(root_url, cookies=True, cache=False,
+                          error_handling=False, method='GET', retries=0,
+                          timeout=self.get_timeout(host))
+        req = self.add_headers(req)
+
+        try:
+            self.send(req, grep=False)
+        except HTTPRequestException, e:
+            msg = 'Remote server is UNREACHABLE due to: "%s"'
+            om.out.debug(msg % e)
+            return False
+        except Exception, e:
+            msg = 'Internal error makes server UNREACHABLE due to: "%s"'
+            om.out.debug(msg % e)
+            return False
         else:
-            self._last_request_failed = True
+            msg = 'Remote server is reachable'
+            om.out.debug(msg)
+            return True
 
-        error_total = len(self._last_errors)
-        om.out.debug('Incrementing global error count. GEC: %s' % error_total)
+    def get_error_rate(self):
+        """
+        :return: The error rate as an integer 0-100
+        """
+        last_responses = list(self._last_responses)
+        total_failed = 0.0
+        total = len(last_responses)
 
-        with self._count_lock:
-            if error_total >= MAX_ERROR_COUNT:
-                self._handle_error_on_increment(error, self._last_errors)
-    
-    def _handle_error_on_increment(self, error, last_errors):
+        if total == 0:
+            return total
+
+        for response_meta in last_responses:
+            if not response_meta.successful:
+                total_failed += 1
+
+        return int((total_failed / total) * 100)
+
+    def _log_error_rate(self):
         """
-        Handle the error
+        Logs the error rate to the debug() log, useful to understand why a scan
+        fails with "Too many consecutive errors"
+
+        :see: https://github.com/andresriancho/w3af/issues/8698
         """
-        #
+        error_rate = self.get_error_rate()
+        om.out.debug('ExtendedUrllib error rate is at %i%%' % error_rate)
+
+    def _handle_error_count_exceeded(self, error):
+        """
+        Handle the case where we exceeded MAX_ERROR_COUNT
+        """
         # Create a detailed exception message
-        #
         msg = ('w3af found too many consecutive errors while performing'
                ' HTTP requests. In most cases this means that the remote web'
                ' server is not reachable anymore, the network is down, or'
@@ -742,6 +1059,12 @@ class ExtendedUrllib(object):
             e = ScanMustStopByKnownReasonExc(msg % args, reason=reason_msg)
 
         else:
+            last_errors = []
+            last_n_responses = list(self._last_responses)[-MAX_ERROR_COUNT:]
+
+            for response_meta in last_n_responses:
+                last_errors.append(response_meta.message)
+
             e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
         self._stop_exception = e
@@ -749,11 +1072,12 @@ class ExtendedUrllib(object):
         raise self._stop_exception
         # pylint: enable=E0702
 
-    def _zero_global_error_count(self):
-        if self._last_request_failed or self._last_errors:
-            self._last_request_failed = False
-            self._last_errors.clear()
-            om.out.debug('Resetting global error count. GEC: 0')
+    def _log_successful_response(self, response):
+        host = response.get_url().get_net_location()
+        self._last_responses.append(ResponseMeta(True,
+                                                 SUCCESS,
+                                                 rtt=response.get_wait_time(),
+                                                 host=host))
 
     def set_grep_queue_put(self, grep_queue_put):
         self._grep_queue_put = grep_queue_put

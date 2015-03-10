@@ -30,12 +30,12 @@ import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 from mock import Mock, patch
 
 from w3af import ROOT_PATH
 
-from w3af.core.data.url.extended_urllib import ExtendedUrllib, MAX_ERROR_COUNT
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
 from w3af.core.data.parsers.url import URL
@@ -150,19 +150,15 @@ class TestXUrllib(unittest.TestCase):
                 self.uri_opener.GET(url)
             except HTTPRequestException:
                 http_request_e += 1
-                self.assertTrue(True)
-            except ScanMustStopException:
+            except ScanMustStopException, smse:
                 scan_must_stop_e += 1
-                self.assertTrue(True)
                 break
             except Exception, e:
                 msg = 'Not expecting "%s".'
                 self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
 
         self.assertEqual(scan_must_stop_e, 1)
-        self.assertEqual(http_request_e, 5)
+        self.assertEqual(http_request_e, 9)
 
     def test_get_wait_time(self):
         """
@@ -172,57 +168,6 @@ class TestXUrllib(unittest.TestCase):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertNotEqual(http_response.get_wait_time(), DEFAULT_WAIT_TIME)
-
-    def test_timeout(self):
-        upper_daemon = UpperDaemon(TimeoutTCPHandler)
-        upper_daemon.start()
-        upper_daemon.wait_for_start()
-
-        port = upper_daemon.get_port()
-        
-        url = URL('http://127.0.0.1:%s/' % port)
-        
-        self.uri_opener.settings.set_timeout(1)
-        start = time.time()
-
-        try:
-            self.uri_opener.GET(url)
-        except HTTPRequestException, hre:
-            self.assertEqual(hre.message, 'HTTP timeout error.')
-        except Exception, e:
-            msg = 'Not expecting: "%s"'
-            self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False, 'Expected HTTPRequestException.')
-
-        end = time.time()
-        self.uri_opener.settings.set_default_values()
-        self.assertLess(end-start, 3)
-
-    def test_timeout_ssl(self):
-        ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
-        ssl_daemon.start()
-        ssl_daemon.wait_for_start()
-
-        port = ssl_daemon.get_port()
-
-        url = URL('https://127.0.0.1:%s/' % port)
-
-        self.uri_opener.settings.set_timeout(1)
-        start = time.time()
-
-        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
-
-        end = time.time()
-        self.uri_opener.settings.set_default_values()
-
-        #   We Skip this part because openssl doesn't allow us to use timeouts
-        #   https://github.com/andresriancho/w3af/issues/7989
-        #
-        #   Don't Skip at the beginning of the test because we want to be able
-        #   to test that timeout exceptions are at least handled by xurllib
-        raise SkipTest('See https://github.com/andresriancho/w3af/issues/7989')
-        #self.assertLess(end-start, 3)
 
     def test_ssl_tls_1_0(self):
         ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_TLSv1)
@@ -259,106 +204,6 @@ class TestXUrllib(unittest.TestCase):
 
         resp = self.uri_opener.GET(url)
         self.assertEqual(resp.get_body(), Ok200Handler.body)
-
-    def test_timeout_many(self):
-        upper_daemon = UpperDaemon(TimeoutTCPHandler)
-        upper_daemon.start()
-        upper_daemon.wait_for_start()
-
-        port = upper_daemon.get_port()
-
-        self.uri_opener.settings.set_timeout(1)
-
-        url = URL('http://127.0.0.1:%s/' % port)
-        http_request_e = 0
-        scan_stop_e = 0
-
-        for _ in xrange(MAX_ERROR_COUNT):
-            try:
-                self.uri_opener.GET(url)
-            except HTTPRequestException, hre:
-                http_request_e += 1
-                self.assertEqual(hre.message, 'HTTP timeout error.')
-            except ScanMustStopException:
-                scan_stop_e += 1
-                self.assertTrue(True)
-                break
-            except Exception, e:
-                msg = 'Not expecting: "%s"'
-                self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
-
-        self.uri_opener.settings.set_default_values()
-        self.assertEqual(http_request_e, 5)
-        self.assertEqual(scan_stop_e, 1)
-
-    def test_delay_on_errors(self):
-        return_empty_daemon = UpperDaemon(EmptyTCPHandler)
-        return_empty_daemon.start()
-        return_empty_daemon.wait_for_start()
-
-        port = return_empty_daemon.get_port()
-
-        url = URL('http://127.0.0.1:%s/' % port)
-        previous_time = 0.0
-        total_time = 0.0
-
-        # Force the uri_opener into an error state
-        for _ in xrange(3):
-            try:
-                self.uri_opener.GET(url, cache=False)
-            except:
-                pass
-
-        # Not check the delays
-        for i in xrange(MAX_ERROR_COUNT):
-            start = time.time()
-            try:
-                self.uri_opener.GET(url, cache=False)
-            except HTTPRequestException:
-                self.assertTrue(True)
-                end = time.time()
-
-                self.assertGreater(end - start, previous_time)
-                previous_time = end - start
-                total_time += previous_time
-
-            except ScanMustStopException:
-                self.assertTrue(True)
-                break
-            except Exception, e:
-                msg = 'Not expecting: "%s"'
-                self.assertTrue(False, msg % e.__class__.__name__)
-        else:
-            self.assertTrue(False)
-
-        expected_total_delay = 0.0
-        for i in xrange(MAX_ERROR_COUNT):
-            expected_total_delay += ExtendedUrllib.SOCKET_ERROR_DELAY * i
-
-        self.assertGreater(expected_total_delay, total_time)
-
-    def test_ignore_errors(self):
-        upper_daemon = UpperDaemon(TimeoutTCPHandler)
-        upper_daemon.start()
-        upper_daemon.wait_for_start()
-
-        port = upper_daemon.get_port()
-
-        self.uri_opener.settings.set_timeout(1)
-        self.uri_opener._retry = Mock()
-
-        url = URL('http://127.0.0.1:%s/' % port)
-
-        try:
-            self.uri_opener.GET(url, ignore_errors=True)
-        except HTTPRequestException:
-            self.assertEqual(self.uri_opener._retry.call_count, 0)
-        else:
-            self.assertTrue(False, 'Exception not raised')
-
-        self.uri_opener.settings.set_default_values()
 
     def test_stop(self):
         self.uri_opener.stop()

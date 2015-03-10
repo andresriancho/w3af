@@ -1,21 +1,49 @@
 import threading
+import binascii
 import httplib
 import urllib
 import socket
 import ssl
+import os
 
 from .http_response import HTTPResponse
-from .utils import debug
+from .utils import debug, DEBUG
 
-from w3af.core.data.kb.config import cf
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 
-class _HTTPConnection(httplib.HTTPConnection):
+class UniqueID(object):
+    def __init__(self):
+        if DEBUG:
+            # Only do the extra id stuff when debugging
+            self.id = binascii.hexlify(os.urandom(8))
+        else:
+            self.id = None
+
+        self.req_count = 0
+        self.timeout = None
+
+    def inc_req_count(self):
+        self.req_count += 1
+
+    def __repr__(self):
+        # Only makes sense when DEBUG is True
+        return '<KeepAliveHTTPConnection %s - Request #%s>' % (self.id,
+                                                               self.req_count)
+
+    def __str__(self):
+        # Only makes sense when DEBUG is True
+        timeout = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
+        args = (self.__class__.__name__, self.id, self.req_count, timeout)
+        return '%s(id:%s, req_count:%s, timeout:%s)' % args
+
+
+class _HTTPConnection(httplib.HTTPConnection, UniqueID):
 
     def __init__(self, host, port=None, strict=None,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        UniqueID.__init__(self)
         httplib.HTTPConnection.__init__(self, host, port, strict,
                                         timeout=timeout)
         self.is_fresh = True
@@ -27,8 +55,9 @@ class ProxyHTTPConnection(_HTTPConnection):
     """
     _ports = {'http': 80, 'https': 443}
 
-    def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict)
+    def __init__(self, host, port=None, strict=None,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        _HTTPConnection.__init__(self, host, port, strict, timeout=timeout)
 
     def proxy_setup(self, url):
         # request is called before connect, so can interpret url and get
@@ -95,7 +124,7 @@ _protocols = [ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv23]
 _protocols_lock = threading.RLock()
 
 
-class SSLNegotiatorConnection(httplib.HTTPSConnection):
+class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
     """
     Connection class that enables usage of newer SSL protocols.
 
@@ -105,6 +134,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
         https://gist.github.com/flandr/74be22d1c3d7c1dfefdd
     """
     def __init__(self, *args, **kwargs):
+        UniqueID.__init__(self)
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
 
     def connect(self):
@@ -143,7 +173,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection):
                                    certfile=self.cert_file,
                                    ssl_version=protocol,
                                    server_hostname=self.host,
-                                   timeout=cf.get('timeout'))
+                                   timeout=self.timeout)
         except ssl.SSLError, ssl_exc:
             msg = "SSL connection error occurred with protocol %s: '%s'"
             debug(msg % (protocol, ssl_exc))
@@ -179,8 +209,10 @@ class ProxyHTTPSConnection(ProxyHTTPConnection, SSLNegotiatorConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
-                 strict=None):
-        ProxyHTTPConnection.__init__(self, host, port, strict=strict)
+                 strict=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        UniqueID.__init__(self)
+        ProxyHTTPConnection.__init__(self, host, port, strict=strict,
+                                     timeout=timeout)
         self.key_file = key_file
         self.cert_file = cert_file
 
@@ -202,19 +234,20 @@ class HTTPConnection(_HTTPConnection):
     # use the modified response class
     response_class = HTTPResponse
 
-    def __init__(self, host, port=None, strict=None):
+    def __init__(self, host, port=None, strict=None,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         _HTTPConnection.__init__(self, host,
                                  port=port,
                                  strict=strict,
-                                 timeout=cf.get('timeout'))
+                                 timeout=timeout)
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
-                 strict=None):
+                 strict=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         SSLNegotiatorConnection.__init__(self, host, port, key_file, cert_file,
-                                         strict)
+                                         strict, timeout=timeout)
         self.is_fresh = True
 

@@ -81,7 +81,8 @@ class SQLMapWrapper(object):
         
         self.proxy = Proxy(host, 0, uri_opener, name='SQLMapWrapperProxy')
         self.proxy.start()
-        self.local_proxy_url = 'http://%s:%s/' % (host, self.proxy.get_bind_port())
+        self.local_proxy_url = 'http://%s:%s/' % (host,
+                                                  self.proxy.get_bind_port())
 
     def __reduce__(self):
         """
@@ -199,7 +200,7 @@ class SQLMapWrapper(object):
         return self.run_sqlmap_with_pipes(extra_params)
     
     def get_wrapper_params(self, extra_params=[]):
-        # TODO: This one will dissapear the day I add stdin handling support
+        # TODO: This one will disappear the day I add stdin handling support
         #       for the wrapper. Please remember that this support will have to
         #       take care of stdin and all other inputs from other UIs
         params = ['--batch']

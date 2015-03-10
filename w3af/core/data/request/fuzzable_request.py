@@ -283,9 +283,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if not parameters:
             output = short_fmt % (self.get_method(), self.get_url())
         else:
-            jparams = u','.join(parameters)
+            jparams = u', '.join(parameters)
             output = long_fmt % (self.get_method(), self.get_url(),
-                               dc_type, jparams)
+                                 dc_type, jparams)
 
         return output.encode(DEFAULT_ENCODING)
 

@@ -19,17 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import hashlib
+import os
 import random
+import hashlib
+import tempfile
 import threading
 import traceback
-import os
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from os.path import basename
 
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.controllers.exceptions import (ScanMustStopException,
@@ -82,10 +84,10 @@ class ExceptionHandler(object):
         :param exec_info: The exec info as returned by sys module
         :param enabled_plugins: A string as returned by helpers.pprint_plugins.
                                 First I thought about getting the enabled_plugins
-                                after the scan finished, but that proved to be an
-                                incorrect approach since the UI and/or strategy
-                                could simply remove that information as soon as the
-                                scan finished.
+                                after the scan finished, but that proved to be
+                                an incorrect approach since the UI and/or
+                                strategy could simply remove that information as
+                                soon as the scan finished.
 
         :return: None
         """
@@ -115,7 +117,7 @@ class ExceptionHandler(object):
             count = 0
             for stored_edata in self._exception_data:
                 if edata.plugin == stored_edata.plugin and\
-                        edata.phase == stored_edata.phase:
+                edata.phase == stored_edata.phase:
                     count += 1
 
             if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
@@ -124,6 +126,26 @@ class ExceptionHandler(object):
                 msg += ' The scan will continue but some vulnerabilities might'\
                        ' not be identified.'
                 om.out.error(msg)
+
+        filename = self.write_crash_file(edata)
+        om.out.debug('Logged "%s" to "%s"' % (edata.get_exception_class(),
+                                              filename))
+
+    def write_crash_file(self, edata):
+        """
+        Writes the exception data to a random file in /tmp/ right after the
+        exception is found.
+
+        Very similar to the create_crash_file but for internal/debugging usage
+
+        :return: None
+        """
+        filename = 'w3af_crash-%s.txt' % rand_alnum(5)
+        filename = os.path.join(tempfile.gettempdir(), filename)
+        crash_dump = file(filename, "w")
+        crash_dump.write(edata.get_details())
+        crash_dump.close()
+        return filename
 
     def clear(self):
         self._exception_data = []
@@ -271,10 +293,13 @@ class ExceptionData(object):
     def get_summary(self):
         res = 'A "%s" exception was found while running %s.%s on "%s". The'\
               ' exception was: "%s" at %s:%s():%s.'
-        res = res % (self.exception.__class__.__name__, self.phase, self.plugin,
+        res = res % (self.get_exception_class(), self.phase, self.plugin,
                      self.fuzzable_request, self.exception, self.filename,
                      self.function_name, self.lineno)
         return res
+
+    def get_exception_class(self):
+        return self.exception.__class__.__name__
 
     def get_details(self):
         res = self.get_summary()

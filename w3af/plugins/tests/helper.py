@@ -120,6 +120,9 @@ class PluginTest(unittest.TestCase):
                 info.get_desc()
 
     def assertAllVulnNamesEqual(self, vuln_name, vulns):
+        if not vulns:
+            self.assertTrue(False, 'No vulnerabilities found to match')
+
         for vuln in vulns:
             self.assertEqual(vuln.get_name(), vuln_name)
 
@@ -390,6 +393,7 @@ class PluginConfig(object):
 
 class ReadExploitTest(PluginTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
+        self.w3afcore.uri_opener.set_exploit_mode(True)
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', exploit_plugin)
 
         self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))

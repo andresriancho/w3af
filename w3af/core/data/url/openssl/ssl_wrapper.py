@@ -202,7 +202,11 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
         ctx.set_verify(cert_reqs, lambda a, b, err_no, c, d: err_no == 0)
 
     if timeout is not None:
-        ctx.set_timeout(timeout)
+        # SSL connection timeout doesn't work #7989
+        # https://github.com/andresriancho/w3af/issues/7989
+        #
+        #ctx.set_timeout(timeout)
+        pass
 
     if ca_certs:
         try:

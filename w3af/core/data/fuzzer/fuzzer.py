@@ -87,7 +87,7 @@ def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
     # Apache+PHP doesn't send that tag by default (only sent if the PHP
     # developer added some code to his PHP to do it).
     #
-    if orig_resp is not None:
+    if orig_resp is not None and result:
 
         headers = orig_resp.get_headers()
         etag, etag_header_name = headers.iget('ETag', None)
