@@ -120,7 +120,6 @@ class OutputManager(Process):
                 break
 
             if work_unit == POISON_PILL:
-
                 break
 
             else:
