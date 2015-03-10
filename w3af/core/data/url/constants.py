@@ -28,7 +28,7 @@ SOCKET_ERROR_DELAY = 0.15
 DEFAULT_TIMEOUT = 6
 
 # Run the timeout adjustment every N HTTP requests
-TIMEOUT_ADJUST_LIMIT = 25
+TIMEOUT_ADJUST_LIMIT = 50
 
 # Used to calculate the timeout based on the average response time from the
 # remote site. timeout = average_response_time * TIMEOUT_MULT_CONST
@@ -46,4 +46,4 @@ TIMEOUT_MULT_CONST = 7.5
 # care by TIMEOUT_MULT_CONST but in some cases that's not enough.
 #
 # Thus I've decided to set a MIN timeout:
-TIMEOUT_MIN = 0.15
+TIMEOUT_MIN = 0.35
