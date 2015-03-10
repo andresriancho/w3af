@@ -53,7 +53,6 @@ class detailed(AuthPlugin):
         """
         Login to the application.
         """
-
         msg = 'Logging into the application using %s/%s' % (self.username,
                                                             self.password)
         om.out.debug(msg)
@@ -65,40 +64,40 @@ class detailed(AuthPlugin):
             functor = getattr(self._uri_opener, self.method)
             response = functor(self.auth_url, data)
 
-            redir_count = 0
-            working_auth_url = self.auth_url
+            redirect_count = 0
 
             # follow redirects if the feature is enabled
-            while self.follow_redirects and redir_count < self.MAX_REDIRECTS:
+            while self.follow_redirects and redirect_count < self.MAX_REDIRECTS:
                 
                 if response.get_code() not in GET_HEAD_CODES:
                     # no redirect received, continue
                     break
 
                 # Avoid endless loops
-                redir_count += 1
+                redirect_count += 1
 
-                location_header_value, _ = response.get_headers().iget('location')
-                uri_header_value, _ = response.get_headers().iget('uri')
-                redir_url = location_header_value or uri_header_value
+                response_headers = response.get_headers()
+                location_header_value, _ = response_headers.iget('location')
+                uri_header_value, _ = response_headers.iget('uri')
+                redirect_url = location_header_value or uri_header_value
 
-                redir_url = response.get_url().url_join(redir_url)
-                
-                om.out.debug('auth.detailed was redirected to URL: "%s"' % redir_url)
+                redirect_url = response.get_url().url_join(redirect_url)
+
+                msg = 'auth.detailed was redirected to URL: "%s"'
+                om.out.debug(msg % redirect_url)
                 
                 # on HTTP redirect we can only follow up with GET
-                response = self._uri_opener.GET(redir_url)
+                response = self._uri_opener.GET(redirect_url)
 
-            if redir_count == self.MAX_REDIRECTS:
-                msg = "auth.detailed seems to have entered an" \
-                      " endless HTTP redirect loop with {0}" \
-                      " redirects, the last URL was {1}"
-                raise Exception(msg.format(redir_count, redir_url))
+            if redirect_count == self.MAX_REDIRECTS:
+                msg = 'auth.detailed seems to have entered an endless HTTP' \
+                      ' redirect loop with %s redirects, the last URL was %s'
+                raise Exception(msg % (redirect_count, redirect_url))
 
             # check if we're logged in
             if not self.is_logged():
-                raise Exception("Can't login into web application as %s/%s"
-                                % (self.username, self.password))
+                msg = "Can't login into web application as %s/%s"
+                raise Exception(msg % (self.username, self.password))
             else:
                 om.out.debug('Login success for %s/%s' % (self.username,
                                                           self.password))
@@ -194,10 +193,12 @@ class detailed(AuthPlugin):
              '    - %U for the username value\n'
              '    - %p for the password parameter name value\n'
              '    - %P for the password value\n'),
+
             ('follow_redirects',
              self.follow_redirects,
              'boolean',
-             'Follow HTTP redirects in multi-stage authentication workflows'),
+             'Follow HTTP redirects in multi-stage authentication flows'),
+
             ('method',
              self.method,
              'string',
@@ -228,10 +229,10 @@ class detailed(AuthPlugin):
         self.method = options_list['method'].get_value()
         self.auth_url = options_list['auth_url'].get_value()
         self.check_url = options_list['check_url'].get_value()
-        self.follow_redirects= options_list['follow_redirects'].get_value()
+        self.follow_redirects = options_list['follow_redirects'].get_value()
 
         for o in options_list:
-            if not o.get_value():
+            if o.get_value() == '':
                 msg = "All parameters are required and can't be empty."
                 raise BaseFrameworkException(msg)
 
