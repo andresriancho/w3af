@@ -171,14 +171,19 @@ class TestXUrllibTimeout(unittest.TestCase):
                 self.assertTrue(False, msg % e.__class__.__name__)
             else:
                 sent_requests += 1
+                if self.uri_opener.settings.set_timeout.call_count:
+                    break
 
+        rtt = self.uri_opener.get_average_rtt()[0]
         adjusted_tout = self.uri_opener.settings.set_timeout.call_args[0][0]
-        expected_tout = TIMEOUT_MULT_CONST * self.uri_opener.get_average_rtt()[0]
+        expected_tout = TIMEOUT_MULT_CONST * rtt
+        delta = rtt * 0.1
 
         self.assertEqual(self.uri_opener.settings.set_timeout.call_count, 1)
-        self.assertGreater(adjusted_tout, expected_tout)
+        self.assertGreaterEqual(adjusted_tout, expected_tout - delta)
+        self.assertLessEqual(adjusted_tout, expected_tout + delta)
         self.assertLess(adjusted_tout, DEFAULT_TIMEOUT)
-        self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT * 2)
+        self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT + 1)
 
 
 class Ok200SmallDelayHandler(SocketServer.BaseRequestHandler):
