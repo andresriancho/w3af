@@ -105,6 +105,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
         port = upper_daemon.get_port()
 
         self.uri_opener.settings.set_configured_timeout(1)
+        self.uri_opener.clear_timeout()
         self.uri_opener._retry = Mock()
 
         url = URL('http://127.0.0.1:%s/' % port)
@@ -146,6 +147,7 @@ class TestXUrllibErrorHandling(PluginTest):
     def test_do_not_reach_must_stop_exception(self):
         # Configure low timeout to have faster test
         self.w3afcore.uri_opener.settings.set_configured_timeout(TIMEOUT_SECS)
+        self.w3afcore.uri_opener.clear_timeout()
 
         # Setup the server
         upper_daemon = ThreadingUpperDaemon(MultipleTimeoutsTCPHandler)

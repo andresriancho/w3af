@@ -29,11 +29,16 @@ class ResponseMeta(object):
     Stores response meta-data to be able to track errors and timeouts in the
     extended urllib library.
     """
-    def __init__(self, successful, message, rtt=None):
+    def __init__(self, successful, message, rtt=None, host=None):
         self.successful = successful
         self.message = message
         self.rtt = rtt
+        self.host = host
 
     def __str__(self):
-        args = (self.successful, self.message, self.rtt)
-        return '<ResponseMeta (successful: %s, message: %s, rtt: %s)' % args
+        fmt = '<ResponseMeta (successful: %s, message: %s, rtt: %s, host: %s)'
+        args = (self.successful, self.message, self.rtt, self.host)
+        return fmt % args
+
+    def __repr__(self):
+        return str(self)

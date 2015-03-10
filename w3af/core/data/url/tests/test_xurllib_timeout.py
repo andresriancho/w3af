@@ -60,6 +60,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
 
         self.uri_opener.settings.set_configured_timeout(0.5)
+        self.uri_opener.clear_timeout()
         # We can mock this because it's being tested at TestXUrllibDelayOnError
         self.uri_opener._pause_on_http_error = Mock()
         start = time.time()
@@ -88,6 +89,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         url = URL('https://127.0.0.1:%s/' % port)
 
         self.uri_opener.settings.set_configured_timeout(1)
+        self.uri_opener.clear_timeout()
         start = time.time()
 
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
@@ -111,6 +113,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         port = upper_daemon.get_port()
 
         self.uri_opener.settings.set_configured_timeout(0.5)
+        self.uri_opener.clear_timeout()
         # We can mock this because it's being tested at TestXUrllibDelayOnError
         self.uri_opener._pause_on_http_error = Mock()
 
@@ -149,15 +152,16 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         # Enable timeout auto-adjust
         self.uri_opener.settings.set_configured_timeout(0)
+        self.uri_opener.clear_timeout()
 
         # We can mock this because it's being tested at TestXUrllibDelayOnError
         self.uri_opener._pause_on_http_error = Mock()
 
         # Mock to verify the calls
-        self.uri_opener.settings.set_timeout = Mock()
+        self.uri_opener.set_timeout = Mock()
 
         # Make sure we start from the desired timeout value
-        self.assertEqual(self.uri_opener.settings.get_timeout(),
+        self.assertEqual(self.uri_opener.get_timeout('127.0.0.1'),
                          DEFAULT_TIMEOUT)
 
         url = URL('http://127.0.0.1:%s/' % port)
@@ -166,20 +170,20 @@ class TestXUrllibTimeout(unittest.TestCase):
         for _ in xrange(TIMEOUT_ADJUST_LIMIT * 2):
             try:
                 self.uri_opener.GET(url)
-            except Exception, e:
-                msg = 'Not expecting: "%s"'
-                self.assertTrue(False, msg % e.__class__.__name__)
+            except Exception:
+                raise
             else:
                 sent_requests += 1
-                if self.uri_opener.settings.set_timeout.call_count:
+                if self.uri_opener.set_timeout.call_count:
                     break
 
+        self.assertEqual(self.uri_opener.set_timeout.call_count, 1)
+
         rtt = self.uri_opener.get_average_rtt()[0]
-        adjusted_tout = self.uri_opener.settings.set_timeout.call_args[0][0]
+        adjusted_tout = self.uri_opener.set_timeout.call_args[0][0]
         expected_tout = TIMEOUT_MULT_CONST * rtt
         delta = rtt * 0.1
 
-        self.assertEqual(self.uri_opener.settings.set_timeout.call_count, 1)
         self.assertGreaterEqual(adjusted_tout, expected_tout - delta)
         self.assertLessEqual(adjusted_tout, expected_tout + delta)
         self.assertLess(adjusted_tout, DEFAULT_TIMEOUT)

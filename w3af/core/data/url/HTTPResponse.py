@@ -421,6 +421,9 @@ class HTTPResponse(object):
     def get_url(self):
         return self._realurl
 
+    def get_host(self):
+        return self.get_url().get_domain()
+
     def set_uri(self, uri):
         """
         >>> uri = URL('http://www.google.com/')

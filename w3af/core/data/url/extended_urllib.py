@@ -57,7 +57,7 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           SOCKET_ERROR_DELAY,
                                           TIMEOUT_MULT_CONST,
                                           TIMEOUT_ADJUST_LIMIT,
-                                          TIMEOUT_MIN)
+                                          TIMEOUT_MIN, DEFAULT_TIMEOUT)
 
 
 class ExtendedUrllib(object):
@@ -83,8 +83,12 @@ class ExtendedUrllib(object):
         self._rate_limit_last_time_called = 0.0
         self._rate_limit_lock = threading.RLock()
 
-        # For timeout auto adjust
+        # For timeout auto adjust and general stats
         self._total_requests = 0
+
+        # Timeout is kept by host
+        self._host_timeout = {}
+        self._global_timeout = DEFAULT_TIMEOUT
 
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -118,19 +122,61 @@ class ExtendedUrllib(object):
         """
         self._pause_and_stop()
         self._pause_on_http_error(request)
-        
+
         if not self.exploit_mode:
             self._rate_limit()
-            self._auto_adjust_timeout()
+            self._auto_adjust_timeout(request)
 
         # Increase the request count
         self._total_requests += 1
 
     def set_exploit_mode(self, exploit_mode):
         self.exploit_mode = exploit_mode
-        self.settings.clear_timeout()
 
-    def _auto_adjust_timeout(self):
+        # Set the timeout to DEFAULT_TIMEOUT
+        self.clear_timeout()
+
+        # Closes all HTTPConnections so all new requests are sent using the
+        # DEFAULT_TIMEOUT
+        self.settings.close_connections()
+
+    def set_timeout(self, timeout, host):
+        """
+        Sets the timeout to use in HTTP requests, usually called by the auto
+        timeout adjust feature in extended_urllib.py
+        """
+        msg = 'Updating socket timeout for %s from %s to %s seconds'
+        om.out.debug(msg % (host, self.get_timeout(host), timeout))
+
+        self._host_timeout[host] = timeout
+
+    def get_timeout(self, host):
+        """
+        :return: The timeout to use in HTTP requests, will be equal to the user
+                 configured setting if the auto timeout adjust feature is
+                 disabled, but when enabled this value will change during the
+                 scan.
+        """
+        return self._host_timeout.get(host, self._global_timeout)
+
+    def clear_timeout(self):
+        """
+        Called when the scan has finished/this opener settings won't be used
+        anymore.
+
+        :return: None
+        """
+        self._host_timeout = {}
+        configured_timeout = self.settings.get_configured_timeout()
+
+        if configured_timeout != 0:
+            self._global_timeout = configured_timeout
+        else:
+            # Get ready for the next scan, which we don't want to be affected
+            # by the timeout set in the previous scan
+            self._global_timeout = DEFAULT_TIMEOUT
+
+    def _auto_adjust_timeout(self, request):
         """
         By default the timeout value at OpenerSettings is set to 0, which means
         that w3af needs to auto-adjust it based on the HTTP request/response
@@ -180,20 +226,24 @@ class ExtendedUrllib(object):
         if not self._should_auto_adjust_now():
             return
 
-        average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT)
+        host = request.get_host()
+        average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT,
+                                                        host)
 
         if num_samples < (TIMEOUT_ADJUST_LIMIT / 2):
             msg = 'Not enough samples collected (%s) to adjust timeout.' \
                   ' Keeping the current value of %s seconds'
-            om.out.debug(msg % (num_samples, self.settings.get_timeout()))
+            om.out.debug(msg % (num_samples, self.get_timeout(host)))
         else:
             timeout = average_rtt * TIMEOUT_MULT_CONST
             timeout = max(timeout, TIMEOUT_MIN)
-            self.settings.set_timeout(timeout)
+            self.set_timeout(timeout, host)
 
-    def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT):
+    def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT, host=None):
         """
         :param count: The number of HTTP requests to sample the RTT from
+        :param host: If specified filter the requests by host before calculating
+                     the average RTT
         :return: Tuple with (average RTT from the last `count` requests,
                              the number of successful responses, which contain
                              an RTT, and were used to calculate the average RTT)
@@ -203,13 +253,19 @@ class ExtendedUrllib(object):
         last_n_responses = list(self._last_responses)[-count:]
 
         for response_meta in last_n_responses:
+            if host is not None:
+                if response_meta.host != host:
+                    continue
+
             if response_meta.rtt is not None:
                 rtt_sum += response_meta.rtt
                 add_count += 1
 
-        average_rtt = float(rtt_sum) / add_count
-
-        return average_rtt, add_count
+        if not add_count:
+            return None, 0
+        else:
+            average_rtt = float(rtt_sum) / add_count
+            return average_rtt, add_count
 
     def _should_auto_adjust_now(self):
         """
@@ -353,7 +409,7 @@ class ExtendedUrllib(object):
         self.clear()
         self.settings.clear_cookies()
         self.settings.clear_cache()
-        self.settings.clear_timeout()
+        self.clear_timeout()
         self.settings.close_connections()
 
     def restart(self):
@@ -364,6 +420,8 @@ class ExtendedUrllib(object):
             self.settings.need_update = False
             self.settings.build_openers()
             self._opener = self.settings.get_custom_opener()
+
+            self.clear_timeout()
 
     def get_headers(self, uri):
         """
@@ -522,7 +580,8 @@ class ExtendedUrllib(object):
             uri.querystring = data
 
         new_connection = True if timeout is not None else False
-        timeout = self.settings.get_timeout() if timeout is None else timeout
+        host = uri.get_domain()
+        timeout = self.get_timeout(host) if timeout is None else timeout
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
@@ -564,7 +623,8 @@ class ExtendedUrllib(object):
         data = str(data)
 
         new_connection = True if timeout is not None else False
-        timeout = self.settings.get_timeout() if timeout is None else timeout
+        host = uri.get_domain()
+        timeout = self.get_timeout(host) if timeout is None else timeout
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
@@ -640,7 +700,8 @@ class ExtendedUrllib(object):
             max_retries = uri_opener.settings.get_max_retrys()
 
             new_connection = True if timeout is not None else False
-            timeout = uri_opener.settings.get_timeout() if timeout is None else timeout
+            host = uri.get_domain()
+            timeout = uri_opener.get_timeout(host) if timeout is None else timeout
             req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
                               method=method,
                               error_handling=error_handling,
@@ -846,7 +907,8 @@ class ExtendedUrllib(object):
         """
         reason = get_exception_reason(error)
         reason = reason or str(error)
-        self._last_responses.append(ResponseMeta(False, reason))
+        self._last_responses.append(ResponseMeta(False, reason,
+                                                 host=request.get_host()))
 
         self._log_error_rate()
 
@@ -928,10 +990,11 @@ class ExtendedUrllib(object):
         """
         uri = request.get_uri()
         root_url = uri.base_url()
+        host = uri.get_domain()
 
         req = HTTPRequest(root_url, cookies=True, cache=False,
                           error_handling=False, method='GET', retries=0,
-                          timeout=self.settings.get_timeout())
+                          timeout=self.get_timeout(host))
         req = self.add_headers(req)
 
         try:
@@ -1010,9 +1073,11 @@ class ExtendedUrllib(object):
         # pylint: enable=E0702
 
     def _log_successful_response(self, response):
+        host = response.get_url().get_net_location()
         self._last_responses.append(ResponseMeta(True,
                                                  SUCCESS,
-                                                 response.get_wait_time()))
+                                                 rtt=response.get_wait_time(),
+                                                 host=host))
 
     def set_grep_queue_put(self, grep_queue_put):
         self._grep_queue_put = grep_queue_put
