@@ -315,22 +315,24 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         :return: None
         """
-        # Only initialize once
-        if self.initialized:
-            return
+        with self._kb_lock:
 
-        self.initialized = True
+            # Only initialize once
+            if self.initialized:
+                return
 
-        self.urls = DiskSet(table_prefix='kb_urls')
-        self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
+            self.initialized = True
 
-        self.db = get_default_persistent_db_instance()
+            self.urls = DiskSet(table_prefix='kb_urls')
+            self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
 
-        self.table_name = 'knowledge_base_' + rand_alpha(30)
-        self.db.create_table(self.table_name, self.COLUMNS)
-        self.db.create_index(self.table_name, ['location_a', 'location_b'])
-        self.db.create_index(self.table_name, ['uniq_id'])
-        self.db.commit()
+            self.db = get_default_persistent_db_instance()
+
+            self.table_name = 'knowledge_base_' + rand_alpha(30)
+            self.db.create_table(self.table_name, self.COLUMNS)
+            self.db.create_index(self.table_name, ['location_a', 'location_b'])
+            self.db.create_index(self.table_name, ['uniq_id'])
+            self.db.commit()
 
     @requires_setup
     def clear(self, location_a, location_b):
