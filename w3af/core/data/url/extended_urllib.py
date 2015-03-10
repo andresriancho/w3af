@@ -127,6 +127,7 @@ class ExtendedUrllib(object):
 
     def set_exploit_mode(self, exploit_mode):
         self.exploit_mode = exploit_mode
+        self.settings.clear_timeout()
 
     def _auto_adjust_timeout(self):
         """

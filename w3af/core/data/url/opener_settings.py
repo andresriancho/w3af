@@ -250,8 +250,8 @@ class OpenerSettings(Configurable):
 
     def clear_timeout(self):
         """
-        Called when the scan has finished  / this opener settings won't be used
-        anymore
+        Called when the scan has finished/this opener settings won't be used
+        anymore.
 
         :return: None
         """
