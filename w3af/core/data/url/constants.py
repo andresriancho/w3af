@@ -34,3 +34,16 @@ TIMEOUT_ADJUST_LIMIT = 25
 # remote site. timeout = average_response_time * TIMEOUT_MULT_CONST
 # https://github.com/andresriancho/w3af/issues/8698
 TIMEOUT_MULT_CONST = 7.5
+
+# In some cases the remote server is really quick to respond and we would be
+# able to set timeouts as low as 0.01 seconds, while this is awesome it also
+# means that any "small" load on our scanner and/or the server side will trigger
+# a timeout.
+#
+# Another case where low timeouts might affect us is when the last responses
+# used to calculate the timeout were all taken from a cache and the requests
+# that we want to send require "expensive" SQL queries. This should be taken
+# care by TIMEOUT_MULT_CONST but in some cases that's not enough.
+#
+# Thus I've decided to set a MIN timeout:
+TIMEOUT_MIN = 0.15
