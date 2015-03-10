@@ -329,9 +329,8 @@ class httpLogTab(RememberingHPaned):
         #  Search part
         #
         if searchText:
-            likePieces = []
-            likePieces.append(('url', "%" + searchText + "%", 'like'))
-            likePieces.append(('tag', "%" + searchText + "%", 'like'))
+            likePieces = [('url', "%" + searchText + "%", 'like'),
+                          ('tag', "%" + searchText + "%", 'like')]
             searchData.append((likePieces, 'OR'))
         #
         # Filter part
