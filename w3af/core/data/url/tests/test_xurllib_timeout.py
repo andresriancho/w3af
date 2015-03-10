@@ -182,7 +182,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         rtt = self.uri_opener.get_average_rtt()[0]
         adjusted_tout = self.uri_opener.set_timeout.call_args[0][0]
         expected_tout = TIMEOUT_MULT_CONST * rtt
-        delta = rtt * 0.1
+        delta = rtt * 0.2
 
         self.assertGreaterEqual(adjusted_tout, expected_tout - delta)
         self.assertLessEqual(adjusted_tout, expected_tout + delta)
