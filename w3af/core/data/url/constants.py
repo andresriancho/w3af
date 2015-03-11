@@ -23,6 +23,14 @@ USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
 # in seconds.
 SOCKET_ERROR_DELAY = 0.15
 
+# We want to pause on errors in order to allow the remote end to recover if
+# we're flooding it, but some errors are allowed
+ACCEPTABLE_ERROR_RATE = 5
+
+# We want to pause on errors in order to allow the remote end to recover, but
+# the stats analysis only makes sense once every N requests:
+ERROR_DELAY_LIMIT = 5
+
 # When we start scanning a site and w3af is configured to use auto-adjustable
 # timeouts we actually need *some* timeout to start from, this is the value:
 DEFAULT_TIMEOUT = 6
