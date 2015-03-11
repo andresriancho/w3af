@@ -164,8 +164,8 @@ class php_eggs(InfrastructurePlugin):
         images = 0
         not_images = 0
         for query_result in query_results:
-            http_response = query_result.http_response
-            content_type, _ = http_response.get_headers().iget('content-type')
+            response = query_result.http_response
+            content_type, _ = response.get_headers().iget('content-type', '')
             if 'image' in content_type:
                 images += 1
             else:
