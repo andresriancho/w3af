@@ -238,14 +238,16 @@ class rfi(AuditPlugin):
                 # always the same HTTP response body
                 webroot = '.'
                 webserver.start_webserver(self._listen_address,
-                                          self._listen_port, webroot,
+                                          self._listen_port,
+                                          webroot,
                                           RFIWebHandler)
 
                 # Perform the real work
                 self._test_inclusion(freq, rfi_data, orig_response)
             except Exception, e:
-                om.out.error('An error occurred while running local webserver:'
-                             ' "%s"' % e)
+                msg = 'An error occurred while running local web server for' \
+                      ' the remote file inclusion (rfi) plugin: "%s"'
+                om.out.error(msg % e)
 
     def _w3af_site_test_inclusion(self, freq, orig_response):
         """
