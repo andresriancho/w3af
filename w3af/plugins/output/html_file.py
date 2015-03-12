@@ -80,7 +80,7 @@ class html_file(OutputPlugin):
             self._initialized = True
             try:
                 self._file = codecs.open(self._output_file_name,
-                                         "w", "utf-8", 'replace')
+                                         'w', 'utf-8', 'replace')
                 #self._file = open( self._output_file_name, "w" )
             except IOError, io:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
@@ -92,7 +92,7 @@ class html_file(OutputPlugin):
                 raise BaseFrameworkException(msg)
 
             try:
-                style_file = open(self._style_output_file, "r")
+                style_file = open(self._style_output_file, 'r')
             except Exception, e:
                 msg = 'Can\'t open CSS style file "%s" for reading: "%s"'
                 msg = msg % (os.path.abspath(self._style_output_file), e)
@@ -136,8 +136,9 @@ class html_file(OutputPlugin):
             to_print = to_print.replace('\n', '<br />')
             self._add_to_debug_table(to_print, 'debug')
 
-    def do_nothing(self, *args, **kwds):
+    def do_nothing(self, *args, **kwargs):
         pass
+
     information = vulnerability = do_nothing
 
     def error(self, message, new_line=True):
@@ -165,9 +166,9 @@ class html_file(OutputPlugin):
         should take an action for the enabled plugins and their configuration.
         Usually, write the info to a file or print it somewhere.
 
-        :param pluginsDict: A dict with all the plugin types and the
+        :param plugins_dict: A dict with all the plugin types and the
                                 enabled plugins for that type of plugin.
-        :param optionsDict: A dict with the options for every plugin.
+        :param options_dict: A dict with the options for every plugin.
         """
         to_print = '<pre>'
 
