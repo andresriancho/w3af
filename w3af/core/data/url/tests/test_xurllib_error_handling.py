@@ -166,8 +166,8 @@ class TestXUrllibErrorHandling(PluginTest):
         with patch('w3af.core.data.url.extended_urllib.om.out') as om_mock:
             self._scan(target_url, cfg['plugins'])
 
-            self.assertIn(call.debug('Remote server is reachable'),
-                          om_mock.mock_calls)
+            msg = 'Remote URL %s is reachable'
+            self.assertIn(call.debug(msg % target_url), om_mock.mock_calls)
 
         # Restore the defaults
         self.w3afcore.uri_opener.settings.set_default_values()
