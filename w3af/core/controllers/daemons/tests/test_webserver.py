@@ -59,7 +59,9 @@ class TestWebserver(unittest.TestCase):
         test_fh.close()
 
     def test_is_down(self):
+        # pylint: disable=E1103
         self.assertFalse(self.server.is_down())
+        # pylint: enable=E1103
 
     def test_GET_exists(self):
         self._create_file()
