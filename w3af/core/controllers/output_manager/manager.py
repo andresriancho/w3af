@@ -123,12 +123,12 @@ class OutputManager(Process):
                 break
 
             else:
-                args, kwds = work_unit
+                args, kwargs = work_unit
                 #
                 #    Please note that error handling is done inside:
                 #        _call_output_plugins_action
                 #
-                apply(self._call_output_plugins_action, args, kwds)
+                self._call_output_plugins_action(*args, **kwargs)
 
                 self.in_queue.task_done()
 
