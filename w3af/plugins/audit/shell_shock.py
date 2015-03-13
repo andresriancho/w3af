@@ -101,9 +101,9 @@ class shell_shock(AuditPlugin):
         header_value, header_name = response.get_headers().iget(injected_header)
 
         if header_value is not None and injected_value in header_value.lower():
-            desc = 'Shell shock was found at: %s' % mutant.found_at()
+            desc = u'Shell shock was found at: %s' % mutant.found_at()
 
-            v = Vuln.from_mutant('Shell shock vulnerability', desc,
+            v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
                                  severity.HIGH, [response.id],
                                  self.get_name(), mutant)
 
@@ -147,9 +147,9 @@ class shell_shock(AuditPlugin):
 
             if success:
                 mutant.set_token_value(delay_obj.get_string_for_delay(3))
-                desc = 'Shell shock was found at: %s' % mutant.found_at()
+                desc = u'Shell shock was found at: %s' % mutant.found_at()
 
-                v = Vuln.from_mutant('Shell shock vulnerability', desc,
+                v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
                                      severity.HIGH, [r.id for r in responses],
                                      self.get_name(), mutant)
 
