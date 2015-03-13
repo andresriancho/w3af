@@ -63,7 +63,6 @@ def get_thread_name(threads_list, thread_id):
     """
     for thread in threads_list:
         if thread.ident == thread_id:
-            print thread.name, '*' * 80
             return thread.name
 
     return None
