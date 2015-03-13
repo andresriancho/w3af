@@ -30,12 +30,12 @@ import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from mock import Mock, patch
+from mock import patch
 
 from w3af import ROOT_PATH
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
+from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
 from w3af.core.data.parsers.url import URL
@@ -44,7 +44,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
 
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
-from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
                                               HTTPRequestException,
@@ -204,6 +204,30 @@ class TestXUrllib(unittest.TestCase):
 
         resp = self.uri_opener.GET(url)
         self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_fail_when_requesting_http(self):
+        http_daemon = UpperDaemon(Ok200Handler)
+        http_daemon.start()
+        http_daemon.wait_for_start()
+
+        port = http_daemon.get_port()
+
+        # Note that here I'm using httpS <<---- "S" and that I've started an
+        # HTTP server. We should get an exception
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+
+    def test_ssl_fail_when_requesting_moth_http(self):
+        """
+        Might be related with https://github.com/andresriancho/w3af/issues/7989
+        """
+        # Note that here I'm using httpS <<---- "S" and that I'm connecting to
+        # the net location (host:port) of an HTTP server.
+        http_url = URL(get_moth_http())
+        test_url = URL('https://%s' % http_url.get_net_location())
+
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, test_url)
 
     def test_stop(self):
         self.uri_opener.stop()
