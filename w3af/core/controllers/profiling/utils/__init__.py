@@ -40,6 +40,8 @@ def dump_data_every_thread(func, delay_minutes, save_thread_ptr):
     save_thread = threading.Timer(delay_minutes * 60,
                                   dump_data_every_thread,
                                   args=(func, delay_minutes, save_thread_ptr))
+    save_thread.name = 'ProfilingDumpData'
+    save_thread.daemon = True
     save_thread.start()
 
     if save_thread_ptr:
