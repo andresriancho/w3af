@@ -842,14 +842,14 @@ class ExtendedUrllib(object):
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
         if not req.error_handling:
-            msg = 'Raising HTTP error "%s" "%s". Reason: "%s". Error handling' \
-                  ' was disabled for this request.'
+            msg = u'Raising HTTP error "%s" "%s". Reason: "%s". Error' \
+                  u' handling was disabled for this request.'
             om.out.debug(msg % (req.get_method(), original_url, exception))
             error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
 
         # Log the error
-        msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
+        msg = u'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
         om.out.debug(msg % (req.get_method(), original_url, exception))
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
