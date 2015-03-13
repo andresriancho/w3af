@@ -142,8 +142,8 @@ class BlindSqliResponseDiff(object):
         mutant.set_token_value(syntax_error)
         syntax_error_response, body_syntax_error_response = send_clean(mutant)
 
-        self.debug(
-            'Comparing body_true_response and body_syntax_error_response.')
+        self.debug('Comparing body_true_response and'
+                   ' body_syntax_error_response.')
         if self.equal_with_limit(body_true_response,
                                  body_syntax_error_response,
                                  compare_diff):
