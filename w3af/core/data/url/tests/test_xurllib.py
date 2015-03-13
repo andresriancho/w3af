@@ -44,7 +44,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
 
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
-from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
                                               HTTPRequestException,
@@ -220,14 +220,22 @@ class TestXUrllib(unittest.TestCase):
 
     def test_ssl_fail_when_requesting_moth_http(self):
         """
-        Might be related with https://github.com/andresriancho/w3af/issues/7989
+        https://github.com/andresriancho/w3af/issues/7989
+
+        This test takes considerable time to run since it needs to timeout the
+        SSL connection for each SSL protocol
         """
         # Note that here I'm using httpS <<---- "S" and that I'm connecting to
         # the net location (host:port) of an HTTP server.
         http_url = URL(get_moth_http())
         test_url = URL('https://%s' % http_url.get_net_location())
 
-        self.assertRaises(HTTPRequestException, self.uri_opener.GET, test_url)
+        self.uri_opener.settings.set_max_http_retries(0)
+
+        self.assertRaises(HTTPRequestException,
+                          self.uri_opener.GET,
+                          test_url,
+                          timeout=1)
 
     def test_stop(self):
         self.uri_opener.stop()

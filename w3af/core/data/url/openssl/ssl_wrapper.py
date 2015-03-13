@@ -13,8 +13,10 @@ IANAL but I believe that the guys from ssl-sni made a mistake at changing the
 license (basically they can't). So I'm choosing to use the original Apache
 License, Version 2.0 for this file.
 """
-import socket
 import ssl
+import time
+import socket
+import select
 import OpenSSL
 import pyasn1.codec.der.decoder
 import subj_alt_name
@@ -201,13 +203,6 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     if cert_reqs != OpenSSL.SSL.VERIFY_NONE:
         ctx.set_verify(cert_reqs, lambda a, b, err_no, c, d: err_no == 0)
 
-    if timeout is not None:
-        # SSL connection timeout doesn't work #7989
-        # https://github.com/andresriancho/w3af/issues/7989
-        #
-        #ctx.set_timeout(timeout)
-        pass
-
     if ca_certs:
         try:
             ctx.load_verify_locations(ca_certs, None)
@@ -222,10 +217,33 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
 
     cnx.set_connect_state()
 
-    try:
-        cnx.do_handshake()
-    except OpenSSL.SSL.Error, e:
-        raise ssl.SSLError('Bad handshake', e)
+    # SSL connection timeout doesn't work #7989 , so I'm not able to call:
+    #   ctx.set_timeout(timeout)
+    #
+    # The workaround I found was to use select.select and non-blocking sockets
+    #
+    # https://github.com/andresriancho/w3af/issues/7989
+    sock.setblocking(0)
+    sock.settimeout(timeout)
+    time_begin = time.time()
 
+    while True:
+        try:
+            cnx.do_handshake()
+            break
+        except OpenSSL.SSL.WantReadError:
+            in_fds, out_fds, err_fds = select.select([sock, ], [], [], timeout)
+            if len(in_fds) == 0:
+                raise ssl.SSLError("do_handshake timed out")
+            else:
+                conn_time = int(time.time() - time_begin)
+                if conn_time > timeout:
+                    raise ssl.SSLError("do_handshake timed out")
+                else:
+                    pass
+        except OpenSSL.SSL.SysCallError as e:
+            raise ssl.SSLError(e.args)
+
+    sock.setblocking(1)
     return SSLSocket(cnx, sock)
 
