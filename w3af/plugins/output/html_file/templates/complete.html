@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Application Security Scan Report for {{ target_domain }}</title>
+
+    {% for css in ['bootstrap-3.3.2.min.css'] %}
+        <style>
+            {% include css %}
+        </style>
+    {% endfor %}
+</head>
+
+<body>
+    <div class="container">
+        <div class="thumbnail">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>
+                        <p class="text-center">Application Security Scan for {{ target_domain }}</p>
+                    </h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-4">
+                    <h4>Meta-data</h4>
+                    <p>This report contains the application security scan results
+                    for the w3af scan of the {{ target_domain }} which finished
+                    {{ get_current_date() }}</p>
+                </div>
+
+                <div class="col-md-3">
+                    <h4>Configured target URLs</h4>
+                    <ul>
+                    {% for target_urls in target_urls %}
+                        <li> {{ target_urls }} </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h4>Enabled plugins</h4>
+                    <ul>
+                    {% for plugin_type in enabled_plugins %}
+                        <li> <h5>{{ plugin_type }}</h5>
+                            <ul>
+                            {% for plugin_name in enabled_plugins[plugin_type] %}
+                                <li>{{ plugin_name }}</li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-1"></div>
+            </div>
+        </div>
+    {% for finding in findings %}
+        <div class="thumbnail">
+            <div class="row">
+                <div class="col-md-2"><img src="{{ finding.get_severity()|severity_icon }}" /></div>
+                <div class="col-md-8"><h2 class="text-center">{{ finding.get_name() }}</h2></div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><p>{{ finding.get_desc() }}</p></div>
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10">
+                    <ul>
+                    {% if finding.get_url() != None %}
+                        <li>Vulnerable URL: <a href="{{ finding.get_url() }}">{{ finding.get_url() }}</a></li>
+                    {% endif %}
+
+                    {% if finding.get_token_name() != None %}
+                        <li>Vulnerable Parameter: <code>{{ finding.get_token_name() }}</code></li>
+                    {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-1"></div>
+            </div>
+            {% for id in finding.get_id() %}
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-8">
+                        <pre>{{ id|request }}</pre>
+                    </div>
+                    <div class="col-md-2"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-8">
+                        <pre>{{ id|response }}</pre>
+                    </div>
+                    <div class="col-md-2"></div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <div class="thumbnail">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>
+                    <p class="text-center">URLs found during application scan</p>
+                </h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <ul>
+                    {% for url in known_urls %}
+                        <li><a href="{{ url }}">{{ url }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+    </div>
+
+    {% if debug_log %}
+    <div class="thumbnail">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>
+                    <p class="text-center">Scan log</p>
+                </h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Log level</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for timestamp, level, message in debug_log %}
+                            <tr>
+                                <td>{{ timestamp }}</th>
+                                <td>{{ level }}</th>
+                                <td>{{ message }}</th>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    </div>
+</body>
+
+</html>

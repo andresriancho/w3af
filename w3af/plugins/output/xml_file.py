@@ -32,7 +32,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
 from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
-from w3af.core.data.misc.encoding import smart_str
+from w3af.core.data.misc.encoding import smart_str, smart_unicode
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -249,7 +249,7 @@ class xml_file(OutputPlugin):
             encoded = base64.encodestring(body)
             action_body_content = self._xmldoc.createTextNode(encoded)
             action_body_node.setAttribute('content-encoding', 'base64')
-        
+
         else:
             # try and extract the Content-Type header
             content_type, _ = headers.iget('Content-Type', "")
