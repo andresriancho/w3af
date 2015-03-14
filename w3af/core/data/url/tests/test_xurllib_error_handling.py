@@ -52,50 +52,71 @@ class TestXUrllibDelayOnError(unittest.TestCase):
         self.uri_opener.end()
 
     def test_increasing_delay_on_errors(self):
+        expected_log = {0: False, 70: False, 40: False, 10: False, 80: False,
+                        50: False, 20: False, 90: False, 60: False, 30: False,
+                        100: False}
+        self.assertEqual(self.uri_opener._sleep_log, expected_log)
+
         return_empty_daemon = UpperDaemon(EmptyTCPHandler)
         return_empty_daemon.start()
         return_empty_daemon.wait_for_start()
 
         port = return_empty_daemon.get_port()
 
+        # No retries means that the test is easier to read/understand
+        self.uri_opener.settings.set_max_http_retries(0)
+
+        # We want to keep going, don't test the _should_stop_scan here.
+        self.uri_opener._should_stop_scan = lambda x: False
+
         url = URL('http://127.0.0.1:%s/' % port)
         http_exception_count = 0
-        must_stop_exception_count = 0
+        loops = 100
 
         # Not check the delays
         with patch('w3af.core.data.url.extended_urllib.time.sleep') as sleepm:
-            for i in xrange(MAX_ERROR_COUNT):
+            for i in xrange(loops):
                 try:
                     self.uri_opener.GET(url, cache=False)
                 except HTTPRequestException:
                     http_exception_count += 1
-                except ScanMustStopException:
-                    must_stop_exception_count += 1
-                    break
                 except Exception, e:
                     msg = 'Not expecting: "%s"'
                     self.assertTrue(False, msg % e.__class__.__name__)
                 else:
                     self.assertTrue(False, 'Expecting HTTPRequestException')
-            else:
-                self.assertTrue(False)
+
+            self.assertEqual(loops - 1, i)
 
             # Note that the timeouts are increasing based on the error rate and
             # SOCKET_ERROR_DELAY
-            expected_calls = [call(0.15),
-                              call(0.3),
-                              call(0.44999999999999996),
-                              call(0.6),
-                              call(0.75),
-                              call(0.8999999999999999),
-                              call(1.05),
-                              call(1.2),
-                              call(1.3499999999999999),
-                              call(1.5)]
-            self.assertEqual(expected_calls, sleepm.call_args_list)
+            expected_calls = [call(1.5),
+                              call(3.0),
+                              call(4.5),
+                              call(6.0),
+                              call(7.5),
+                              call(9.0),
+                              call(10.5),
+                              call(12.0),
+                              call(13.5)]
 
-            self.assertEqual(http_exception_count, 4)
-            self.assertEqual(must_stop_exception_count, 1)
+            expected_log = {0: False, 70: True, 40: True, 10: True, 80: True,
+                            50: True, 20: True, 90: True, 60: True, 30: True,
+                            100: False}
+            self.assertEqual(expected_calls, sleepm.call_args_list)
+            self.assertEqual(http_exception_count, 100)
+            self.assertEqual(self.uri_opener._sleep_log, expected_log)
+
+            # This one should also clear the log
+            try:
+                self.uri_opener.GET(url, cache=False)
+            except HTTPRequestException:
+                pass
+            else:
+                self.assertTrue(False, 'Expected HTTPRequestException')
+
+            # The log was cleared, all values should be False
+            self.assertTrue(all([not v for v in self.uri_opener._sleep_log.values()]))
 
     def test_error_handling_disable_per_request(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
@@ -166,8 +187,8 @@ class TestXUrllibErrorHandling(PluginTest):
         with patch('w3af.core.data.url.extended_urllib.om.out') as om_mock:
             self._scan(target_url, cfg['plugins'])
 
-            self.assertIn(call.debug('Remote server is reachable'),
-                          om_mock.mock_calls)
+            msg = 'Remote URL %s is reachable'
+            self.assertIn(call.debug(msg % target_url), om_mock.mock_calls)
 
         # Restore the defaults
         self.w3afcore.uri_opener.settings.set_default_values()

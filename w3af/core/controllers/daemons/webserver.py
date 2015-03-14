@@ -32,9 +32,6 @@ import w3af.core.controllers.output_manager as om
 # Created servers
 _servers = {}
 
-# Server timeout in seconds
-SERVER_TIMEOUT = 3 * 60
-
 
 def is_running(ip, port):
     """
@@ -67,7 +64,7 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
         self.__shutdown_request = False
 
     def is_down(self):
-        return self.__shutdown_request
+        return self.__is_shut_down.is_set()
 
     def serve_forever(self, poll_interval=0.5):
         """Handle one request at a time until shutdown.
@@ -79,23 +76,25 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
         self.__is_shut_down.clear()
         try:
             while not self.__shutdown_request:
-                self.handle_request()
+                self.handle_request(poll_interval=poll_interval)
         finally:
-            ##self.__shutdown_request = False
+            self.__shutdown_request = False
             self.__is_shut_down.set()
 
-    def handle_request(self):
+    def handle_request(self, poll_interval=0.5):
         """Handle one request, possibly blocking."""
 
-        fd_sets = select.select([self], [], [], SERVER_TIMEOUT)
+        fd_sets = select.select([self], [], [], poll_interval)
         if not fd_sets[0]:
             self.server_close()
             self.__shutdown_request = True
             return
+
         try:
             request, client_address = self.get_request()
         except socket.error:
             return
+
         if self.verify_request(request, client_address):
             try:
                 self.process_request(request, client_address)
@@ -104,9 +103,6 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
                 self.close_request(request)
 
     def server_bind(self):
-        msg = 'Changing socket options of w3afHTTPServer to (socket.SOL_SOCKET'\
-              ', socket.SO_REUSEADDR, 1)'
-        om.out.debug(msg)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BaseHTTPServer.HTTPServer.server_bind(self)
 
@@ -138,8 +134,9 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 try:
                     self.send_response(200)
-                    # This isn't nice, but this is NOT a complete web server implementation
-                    # it is only here to serve some files to "victim" web servers
+                    # This isn't nice, but this is NOT a complete web server
+                    # implementation it is only here to serve some files to
+                    # "victim" web servers
                     content_type, encoding = mimetypes.guess_type(self.path)
                     if content_type is not None:
                         self.send_header('Content-type', content_type)
@@ -168,19 +165,20 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 def start_webserver(ip, port, webroot, handler=w3afWebHandler):
-    """Create a http server deamon. The returned instance is unique for <ip>
+    """Create a http server daemon. The returned instance is unique for <ip>
     and <port>.
 
     :param ip: IP address where to bind
     :param port: Port number
-    :param webroot: webserver's root directory
-    :return: A local webserver instance bound to the requested address (<ip>, <port>)
+    :param webroot: webs erver's root directory
+    :return: A local web server instance bound to the requested address (<ip>, <port>)
     """
     server_thread = _get_inst(ip, port)
 
     if server_thread is None or server_thread.is_down():
         web_server = w3afHTTPServer((ip, port), webroot, handler)
         _servers[(ip, port)] = web_server
+
         # Start server!
         server_thread = threading.Thread(target=web_server.serve_forever)
         server_thread.name = 'WebServer'
@@ -191,10 +189,10 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
 
 
 def start_webserver_any_free_port(ip, webroot, handler=w3afWebHandler):
-    """Create a http server deamon in any free port available.
+    """Create a http server daemon in any free port available.
 
     :param ip: IP address where to bind
-    :param webroot: webserver's root directory
+    :param webroot: web server's root directory
     :return: A local webserver instance and the port where it's listening
     """
     web_server = w3afHTTPServer((ip, 0), webroot, handler)

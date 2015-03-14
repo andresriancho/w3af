@@ -244,14 +244,20 @@ class UrlOpenerProxy(object):
     # do it this way since the extended_urllib.py also implements __getattr__
     # to provide PUT, PATCH, etc. methods.
     #
-    # These methods won't be wrapped, mostly because they:
+    # These methods won't be wrapped, mostly because they either:
     #   * Don't return an HTTPResponse
     #   * Don't raise HTTPRequestException
     #
     # I noticed this issue when #8705 was reported
     # https://github.com/andresriancho/w3af/issues/8705
-    NO_WRAPPER_FOR = {'send_clean', 'clear', 'end', 'restart', 'get_headers',
-                      'get_cookies', 'get_remote_file_size', 'add_headers',
+    NO_WRAPPER_FOR = {'send_clean',
+                      'clear',
+                      'end',
+                      'restart',
+                      'get_headers',
+                      'get_cookies',
+                      'get_remote_file_size',
+                      'add_headers',
                       '_check_uri',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',

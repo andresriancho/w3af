@@ -40,7 +40,7 @@ class TestWebserver(unittest.TestCase):
         
         for port in xrange(self.PORT, self.PORT + 15):
             try:
-                start_webserver(self.IP, port, self.tempdir)
+                self.server = start_webserver(self.IP, port, self.tempdir)
             except:
                 pass
             else:
@@ -58,9 +58,14 @@ class TestWebserver(unittest.TestCase):
         test_fh.write(self.TESTSTRING)
         test_fh.close()
 
+    def test_is_down(self):
+        # pylint: disable=E1103
+        self.assertFalse(self.server.is_down())
+        # pylint: enable=E1103
+
     def test_GET_exists(self):
         self._create_file()
-        
+
         url = 'http://%s:%s/foofile.txt' % (self.IP, self.PORT)
         response_body = urllib2.urlopen(url).read()
         

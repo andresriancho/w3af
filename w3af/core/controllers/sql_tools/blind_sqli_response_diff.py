@@ -26,9 +26,10 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.exceptions import HTTPRequestException
 
 
-class blind_sqli_response_diff(object):
+class BlindSqliResponseDiff(object):
     """
     This class tests for blind SQL injection bugs using response diffs,
     the logic is here and not as an audit plugin because it is also used in
@@ -62,10 +63,15 @@ class blind_sqli_response_diff(object):
         """
         statements = self._get_statements(mutant)
         for statement_type in statements:
-            vuln = self._find_bsql(mutant, statements[statement_type],
-                                   statement_type)
-            if vuln:
-                return vuln
+            try:
+                vuln = self._find_bsql(mutant,
+                                       statements[statement_type],
+                                       statement_type)
+            except HTTPRequestException:
+                continue
+            else:
+                if vuln:
+                    return vuln
 
         return None
 
@@ -100,14 +106,16 @@ class blind_sqli_response_diff(object):
 
         :return: A vulnerability object or None if nothing is found
         """
+        # shortcuts
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
+        send_clean = self._uri_opener.send_clean
 
         mutant.set_token_value(true_statement)
-        _, body_true_response = self._uri_opener.send_clean(mutant)
+        _, body_true_response = send_clean(mutant)
 
         mutant.set_token_value(false_statement)
-        _, body_false_response = self._uri_opener.send_clean(mutant)
+        _, body_false_response = send_clean(mutant)
 
         if body_true_response == body_false_response:
             #
@@ -132,11 +140,10 @@ class blind_sqli_response_diff(object):
 
         syntax_error = "d'z'0"
         mutant.set_token_value(syntax_error)
-        syntax_error_response, body_syntax_error_response = self._uri_opener.send_clean(
-            mutant)
+        syntax_error_response, body_syntax_error_response = send_clean(mutant)
 
-        self.debug(
-            'Comparing body_true_response and body_syntax_error_response.')
+        self.debug('Comparing body_true_response and'
+                   ' body_syntax_error_response.')
         if self.equal_with_limit(body_true_response,
                                  body_syntax_error_response,
                                  compare_diff):
@@ -148,11 +155,10 @@ class blind_sqli_response_diff(object):
         second_false_stm = statements[statement_type][1]
 
         mutant.set_token_value(second_true_stm)
-        second_true_response, body_second_true_response = self._uri_opener.send_clean(
-            mutant)
+        second_true_response, body_second_true_response = send_clean(mutant)
 
         mutant.set_token_value(second_false_stm)
-        second_false_response, body_second_false_response = self._uri_opener.send_clean(mutant)
+        second_false_response, body_second_false_response = send_clean(mutant)
 
         self.debug('Comparing body_second_true_response and'
                    ' body_true_response.')

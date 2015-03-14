@@ -712,8 +712,9 @@ class MainApp(object):
         This is separated because it's called when the process finishes by
         itself or by the user click.
         """
-        self.startstopbtns.change_internals(_("Clear"), gtk.STOCK_CLEAR,
-                                           _("Clear all the obtained results"))
+        self.startstopbtns.change_internals(_("Clear"),
+                                            gtk.STOCK_CLEAR,
+                                            _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
         self.scan_should = "clear"

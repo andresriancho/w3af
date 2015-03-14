@@ -269,6 +269,7 @@ class URL(DiskItem):
         return new_url
 
     @property
+    @memoized
     def url_string(self):
         """
         :return: A <unicode> representation of the URL
@@ -807,9 +808,10 @@ class URL(DiskItem):
     def __hash__(self):
         return hash(self.url_string)
 
+    @memoized
     def __str__(self):
         """
-        :return: A string representation of myself
+        :return: A string representation of self
         """
         urlstr = smart_str(
             self.url_string,

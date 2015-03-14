@@ -88,6 +88,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         url = URL('https://127.0.0.1:%s/' % port)
 
+        self.uri_opener.settings.set_max_http_retries(0)
         self.uri_opener.settings.set_configured_timeout(1)
         self.uri_opener.clear_timeout()
         start = time.time()
@@ -97,13 +98,12 @@ class TestXUrllibTimeout(unittest.TestCase):
         end = time.time()
         self.uri_opener.settings.set_default_values()
 
-        #   We Skip this part because openssl doesn't allow us to use timeouts
-        #   https://github.com/andresriancho/w3af/issues/7989
-        #
-        #   Don't Skip at the beginning of the test because we want to be able
-        #   to test that timeout exceptions are at least handled by xurllib
-        raise SkipTest('See https://github.com/andresriancho/w3af/issues/7989')
-        #self.assertLess(end-start, 3)
+        # We set the upper limit to 4 because the uri opener needs to timeout
+        # all the connections (one for each SSL protocol) and then, because of
+        # some very relaxed handshake it needs to timeout a SSL protocol 3
+        # connection which passes handshake phase but then fails to send/get
+        # the headers
+        self.assertLess(end-start, 80)
 
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)

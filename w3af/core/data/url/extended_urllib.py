@@ -57,7 +57,9 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           SOCKET_ERROR_DELAY,
                                           TIMEOUT_MULT_CONST,
                                           TIMEOUT_ADJUST_LIMIT,
-                                          TIMEOUT_MIN, DEFAULT_TIMEOUT)
+                                          TIMEOUT_MIN, DEFAULT_TIMEOUT,
+                                          ACCEPTABLE_ERROR_RATE,
+                                          ERROR_DELAY_LIMIT)
 
 
 class ExtendedUrllib(object):
@@ -89,6 +91,11 @@ class ExtendedUrllib(object):
         # Timeout is kept by host
         self._host_timeout = {}
         self._global_timeout = DEFAULT_TIMEOUT
+
+        # Used in the pause on HTTP error feature to keep track of when the
+        # core slept waiting for the remote end to be reachable
+        self._sleep_log = {}
+        self._clear_sleep_log()
 
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -292,40 +299,39 @@ class ExtendedUrllib(object):
 
     def _pause_on_http_error(self, request):
         """
-        This method will pause the scan for an increasing period of time based
-        on the HTTP error rate. HTTP errors are timeouts, network unreachable,
-        etc. things like 404, 403, 500 are NOT considered errors.
+        This method will pause all scan threads for an increasing period of time
+        based on the HTTP error rate. HTTP errors are timeouts, network
+        unreachable, etc. things like 404, 403, 500 are NOT considered errors.
 
         The objective of this method is to give the remote server, or local
         connection, the chance to recover from their errors without killing the
         w3af scan.
 
-        Successful requests lower the error rate and allow faster request rates.
-        Failed requests increase the rate and make this method delay requests
+        When the error rate is lower than 5% nothing is done. We accept some
+        errors.
 
-        The rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
-        in seconds.
+        If error rate is higher we delay the threads for some time, give the
+        remote server/local connection time to recover, and then continue with
+        the scan as usual.
+
+        The error rate is multiplied by SOCKET_ERROR_DELAY to get the real delay
+        time in seconds.
 
         The error rate starts at zero, so no delay is added at the beginning
 
-        In the worse case scenario, where MAX_ERROR_COUNT errors occur, the
-        requests are going to be delayed as follows (considering MAX_ERROR_COUNT
-        10 and SOCKET_ERROR_DELAY 0.1):
-            1-  No delay
-            2-  SOCKET_ERROR_DELAY * 1 == 0.1
-            3-  SOCKET_ERROR_DELAY * 2 == 0.2
-            ...
-            10- SOCKET_ERROR_DELAY * 9 == 0.9
-
-        The total time added by this method (considering the above values) is
-        4.5 seconds. That's the time we give the remote server to recover.
-
         :return: None, but might delay the requests which go out to the network
         :see: https://github.com/andresriancho/w3af/issues/4811
+        :see: https://github.com/andresriancho/w3af/issues/8852
         """
-        error_rate = self.get_error_rate()
-        if error_rate:
-            self._rate_limit_lock.acquire()
+        with self._rate_limit_lock:
+
+            error_rate = self.get_error_rate()
+            if not self._should_pause_on_http_error(error_rate):
+                return
+
+            pending_pause, lower_error_rate = self._has_pending_pause(error_rate)
+            if not pending_pause:
+                return
 
             # Logging
             error_sleep = SOCKET_ERROR_DELAY * error_rate
@@ -338,7 +344,43 @@ class ExtendedUrllib(object):
             # The actual delay
             time.sleep(error_sleep)
 
-            self._rate_limit_lock.release()
+            # Record this delay
+            self._sleep_log[lower_error_rate] = True
+
+            # Clear if needed
+            if self.get_total_requests() % 100 == 0:
+                self._clear_sleep_log()
+
+    def _clear_sleep_log(self):
+        self._sleep_log = {}
+
+        step = ACCEPTABLE_ERROR_RATE * 2
+        data = [(i, False) for i in xrange(0, 110, step)]
+
+        self._sleep_log.update(data)
+
+    def _has_pending_pause(self, error_rate):
+        """
+        :param error_rate: The current error rate
+        :return: (False if we don't need to sleep/delay,
+                  The rounded error rate used to query the sleep log)
+        """
+        step = ACCEPTABLE_ERROR_RATE * 2
+        lower_error_rate = divmod(error_rate, step)[0] * step
+        return not self._sleep_log[lower_error_rate], lower_error_rate
+
+    def _should_pause_on_http_error(self, error_rate):
+        """
+        :param error_rate: The current error rate
+        :return: True if we should analyze enter the pause on error
+        """
+        if error_rate <= ACCEPTABLE_ERROR_RATE:
+            return False
+
+        if self.get_total_requests() % ERROR_DELAY_LIMIT == 0:
+            return True
+
+        return False
 
     def _rate_limit(self):
         """
@@ -353,12 +395,9 @@ class ExtendedUrllib(object):
             elapsed = time.clock() - self._rate_limit_last_time_called
             left_to_wait = min_interval - elapsed
 
-            self._rate_limit_lock.acquire()
-
-            if left_to_wait > 0:
-                time.sleep(left_to_wait)
-
-            self._rate_limit_lock.release()
+            with self._rate_limit_lock:
+                if left_to_wait > 0:
+                    time.sleep(left_to_wait)
 
             self._rate_limit_last_time_called = time.clock()
 
@@ -803,14 +842,14 @@ class ExtendedUrllib(object):
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):
         if not req.error_handling:
-            msg = 'Raising HTTP error "%s" "%s". Reason: "%s". Error handling' \
-                  ' was disabled for this request.'
+            msg = u'Raising HTTP error "%s" "%s". Reason: "%s". Error' \
+                  u' handling was disabled for this request.'
             om.out.debug(msg % (req.get_method(), original_url, exception))
             error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
 
         # Log the error
-        msg = 'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
+        msg = u'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
         om.out.debug(msg % (req.get_method(), original_url, exception))
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
@@ -822,7 +861,8 @@ class ExtendedUrllib(object):
         with self._count_lock:
             self._log_failed_response(exception, req)
 
-            if self._should_stop_scan(req):
+            should_stop_scan = self._should_stop_scan(req)
+            if should_stop_scan:
                 self._handle_error_count_exceeded(exception)
 
         # Then retry!
@@ -1000,16 +1040,16 @@ class ExtendedUrllib(object):
         try:
             self.send(req, grep=False)
         except HTTPRequestException, e:
-            msg = 'Remote server is UNREACHABLE due to: "%s"'
-            om.out.debug(msg % e)
+            msg = 'Remote URL %s is UNREACHABLE due to: "%s"'
+            om.out.debug(msg % (root_url, e))
             return False
         except Exception, e:
-            msg = 'Internal error makes server UNREACHABLE due to: "%s"'
-            om.out.debug(msg % e)
+            msg = 'Internal error makes URL %s UNREACHABLE due to: "%s"'
+            om.out.debug(msg % (root_url, e))
             return False
         else:
-            msg = 'Remote server is reachable'
-            om.out.debug(msg)
+            msg = 'Remote URL %s is reachable'
+            om.out.debug(msg % root_url)
             return True
 
     def get_error_rate(self):

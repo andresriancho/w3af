@@ -30,12 +30,12 @@ import SocketServer
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
-from mock import Mock, patch
+from mock import patch
 
 from w3af import ROOT_PATH
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import MAX_ERROR_COUNT, SOCKET_ERROR_DELAY
+from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
 from w3af.core.data.parsers.url import URL
@@ -141,6 +141,8 @@ class TestXUrllib(unittest.TestCase):
 
         port = upper_daemon.get_port()
 
+        self.uri_opener.settings.set_max_http_retries(0)
+
         url = URL('http://127.0.0.1:%s/' % port)
         http_request_e = 0
         scan_must_stop_e = 0
@@ -204,6 +206,38 @@ class TestXUrllib(unittest.TestCase):
 
         resp = self.uri_opener.GET(url)
         self.assertEqual(resp.get_body(), Ok200Handler.body)
+
+    def test_ssl_fail_when_requesting_http(self):
+        http_daemon = UpperDaemon(Ok200Handler)
+        http_daemon.start()
+        http_daemon.wait_for_start()
+
+        port = http_daemon.get_port()
+
+        # Note that here I'm using httpS <<---- "S" and that I've started an
+        # HTTP server. We should get an exception
+        url = URL('https://127.0.0.1:%s/' % port)
+
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+
+    def test_ssl_fail_when_requesting_moth_http(self):
+        """
+        https://github.com/andresriancho/w3af/issues/7989
+
+        This test takes considerable time to run since it needs to timeout the
+        SSL connection for each SSL protocol
+        """
+        # Note that here I'm using httpS <<---- "S" and that I'm connecting to
+        # the net location (host:port) of an HTTP server.
+        http_url = URL(get_moth_http())
+        test_url = URL('https://%s' % http_url.get_net_location())
+
+        self.uri_opener.settings.set_max_http_retries(0)
+
+        self.assertRaises(HTTPRequestException,
+                          self.uri_opener.GET,
+                          test_url,
+                          timeout=1)
 
     def test_stop(self):
         self.uri_opener.stop()

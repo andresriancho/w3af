@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 html_file.py
 
@@ -20,32 +21,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
-import cgi
 import time
-import codecs
+import datetime
+import functools
+import collections
 
-from string import Template
+from jinja2 import StrictUndefined, Environment, FileSystemLoader
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
+from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.constants.severity import LOW, MEDIUM, HIGH
+from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import OUTPUT_FILE
+from w3af.core.data.options.option_types import OUTPUT_FILE, INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-
-
-TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
-
-HTML_HEADER = Template('<!DOCTYPE html>\n<html>\n<head>\n<title>$title</title>\n'
-                       '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n'
-                       '<style type="text/css">\n<!--\n$css-->\n</style>\n</head>\n'
-                       '<body bgcolor="white">\n')
 
 
 class html_file(OutputPlugin):
@@ -59,68 +54,15 @@ class html_file(OutputPlugin):
 
         # Internal variables
         self._initialized = False
-        self._style_output_file = os.path.join(ROOT_PATH, 'plugins', 'output',
-                                               'html_file', 'style.css')
-
-        # These attributes hold the file pointers
-        self._file = None
         self._additional_info = DiskList(table_prefix='html_file')
+        self._enabled_plugins = {}
+        self.template_root = os.path.join(ROOT_PATH, 'plugins', 'output',
+                                          'html_file', 'templates')
 
         # User configured parameters
         self._verbose = False
         self._output_file_name = '~/report.html'
-
-    def _init(self):
-        """
-        Write messages to HTML file.
-        """
-        self._output_file_name = os.path.expanduser(self._output_file_name)
-        
-        if not self._initialized:
-            self._initialized = True
-            try:
-                self._file = codecs.open(self._output_file_name,
-                                         "w", "utf-8", 'replace')
-                #self._file = open( self._output_file_name, "w" )
-            except IOError, io:
-                msg = 'Can\'t open report file "%s" for writing: "%s"'
-                msg %= (os.path.abspath(self._output_file_name), io.strerror)
-                raise BaseFrameworkException(msg)
-            except Exception, e:
-                msg = 'Can\'t open report file "%s" for writing: "%s"'
-                msg = msg % (os.path.abspath(self._output_file_name), e)
-                raise BaseFrameworkException(msg)
-
-            try:
-                style_file = open(self._style_output_file, "r")
-            except Exception, e:
-                msg = 'Can\'t open CSS style file "%s" for reading: "%s"'
-                msg = msg % (os.path.abspath(self._style_output_file), e)
-                raise BaseFrameworkException(msg)
-            else:
-                html = HTML_HEADER.substitute(title=cgi.escape(TITLE),
-                                              css=style_file.read())
-                self._write_to_file(html)
-
-    def _write_to_file(self, *msg_list):
-        """
-        Write all parameters to the output file.
-
-        :param msg_list: The messages (strings) to write to the file.
-        """
-        if self._file is None:
-            return
-        
-        for msg in msg_list:
-            try:
-                self._file.write(msg + '\n')
-            except Exception, e:
-                self._file = None
-                msg = 'An exception was raised while trying to write to the'\
-                      ' output file "%s" in the html_file plugin: "%s".'\
-                      ' Disabling output to this file.'
-                om.out.error(msg % (self._output_file_name, e),
-                             ignore_plugins={self.get_name()})
+        self._template = os.path.join(self.template_root, 'complete.html')
 
     def debug(self, message, new_line=True):
         """
@@ -128,16 +70,13 @@ class html_file(OutputPlugin):
         called from a plugin or from the framework. This method should take
         an action for debug messages.
         """
-        self._init()
-
         if self._verbose:
             to_print = self._clean_string(message)
-            to_print = cgi.escape(to_print)
-            to_print = to_print.replace('\n', '<br />')
-            self._add_to_debug_table(to_print, 'debug')
+            self._append_additional_info(to_print, 'debug')
 
-    def do_nothing(self, *args, **kwds):
+    def do_nothing(self, *args, **kwargs):
         pass
+
     information = vulnerability = do_nothing
 
     def error(self, message, new_line=True):
@@ -146,48 +85,18 @@ class html_file(OutputPlugin):
         called from a plugin or from the framework. This method should take
         an action for error messages.
         """
-        self._init()
         to_print = self._clean_string(message)
-        self._add_to_debug_table(cgi.escape(to_print), 'error')
+        self._append_additional_info(to_print, 'error')
 
     def console(self, message, new_line=True):
         """
         This method is used by the w3af console to print messages to the
         outside.
         """
-        self._init()
         to_print = self._clean_string(message)
-        self._add_to_debug_table(cgi.escape(to_print), 'console')
+        self._append_additional_info(to_print, 'console')
 
-    def log_enabled_plugins(self, plugins_dict, options_dict):
-        """
-        This method is called from the output manager object. This method
-        should take an action for the enabled plugins and their configuration.
-        Usually, write the info to a file or print it somewhere.
-
-        :param pluginsDict: A dict with all the plugin types and the
-                                enabled plugins for that type of plugin.
-        :param optionsDict: A dict with the options for every plugin.
-        """
-        to_print = '<pre>'
-
-        for plugin_type in plugins_dict:
-            to_print += self._create_plugin_info(plugin_type,
-                                                 plugins_dict[plugin_type],
-                                                 options_dict[plugin_type])
-
-        # And now the target information
-        str_targets = ', '.join([u.url_string for u in cf.cf.get('targets')])
-        to_print += 'target\n'
-        to_print += '    set target ' + str_targets + '\n'
-        to_print += '    back'
-
-        to_print += '\n'
-        to_print += '</pre>'
-        self._add_to_debug_table('<i>Enabled plugins</i>:\n <br /><br />' +
-                                 to_print + '\n', 'debug')
-
-    def _add_to_debug_table(self, message, msg_type):
+    def _append_additional_info(self, message, msg_type):
         """
         Add a message to the debug table.
 
@@ -196,11 +105,7 @@ class html_file(OutputPlugin):
         """
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
-
-        msg = '<tr><td class="content">%s</td>\n'\
-              '    <td class="content">%s</td>\n' \
-              '    <td class="content">%s</td></tr>'
-        self._additional_info.append(msg % (the_time, msg_type, message))
+        self._additional_info.append((the_time, msg_type, message))
 
     def set_options(self, option_list):
         """
@@ -222,6 +127,10 @@ class html_file(OutputPlugin):
         """
         ol = OptionList()
 
+        d = 'The path to the HTML template used to render the report.'
+        o = opt_factory('template', self._template, d, INPUT_FILE)
+        ol.add(o)
+
         d = 'File name where this plugin will write to'
         o = opt_factory('output_file', self._output_file_name, d, OUTPUT_FILE)
         ol.add(o)
@@ -232,121 +141,166 @@ class html_file(OutputPlugin):
 
         return ol
 
+    def log_enabled_plugins(self, plugins_dict, options_dict):
+        """
+        This method is called from the output manager object. This method
+        should take an action for the enabled plugins and their configuration.
+        Usually, write the info to a file or print it somewhere.
+
+        :param plugins_dict: A dict with all the plugin types and the
+                                enabled plugins for that type of plugin.
+        :param options_dict: A dict with the options for every plugin.
+        """
+        self._enabled_plugins = {}
+
+        # TODO: Improve so it contains the plugin configuration too
+        for plugin_type, enabled in plugins_dict.iteritems():
+            self._enabled_plugins[plugin_type] = enabled
+
     def end(self):
         """
-        This method is called when the scan has finished.
+        This method is called when the scan has finished, we perform these
+        main tasks:
+            * Get the target URLs
+            * Get the enabled plugins
+            * Get the vulnerabilities and infos from the KB
+            * Get the debug data
+            * Send all the data to jinja2 for rendering the template
+
         """
-        self._init()
+        target_urls = [t.url_string for t in cf.cf.get('targets')]
+        target_domain = cf.cf.get('target_domains')[0]
+        enabled_plugins = self._enabled_plugins
+        findings = kb.kb.get_all_findings()
+        debug_log = ((t, l, smart_unicode(m)) for (t, l, m) in self._additional_info)
+        known_urls = kb.kb.get_all_known_urls()
 
-        self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="30%">',
-            '<tbody>',
-            '<tr><td>',
-            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
-            '<tr><td class="title" colspan="3">w3af target URL\'s</td></tr>',
-            '<tr><td class="sub" width="100%">URL</td></tr>')
+        context = {'target_urls': target_urls,
+                   'target_domain': target_domain,
+                   'enabled_plugins': enabled_plugins,
+                   'findings': findings,
+                   'debug_log': debug_log,
+                   'known_urls': known_urls}
 
-        target_html = '<tr><td class="default" width="100%%">%s</td></tr>'
+        # The file was verified to exist when setting the plugin configuration
+        template_fh = file(os.path.expanduser(self._template), 'r')
+        output_fh = file(os.path.expanduser(self._output_file_name), 'w')
 
-        for t in cf.cf.get('targets'):
-            self._write_to_file(target_html % cgi.escape(t.url_string))
+        self._render_html_file(template_fh, context, output_fh)
 
-        self._write_to_file('</table></td></tr></tbody></table><br />')
+    def _render_html_file(self, template_fh, context, output_fh):
+        """
+        Renders the HTML file using the configured template. Separated as a
+        method to be able to easily test.
 
-        #
-        # Write info and vulns
-        #
-        self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="75%">',
-            '<tbody> <tr><td>',
-            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
-            '<tr><td class="title" colspan="3">Security Issues</td></tr>',
-            '<tr>',
-            '<td class="sub" width="10%">Type</td>',
-            '<td class="sub" width="10%">Port</td>',
-            '<td class="sub" width="80%">Issue </td>',
-            '</tr>')
+        :param context: A dict containing target urls, enabled plugins, etc.
+        :return: True on successful rendering
+        """
+        severity_icon = functools.partial(get_severity_icon, self.template_root)
 
-        # Writes the vulnerabilities and information instances to the table
-        for i in kb.kb.get_all_findings():
+        jinja2_env = Environment(undefined=StrictUndefined,
+                                 trim_blocks=True,
+                                 autoescape=True,
+                                 lstrip_blocks=True)
+        jinja2_env.filters['request'] = request_dump
+        jinja2_env.filters['response'] = response_dump
+        jinja2_env.filters['severity_icon'] = severity_icon
+        jinja2_env.filters['severity_text'] = get_severity_text
+        jinja2_env.globals['get_current_date'] = get_current_date
+        jinja2_env.loader = FileSystemLoader(self.template_root)
 
-            # Get all the information I'll be using
-            desc = cgi.escape(i.get_desc())
-            severity = cgi.escape(i.get_severity())
+        template = jinja2_env.from_string(template_fh.read())
 
-            if i.get_url() is not None:
-                port = str(i.get_url().get_port())
-                port = 'tcp/' + port
-                escaped_url = cgi.escape(i.get_url().url_string)
-            else:
-                port = 'There is no port associated with this item.'
-                escaped_url = 'There is no URL associated with this item.'
+        try:
+            rendered_output = template.render(context)
+        except Exception, e:
+            msg = u'Failed to render html report template. Exception: "%s"'
+            om.out.error(msg % e)
+            return False
+        finally:
+            self._additional_info.clear()
+            self._enabled_plugins = {}
 
-            if i.get_severity() in (LOW, MEDIUM, HIGH):
-                color = 'red'
-                i_class = 'Vulnerability'
-            else:
-                color = 'blue'
-                i_class = 'Information'
+        try:
+            output_fh.write(rendered_output.encode('utf-8'))
+        except Exception, e:
+            msg = u'Failed to write html report to output file. Exception: "%s"'
+            om.out.error(msg % e)
+            return False
 
-            information_row = '<tr>\n'\
-                              '    <td valign="top" class="default" width="10%%">\n'\
-                              '        <font color="%s">%s</font>\n'\
-                              '    </td>\n'\
-                              '    <td valign="top" class="default" width="10%%">%s</td>\n'\
-                              '    <td class="default" width="80%%">%s<br /><br />\n'\
-                              '        <b>URL:</b> %s<br />\n'\
-                              '        <b>Severity:</b> %s<br />\n'\
-                              '    </td>\n'\
-                              '</tr>\n'
-
-            self._write_to_file(information_row % (color, i_class,
-                                                   port,
-                                                   desc,
-                                                   escaped_url,
-                                                   severity))
-
-        # Close the information/vulnerability table
-        self._write_to_file('</table></td></tr></tbody></table><br />')
-
-        # Write debug information
-        self._write_to_file(
-            '<table bgcolor="#a1a1a1" cellpadding="0" cellspacing="0" border="0" width="75%">',
-            '<tbody> <tr><td>',
-            '<table cellpadding="2" cellspacing="1" border="0" width="100%">',
-            '<tr><td class="title" colspan="3">Security Issues</td></tr>',
-            '<tr>',
-            '<td class="sub" width="25%">Time</td>',
-            '<td class="sub" width="10%">Type</td>',
-            '<td class="sub" width="65%">Message</td>',
-            '</tr>')
-
-        for line in self._additional_info:
-            self._write_to_file(line)
-
-        # Close the debug table
-        self._write_to_file('</table></td></tr></tbody></table><br />')
-
-        # Finish the report
-        self._write_to_file('</body>', '</html>')
-
-        # Close the file.
-        if self._file is not None:
-            self._file.close()
-        
-        self._additional_info.clear()
+        return True
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin writes the framework messages to an HTML report file.
+        This plugin writes the framework findings and messages to an HTML report
 
-        Two configurable parameters exist:
+        Three configurable parameters exist:
+            - template
             - output_file
             - verbose
+
+        It is possible to customize the output by changing the template which
+        is used to render the output file.
 
         If you want to write every HTTP request/response to a text file, you
         should use the text_file plugin.
         """
+
+
+def request_dump(_id):
+    """
+    :param _id: The ID to query in the database
+    :return: The request as unicode
+    """
+    _history = HistoryItem()
+
+    try:
+        details = _history.read(_id)
+    except DBException:
+        return None
+
+    return smart_unicode(details.request.dump().strip())
+
+
+def response_dump(_id):
+    """
+    :param _id: The ID to query in the database
+    :return: The response as unicode
+    """
+    _history = HistoryItem()
+
+    try:
+        details = _history.read(_id)
+    except DBException:
+        return None
+
+    return smart_unicode(details.response.dump().strip())
+
+
+def get_current_date():
+    return datetime.date.today().strftime("%d.%m.%Y")
+
+
+def get_severity_icon(template_root, severity):
+    icon_file = os.path.join(template_root, '%s.png' % severity.lower())
+    fmt = u'data:image/png;base64,%s'
+
+    if os.path.exists(icon_file):
+        return fmt % file(icon_file).read().encode('base64')
+
+    return fmt
+
+
+def get_severity_text(severity):
+    if severity.lower() == 'information':
+        severity = 'info'
+
+    color_map = {'high': 'danger',
+                 'medium': 'warning',
+                 'low': 'success',
+                 'info': 'info'}
+    fmt = u'<h3 class="text-%s">%s</h3>'
+    return fmt % (color_map[severity.lower()], severity.upper())

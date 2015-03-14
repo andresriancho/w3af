@@ -53,14 +53,13 @@ class MessageConsumer(object):
             yield True
             
             try:
-                msg = self.messages.get_nowait()
+                # Sleeping here prevents the GUI from running at 100% cpu
+                msg = self.messages.get(timeout=0.01)
             except Queue.Empty:
                 continue
             else:
                 if msg is None:
                     continue
-                
-                self.handle_message(msg)
                 
                 # Given that in some cases the handle_message takes some
                 # time to run, we've implemented this loop to give the method
@@ -76,4 +75,3 @@ class MessageConsumer(object):
             raise TypeError('Expected Message and got %s instead.' % type(msg))
         
         yield True
-        
