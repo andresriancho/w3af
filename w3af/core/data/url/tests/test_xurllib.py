@@ -90,7 +90,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('root:x:0', http_response.body)
 
-    def test_POST(self):
+    def test_post(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
 
         data = URLEncodedForm()
@@ -99,7 +99,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
-    def test_POST_special_chars(self):
+    def test_post_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
 
@@ -111,6 +111,10 @@ class TestXUrllib(unittest.TestCase):
 
     def test_unknown_domain(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
+
+    def test_file_proto(self):
+        url = URL('file://foo/bar.txt')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
     def test_url_port_closed(self):

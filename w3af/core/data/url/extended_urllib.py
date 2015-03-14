@@ -769,17 +769,12 @@ class ExtendedUrllib(object):
 
         return req
 
-    def _check_uri(self, req):
-        if req.get_full_url().startswith('http'):
-            return True
+    def assert_allowed_proto(self, req):
+        full_url = req.get_full_url().lower()
 
-        elif req.get_full_url().startswith('javascript:') or \
-        req.get_full_url().startswith('mailto:'):
+        if not full_url.startswith('http'):
             msg = 'Unsupported URL: "%s"'
             raise HTTPRequestException(msg % req.get_full_url(), request=req)
-
-        else:
-            return False
 
     def send(self, req, grep=True):
         """
@@ -792,7 +787,7 @@ class ExtendedUrllib(object):
         self._before_send_hook(req)
 
         # Sanitize the URL
-        self._check_uri(req)
+        self.assert_allowed_proto(req)
 
         # Evasion
         req = self._evasion(req)

@@ -259,7 +259,7 @@ class UrlOpenerProxy(object):
                       'get_cookies',
                       'get_remote_file_size',
                       'add_headers',
-                      '_check_uri',
+                      'assert_allowed_proto',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',
                       '_handle_send_success',
