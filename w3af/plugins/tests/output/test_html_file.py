@@ -131,8 +131,9 @@ class TestHTMLRendering(PluginTest):
                             MockVuln('XSS-2', None, 'Medium', [], 'xss'),
                             MockVuln('XSS-3', None, 'Low', [], 'xss'),
                             MockVuln('XSS-4', None, 'Information', 4, 'xss')],
-               'debug_log': [('Fri Mar 13 14:11:58 2015', 'debug', 'Log 1' * 30),
-                             ('Fri Mar 13 14:11:59 2015', 'debug', 'Log 2')],
+               'debug_log': [('Fri Mar 13 14:11:58 2015', 'debug', 'Log 1' * 40),
+                             ('Fri Mar 13 14:11:59 2015', 'debug', 'Log 2'),
+                             ('Fri Mar 13 14:11:59 2015', 'error', 'Log 3' * 5)],
                'known_urls': [URL('http://w3af.com'),
                               URL('http://w3af.com/blog'),
                               URL('http://w3af.com/oss')]}

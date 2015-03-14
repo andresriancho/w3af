@@ -24,6 +24,7 @@ import os
 import time
 import datetime
 import functools
+import collections
 
 from jinja2 import StrictUndefined, Environment, FileSystemLoader
 
@@ -171,7 +172,7 @@ class html_file(OutputPlugin):
         target_domain = cf.cf.get('target_domains')[0]
         enabled_plugins = self._enabled_plugins
         findings = kb.kb.get_all_findings()
-        debug_log = self._additional_info
+        debug_log = ((t, l, smart_unicode(m)) for (t, l, m) in self._additional_info)
         known_urls = kb.kb.get_all_known_urls()
 
         context = {'target_urls': target_urls,
@@ -204,6 +205,7 @@ class html_file(OutputPlugin):
         jinja2_env.filters['request'] = request_dump
         jinja2_env.filters['response'] = response_dump
         jinja2_env.filters['severity_icon'] = severity_icon
+        jinja2_env.filters['severity_text'] = get_severity_text
         jinja2_env.globals['get_current_date'] = get_current_date
         jinja2_env.loader = FileSystemLoader(self.template_root)
 
@@ -290,3 +292,15 @@ def get_severity_icon(template_root, severity):
         return fmt % file(icon_file).read().encode('base64')
 
     return fmt
+
+
+def get_severity_text(severity):
+    if severity.lower() == 'information':
+        severity = 'info'
+
+    color_map = {'high': 'danger',
+                 'medium': 'warning',
+                 'low': 'success',
+                 'info': 'info'}
+    fmt = u'<h3 class="text-%s">%s</h3>'
+    return fmt % (color_map[severity.lower()], severity.upper())

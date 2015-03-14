@@ -11,6 +11,18 @@
             {% include css %}
         </style>
     {% endfor %}
+
+    <style>
+        .table {
+            table-layout:fixed;
+        }
+
+        .table td {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+    </style>
 </head>
 
 <body>
@@ -63,7 +75,7 @@
             <div class="row">
                 <div class="col-md-2"><img src="{{ finding.get_severity()|severity_icon }}" /></div>
                 <div class="col-md-8"><h2 class="text-center">{{ finding.get_name() }}</h2></div>
-                <div class="col-md-2"></div>
+                <div class="col-md-2"><b>{{ finding.get_severity()|severity_text|safe }}</b></div>
             </div>
             <div class="row">
                 <div class="col-md-1"></div>
@@ -140,16 +152,20 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Timestamp</th>
-                            <th>Log level</th>
-                            <th>Message</th>
+                            <th width="20%">Timestamp</th>
+                            <th width="10%">Log level</th>
+                            <th width="70%">Message</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for timestamp, level, message in debug_log %}
-                            <tr>
+                            <tr {% if level == 'error' %}
+                                    class="danger"
+                                {% endif %}>
                                 <td>{{ timestamp }}</th>
-                                <td>{{ level }}</th>
+                                <td>
+                                    {{ level }}
+                                </th>
                                 <td>{{ message }}</th>
                             </tr>
                         {% endfor %}
