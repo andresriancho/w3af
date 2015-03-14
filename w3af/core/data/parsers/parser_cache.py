@@ -161,13 +161,13 @@ class ParserCache(object):
         event = multiprocessing.Event()
         self._parser_finished_events[hash_string] = event
 
+        # Start the worker processes if needed
+        self.start_workers()
+
         apply_args = (ProcessDocumentParser,
                       http_response,
                       self._processes,
                       hash_string)
-
-        # Start the worker processes if needed
-        self.start_workers()
 
         # Push the task to the workers
         result = self._pool.apply_async(apply_with_return_error, (apply_args,))
