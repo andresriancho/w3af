@@ -234,11 +234,11 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
         except OpenSSL.SSL.WantReadError:
             in_fds, out_fds, err_fds = select.select([sock, ], [], [], timeout)
             if len(in_fds) == 0:
-                raise ssl.SSLError("do_handshake timed out")
+                raise ssl.SSLError('do_handshake timed out')
             else:
                 conn_time = int(time.time() - time_begin)
                 if conn_time > timeout:
-                    raise ssl.SSLError("do_handshake timed out")
+                    raise ssl.SSLError('do_handshake timed out')
                 else:
                     pass
         except OpenSSL.SSL.SysCallError as e:
