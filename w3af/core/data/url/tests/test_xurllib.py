@@ -141,6 +141,8 @@ class TestXUrllib(unittest.TestCase):
 
         port = upper_daemon.get_port()
 
+        self.uri_opener.settings.set_max_http_retries(0)
+
         url = URL('http://127.0.0.1:%s/' % port)
         http_request_e = 0
         scan_must_stop_e = 0
