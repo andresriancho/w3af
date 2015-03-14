@@ -128,9 +128,9 @@ class php_eggs(InfrastructurePlugin):
         :return: A list with the HTTP response objects
         """
         def http_get(fuzzable_request, (egg_url, egg_desc)):
-            egg_URL = fuzzable_request.get_url().uri2url().url_join(egg_url)
-            response = self._uri_opener.GET(egg_URL, cache=True)
-            return response, egg_URL, egg_desc
+            egg_url = fuzzable_request.get_url().uri2url().url_join(egg_url)
+            response = self._uri_opener.GET(egg_url, cache=True, grep=False)
+            return response, egg_url, egg_desc
 
         # Send the requests using threads:
         query_results = []
