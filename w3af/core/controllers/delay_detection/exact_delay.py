@@ -26,8 +26,8 @@ class ExactDelay(object):
     """
     def __init__(self, delay_fmt, delta=0, mult=1):
         """
-        :param delay_fmt: The format that should be use to generate the delay string.
-                          Example: "sleep(%s)".
+        :param delay_fmt: The format that should be use to generate the delay
+                          string. Example: "sleep(%s)".
         """
         self._delay_fmt = delay_fmt
         self._delay_delta = delta
@@ -63,7 +63,7 @@ class ExactDelay(object):
 
     def set_multiplier(self, mult):
         """
-        Some delays are expressed in miliseconds, so we need to take that into
+        Some delays are expressed in milliseconds, so we need to take that into
         account and let the user define a specific delay with 1000 as multiplier
 
         >>> d = ExactDelay('sleep(%s)', mult=1000)
@@ -73,3 +73,8 @@ class ExactDelay(object):
 
         """
         self._delay_multiplier = mult
+
+    def __repr__(self):
+        return u'<ExactDelay (fmt:%s, delta:%s, mult:%s)>' % (self._delay_fmt,
+                                                              self._delay_delta,
+                                                              self._delay_multiplier)
