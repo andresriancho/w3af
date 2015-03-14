@@ -25,6 +25,7 @@ import os
 import zlib
 import signal
 import atexit
+import threading
 import multiprocessing
 
 from darts.lib.utils.lru import SynchronizedLRUDict
@@ -59,6 +60,7 @@ class ParserCache(object):
         self._pool = None
         self._processes = None
         self._parser_finished_events = {}
+        self._start_lock = threading.RLock()
 
         # These are here for debugging:
         self._archive = set()
@@ -71,18 +73,19 @@ class ParserCache(object):
         Start the pool and workers
         :return: The pool instance
         """
-        if self._pool is None:
-            # Keep track of which pid is processing which http response
-            # pylint: disable=E1101
-            self._processes = manager.dict()
-            # pylint: enable=E1101
+        with self._start_lock:
+            if self._pool is None:
+                # Keep track of which pid is processing which http response
+                # pylint: disable=E1101
+                self._processes = manager.dict()
+                # pylint: enable=E1101
 
-            # The pool
-            log_queue = om.manager.get_in_queue()
-            self._pool = ProcessPool(self.MAX_WORKERS,
-                                     maxtasksperchild=25,
-                                     initializer=init_worker,
-                                     initargs=(log_queue,))
+                # The pool
+                log_queue = om.manager.get_in_queue()
+                self._pool = ProcessPool(self.MAX_WORKERS,
+                                         maxtasksperchild=25,
+                                         initializer=init_worker,
+                                         initargs=(log_queue,))
 
         return self._pool
 
@@ -96,9 +99,13 @@ class ParserCache(object):
             self._pool = None
             self._processes = None
 
+        # We don't need this data anymore
+        self._cache.clear()
+
         if self.DEBUG:
+            re_calc_rate = (self._calculated_more_than_once / self._total)
             print('parser_cache LRU rate: %s' % (self._from_LRU / self._total))
-            print('parser_cache re-calculation rate: %s' % (self._calculated_more_than_once / self._total))
+            print('parser_cache re-calculation rate: %s' % re_calc_rate)
             print('parser_cache size: %s' % self.LRU_LENGTH)
 
     def get_cache_key(self, http_response):
@@ -159,6 +166,10 @@ class ParserCache(object):
                       self._processes,
                       hash_string)
 
+        # Start the worker processes if needed
+        self.start_workers()
+
+        # Push the task to the workers
         result = self._pool.apply_async(apply_with_return_error, (apply_args,))
 
         try:
@@ -216,7 +227,6 @@ class ParserCache(object):
         :param http_response: The http response instance
         :return: An instance of DocumentParser
         """
-        self.start_workers()
         hash_string = self.get_cache_key(http_response)
 
         if not self.should_cache(http_response):
