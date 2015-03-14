@@ -355,7 +355,7 @@ class ExtendedUrllib(object):
         self._sleep_log = {}
 
         step = ACCEPTABLE_ERROR_RATE * 2
-        data = [(i, False) for i in xrange(0, 100, step)]
+        data = [(i, False) for i in xrange(0, 110, step)]
 
         self._sleep_log.update(data)
 
