@@ -23,7 +23,6 @@ import sys
 import Queue
 import threading
 
-from functools import wraps
 from itertools import repeat
 from tblib.decorators import Error
 
@@ -276,7 +275,6 @@ class UrlOpenerProxy(object):
 
         attr = getattr(self._url_opener, name)
 
-        @wraps(attr)
         def url_opener_proxy(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
