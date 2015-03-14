@@ -369,7 +369,7 @@ class TestXUrllib(unittest.TestCase):
         self.rate_limit_generic(1, 1, 2.2)
 
     def test_rate_limit_zero(self):
-        self.rate_limit_generic(0, 0.01, 0.4)
+        self.rate_limit_generic(0, 0.005, 0.4)
 
     @httpretty.activate
     def rate_limit_generic(self, max_requests_per_second, _min, _max):
