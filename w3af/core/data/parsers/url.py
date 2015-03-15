@@ -128,7 +128,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     """
     Parse a url encoded string (a=b&c=d) into a QueryString object.
 
-    :param url_enc_str: The string to parse
+    :param qstr: The string to parse
     :return: A QueryString object (a dict wrapper).
     """
     if not isinstance(qstr, basestring):
@@ -387,7 +387,7 @@ class URL(DiskItem):
 
         # We may have auth URLs like <http://user:passwd@host.tld:80>.
         # Notice the ":" duplication. We'll be interested in transforming
-        # 'net_location' beginning in the last appereance of ':'
+        # 'net_location' beginning in the last appearance of ':'
         at_symb_index = net_location.rfind('@')
         colon_symb_max_index = net_location.rfind(':')
         
@@ -477,9 +477,10 @@ class URL(DiskItem):
         For more information read RFC 1808 especially section 5.
 
         :param relative: The relative url to add to the base url
-        :param encoding: The encoding to use for the final url_object being returned.
-                         If no encoding is specified, the returned url_object will
-                         have the same encoding that the current url_object.
+        :param encoding: The encoding to use for the final url_object being
+                         returned. If no encoding is specified, the returned
+                         url_object will have the same encoding that the current
+                         url_object.
         :return: The joined URL.
 
         Example usage available in test_url.py
