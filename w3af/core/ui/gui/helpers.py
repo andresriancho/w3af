@@ -180,8 +180,8 @@ def FriendlyExceptionDlg(message):
             self.connect('response', self.dialog_response_cb)
             self.show()
 
-    dlg = w3af_message_dialog(
-        None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+    dlg = w3af_message_dialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                              gtk.BUTTONS_OK, message)
     dlg.set_icon_from_file(W3AF_ICON)
     dlg.set_title('Error')
     dlg.dialog_run()
