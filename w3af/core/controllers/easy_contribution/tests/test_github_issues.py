@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
                                                                    OAUTH_TOKEN,
                                                                    OAuthTokenInvalid,
-                                                                   LoginFailed)
+                                                                   UserCredentialsInvalid)
 
 
 @attr('internet')
@@ -61,4 +61,4 @@ class TestGithubIssues(unittest.TestCase):
     
     def test_login_failed_user_pass(self):
         gh = GithubIssues('foobar', 'testbar')
-        self.assertRaises(LoginFailed, gh.login)
+        self.assertRaises(UserCredentialsInvalid, gh.login)
