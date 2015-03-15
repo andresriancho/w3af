@@ -53,9 +53,9 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
 
     # Create the dialog that allows the user to send the bug to github
     bug_report_win = unhandled_bug_report.BugReportWindow(w3af_core,
-                                                            _('Bug detected!'),
-                                                            clean_exception,
-                                                            filename, plugins)
+                                                          _('Bug detected!'),
+                                                          clean_exception,
+                                                          filename, plugins)
 
     # Blocks waiting for user interaction
     bug_report_win.show()

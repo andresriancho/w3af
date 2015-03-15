@@ -535,10 +535,9 @@ class GithubBugReport(object):
         Send bug to github.
         """
         try:
-            ticket_url, ticket_id = gh.report_bug(
-                summary, userdesc, self.tback,
-                self.fname, self.plugins, self.autogen,
-                email)
+            ticket_url, ticket_id = gh.report_bug(summary, userdesc, self.tback,
+                                                  self.fname, self.plugins,
+                                                  self.autogen, email)
         except:
             return None, None
         else:

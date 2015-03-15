@@ -141,8 +141,8 @@ class GithubIssues(object):
             desc = ''
 
         #
-        #    Define which description to use (depending on the availability of an
-        #    email provided by the user or not).
+        # Define which description to use (depending on the availability of an
+        # email provided by the user or not).
         #
         if email is not None:
             email_fmt = '\n\nThe user provided the following email address for'\
