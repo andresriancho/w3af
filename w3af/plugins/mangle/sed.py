@@ -66,9 +66,9 @@ class sed(ManglePlugin):
         
         headers_inst = Headers.from_string(header_string)
 
-        return FuzzableRequest.from_parts(request.get_uri(),
-                                          method=request.get_method(),
-                                          post_data=data, headers=headers_inst)
+        request.set_headers(headers_inst)
+        request.add_data(data)
+        return request
 
     def mangle_response(self, response):
         """
@@ -114,15 +114,15 @@ class sed(ManglePlugin):
 
         :return: No value is returned.
         """
-        self._user_option_fix_content_len = option_list[
-            'fix_content_len'].get_value()
+        self._user_option_fix_content_len = option_list['fix_content_len'].get_value()
 
         self._expressions = ','.join(option_list['expressions'].get_value())
         self._expressions = re.findall('([qs])([bh])/(.*?)/(.*?)/;?',
                                        self._expressions)
 
         if len(self._expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
-            raise BaseFrameworkException('The user specified expression is invalid.')
+            msg = 'The user specified expression is invalid.'
+            raise BaseFrameworkException(msg)
 
         for exp in self._expressions:
             req_res, body_header, regex_str, target_str = exp

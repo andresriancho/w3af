@@ -103,6 +103,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         headers.update(self.unredirected_hdrs.items())
         return headers
 
+    def set_headers(self, headers):
+        self.headers = dict(headers)
+
     def get_timeout(self):
         return self.timeout
     

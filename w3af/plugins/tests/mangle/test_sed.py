@@ -92,3 +92,5 @@ class TestSed(unittest.TestCase):
         
         value, _ = mod_request.get_headers().iget('content-type')
         self.assertEqual(value, 'text/xml')
+
+        self.assertIs(mod_request, request)
