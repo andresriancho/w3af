@@ -54,10 +54,15 @@ def start_thread_on_demand(func):
             try:
                 manager.start()
             except RuntimeError:
-                # is_alive() doesn't always return the true state of the
-                # thread, thus we need to add this try/except, see:
+                # is_alive() might say that the process is NOT alive when:
+                #   * We just created the OutputManager instance
+                #   * The instance was created, started and joined
+                #
+                # In the second case, we can't start() it again and thus we'll
+                # get a RuntimeError
                 #
                 # https://github.com/andresriancho/w3af/issues/7453
+                # https://github.com/andresriancho/w3af/issues/5354
                 pass
 
         return func(*args, **kwds)
@@ -126,6 +131,7 @@ class OutputManager(Process):
                 break
 
             if work_unit == POISON_PILL:
+                # This is added at fresh_output_manager_inst
                 break
 
             else:
