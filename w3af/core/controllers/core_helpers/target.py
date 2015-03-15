@@ -179,13 +179,14 @@ class w3af_core_target(Configurable):
         cf.cf.save('baseURLs', [i.base_url() for i in target_urls])
 
         if target_urls:
-            sess_name = [x.get_net_location() for x in target_urls]
-            sess_name = '-'.join(sess_name)
+            sess_name = [x.get_domain() for x in target_urls]
+            sess_name = u'-'.join(sess_name)
         else:
-            sess_name = 'noTarget'
+            sess_name = u'no_target'
 
-        cf.cf.save('session_name', sess_name + '-' + time.strftime(
-            '%Y-%b-%d_%H-%M-%S'))
+        fmt = u'%s-%s'
+        cf.cf.save('session_name', fmt % (sess_name,
+                                          time.strftime('%Y-%b-%d_%H-%M-%S')))
 
         # Advanced target selection
         os = options_list['target_os'].get_value_str()
