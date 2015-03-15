@@ -701,6 +701,7 @@ class RememberingWindow(gtk.Window):
             self.winconfig[self.id_size] = self.get_size()
             self.winconfig[self.id_position] = self.get_position()
         except ValueError:
+            # https://github.com/andresriancho/w3af/issues/8890
             pass
 
         return False
@@ -904,10 +905,17 @@ class _RememberingPane(object):
                 self.signal = self.connect("expose-event", self.exposed)
 
     def move_handle(self, widg, what):
-        """Adjust the record every time the handle is moved."""
+        """
+        Adjust the record every time the handle is moved.
+        """
         if what.name == "position-set":
             pos = self.get_position()
-            self.winconfig[self.widgname] = pos
+
+            try:
+                self.winconfig[self.widgname] = pos
+            except ValueError:
+                # https://github.com/andresriancho/w3af/issues/8890
+                pass
 
     def exposed(self, area, event):
         """Adjust the handle to the remembered position.
