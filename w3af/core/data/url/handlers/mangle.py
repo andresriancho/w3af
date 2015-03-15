@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib2
 
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 from w3af.core.data.url.handlers.output_manager import OutputManagerHandler
@@ -39,26 +37,25 @@ class MangleHandler(urllib2.BaseHandler):
         self._plugin_list = plugin_list
 
     def http_request(self, request):
-        if self._plugin_list:
-            fr = FuzzableRequest.from_urllib2_request(request)
+        if not self._plugin_list:
+            return request
 
-            for plugin in self._plugin_list:
-                fr = plugin.mangle_request(fr)
-
-            request = HTTPRequest.from_fuzzable_request(fr)
+        for plugin in self._plugin_list:
+            request = plugin.mangle_request(request)
 
         return request
 
     def http_response(self, request, response):
+        if not self._plugin_list:
+            return response
 
-        if self._plugin_list:
-            # Create the HTTPResponse object
-            http_resp = HTTPResponse.from_httplib_resp(response)
+        # Create the HTTPResponse object
+        http_resp = HTTPResponse.from_httplib_resp(response)
 
-            for plugin in self._plugin_list:
-                plugin.mangle_response(http_resp)
+        for plugin in self._plugin_list:
+            plugin.mangle_response(http_resp)
 
-            response = self._http_resp_2_httplib(response, http_resp)
+        response = self._http_resp_2_httplib(response, http_resp)
 
         return response
 
