@@ -29,6 +29,9 @@ from w3af.core.ui.gui.entries import EmailEntry
 from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
                                                                    OAUTH_TOKEN,
+                                                                   LoginFailed,
+                                                                   OAUTH_AUTH_FAILED,
+                                                                   OAuthTokenInvalid,
                                                                    DEFAULT_BUG_QUERY_TEXT)
 
 
@@ -92,7 +95,8 @@ class report_bug_show_result(gtk.MessageDialog):
                                     apply(bug_report_function, bug_to_report)
 
         :param bugs_to_report: An iterable with the bugs to report. These are
-                               going to be the parameters for the bug_report_function.
+                               going to be the parameters for the
+                               bug_report_function.
         """
         gtk.MessageDialog.__init__(self,
                                    None,
@@ -385,7 +389,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         # I'm done!
         self.destroy()
 
-        return (False, method, params)
+        return False, method, params
 
     def _email_entry_changed(self, x, y):
         """
@@ -402,7 +406,8 @@ class dlg_ask_credentials(gtk.MessageDialog):
 
     def _radio_callback_anon(self, event, enable, disable):
         self._radio_callback(event, enable, disable)
-        # re-enable the button in case it was disabled by an invalid email address entry
+        # re-enable the button in case it was disabled by an invalid email
+        # address entry
         ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
         ok_button.set_sensitive(True)
 
@@ -412,7 +417,8 @@ class dlg_ask_credentials(gtk.MessageDialog):
 
     def _radio_callback_gh(self, event, enable, disable):
         self._radio_callback(event, enable, disable)
-        # re-enable the button in case it was disabled by an invalid email address entry
+        # re-enable the button in case it was disabled by an invalid email
+        # address entry
         ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
         ok_button.set_sensitive(True)
 
@@ -425,6 +431,18 @@ class dlg_ask_credentials(gtk.MessageDialog):
 
         for section in disable:
             section.set_sensitive(False)
+
+
+def dlg_invalid_token(parent):
+    md = gtk.MessageDialog(parent,
+                           gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                           gtk.MESSAGE_WARNING,
+                           gtk.BUTTONS_OK,
+                           OAUTH_AUTH_FAILED)
+
+    md.set_icon_from_file(W3AF_ICON)
+    md.set_title('GitHub authentication failed')
+    return md
 
 
 class dlg_ask_bug_info(gtk.MessageDialog):
@@ -546,6 +564,10 @@ class GithubBugReport(object):
     def _login_github(self, retry=3):
         """
         Perform user login.
+
+        :return: (user wants to exit,
+                  github instance,
+                  user's email)
         """
         invalid_login = False
         email = None
@@ -553,6 +575,7 @@ class GithubBugReport(object):
         while retry:
             # Decrement retry counter
             retry -= 1
+
             # Ask for user and password, or anonymous
             dlg_cred = dlg_ask_credentials(invalid_login)
             user_exit, method, params = dlg_cred.run()
@@ -578,11 +601,20 @@ class GithubBugReport(object):
                 # credentials
                 user, password = (OAUTH_TOKEN, None)
 
-            gh = GithubIssues(user, password)
-            login_result = gh.login()
-            invalid_login = not login_result
-
-            if login_result:
+            try:
+                gh = GithubIssues(user, password)
+                gh.login()
+            except LoginFailed:
+                # Let the user try again
+                invalid_login = True
+                continue
+            except OAuthTokenInvalid:
+                dlg = dlg_invalid_token(self)
+                dlg.run()
+                dlg.destroy()
+                return True, None, None
+            else:
+                # Login success!
                 break
 
         return False, gh, email

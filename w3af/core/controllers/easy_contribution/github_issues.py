@@ -25,7 +25,7 @@ import ssl
 import socket
 
 from github import Github
-from github import GithubException
+from github import GithubException, BadCredentialsException
 
 from w3af.core.controllers.exception_handling.helpers import get_versions
 
@@ -46,6 +46,11 @@ Please provide any additional information below:
 
 """
 
+OAUTH_AUTH_FAILED = """Failed to authenticate with github.com , please try\
+ again later. If the authentication still fails it might be because the\
+ current w3af version is outdated and is not allowed to report any new\
+ issues."""
+
 TICKET_URL_FMT = 'https://github.com/andresriancho/w3af/issues/%s'
 
 #
@@ -63,33 +68,47 @@ OAUTH_TOKEN = 'bab698f08a4fd15931c4aa44ae399666552ef9e5'
 OAUTH_TOKEN = OAUTH_TOKEN[::-1]
 
 
+class OAuthTokenInvalid(Exception):
+    pass
+
+
+class UserCredentialsInvalid(Exception):
+    pass
+
+
+class LoginFailed(Exception):
+    pass
+
+
 class GithubIssues(object):
     def __init__(self, user_or_token, password=None):
         self._user_or_token = user_or_token
         self._password = password
         self.gh = None
+        self.using_oauth = True if password is None else False
         
     def login(self):
         try:
             self.gh = Github(self._user_or_token, self._password)
-        except GithubException:
-            return False
+        except GithubException, ex:
+            # Not sure when we get here, but just in case...
+            raise LoginFailed(str(ex))
         else:
             # This is just a small piece of code which sends a request to the
             # API in order to verify if the credentials are fine. Doesn't
             # really do anything with the user credentials.
             try:
                 [i for i in self.gh.get_user().get_repos()]
-            except ssl.SSLError:
-                # SSLError: The read operation timed out
-                return False
-            except GithubException:
-                return False
-            except socket.gaierror:
-                return False
-            except socket.timeout:
-                return False
-        
+            except BadCredentialsException:
+                # The OAUTH_TOKEN and/or user provided credentials are incorrect
+                if self.using_oauth:
+                    raise OAuthTokenInvalid('Invalid OAuth token')
+                else:
+                    raise UserCredentialsInvalid('Invalid user credentials')
+            except (ssl.SSLError, GithubException, socket.gaierror,
+                    socket.timeout) as ex:
+                raise LoginFailed(str(ex))
+
         return True
         
     def report_bug(self, summary, userdesc, tback='', fname=None, plugins='',

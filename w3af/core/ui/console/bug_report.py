@@ -22,10 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.easy_contribution.github_issues import GithubIssues
-from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
+from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
+                                                                   OAUTH_TOKEN,
+                                                                   OAUTH_AUTH_FAILED,
+                                                                   LoginFailed,
+                                                                   OAuthTokenInvalid)
 
 
 class bug_report_menu(menu):
@@ -128,10 +131,14 @@ class bug_report_menu(menu):
         """
         Report one or more bugs to w3af's Github, submit data to server.
         """
-        gh = GithubIssues(OAUTH_TOKEN)
-        if not gh.login():
+        try:
+            gh = GithubIssues(OAUTH_TOKEN)
+            gh.login()
+        except LoginFailed:
             msg = 'Failed to contact github.com. Please try again later.'
             om.out.console(msg)
+        except OAuthTokenInvalid:
+            om.out.console(OAUTH_AUTH_FAILED)
         else:
             traceback_str = edata.traceback_str
             desc = edata.get_summary()
@@ -143,11 +150,11 @@ class bug_report_menu(menu):
                                                   plugins=plugins)
 
             if ticket_id is None:
-                msg = '    [%s/%s] Failed to report bug with id %s.' % (
-                    num, total, eid)
+                fmt = '    [%s/%s] Failed to report bug with id %s.'
+                msg = fmt % (num, total, eid)
             else:
-                msg = '    [%s/%s] Bug with id %s reported at %s' % (
-                    num, total, eid, ticket_url)
+                fmt = '    [%s/%s] Bug with id %s reported at %s'
+                msg = fmt % (num, total, eid, ticket_url)
 
             om.out.console(str(msg))
 
