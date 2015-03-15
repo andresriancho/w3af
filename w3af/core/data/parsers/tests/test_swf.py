@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
-from nose.plugins.skip import SkipTest
-
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.swf import SWFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -33,11 +31,14 @@ from w3af.core.data.parsers.url import URL
 
 
 class TestSWFParser(unittest.TestCase):
-    
-    WIVET_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                                'data', 'wivet1.swf')
-    DEMO_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                               'data', 'subscribe.swf')
+
+    SAMPLE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'parsers',
+                              'tests', 'data')
+
+    WIVET_SAMPLE = os.path.join(SAMPLE_DIR, 'wivet1.swf')
+    DEMO_SAMPLE = os.path.join(SAMPLE_DIR, 'subscribe.swf')
+    DOMAIN_DECODE_1 = os.path.join(SAMPLE_DIR, 'test-5925-1.swf')
+    DOMAIN_DECODE_2 = os.path.join(SAMPLE_DIR, 'test-5925-2.swf')
     
     def parse(self, filename):
         body = file(filename).read()
@@ -52,8 +53,6 @@ class TestSWFParser(unittest.TestCase):
         return parser
     
     def test_swf_parser_wivet(self):
-        raise SkipTest('See https://github.com/andresriancho/w3af/issues/1128')
-
         parser = self.parse(self.WIVET_SAMPLE)
         parsed, re_refs = parser.get_references()
         
@@ -74,3 +73,32 @@ class TestSWFParser(unittest.TestCase):
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)
 
+    def test_swf_parser_domain_encoding_1(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/5682
+        """
+        parser = self.parse(self.DOMAIN_DECODE_1)
+        parsed, re_refs = parser.get_references()
+
+        self.assertEqual(parsed, [])
+        self.assertEqual(len(set(re_refs)), 1)
+
+        url = re_refs[0]
+        self.assertIsInstance(url.get_domain(), str)
+        self.assertIsInstance('www.adamdorman.com', str)
+
+    def test_swf_parser_domain_encoding_2(self):
+        """
+        :see: https://github.com/andresriancho/w3af/issues/5682
+        """
+        parser = self.parse(self.DOMAIN_DECODE_2)
+        parsed, re_refs = parser.get_references()
+
+        expected = {URL('http://mail.stiei.edu.cn/'),
+                    URL('http://e-learning.stiei.edu.cn/eol/homepage/common/index_newjpk.jsp'),
+                    URL('http://xxgk.stiei.edu.cn/'),
+                    URL('http://portal1.stiei.edu.cn:8081/'),
+                    URL('http://e-learning.stiei.edu.cn/')}
+
+        self.assertEqual(parsed, [])
+        self.assertEqual(set(re_refs), expected)
