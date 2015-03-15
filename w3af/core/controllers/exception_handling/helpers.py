@@ -37,11 +37,15 @@ def pprint_plugins(w3af_core):
     plugs_opts = copy.deepcopy(w3af_core.plugins.get_all_plugin_options())
     plugs = w3af_core.plugins.get_all_enabled_plugins()
 
-    for ptype, plist in plugs.iteritems():
-        for p in plist:
-            if p not in chain(*(pt.keys() for pt in
-                                plugs_opts.itervalues())):
-                plugs_opts[ptype][p] = {}
+    for ptype, plugin_list in plugs.iteritems():
+        for plugin in plugin_list:
+            if plugin not in chain(*(pt.keys() for pt in plugs_opts.itervalues())):
+                plugs_opts[ptype][plugin] = {}
+
+    if not any(plugs_opts.values()):
+        # No plugins configured, we return an empty string so the users of
+        # this function understand that there is no config
+        return u''
 
     plugins = StringIO.StringIO()
     pprint.pprint(plugs_opts, plugins)
