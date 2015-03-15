@@ -61,4 +61,4 @@ class TestGithubIssues(unittest.TestCase):
     
     def test_login_failed_user_pass(self):
         gh = GithubIssues('foobar', 'testbar')
-        self.assertFalse(LoginFailed, gh.login)
+        self.assertRaises(LoginFailed, gh.login)
