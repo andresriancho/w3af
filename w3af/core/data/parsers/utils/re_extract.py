@@ -84,7 +84,7 @@ class ReExtract(BaseParser):
                     continue
 
             try:
-                url = URL(url_mo.group(0))
+                url = URL(url_mo.group(0), encoding=self._encoding)
             except ValueError:
                 pass
             else:
