@@ -24,8 +24,10 @@ import unittest
 from github import Github
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.easy_contribution.github_issues import GithubIssues
-from w3af.core.controllers.easy_contribution.github_issues import OAUTH_TOKEN
+from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
+                                                                   OAUTH_TOKEN,
+                                                                   OAuthTokenInvalid,
+                                                                   LoginFailed)
 
 
 @attr('internet')
@@ -51,7 +53,7 @@ class TestGithubIssues(unittest.TestCase):
 
     def test_login_failed_token(self):
         gh = GithubIssues(OAUTH_TOKEN + 'foobar')
-        self.assertFalse(gh.login())
+        self.assertRaises(OAuthTokenInvalid, gh.login)
 
     def test_login_success_token(self):
         gh = GithubIssues(OAUTH_TOKEN)
@@ -59,5 +61,4 @@ class TestGithubIssues(unittest.TestCase):
     
     def test_login_failed_user_pass(self):
         gh = GithubIssues('foobar', 'testbar')
-        self.assertFalse(gh.login())
-        
+        self.assertFalse(LoginFailed, gh.login)
