@@ -147,6 +147,15 @@ class w3af_core_target(Configurable):
                 else:
                     for line in f:
                         target_in_file = line.strip()
+
+                        # Empty lines are allowed
+                        if not target_in_file:
+                            continue
+
+                        # Comments starting with # are allowed too
+                        if target_in_file.startswith('#'):
+                            continue
+
                         target_in_file_inst = URL(target_in_file)
                         self._verify_url(target_in_file_inst, file_target=False)
                         target_urls.append(target_in_file_inst)
