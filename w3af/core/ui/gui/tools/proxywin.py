@@ -55,9 +55,9 @@ class ProxiedRequests(entries.RememberingWindow):
     """
     def __init__(self, w3af):
         """Constructor."""
-        super(ProxiedRequests, self).__init__(w3af, "proxytool",
-                                              _("w3af - Proxy"),
-                                              "Using_the_Proxy",
+        super(ProxiedRequests, self).__init__(w3af, 'proxytool',
+                                              _('w3af - Proxy'),
+                                              'Using_the_Proxy',
                                               onDestroy=self._close)
         self.w3af = w3af
         
@@ -78,7 +78,8 @@ class ProxiedRequests(entries.RememberingWindow):
              None, _('Move to the next request'), self._next),
         ])
         actiongroup.add_toggle_actions([
-            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
+            # xml_name, icon, real_menu_text, accelerator, tooltip,
+            # callback, initial_flag
             (
                 'TrapReq', gtk.STOCK_JUMP_TO, _(
                     '_Trap Requests'), None, _('Trap requests'),
@@ -168,7 +169,8 @@ class ProxiedRequests(entries.RememberingWindow):
         
         d = _('Proxy IP address and port number')
         h = _('Local IP address where the proxy will listen for HTTP requests.')
-        o = opt_factory('ipport', "127.0.0.1:8080", d, option_types.IPPORT, help=h)
+        o = opt_factory('ipport', '127.0.0.1:8080', d, option_types.IPPORT,
+                        help=h)
         proxy_options.add(o)
         
         d = _('Regular expression for URLs to intercept')
@@ -294,7 +296,8 @@ class ProxiedRequests(entries.RememberingWindow):
         self.pref.save()
 
         if self._layout != self.pref.get_value('proxy', 'trap_view'):
-            self.show_alert(_("Some of options will take effect after you restart proxy tool"))
+            self.show_alert(_("Some of options will take effect after you"
+                              " restart proxy tool"))
 
     def show_alert(self, msg):
         dlg = gtk.MessageDialog(

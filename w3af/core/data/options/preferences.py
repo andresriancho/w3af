@@ -35,7 +35,6 @@ class Preferences(object):
     It also support saving into files.
     """
     def __init__(self, label=None):
-        """Contructor."""
         self.sections = {}
         self.options = {}
         if label:
@@ -47,8 +46,10 @@ class Preferences(object):
         self.options[section] = options_list
 
     def has_section(self, section):
-        """Indicates whether the named section is present in the configuration."""
-        return (section in self.sections)
+        """
+        Indicates whether the named section is present in the configuration.
+        """
+        return section in self.sections
 
     def get_options(self, section):
         """Returns a list of options available in the specified section."""
@@ -73,15 +74,18 @@ class Preferences(object):
             return self.options[section][option].get_value()
 
     def set(self, section, option):
-        """If the given section exists, set the given option to the specified value;
-        otherwise raise NoSectionError."""
+        """
+        If the given section exists, set the given option to the specified
+        value; otherwise raise NoSectionError.
+        """
         if self.has_section(section):
             self.options[section][option.get_name()] = option
 
     def set_value(self, section, option, value):
         """
         If the given section exists, set the given option to the specified
-        value; otherwise raise NoSectionError."""
+        value; otherwise raise NoSectionError.
+        """
         if self.has_section(section):
             self.options[section][option].set_value(value)
 
@@ -102,7 +106,9 @@ class Preferences(object):
             return False
 
     def load_values(self):
-        """Read values of options from file."""
+        """
+        Read values of options from file.
+        """
         config = RawConfigParser()
         config.read(self.filename)
         sections = config.sections()
