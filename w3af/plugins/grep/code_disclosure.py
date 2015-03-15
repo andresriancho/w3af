@@ -38,7 +38,7 @@ class code_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Internal variables
-        self._first_404 = True
+        self._report_404_match = True
 
     def grep(self, request, response):
         """
@@ -52,36 +52,36 @@ class code_disclosure(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
+        # https://github.com/andresriancho/w3af/issues/5379
+        # Avoid some (rather common) false positives that appear in JS files
+        if 'javascript' in response.content_type:
+            return
+
         match, lang = is_source_file(response.get_body())
 
-        if match:
-            # Check also for 404
-            if not is_404(response):
-                desc = 'The URL: "%s" has a %s code disclosure vulnerability.'
-                desc = desc % (response.get_url(), lang)
-                
-                v = Vuln('Code disclosure vulnerability', desc,
-                         severity.LOW, response.id, self.get_name())
+        if not match:
+            return
 
-                v.set_url(response.get_url())
-                v.add_to_highlight(match.group())
-                
-                self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
+        # Only report 404 findings once
+        if is_404(response) and self._report_404_match:
+            self._report_404_match = False
 
-            else:
-                self._first_404 = False
-                
-                desc = 'The URL: "%s" has a %s code disclosure'\
-                       ' vulnerability in the customized 404 script.'
-                desc = desc % (response.get_url(), lang)
-                
-                v = Vuln('Code disclosure vulnerability in 404 page', desc,
-                         severity.LOW, response.id, self.get_name())
+            desc = u'The URL: "%s" has a %s code disclosure' \
+                   u' vulnerability in the customized 404 script.'
+            name = u'Code disclosure vulnerability in 404 page'
+        else:
+            desc = u'The URL: "%s" has a %s code disclosure vulnerability.'
+            name = u'Code disclosure vulnerability'
 
-                v.set_url(response.get_url())
-                v.add_to_highlight(match.group())
-                self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
+        # Report the vulnerability
+        desc %= (response.get_url(), lang)
+
+        v = Vuln(name, desc, severity.LOW, response.id, self.get_name())
+        v.set_url(response.get_url())
+        v.add_to_highlight(match.group())
+        
+        self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
     def get_long_desc(self):
         """

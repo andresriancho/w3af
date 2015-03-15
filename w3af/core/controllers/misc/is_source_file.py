@@ -64,8 +64,8 @@ def is_source_file(file_content):
     """
     :param file_content: The content of the http response body to analyze
     :return: A tuple with:
-                a re.match object if the file_content matches a source code file,
-                a string with the source code programming language
+                - re.match object if the file_content matches a source code file
+                - string with the source code programming language
     """
     for match, _, _, lang in _multi_re.query(file_content):
 

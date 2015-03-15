@@ -383,7 +383,6 @@ class HTTPResponse(object):
         if self._doc_type is None:
             self._doc_type = HTTPResponse.DOC_TYPE_OTHER
 
-
     headers = property(get_headers, set_headers)
 
     @memoized
