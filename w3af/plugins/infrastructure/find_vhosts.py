@@ -89,10 +89,10 @@ class find_vhosts(InfrastructurePlugin):
             reported.add(vhost)
 
             domain = fuzzable_request.get_url().get_domain()
-            desc = 'Found a new virtual host at the target web server, the'\
-                   ' virtual host name is: "%s". To access this site' \
-                   ' you might need to change your DNS resolution settings'\
-                   ' in order to point "%s" to the IP address of "%s".'
+            desc = u'Found a new virtual host at the target web server, the'\
+                   u' virtual host name is: "%s". To access this site' \
+                   u' you might need to change your DNS resolution settings'\
+                   u' in order to point "%s" to the IP address of "%s".'
             desc %= (vhost, vhost, domain)
 
             v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
@@ -150,12 +150,12 @@ class find_vhosts(InfrastructurePlugin):
             fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
-                desc = 'The content of "%s" references a non existent domain:'\
-                       ' "%s". This can be a broken link, or an internal'\
-                       ' domain name.'
-                desc = desc % (fuzzable_request.get_url(), domain)
+                desc = u'The content of "%s" references a non existent domain:'\
+                       u' "%s". This can be a broken link, or an internal'\
+                       u' domain name.'
+                desc %= (fuzzable_request.get_url(), domain)
                 
-                i = Info('Internal hostname in HTML link', desc,
+                i = Info(u'Internal hostname in HTML link', desc,
                          original_response.id, self.get_name())
                 i.set_url(fuzzable_request.get_url())
                 
