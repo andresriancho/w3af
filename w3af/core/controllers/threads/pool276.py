@@ -61,12 +61,14 @@ TERMINATE = 2
 
 job_counter = itertools.count()
 
+
 def mapstar(args):
     return map(*args)
 
 #
 # Code run by worker processes
 #
+
 
 class MaybeEncodingError(Exception):
     """Wraps possible unpickleable errors, so they can be
@@ -123,10 +125,10 @@ def worker(inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
         completed += 1
     debug('worker exiting after %d tasks' % completed)
 
+
 #
 # Class representing a process pool
 #
-
 class Pool(object):
     '''
     Class which supports an async version of the `apply()` builtin

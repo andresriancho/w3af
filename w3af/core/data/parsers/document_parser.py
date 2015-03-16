@@ -47,6 +47,7 @@ class DocumentParser(object):
         unsure that the response is really an HTML document).
         """
         self._parser = None
+        self._response_repr = None
 
         if http_resp.is_image():
             msg = 'There is no parser for images.'
@@ -55,6 +56,7 @@ class DocumentParser(object):
         for parser in self.PARSERS:
             if parser.can_parse(http_resp):
                 self._parser = parser(http_resp)
+                self._response_repr = repr(http_resp)
                 break
 
         if self._parser is None:
@@ -125,6 +127,16 @@ class DocumentParser(object):
         :return: Only the text, no tags, which is present in a document.
         """
         return self._parser.get_clear_text_body()
+
+    def __repr__(self):
+        if self._parser:
+            klass = self._parser.__class__.__name__
+        else:
+            klass = None
+
+        return '<%s DocumentParser for "%s">' % (klass, self._response_repr)
+
+    __str__ = __repr__
 
 
 def document_parser_factory(http_resp):
