@@ -36,8 +36,8 @@ class error_pages(GrepPlugin):
 
     ERROR_PAGES = (
         '<H1>Error page exception</H1>',
-        # This signature fires up also in default 404 pages of aspx which generates
-        # a lot of noise, so ... disabling it
+        # This signature fires up also in default 404 pages of aspx which
+        # generates a lot of noise, so ... disabling it
         #mesg.append('<span><H1>Server Error in ',
         '<h2> <i>Runtime Error</i> </h2></span>',
         '<h2> <i>Access is denied</i> </h2></span>',
@@ -59,7 +59,8 @@ class error_pages(GrepPlugin):
         # nwwcgi errors
         '<TITLE>nwwcgi Error',
 
-        # ASP error I found during a pentest, the ASP used a foxpro db, not a SQL injection
+        # ASP error I found during a pentest, the ASP used a foxpro db, not a
+        # SQL injection
         '<font face="Arial" size=2>error \'800a0005\'</font>',
         '<h2> <i>Runtime Error</i> </h2></span>',
         # Some error in ASP when using COM objects.
