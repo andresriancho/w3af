@@ -38,17 +38,25 @@ def execute_scan(target, profile, timeout):
 
     from w3af.core.controllers.w3afCore import w3afCore
     from w3af.core.data.kb.knowledge_base import kb
+    from w3af.core.controllers.exceptions import BaseFrameworkException
 
-    scanner = w3afCore()
-    scanner.profiles.use_profile(profile)
-    option_list = scanner.target.get_options()
-    option_list['target'].set_value(target)
-    scanner.target.set_options(option_list)
-    scanner.plugins.init_plugins()
+    try:
+        scanner = w3afCore()
+        scanner.profiles.use_profile(profile)
+        option_list = scanner.target.get_options()
+        option_list['target'].set_value(target)
+        scanner.target.set_options(option_list)
+        scanner.plugins.init_plugins()
+    except BaseFrameworkException, e:
+        logger.warn('Failed to initialize scanner: %s' % e)
+        return
 
     timer = th.Timer(timeout, stop_scan, (scanner,))
     timer.start()
-    scanner.start()
+    try:
+        scanner.start()
+    except BaseFrameworkException, e:
+        logger.warn('Failed to execute scan: %s' % e)
     if timer.is_alive():
         timer.cancel()
         timer.join()
