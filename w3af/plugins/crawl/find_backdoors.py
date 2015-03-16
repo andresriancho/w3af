@@ -116,11 +116,11 @@ class find_backdoors(CrawlPlugin):
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
             if self._is_possible_backdoor(response):
-                desc = 'A web backdoor was found at: "%s"; this could ' \
-                       'indicate that the server has been compromised.'
-                desc = desc % response.get_url()
+                desc = u'A web backdoor was found at: "%s"; this could' \
+                       u' indicate that the server has been compromised.'
+                desc %= response.get_url()
 
-                v = Vuln('Potential web backdoor', desc, severity.HIGH,
+                v = Vuln(u'Potential web backdoor', desc, severity.HIGH,
                          response.id, self.get_name())
                 v.set_url(response.get_url())
 
@@ -183,6 +183,6 @@ class find_backdoors(CrawlPlugin):
         The plugin will perform these requests:
             - http://host.tld/w3af/c99.php
             - http://host.tld/w3af/cmd.php
-            - http://host.tld/w3af/webshell.php
             ...
+            - http://host.tld/w3af/webshell.php
         """
