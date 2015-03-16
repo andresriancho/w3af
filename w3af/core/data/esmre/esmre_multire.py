@@ -58,8 +58,8 @@ class esmre_multire(object):
                 self._re_cache[item] = re.compile(item, re_compile_flags)
                 self._index.enter(item, (item,))
             else:
-                raise ValueError(
-                    'Can NOT build esmre_multire with provided values.')
+                msg = 'Can NOT build esmre_multire with provided values.'
+                raise ValueError(msg)
 
     def query(self, target_str):
         """
@@ -110,12 +110,12 @@ class LongKeywordIndex(esmre.Index):
             
             if not keywords:
                 raise ValueError('Failed due to performance reasons.'
-                                 'Need more hints for RE: %s' % regex)
+                                 ' Need more hints for RE: %s' % regex)
             
             for hint in keywords:
                 if len(hint) <= self.hint_len:
                     raise ValueError('Failed due to performance reasons.'
-                                     'Need longer hints for RE: %s' % regex)
+                                     ' Need longer hints for RE: %s' % regex)
 
                 self.esm.enter(hint.lower(), obj)
         
