@@ -1,0 +1,80 @@
+# https://sourceforge.net/projects/uniscan/
+# https://code.google.com/p/bwsfinder/source/browse/trunk/
+
+execute command: <input type="text" name="c">
+jsp File browser
+JspWebshell
+PHPShell
+phpRemoteView
+JspSpy
+<title>Mini Php Shell
+<title>r57Shell
+Simple CGI backdoor by DK
+JFolder
+NIX REMOTE WEB-SHELL
+Execute Shell Command
+PGTools
+<title>PhpShell \d\.\d</title>
+cmd\.jsp
+c99shell</title>
+hackru\.info
+Hmilyld
+c99shell
+darkst
+<title>\*  ernealizm  \* </title>
+C99Shell v
+xIXRbE
+MyShell
+fuckjp
+yoco
+backdoor\.jsp
+<input type=text name=".CMD" size=45 value=
+<title>ZoRBaCK Connect</title>
+hkmjj
+<title>ASPX Shell</title>
+<title>.+- WSO.+</title>
+hack520
+BloodSword
+Jsp File Admin
+lcxMacros
+JFileMan
+<title>Knull Shell</title>
+<title>:: www\.h4ckcity\.org :: Coded By 2MzRp & LocalMan ::</title>
+<title>JSP Shell</title>
+r57shell</title>
+jspreverse\.html
+icesword
+<form method="POST" action="cfexec\.cfm">
+JSP Backdoor Reverse Shell
+REMVIEW TOOLS
+PHVayv
+JspDo
+NetworkFileManagerPHP
+<title>Stored Procedure Execute</title>
+hacker666
+JSP Backdoor
+h4ntu
+<title>SST Sheller !</title>
+www\.hmilyld\.cn
+heroes1412
+safe\.yi\.org
+<title>.+Ani-Shell.+</title>
+AspRootkit
+Persiangig
+Webshell
+<title>awen asp\.net webshell</title>
+404 infiltrate team
+pwnshell
+websamba
+xakep
+PHP Shell
+<title>SyRiAn Sh3ll 
+<title>.+NTDaddy.+</title>
+<title>iTSecTeam</title>
+PHANTASMA
+<title>PHP-Terminal
+jshell
+lpl38
+<FORM METHOD=GET ACTION='cmdjsp\.jsp'>
+jsp web shell
+Cod3rZ

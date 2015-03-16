@@ -19,39 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import os
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af import ROOT_PATH
+from w3af import CRAWL_PATH
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-
-
-# Mapping object to use in XPath search
-BACKDOOR_COLLECTION = {'input': {'value': ('run', 'send', 'exec', 'execute',
-                                           'run cmd', 'execute command',
-                                           'run command', 'list', 'connect'),
-                                 'name': ('cmd', 'command')},
-                       'form': {'enctype': ('multipart/form-data',)}}
-
-# List of known offensive words.
-KNOWN_OFFENSIVE_WORDS = {'access', 'backdoor', 'cmd', 'cmdExe_Click',
-                         'cmd_exec', 'command', 'connect', 'directory',
-                         'directories', 'exec', 'exec_cmd', 'execute', 'eval',
-                         'file', 'file upload', 'hack', 'hacked', 'hacked by',
-                         'hacking', 'htaccess', 'launch command',
-                         'launch shell', 'list', 'listing', 'output', 'passwd',
-                         'password', 'permission', 'remote', 'reverse', 'run',
-                         'runcmd', 'server', 'shell', 'socket', 'system',
-                         'user', 'userfile', 'userid', 'web shell', 'webshell'}
+from w3af.core.data.esmre.multi_re import multi_re
 
 
 class find_backdoors(CrawlPlugin):
@@ -60,14 +40,35 @@ class find_backdoors(CrawlPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    WEBSHELL_DB = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'find_backdoors',
-                               'web_shells.txt')
+    WEBSHELL_DB = os.path.join(CRAWL_PATH, 'find_backdoors', 'web_shells.txt')
+    SIGNATURE_DB = os.path.join(CRAWL_PATH, 'find_backdoors', 'signatures.txt')
 
     def __init__(self):
         CrawlPlugin.__init__(self)
 
         # Internal variables
         self._analyzed_dirs = ScalableBloomFilter()
+        self._signature_re = None
+
+    def setup(self):
+        with self._plugin_lock:
+            if self._signature_re is not None:
+                return
+
+            signatures = self._read_signatures()
+            self._signature_re = multi_re(signatures, hint_len=2)
+
+    def _read_signatures(self):
+        for line in file(self.SIGNATURE_DB):
+            line = line.strip()
+
+            if not line:
+                continue
+
+            if line.startswith('#'):
+                continue
+
+            yield (line, 'Backdoor signature')
 
     def crawl(self, fuzzable_request):
         """
@@ -81,6 +82,8 @@ class find_backdoors(CrawlPlugin):
 
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add(domain_path)
+
+            self.setup()
 
             # Read the web shell database
             web_shells = self._iter_web_shells()
@@ -115,22 +118,29 @@ class find_backdoors(CrawlPlugin):
         except BaseFrameworkException:
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
-            if self._is_possible_backdoor(response):
-                desc = u'A web backdoor was found at: "%s"; this could' \
-                       u' indicate that the server has been compromised.'
-                desc %= response.get_url()
+            signature = self._match_signature(response)
+            if signature is None:
+                return
 
-                v = Vuln(u'Potential web backdoor', desc, severity.HIGH,
-                         response.id, self.get_name())
-                v.set_url(response.get_url())
+            desc = u'An HTTP response matching the web backdoor signature' \
+                   u' "%s" was found at: "%s"; this could indicate that the' \
+                   u' server has been compromised.'
+            desc %= (signature, response.get_url())
 
-                kb.kb.append(self, 'backdoors', v)
-                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+            # It's probability is higher if we found a long signature
+            _severity = severity.HIGH if len(signature) > 8 else severity.MEDIUM
 
-                fr = FuzzableRequest.from_http_response(response)
-                self.output_queue.put(fr)
+            v = Vuln(u'Potential web backdoor', desc, _severity,
+                     response.id, self.get_name())
+            v.set_url(response.get_url())
 
-    def _is_possible_backdoor(self, response):
+            kb.kb.append(self, 'backdoors', v)
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
+            fr = FuzzableRequest.from_http_response(response)
+            self.output_queue.put(fr)
+
+    def _match_signature(self, response):
         """
         Heuristic to infer if the content of <response> has the pattern of a
         backdoor response.
@@ -138,38 +148,13 @@ class find_backdoors(CrawlPlugin):
         :param response: HTTPResponse object
         :return: A bool value
         """
-        if is_404(response):
-            return False
-
         body_text = response.get_body()
-        dom = response.get_dom()
-        if dom is not None:
-            for ele, attrs in BACKDOOR_COLLECTION.iteritems():
-                for attrname, attr_vals in attrs.iteritems():
-                    # Set of lowered attribute values
-                    dom_attr_vals = \
-                        set(n.get(attrname).lower() for n in
-                            (dom.xpath('//%s[@%s]' % (ele, attrname))))
+        
+        for match, _, _, _ in self._signature_re.query(body_text):
+            match_string = match.group(0)
+            return match_string
 
-                    # If at least one elem in intersection return True
-                    if dom_attr_vals & set(attr_vals):
-                        return True
-
-        # If no regex matched then try with keywords. At least 2 should be
-        # contained in 'body_text' to succeed.
-        #
-        # TODO: Improve this for loop so that we only read the response once and
-        #       match all the known offensive words "at the same time", instead
-        #       of reading the same string N times (once for each item in
-        #       KNOWN_OFFENSIVE_WORDS)
-        times = 0
-        for back_kw in KNOWN_OFFENSIVE_WORDS:
-            if re.search(back_kw, body_text, re.I):
-                times += 1
-                if times == 2:
-                    return True
-
-        return False
+        return None
 
     def get_long_desc(self):
         """
