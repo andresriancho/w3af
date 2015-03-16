@@ -24,5 +24,8 @@ import gettext
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 
+# Shortcuts
+CRAWL_PATH = os.path.join(ROOT_PATH, 'plugins', 'crawl')
+
 # Translation stuff
 gettext.install('w3af', os.path.join(ROOT_PATH, 'locales'))
