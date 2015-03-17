@@ -64,7 +64,6 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg='', log_msg=None):
                     is raised. If no value is passed the string representation
                     of the current exception is used.
     """
-
     if backoff <= 1:
         raise ValueError("'backoff' must be greater than 1")
 
