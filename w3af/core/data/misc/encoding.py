@@ -115,7 +115,7 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
 
 def smart_str(s, encoding='utf-8', errors='strict'):
     """
-    Return a bytestring version of 's', encoded as specified in 'encoding'.
+    Return a byte-string version of 's', encoded as specified in 'encoding'.
     """
     if isinstance(s, unicode):
         s = s.encode(encoding, errors)
