@@ -29,9 +29,9 @@ from w3af.core.controllers.misc.decorators import cached_property
 QUOTE_CHARS = {'"', "'"}
 ATTR_DELIMITERS = {'"', '`', "'"}
 JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
-            'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus', 
-            'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown', 
-            'onkeypress', 'onkeyup', 'onload', 'onunload']
+             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus',
+             'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown',
+             'onkeypress', 'onkeyup', 'onload', 'onunload']
 
 
 class Context(object):
@@ -78,6 +78,10 @@ def normalize_html(data):
     COMMENT_END = '--'
     COMMENT_START = '!--'
     ATTR_DELIMITERS = {'"', '`', "'"}
+
+    # Move unicode to str if required
+    if isinstance(data, unicode):
+        data = data.encode('utf8')
 
     # Fast search and replace when more than one char needs to be searched
     repls = ("\\'", ''), ('\\"', '')
