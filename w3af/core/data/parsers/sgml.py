@@ -96,10 +96,14 @@ class SGMLParser(BaseParser):
         handler = '_handle_%s_tag_start' % tag
 
         try:
-            meth = getattr(self, handler, lambda *args: None)
-            meth(tag, attrs)
-        except Exception, ex:
-            self._handle_exception('parsing document', ex)
+            method = getattr(self, handler)
+        except AttributeError:
+            pass
+        else:
+            try:
+                method(tag, attrs)
+            except Exception, ex:
+                self._handle_exception('parsing %s tag' % tag, ex)
 
         try:
             if tag in self.TAGS_WITH_URLS:
@@ -118,7 +122,12 @@ class SGMLParser(BaseParser):
         Called by the parser on element close.
         """
         # Call handler method if exists
-        getattr(self, '_handle_' + tag + '_tag_end', lambda arg: None)(tag)
+        try:
+            method = getattr(self, '_handle_%s_tag_end' % tag)
+        except AttributeError:
+            return
+        else:
+            return method(tag)
 
     def data(self, data):
         """
