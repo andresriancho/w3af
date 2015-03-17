@@ -117,7 +117,7 @@ class TestAuditPlugin(unittest.TestCase):
 
         mod = 'w3af.core.controllers.plugins.audit_plugin.%s'
 
-        mock_plugin_timeout = 1
+        mock_plugin_timeout = 2
         msg = '[timeout] The "%s" plugin took more than %s seconds to'\
               ' complete the analysis of "%s", killing it!'
 
