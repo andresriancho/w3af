@@ -24,6 +24,7 @@ import unittest
 import urllib2
 import cPickle
 
+from multiprocessing.queues import SimpleQueue
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
@@ -969,6 +970,18 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://www.w3af.com/?id=1')
         cPickle.dumps(u)
 
+    def test_can_pickle_via_queue(self):
+        """
+        https://github.com/andresriancho/w3af/issues/8748
+        """
+        sq = SimpleQueue()
+        u1 = URL('http://www.w3af.com/')
+        sq.put(u1)
+        u2 = sq.get()
+
+        self.assertEqual(u1, u2)
+
     def test_copy(self):
         u = URL('http://www.w3af.com/?id=1&id=2')
         self.assertEqual(u, u.copy())
+
