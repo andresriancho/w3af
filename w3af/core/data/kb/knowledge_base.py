@@ -36,7 +36,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info_set import InfoSet
-from w3af.core.data.constants.severity import (INFORMATION, LOW, MEDIUM, HIGH)
+from w3af.core.data.constants.severity import INFORMATION, LOW, MEDIUM, HIGH
 from weakref import WeakValueDictionary
 
 
@@ -316,12 +316,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         :return: None
         """
         with self._kb_lock:
-
-            # Only initialize once
             if self.initialized:
                 return
-
-            self.initialized = True
 
             self.urls = DiskSet(table_prefix='kb_urls')
             self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
@@ -333,6 +329,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             self.db.create_index(self.table_name, ['location_a', 'location_b'])
             self.db.create_index(self.table_name, ['uniq_id'])
             self.db.commit()
+
+            # Only initialize once
+            self.initialized = True
 
     @requires_setup
     def clear(self, location_a, location_b):
