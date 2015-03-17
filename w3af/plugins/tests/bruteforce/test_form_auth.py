@@ -112,7 +112,7 @@ class TestFormAuth(PluginTest):
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')
-        self.assertEquals(len(vulns), 1)
+        self.assertEquals(len(vulns), 1, vulns)
 
         vuln = vulns[0]
 
