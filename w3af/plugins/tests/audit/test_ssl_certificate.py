@@ -25,13 +25,11 @@ from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
-from w3af.core.controllers.misc.get_unused_port import get_unused_port
 
 
 class TestSSLCertificate(PluginTest):
 
-    PORT = get_unused_port()
-    local_target_url = 'https://localhost:%s/' % PORT
+    local_target_url = 'https://localhost:%s/'
 
     remote_url = 'https://www.yandex.com/'
     EXPECTED_STRINGS = ('yandex.ru', 'Moscow', 'RU', 'yandex')
@@ -49,11 +47,14 @@ class TestSSLCertificate(PluginTest):
         # Start the HTTPS server
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
                                 'certs', 'invalid_cert.pem')
-        s = SSLServer('localhost', self.PORT, certfile)
+        s = SSLServer('localhost', 0, certfile)
         s.start()
+        s.wait_for_start()
+
+        port = s.get_port()
 
         cfg = self._run_configs['cfg']
-        self._scan(self.local_target_url, cfg['plugins'])
+        self._scan(self.local_target_url % port, cfg['plugins'])
 
         s.stop()
 
@@ -67,7 +68,7 @@ class TestSSLCertificate(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Invalid SSL certificate', vuln.get_name())
-        self.assertEquals(self.local_target_url, str(vuln.get_url()))
+        self.assertEquals(self.local_target_url % port, str(vuln.get_url()))
 
     @attr('internet')
     def test_ssl_certificate_yandex(self):

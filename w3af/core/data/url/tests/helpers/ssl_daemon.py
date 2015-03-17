@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import SocketServer
 import threading
 import socket
+import time
 import ssl
 import os
 
@@ -70,6 +71,7 @@ class SSLServer(threading.Thread):
         self.cert = certfile
         self.proto = proto
         self.http_response = http_response
+
         self.sock = socket.socket()
         self.sock.bind((listen, port))
         self.sock.listen(5)
@@ -117,3 +119,13 @@ class SSLServer(threading.Thread):
             s.close()
         except:
             pass
+
+    def wait_for_start(self):
+        while self.get_port() is None:
+            time.sleep(0.5)
+
+    def get_port(self):
+        try:
+            return self.sock.getsockname()[1]
+        except:
+            return None
