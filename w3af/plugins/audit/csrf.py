@@ -33,6 +33,7 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.kb.vuln import Vuln
 
+
 COMMON_CSRF_NAMES = (
     'csrf_token',
     'CSRFName',                   # OWASP CSRF_Guard
@@ -65,7 +66,7 @@ class csrf(AuditPlugin):
 
     def audit(self, freq, orig_response):
         """
-        Tests a URL for CSRF vulnerabilities.
+        Test URLs for CSRF vulnerabilities.
 
         :param freq: A FuzzableRequest
         """
@@ -206,14 +207,33 @@ class csrf(AuditPlugin):
             
         return False
 
+    def shannon_entropy(self, data):
+        """
+        Shannon entropy calculation
+        http://pythonfiddle.com/shannon-entropy-calculation/
+        """
+        if not data:
+            return 0
+
+        entropy = 0
+
+        for x in range(256):
+            p_x = float(data.count(chr(x)))/len(data)
+            if p_x > 0:
+                entropy += - p_x * log(p_x, 2)
+
+        return entropy
+
     def is_csrf_token(self, key, value):
-        # Entropy based algoritm
-        # http://en.wikipedia.org/wiki/Password_strength
-        min_length = 6
-        min_entropy = 36
+        """
+        Entropy based algorithm
+        http://en.wikipedia.org/wiki/Password_strength
+        """
+        min_length = 5
+        min_entropy = 2.4
 
         # Check length
-        if len(value) < min_length:
+        if len(value) <= min_length:
             return False
         
         # Check for common CSRF token names
@@ -222,31 +242,10 @@ class csrf(AuditPlugin):
                 return True
     
         # Calculate entropy
-        total = 0
-        total_digit = False
-        total_lower = False
-        total_upper = False
-        total_spaces = False
-
-        for i in value:
-            if i.isdigit():
-                total_digit = True
-                continue
-            if i.islower():
-                total_lower = True
-                continue
-            if i.isupper():
-                total_upper = True
-                continue
-            if i == ' ':
-                total_spaces = True
-                continue
-        total = int(
-            total_digit) * 10 + int(total_upper) * 26 + int(total_lower) * 26
-        entropy = floor(log(total) * (len(value) / log(2)))
+        entropy = self.shannon_entropy(value.encode('utf8'))
         if entropy >= min_entropy:
-            if not total_spaces and total_digit:
-                return True
+            return True
+
         return False
 
     def get_long_desc(self):
@@ -257,6 +256,6 @@ class csrf(AuditPlugin):
         This plugin finds Cross Site Request Forgeries (CSRF) vulnerabilities.
 
         The simplest type of csrf is checked to be vulnerable, the web
-        application must have sent a permanent cookie, and the aplicacion must
+        application must have sent a permanent cookie, and the application must
         have query string parameters.
         """

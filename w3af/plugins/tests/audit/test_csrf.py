@@ -246,7 +246,7 @@ class TestCSRF(PluginTest):
         freq.set_querystring(query_string)
         
         token = self.csrf_plugin._find_csrf_token(freq)
-        self.assertIsNone(token)
+        self.assertIn('secret', token)
     
     @attr('ci_fails')
     def test_is_token_checked_true(self):
