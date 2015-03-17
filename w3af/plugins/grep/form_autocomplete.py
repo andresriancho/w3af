@@ -28,13 +28,15 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 
-# Find all form elements that don't include the'autocomplete' attribute;
+# Find all form elements that don't include the 'autocomplete' attribute;
 # otherwise (if included) not equals 'off'
 AUTOCOMPLETE_FORMS_XPATH = ("//form[not(@autocomplete) or "
                             "translate(@autocomplete,'OF','of')!='off']")
+
 # Find all input elements which type's lower-case value
 # equals-case-sensitive 'password'
 PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
+
 # All 'text' input elements
 TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
@@ -93,7 +95,7 @@ class form_autocomplete(GrepPlugin):
                 i.set_url(url)
 
                 form_str = etree.tostring(form)
-                to_highlight = form_str[:(form_str).find('>') + 1]
+                to_highlight = form_str[:form_str.find('>') + 1]
                 i.add_to_highlight(to_highlight)
 
                 # Store and print
