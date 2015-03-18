@@ -54,3 +54,18 @@ class TestMultipartEncode(unittest.TestCase):
                    ' filename="test.txt"\r\nContent-Type: text/plain\r\n\r\n\x00'\
                    'hello world\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)
+
+    def test_encode_two_files(self):
+        _files = [('file1', NamedStringIO('hello world', name='test1.txt')),
+                  ('file2', NamedStringIO('bye bye', name='test2.txt'))]
+
+        _, encoded = multipart_encode((), _files, boundary='fakeboundary')
+
+        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data;' \
+                   ' name="file1"; filename="test1.txt"\r\n' \
+                   'Content-Type: text/plain\r\n\r\nhello world\r\n' \
+                   '--fakeboundary\r\nContent-Disposition: form-data;' \
+                   ' name="file2"; filename="test2.txt"\r\n' \
+                   'Content-Type: text/plain\r\n\r\nbye bye\r\n' \
+                   '--fakeboundary--\r\n\r\n'
+        self.assertEqual(EXPECTED, encoded)
