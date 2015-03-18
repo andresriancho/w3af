@@ -38,10 +38,10 @@ from w3af.core.ui.console.bug_report import bug_report_menu
 from w3af.core.ui.console.util import mapDict
 from w3af.core.ui.console.tables import table
 
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
 from w3af.core.controllers.misc_settings import MiscSettings
-
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ScanMustStopException)
 
 
 class rootMenu(menu):
@@ -129,6 +129,14 @@ class rootMenu(menu):
         except Exception:
             self._w3af.stop()
             raise
+        finally:
+            # All plugins are removed from the configuration/memory after a scan
+            # finishes. At least for now it's by design and it generates an
+            # usability bug where the user gets a strange message saying he
+            # disabled the console output, so we re-enable it
+            #
+            # https://github.com/andresriancho/w3af/issues/8114
+            self._w3af.plugins.set_plugins(['console'], 'output')
 
     def show_progress_on_request(self):
         """
@@ -137,10 +145,7 @@ class rootMenu(menu):
         while self._w3af.status.is_running():
 
             # Define some variables...
-            rfds = []
-            wfds = []
-            efds = []
-            hitted_enter = False
+            user_press_enter = False
 
             # TODO: This if is terrible! I need to remove it!
             # read from sys.stdin with a 0.5 second timeout
@@ -149,20 +154,17 @@ class rootMenu(menu):
                 rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
                 if rfds:
                     if len(sys.stdin.readline()):
-                        hitted_enter = True
+                        user_press_enter = True
             else:
                 # windows
                 import msvcrt
                 time.sleep(0.3)
                 if msvcrt.kbhit():
                     if term.read(1) in ['\n', '\r', '\r\n', '\n\r']:
-                        hitted_enter = True
+                        user_press_enter = True
 
             # If something was written to sys.stdin, read it
-            if hitted_enter:
-
-                # change back to the previous state
-                hitted_enter = False
+            if user_press_enter:
 
                 # Get the information and print it to the user
                 status_information_str = self._w3af.status.get_long_status()
