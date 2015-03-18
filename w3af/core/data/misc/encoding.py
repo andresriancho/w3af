@@ -23,6 +23,8 @@ import codecs
 import urllib
 import chardet
 
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+
 # Custom error handling schemes registration
 ESCAPED_CHAR = 'slash_escape_char'
 PERCENT_ENCODE = 'percent_encode'
@@ -68,7 +70,8 @@ codecs.register_error(PERCENT_ENCODE, _percent_encode)
 codecs.register_error(HTML_ENCODE, _return_html_encoded)
 
 
-def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
+def smart_unicode(s, encoding=DEFAULT_ENCODING, errors='strict',
+                  on_error_guess=True):
     """
     Return the unicode representation of 's'. Decodes byte-strings using
     the 'encoding' codec.
@@ -113,7 +116,7 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
     return s
 
 
-def smart_str(s, encoding='utf-8', errors='strict'):
+def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
     """
     Return a byte-string version of 's', encoded as specified in 'encoding'.
     """
@@ -128,9 +131,9 @@ def is_known_encoding(encoding):
     """
     :return: True if the encoding name is known.
 
-    >>> is_known_encoding( 'foo' )
+    >>> is_known_encoding('foo')
     False
-    >>> is_known_encoding( 'utf-8' )
+    >>> is_known_encoding('utf-8')
     True
     """
     try:
