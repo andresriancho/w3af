@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import mimetools
 import mimetypes
-import os
 import hashlib
+import os
 
 from w3af.core.controllers.misc.io import is_file_like
 from w3af.core.data.misc.encoding import smart_str
@@ -86,7 +86,7 @@ def multipart_encode(_vars, files, boundary=None, _buffer=None):
         # Before:
         #     boundary = mimetools.choose_boundary()
         #     '127.0.0.1.1000.6267.1173556103.828.1'
-        # This contains my IP address, I dont like that...
+        # This contains my IP address, I don't like that...
         # Now:
         boundary = get_boundary()
 
@@ -104,11 +104,12 @@ def multipart_encode(_vars, files, boundary=None, _buffer=None):
 
         guessed_mime = mimetypes.guess_type(filename)[0]
         content_type = guessed_mime or 'application/octet-stream'
+        args = (smart_str(key), smart_str(filename))
 
         _buffer += '--%s\r\n' % boundary
-        _buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
+        _buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % args
         _buffer += 'Content-Type: %s\r\n' % content_type
-        _buffer += '\r\n' + fd.read() + '\r\n'
+        _buffer += '\r\n%s\r\n' % fd.read()
 
     _buffer += '--%s--\r\n\r\n' % boundary
 
