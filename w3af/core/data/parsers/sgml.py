@@ -47,6 +47,8 @@ class SGMLParser(BaseParser):
         '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
         re.I | re.U)
 
+    META_URL_REDIR_RE = re.compile('.*?URL.*?=(.*)', re.I | re.U)
+
     TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
@@ -406,7 +408,7 @@ class SGMLParser(BaseParser):
             #   "4;URL=http://www.f00.us/"
             #   "2; URL=http://www.f00.us/"
             #   "6  ; URL=http://www.f00.us/"
-            for urlstr in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
+            for urlstr in self.META_URL_REDIR_RE.findall(content):
                 urlstr = self._decode_url(urlstr.strip())
                 url = unicode(self._base_url.url_join(urlstr))
                 url = URL(url, encoding=self._encoding)
