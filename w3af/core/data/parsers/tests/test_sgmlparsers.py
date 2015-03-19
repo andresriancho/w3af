@@ -237,7 +237,6 @@ class TestSGMLParser(unittest.TestCase):
         self.assertFalse(getattr(p, '_inside_script'))
 
         self.assertEquals(set(), getattr(p, '_tag_and_url'))
-        self.assertEquals(set(), getattr(p, '_parsed_urls'))
         self.assertEquals([], getattr(p, '_forms'))
         self.assertEquals([], getattr(p, '_comments_in_doc'))
         self.assertEquals([], getattr(p, '_meta_redirs'))
