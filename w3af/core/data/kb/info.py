@@ -28,6 +28,8 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.constants.vulns import is_valid_name
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
+from w3af.core.data.kb.tests.test_info import MockInfo
+from w3af.core.data.kb.tests.test_vuln import MockVuln
 
 
 class Info(dict):
@@ -119,7 +121,7 @@ class Info(dict):
         return INFORMATION
 
     def set_name(self, name):
-        if is_running_on_ci():
+        if is_running_on_ci() and not isinstance(self, (MockVuln, MockInfo)):
             if not is_valid_name(name):
                 missing = os.path.join(ARTIFACTS_DIR, 'missing-vulndb.txt')
                 missing = file(missing, 'a')

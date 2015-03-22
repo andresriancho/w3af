@@ -88,4 +88,5 @@ class TestVulnsConstants(unittest.TestCase):
 
             missing_list.append(line)
 
+        self.maxDiff = None
         self.assertEqual(missing_list, [])
