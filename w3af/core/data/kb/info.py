@@ -26,7 +26,7 @@ from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.constants.vulns import is_valid_name
-from w3af.core.controllers.ci.detect import is_running_on_ci
+from w3af.core.controllers.tests.running_tests import is_running_tests
 from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 
 
@@ -121,7 +121,7 @@ class Info(dict):
     def set_name(self, name):
         self._name = name
 
-        if not is_running_on_ci():
+        if not is_running_tests():
             return
 
         from w3af.core.data.kb.tests.test_info import MockInfo
