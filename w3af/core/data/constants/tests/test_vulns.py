@@ -23,8 +23,11 @@ import os
 import re
 import unittest
 
+from nose.plugins.attrib import attr
+
 from w3af import ROOT_PATH
 from w3af.core.data.constants.vulns import VULNS
+from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 
        
 class TestVulnsConstants(unittest.TestCase):
@@ -37,7 +40,7 @@ class TestVulnsConstants(unittest.TestCase):
         for _ in xrange(21):
             vulns_file.readline()
             
-        vuln_id_list = re.findall('\d+', vulns_file.read())
+        vuln_id_list = re.findall('(\d+):', vulns_file.read())
         filtered = set()
         dups = set()
         
@@ -46,10 +49,47 @@ class TestVulnsConstants(unittest.TestCase):
                 dups.add(vuln_id)
             
             filtered.add(vuln_id)
-            
-        self.assertEquals( set([]), dups )
+
+        self.assertEquals(set([]), dups)
     
     def test_no_empty(self):
         items = VULNS.items()
         empty_values = set([(key, val) for (key, val) in items if not val])
         self.assertEqual(set([]), empty_values)
+
+    @attr('ci_fails')
+    def test_vuln_updated(self):
+        """
+        Each time we call Info.set_name during a test (and only during tests,
+        not run when the user is running w3af) we check if the name of the
+        vulnerability being set is actually in the vuln.py database or not,
+        if it's not we append it to a file called /tmp/missing-vulndb.txt
+
+        This test asserts that the file:
+            * Doesn't exist
+            * Is empty
+            * Fail if not
+
+        Since we want to run this test at the end, we tag it as ci_fails for the
+        main running to ignore it, but then we run it manually from circle.yml
+        """
+        missing = os.path.join(ARTIFACTS_DIR, 'missing-vulndb.txt')
+
+        if not os.path.exists(missing):
+            # Perfect!
+            return
+
+        missing_list = []
+        for line in file(missing):
+            line = line.strip()
+
+            if not line:
+                continue
+
+            missing_list.append(line)
+
+        missing_list = list(set(missing_list))
+        missing_list.sort()
+
+        self.maxDiff = None
+        self.assertEqual(missing_list, [])

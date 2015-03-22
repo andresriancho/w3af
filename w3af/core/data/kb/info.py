@@ -19,10 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
+
 from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.constants.vulns import is_valid_name
+from w3af.core.controllers.tests.running_tests import is_running_tests
+from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 
 
 class Info(dict):
@@ -114,12 +119,22 @@ class Info(dict):
         return INFORMATION
 
     def set_name(self, name):
-        """
-        if not is_valid_name(name):
-            msg = 'Invalid vulnerability name "%s" specified.'
-            raise ValueError(msg % name)
-        """
         self._name = name
+
+        if not is_running_tests():
+            return
+
+        from w3af.core.data.kb.tests.test_info import MockInfo
+        from w3af.core.data.kb.tests.test_vuln import MockVuln
+
+        if isinstance(self, (MockVuln, MockInfo)):
+            return
+
+        if not is_valid_name(name):
+            missing = os.path.join(ARTIFACTS_DIR, 'missing-vulndb.txt')
+            missing = file(missing, 'a')
+            missing.write('%s\n' % name)
+            missing.close()
 
     def get_name(self):
         return self._name

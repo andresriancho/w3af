@@ -103,7 +103,9 @@ test:
   override:
     - w3af/core/controllers/ci/nosetests_wrapper/main.py:
         timeout: 360
-        
+
+    - nosetests w3af/core/data/constants/tests/test_vulns.py:TestVulnsConstants.test_vuln_updated
+
     - w3af/core/controllers/ci/teardown_moth.py
 
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         

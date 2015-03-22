@@ -25,13 +25,11 @@ class ColorLog(logging.Handler):
     A class to print colored messages to stdout
     """
 
-    COLORS = {
-                logging.CRITICAL: red,
-                logging.ERROR: red,
-                logging.WARNING: yellow,
-                logging.INFO: green,
-                logging.DEBUG: lambda x: x,
-              }
+    COLORS = {logging.CRITICAL: red,
+              logging.ERROR: red,
+              logging.WARNING: yellow,
+              logging.INFO: green,
+              logging.DEBUG: lambda x: x}
     
     def __init__(self):
         logging.Handler.__init__(self)

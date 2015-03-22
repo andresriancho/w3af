@@ -37,9 +37,9 @@ class DAVTemplate(BaseTemplate):
 
     def get_options(self):
         """
-        In this case we provide a sample implementation since most vulnerabilities
-        will have this template. If the specific vulnerability needs other params
-        then it should override this implementation.
+        In this case we provide a sample implementation since most
+        vulnerabilities will have this template. If the specific vulnerability
+        needs other params then it should override this implementation.
         """
         ol = OptionList()
 
@@ -72,7 +72,7 @@ class DAVTemplate(BaseTemplate):
         :return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         """
-        return ('dav', 'dav')
+        return 'dav', 'dav'
 
     def get_vulnerability_name(self):
         """
