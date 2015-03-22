@@ -24,6 +24,7 @@ from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 STS_HEADER = 'Strict-Transport-Security'
+MAX_REPORTS = 50
 
 
 class strict_transport_security(GrepPlugin):
@@ -32,6 +33,10 @@ class strict_transport_security(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    def __init__(self):
+        super(strict_transport_security, self).__init__()
+        self._reports = 0
+
     def grep(self, request, response):
         """
         Check if HTTPS responses have the Strict-Transport-Security header set.
@@ -40,12 +45,17 @@ class strict_transport_security(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
+        if self._reports > MAX_REPORTS:
+            return
+
         if request.get_url().get_protocol() != 'https':
             return
 
         sts_header_value, _ = response.get_headers().iget(STS_HEADER, None)
         if sts_header_value is not None:
             return
+
+        self._reports += 1
 
         desc = 'The web server uses HTTPS but does not set the '\
                ' Strict-Transport-Security header.'
