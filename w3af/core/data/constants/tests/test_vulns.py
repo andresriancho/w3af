@@ -49,7 +49,7 @@ class TestVulnsConstants(unittest.TestCase):
                 dups.add(vuln_id)
             
             filtered.add(vuln_id)
-        
+
         self.assertEquals(set([]), dups)
     
     def test_no_empty(self):

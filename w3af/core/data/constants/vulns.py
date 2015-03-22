@@ -192,6 +192,7 @@ VULNS = {
          30060: 'Missing X-Content-Type-Options header',
          30061: 'Missing Strict Transport Security header',
          30062: 'HTML5 WebSocket detected',
+         30063: 'Insecure password form access over HTTP',
          
          # Infrastructure
          40001: 'Potential XSS vulnerability',
@@ -237,6 +238,7 @@ VULNS = {
          60002: 'OS Commanding code execution',
          60003: 'Code execution via remote file inclusion',
          60004: '(Blind) SQL injection',
+         60005: 'Arbitrary file read',
 
          # Users can add their vulnerabilities
          70000: 'Manually added vulnerability',
