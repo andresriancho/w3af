@@ -40,7 +40,7 @@ class TestVulnsConstants(unittest.TestCase):
         for _ in xrange(21):
             vulns_file.readline()
             
-        vuln_id_list = re.findall('\d+', vulns_file.read())
+        vuln_id_list = re.findall('(\d+):', vulns_file.read())
         filtered = set()
         dups = set()
         
@@ -49,7 +49,7 @@ class TestVulnsConstants(unittest.TestCase):
                 dups.add(vuln_id)
             
             filtered.add(vuln_id)
-            
+        
         self.assertEquals(set([]), dups)
     
     def test_no_empty(self):
