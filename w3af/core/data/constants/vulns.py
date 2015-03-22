@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 VULNS = {
          00000: 'TestCase',
-         
+
          # Audit
          10000: 'Blind SQL injection vulnerability',
          10001: 'Buffer overflow vulnerability',
@@ -34,7 +34,7 @@ VULNS = {
          10008: 'Insecure Access-Control-Allow-Origin',
          10009: 'Incorrect withCredentials implementation',
          10010: 'CSRF vulnerability',
-         10011: 'Insecure DAV configuration',
+         10011: 'Insecure testDAV configuration',
          10012: 'DAV incorrect configuration',
          10013: 'DAV insufficient privileges',
          10014: 'eval() input injection vulnerability',
@@ -72,6 +72,9 @@ VULNS = {
          10047: 'Cross site scripting vulnerability',
          10048: 'Cross site tracing vulnerability',
          10049: 'Parameter modifies response headers',
+         10050: 'Eval() code execution',
+         10051: 'Reflected File Download vulnerability',
+         10052: 'Shell shock vulnerability',
          
          # Crawl
          20000: 'phpinfo() file found',
@@ -184,6 +187,11 @@ VULNS = {
          30055: 'Blank http response body',
          30056: 'Content feed resource',
          30057: 'Malware identified',
+         30058: 'Insecure password submission over HTTP',
+         30059: 'CSP vulnerability',
+         30060: 'Missing X-Content-Type-Options header',
+         30061: 'Missing Strict Transport Security header',
+         30062: 'HTML5 WebSocket detected',
          
          # Infrastructure
          40001: 'Potential XSS vulnerability',
@@ -222,6 +230,16 @@ VULNS = {
          
          # Bruteforce
          50000: 'Guessable credentials',
+
+         # Attack
+         60000: 'DAV Misconfiguration',
+         60001: 'Arbitrary file upload',
+         60002: 'OS Commanding code execution',
+         60003: 'Code execution via remote file inclusion',
+         60004: '(Blind) SQL injection',
+
+         # Users can add their vulnerabilities
+         70000: 'Manually added vulnerability',
                                     
          }
 
