@@ -62,7 +62,6 @@ class strict_transport_security(GrepPlugin):
         i = Info('Missing Strict Transport Security header', desc,
                  response.id, self.get_name())
         i.set_url(response.get_url())
-        i.add_to_highlight(response.get_msg())
         i[STSInfoSet.ITAG] = response.get_url().get_domain()
 
         self.kb_append_uniq_group(self, 'strict_transport_security', i,
