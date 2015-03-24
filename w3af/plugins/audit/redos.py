@@ -24,12 +24,12 @@ from __future__ import with_statement
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.delay_detection.aprox_delay_controller import (AproxDelayController,
-                                                                     EXPONENTIALLY)
-from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
+from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
+from w3af.core.controllers.delay_detection.aprox_delay_controller import (AproxDelayController,
+                                                                          EXPONENTIALLY)
 
 
 class redos(AuditPlugin):
@@ -79,9 +79,9 @@ class redos(AuditPlugin):
         IMPORTANT NOTE: I need different instances of the delay objects in
                         order to avoid any threading issues. 
         """
-        return [ AproxDelay('%sX!',     'a', 10),
-                 AproxDelay('a@a.%sX!', 'a', 10),
-                 AproxDelay('%s9!',     '1', 10)]
+        return [AproxDelay('%sX!',     'a', 10),
+                AproxDelay('a@a.%sX!', 'a', 10),
+                AproxDelay('%s9!',     '1', 10)]
                 
     def ignore_this_request(self, freq):
         """
