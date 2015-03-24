@@ -37,10 +37,11 @@ from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.process_pool import ProcessPool
 from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.output_manager import log_sink_factory
-from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.threads.decorators import apply_with_return_error
+from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
+from w3af.core.data.parsers.document_parser import DocumentParser
 
 
 class ParserCache(object):
@@ -52,7 +53,7 @@ class ParserCache(object):
     LRU_LENGTH = 40
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
     PARSER_TIMEOUT = 60 # in seconds
-    DEBUG = False
+    DEBUG = core_profiling_is_enabled()
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
 
     def __init__(self):
@@ -63,9 +64,7 @@ class ParserCache(object):
         self._start_lock = threading.RLock()
 
         # These are here for debugging:
-        self._archive = set()
         self._from_LRU = 0.0
-        self._calculated_more_than_once = 0.0
         self._total = 0.0
 
     def start_workers(self):
@@ -102,11 +101,29 @@ class ParserCache(object):
         # We don't need this data anymore
         self._cache.clear()
 
-        if self.DEBUG:
-            re_calc_rate = (self._calculated_more_than_once / self._total)
-            print('parser_cache LRU rate: %s' % (self._from_LRU / self._total))
-            print('parser_cache re-calculation rate: %s' % re_calc_rate)
-            print('parser_cache size: %s' % self.LRU_LENGTH)
+    def get_hit_rate(self):
+        """
+        :note: Only returns useful information if debugging is enabled
+        """
+        try:
+            return self._from_LRU / self._total
+        except ZeroDivisionError:
+            return None
+
+    def get_max_lru_items(self):
+        """
+        :note: Only returns useful information if debugging is enabled
+        """
+        return self.LRU_LENGTH
+
+    def get_current_lru_items(self):
+        """
+        :note: Only returns useful information if debugging is enabled
+        """
+        return len(self._cache)
+
+    def get_total_queries(self):
+        return self._total
 
     def get_cache_key(self, http_response):
         """
@@ -246,39 +263,30 @@ class ParserCache(object):
                 msg = 'There is no parser for "%s".' % http_response.get_url()
                 raise BaseFrameworkException(msg)
 
+        # metric increase
+        self._total += 1
+
         parser = self._cache.get(hash_string, None)
         if parser is not None:
-            self._debug_in_cache(hash_string)
+            self._debug_handle_cache_hit(hash_string)
             return parser
         else:
+            self._debug_handle_cache_miss(hash_string)
+
             # Create a new instance of DocumentParser, add it to the cache
             parser = self._parse_http_response_in_worker(http_response,
                                                          hash_string)
             self._cache[hash_string] = parser
-            self._debug_not_in_cache(hash_string)
             return parser
 
-    def _debug_not_in_cache(self, hash_string):
+    def _debug_handle_cache_hit(self, hash_string):
         if self.DEBUG:
-            self._total += 1
+            om.out.debug('[parser_cache] Hit for %s' % hash_string)
+            self._from_LRU += 1
 
-            if hash_string in self._archive:
-                msg = '[%s] calculated and was in archive. (bad)'
-                print(msg % hash_string)
-                self._calculated_more_than_once += 1
-            else:
-                msg = '[%s] calculated for the first time and cached. (good)'
-                print(msg % hash_string)
-                self._archive.add(hash_string)
-
-    def _debug_in_cache(self, hash_string):
+    def _debug_handle_cache_miss(self, hash_string):
         if self.DEBUG:
-            self._total += 1
-
-            if hash_string in self._archive:
-                msg = '[%s] return from LRU and was in archive. (good)'
-                print(msg % hash_string)
-                self._from_LRU += 1
+            om.out.debug('[parser_cache] Miss for %s' % hash_string)
 
 
 class ProcessDocumentParser(DocumentParser):
