@@ -54,7 +54,7 @@ class TestGeneric(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Unidentified vulnerability', vuln.get_name())
+        self.assertEquals('Unhandled error in web application', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
 
     @attr('ci_fails')
