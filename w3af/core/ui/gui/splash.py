@@ -22,6 +22,7 @@ import gtk
 import os
 
 from w3af.core.ui.gui.constants import W3AF_ICON
+from w3af.core.controllers.dependency_check.platforms.mac import MacOSX
 from w3af import ROOT_PATH
 
 
@@ -48,8 +49,12 @@ class Splash(gtk.Window):
         self.label = gtk.Label()
         vbox.pack_start(self.label)
 
+        # Splash screen doesn't have decoration (at least where supported)
+        # https://github.com/andresriancho/w3af/issues/9084
+        if not MacOSX.is_current_platform():
+            self.set_decorated(False)
+
         # color and position
-        self.set_decorated(False)
         color = gtk.gdk.color_parse('#f2f2ff')
         self.modify_bg(gtk.STATE_NORMAL, color)
         self.set_position(gtk.WIN_POS_CENTER)
