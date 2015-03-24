@@ -169,11 +169,12 @@ class generic(AuditPlugin):
                 if info.get_token_name() == variable and info.get_url() == url:
                     break
             else:
-                desc = 'An unidentified vulnerability was found at: %s'
+                desc = 'An unhandled error, which could potentially translate' \
+                       ' to a vulnerability, was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                v = Vuln.from_mutant('Unidentified vulnerability', desc,
-                                     severity.MEDIUM, id_list, self.get_name(),
+                v = Vuln.from_mutant('Unhandled error in web application', desc,
+                                     severity.LOW, id_list, self.get_name(),
                                      mutant)
         
                 self.kb_append_uniq(self, 'generic', v)
