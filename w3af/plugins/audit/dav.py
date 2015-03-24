@@ -58,13 +58,13 @@ class dav(AuditPlugin):
         if domain_path not in self._already_tested_dirs:
             self._already_tested_dirs.add(domain_path)
             #
-            #    Send the three requests in different threads, store the
-            #    apply_result objects in order to be able to "join()" in the
-            #    next for loop
+            # Send the three requests in different threads, store the
+            # apply_result objects in order to be able to "join()" in the
+            # next for loop
             #
-            #    TODO: This seems to be a fairly common use case: Send args to N
-            #    functions that need to be run in different threads. If possible
-            #    code this into threadpool.py in order to make this code clearer
+            # TODO: This seems to be a fairly common use case: Send args to N
+            # functions that need to be run in different threads. If possible
+            # code this into threadpool.py in order to make this code clearer
             results = []
             for func in [self._PUT, self._PROPFIND, self._SEARCH]:
                 apply_res = self.worker_pool.apply_async(func, (domain_path,))
