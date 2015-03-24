@@ -71,7 +71,6 @@ class SGMLParser(BaseParser):
         self._inside_textarea = False
         self._inside_script = False
 
-        # Internal containers
         self._tag_and_url = set()
         self._forms = []
         self._comments_in_doc = []
@@ -82,9 +81,22 @@ class SGMLParser(BaseParser):
         # Parse!
         self._parse(http_resp)
 
+    def clear(self):
+        # Internal containers
+        self._tag_and_url.clear()
+        self._forms = []
+        self._comments_in_doc = []
+        self._meta_redirs = []
+        self._meta_tags = []
+        self._emails.clear()
+
+        if self._dom is not None:
+            self._dom.clear()
+            self._dom = None
+
     def _handle_exception(self, where, ex):
-        msg = 'An exception occurred while %s: "%s"' % (where, ex)
-        om.out.error(msg)
+        msg = 'An exception occurred while %s: "%s"'
+        om.out.error(msg % (where, ex))
         om.out.error('Error traceback: %s' % traceback.format_exc())
 
     def start(self, tag, attrs):

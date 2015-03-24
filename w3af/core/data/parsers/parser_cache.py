@@ -98,7 +98,11 @@ class ParserCache(object):
             self._pool = None
             self._processes = None
 
-        # We don't need this data anymore
+        # Make sure the parsers clear all resources
+        for parser in self._cache.itervalues():
+            parser.clear()
+
+        # We don't need the parsers anymore
         self._cache.clear()
 
     def get_hit_rate(self):
