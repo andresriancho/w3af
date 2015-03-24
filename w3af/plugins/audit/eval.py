@@ -220,7 +220,7 @@ class eval(AuditPlugin):
         return """
         This plugin finds eval() input injection vulnerabilities. These
         vulnerabilities are found in web applications, where the developer
-        passesuser controlled data to the eval() function.
+        passes user controlled data to the eval() function.
 
         To check for vulnerabilities of this kind, the plugin sends an echo
         function with two randomized strings as a parameters (echo 'abc' + 'xyz')
