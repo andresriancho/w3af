@@ -128,6 +128,9 @@ class DocumentParser(object):
         """
         return self._parser.get_clear_text_body()
 
+    def clear(self):
+        return self._parser.clear()
+
     def __repr__(self):
         if self._parser:
             klass = self._parser.__class__.__name__
