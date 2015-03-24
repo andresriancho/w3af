@@ -24,8 +24,6 @@ import os
 
 from functools import partial
 
-import w3af.core.data.parsers.parser_cache as parser_cache
-
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
@@ -94,6 +92,8 @@ def stop_core_profiling(w3af_core):
 
 
 def get_parser_cache_stats():
+    import w3af.core.data.parsers.parser_cache as parser_cache
+    
     return {'hit_rate': parser_cache.dpc.get_hit_rate(),
             'max_lru_items': parser_cache.dpc.get_max_lru_items(),
             'current_lru_size': parser_cache.dpc.get_current_lru_items(),
