@@ -240,6 +240,7 @@ VULNS = {
          60003: 'Code execution via remote file inclusion',
          60004: '(Blind) SQL injection',
          60005: 'Arbitrary file read',
+         60006: 'Eval() code execution',
 
          # Users can add their vulnerabilities
          70000: 'Manually added vulnerability',

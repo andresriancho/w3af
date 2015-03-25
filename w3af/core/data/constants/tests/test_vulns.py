@@ -140,7 +140,7 @@ class TestVulnsConstants(unittest.TestCase):
             msg = '"%s" not in plugin sources' % vuln_name
             self.assertIn(vuln_name, all_plugin_sources, msg)
 
-    @attr('ci_fails')
+    @attr('ci_ignore')
     def test_vuln_updated(self):
         """
         Each time we call Info.set_name during a test (and only during tests,
