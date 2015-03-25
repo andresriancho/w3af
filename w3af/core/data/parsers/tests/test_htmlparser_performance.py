@@ -49,19 +49,20 @@ class TestHTMLParserPerformance(unittest.TestCase):
         url = URL('http://www.w3af.org/')
         response = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
-        self.measure_memory(1)
+        #self.measure_memory(1)
 
         parsers = []
 
         for _ in xrange(40):
             p = HTMLParser(response)
             p.get_dom()
-            parsers.append(p)
+            #parsers.append(p)
 
         # Clear any reference to the parser
         #del p
+        #parsers = []
 
-        self.measure_memory(2)
+        #self.measure_memory(2)
 
         time.sleep(360)
 
@@ -85,4 +86,5 @@ class TestHTMLParserPerformance(unittest.TestCase):
 
         import psutil
         self_pid = psutil.Process()
+        # pylint: disable=E1101
         print self_pid.memory_info()
