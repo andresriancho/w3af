@@ -68,9 +68,12 @@ class TestVulnsConstants(unittest.TestCase):
     def test_vulnerability_names_unique(self):
         dups = []
         vuln_names = self.get_all_vulnerability_names()
+        dup_ignore = {'Vacant',
+                      'Unhandled error in web application'}
 
         for name in vuln_names:
-            if vuln_names.count(name) > 1:
+            if vuln_names.count(name) > 1 and name not in dups\
+            and name not in dup_ignore:
                 dups.append(name)
 
         self.assertEqual(dups, [])

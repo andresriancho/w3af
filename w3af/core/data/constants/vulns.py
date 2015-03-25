@@ -37,7 +37,7 @@ VULNS = {
          10011: 'Insecure DAV configuration',
          10012: 'DAV incorrect configuration',
          #10013: 'Vacant',
-         10014: 'eval() input injection vulnerability',
+         #10014: 'Vacant',
          10015: 'Insecure file upload',
          10016: 'Format string vulnerability',
          10017: 'Insecure Frontpage extensions configuration',
