@@ -70,6 +70,9 @@ top-1m.csv.zip
 test.w3af
 output-w3af.txt
 
+# Ignore some profiling data
+*.dump
+
 # Ignore intermediate XML file
 w3af/plugins/crawl/phishtank/index.xml
 

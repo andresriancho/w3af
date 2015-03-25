@@ -30,8 +30,8 @@ NOSE_COLLECT_IGNORE_PARAMS = '--with-id --collect-only --with-xunit'\
 
 NOSE_OUTPUT_PREFIX = 'nose'
 NOSE_XUNIT_EXT = 'xml'
-NOSE_RUN_SELECTOR = 'not ci_fails and not fails'
-NOSE_IGNORE_SELECTOR = 'ci_fails or fails'
+NOSE_RUN_SELECTOR = 'not ci_fails and not fails and not ci_ignore'
+NOSE_IGNORE_SELECTOR = 'ci_fails or fails or ci_ignore'
 
 NOISE = [
          # Related with xvfb not having the randr extension
