@@ -188,6 +188,10 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(resp.get_body(), Ok200Handler.body)
 
     def test_ssl_v23(self):
+        # https://bugs.kali.org/view.php?id=2160
+        if not hasattr(ssl, 'PROTOCOL_SSLv23'):
+            return
+
         ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv23)
         ssl_daemon.start()
         ssl_daemon.wait_for_start()
@@ -200,6 +204,10 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(resp.get_body(), Ok200Handler.body)
 
     def test_ssl_v3(self):
+        # https://bugs.kali.org/view.php?id=2160
+        if not hasattr(ssl, 'PROTOCOL_SSLv3'):
+            return
+
         ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv3)
         ssl_daemon.start()
         ssl_daemon.wait_for_start()

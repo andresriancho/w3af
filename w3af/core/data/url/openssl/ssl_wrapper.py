@@ -21,19 +21,20 @@ import OpenSSL
 import pyasn1.codec.der.decoder
 import subj_alt_name
 
-PROTOCOL_SSLv23 = ssl.PROTOCOL_SSLv23
-PROTOCOL_SSLv3 = ssl.PROTOCOL_SSLv3
-PROTOCOL_TLSv1 = ssl.PROTOCOL_TLSv1
-
 CERT_NONE = ssl.CERT_NONE
 CERT_OPTIONAL = ssl.CERT_OPTIONAL
 CERT_REQUIRED = ssl.CERT_REQUIRED
 
-_openssl_versions = {
-    PROTOCOL_SSLv23: OpenSSL.SSL.SSLv23_METHOD,
-    PROTOCOL_SSLv3: OpenSSL.SSL.SSLv3_METHOD,
-    PROTOCOL_TLSv1: OpenSSL.SSL.TLSv1_METHOD,
-}
+_openssl_versions = {}
+_proto_names = [('PROTOCOL_SSLv3', OpenSSL.SSL.SSLv3_METHOD),
+                ('PROTOCOL_TLSv1', OpenSSL.SSL.TLSv1_METHOD),
+                ('PROTOCOL_SSLv23', OpenSSL.SSL.SSLv23_METHOD),
+                ('PROTOCOL_SSLv2', OpenSSL.SSL.SSLv2_METHOD)]
+
+for ssl_proto_name, openssl_proto_const in _proto_names:
+    proto_const = getattr(ssl, ssl_proto_name, None)
+    if proto_const is not None:
+        _openssl_versions[proto_const] = openssl_proto_const
 
 _openssl_cert_reqs = {
     CERT_NONE: OpenSSL.SSL.VERIFY_NONE,
@@ -179,7 +180,7 @@ class OpenSSLReformattedError(Exception):
 
 
 def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
-                cert_reqs=CERT_NONE, ssl_version=PROTOCOL_TLSv1,
+                cert_reqs=CERT_NONE, ssl_version=ssl.PROTOCOL_TLSv1,
                 ca_certs=None, do_handshake_on_connect=True,
                 suppress_ragged_eofs=True, server_hostname=None,
                 timeout=None):
