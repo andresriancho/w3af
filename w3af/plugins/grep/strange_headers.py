@@ -48,7 +48,10 @@ class strange_headers(GrepPlugin):
                       'VARY', 'WWW-AUTHENTICATE', 'X-FRAME-OPTIONS',
                       'X-CONTENT-TYPE-OPTIONS', 'X-POWERED-BY',
                       'X-ASPNET-VERSION', 'X-CACHE', 'X-UA-COMPATIBLE', 'X-PAD',
-                      'X-XSS-PROTECTION'}
+                      'X-XSS-PROTECTION', 'ACCESS-CONTROL-ALLOW-ORIGIN',
+                      'ACCESS-CONTROL-ALLOW-METHODS',
+                      'ACCESS-CONTROL-ALLOW-HEADERS',
+                      'ACCESS-CONTROL-MAX-AGE'}
 
     def grep(self, request, response):
         """
