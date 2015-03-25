@@ -103,7 +103,15 @@ class Mutant(DiskItem):
         Shortcut!
         :return: Sets the current token to :value:
         """
-        return self.get_token().set_value(value)
+        token = self.get_token()
+
+        if token is not None:
+            return token.set_value(value)
+
+        dc = self.get_dc()
+        msg = 'Token is None at "%s" data container dump: "%s"'
+        args = (dc.__class__.__name__, dc)
+        raise AttributeError(msg % args)
 
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
