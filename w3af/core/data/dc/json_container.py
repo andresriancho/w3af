@@ -42,7 +42,7 @@ class JSONContainer(DataContainer):
 
     def __init__(self, json_post_data, encoding=UTF8):
         """
-        :param json_post_data: The XMLRPC call as string
+        :param json_post_data: The JSON data as string
         """
         DataContainer.__init__(self, encoding=encoding)
 
@@ -107,6 +107,9 @@ class JSONContainer(DataContainer):
         :return: string representation by writing back to JSON string
         """
         return json_complex_str(self._json)
+
+    def __repr__(self):
+        return '<JSONContainer (token: %s)>' % self.get_token()
 
     def token_filter(self, token_path, token_value):
         # Only return tokens for strings
