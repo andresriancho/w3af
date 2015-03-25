@@ -103,22 +103,17 @@ class generic(AuditPlugin):
 
         :return: None
         """
-        original_to_error = relative_distance(
-            orig_resp.get_body(), error_response.get_body())
-        limit_to_error = relative_distance(
-            limit_response.get_body(), error_response.get_body())
-        original_to_limit = relative_distance(
-            limit_response.get_body(), orig_resp.get_body())
+        original_to_error = relative_distance(orig_resp.get_body(),
+                                              error_response.get_body())
+        limit_to_error = relative_distance(limit_response.get_body(),
+                                           error_response.get_body())
+        original_to_limit = relative_distance(limit_response.get_body(),
+                                              orig_resp.get_body())
 
         ratio = self._diff_ratio + (1 - original_to_limit)
 
-        #om.out.debug('original_to_error: ' +  str(original_to_error) )
-        #om.out.debug('limit_to_error: ' +  str(limit_to_error) )
-        #om.out.debug('original_to_limit: ' +  str(original_to_limit) )
-        #om.out.debug('ratio: ' +  str(ratio) )
-
         if original_to_error < ratio and limit_to_error < ratio:
-            # Maybe the limit I requested wasn't really a non-existant one
+            # Maybe the limit I requested wasn't really a non-existent one
             # (and the error page really found the limit),
             # let's request a new limit (one that hopefully doesn't exist)
             # in order to remove some false positives
@@ -126,8 +121,8 @@ class generic(AuditPlugin):
 
             id_list = [orig_resp.id, limit_response.id, error_response.id]
 
-            if relative_distance(limit_response2.get_body(), limit_response.get_body()) > \
-                    1 - self._diff_ratio:
+            if relative_distance(limit_response2.get_body(),
+                                 limit_response.get_body()) > 1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have
                 # found the limit here and that the error string really produced
                 # an error
@@ -135,7 +130,7 @@ class generic(AuditPlugin):
                                               mutant.get_token_name(),
                                               mutant, id_list))
 
-    def _get_limit_response(self, m):
+    def _get_limit_response(self, mutant):
         """
         We request the limit (something that doesn't exist)
             - If http://localhost/a.php?b=1
@@ -145,17 +140,13 @@ class generic(AuditPlugin):
 
         :return: The limit response object
         """
-        # Copy the dc, needed to make a good vuln report
-        dc = copy.deepcopy(m.get_dc())
+        mutant_copy = mutant.copy()
 
-        if m.get_token_original_value().isdigit():
-            m.set_token_value(rand_number(length=8))
-        else:
-            m.set_token_value(rand_alnum(length=8))
-        limit_response = self._uri_opener.send_mutant(m)
+        is_digit = mutant.get_token_original_value().isdigit()
+        value = rand_number(length=8) if is_digit else rand_alnum(length=8)
+        mutant_copy.set_token_value(value)
+        limit_response = self._uri_opener.send_mutant(mutant_copy)
 
-        # restore the dc
-        m.set_dc(dc)
         return limit_response
 
     def end(self):
@@ -209,7 +200,6 @@ class generic(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds all kind of bugs without using a fixed database of
-        errors. This is a new kind of methodology that solves the main problem
-        of most web application security scanners.
+        This plugin identifies unhandled Web application exceptions by sending
+        specially crafted strings to each input.
         """
