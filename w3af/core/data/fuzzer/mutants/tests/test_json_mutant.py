@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import json
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -80,3 +81,38 @@ class TestJSONMutant(unittest.TestCase):
 
         for m in created_mutants:
             self.assertEqual(m.get_method(), 'POST')
+
+    def test_create_mutants_9116(self):
+        payment_data = {'transaction_amount': 100,
+                        'reason': 'Title of what you are paying for',
+                        'installments': 1,
+                        'payment_method_id': 'visa',
+                        'token': '16faba8617708',
+                        'external_reference': '1234',
+                        'random_anti_anti_double_click': 11577513359,
+                        'extra_charge': None}
+        payment_data = json.dumps(payment_data)
+
+        dc = JSONContainer(payment_data)
+        freq = FuzzableRequest(self.url, post_data=dc, method='POST')
+
+        created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
+
+        expected_dcs = ['{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "www", "installments": 1, "payment_method_id": "visa", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "xyz", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "www", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "visa", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "xyz", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "visa", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "xyz", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "visa", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "xyz", "installments": 1, "payment_method_id": "visa", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "1234", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "www", "extra_charge": null}',
+                        '{"transaction_amount": 100, "external_reference": "www", "random_anti_anti_double_click": 11577513359, "token": "16faba8617708", "reason": "Title of what you are paying for", "installments": 1, "payment_method_id": "visa", "extra_charge": null}']
+
+        created_dcs = [str(i.get_dc()) for i in created_mutants]
+        created_post_datas = [i.get_data() for i in created_mutants]
+
+        self.assertEqual(set(created_dcs), set(expected_dcs))
+        self.assertEqual(set(created_dcs), set(created_post_datas))
+
+        for m in created_mutants:
+            m.set_token_value('abc')
