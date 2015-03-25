@@ -19,7 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import traceback
 import json
+import sys
 import os
 
 from functools import partial
@@ -75,11 +77,15 @@ def dump_data(w3af_core):
                 'Audit queue size': s.get_audit_qsize(),
                 'Cache stats': get_parser_cache_stats()}
     except Exception, e:
-        print('Failed to retrieve status data: "%s"' % e)
-    else:
-        json_data = json.dumps(data, indent=4)
-        output_file = PROFILING_OUTPUT_FMT % get_filename_fmt()
-        file(output_file, 'w').write(json_data)
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tback = traceback.format_exception(exc_type, exc_value, exc_tb)
+
+        data = {'Exception': str(e),
+                'Traceback': tback}
+
+    json_data = json.dumps(data, indent=4)
+    output_file = PROFILING_OUTPUT_FMT % get_filename_fmt()
+    file(output_file, 'w').write(json_data)
 
 
 @should_profile_core
