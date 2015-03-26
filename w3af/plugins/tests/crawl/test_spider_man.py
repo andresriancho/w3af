@@ -95,7 +95,9 @@ class TestSpiderman(PluginTest):
         bt = BrowserThread(url_resolver)
         bt.start()
 
+        # pylint: disable=E1101
         cfg = self._run_configs['cfg']
+        # pylint: enable=E1101
         self._scan(cfg['target'], cfg['plugins'])
 
         # Fetch all the results
