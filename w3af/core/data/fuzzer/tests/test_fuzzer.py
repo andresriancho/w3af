@@ -104,18 +104,23 @@ class TestFuzzer(unittest.TestCase):
         self.assertAllHaveTokens(generated_mutants)
 
     def test_special_url_characters(self):
-        special_chr_url = 'http://moth/core/encoding_spaces/xss-get.py' \
-                          '?__VIEWSTATE=/wEPDwUKMTEzMDczNTAxOWRk' \
-                          '&__EVENTVALIDATION=/wEWAwLNx+2YBwKw59eKCgKcjoPABw=='\
-                          '&_ctl0:_ctl0:Content:Main:TextBox1=%s'
+        initial_url = 'http://w3af.org/' \
+                      '?__VIEWSTATE=/' \
+                      '&__EVENTVALIDATION=\\X+W=='\
+                      '&_ctl0:TextBox1=%s'
 
-        url = URL(special_chr_url % '')
+        url = URL(initial_url % '')
         freq = FuzzableRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
-        expected_urls = [special_chr_url % 'abc',
-                         special_chr_url % 'def']
-        generated_urls = [m.get_uri().url_string for m in generated_mutants]
+        decoded_url = 'http://w3af.org/' \
+                      '?__VIEWSTATE=/' \
+                      '&__EVENTVALIDATION=\\X%%20W=='\
+                      '&_ctl0:TextBox1=%s'
+
+        expected_urls = [decoded_url % 'abc',
+                         decoded_url % 'def']
+        generated_urls = [str(m.get_uri()) for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
         self.assertAllInstance(generated_mutants, QSMutant)

@@ -73,18 +73,20 @@ def memoized(meth):
 
 
 def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
-    """This is a slightly modified version of the function with the same name
-    that is defined in urlparse.py . I had to modify it in order to have
-    '+' handled in the way w3af needed it. Note that the only change is:
+    """This was a slightly modified version of the function with the same name
+    that is defined in urlparse.py . I modified it, and then reverted the patch
+    to have different handling of '+':
 
     -        name = unquote(nv[0].replace('+', ' '))
     -        value = unquote(nv[1].replace('+', ' '))
     +        name = unquote(nv[0])
     +        value = unquote(nv[1])
 
-    In other words, keep those + !
+    Due to this [0] bug: "Proxy (and maybe others) affected by querystring +
+    not being decoded by URL class #9139", I reverted my changes to the function
+    but kept it here for better docs.
 
-    Parse a query given as a string argument.
+    [0] https://github.com/andresriancho/w3af/issues/9139
 
     Arguments:
 
