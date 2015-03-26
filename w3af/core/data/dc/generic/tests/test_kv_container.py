@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import urllib
+import copy
 
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.utils.token import DataToken
@@ -127,6 +128,16 @@ class TestKeyValueContainer(unittest.TestCase):
         token = dc.set_token(('a', 0))
         self.assertEqual(token.get_name(), 'a')
         self.assertEqual(token, dc['a'][0])
+
+    def test_copy_with_token(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        dc.set_token(('a', 0))
+        dc_copy = copy.deepcopy(dc)
+
+        self.assertEqual(dc.get_token(), dc_copy.get_token())
+        self.assertIsNotNone(dc.get_token())
+        self.assertIsNotNone(dc_copy.get_token())
 
     def test_set_token_using_data_token(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])

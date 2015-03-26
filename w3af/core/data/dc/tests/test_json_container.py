@@ -91,6 +91,17 @@ class TestJSONContainer(unittest.TestCase):
     def test_is_json_false(self):
         self.assertFalse(JSONContainer.is_json('x'))
 
-    def test_copy(self):
+    def test_copy_container_no_token(self):
         dc = JSONContainer(COMPLEX_OBJECT)
-        self.assertEqual(dc, copy.deepcopy(dc))
+        dc_copy = copy.deepcopy(dc)
+        self.assertEqual(dc, dc_copy)
+
+    def test_copy_container_with_token(self):
+        jcont = JSONContainer(ARRAY)
+        dcc_tokens = [(dcc, token) for dcc, token in jcont.iter_bound_tokens()]
+
+        dc, token = dcc_tokens[0]
+        self.assertIsNotNone(dc.get_token())
+
+        dc_copy = copy.deepcopy(dc)
+        self.assertIsNotNone(dc_copy.get_token())

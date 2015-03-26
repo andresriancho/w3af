@@ -58,7 +58,8 @@ class JSONContainer(DataContainer):
         self.parse_json(json_post_data)
 
     def __reduce__(self):
-        return self.__class__, (self._raw_json,), {}
+        return self.__class__, (self._raw_json,), {'token': self.token,
+                                                   'encoding': self.encoding}
 
     def get_type(self):
         return 'JSON'

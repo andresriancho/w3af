@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import json
+import copy
 
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -134,9 +135,18 @@ class TestJSONMutant(unittest.TestCase):
         created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
                                                     False, self.fuzzer_config)
 
+        payload = 'def'
 
         m = created_mutants[0]
-        m.set_token_value('abc')
+
+        dc = m.get_dc()
+        dc_copy = copy.deepcopy(dc)
+        self.assertEqual(dc_copy.get_token(), dc.get_token())
 
         mcopy = m.copy()
-        mcopy.set_token_value('def')
+        token = mcopy.get_token()
+        mcopy.set_token_value(payload)
+
+        self.assertIsNotNone(m.get_token())
+        self.assertIsNotNone(token)
+        self.assertEqual(mcopy.get_token_value(), payload)

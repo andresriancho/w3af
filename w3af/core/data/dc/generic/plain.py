@@ -43,7 +43,8 @@ class PlainContainer(DataContainer):
 
     def __reduce__(self):
         args = (self.plain_data, self.content_type_header_value)
-        return self.__class__, args, {}
+        return self.__class__, args, {'token': self.token,
+                                      'encoding': self.encoding}
 
     def __contains__(self, item):
         return False
