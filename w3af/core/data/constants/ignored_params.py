@@ -24,10 +24,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # The following is a list of parameter names that will be ignored during
 # the fuzzing process
 #
-IGNORED_PARAMETERS = [
-    '__EVENTTARGET', '__EVENTARGUMENT', '__VIEWSTATE', '__VIEWSTATEENCRYPTED',
-    '__EVENTVALIDATION', '__dnnVariable', 'javax.faces.ViewState',
-    'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64',
-    'jsf_viewid', 'jsf_state', 'cfid', 'cftoken', 'ASP.NET_sessionid',
-    'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID', 'csrfmiddlewaretoken',
-]
+IGNORED_PARAMETERS = {'ASP.NET_SESSIONID',
+                      'ASPSESSIONID',
+                      'CFID',
+                      'CFTOKEN',
+                      'CSRFMIDDLEWARETOKEN',
+                      'JAVAX.FACES.VIEWSTATE',
+                      'JSESSIONID',
+                      'JSF_SEQUENCE',
+                      'JSF_STATE',
+                      'JSF_STATE_64',
+                      'JSF_TREE',
+                      'JSF_TREE_64',
+                      'JSF_VIEWID',
+                      'PHPSESSID',
+                      '__DNNVARIABLE',
+                      '__EVENTARGUMENT',
+                      '__EVENTTARGET',
+                      '__EVENTVALIDATION',
+                      '__VIEWSTATE',
+                      '__VIEWSTATEENCRYPTED'}
+
+
+def is_in_ignored_parameters(param):
+    return param.upper() in IGNORED_PARAMETERS

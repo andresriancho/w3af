@@ -19,11 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
+import socket
 import urllib2
 
 from multiprocessing.dummy import Process
-from nose.plugins.skip import SkipTest
 
+from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -38,19 +39,27 @@ TERMINATE_URL = 'http://127.7.7.7/spider_man?terminate'
 
 class BrowserThread(Process):
 
-    def __init__(self, url_resolver):
+    def __init__(self, url_resolver, proxy_port):
         super(BrowserThread, self).__init__()
         self.responses = []
         self.url_resolver = url_resolver
+        self.proxy_port = proxy_port
 
     def run(self):
         """
         @see: Comment in test_spiderman_basic
         """
-        time.sleep(5.0)
+        for i in xrange(120):
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                s.connect(('127.0.0.1', self.proxy_port))
+            except:
+                time.sleep(0.5)
+            else:
+                break
 
-        proxy_cfg = {'http': 'http://127.0.0.1:44444/',
-                     'https': 'http://127.0.0.1:44444/'}
+        proxy_cfg = {'http': 'http://127.0.0.1:%s/' % self.proxy_port,
+                     'https': 'http://127.0.0.1:%s/' % self.proxy_port}
         proxy_support = urllib2.ProxyHandler(proxy_cfg)
         opener = urllib2.build_opener(proxy_support)
         # Avoid this, it might influence other tests!
@@ -63,23 +72,39 @@ class BrowserThread(Process):
 
             if method == 'POST':
                 req = urllib2.Request(url, payload)
-                response = opener.open(req)
+                try:
+                    response = opener.open(req)
+                except Exception, ex:
+                    self.responses.append(str(ex))
+                else:
+                    self.responses.append(response.read())
             else:
                 if payload is None:
                     full_url = url
                 else:
                     full_url = url + '?' + payload
-                response = opener.open(full_url)
 
+                try:
+                    response = opener.open(full_url)
+                except Exception, ex:
+                    self.responses.append(str(ex))
+                else:
+                    self.responses.append(response.read())
+
+        try:
+            response = opener.open(TERMINATE_URL)
+        except Exception, ex:
+            self.responses.append(str(ex))
+        else:
             self.responses.append(response.read())
-
-        response = opener.open(TERMINATE_URL)
-        self.responses.append(response.read())
 
 
 class TestSpiderman(PluginTest):
 
-    def generic_spiderman_run(self, url_resolver=get_moth_http):
+    def generic_spiderman_run(self,
+                              run_config,
+                              url_resolver=get_moth_http,
+                              proxy_port=44444):
         """
         The difficult thing with this test is that the scan will block until
         we browse through the spider_man proxy to the spider_man.TERMINATE_URL,
@@ -92,18 +117,17 @@ class TestSpiderman(PluginTest):
         The second assert will check that the proxy actually returned the
         expected HTTP response body to the browser.
         """
-        bt = BrowserThread(url_resolver)
+        bt = BrowserThread(url_resolver, proxy_port)
         bt.start()
 
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(run_config['target'], run_config['plugins'])
 
         # Fetch all the results
         bt.join()
         kb_urls = self.kb.get_all_known_urls()
         responses = bt.responses
 
-        EXPECTED_RESPONSE_CONTENTS = (
+        expected_response_contents = (
             'Trivial Blind SQL injection',
             'reachable using a query string',
             'no such column: abc',
@@ -111,7 +135,7 @@ class TestSpiderman(PluginTest):
         )
 
         # The browser that used spiderman needs to get these responses
-        for index, e_response in enumerate(EXPECTED_RESPONSE_CONTENTS):
+        for index, e_response in enumerate(expected_response_contents):
             self.assertIn(e_response, responses[index])
 
         # w3af needs to know about the browsed URLs
@@ -122,29 +146,31 @@ class TestSpiderman(PluginTest):
 
 class TestHTTPSpiderman(TestSpiderman):
 
-    base_url = get_moth_http()
-
-    _run_configs = {
-        'cfg': {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man'),)}
-        }
-    }
-
     def test_spiderman_http(self):
-        self.generic_spiderman_run(get_moth_http)
+        port = get_unused_port()
+
+        run_config = {
+                'target': get_moth_http(),
+                'plugins': {'crawl': (PluginConfig('spider_man',
+                                                   ('listen_port', port,
+                                                    PluginConfig.INT),
+                                                   ),)}
+        }
+
+        self.generic_spiderman_run(run_config, get_moth_http, port)
 
 
 class TestHTTPSSpiderman(TestSpiderman):
 
-    base_url = get_moth_https()
-
-    _run_configs = {
-        'cfg': {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man'),)}
-        }
-    }
-
     def test_spiderman_https(self):
-        self.generic_spiderman_run(get_moth_https)
+        port = get_unused_port()
+
+        run_config = {
+                'target': get_moth_https(),
+                'plugins': {'crawl': (PluginConfig('spider_man',
+                                                   ('listen_port', port,
+                                                    PluginConfig.INT),
+                                                   ),)}
+        }
+
+        self.generic_spiderman_run(run_config, get_moth_https, port)
