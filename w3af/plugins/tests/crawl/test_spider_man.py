@@ -83,8 +83,12 @@ class BrowserThread(Process):
                 else:
                     self.responses.append(response.read())
 
-        response = opener.open(TERMINATE_URL)
-        self.responses.append(response.read())
+        try:
+            response = opener.open(TERMINATE_URL)
+        except Exception, ex:
+            self.responses.append(str(ex))
+        else:
+            self.responses.append(response.read())
 
 
 class TestSpiderman(PluginTest):
