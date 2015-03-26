@@ -139,10 +139,10 @@ class AproxDelayController(DelayMixIn):
         mutant = self.mutant.copy()
         mutant.set_token_value(delay_str)
 
-        #    Send
+        # Send
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
-        #    Test
+        # Test
         if response.get_wait_time() > (original_wait_time * 2.5):
                 return True, response
 
