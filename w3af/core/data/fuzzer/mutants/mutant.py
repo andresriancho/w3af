@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
-from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
+from w3af.core.data.constants.ignored_params import is_in_ignored_parameters
 from w3af.core.data.db.disk_item import DiskItem
 
 
@@ -214,7 +214,7 @@ class Mutant(DiskItem):
                 #
                 # Ignore the banned parameter names
                 #
-                if token.get_name() in IGNORED_PARAMETERS:
+                if is_in_ignored_parameters(token.get_name()):
                     continue
 
                 # Only fuzz the specified parameters (if any)
