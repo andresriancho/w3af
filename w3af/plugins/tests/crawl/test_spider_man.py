@@ -93,7 +93,9 @@ class BrowserThread(Process):
 
 class TestSpiderman(PluginTest):
 
-    def generic_spiderman_run(self, url_resolver=get_moth_http,
+    def generic_spiderman_run(self,
+                              run_config,
+                              url_resolver=get_moth_http,
                               proxy_port=44444):
         """
         The difficult thing with this test is that the scan will block until
@@ -110,10 +112,7 @@ class TestSpiderman(PluginTest):
         bt = BrowserThread(url_resolver, proxy_port)
         bt.start()
 
-        # pylint: disable=E1101
-        cfg = self._run_configs['cfg']
-        # pylint: enable=E1101
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(run_config['target'], run_config['plugins'])
 
         # Fetch all the results
         bt.join()
@@ -139,39 +138,31 @@ class TestSpiderman(PluginTest):
 
 class TestHTTPSpiderman(TestSpiderman):
 
-    base_url = get_moth_http()
-    port = get_unused_port()
-
-    _run_configs = {
-        'cfg': {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man',
-
-                                               ('listen_port', port, PluginConfig.INT),
-
-                                               ),)}
-        }
-    }
-
     def test_spiderman_http(self):
-        self.generic_spiderman_run(get_moth_http, self.port)
+        port = get_unused_port()
+
+        run_config = {
+                'target': get_moth_http(),
+                'plugins': {'crawl': (PluginConfig('spider_man',
+                                                   ('listen_port', port,
+                                                    PluginConfig.INT),
+                                                   ),)}
+        }
+
+        self.generic_spiderman_run(run_config, get_moth_http, port)
 
 
 class TestHTTPSSpiderman(TestSpiderman):
 
-    base_url = get_moth_https()
-    port = get_unused_port()
-
-    _run_configs = {
-        'cfg': {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man',
-
-                                               ('listen_port', port, PluginConfig.INT),
-
-                                               ),)}
-        }
-    }
-
     def test_spiderman_https(self):
-        self.generic_spiderman_run(get_moth_https, self.port)
+        port = get_unused_port()
+
+        run_config = {
+                'target': get_moth_https(),
+                'plugins': {'crawl': (PluginConfig('spider_man',
+                                                   ('listen_port', port,
+                                                    PluginConfig.INT),
+                                                   ),)}
+        }
+
+        self.generic_spiderman_run(run_config, get_moth_https, port)
