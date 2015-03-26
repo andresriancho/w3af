@@ -185,11 +185,18 @@ class ProxyHandler(w3afProxyHandler):
         global global_first_request
         if global_first_request:
             global_first_request = False
-            om.out.information(
-                'The user is navigating through the spider_man proxy.')
+            msg = 'The user is navigating through the spider_man proxy.'
+            om.out.information(msg)
+
+        # convert relative URL to absolute if request came from CONNECT
+        if hasattr(self.server, 'chainedHandler'):
+            base_path = "https://" + self.server.chainedHandler.path
+            path = base_path + self.path
+        else:
+            path = self.path
 
         # Convert to url_object
-        path = URL(self.path)
+        path = URL(path)
 
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')
