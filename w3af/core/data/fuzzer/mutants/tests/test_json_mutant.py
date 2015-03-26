@@ -126,3 +126,17 @@ class TestJSONMutant(unittest.TestCase):
 
         for m in created_mutants:
             m.set_token_value('abc')
+
+    def test_mutant_copy_9116(self):
+        dc = JSONContainer(COMPLEX_OBJECT)
+        freq = FuzzableRequest(self.url, post_data=dc, method='POST')
+
+        created_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
+                                                    False, self.fuzzer_config)
+
+
+        m = created_mutants[0]
+        m.set_token_value('abc')
+
+        mcopy = m.copy()
+        mcopy.set_token_value('def')
