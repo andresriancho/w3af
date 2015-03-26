@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import copy
 
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.utils.token import DataToken
@@ -165,3 +166,14 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
         self.assertIsInstance(headers['a'], basestring)
+
+    def test_copy_with_token(self):
+        dc = Headers([('Abc', 'b')])
+
+        dc.set_token(('Abc',))
+        dc_copy = copy.deepcopy(dc)
+
+        self.assertEqual(dc.get_token(), dc_copy.get_token())
+        self.assertIsNotNone(dc.get_token())
+        self.assertIsNotNone(dc_copy.get_token())
+        self.assertEqual(dc_copy.get_token().get_name(), 'Abc')

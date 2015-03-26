@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import urllib
+import copy
 
 from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 
@@ -140,3 +141,13 @@ class TestNoRepeatKeyValueContainer(unittest.TestCase):
         dc2 = NonRepeatKeyValueContainer([(u'a', u'1'), (u'b', u'cc')])
 
         self.assertFalse(dc1.is_variant_of(dc2))
+
+    def test_copy_with_token(self):
+        dc = NonRepeatKeyValueContainer([(u'a', '1'), (u'b', '2')])
+
+        dc.set_token(('a',))
+        dc_copy = copy.deepcopy(dc)
+
+        self.assertEqual(dc.get_token(), dc_copy.get_token())
+        self.assertIsNotNone(dc.get_token())
+        self.assertIsNotNone(dc_copy.get_token())

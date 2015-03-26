@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import copy
 
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.parsers.url import URL
@@ -56,3 +57,13 @@ class TestCookieDc(unittest.TestCase):
 
         self.assertEqual(cookie, Cookie('abc=def'))
 
+    def test_copy_with_token(self):
+        dc = Cookie('one=123; two=567; path=/')
+
+        dc.set_token(('one', 0))
+        dc_copy = copy.deepcopy(dc)
+
+        self.assertEqual(dc.get_token(), dc_copy.get_token())
+        self.assertIsNotNone(dc.get_token())
+        self.assertIsNotNone(dc_copy.get_token())
+        self.assertEqual(dc_copy.get_token().get_name(), 'one')
