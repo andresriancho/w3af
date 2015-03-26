@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
+import socket
 import urllib2
 
 from multiprocessing.dummy import Process
@@ -48,7 +49,14 @@ class BrowserThread(Process):
         """
         @see: Comment in test_spiderman_basic
         """
-        time.sleep(5.0)
+        for i in xrange(120):
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                s.connect(('127.0.0.1', self.proxy_port))
+            except:
+                time.sleep(0.5)
+            else:
+                break
 
         proxy_cfg = {'http': 'http://127.0.0.1:%s/' % self.proxy_port,
                      'https': 'http://127.0.0.1:%s/' % self.proxy_port}
@@ -119,7 +127,7 @@ class TestSpiderman(PluginTest):
         kb_urls = self.kb.get_all_known_urls()
         responses = bt.responses
 
-        EXPECTED_RESPONSE_CONTENTS = (
+        expected_response_contents = (
             'Trivial Blind SQL injection',
             'reachable using a query string',
             'no such column: abc',
@@ -127,7 +135,7 @@ class TestSpiderman(PluginTest):
         )
 
         # The browser that used spiderman needs to get these responses
-        for index, e_response in enumerate(EXPECTED_RESPONSE_CONTENTS):
+        for index, e_response in enumerate(expected_response_contents):
             self.assertIn(e_response, responses[index])
 
         # w3af needs to know about the browsed URLs
