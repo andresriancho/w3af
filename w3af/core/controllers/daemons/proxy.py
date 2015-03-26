@@ -145,12 +145,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         """
         self.headers['Connection'] = 'close'
 
-        path = self.path
-
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
             base_path = "https://" + self.server.chainedHandler.path
-            path = base_path + path
+            path = base_path + self.path
+        else:
+            path = self.path
 
         uri_instance = URL(path)
 
@@ -162,10 +162,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # most likely a POST request
             post_data = self._get_post_data()
 
+        http_method = getattr(self._uri_opener, self.command)
+        headers = Headers(self.headers.items())
+
         try:
-            http_method = getattr(self._uri_opener, self.command)
-            res = http_method(uri_instance, data=post_data,
-                              headers=Headers(self.headers.items()),
+            res = http_method(uri_instance,
+                              data=post_data,
+                              headers=headers,
                               grep=grep)
         except BaseFrameworkException, w:
             om.out.error('The proxy request failed, error: ' + str(w))
