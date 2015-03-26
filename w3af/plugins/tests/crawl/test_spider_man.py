@@ -22,8 +22,8 @@ import time
 import urllib2
 
 from multiprocessing.dummy import Process
-from nose.plugins.skip import SkipTest
 
+from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -38,10 +38,11 @@ TERMINATE_URL = 'http://127.7.7.7/spider_man?terminate'
 
 class BrowserThread(Process):
 
-    def __init__(self, url_resolver):
+    def __init__(self, url_resolver, proxy_port):
         super(BrowserThread, self).__init__()
         self.responses = []
         self.url_resolver = url_resolver
+        self.proxy_port = proxy_port
 
     def run(self):
         """
@@ -49,8 +50,8 @@ class BrowserThread(Process):
         """
         time.sleep(5.0)
 
-        proxy_cfg = {'http': 'http://127.0.0.1:44444/',
-                     'https': 'http://127.0.0.1:44444/'}
+        proxy_cfg = {'http': 'http://127.0.0.1:%s/' % self.proxy_port,
+                     'https': 'http://127.0.0.1:%s/' % self.proxy_port}
         proxy_support = urllib2.ProxyHandler(proxy_cfg)
         opener = urllib2.build_opener(proxy_support)
         # Avoid this, it might influence other tests!
@@ -79,7 +80,8 @@ class BrowserThread(Process):
 
 class TestSpiderman(PluginTest):
 
-    def generic_spiderman_run(self, url_resolver=get_moth_http):
+    def generic_spiderman_run(self, url_resolver=get_moth_http,
+                              proxy_port=44444):
         """
         The difficult thing with this test is that the scan will block until
         we browse through the spider_man proxy to the spider_man.TERMINATE_URL,
@@ -92,7 +94,7 @@ class TestSpiderman(PluginTest):
         The second assert will check that the proxy actually returned the
         expected HTTP response body to the browser.
         """
-        bt = BrowserThread(url_resolver)
+        bt = BrowserThread(url_resolver, proxy_port)
         bt.start()
 
         # pylint: disable=E1101
@@ -125,28 +127,38 @@ class TestSpiderman(PluginTest):
 class TestHTTPSpiderman(TestSpiderman):
 
     base_url = get_moth_http()
+    port = get_unused_port()
 
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man'),)}
+            'plugins': {'crawl': (PluginConfig('spider_man',
+
+                                               ('listen_port', port, PluginConfig.INT),
+
+                                               ),)}
         }
     }
 
     def test_spiderman_http(self):
-        self.generic_spiderman_run(get_moth_http)
+        self.generic_spiderman_run(get_moth_http, self.port)
 
 
 class TestHTTPSSpiderman(TestSpiderman):
 
     base_url = get_moth_https()
+    port = get_unused_port()
 
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('spider_man'),)}
+            'plugins': {'crawl': (PluginConfig('spider_man',
+
+                                               ('listen_port', port, PluginConfig.INT),
+
+                                               ),)}
         }
     }
 
     def test_spiderman_https(self):
-        self.generic_spiderman_run(get_moth_https)
+        self.generic_spiderman_run(get_moth_https, self.port)
