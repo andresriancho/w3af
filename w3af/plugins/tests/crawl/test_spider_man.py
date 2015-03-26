@@ -64,15 +64,24 @@ class BrowserThread(Process):
 
             if method == 'POST':
                 req = urllib2.Request(url, payload)
-                response = opener.open(req)
+                try:
+                    response = opener.open(req)
+                except Exception, ex:
+                    self.responses.append(str(ex))
+                else:
+                    self.responses.append(response.read())
             else:
                 if payload is None:
                     full_url = url
                 else:
                     full_url = url + '?' + payload
-                response = opener.open(full_url)
 
-            self.responses.append(response.read())
+                try:
+                    response = opener.open(full_url)
+                except Exception, ex:
+                    self.responses.append(str(ex))
+                else:
+                    self.responses.append(response.read())
 
         response = opener.open(TERMINATE_URL)
         self.responses.append(response.read())
