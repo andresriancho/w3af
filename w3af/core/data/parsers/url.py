@@ -117,8 +117,8 @@ def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
             else:
                 continue
         if len(nv[1]) or keep_blank_values:
-            name = urlparse.unquote(nv[0])
-            value = urlparse.unquote(nv[1])
+            name = urlparse.unquote(nv[0].replace('+', ' '))
+            value = urlparse.unquote(nv[1].replace('+', ' '))
             r.append((name, value))
 
     return r
