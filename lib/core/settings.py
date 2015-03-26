@@ -145,10 +145,10 @@ INFERENCE_EQUALS_CHAR = "="
 # Character used for operation "not-equals" in inference
 INFERENCE_NOT_EQUALS_CHAR = "!="
 
-# String used for representation of unknown dbms
+# String used for representation of unknown DBMS
 UNKNOWN_DBMS = "Unknown"
 
-# String used for representation of unknown dbms version
+# String used for representation of unknown DBMS version
 UNKNOWN_DBMS_VERSION = "Unknown"
 
 # Dynamicity mark length used in dynamicity removal engine
@@ -483,7 +483,7 @@ DEFAULT_COOKIE_DELIMITER = ';'
 FORCE_COOKIE_EXPIRATION_TIME = "9999999999"
 
 # Github OAuth token used for creating an automatic Issue for unhandled exceptions
-GITHUB_REPORT_OAUTH_TOKEN = "29f6bdf5ce4424fc17a19405bce75d6aca7dcd27"
+GITHUB_REPORT_OAUTH_TOKEN = "f05e68171afd41a445b1fff80f369fae88b37968"
 
 # Skip unforced HashDB flush requests below the threshold number of cached items
 HASHDB_FLUSH_THRESHOLD = 32
@@ -495,7 +495,7 @@ HASHDB_FLUSH_RETRIES = 3
 HASHDB_END_TRANSACTION_RETRIES = 3
 
 # Unique milestone value used for forced deprecation of old HashDB values (e.g. when changing hash/pickle mechanism)
-HASHDB_MILESTONE_VALUE = "nXkbwIURlN"  # rd74b803 "".join(random.sample(string.ascii_letters, 10))
+HASHDB_MILESTONE_VALUE = "JHjrBugdDA"  # "".join(random.sample(string.ascii_letters, 10))
 
 # Warn user of possible delay due to large page dump in full UNION query injections
 LARGE_OUTPUT_THRESHOLD = 1024 ** 2

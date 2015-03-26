@@ -166,7 +166,7 @@ class Connect(object):
 
         if not kb.dnsMode and conn:
             headers = conn.info()
-            if headers and (headers.getheader(HTTP_HEADER.CONTENT_ENCODING, "").lower() in ("gzip", "deflate")\
+            if headers and hasattr(headers, "getheader") and (headers.getheader(HTTP_HEADER.CONTENT_ENCODING, "").lower() in ("gzip", "deflate")\
               or "text" not in headers.getheader(HTTP_HEADER.CONTENT_TYPE, "").lower()):
                 retVal = conn.read(MAX_CONNECTION_TOTAL_SIZE)
                 if len(retVal) == MAX_CONNECTION_TOTAL_SIZE:
@@ -321,7 +321,7 @@ class Connect(object):
             requestMsg += " %s" % httplib.HTTPConnection._http_vsn_str
 
             # Prepare HTTP headers
-            headers = forgeHeaders({HTTP_HEADER.COOKIE: cookie, HTTP_HEADER.USER_AGENT: ua, HTTP_HEADER.REFERER: referer})
+            headers = forgeHeaders({HTTP_HEADER.COOKIE: cookie, HTTP_HEADER.USER_AGENT: ua, HTTP_HEADER.REFERER: referer, HTTP_HEADER.HOST: host})
 
             if kb.authHeader:
                 headers[HTTP_HEADER.AUTHORIZATION] = kb.authHeader
@@ -332,8 +332,11 @@ class Connect(object):
             if HTTP_HEADER.ACCEPT not in headers:
                 headers[HTTP_HEADER.ACCEPT] = HTTP_ACCEPT_HEADER_VALUE
 
-            headers[HTTP_HEADER.ACCEPT_ENCODING] = HTTP_ACCEPT_ENCODING_HEADER_VALUE if kb.pageCompress else "identity"
-            headers[HTTP_HEADER.HOST] = host or getHostHeader(url)
+            if HTTP_HEADER.HOST not in headers:
+                headers[HTTP_HEADER.HOST] = getHostHeader(url)
+
+            if HTTP_HEADER.ACCEPT_ENCODING not in headers:
+                headers[HTTP_HEADER.ACCEPT_ENCODING] = HTTP_ACCEPT_ENCODING_HEADER_VALUE if kb.pageCompress else "identity"
 
             if post is not None and HTTP_HEADER.CONTENT_TYPE not in headers:
                 headers[HTTP_HEADER.CONTENT_TYPE] = POST_HINT_CONTENT_TYPES.get(kb.postHint, DEFAULT_CONTENT_TYPE)
@@ -535,7 +538,7 @@ class Connect(object):
                 debugMsg = "got HTTP error code: %d (%s)" % (code, status)
                 logger.debug(debugMsg)
 
-        except (urllib2.URLError, socket.error, socket.timeout, httplib.BadStatusLine, httplib.IncompleteRead, struct.error, ProxyError, SqlmapCompressionException), e:
+        except (urllib2.URLError, socket.error, socket.timeout, httplib.BadStatusLine, httplib.IncompleteRead, httplib.ResponseNotReady, struct.error, ProxyError, SqlmapCompressionException), e:
             tbMsg = traceback.format_exc()
 
             if "no host given" in tbMsg:
@@ -699,7 +702,7 @@ class Connect(object):
                     payload = payload.replace("'", REPLACEMENT_MARKER).replace('"', "'").replace(REPLACEMENT_MARKER, '"')
                 value = agent.replacePayload(value, payload)
             else:
-                # GET, POST, URI and Cookie payload needs to be throughly URL encoded
+                # GET, POST, URI and Cookie payload needs to be thoroughly URL encoded
                 if place in (PLACE.GET, PLACE.URI, PLACE.COOKIE) and not conf.skipUrlEncode or place in (PLACE.POST, PLACE.CUSTOM_POST) and kb.postUrlEncode:
                     payload = urlencode(payload, '%', False, place != PLACE.URI)  # spaceplus is handled down below
                     value = agent.replacePayload(value, payload)
@@ -848,21 +851,21 @@ class Connect(object):
                 for part in item.split(delimiter):
                     if '=' in part:
                         name, value = part.split('=', 1)
-                        name = name.strip()
+                        name = re.sub(r"[^\w]", "", name.strip())
                         if name in keywords:
                             name = "%s%s" % (name, EVALCODE_KEYWORD_SUFFIX)
                         value = urldecode(value, convall=True, plusspace=(item==post and kb.postSpaceToPlus))
-                        evaluateCode("%s=%s" % (name, repr(value)), variables)
+                        variables[name] = value
 
             if cookie:
                 for part in cookie.split(conf.cookieDel or DEFAULT_COOKIE_DELIMITER):
                     if '=' in part:
                         name, value = part.split('=', 1)
-                        name = name.strip()
+                        name = re.sub(r"[^\w]", "", name.strip())
                         if name in keywords:
                             name = "%s%s" % (name, EVALCODE_KEYWORD_SUFFIX)
                         value = urldecode(value, convall=True)
-                        evaluateCode("%s=%s" % (name, repr(value)), variables)
+                        variables[name] = value
 
             while True:
                 try:
