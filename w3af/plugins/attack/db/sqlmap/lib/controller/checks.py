@@ -64,7 +64,7 @@ from lib.core.settings import DUMMY_XSS_CHECK_APPENDIX
 from lib.core.settings import FORMAT_EXCEPTION_STRINGS
 from lib.core.settings import HEURISTIC_CHECK_ALPHABET
 from lib.core.settings import SUHOSIN_MAX_VALUE_LENGTH
-from lib.core.settings import UNKNOWN_DBMS
+from lib.core.settings import SUPPORTED_DBMS
 from lib.core.settings import URI_HTTP_HEADER
 from lib.core.settings import LOWER_RATIO_BOUND
 from lib.core.settings import UPPER_RATIO_BOUND
@@ -89,7 +89,6 @@ def checkSqlInjection(place, parameter, value):
     kb.testMode = True
 
     paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
-
     tests = getSortedInjectionTests()
 
     while tests:
@@ -100,26 +99,38 @@ def checkSqlInjection(place, parameter, value):
                 break
 
             if conf.dbms is None:
+                # If the DBMS has not yet been fingerprinted (via simple heuristic check
+                # or via DBMS-specific payload) and boolean-based blind has been identified
+                # then attempt to identify with a simple DBMS specific boolean-based
+                # test what the DBMS may be
                 if not injection.dbms and PAYLOAD.TECHNIQUE.BOOLEAN in injection.data:
-                    if not Backend.getIdentifiedDbms() and not kb.heuristicDbms:
-                        kb.heuristicDbms = heuristicCheckDbms(injection) or UNKNOWN_DBMS
+                    if not Backend.getIdentifiedDbms() and kb.heuristicDbms is False:
+                        kb.heuristicDbms = heuristicCheckDbms(injection)
 
-                if not conf.testFilter and (Backend.getErrorParsedDBMSes() or kb.heuristicDbms) not in ([], None, UNKNOWN_DBMS):
-                    if kb.reduceTests is None and Backend.getErrorParsedDBMSes():
-                        msg = "heuristic (parsing) test showed that the "
-                        msg += "back-end DBMS could be '%s'. " % (Format.getErrorParsedDBMSes() if Backend.getErrorParsedDBMSes() else kb.heuristicDbms)
-                        msg += "Do you want to skip test payloads specific for other DBMSes? [Y/n]"
-                        kb.reduceTests = [] if readInput(msg, default='Y').upper() != 'Y' else (Backend.getErrorParsedDBMSes() or [kb.heuristicDbms])
+                # If the DBMS has already been fingerprinted (via DBMS-specific
+                # error message, simple heuristic check or via DBMS-specific
+                # payload), ask the user to limit the tests to the fingerprinted
+                # DBMS
+                if kb.reduceTests is None and not conf.testFilter and (intersect(Backend.getErrorParsedDBMSes(), \
+                   SUPPORTED_DBMS, True) or kb.heuristicDbms or injection.dbms):
+                    msg = "it looks like the back-end DBMS is '%s'. " % (Format.getErrorParsedDBMSes() or kb.heuristicDbms or injection.dbms)
+                    msg += "Do you want to skip test payloads specific for other DBMSes? [Y/n]"
+                    kb.reduceTests = (Backend.getErrorParsedDBMSes() or [kb.heuristicDbms]) if readInput(msg, default='Y').upper() == 'Y' else []
 
-                    if kb.extendTests is None:
-                        _ = (Format.getErrorParsedDBMSes() if Backend.getErrorParsedDBMSes() else kb.heuristicDbms)
-                        msg = "do you want to include all tests for '%s' " % _
-                        msg += "extending provided level (%d) and risk (%s) values? [Y/n]" % (conf.level, conf.risk)
-                        kb.extendTests = [] if readInput(msg, default='Y').upper() != 'Y' else (Backend.getErrorParsedDBMSes() or [kb.heuristicDbms])
-            elif kb.extendTests is None and conf.level < 5 and conf.risk < 3:
-                msg = "do you want to include all tests for '%s' " % conf.dbms
-                msg += "extending provided level (%d) and risk (%s)? [Y/n]" % (conf.level, conf.risk)
-                kb.extendTests = [] if readInput(msg, default='Y').upper() != 'Y' else ([conf.dbms])
+            # If the DBMS has been fingerprinted (via DBMS-specific error
+            # message, via simple heuristic check or via DBMS-specific
+            # payload), ask the user to extend the tests to all DBMS-specific,
+            # regardless of --level and --risk values provided
+            if kb.extendTests is None and not conf.testFilter and (conf.level < 5 or conf.risk < 3) \
+               and (intersect(Backend.getErrorParsedDBMSes(), SUPPORTED_DBMS, True) or \
+               kb.heuristicDbms or injection.dbms):
+                msg = "for the remaining tests, do you want to include all tests "
+                msg += "for '%s' extending provided " % (Format.getErrorParsedDBMSes() or kb.heuristicDbms or injection.dbms)
+                msg += "level (%d)" % conf.level if conf.level < 5 else ""
+                msg += " and " if conf.level < 5 and conf.risk < 3 else ""
+                msg += "risk (%d)" % conf.risk if conf.risk < 3 else ""
+                msg += " values? [Y/n]" if conf.level < 5 and conf.risk < 3 else " value? [Y/n]"
+                kb.extendTests = (Backend.getErrorParsedDBMSes() or [kb.heuristicDbms]) if readInput(msg, default='Y').upper() == 'Y' else []
 
             title = test.title
             kb.testType = stype = test.stype
@@ -179,27 +190,56 @@ def checkSqlInjection(place, parameter, value):
                 logger.debug(debugMsg)
                 continue
 
-
-            # Skip DBMS-specific test if it does not match either the
-            # previously identified or the user's provided DBMS (either
-            # from program switch or from parsed error message(s))
+            # Parse DBMS-specific payloads' details
             if "details" in test and "dbms" in test.details:
-                dbms = test.details.dbms
+                payloadDbms = test.details.dbms
             else:
-                dbms = None
+                payloadDbms = None
 
-            # Skip tests if title is not included by the given filter
-            if conf.testFilter:
-                if not any(conf.testFilter in str(item) or re.search(conf.testFilter, str(item), re.I) for item in (test.title, test.vector, dbms)):
-                    debugMsg = "skipping test '%s' because " % title
-                    debugMsg += "its name/vector/dbms is not included by the given filter"
+            # Skip tests if title, vector or DBMS is not included by the
+            # given test filter
+            if conf.testFilter and not any(conf.testFilter in str(item) or \
+               re.search(conf.testFilter, str(item), re.I) for item in \
+               (test.title, test.vector, payloadDbms)):
+                    debugMsg = "skipping test '%s' because its " % title
+                    debugMsg += "name/vector/DBMS is not included by the given filter"
                     logger.debug(debugMsg)
                     continue
 
-            elif not (kb.extendTests and intersect(dbms, kb.extendTests)):
+            if payloadDbms is not None:
+                # Skip DBMS-specific test if it does not match the user's
+                # provided DBMS
+                if conf.dbms is not None and not intersect(payloadDbms, conf.dbms, True):
+                    debugMsg = "skipping test '%s' because " % title
+                    debugMsg += "the provided DBMS is %s" % conf.dbms
+                    logger.debug(debugMsg)
+                    continue
+
+                # Skip DBMS-specific test if it does not match the
+                # previously identified DBMS (via DBMS-specific payload)
+                if injection.dbms is not None and not intersect(payloadDbms, injection.dbms, True):
+                    debugMsg = "skipping test '%s' because the identified " % title
+                    debugMsg += "back-end DBMS is %s" % injection.dbms
+                    logger.debug(debugMsg)
+                    continue
+
+                # Skip DBMS-specific test if it does not match the
+                # previously identified DBMS (via DBMS-specific error message)
+                if kb.reduceTests and not intersect(payloadDbms, kb.reduceTests, True):
+                    debugMsg = "skipping test '%s' because the parsed " % title
+                    debugMsg += "error message(s) showed that the back-end DBMS "
+                    debugMsg += "could be %s" % Format.getErrorParsedDBMSes()
+                    logger.debug(debugMsg)
+                    continue
+
+            # If the user did not decide to extend the tests to all
+            # DBMS-specific or the test payloads is not specific to the
+            # identified DBMS, then only test for it if both level and risk
+            # are below the corrisponding configuration's level and risk
+            # values
+            if not conf.testFilter and not (kb.extendTests and intersect(payloadDbms, kb.extendTests, True)):
                 # Skip test if the risk is higher than the provided (or default)
                 # value
-                # Parse test's <risk>
                 if test.risk > conf.risk:
                     debugMsg = "skipping test '%s' because the risk (%d) " % (title, test.risk)
                     debugMsg += "is higher than the provided (%d)" % conf.risk
@@ -208,32 +248,9 @@ def checkSqlInjection(place, parameter, value):
 
                 # Skip test if the level is higher than the provided (or default)
                 # value
-                # Parse test's <level>
                 if test.level > conf.level:
                     debugMsg = "skipping test '%s' because the level (%d) " % (title, test.level)
                     debugMsg += "is higher than the provided (%d)" % conf.level
-                    logger.debug(debugMsg)
-                    continue
-
-            if dbms is not None:
-                if injection.dbms is not None and not intersect(injection.dbms, dbms):
-                    debugMsg = "skipping test '%s' because " % title
-                    debugMsg += "the back-end DBMS identified is "
-                    debugMsg += "%s" % injection.dbms
-                    logger.debug(debugMsg)
-                    continue
-
-                if conf.dbms is not None and not intersect(conf.dbms.lower(), [_.lower() for _ in arrayizeValue(dbms)]):
-                    debugMsg = "skipping test '%s' because " % title
-                    debugMsg += "the provided DBMS is %s" % conf.dbms
-                    logger.debug(debugMsg)
-                    continue
-
-                if kb.reduceTests and not intersect(dbms, kb.reduceTests):
-                    debugMsg = "skipping test '%s' because " % title
-                    debugMsg += "the parsed error message(s) showed "
-                    debugMsg += "that the back-end DBMS could be "
-                    debugMsg += "%s" % Format.getErrorParsedDBMSes()
                     logger.debug(debugMsg)
                     continue
 
@@ -248,11 +265,11 @@ def checkSqlInjection(place, parameter, value):
 
             if clause != [0] and injection.clause and injection.clause != [0] and not clauseMatch:
                 debugMsg = "skipping test '%s' because the clauses " % title
-                debugMsg += "differs from the clause already identified"
+                debugMsg += "differ from the clause already identified"
                 logger.debug(debugMsg)
                 continue
 
-            # Skip test if the user provided custom character
+            # Skip test if the user provided custom character (for UNION-based payloads)
             if conf.uChar is not None and ("random number" in title or "(NULL)" in title):
                 debugMsg = "skipping test '%s' because the user " % title
                 debugMsg += "provided a specific character, %s" % conf.uChar
@@ -262,9 +279,9 @@ def checkSqlInjection(place, parameter, value):
             infoMsg = "testing '%s'" % title
             logger.info(infoMsg)
 
-            # Force back-end DBMS according to the current
-            # test value for proper payload unescaping
-            Backend.forceDbms(dbms[0] if isinstance(dbms, list) else dbms)
+            # Force back-end DBMS according to the current test DBMS value
+            # for proper payload unescaping
+            Backend.forceDbms(payloadDbms[0] if isinstance(payloadDbms, list) else payloadDbms)
 
             # Parse test's <request>
             comment = agent.getComment(test.request) if len(conf.boundaries) > 1 else None
@@ -282,7 +299,7 @@ def checkSqlInjection(place, parameter, value):
                 # Skip boundary if the level is higher than the provided (or
                 # default) value
                 # Parse boundary's <level>
-                if boundary.level > conf.level:
+                if boundary.level > conf.level and not (kb.extendTests and intersect(payloadDbms, kb.extendTests, True)):
                     continue
 
                 # Skip boundary if it does not match against test's <clause>
@@ -312,13 +329,12 @@ def checkSqlInjection(place, parameter, value):
                 # Parse boundary's <prefix>, <suffix> and <ptype>
                 prefix = boundary.prefix if boundary.prefix else ""
                 suffix = boundary.suffix if boundary.suffix else ""
+                ptype = boundary.ptype
 
                 # Options --prefix/--suffix have a higher priority (if set by user)
                 prefix = conf.prefix if conf.prefix is not None else prefix
                 suffix = conf.suffix if conf.suffix is not None else suffix
                 comment = None if conf.suffix is not None else comment
-
-                ptype = boundary.ptype
 
                 # If the previous injections succeeded, we know which prefix,
                 # suffix and parameter type to use for further tests, no
@@ -327,7 +343,9 @@ def checkSqlInjection(place, parameter, value):
                 condBound &= (injection.prefix != prefix or injection.suffix != suffix)
                 condType = injection.ptype is not None and injection.ptype != ptype
 
-                if condBound or condType:
+                # If the payload is an inline query test for it regardless
+                # of previously identified injection types
+                if stype != PAYLOAD.TECHNIQUE.QUERY and (condBound or condType):
                     continue
 
                 # For each test's <where>
@@ -348,6 +366,7 @@ def checkSqlInjection(place, parameter, value):
                         # will likely result in a different content
                         kb.data.setdefault("randomInt", str(randomInt(10)))
                         kb.data.setdefault("randomStr", str(randomStr(10)))
+
                         if conf.invalidLogical:
                             _ = int(kb.data.randomInt[:2])
                             origValue = "%s AND %s=%s" % (value, _, _ + 1)
@@ -357,6 +376,7 @@ def checkSqlInjection(place, parameter, value):
                             origValue = kb.data.randomStr[:6]
                         else:
                             origValue = "-%s" % kb.data.randomInt[:4]
+
                         templatePayload = agent.payload(place, parameter, value="", newValue=origValue, where=where)
                     elif where == PAYLOAD.WHERE.REPLACE:
                         origValue = ""
@@ -417,6 +437,7 @@ def checkSqlInjection(place, parameter, value):
                                 trueSet = set(extractTextTagContent(truePage))
                                 falseSet = set(extractTextTagContent(falsePage))
                                 candidates = filter(None, (_.strip() if _.strip() in (kb.pageTemplate or "") and _.strip() not in falsePage and _.strip() not in threadData.lastComparisonHeaders else None for _ in (trueSet - falseSet)))
+
                                 if candidates:
                                     conf.string = candidates[0]
                                     infoMsg = "%s parameter '%s' seems to be '%s' injectable (with --string=\"%s\")" % (paramType, parameter, title, repr(conf.string).lstrip('u').strip("'"))
@@ -480,7 +501,7 @@ def checkSqlInjection(place, parameter, value):
                             configUnion(test.request.char, test.request.columns)
 
                             if not Backend.getIdentifiedDbms():
-                                if kb.heuristicDbms in (None, UNKNOWN_DBMS):
+                                if kb.heuristicDbms is None:
                                     warnMsg = "using unescaped version of the test "
                                     warnMsg += "because of zero knowledge of the "
                                     warnMsg += "back-end DBMS. You can try to "
@@ -490,8 +511,8 @@ def checkSqlInjection(place, parameter, value):
                                     Backend.forceDbms(kb.heuristicDbms)
 
                             if unionExtended:
-                                infoMsg = "automatically extending ranges "
-                                infoMsg += "for UNION query injection technique tests as "
+                                infoMsg = "automatically extending ranges for UNION "
+                                infoMsg += "query injection technique tests as "
                                 infoMsg += "there is at least one other (potential) "
                                 infoMsg += "technique found"
                                 singleTimeLogMessage(infoMsg)
@@ -536,12 +557,15 @@ def checkSqlInjection(place, parameter, value):
                             for dKey, dValue in test.details.items():
                                 if dKey == "dbms":
                                     injection.dbms = dValue
+
                                     if not isinstance(dValue, list):
                                         Backend.setDbms(dValue)
                                     else:
                                         Backend.forceDbms(dValue[0], True)
+
                                 elif dKey == "dbms_version" and injection.dbms_version is None and not conf.testFilter:
                                     injection.dbms_version = Backend.setVersion(dValue)
+
                                 elif dKey == "os" and injection.os is None:
                                     injection.os = Backend.setOs(dValue)
 
@@ -642,13 +666,22 @@ def checkSqlInjection(place, parameter, value):
     return injection
 
 def heuristicCheckDbms(injection):
-    retVal = None
+    """
+    This functions is called when boolean-based blind is identified with a
+    generic payload and the DBMS has not yet been fingerprinted to attempt
+    to identify with a simple DBMS specific boolean-based test what the DBMS
+    may be
+    """
+    retVal = False
 
     pushValue(kb.injection)
     kb.injection = injection
-    randStr1, randStr2 = randomStr(), randomStr()
 
     for dbms in getPublicTypeMembers(DBMS, True):
+        if not FROM_DUMMY_TABLE.get(dbms, ""):
+            continue
+
+        randStr1, randStr2 = randomStr(), randomStr()
         Backend.forceDbms(dbms)
 
         if checkBooleanExpression("(SELECT '%s'%s)='%s'" % (randStr1, FROM_DUMMY_TABLE.get(dbms, ""), randStr1)):
@@ -660,7 +693,7 @@ def heuristicCheckDbms(injection):
     kb.injection = popValue()
 
     if retVal:
-        infoMsg = "heuristic (extended) test shows that the back-end DBMS "  # not as important as "parsing" counter-part (because of false-positives)
+        infoMsg = "heuristic (extended) test shows that the back-end DBMS "  # Not as important as "parsing" counter-part (because of false-positives)
         infoMsg += "could be '%s' " % retVal
         logger.info(infoMsg)
 
@@ -686,16 +719,14 @@ def checkFalsePositives(injection):
         kb.injection = injection
 
         for i in xrange(conf.level):
-            randInt1, randInt2, randInt3 = (_() for j in xrange(3))
+            while True:
+                randInt1, randInt2, randInt3 = (_() for j in xrange(3))
 
-            randInt1 = min(randInt1, randInt2, randInt3)
-            randInt3 = max(randInt1, randInt2, randInt3)
+                randInt1 = min(randInt1, randInt2, randInt3)
+                randInt3 = max(randInt1, randInt2, randInt3)
 
-            while randInt1 >= randInt2:
-                randInt2 = _()
-
-            while randInt2 >= randInt3:
-                randInt3 = _()
+                if randInt3 > randInt2 > randInt1:
+                    break
 
             if not checkBooleanExpression("%d=%d" % (randInt1, randInt1)):
                 retVal = None
@@ -778,22 +809,12 @@ def checkFilteredChars(injection):
 
 def heuristicCheckSqlInjection(place, parameter):
     if kb.nullConnection:
-        debugMsg = "heuristic check skipped "
-        debugMsg += "because NULL connection used"
-        logger.debug(debugMsg)
-        return None
-
-    if wasLastResponseDBMSError():
-        debugMsg = "heuristic check skipped "
-        debugMsg += "because original page content "
-        debugMsg += "contains DBMS error"
+        debugMsg = "heuristic check skipped because NULL connection used"
         logger.debug(debugMsg)
         return None
 
     origValue = conf.paramDict[place][parameter]
-
     paramType = conf.method if conf.method not in (None, HTTPMETHOD.GET, HTTPMETHOD.POST) else place
-
     prefix = ""
     suffix = ""
 
@@ -805,6 +826,7 @@ def heuristicCheckSqlInjection(place, parameter):
             suffix = conf.suffix
 
     randStr = ""
+
     while '\'' not in randStr:
         randStr = randomStr(length=10, alphabet=HEURISTIC_CHECK_ALPHABET)
 
@@ -872,8 +894,7 @@ def heuristicCheckSqlInjection(place, parameter):
 
     if value in (page or ""):
         infoMsg = "heuristic (XSS) test shows that %s parameter " % paramType
-        infoMsg += "'%s' might " % parameter
-        infoMsg += "be vulnerable to XSS attacks"
+        infoMsg += "'%s' might be vulnerable to XSS attacks" % parameter
         logger.info(infoMsg)
 
     kb.heuristicMode = False

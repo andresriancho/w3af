@@ -130,6 +130,7 @@ from lib.core.settings import WEBSCARAB_SPLITTER
 from lib.core.threads import getCurrentThreadData
 from lib.core.update import update
 from lib.parse.configfile import configFileParser
+from lib.parse.payloads import loadBoundaries
 from lib.parse.payloads import loadPayloads
 from lib.parse.sitemap import parseSitemap
 from lib.request.basic import checkCharEncoding
@@ -1399,6 +1400,17 @@ def _setHTTPReferer():
 
         conf.httpHeaders.append((HTTP_HEADER.REFERER, conf.referer))
 
+def _setHTTPHost():
+    """
+    Set the HTTP Host
+    """
+
+    if conf.host:
+        debugMsg = "setting the HTTP Host header"
+        logger.debug(debugMsg)
+
+        conf.httpHeaders.append((HTTP_HEADER.HOST, conf.host))
+
 def _setHTTPCookies():
     """
     Set the HTTP Cookie header
@@ -2380,6 +2392,7 @@ def init():
         _setHTTPExtraHeaders()
         _setHTTPCookies()
         _setHTTPReferer()
+        _setHTTPHost()
         _setHTTPUserAgent()
         _setHTTPAuthentication()
         _setHTTPProxy()
@@ -2400,6 +2413,7 @@ def init():
     _setWriteFile()
     _setMetasploit()
     _setDBMSAuthentication()
+    loadBoundaries()
     loadPayloads()
     _setPrefixSuffix()
     update()
