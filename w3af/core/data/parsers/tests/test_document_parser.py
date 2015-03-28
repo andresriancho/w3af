@@ -24,8 +24,6 @@ import unittest
 import time
 import os
 
-from mock import patch, call, PropertyMock
-
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.HTTPResponse import HTTPResponse
