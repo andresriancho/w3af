@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
+from vulndb import DBVuln
+
 from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
@@ -36,13 +38,17 @@ class Info(dict):
     
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, name, desc, response_ids, plugin_name):
+    def __init__(self, name, desc, response_ids, plugin_name, vulndb_id=None):
         """
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
         :param desc: The vulnerability description
         :param response_ids: A list of response ids associated with this vuln
         :param plugin_name: The name of the plugin which identified the vuln
+        :param vulndb_id: The vulnerability ID in the vulndb that is associated
+                          with this Info instance.
+
+        :see: https://github.com/vulndb/data
         """
         super(Info, self).__init__()
 
@@ -55,12 +61,15 @@ class Info(dict):
         self._desc = None
         self._id = []
         self._plugin_name = None
+        self._vulndb_id = None
+        self._vulndb = None
 
         # Set the values provided by the user
         self.set_name(name)
         self.set_desc(desc)
         self.set_id(response_ids)
         self.set_plugin_name(plugin_name)
+        self.set_vulndb_id(vulndb_id)
     
     @classmethod
     def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
@@ -172,7 +181,108 @@ class Info(dict):
 
     def get_desc(self, with_id=True):
         return self._get_desc_impl('information', with_id)
-    
+
+    def get_vulndb_id(self):
+        return self._vulndb_id
+
+    def set_vulndb_id(self, vulndb_id):
+        if vulndb_id is None:
+            self._vulndb_id = None
+            return
+
+        if not DBVuln.is_valid_id(vulndb_id):
+            raise ValueError('Invalid vulnerability DB id: %s' % vulndb_id)
+
+        self._vulndb_id = vulndb_id
+
+    def has_db_details(self):
+        """
+        :return: True if this vulnerability has an associated DBVuln instance
+                 from which to fetch detailed vuln information.
+        """
+        return self._vulndb_id is not None
+
+    def get_long_description(self):
+        """
+        :return: The long description for this vulnerability, extracted from the
+                 vulndb module.
+
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().description
+
+    def get_fix_guidance(self):
+        """
+        :return: The text on how to fix this vulnerability, extracted from the
+                 vulndb module.
+
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().fix_guidance
+
+    def get_fix_effort(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().fix_effort
+
+    def get_tags(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().tags
+
+    def get_wasc_ids(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().wasc
+
+    def get_wasc_urls(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        for wasc_id in self.get_wasc_ids():
+            yield DBVuln.get_wasc_url(wasc_id)
+
+    def get_cwe_urls(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        for cwe_id in self.get_cwe_ids():
+            yield DBVuln.get_cwe_url(cwe_id)
+
+    def get_cwe_ids(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().cwe
+
+    def get_references(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        """
+        return self.get_vuln_info_from_db().references
+
+    def get_owasp_top_10_references(self):
+        """
+        :note: Call has_db_details before calling this, or you'll get exceptions
+        :return: Yields tuples containing owasp version, owasp risk id (1-10),
+                 link to the owasp wiki for that risk
+        """
+        return self.get_vuln_info_from_db().get_owasp_top_10_references()
+
+    def get_vuln_info_from_db(self):
+        """
+        Read the vulnerability information from the vulndb
+        """
+        if self._vulndb is not None:
+            return self._vulndb
+
+        if self._vulndb_id is not None:
+            self._vulndb = DBVuln.from_id(self._vulndb_id)
+            return self._vulndb
+
     def _get_desc_impl(self, what, with_id=True):
         
         if self._id is not None and self._id != 0 and with_id:
@@ -184,12 +294,12 @@ class Info(dict):
             if len(self._id) > 1:
                 id_range = self._convert_to_range_wrapper(self._id)
                 
-                desc_to_return += ' This %s was found in the requests with' % what
-                desc_to_return += ' ids %s.' % id_range
+                desc_to_return += ' This %s was found in the requests' % what
+                desc_to_return += ' with ids %s.' % id_range
 
             elif len(self._id) == 1:
-                desc_to_return += ' This %s was found in the request with' % what
-                desc_to_return += ' id %s.' % self._id[0]
+                desc_to_return += ' This %s was found in the request' % what
+                desc_to_return += ' with id %s.' % self._id[0]
 
             return desc_to_return
         else:
@@ -421,3 +531,4 @@ class Info(dict):
                 raise TypeError('Only able to highlight strings.')
             
             self._string_matches.add(s)
+
