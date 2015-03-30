@@ -60,9 +60,9 @@ def getRenderingView(w3af, parentView):
     """Return RenderingView with best web engine or raise exception."""
     if RENDERING_ENGINES['webkit']:
         return WebKitRenderingView(w3af, parentView)
-    if RENDERING_ENGINES['moz']:
+    elif RENDERING_ENGINES['moz']:
         return MozRenderingView(w3af, parentView)
-    if RENDERING_ENGINES['gtkhtml2']:
+    elif RENDERING_ENGINES['gtkhtml2']:
         return GtkHtmlRenderingView(w3af, parentView)
 
     raise BaseFrameworkException(NO_RENDER_MSG)
@@ -95,14 +95,15 @@ class RenderingView(gtk.VBox):
 
 class GtkHtmlRenderingView(RenderingView):
     """GtkHTML2 web engine view."""
+
     def __init__(self, w3af, parentView):
         """Make GtkHtmlRenderingView object."""
         super(GtkHtmlRenderingView, self).__init__(w3af, parentView)
         self._renderingWidget = gtkhtml2.View()
-        swRenderedHTML = gtk.ScrolledWindow()
-        swRenderedHTML.add(self._renderingWidget)
-        swRenderedHTML.show_all()
-        self.pack_start(swRenderedHTML)
+        sw_rendered_html = gtk.ScrolledWindow()
+        sw_rendered_html.add(self._renderingWidget)
+        sw_rendered_html.show_all()
+        self.pack_start(sw_rendered_html)
 
     def show_object(self, obj):
         """Show object in view."""
@@ -111,11 +112,11 @@ class GtkHtmlRenderingView(RenderingView):
             return
         if not len(obj.get_body()):
             return
-        mimeType = 'text/html'
+        mime_type = 'text/html'
         try:
             document = gtkhtml2.Document()
             document.clear()
-            document.open_stream(mimeType)
+            document.open_stream(mime_type)
             document.write_stream(obj.get_body())
             document.close_stream()
             self._renderingWidget.set_document(document)
@@ -135,23 +136,24 @@ class GtkHtmlRenderingView(RenderingView):
 
 class MozRenderingView(RenderingView):
     """Gecko web engine view."""
+
     def __init__(self, w3af, parentView):
         """Make MozRenderingView object."""
         super(MozRenderingView, self).__init__(w3af, parentView)
         self._renderingWidget = gtkmozembed.MozEmbed()
-        print self._renderingWidget
-        swRenderedHTML = gtk.ScrolledWindow()
-        swRenderedHTML.add(self._renderingWidget)
-        swRenderedHTML.show_all()
-        self.pack_start(swRenderedHTML)
+
+        sw_rendered_html = gtk.ScrolledWindow()
+        sw_rendered_html.add(self._renderingWidget)
+        sw_rendered_html.show_all()
+        self.pack_start(sw_rendered_html)
 
     def show_object(self, obj):
         """Show object in view."""
-        mimeType = 'text/html'
+        mime_type = 'text/html'
         # mimeType = obj.content_type
         if obj.is_text_or_html():
             self._renderingWidget.render_data(obj.get_body(
-            ), long(len(obj.get_body())), str(obj.get_uri()), mimeType)
+            ), long(len(obj.get_body())), str(obj.get_uri()), mime_type)
 
     def clear(self):
         """Clear view."""
@@ -160,6 +162,7 @@ class MozRenderingView(RenderingView):
 
 class WebKitRenderingView(RenderingView):
     """WebKit web engine view."""
+
     def __init__(self, w3af, parentView):
         """Make WebKitRenderingView object."""
         super(WebKitRenderingView, self).__init__(w3af, parentView)
@@ -168,14 +171,14 @@ class WebKitRenderingView(RenderingView):
         settings = self._renderingWidget.get_settings()
         settings.set_property('auto-load-images', True)
         settings.set_property('enable-scripts', False)
-        swRenderedHTML = gtk.ScrolledWindow()
-        swRenderedHTML.add(self._renderingWidget)
-        swRenderedHTML.show_all()
-        self.pack_start(swRenderedHTML)
+        sw_rendered_html = gtk.ScrolledWindow()
+        sw_rendered_html.add(self._renderingWidget)
+        sw_rendered_html.show_all()
+        self.pack_start(sw_rendered_html)
 
     def show_object(self, obj):
         """Show object in view."""
-        mimeType = 'text/html'
+        mime_type = 'text/html'
         load_string = self._renderingWidget.load_string
 
         try:
@@ -184,14 +187,14 @@ class WebKitRenderingView(RenderingView):
                 body = obj.get_body()
                 uri = obj.get_uri().url_string
                 try:
-                    load_string(body, mimeType, UTF8, uri)
+                    load_string(body, mime_type, UTF8, uri)
                 except Exception:
-                    load_string(repr(body), mimeType, UTF8, uri)
+                    load_string(repr(body), mime_type, UTF8, uri)
 
             else:
                 raise Exception
         except Exception:
-            load_string(_("Can't render response"), mimeType, 'UTF-8', 'error')
+            load_string(_("Can't render response"), mime_type, 'UTF-8', 'error')
 
     def clear(self):
         """Clear view."""
