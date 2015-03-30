@@ -24,6 +24,7 @@ import urllib2
 import sys
 import re
 import Queue
+import webkit
 import webbrowser
 
 from multiprocessing.dummy import Process, Event
@@ -52,6 +53,8 @@ DB_VULN_NOT_FOUND = markdown('The detailed description for this vulnerability'
                              ' [vulndb/data project](https://github.com/vulndb/data)'
                              ' to improve w3af\'s output.')
 
+FILE = 'file:///'
+
 
 class FullKBTree(KBTree):
     def __init__(self, w3af, kbbrowser, ifilter):
@@ -71,6 +74,20 @@ class FullKBTree(KBTree):
         self.connect('cursor-changed', self._show_desc)
         self.show()
 
+    def _create_reference_list(self, info):
+        """
+        :return: A list with references for this info instance in markdown
+                 format so I can add them to the description.
+        """
+        if not info.get_references():
+            return ''
+
+        output = '\n\n### References\n'
+        for ref in info.get_references():
+            output += ' * [%s](%s)\n' % (ref.title, ref.url)
+
+        return output
+
     def _show_desc(self, tv):
         """Shows the description in the right section
 
@@ -89,14 +106,15 @@ class FullKBTree(KBTree):
         self.kbbrowser.vuln_notebook.set_current_page(0)
 
         if instance.has_db_details():
-            desc = markdown(instance.get_long_description())
-            fix = markdown(instance.get_fix_guidance())
+            desc_markdown = instance.get_long_description()
+            desc_markdown += '\n\n### Fix guidance\n'
+            desc_markdown += instance.get_fix_guidance()
+            desc_markdown += self._create_reference_list(instance)
+            desc = markdown(desc_markdown)
 
-            self.kbbrowser.description.set_text(desc)
-            self.kbbrowser.fix.set_text(fix)
+            self.kbbrowser.description.load_html_string(desc, FILE)
         else:
-            self.kbbrowser.description.set_text(DB_VULN_NOT_FOUND)
-            self.kbbrowser.fix.set_text(DB_VULN_NOT_FOUND)
+            self.kbbrowser.description.load_html_string(DB_VULN_NOT_FOUND, FILE)
 
         if not instance.get_id():
             self.clear_request_response_viewer()
@@ -226,12 +244,10 @@ class KBBrowser(entries.RememberingHPaned):
         # the vulnerability information
         summary = self.get_notebook_summary(w3af)
         description = self.get_notebook_description()
-        fix = self.get_notebook_fix()
 
         self.vuln_notebook = gtk.Notebook()
         self.vuln_notebook.append_page(summary, gtk.Label('Summary'))
         self.vuln_notebook.append_page(description, gtk.Label('Description'))
-        self.vuln_notebook.append_page(fix, gtk.Label('Fix'))
         self.vuln_notebook.set_current_page(0)
         self.vuln_notebook.show()
 
@@ -241,34 +257,21 @@ class KBBrowser(entries.RememberingHPaned):
         self.show()
 
     def get_notebook_description(self):
-        description_tv = gtk.TextView()
-        description_tv.set_editable(False)
-        description_tv.set_cursor_visible(False)
-        description_tv.set_wrap_mode(gtk.WRAP_WORD)
-        self.description = description_tv.get_buffer()
-        description_tv.show()
+        # Make the HTML viewable area
+        self.description = webkit.WebView()
 
-        desc_scrollwin = gtk.ScrolledWindow()
-        desc_scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        desc_scrollwin.add_with_viewport(description_tv)
-        desc_scrollwin.show()
+        # Disable the plugins for the webview
+        ws = self.description.get_settings()
+        ws.set_property('enable-plugins', False)
+        self.description.set_settings(ws)
+        self.description.show()
 
-        return desc_scrollwin
+        desc_scroll = gtk.ScrolledWindow()
+        desc_scroll.add(self.description)
+        desc_scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        desc_scroll.show()
 
-    def get_notebook_fix(self):
-        fix_tv = gtk.TextView()
-        fix_tv.set_editable(False)
-        fix_tv.set_cursor_visible(False)
-        fix_tv.set_wrap_mode(gtk.WRAP_WORD)
-        self.fix = fix_tv.get_buffer()
-        fix_tv.show()
-
-        fix_scrollwin = gtk.ScrolledWindow()
-        fix_scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        fix_scrollwin.add_with_viewport(fix_tv)
-        fix_scrollwin.show()
-
-        return fix_scrollwin
+        return desc_scroll
 
     def get_notebook_summary(self, w3af):
         summary_tv = gtk.TextView()
@@ -629,13 +632,13 @@ class URLsTree(gtk.TreeView):
         gm.append(e)
 
         e = gtk.ImageMenuItem(_("Open with default browser..."))
-        e.connect('activate', self._openBrowser, fullurl)
+        e.connect('activate', self._open_browser, fullurl)
         gm.append(e)
 
         gm.show_all()
         gm.popup(None, None, None, event.button, event.time)
 
-    def _openBrowser(self, widg, text):
+    def _open_browser(self, widg, text):
         """Opens the text with an external browser."""
         webbrowser.open_new_tab(text)
 
