@@ -53,8 +53,9 @@ from w3af.core.ui.gui.auto_update.gui_updater import GUIUpdater
  
 from w3af.core.ui.gui import scanrun, helpers, profiles, compare
 from w3af.core.ui.gui import export_request
-from w3af.core.ui.gui import entries, encdec, pluginconfig, confpanel
+from w3af.core.ui.gui import entries, pluginconfig, confpanel
 from w3af.core.ui.gui import wizard, guardian
+from w3af.core.ui.gui.tools import encdec
 from w3af.core.ui.gui.user_help.open_help import open_help
 from w3af.core.ui.gui.tabs.log.main_body import LogBody
 from w3af.core.ui.gui.tabs.exploit.main_body import ExploitBody
