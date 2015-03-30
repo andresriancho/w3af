@@ -21,32 +21,39 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import gtk
 
-RENDERING_ENGINES = {'webkit': False, 'gtkhtml2': False, 'moz': False}
+RENDERING_ENGINES = {'webkit': False,
+                     'gtkhtml2': False,
+                     'moz': False}
 
 try:
     import webkit
     RENDERING_ENGINES['webkit'] = True
-except Exception, e:
+except ImportError:
     pass
 
 try:
     import gtkmozembed
     RENDERING_ENGINES['moz'] = True
-except Exception, e:
+except ImportError:
     pass
 
 try:
     import gtkhtml2
-    #   This brings crashes like:
-    #       HtmlView-ERROR **: file htmlview.c: line 1906 (html_view_insert_node): assertion
-    #       failed: (node->style != NULL)
+    # This brings crashes like:
+    #    HtmlView-ERROR **: file htmlview.c: line 1906 (html_view_insert_node):
+    #    assertion failed: (node->style != NULL)
     #   TODO: Change this to True when gtkhtml2 is fixed
     RENDERING_ENGINES['gtkhtml2'] = False
-except Exception, e:
+except ImportError:
     pass
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.constants.encodings import UTF8
+
+
+NO_RENDER_MSG = 'If you want to render HTML responses, install at least one' \
+                ' of the following rendering engines: python-webkit,' \
+                ' python-gtkmozembed, python-gtkhtml2'
 
 
 def getRenderingView(w3af, parentView):
@@ -57,8 +64,8 @@ def getRenderingView(w3af, parentView):
         return MozRenderingView(w3af, parentView)
     if RENDERING_ENGINES['gtkhtml2']:
         return GtkHtmlRenderingView(w3af, parentView)
-    raise BaseFrameworkException('If you want to render HTML responses, you need to install at least one of rendering engines: \
-                python-webkit, python-gtkmozembed, python-gtkhtml2')
+
+    raise BaseFrameworkException(NO_RENDER_MSG)
 
 
 class RenderingView(gtk.VBox):
@@ -72,13 +79,13 @@ class RenderingView(gtk.VBox):
 
     def show_object(self, obj):
         """Show object in view."""
-        raise BaseFrameworkException('Child MUST implment a clear() method.')
+        raise BaseFrameworkException('Child MUST implement a clear() method.')
 
     def clear(self):
-        raise BaseFrameworkException('Child MUST implment a clear() method.')
+        raise BaseFrameworkException('Child MUST implement a clear() method.')
 
     def get_object(self):
-        """Return object (request or resoponse)."""
+        """Return object (request or response)."""
         pass
 
     def highlight(self, text, tag):
@@ -113,13 +120,13 @@ class GtkHtmlRenderingView(RenderingView):
             document.close_stream()
             self._renderingWidget.set_document(document)
         except ValueError, ve:
-            # I get here when the mime type is an image or something that I can't display
+            # I get here when the mime type is an image or something that I
+            # can't display
             pass
         except Exception, e:
-            print _('This is a catched exception!')
-            print _('Exception:'), type(e), str(e)
-            print _('I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:')
-            print 'https://sourceforge.net/apps/trac/w3af/newticket'
+            print _('gtkhtml2 exception:'), type(e), str(e)
+            print _('Please report this issue here:')
+            print 'https://github.com/andresriancho/w3af/issues/new'
 
     def clear(self):
         """Clear view."""
