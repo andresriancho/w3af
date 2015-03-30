@@ -183,17 +183,17 @@ class xml_file(OutputPlugin):
                                 plugins for that type of plugin.
         :param options_dict: A dict with the options for every plugin.
         """
-        # Add the user configured targets to scaninfo
+        # Add the user configured targets to scan-info
         str_targets = ','.join([xml_str(t.url_string) for t in cf.cf.get('targets')])
         self._scaninfo.setAttribute('target', str_targets)
 
-        # Add enabled plugins and their configuration to scaninfo
+        # Add enabled plugins and their configuration to scan-info
         for plugin_type in plugins_dict:
             self._build_plugin_scaninfo(plugin_type,
                                         plugins_dict[plugin_type],
                                         options_dict[plugin_type])
 
-        # Add scaninfo to the report
+        # Add scan-info to the report
         self._topElement.appendChild(self._scaninfo)
 
     def report_http_action(self, parent_node, action):
@@ -202,7 +202,7 @@ class xml_file(OutputPlugin):
         factor anything with a content-type not prefixed with a text/ in a
         CDATA.
 
-        parent - the parent node (eg httprequest/httpresponse)
+        parent - the parent node (eg http-request/http-response)
         action - either a details.request or details.response
         """
         headers, body = self.handle_headers(parent_node, action)
@@ -379,8 +379,15 @@ class xml_file(OutputPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin writes the framework messages to an XML report file.
+        This plugin creates an XML file containing all of w3af's findings.
 
         One configurable parameter exists:
             - output_file
+
+        When using the contents of the XML file it's important to notice that
+        the long-description and fix-guidance tags contain text in markdown
+        format.
+
+        The generated XML file validates against the report.xsd file which is
+        distributed with the plugin.
         """
