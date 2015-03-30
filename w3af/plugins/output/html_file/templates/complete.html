@@ -107,33 +107,51 @@
                 <div class="col-md-1"></div>
             </div>
 
-            {% if finding.has_db_details() == True %}
+            {% if finding.has_db_details() %}
             <div class="row">
                 <div class="col-md-1"></div>
                 <div class="col-md-10">
                     <h4>Fix</h4>
                     {{ finding.get_fix_guidance()|render_markdown|safe }}
+
+                    {% if finding.get_references() %}
+                        <h4>References</h4>
+                        <ul>
+                        {% for ref in finding.get_references() %}
+                            <li> <a href="{{ ref.url }}">{{ ref.title }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
                 <div class="col-md-1"></div>
             </div>
             {% endif %}
 
-            {% for id in finding.get_id() %}
+            {% if finding.get_id() %}
+
                 <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8">
-                        <pre>{{ id|request }}</pre>
-                    </div>
-                    <div class="col-md-2"></div>
+                    <div class="col-md-1"></div>
+                    <div class="col-md-10"><h4>HTTP proof</h4></div>
+                    <div class="col-md-1"></div>
                 </div>
-                <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8">
-                        <pre>{{ id|response }}</pre>
+
+                {% for id in finding.get_id() %}
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-8">
+                            <pre>{{ id|request }}</pre>
+                        </div>
+                        <div class="col-md-2"></div>
                     </div>
-                    <div class="col-md-2"></div>
-                </div>
-            {% endfor %}
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-8">
+                            <pre>{{ id|response }}</pre>
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
     {% endfor %}
 
