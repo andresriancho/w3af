@@ -52,14 +52,16 @@ class TestVulnsConstants(unittest.TestCase):
 
         self.assertEqual(dups, [])
 
-    def test_all_vulnerability_names_used(self):
-        vuln_names = VULNS.keys()
+    def get_all_plugins_source(self):
         plugins_path = os.path.join(ROOT_PATH, 'plugins')
         vuln_template_path = os.path.join(ROOT_PATH, 'core', 'data', 'kb',
                                           'vuln_templates')
 
         all_plugin_sources = ''
         for dir_name, subdir_list, file_list in os.walk(plugins_path):
+
+            if dir_name in ('test', 'tests'):
+                continue
 
             for fname in file_list:
                 if not fname.endswith('.py'):
@@ -103,6 +105,11 @@ class TestVulnsConstants(unittest.TestCase):
                 full_path = os.path.join(vuln_template_path, dir_name, fname)
                 all_plugin_sources += file(full_path).read()
 
+        return all_plugin_sources
+
+    def test_all_vulnerability_names_from_db_are_used(self):
+        vuln_names = VULNS.keys()
+        all_plugin_sources = self.get_all_plugins_source()
         missing_ignore = {'TestCase',
                           'Blind SQL injection vulnerability'}
 
@@ -112,6 +119,25 @@ class TestVulnsConstants(unittest.TestCase):
 
             msg = '"%s" not in plugin sources' % vuln_name
             self.assertIn(vuln_name, all_plugin_sources, msg)
+
+    def test_all_vulnerability_names_from_source_in_db(self):
+        vuln_names = VULNS.keys()
+        vuln_names_re = ' (Info|Vuln)\\(["\'](.*?)["\'] ?,.*?\\)'
+        all_plugin_sources = self.get_all_plugins_source()
+        vuln_names_in_source = re.findall(vuln_names_re, all_plugin_sources,
+                                          re.DOTALL)
+
+        extracted = []
+        not_in_db = []
+
+        for _type, vuln_title in vuln_names_in_source:
+            extracted.append(vuln_title)
+
+            if vuln_title not in vuln_names and vuln_title not in not_in_db:
+                not_in_db.append(vuln_title)
+
+        self.assertEqual(not_in_db, [])
+        self.assertGreater(len(extracted), 120, extracted)
 
     @attr('ci_ignore')
     def test_vuln_updated(self):
