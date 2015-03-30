@@ -24,9 +24,11 @@ import urllib2
 import sys
 import re
 import Queue
+import webkit
 import webbrowser
 
 from multiprocessing.dummy import Process, Event
+from markdown import markdown
 
 from w3af.core.ui.gui import httpLogTab, entries
 from w3af.core.ui.gui.reqResViewer import ReqResViewer
@@ -45,6 +47,14 @@ import w3af.core.data.kb.knowledge_base as kb
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
 
+DB_VULN_NOT_FOUND = markdown('The detailed description for this vulnerability'
+                             ' is not available in our database, please'
+                             ' contribute to the open source'
+                             ' [vulndb/data project](https://github.com/vulndb/data)'
+                             ' to improve w3af\'s output.')
+
+FILE = 'file:///'
+
 
 class FullKBTree(KBTree):
     def __init__(self, w3af, kbbrowser, ifilter):
@@ -53,7 +63,7 @@ class FullKBTree(KBTree):
         This also gives a long description of the element when clicked.
 
         :param kbbrowser: The KB Browser
-        :param filter: The filter to show which elements
+        :param ifilter: The filter to show which elements
 
         :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
         """
@@ -61,11 +71,25 @@ class FullKBTree(KBTree):
                                          'Knowledge Base', strict=False)
         self._historyItem = HistoryItem()
         self.kbbrowser = kbbrowser
-        self.connect('cursor-changed', self._showDesc)
+        self.connect('cursor-changed', self._show_desc)
         self.show()
 
-    def _showDesc(self, tv):
-        """Shows the description at the right
+    def _create_reference_list(self, info):
+        """
+        :return: A list with references for this info instance in markdown
+                 format so I can add them to the description.
+        """
+        if not info.get_references():
+            return ''
+
+        output = '\n\n### References\n'
+        for ref in info.get_references():
+            output += ' * [%s](%s)\n' % (ref.title, ref.url)
+
+        return output
+
+    def _show_desc(self, tv):
+        """Shows the description in the right section
 
         :param tv: the treeview.
         """
@@ -77,8 +101,20 @@ class FullKBTree(KBTree):
         if not isinstance(instance, Info):
             return
         
-        longdesc = instance.get_desc()
-        self.kbbrowser.explanation.set_text(longdesc)
+        summary = instance.get_desc()
+        self.kbbrowser.explanation.set_text(summary)
+        self.kbbrowser.vuln_notebook.set_current_page(0)
+
+        if instance.has_db_details():
+            desc_markdown = instance.get_long_description()
+            desc_markdown += '\n\n### Fix guidance\n'
+            desc_markdown += instance.get_fix_guidance()
+            desc_markdown += self._create_reference_list(instance)
+            desc = markdown(desc_markdown)
+
+            self.kbbrowser.description.load_html_string(desc, FILE)
+        else:
+            self.kbbrowser.description.load_html_string(DB_VULN_NOT_FOUND, FILE)
 
         if not instance.get_id():
             self.clear_request_response_viewer()
@@ -99,7 +135,7 @@ class FullKBTree(KBTree):
             # There is ONLY ONE id related to the object
             # This is 1)
             self.kbbrowser.pagesControl.deactivate()
-            self.kbbrowser._pageChange(0)
+            self.kbbrowser.page_change(0)
             self.kbbrowser.pagesControl.hide()
             self.kbbrowser.title0.hide()
 
@@ -142,7 +178,7 @@ class FullKBTree(KBTree):
             self.kbbrowser.req_res_ids = instance.get_id()
             num_ids = len(instance.get_id())
             self.kbbrowser.pagesControl.activate(num_ids)
-            self.kbbrowser._pageChange(0)
+            self.kbbrowser.page_change(0)
 
         self.kbbrowser.rrV.set_sensitive(True)
 
@@ -169,11 +205,10 @@ class KBBrowser(entries.RememberingHPaned):
         super(KBBrowser, self).__init__(w3af, "pane-kbbrowser", 250)
 
         # Internal variables:
-        #
-        # Here I save the request and response ids to be used in the page control
+        # Save the request and response ids to be used in the page control
         self.req_res_ids = []
-        # This is to search the DB and print the different request and responses as they are
-        # requested from the page control, "_pageChange" method.
+        # This is to search the DB and print the different request and responses
+        # as they are requested from the page control, "page_change" method.
         self._historyItem = HistoryItem()
 
         # the filter to the tree
@@ -183,40 +218,73 @@ class KBBrowser(entries.RememberingHPaned):
         def make_but(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
-            but.connect("clicked", self.type_filter, signal)
+            but.connect('clicked', self.type_filter, signal)
             self.filters[signal] = initial
             but.show()
             filterbox.pack_start(but, expand=False, fill=False, padding=2)
-        make_but("Vulnerabilities", "vuln", True)
-        make_but("Informations", "info", True)
+        make_but('Vulnerability', 'vuln', True)
+        make_but('Information', 'info', True)
         filterbox.show()
 
         # the kb tree
         self.kbtree = FullKBTree(w3af, self, self.filters)
 
         # all in the first pane
-        scrollwin21 = gtk.ScrolledWindow()
-        scrollwin21.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin21.add(self.kbtree)
-        scrollwin21.show()
+        kbtree_scrollwin = gtk.ScrolledWindow()
+        kbtree_scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        kbtree_scrollwin.add(self.kbtree)
+        kbtree_scrollwin.show()
 
         # the filter and tree box
         treebox = gtk.VBox()
         treebox.pack_start(filterbox, expand=False, fill=False)
-        treebox.pack_start(scrollwin21)
+        treebox.pack_start(kbtree_scrollwin)
         treebox.show()
 
-        # the explanation
-        explan_tv = gtk.TextView()
-        explan_tv.set_editable(False)
-        explan_tv.set_cursor_visible(False)
-        explan_tv.set_wrap_mode(gtk.WRAP_WORD)
-        self.explanation = explan_tv.get_buffer()
-        explan_tv.show()
-        scrollwin22 = gtk.ScrolledWindow()
-        scrollwin22.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin22.add_with_viewport(explan_tv)
-        scrollwin22.show()
+        # the vulnerability information
+        summary = self.get_notebook_summary(w3af)
+        description = self.get_notebook_description()
+
+        self.vuln_notebook = gtk.Notebook()
+        self.vuln_notebook.append_page(summary, gtk.Label('Summary'))
+        self.vuln_notebook.append_page(description, gtk.Label('Description'))
+        self.vuln_notebook.set_current_page(0)
+        self.vuln_notebook.show()
+
+        # pack & show
+        self.pack1(treebox)
+        self.pack2(self.vuln_notebook)
+        self.show()
+
+    def get_notebook_description(self):
+        # Make the HTML viewable area
+        self.description = webkit.WebView()
+
+        # Disable the plugins for the webview
+        ws = self.description.get_settings()
+        ws.set_property('enable-plugins', False)
+        self.description.set_settings(ws)
+        self.description.show()
+
+        desc_scroll = gtk.ScrolledWindow()
+        desc_scroll.add(self.description)
+        desc_scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        desc_scroll.show()
+
+        return desc_scroll
+
+    def get_notebook_summary(self, w3af):
+        summary_tv = gtk.TextView()
+        summary_tv.set_editable(False)
+        summary_tv.set_cursor_visible(False)
+        summary_tv.set_wrap_mode(gtk.WRAP_WORD)
+        self.explanation = summary_tv.get_buffer()
+        summary_tv.show()
+
+        summary_scrollwin = gtk.ScrolledWindow()
+        summary_scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        summary_scrollwin.add_with_viewport(summary_tv)
+        summary_scrollwin.show()
 
         # The request/response viewer
         self.rrV = ReqResViewer(w3af, withAudit=False)
@@ -226,43 +294,41 @@ class KBBrowser(entries.RememberingHPaned):
         self.title0 = gtk.Label()
         self.title0.show()
 
-        # Create page changer to handle info/vuln objects that have MORE THAN ONE
-        # related request/response
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange, 0)
+        # Create page changer to handle info/vuln objects that have MORE THAN
+        # ONE related request/response
+        self.pagesControl = entries.PagesControl(w3af, self.page_change, 0)
         self.pagesControl.deactivate()
-        self._pageChange(0)
-        centerbox = gtk.HBox()
-        centerbox.pack_start(self.pagesControl, True, False)
+        self.page_change(0)
+        center_box = gtk.HBox()
+        center_box.pack_start(self.pagesControl, True, False)
 
-        # Add everything to a vbox
-        vbox_rrv_centerbox = gtk.VBox()
-        vbox_rrv_centerbox.pack_start(self.title0, False, True)
-        vbox_rrv_centerbox.pack_start(self.rrV, True, True)
-        vbox_rrv_centerbox.pack_start(centerbox, False, False)
+        # Title, request/response and paginator all go together in a vbox
+        http_data_vbox = gtk.VBox()
+        http_data_vbox.pack_start(self.title0, False, True)
+        http_data_vbox.pack_start(self.rrV, True, True)
+        http_data_vbox.pack_start(center_box, False, False)
 
         # and show
-        vbox_rrv_centerbox.show()
+        http_data_vbox.show()
         self.pagesControl.show()
-        centerbox.show()
+        center_box.show()
 
-        # And now put everything inside the vpaned
-        vpanedExplainAndView = entries.RememberingVPaned(
-            w3af, "pane-kbbexplainview", 100)
-        vpanedExplainAndView.pack1(scrollwin22)
-        vpanedExplainAndView.pack2(vbox_rrv_centerbox)
-        vpanedExplainAndView.show()
+        # The summary and http data go in a vbox too
+        summary_data_vbox = entries.RememberingVPaned(w3af,
+                                                      'pane-kbbexplainview',
+                                                      100)
+        summary_data_vbox.pack1(summary_scrollwin)
+        summary_data_vbox.pack2(http_data_vbox)
+        summary_data_vbox.show()
 
-        # pack & show
-        self.pack1(treebox)
-        self.pack2(vpanedExplainAndView)
-        self.show()
+        return summary_data_vbox
 
     def type_filter(self, button, ptype):
         """Changes the filter of the KB in the tree."""
         self.filters[ptype] = button.get_active()
         self.kbtree.set_filter(self.filters)
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         """
         Handle the page change in the page control.
         """
@@ -295,16 +361,16 @@ class URLsGraph(gtk.VBox):
 
         self.toolbox = gtk.HBox()
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_IN, 'Zoom In')
-        b.connect("clicked", self._zoom, "in")
+        b.connect('clicked', self._zoom, "in")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_OUT, 'Zoom Out')
-        b.connect("clicked", self._zoom, "out")
+        b.connect('clicked', self._zoom, "out")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_FIT, 'Zoom Fit')
-        b.connect("clicked", self._zoom, "fit")
+        b.connect('clicked', self._zoom, "fit")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, 'Zoom 100%')
-        b.connect("clicked", self._zoom, "100")
+        b.connect('clicked', self._zoom, "100")
         self.toolbox.pack_start(b, False, False)
         self.pack_start(self.toolbox, False, False)
         self.toolbox.set_sensitive(False)
@@ -361,9 +427,8 @@ class URLsGraph(gtk.VBox):
         gobject.timeout_add(500, self._draw_start)
 
     def limit_node(self, parent, node, name):
-        # I have to escape the quotes, because I don't want a "dot code injection"
-        # This was sourceforge bug #2675512
-        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        # I have to escape the quotes, because I don't want a "dot code
+        # injection". This was sourceforge bug #2675512
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
 
@@ -375,9 +440,8 @@ class URLsGraph(gtk.VBox):
         self._somethingnew = True
 
     def new_node(self, parent, node, name, isLeaf):
-        # I have to escape the quotes, because I don't want a "dot code injection"
-        # This was bug #2675512
-        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        # I have to escape the quotes, because I don't want a "dot code
+        # injection" This was bug #2675512
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
 
@@ -443,7 +507,6 @@ class URLsTree(gtk.TreeView):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
             # This "if path" fixed bug #2205544
-            # https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2205544&group_id=170274
             if path:
                 if self.row_expanded(path):
                     self.collapse_row(path)
@@ -569,13 +632,13 @@ class URLsTree(gtk.TreeView):
         gm.append(e)
 
         e = gtk.ImageMenuItem(_("Open with default browser..."))
-        e.connect('activate', self._openBrowser, fullurl)
+        e.connect('activate', self._open_browser, fullurl)
         gm.append(e)
 
         gm.show_all()
         gm.popup(None, None, None, event.button, event.time)
 
-    def _openBrowser(self, widg, text):
+    def _open_browser(self, widg, text):
         """Opens the text with an external browser."""
         webbrowser.open_new_tab(text)
 

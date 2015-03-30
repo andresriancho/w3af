@@ -37,7 +37,7 @@ class SuSE(Platform):
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview',
-                                'python-gtk'])
+                                'python-gtk', 'python-webkitgtk'])
 
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}

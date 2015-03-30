@@ -1,33 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
-  <xs:element name="w3afrun">
+  <xs:element name="w3af-run">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="w3af-version" minOccurs="1" maxOccurs="1" type="xs:string" />
-        <xs:element ref="scaninfo" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="scan-info" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="vulnerability" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element ref="information" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="error" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="start" use="required" type="xs:integer"/>
-      <xs:attribute name="startstr" use="required"/>
-      <xs:attribute use="required" ref="xmloutputversion"/>
+      <xs:attribute name="start-long" use="required"/>
+      <xs:attribute use="required" ref="version"/>
     </xs:complexType>
   </xs:element>
   
-  <xs:attribute name="xmloutputversion">
+  <xs:attribute name="version">
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
-        <!-- Current Version defined in xmlFile.py; please increment
-             as required -->
-        <xs:enumeration value="2.0"/>
+        <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
+        <xs:enumeration value="2.1"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
 
 
-  <xs:element name="scaninfo">
+  <xs:element name="scan-info">
     <xs:complexType>
       <xs:all>
         <xs:element ref="audit"/>
@@ -44,7 +42,7 @@
     </xs:complexType>
   </xs:element>
   
-    <xs:complexType name="plugintype">  
+    <xs:complexType name="plugin-type">
       <xs:sequence>
         <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
@@ -126,6 +124,10 @@
     <xs:complexType mixed="true">
       <xs:sequence>
         <xs:element name="description" minOccurs="1" maxOccurs="1" type="xs:string"/>
+        <xs:element name="long-description" minOccurs="0" maxOccurs="1" type="xs:string"/>
+        <xs:element name="fix-guidance" minOccurs="0" maxOccurs="1" type="xs:string"/>
+        <xs:element name="fix-effort" minOccurs="0" maxOccurs="1" type="xs:integer"/>
+        <xs:element name="references" minOccurs="0" maxOccurs="1" type="references"/>
         <xs:element name="http-transactions" minOccurs="0" maxOccurs="1" type="http-transactions"/>
       </xs:sequence>
       <xs:attribute name="id" use="optional"/>
@@ -138,19 +140,6 @@
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="information">
-    <xs:complexType mixed="true">
-      <xs:sequence>
-        <xs:element name="description" minOccurs="1" maxOccurs="1" type="xs:string"/>
-        <xs:element name="http-transactions" minOccurs="0" maxOccurs="1" type="http-transactions"/>
-      </xs:sequence>
-      <xs:attribute name="id" use="optional" type="xs:string"/>
-      <xs:attribute name="name" use="required" type="xs:string"/>
-      <xs:attribute name="plugin" use="required"/>
-      <xs:attribute name="url" use="required" type="xs:string"/>
-    </xs:complexType>
-  </xs:element>
-
   <xs:complexType name="http-transactions">
     <xs:sequence>
       <xs:element name="http-transaction" minOccurs="1" maxOccurs="unbounded" type="http-transaction"/>
@@ -159,8 +148,8 @@
 
   <xs:complexType name="http-transaction">
     <xs:sequence>
-      <xs:element ref="httprequest" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="httpresponse" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="http-request" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="http-response" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="id" use="required" type="xs:string"/>
   </xs:complexType>
@@ -187,7 +176,7 @@
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="httprequest">
+  <xs:element name="http-request">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="status" minOccurs="1" maxOccurs="1" type="xs:string"/>
@@ -197,7 +186,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="httpresponse">
+  <xs:element name="http-response">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="status" minOccurs="1" maxOccurs="1" type="xs:string"/>
@@ -231,10 +220,21 @@
       <xs:element name="header" minOccurs="1" maxOccurs="unbounded" type="header"/>
     </xs:sequence>
   </xs:complexType>
-    
+
   <xs:complexType name="header">
     <xs:attribute name="field" use="required" type="xs:string"/>
     <xs:attribute name="content" use="required" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="references">
+    <xs:sequence>
+      <xs:element name="reference" minOccurs="1" maxOccurs="unbounded" type="reference"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="reference">
+    <xs:attribute name="title" use="required" type="xs:string"/>
+    <xs:attribute name="url" use="required" type="xs:string"/>
   </xs:complexType>
 
 </xs:schema>

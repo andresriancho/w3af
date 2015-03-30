@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.ui.gui.fuzzygen import FuzzyGenerator, FuzzyError
+from w3af.core.ui.gui.tools.helpers.fuzzygen import FuzzyGenerator, FuzzyError
 
 
 class TestAll(unittest.TestCase):

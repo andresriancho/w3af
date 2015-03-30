@@ -19,20 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import gtk
-import gobject
 import functools
 import os
 
+import gtk
+import gobject
 from w3af import ROOT_PATH
-from w3af.core.ui.gui import helpers, entries, fuzzygen
+from w3af.core.ui.gui import helpers, entries
 from w3af.core.ui.gui.reqResViewer import ReqResViewer, RequestPart
 from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
-
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               ScanMustStopException)
+from w3af.core.ui.gui.tools.helpers import fuzzygen
 
 
 FUZZY_REQUEST_EXAMPLE = """\
@@ -100,17 +100,17 @@ class PreviewWindow(entries.RememberingWindow):
         # the ok button
         centerbox = gtk.HBox()
         quant = fg.calculate_quantity()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change, quant)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
-        self._pageChange(0)
+        self.page_change(0)
 
         self.vbox.show()
         self.show()
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         while len(self.pages) <= page:
             it = self.generator.next()
             self.pages.append(it)
@@ -229,7 +229,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # result control
         centerbox = gtk.HBox()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
 
@@ -440,10 +440,10 @@ class FuzzyRequests(entries.RememberingWindow):
         if len(self.responses) >= 3:
             self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
-        self._pageChange(0)
+        self.page_change(0)
         return True
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         """
         Change the page, and show the information that was stored in
         self.responses

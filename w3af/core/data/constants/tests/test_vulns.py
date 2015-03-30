@@ -33,29 +33,6 @@ from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 class TestVulnsConstants(unittest.TestCase):
     
     LOCATION = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'vulns.py')
-    
-    def test_no_duplicated_ids(self):
-        # Just skip the entire license header
-        vulns_file = file(self.LOCATION) 
-        for _ in xrange(21):
-            vulns_file.readline()
-            
-        vuln_id_list = re.findall('(\d+):', vulns_file.read())
-        filtered = set()
-        dups = set()
-        
-        for vuln_id in vuln_id_list:
-            if vuln_id in filtered:
-                dups.add(vuln_id)
-            
-            filtered.add(vuln_id)
-
-        self.assertEquals(set([]), dups)
-    
-    def test_no_empty(self):
-        items = VULNS.items()
-        empty_values = set([(key, val) for (key, val) in items if not val])
-        self.assertEqual(set([]), empty_values)
 
     def get_all_vulnerability_names(self):
         # Just skip the entire license header
@@ -63,29 +40,28 @@ class TestVulnsConstants(unittest.TestCase):
         for _ in xrange(21):
             vulns_file.readline()
 
-        return re.findall('\d+: ?[\'"](.*?)[\'"]', vulns_file.read())
+        return re.findall('[\'"](.*?)[\'"] ?:', vulns_file.read())
 
     def test_vulnerability_names_unique(self):
         dups = []
         vuln_names = self.get_all_vulnerability_names()
-        dup_ignore = {'Vacant',
-                      'Unhandled error in web application'}
 
         for name in vuln_names:
-            if vuln_names.count(name) > 1 and name not in dups\
-            and name not in dup_ignore:
+            if vuln_names.count(name) > 1 and name not in dups:
                 dups.append(name)
 
         self.assertEqual(dups, [])
 
-    def test_all_vulnerability_names_used(self):
-        vuln_names = self.get_all_vulnerability_names()
+    def get_all_plugins_source(self):
         plugins_path = os.path.join(ROOT_PATH, 'plugins')
         vuln_template_path = os.path.join(ROOT_PATH, 'core', 'data', 'kb',
                                           'vuln_templates')
 
         all_plugin_sources = ''
         for dir_name, subdir_list, file_list in os.walk(plugins_path):
+
+            if dir_name in ('test', 'tests'):
+                continue
 
             for fname in file_list:
                 if not fname.endswith('.py'):
@@ -129,8 +105,12 @@ class TestVulnsConstants(unittest.TestCase):
                 full_path = os.path.join(vuln_template_path, dir_name, fname)
                 all_plugin_sources += file(full_path).read()
 
+        return all_plugin_sources
+
+    def test_all_vulnerability_names_from_db_are_used(self):
+        vuln_names = VULNS.keys()
+        all_plugin_sources = self.get_all_plugins_source()
         missing_ignore = {'TestCase',
-                          'Vacant',
                           'Blind SQL injection vulnerability'}
 
         for vuln_name in vuln_names:
@@ -139,6 +119,25 @@ class TestVulnsConstants(unittest.TestCase):
 
             msg = '"%s" not in plugin sources' % vuln_name
             self.assertIn(vuln_name, all_plugin_sources, msg)
+
+    def test_all_vulnerability_names_from_source_in_db(self):
+        vuln_names = VULNS.keys()
+        vuln_names_re = ' (Info|Vuln)\\(["\'](.*?)["\'] ?,.*?\\)'
+        all_plugin_sources = self.get_all_plugins_source()
+        vuln_names_in_source = re.findall(vuln_names_re, all_plugin_sources,
+                                          re.DOTALL)
+
+        extracted = []
+        not_in_db = []
+
+        for _type, vuln_title in vuln_names_in_source:
+            extracted.append(vuln_title)
+
+            if vuln_title not in vuln_names and vuln_title not in not_in_db:
+                not_in_db.append(vuln_title)
+
+        self.assertEqual(not_in_db, [])
+        self.assertGreater(len(extracted), 120, extracted)
 
     @attr('ci_ignore')
     def test_vuln_updated(self):

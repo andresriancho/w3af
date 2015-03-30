@@ -243,6 +243,45 @@ class InfoSet(object):
         assert self.ITAG is not None, 'Need to specify unique id tag'
         return info[self.ITAG] == self.get_attribute(self.ITAG)
 
+    def has_db_details(self):
+        return self.first_info.has_db_details()
+
+    def get_vulndb_id(self):
+        return self.first_info.get_vulndb_id()
+
+    def get_long_description(self):
+        return self.first_info.get_long_description()
+
+    def get_fix_guidance(self):
+        return self.first_info.get_fix_guidance()
+
+    def get_fix_effort(self):
+        return self.first_info.get_fix_effort()
+
+    def get_tags(self):
+        return self.first_info.get_tags()
+
+    def get_wasc_ids(self):
+        return self.first_info.get_wasc_ids()
+
+    def get_wasc_urls(self):
+        return self.first_info.get_wasc_urls()
+
+    def get_cwe_urls(self):
+        return self.first_info.get_cwe_urls()
+
+    def get_cwe_ids(self):
+        return self.first_info.get_cwe_ids()
+
+    def get_references(self):
+        return self.first_info.get_references()
+
+    def get_owasp_top_10_references(self):
+        return self.first_info.get_owasp_top_10_references()
+
+    def get_vuln_info_from_db(self):
+        return self.first_info.get_vuln_info_from_db()
+
     def __eq__(self, other):
         return self.get_uniq_id() == other.get_uniq_id()
 

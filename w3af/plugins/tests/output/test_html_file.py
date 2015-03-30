@@ -127,7 +127,7 @@ class TestHTMLRendering(PluginTest):
                'target_domain': 'w3af.com',
                'enabled_plugins': {'audit': ['xss'],
                                    'crawl': ['web_spider']},
-               'findings': [MockVuln('XSS-1', None, 'High', 1, 'xss'),
+               'findings': [MockVuln('SQL injection', None, 'High', 1, 'sqli'),
                             MockVuln('XSS-2', None, 'Medium', [], 'xss'),
                             MockVuln('XSS-3', None, 'Low', [], 'xss'),
                             MockVuln('XSS-4', None, 'Information', 4, 'xss')],

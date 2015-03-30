@@ -31,20 +31,22 @@ class Vuln(Info):
     This class represents a web vulnerability.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, name, desc, severity, response_ids, plugin_name):
+    def __init__(self, name, desc, severity, response_ids, plugin_name,
+                 vulndb_id=None):
         """
         :param name: The vulnerability name, will be checked against the values
                      in core.data.constants.vulns.
-        
         :param desc: The vulnerability description
-        
         :param severity: The severity for this object
-        
         :param response_ids: A list of response ids associated with this vuln
-        
         :param plugin_name: The name of the plugin which identified the vuln
+        :param vulndb_id: The vulnerability ID in the vulndb that is associated
+                          with this Info instance.
+
+        :see: https://github.com/vulndb/data
         """
-        Info.__init__(self, name, desc, response_ids, plugin_name)
+        Info.__init__(self, name, desc, response_ids, plugin_name,
+                      vulndb_id=vulndb_id)
 
         self._severity = None
         self.set_severity(severity)

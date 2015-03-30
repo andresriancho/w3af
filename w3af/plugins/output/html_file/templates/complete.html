@@ -79,7 +79,16 @@
             </div>
             <div class="row">
                 <div class="col-md-1"></div>
-                <div class="col-md-10"><p>{{ finding.get_desc() }}</p></div>
+                <div class="col-md-10">
+                    <h4>Summary</h4>
+                    <p>{{ finding.get_desc() }}</p>
+
+                    {% if finding.has_db_details() == True %}
+                        <br />
+                        <h4>Description</h4>
+                        {{ finding.get_long_description()|render_markdown|safe }}
+                    {% endif %}
+                </div>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
@@ -97,22 +106,52 @@
                 </div>
                 <div class="col-md-1"></div>
             </div>
-            {% for id in finding.get_id() %}
-                <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8">
-                        <pre>{{ id|request }}</pre>
-                    </div>
-                    <div class="col-md-2"></div>
+
+            {% if finding.has_db_details() %}
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10">
+                    <h4>Fix</h4>
+                    {{ finding.get_fix_guidance()|render_markdown|safe }}
+
+                    {% if finding.get_references() %}
+                        <h4>References</h4>
+                        <ul>
+                        {% for ref in finding.get_references() %}
+                            <li> <a href="{{ ref.url }}">{{ ref.title }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
+                <div class="col-md-1"></div>
+            </div>
+            {% endif %}
+
+            {% if finding.get_id() %}
+
                 <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8">
-                        <pre>{{ id|response }}</pre>
-                    </div>
-                    <div class="col-md-2"></div>
+                    <div class="col-md-1"></div>
+                    <div class="col-md-10"><h4>HTTP proof</h4></div>
+                    <div class="col-md-1"></div>
                 </div>
-            {% endfor %}
+
+                {% for id in finding.get_id() %}
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-8">
+                            <pre>{{ id|request }}</pre>
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-8">
+                            <pre>{{ id|response }}</pre>
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
     {% endfor %}
 

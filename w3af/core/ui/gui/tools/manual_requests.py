@@ -25,7 +25,7 @@ import threading
 
 from w3af.core.ui.gui import helpers, entries
 from w3af.core.ui.gui.reqResViewer import ReqResViewer
-from w3af.core.ui.gui.tools.helpers import ThreadedURLImpact
+from w3af.core.ui.gui.tools.helpers.threaded_impact import ThreadedURLImpact
 
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException,

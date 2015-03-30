@@ -24,6 +24,7 @@ import unittest
 import cPickle
 
 from nose.plugins.attrib import attr
+from vulndb.db_vuln import Reference, DBVuln
 
 from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.url import URL
@@ -177,3 +178,73 @@ class TestInfo(unittest.TestCase):
         i2 = copy.deepcopy(i1)
 
         self.assertEqual(i1.get_uniq_id(), i2.get_uniq_id())
+
+    def test_vulndb_id_not_set(self):
+        i = Info('TestCase', MockInfo.LONG_DESC, 1, 'plugin_name')
+        self.assertFalse(i.has_db_details())
+
+    def test_vulndb_id_set(self):
+        # The vulndb_id overrides the 'Blind SQL injection vulnerability' name
+        i = Info('Blind SQL injection vulnerability', MockInfo.LONG_DESC, 1,
+                 'plugin_name', vulndb_id=17)
+
+        # lazy calculation
+        self.assertIsNone(i._vulndb)
+
+        url = 'https://www.owasp.org/index.php/PHP_File_Inclusion'
+        title = 'OWASP'
+        expected_references = [Reference(url, title)]
+
+        self.assertTrue(i.has_db_details())
+        self.assertEqual(i.get_vulndb_id(), 17)
+        self.assertIsInstance(i.get_long_description(), basestring)
+        self.assertIsInstance(i.get_fix_guidance(), basestring)
+        self.assertEqual(i.get_fix_effort(), 50)
+        self.assertEqual(i.get_tags(), ['file', 'inclusion', 'error',
+                                        'injection', 'regexp'])
+        self.assertEqual(i.get_wasc_ids(), [])
+        self.assertEqual(list(i.get_wasc_urls()), [])
+        self.assertEqual(list(i.get_cwe_urls()), [])
+        self.assertEqual(i.get_cwe_ids(), [])
+        self.assertEqual(i.get_references(), expected_references)
+        self.assertEqual(list(i.get_owasp_top_10_references()), [])
+        self.assertIsInstance(i.get_vuln_info_from_db(), DBVuln)
+
+        # lazy calculation success
+        self.assertIsNotNone(i._vulndb)
+
+    def test_vulndb_id_get_from_name(self):
+        # Since there is no vulndb_id set, the name wins:
+        i = Info('Blind SQL injection vulnerability', MockInfo.LONG_DESC, 1,
+                 'plugin_name')
+
+        # lazy calculation
+        self.assertIsNone(i._vulndb)
+
+        expected_references = ({"url": "http://capec.mitre.org/data/definitions/7.html",
+                                "title": "MITRE - CAPEC"},
+                               {"url": "http://projects.webappsec.org/w/page/13246963/SQL%20Injection",
+                                "title": "WASC"},
+                               {"url": "http://www.w3schools.com/sql/sql_injection.asp",
+                                "title": "W3 Schools"},
+                               {"url": "https://www.owasp.org/index.php/Blind_SQL_Injection",
+                                "title": "OWASP"})
+        expected_references = [Reference(d['url'], d['title']) for d in expected_references]
+
+        self.assertTrue(i.has_db_details())
+        self.assertEqual(i.get_vulndb_id(), 46)
+        self.assertIsInstance(i.get_long_description(), basestring)
+        self.assertIsInstance(i.get_fix_guidance(), basestring)
+        self.assertEqual(i.get_fix_effort(), 50)
+        self.assertEqual(i.get_tags(), [u'sql', u'blind', u'differential',
+                                        u'injection', u'database'])
+        self.assertEqual(i.get_wasc_ids(), [])
+        self.assertEqual(list(i.get_wasc_urls()), [])
+        self.assertEqual(list(i.get_cwe_urls()), [])
+        self.assertEqual(i.get_cwe_ids(), [])
+        self.assertEqual(i.get_references(), expected_references)
+        self.assertEqual(list(i.get_owasp_top_10_references()), [])
+        self.assertIsInstance(i.get_vuln_info_from_db(), DBVuln)
+
+        # lazy calculation success
+        self.assertIsNotNone(i._vulndb)

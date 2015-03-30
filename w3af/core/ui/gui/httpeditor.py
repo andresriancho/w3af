@@ -21,15 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import re
+
 import gtk
 import pango
-
 import gtksourceview2 as gtksourceview
-
 from w3af import ROOT_PATH
 from w3af.core.data.constants import severity
 from w3af.core.ui.gui.common.searchable import Searchable
-from w3af.core.ui.gui.encdec import EncodeDecode
+from w3af.core.ui.gui.tools.encdec import EncodeDecode
 
 
 SEVERITY_TO_COLOR = {
