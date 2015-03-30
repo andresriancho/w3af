@@ -127,6 +127,7 @@
         <xs:element name="long-description" minOccurs="0" maxOccurs="1" type="xs:string"/>
         <xs:element name="fix-guidance" minOccurs="0" maxOccurs="1" type="xs:string"/>
         <xs:element name="fix-effort" minOccurs="0" maxOccurs="1" type="xs:integer"/>
+        <xs:element name="references" minOccurs="0" maxOccurs="1" type="references"/>
         <xs:element name="http-transactions" minOccurs="0" maxOccurs="1" type="http-transactions"/>
       </xs:sequence>
       <xs:attribute name="id" use="optional"/>
@@ -219,10 +220,21 @@
       <xs:element name="header" minOccurs="1" maxOccurs="unbounded" type="header"/>
     </xs:sequence>
   </xs:complexType>
-    
+
   <xs:complexType name="header">
     <xs:attribute name="field" use="required" type="xs:string"/>
     <xs:attribute name="content" use="required" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="references">
+    <xs:sequence>
+      <xs:element name="reference" minOccurs="1" maxOccurs="unbounded" type="reference"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="reference">
+    <xs:attribute name="title" use="required" type="xs:string"/>
+    <xs:attribute name="url" use="required" type="xs:string"/>
   </xs:complexType>
 
 </xs:schema>

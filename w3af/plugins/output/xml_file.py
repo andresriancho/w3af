@@ -330,6 +330,17 @@ class xml_file(OutputPlugin):
                 fix_node.appendChild(fix)
                 message_node.appendChild(fix_node)
 
+                if i.get_references():
+                    references_node = self._xmldoc.createElement('references')
+
+                    for ref in i.get_references():
+                        ref_node = self._xmldoc.createElement('reference')
+                        ref_node.setAttribute('title', xml_str(ref.title))
+                        ref_node.setAttribute('url', xml_str(ref.url))
+                        references_node.appendChild(ref_node)
+
+                    message_node.appendChild(references_node)
+
             if i.get_id():
                 message_node.setAttribute('id', str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
