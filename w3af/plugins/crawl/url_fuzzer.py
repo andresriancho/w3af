@@ -60,6 +60,7 @@ class url_fuzzer(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
+        self._headers = None
         self._first_time = True
         self._fuzz_images = False
         self._seen = ScalableBloomFilter()
@@ -87,11 +88,11 @@ class url_fuzzer(CrawlPlugin):
 
         self._verify_head_enabled(url)
         if self._head_enabled():
-            response = self._uri_opener.HEAD(
-                url, cache=True, headers=self._headers)
+            response = self._uri_opener.HEAD(url, cache=True,
+                                             headers=self._headers)
         else:
-            response = self._uri_opener.GET(
-                url, cache=True, headers=self._headers)
+            response = self._uri_opener.GET(url, cache=True,
+                                            headers=self._headers)
 
         if response.is_text_or_html() or self._fuzz_images:
             mutants_chain = chain(self._mutate_by_appending(url),

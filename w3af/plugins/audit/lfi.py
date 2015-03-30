@@ -61,8 +61,7 @@ class lfi(AuditPlugin):
         :param freq: A FuzzableRequest
         """
         # Which payloads do I want to send to the remote end?
-        local_files = []
-        local_files.append(freq.get_url().get_file_name())
+        local_files = [freq.get_url().get_file_name()]
         if not self._open_basedir:
             local_files.extend(self._get_local_file_list(freq.get_url()))
 
