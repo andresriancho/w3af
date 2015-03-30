@@ -154,7 +154,7 @@ class Compare(entries.RememberingWindow):
 
         # the page control
         box = gtk.HBox()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change)
         box.pack_start(self.pagesControl, False, False, padding=5)
         self.delbut = gtk.Button("Delete")
         self.delbut.connect("clicked", self._delete)
@@ -262,7 +262,7 @@ class Compare(entries.RememberingWindow):
         title, realtext = self._getElementText()
         self.comp.set_left_pane(title, realtext)
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         """Change the selected page."""
         self.showingPage = page
         title, realtext = self._getElementText()

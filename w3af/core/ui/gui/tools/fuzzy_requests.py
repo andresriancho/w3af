@@ -100,17 +100,17 @@ class PreviewWindow(entries.RememberingWindow):
         # the ok button
         centerbox = gtk.HBox()
         quant = fg.calculate_quantity()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change, quant)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
-        self._pageChange(0)
+        self.page_change(0)
 
         self.vbox.show()
         self.show()
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         while len(self.pages) <= page:
             it = self.generator.next()
             self.pages.append(it)
@@ -229,7 +229,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # result control
         centerbox = gtk.HBox()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
 
@@ -440,10 +440,10 @@ class FuzzyRequests(entries.RememberingWindow):
         if len(self.responses) >= 3:
             self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
-        self._pageChange(0)
+        self.page_change(0)
         return True
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         """
         Change the page, and show the information that was stored in
         self.responses

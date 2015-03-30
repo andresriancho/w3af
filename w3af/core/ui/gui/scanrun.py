@@ -117,7 +117,7 @@ class FullKBTree(KBTree):
             # There is ONLY ONE id related to the object
             # This is 1)
             self.kbbrowser.pagesControl.deactivate()
-            self.kbbrowser._pageChange(0)
+            self.kbbrowser.page_change(0)
             self.kbbrowser.pagesControl.hide()
             self.kbbrowser.title0.hide()
 
@@ -160,7 +160,7 @@ class FullKBTree(KBTree):
             self.kbbrowser.req_res_ids = instance.get_id()
             num_ids = len(instance.get_id())
             self.kbbrowser.pagesControl.activate(num_ids)
-            self.kbbrowser._pageChange(0)
+            self.kbbrowser.page_change(0)
 
         self.kbbrowser.rrV.set_sensitive(True)
 
@@ -190,7 +190,7 @@ class KBBrowser(entries.RememberingHPaned):
         # Save the request and response ids to be used in the page control
         self.req_res_ids = []
         # This is to search the DB and print the different request and responses
-        # as they are requested from the page control, "_pageChange" method.
+        # as they are requested from the page control, "page_change" method.
         self._historyItem = HistoryItem()
 
         # the filter to the tree
@@ -200,7 +200,7 @@ class KBBrowser(entries.RememberingHPaned):
         def make_but(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
-            but.connect("clicked", self.type_filter, signal)
+            but.connect('clicked', self.type_filter, signal)
             self.filters[signal] = initial
             but.show()
             filterbox.pack_start(but, expand=False, fill=False, padding=2)
@@ -293,28 +293,28 @@ class KBBrowser(entries.RememberingHPaned):
 
         # Create page changer to handle info/vuln objects that have MORE THAN
         # ONE related request/response
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange, 0)
+        self.pagesControl = entries.PagesControl(w3af, self.page_change, 0)
         self.pagesControl.deactivate()
-        self._pageChange(0)
-        centerbox = gtk.HBox()
-        centerbox.pack_start(self.pagesControl, True, False)
+        self.page_change(0)
+        center_box = gtk.HBox()
+        center_box.pack_start(self.pagesControl, True, False)
 
         # Title, request/response and paginator all go together in a vbox
         http_data_vbox = gtk.VBox()
         http_data_vbox.pack_start(self.title0, False, True)
         http_data_vbox.pack_start(self.rrV, True, True)
-        http_data_vbox.pack_start(centerbox, False, False)
+        http_data_vbox.pack_start(center_box, False, False)
 
         # and show
         http_data_vbox.show()
         self.pagesControl.show()
-        centerbox.show()
+        center_box.show()
 
         # The summary and http data go in a vbox too
         summary_data_vbox = entries.RememberingVPaned(w3af,
                                                       'pane-kbbexplainview',
                                                       100)
-        summary_data_vbox.pack1(summary_tv)
+        summary_data_vbox.pack1(summary_scrollwin)
         summary_data_vbox.pack2(http_data_vbox)
         summary_data_vbox.show()
 
@@ -325,7 +325,7 @@ class KBBrowser(entries.RememberingHPaned):
         self.filters[ptype] = button.get_active()
         self.kbtree.set_filter(self.filters)
 
-    def _pageChange(self, page):
+    def page_change(self, page):
         """
         Handle the page change in the page control.
         """
@@ -358,16 +358,16 @@ class URLsGraph(gtk.VBox):
 
         self.toolbox = gtk.HBox()
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_IN, 'Zoom In')
-        b.connect("clicked", self._zoom, "in")
+        b.connect('clicked', self._zoom, "in")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_OUT, 'Zoom Out')
-        b.connect("clicked", self._zoom, "out")
+        b.connect('clicked', self._zoom, "out")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_FIT, 'Zoom Fit')
-        b.connect("clicked", self._zoom, "fit")
+        b.connect('clicked', self._zoom, "fit")
         self.toolbox.pack_start(b, False, False)
         b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, 'Zoom 100%')
-        b.connect("clicked", self._zoom, "100")
+        b.connect('clicked', self._zoom, "100")
         self.toolbox.pack_start(b, False, False)
         self.pack_start(self.toolbox, False, False)
         self.toolbox.set_sensitive(False)
