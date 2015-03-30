@@ -58,6 +58,9 @@ class xml_file(OutputPlugin):
 
     :author: Kevin Denver ( muffysw@hotmail.com )
     """
+
+    XML_OUTPUT_VERSION = '2.1'
+
     def __init__(self):
         OutputPlugin.__init__(self)
 
@@ -74,19 +77,19 @@ class xml_file(OutputPlugin):
 
         # xml root
         self._xmldoc = xml.dom.minidom.Document()
-        self._topElement = self._xmldoc.createElement("w3afrun")
-        self._topElement.setAttribute("start", self._timestamp)
-        self._topElement.setAttribute("startstr", self._long_timestamp)
-        self._topElement.setAttribute("xmloutputversion", "2.0")
+        self._topElement = self._xmldoc.createElement('w3af-run')
+        self._topElement.setAttribute('start', self._timestamp)
+        self._topElement.setAttribute('start-long', self._long_timestamp)
+        self._topElement.setAttribute('version', self.XML_OUTPUT_VERSION)
 
         # Add in the version details
-        version_element = self._xmldoc.createElement("w3af-version")
+        version_element = self._xmldoc.createElement('w3af-version')
         version = xml_str(get_w3af_version.get_w3af_version())
         version_data = self._xmldoc.createTextNode(version)
         version_element.appendChild(version_data)
         self._topElement.appendChild(version_element)
 
-        self._scaninfo = self._xmldoc.createElement("scaninfo")
+        self._scaninfo = self._xmldoc.createElement('scan-info')
 
         # HistoryItem to get requests/responses
         self._history = HistoryItem()
@@ -115,8 +118,8 @@ class xml_file(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
         """
-        message_node = self._xmldoc.createElement("error")
-        message_node.setAttribute("caller", xml_str(self.get_caller()))
+        message_node = self._xmldoc.createElement('error')
+        message_node.setAttribute('caller', xml_str(self.get_caller()))
         description = self._xmldoc.createTextNode(xml_str(message))
         message_node.appendChild(description)
 
@@ -307,6 +310,26 @@ class xml_file(OutputPlugin):
             description_node.appendChild(description)
             message_node.appendChild(description_node)
 
+            # If there is information from the vulndb, then we should write it
+            if i.has_db_details():
+                desc_str = xml_str(i.get_long_description())
+                description_node = self._xmldoc.createElement('long-description')
+                description = self._xmldoc.createTextNode(desc_str)
+                description_node.appendChild(description)
+                message_node.appendChild(description_node)
+
+                fix_str = xml_str(i.get_fix_guidance())
+                fix_node = self._xmldoc.createElement('fix-guidance')
+                fix = self._xmldoc.createTextNode(fix_str)
+                fix_node.appendChild(fix)
+                message_node.appendChild(fix_node)
+
+                fix_effort_str = xml_str(i.get_fix_effort())
+                fix_node = self._xmldoc.createElement('fix-effort')
+                fix = self._xmldoc.createTextNode(fix_effort_str)
+                fix_node.appendChild(fix)
+                message_node.appendChild(fix_node)
+
             if i.get_id():
                 message_node.setAttribute('id', str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
@@ -319,19 +342,20 @@ class xml_file(OutputPlugin):
                     except DBException:
                         msg = 'Failed to retrieve request with id %s from DB.'
                         print(msg % request_id)
-                    else:
-                        # Wrap the entire http transaction in a single block
-                        action_set = self._xmldoc.createElement('http-transaction')
-                        action_set.setAttribute('id', str(request_id))
-                        transaction_set.appendChild(action_set)
+                        continue
 
-                        request_node = self._xmldoc.createElement('httprequest')
-                        self.report_http_action(request_node, details.request)
-                        action_set.appendChild(request_node)
+                    # Wrap the entire http transaction in a single block
+                    action_set = self._xmldoc.createElement('http-transaction')
+                    action_set.setAttribute('id', str(request_id))
+                    transaction_set.appendChild(action_set)
 
-                        response_node = self._xmldoc.createElement('httpresponse')
-                        self.report_http_action(response_node, details.response)
-                        action_set.appendChild(response_node)
+                    request_node = self._xmldoc.createElement('http-request')
+                    self.report_http_action(request_node, details.request)
+                    action_set.appendChild(request_node)
+
+                    response_node = self._xmldoc.createElement('http-response')
+                    self.report_http_action(response_node, details.response)
+                    action_set.appendChild(response_node)
 
             self._topElement.appendChild(message_node)
 
