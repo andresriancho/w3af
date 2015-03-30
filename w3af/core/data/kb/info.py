@@ -27,7 +27,7 @@ from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.constants.vulns import is_valid_name
+from w3af.core.data.constants.vulns import is_valid_name, VULNS
 from w3af.core.controllers.tests.running_tests import is_running_tests
 from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 
@@ -46,7 +46,9 @@ class Info(dict):
         :param response_ids: A list of response ids associated with this vuln
         :param plugin_name: The name of the plugin which identified the vuln
         :param vulndb_id: The vulnerability ID in the vulndb that is associated
-                          with this Info instance.
+                          with this Info instance. If set it will override the
+                          vulndb_id which we get from vulns.py using the
+                          mandatory name attribute.
 
         :see: https://github.com/vulndb/data
         """
@@ -65,11 +67,11 @@ class Info(dict):
         self._vulndb = None
 
         # Set the values provided by the user
+        self.set_vulndb_id(vulndb_id)
         self.set_name(name)
         self.set_desc(desc)
         self.set_id(response_ids)
         self.set_plugin_name(plugin_name)
-        self.set_vulndb_id(vulndb_id)
     
     @classmethod
     def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
@@ -130,6 +132,15 @@ class Info(dict):
     def set_name(self, name):
         self._name = name
 
+        if self.get_vulndb_id() is None:
+            # This means that the plugin developer did NOT set the vuln_id via
+            # kwargs, so we're going to try to get that id via VULNS
+            self.set_vulndb_id(VULNS.get(name, None))
+
+        #
+        #   This section is only here for helping me debug / unittest the
+        #   names used in the framework. See test_vulns.py for more info.
+        #
         if not is_running_tests():
             return
 
