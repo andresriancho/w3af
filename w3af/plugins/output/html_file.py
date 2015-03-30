@@ -24,7 +24,7 @@ import os
 import time
 import datetime
 import functools
-import collections
+import markdown
 
 from jinja2 import StrictUndefined, Environment, FileSystemLoader
 
@@ -202,6 +202,7 @@ class html_file(OutputPlugin):
                                  trim_blocks=True,
                                  autoescape=True,
                                  lstrip_blocks=True)
+        jinja2_env.filters['render_markdown'] = render_markdown
         jinja2_env.filters['request'] = request_dump
         jinja2_env.filters['response'] = response_dump
         jinja2_env.filters['severity_icon'] = severity_icon
@@ -248,6 +249,16 @@ class html_file(OutputPlugin):
         If you want to write every HTTP request/response to a text file, you
         should use the text_file plugin.
         """
+
+
+def render_markdown(markdown_text):
+    """
+    Render the vulndb/data contents (which are in markdown) to HTML
+
+    :param markdown_text: The markdown from vulndb/data
+    :return: HTML
+    """
+    return markdown.markdown(markdown_text)
 
 
 def request_dump(_id):

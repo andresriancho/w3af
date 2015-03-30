@@ -79,7 +79,16 @@
             </div>
             <div class="row">
                 <div class="col-md-1"></div>
-                <div class="col-md-10"><p>{{ finding.get_desc() }}</p></div>
+                <div class="col-md-10">
+                    <h4>Summary</h4>
+                    <p>{{ finding.get_desc() }}</p>
+
+                    {% if finding.has_db_details() == True %}
+                        <br />
+                        <h4>Description</h4>
+                        {{ finding.get_long_description()|render_markdown|safe }}
+                    {% endif %}
+                </div>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
@@ -97,6 +106,18 @@
                 </div>
                 <div class="col-md-1"></div>
             </div>
+
+            {% if finding.has_db_details() == True %}
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10">
+                    <h4>Fix</h4>
+                    {{ finding.get_fix_guidance()|render_markdown|safe }}
+                </div>
+                <div class="col-md-1"></div>
+            </div>
+            {% endif %}
+
             {% for id in finding.get_id() %}
                 <div class="row">
                     <div class="col-md-2"></div>
