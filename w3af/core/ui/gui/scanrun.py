@@ -86,6 +86,7 @@ class FullKBTree(KBTree):
         
         summary = instance.get_desc()
         self.kbbrowser.explanation.set_text(summary)
+        self.kbbrowser.vuln_notebook.set_current_page(0)
 
         if instance.has_db_details():
             desc = markdown(instance.get_long_description())
@@ -231,6 +232,7 @@ class KBBrowser(entries.RememberingHPaned):
         self.vuln_notebook.append_page(summary, gtk.Label('Summary'))
         self.vuln_notebook.append_page(description, gtk.Label('Description'))
         self.vuln_notebook.append_page(fix, gtk.Label('Fix'))
+        self.vuln_notebook.set_current_page(0)
         self.vuln_notebook.show()
 
         # pack & show
@@ -258,7 +260,7 @@ class KBBrowser(entries.RememberingHPaned):
         fix_tv.set_editable(False)
         fix_tv.set_cursor_visible(False)
         fix_tv.set_wrap_mode(gtk.WRAP_WORD)
-        self.description = fix_tv.get_buffer()
+        self.fix = fix_tv.get_buffer()
         fix_tv.show()
 
         fix_scrollwin = gtk.ScrolledWindow()
@@ -297,7 +299,7 @@ class KBBrowser(entries.RememberingHPaned):
         centerbox = gtk.HBox()
         centerbox.pack_start(self.pagesControl, True, False)
 
-        # Add everything to a vbox
+        # Title, request/response and paginator all go together in a vbox
         http_data_vbox = gtk.VBox()
         http_data_vbox.pack_start(self.title0, False, True)
         http_data_vbox.pack_start(self.rrV, True, True)
@@ -308,9 +310,9 @@ class KBBrowser(entries.RememberingHPaned):
         self.pagesControl.show()
         centerbox.show()
 
-        # And now put everything inside the vpaned
+        # The summary and http data go in a vbox too
         summary_data_vbox = entries.RememberingVPaned(w3af,
-                                                      "pane-kbbexplainview",
+                                                      'pane-kbbexplainview',
                                                       100)
         summary_data_vbox.pack1(summary_tv)
         summary_data_vbox.pack2(http_data_vbox)
@@ -422,9 +424,8 @@ class URLsGraph(gtk.VBox):
         gobject.timeout_add(500, self._draw_start)
 
     def limit_node(self, parent, node, name):
-        # I have to escape the quotes, because I don't want a "dot code injection"
-        # This was sourceforge bug #2675512
-        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        # I have to escape the quotes, because I don't want a "dot code
+        # injection". This was sourceforge bug #2675512
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
 
@@ -436,9 +437,8 @@ class URLsGraph(gtk.VBox):
         self._somethingnew = True
 
     def new_node(self, parent, node, name, isLeaf):
-        # I have to escape the quotes, because I don't want a "dot code injection"
-        # This was bug #2675512
-        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        # I have to escape the quotes, because I don't want a "dot code
+        # injection" This was bug #2675512
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
 
@@ -504,7 +504,6 @@ class URLsTree(gtk.TreeView):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
             # This "if path" fixed bug #2205544
-            # https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2205544&group_id=170274
             if path:
                 if self.row_expanded(path):
                     self.collapse_row(path)
