@@ -153,7 +153,7 @@ class dav(AuditPlugin):
                   ' "%s". A test file was uploaded to: "%s".'
             msg = msg % (domain_path, res.get_url())
             
-            v = Vuln('Insecure DAV configuration', msg, severity.HIGH,
+            v = Vuln('Publicly writable directory', msg, severity.HIGH,
                      [put_response.id, res.id], self.get_name())
 
             v.set_url(url)

@@ -98,7 +98,8 @@ class get_emails(GrepPlugin):
             desc = 'The mail account: "%s" was found at "%s".'
             desc = desc % (mail_address, url)
 
-            i = Info('Exposed email address', desc, response.id, self.get_name())
+            i = Info('Email address disclosure', desc, response.id,
+                     self.get_name())
             i.add_to_highlight(mail_address)
             i.set_url(url)
             i[EmailInfoSet.ITAG] = mail_address

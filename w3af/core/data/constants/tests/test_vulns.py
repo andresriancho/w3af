@@ -33,29 +33,6 @@ from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 class TestVulnsConstants(unittest.TestCase):
     
     LOCATION = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'vulns.py')
-    
-    def test_no_duplicated_ids(self):
-        # Just skip the entire license header
-        vulns_file = file(self.LOCATION) 
-        for _ in xrange(21):
-            vulns_file.readline()
-            
-        vuln_id_list = re.findall('(\d+):', vulns_file.read())
-        filtered = set()
-        dups = set()
-        
-        for vuln_id in vuln_id_list:
-            if vuln_id in filtered:
-                dups.add(vuln_id)
-            
-            filtered.add(vuln_id)
-
-        self.assertEquals(set([]), dups)
-    
-    def test_no_empty(self):
-        items = VULNS.items()
-        empty_values = set([(key, val) for (key, val) in items if not val])
-        self.assertEqual(set([]), empty_values)
 
     def get_all_vulnerability_names(self):
         # Just skip the entire license header
@@ -63,23 +40,20 @@ class TestVulnsConstants(unittest.TestCase):
         for _ in xrange(21):
             vulns_file.readline()
 
-        return re.findall('\d+: ?[\'"](.*?)[\'"]', vulns_file.read())
+        return re.findall('[\'"](.*?)[\'"] ?:', vulns_file.read())
 
     def test_vulnerability_names_unique(self):
         dups = []
         vuln_names = self.get_all_vulnerability_names()
-        dup_ignore = {'Vacant',
-                      'Unhandled error in web application'}
 
         for name in vuln_names:
-            if vuln_names.count(name) > 1 and name not in dups\
-            and name not in dup_ignore:
+            if vuln_names.count(name) > 1 and name not in dups:
                 dups.append(name)
 
         self.assertEqual(dups, [])
 
     def test_all_vulnerability_names_used(self):
-        vuln_names = self.get_all_vulnerability_names()
+        vuln_names = VULNS.keys()
         plugins_path = os.path.join(ROOT_PATH, 'plugins')
         vuln_template_path = os.path.join(ROOT_PATH, 'core', 'data', 'kb',
                                           'vuln_templates')
@@ -130,7 +104,6 @@ class TestVulnsConstants(unittest.TestCase):
                 all_plugin_sources += file(full_path).read()
 
         missing_ignore = {'TestCase',
-                          'Vacant',
                           'Blind SQL injection vulnerability'}
 
         for vuln_name in vuln_names:

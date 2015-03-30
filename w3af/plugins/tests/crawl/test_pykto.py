@@ -69,7 +69,8 @@ class TestPykto(PluginTest):
         
 
 class TestIsVulnerableHelper(unittest.TestCase):
-    # is_vuln = IsVulnerableHelper(match_1, match_1_or, match_1_and, fail_1, fail_2)
+    # is_vuln = IsVulnerableHelper(match_1, match_1_or, match_1_and,
+    #                              fail_1, fail_2)
     
     def test_checks_only_response_code_case01(self):
         is_vuln = IsVulnerableHelper(200, None, None, None, None)
