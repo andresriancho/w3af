@@ -37,5 +37,5 @@ class DefaultPlatform(Platform):
         return True
 
     @staticmethod
-    def os_package_is_installed():
+    def os_package_is_installed(package_name):
         return False
