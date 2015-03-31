@@ -3,7 +3,7 @@
 mkdir -p /home/ubuntu/virtualenvs/venv-2.7.3/lib/python2.7/dist-packages/
 cd /home/ubuntu/virtualenvs/venv-2.7.3/lib/python2.7/dist-packages/
 
-if [ ! -f glib ]
+if [ ! -L glib ]
 then
 
     echo "Creating links from venv to main python installation"
