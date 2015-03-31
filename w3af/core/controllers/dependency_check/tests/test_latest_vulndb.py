@@ -25,6 +25,13 @@ import pkg_resources
 from yolk.yolklib import get_highest_version, Distributions
 from yolk.pypi import CheeseShop
 
+MESSAGE = ('There is a new vulndb available at pypi! These are the steps'
+           ' to follow in order to upgrade:\n\n'
+           ' 1- Update requirements.py file\n'
+           ' 2- Update vulns.py to point to the new DB entries\n'
+           ' 3- Ask packagers (Kali) to update the dependency in their repos\n'
+           ' 4- Update the w3af-kali repository to require new package\n')
+
 
 class TestLatestVulnDB(unittest.TestCase):
     def test_latest_vulndb(self):
@@ -52,4 +59,4 @@ class TestLatestVulnDB(unittest.TestCase):
                         found = True
 
         if found:
-            self.assertTrue(False, 'There is a new vulndb available at pypi!')
+            self.assertTrue(False, MESSAGE)
