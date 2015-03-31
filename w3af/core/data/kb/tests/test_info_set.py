@@ -20,13 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import json
 
 from nose.plugins.attrib import attr
 from cPickle import loads
 
-from w3af.core.data.kb.tests.test_info import MockInfo
+from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
+from w3af.core.data.kb.tests.test_info import (MockInfo, BLIND_SQLI_REFS,
+                                               BLIND_SQLI_TOP10_REFS)
 
 
 @attr('smoke')
@@ -99,6 +102,39 @@ class TestInfoSet(unittest.TestCase):
         iset1_clone = loads(pickled_iset1)
 
         self.assertEqual(iset1.get_uniq_id(), iset1_clone.get_uniq_id())
+
+    def test_to_json(self):
+        i = Info('Blind SQL injection vulnerability', MockInfo.LONG_DESC, 1,
+                 'plugin_name')
+
+        i['test'] = 'foo'
+        i.add_to_highlight('abc', 'def')
+
+        iset = InfoSet([i])
+
+        jd = iset.to_json()
+        json_string = json.dumps(jd)
+        jd = json.loads(json_string)
+
+        self.assertEqual(jd['name'], iset.get_name())
+        self.assertEqual(jd['url'], str(iset.get_url()))
+        self.assertEqual(jd['var'], iset.get_token_name())
+        self.assertEqual(jd['response_ids'], iset.get_id())
+        self.assertEqual(jd['vulndb_id'], iset.get_vulndb_id())
+        self.assertEqual(jd['desc'], iset.get_desc(with_id=False))
+        self.assertEqual(jd['long_description'], iset.get_long_description())
+        self.assertEqual(jd['fix_guidance'], iset.get_fix_guidance())
+        self.assertEqual(jd['fix_effort'], iset.get_fix_effort())
+        self.assertEqual(jd['tags'], iset.get_tags())
+        self.assertEqual(jd['wasc_ids'], iset.get_wasc_ids())
+        self.assertEqual(jd['wasc_urls'], list(iset.get_wasc_urls()))
+        self.assertEqual(jd['cwe_urls'], list(iset.get_cwe_urls()))
+        self.assertEqual(jd['references'], BLIND_SQLI_REFS)
+        self.assertEqual(jd['owasp_top_10_references'], BLIND_SQLI_TOP10_REFS)
+        self.assertEqual(jd['plugin_name'], iset.get_plugin_name())
+        self.assertEqual(jd['severity'], iset.get_severity())
+        self.assertEqual(jd['attributes'], iset.first_info.copy())
+        self.assertEqual(jd['highlight'], list(iset.get_to_highlight()))
 
 
 class TemplatedInfoSet(InfoSet):
