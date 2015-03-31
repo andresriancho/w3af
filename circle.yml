@@ -55,16 +55,16 @@ dependencies:
     - sudo apt-get install -y python-dbus python-pygame python-opencv python-scipy python-numpy
     - sudo apt-get install -y stunnel4 libffi-dev tcpdump joe python-webkit
 
-    # Link the GUI stuff to the venv
-    - w3af/core/controllers/ci/install_scripts/install_c_extensions_venv.sh
-
     # Install the core/console dependencies
     - pip install --upgrade pip
     - w3af/core/controllers/ci/install_scripts/install_core_dependencies.sh
 
     # Install GUI dependencies
     - w3af/core/controllers/ci/install_scripts/install_gui_dependencies.sh
-    
+
+    # Link the GUI stuff to the venv
+    - w3af/core/controllers/ci/install_scripts/install_c_extensions_venv.sh
+
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
