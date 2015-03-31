@@ -129,18 +129,27 @@ class InfoSet(object):
         return template.render(context)
 
     def get_id(self):
+        """
+        :return: All the ids associated with the instances stored in self.infos
+        """
         all_ids = []
         for info in self.infos:
             all_ids.extend(info.get_id())
         return list(set(all_ids))
 
     def get_urls(self):
+        """
+        :return: All the URLs associated with the instances stored in self.infos
+        """
         all_urls = []
         for info in self.infos:
             all_urls.append(info.get_url())
         return list(set(all_urls))
 
     def get_uris(self):
+        """
+        :return: All the URIs associated with the instances stored in self.infos
+        """
         all_urls = []
         for info in self.infos:
             all_urls.append(info.get_uri())
