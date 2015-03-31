@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 mkdir -p /home/ubuntu/virtualenvs/venv-2.7.3/lib/python2.7/dist-packages/
 cd /home/ubuntu/virtualenvs/venv-2.7.3/lib/python2.7/dist-packages/
 
