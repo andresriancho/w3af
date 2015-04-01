@@ -58,7 +58,7 @@ VULNS = {
          'Server side include vulnerability': None,
          'Persistent server side include vulnerability': None,
          'Insecure SSL version': None,
-         'Invalid SSL certificate': None,
+         'Self-signed SSL certificate': None,
          'Invalid SSL connection': None,
          'Soon to expire SSL certificate': None,
          'SSL Certificate dump': None,

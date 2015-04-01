@@ -24,6 +24,7 @@ import re
 import unittest
 
 from nose.plugins.attrib import attr
+from vulndb import DBVuln
 
 from w3af import ROOT_PATH
 from w3af.core.data.constants.vulns import VULNS
@@ -138,6 +139,17 @@ class TestVulnsConstants(unittest.TestCase):
 
         self.assertEqual(not_in_db, [])
         self.assertGreater(len(extracted), 120, extracted)
+
+    def test_vulns_dict_points_to_existing_vulndb_data_id(self):
+        invalid = []
+        for vuln_name, _id in VULNS.iteritems():
+            if _id is None:
+                continue
+
+            if not DBVuln.is_valid_id(_id):
+                invalid.append((vuln_name, _id))
+
+        self.assertEqual(invalid, [])
 
     @attr('ci_ignore')
     def test_vuln_updated(self):
