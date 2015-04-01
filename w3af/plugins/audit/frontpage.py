@@ -32,14 +32,17 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.vuln import Vuln
 
+POST_BODY = ('method=put document:%s&service_name=&document=[document_name=%s'
+             ';meta_info=[]]&put_option=overwrite&comment=&'
+             'keep_checked_out=false\n')
+
 
 class frontpage(AuditPlugin):
     """
     Tries to upload a file using frontpage extensions (author.dll).
 
-    :author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self):
         AuditPlugin.__init__(self)
 
@@ -87,26 +90,24 @@ class frontpage(AuditPlugin):
         :param domain_path: http://localhost/f00/
         :param rand_file: <random>.html
         """
+        # TODO: The frontpage version should be obtained from the information
+        # saved in the kb by the infrastructure.frontpage_version plugin!
+        #
+        # The 4.0.2.4715 version should be dynamic!
+        version = '4.0.2.4715'
+
         file_path = domain_path.get_path() + rand_file
 
-        # TODO: The frontpage version should be obtained from the information saved in the kb
-        # by the infrastructure.frontpage_version plugin!
-        # The 4.0.2.4715 version should be dynamic!
-        # The information is already saved in the crawl plugin in the line:
-        # i['version'] = version_match.group(1)
-        content = "method=put document:4.0.2.4715&service_name=&document=[document_name="
-        content += file_path
-        content += ";meta_info=[]]&put_option=overwrite&comment=&keep_checked_out=false"
-        content += '\n'
-        # The content of the file I'm uploading is the file name reversed
-        content += rand_file[::-1]
+        data = POST_BODY % (version, file_path)
+        data += rand_file[::-1]
 
-        # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
-        # inside the infrastructure.frontpage_version plugin, and then used here
+        # TODO: The _vti_bin and _vti_aut directories should be PARSED from
+        # the _vti_inf file inside the infrastructure.frontpage_version plugin,
+        # and then used here
         target_url = domain_path.url_join('_vti_bin/_vti_aut/author.dll')
 
         try:
-            res = self._uri_opener.POST(target_url, data=content)
+            res = self._uri_opener.POST(target_url, data=data)
         except BaseFrameworkException, e:
             om.out.debug(
                 'Exception while uploading file using author.dll: ' + str(e))
@@ -124,7 +125,7 @@ class frontpage(AuditPlugin):
         Verify if the file was uploaded.
 
         :param domain_path: http://localhost/f00/
-        :param rand_file: The filename that was supposingly uploaded
+        :param rand_file: The filename that was (potentially) uploaded
         :param upload_id: The id of the POST request to author.dll
         """
         target_url = domain_path.url_join(rand_file)
@@ -157,8 +158,8 @@ class frontpage(AuditPlugin):
 
     def get_plugin_deps(self):
         """
-        :return: A list with the names of the plugins that should be run before the
-        current one.
+        :return: A list with the names of the plugins that should be run before
+                 the current one.
         """
         return ['infrastructure.frontpage_version']
 
