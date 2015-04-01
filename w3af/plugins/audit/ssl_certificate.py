@@ -132,7 +132,7 @@ class ssl_certificate(AuditPlugin):
                        ' The certificate is not trusted because: "%s".'
                 desc = desc % (domain, details)
                 
-                v = Vuln('Invalid SSL certificate', desc,
+                v = Vuln('Self-signed SSL certificate', desc,
                          severity.LOW, 1, self.get_name())
 
                 tag = 'invalid_ssl_cert'

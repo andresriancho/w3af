@@ -67,7 +67,7 @@ class TestSSLCertificate(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Invalid SSL certificate', vuln.get_name())
+        self.assertEquals('Self-signed SSL certificate', vuln.get_name())
         self.assertEquals(self.local_target_url % port, str(vuln.get_url()))
 
     @attr('internet')
