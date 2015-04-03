@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import copy
 
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.db.disk_dict import DiskDict
 
 DEFAULT_MAX_VARIANTS = 5
@@ -115,7 +116,8 @@ class VariantDB(object):
         '(POST)-' in the future.
         """
         res = '(GET)-'
-        res += reference.get_domain_path() + reference.get_file_name()
+        res += reference.get_domain_path().encode(DEFAULT_ENCODING)
+        res += reference.get_file_name()
 
         if reference.has_query_string():
             res += '?' + self._clean_data_container(reference.querystring)
