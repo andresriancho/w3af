@@ -116,7 +116,7 @@ class VariantDB(object):
         '(POST)-' in the future.
         """
         res = '(GET)-'
-        res += reference.get_domain_path().encode(DEFAULT_ENCODING)
+        res += reference.get_domain_path().url_string.encode(DEFAULT_ENCODING)
         res += reference.get_file_name()
 
         if reference.has_query_string():
