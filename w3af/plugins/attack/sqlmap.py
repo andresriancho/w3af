@@ -32,6 +32,8 @@ from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.core.data.kb.read_shell import ReadShell
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -89,6 +91,14 @@ class sqlmap(AttackPlugin):
         :return : True if vuln can be exploited.
         """
         mutant = vuln_obj.get_mutant()
+
+        if not isinstance(mutant, (QSMutant, PostDataMutant)):
+            msg = ('The SQL injection vulnerability at %s can not be exploited'
+                   ' by w3af\'s sqlmap wrapper because it can only handle'
+                   ' query string and url-encoded post data parameters.')
+            om.out.console(msg % (mutant.get_url(),))
+            return False
+
         orig_value = mutant.get_token().get_original_value()
 
         # When the original value of the parameter was empty, mostly when it
