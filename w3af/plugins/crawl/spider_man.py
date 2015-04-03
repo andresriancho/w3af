@@ -38,6 +38,7 @@ from w3af.core.data.dc.headers import Headers
 # to http://127.7.7.7/spider_man?terminate because in Opera we got
 # an error if we used the original one! Thanks Cohny!
 TERMINATE_URL = URL('http://127.7.7.7/spider_man?terminate')
+TERMINATE_FAVICON_URL = URL('http://127.7.7.7/favicon.ico')
 
 
 class spider_man(CrawlPlugin):
@@ -200,6 +201,11 @@ class ProxyHandler(w3afProxyHandler):
 
         # Convert to url_object
         path = URL(path)
+
+        # Ignore favicon.ico requests
+        # https://github.com/andresriancho/w3af/issues/9135
+        if path == TERMINATE_FAVICON_URL:
+            return
 
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')
