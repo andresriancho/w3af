@@ -16,13 +16,16 @@ Execute Shell Command
 PGTools
 <title>PhpShell \d\.\d</title>
 cmd\.jsp
+
+# c99
 c99shell</title>
+- c99shell</title><STYLE>
+http://ccteam\.ru/releases/
+
 hackru\.info
 Hmilyld
-c99shell
 darkst
 <title>\*  ernealizm  \* </title>
-C99Shell v
 xIXRbE
 MyShell
 fuckjp
