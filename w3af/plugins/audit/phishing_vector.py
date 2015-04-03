@@ -48,7 +48,8 @@ class phishing_vector(AuditPlugin):
         #
         # I also use hTtp instead of http because I want to evade some (stupid)
         # case sensitive filters
-        self._test_urls = ('hTtp://w3af.org/', 'htTps://w3af.org/',
+        self._test_urls = ('hTtp://w3af.org/',
+                           'htTps://w3af.org/',
                            'fTp://w3af.org/')
 
     def audit(self, freq, orig_response):
@@ -67,46 +68,47 @@ class phishing_vector(AuditPlugin):
         """
         Analyze results of the _send_mutant method.
         """
+        if not response.is_text_or_html():
+            return
+
         if self._has_bug(mutant):
             return
         
         dom = response.get_dom()
+        if dom is None:
+            return
 
-        if response.is_text_or_html() and dom is not None:
+        for element in self._tag_xpath(dom):
 
-            elem_list = self._tag_xpath(dom)
+            src_attr = element.attrib.get('src', None)
+            if src_attr is None:
+                continue
 
-            for element in elem_list:
+            for url in self._test_urls:
+                if src_attr.startswith(url):
+                    # Vuln vuln!
+                    desc = 'A phishing vector was found at: %s'
+                    desc %= mutant.found_at()
 
-                if 'src' not in element.attrib:
-                    return []
+                    v = Vuln.from_mutant('Phishing vector', desc,
+                                         severity.LOW, response.id,
+                                         self.get_name(), mutant)
 
-                src_attr = element.attrib['src']
-
-                for url in self._test_urls:
-                    if src_attr.startswith(url):
-                        # Vuln vuln!
-                        desc = 'A phishing vector was found at: %s'
-                        desc = desc % mutant.found_at()
-                        
-                        v = Vuln.from_mutant('Phishing vector', desc,
-                                             severity.LOW, response.id,
-                                             self.get_name(), mutant)
-                        
-                        v.add_to_highlight(src_attr)
-                        self.kb_append_uniq(self, 'phishing_vector', v)
-
+                    v.add_to_highlight(src_attr)
+                    self.kb_append_uniq(self, 'phishing_vector', v)
+                    break
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugins finds phishing vectors in web applications, for example,
-        a bug of this type is found if I request the URL
-        "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
-        HTML the web application sends:
+        This plugins identifies phishing vectors in web applications, a bug of
+        this type is found if the victim requests the URL
+        "http://site.tld/asd.asp?info=http://attacker.tld" and the HTTP response
+        contains:
+
             ...
             <iframe src="http://attacker.tld">
-            ....
+            ...
         """
