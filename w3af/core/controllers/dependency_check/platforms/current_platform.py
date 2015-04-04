@@ -24,6 +24,7 @@ from .ubuntu1404 import Ubuntu1404
 from .ubuntu1410 import Ubuntu1410
 from .debian76 import Debian76
 from .debian78 import Debian78
+from .debian80 import Debian80
 from .centos import CentOS
 from .centos65 import CentOS65
 from .fedora import Fedora
@@ -34,8 +35,9 @@ from .suse import SuSE
 from .elementaryOS02 import ElementaryOS02
 from .default import DefaultPlatform
 
-KNOWN_PLATFORMS = [Debian76, Ubuntu1204, CentOS65, CentOS, Fedora, Kali, MacOSX,
-                   OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410, ElementaryOS02]
+KNOWN_PLATFORMS = [Debian76, Debian78, Debian80, Ubuntu1204, CentOS65, CentOS,
+                   Fedora, Kali, MacOSX, OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410,
+                   ElementaryOS02]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
