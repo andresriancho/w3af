@@ -24,7 +24,7 @@ import platform
 from .ubuntu1204 import Ubuntu1204
 
 
-class Debian78(Ubuntu1204):
+class Debian80(Ubuntu1204):
     SYSTEM_NAME = 'Debian 8.0'
 
     @staticmethod
