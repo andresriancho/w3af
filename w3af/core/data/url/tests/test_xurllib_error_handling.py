@@ -27,16 +27,15 @@ from mock import Mock, patch, call
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.tests.helpers.upper_daemon import ThreadingUpperDaemon
-from w3af.core.data.url.tests.test_xurllib import (EmptyTCPHandler,
-                                                   TimeoutTCPHandler)
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.parsers.url import URL
-from w3af.core.controllers.exceptions import (HTTPRequestException,
-                                              ScanMustStopException)
+from w3af.core.data.url.tests.test_xurllib import (EmptyTCPHandler,
+                                                   TimeoutTCPHandler)
+
 
 TIMEOUT_SECS = 1
 
