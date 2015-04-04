@@ -44,7 +44,11 @@ BLIND_SQLI_REFS = [{"url": "http://capec.mitre.org/data/definitions/7.html",
                    {"url": "https://www.owasp.org/index.php/Blind_SQL_Injection",
                     "title": "OWASP"}]
 
-BLIND_SQLI_TOP10_REFS = []
+BLIND_SQLI_TOP10_REFS = [
+   {u'link': u'https://www.owasp.org/index.php/Top_10_2013-A1',
+    u'owasp_version': u'2013',
+    u'risk_id': 1}
+]
 
 
 class MockInfo(Info):
@@ -213,14 +217,17 @@ class TestInfo(unittest.TestCase):
         self.assertIsInstance(i.get_long_description(), basestring)
         self.assertIsInstance(i.get_fix_guidance(), basestring)
         self.assertEqual(i.get_fix_effort(), 50)
-        self.assertEqual(i.get_tags(), ['file', 'inclusion', 'error',
-                                        'injection', 'regexp'])
+        self.assertEqual(i.get_tags(), ['web', 'file', 'inclusion', 'error',
+                                        'injection'])
         self.assertEqual(i.get_wasc_ids(), [])
         self.assertEqual(list(i.get_wasc_urls()), [])
-        self.assertEqual(list(i.get_cwe_urls()), [])
-        self.assertEqual(i.get_cwe_ids(), [])
+        self.assertEqual(list(i.get_cwe_urls()),
+                         ['https://cwe.mitre.org/data/definitions/98.html'])
+        self.assertEqual(i.get_cwe_ids(), [u'98'])
         self.assertEqual(i.get_references(), expected_references)
-        self.assertEqual(list(i.get_owasp_top_10_references()), [])
+        self.assertEqual(list(i.get_owasp_top_10_references()),
+                         [(u'2013', 1,
+                           'https://www.owasp.org/index.php/Top_10_2013-A1')])
         self.assertIsInstance(i.get_vuln_info_from_db(), DBVuln)
 
         # lazy calculation success
@@ -241,14 +248,17 @@ class TestInfo(unittest.TestCase):
         self.assertIsInstance(i.get_long_description(), basestring)
         self.assertIsInstance(i.get_fix_guidance(), basestring)
         self.assertEqual(i.get_fix_effort(), 50)
-        self.assertEqual(i.get_tags(), [u'sql', u'blind', u'differential',
+        self.assertEqual(i.get_tags(), [u'web', u'sql', u'blind',
                                         u'injection', u'database'])
         self.assertEqual(i.get_wasc_ids(), [])
         self.assertEqual(list(i.get_wasc_urls()), [])
-        self.assertEqual(list(i.get_cwe_urls()), [])
-        self.assertEqual(i.get_cwe_ids(), [])
+        self.assertEqual(list(i.get_cwe_urls()),
+                         [u'https://cwe.mitre.org/data/definitions/89.html'])
+        self.assertEqual(i.get_cwe_ids(), [u'89'])
         self.assertEqual(i.get_references(), expected_references)
-        self.assertEqual(list(i.get_owasp_top_10_references()), [])
+        self.assertEqual(list(i.get_owasp_top_10_references()),
+                         [(u'2013', 1,
+                           'https://www.owasp.org/index.php/Top_10_2013-A1')])
         self.assertIsInstance(i.get_vuln_info_from_db(), DBVuln)
 
         # lazy calculation success
