@@ -22,11 +22,12 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_apache_config_directory(PayloadTestHelper):
+class TestApacheConfigDirectory(PayloadTestHelper):
 
     EXPECTED_RESULT = {'apache_directory': ['/etc/apache2/']}
 
     def test_apache_config_directory(self):
-        result = exec_payload(
-            self.shell, 'apache_config_directory', use_api=True)
+        result = exec_payload(self.shell,
+                              'apache_config_directory',
+                              use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
