@@ -26,7 +26,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 class PayloadTestHelper(PluginTest):
 
-    target_url = get_moth_http('/audit/local_file_read/'\
+    target_url = get_moth_http('/audit/local_file_read/'
                                'local_file_read.py?file=section.txt')
 
     _run_configs = {
@@ -43,7 +43,8 @@ class PayloadTestHelper(PluginTest):
     #        test performance issue.
     def _scan_wrapper(self):
         """
-        :return: Run the scan and return the vulnerability itself and the vuln_id.
+        :return: Run the scan and return the vulnerability itself and the
+                 vuln_id.
         """
         # Run the scan
         cfg = self._run_configs['cfg']
