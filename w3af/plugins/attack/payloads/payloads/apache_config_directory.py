@@ -1,6 +1,8 @@
 import re
+
 from w3af.plugins.attack.payloads.base_payload import Payload
 from w3af.core.ui.console.tables import table
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class apache_config_directory(Payload):
@@ -9,44 +11,49 @@ class apache_config_directory(Payload):
     """
     def fname_generator(self):
         def parse_apache2_init(apache_file_read):
-            directory = re.search('(?<=APACHE_PID_FILE needs to be defined in )(.*?)envvars', apache_file_read)
+            directory = re.search('(?<=APACHE_PID_FILE needs to be defined in )(.*?)envvars',
+                                  apache_file_read)
             if directory:
                 return directory.group(1)
             else:
                 return ''
 
         def parse_apache_init(apache_file_read):
-            directory = re.search(
-                '(?<=APACHE_HOME=")(.*?)\"', apache_file_read)
+            directory = re.search('(?<=APACHE_HOME=")(.*?)\"', apache_file_read)
             if directory:
                 return directory.group(1)
             else:
                 return ''
 
-        paths = []
-        paths.append(
-            parse_apache2_init(self.shell.read('/etc/init.d/apache2')))
-        paths.append(
-            parse_apache_init(self.shell.read('/etc/init.d/apache')))
-        paths.append('/etc/apache2/')
-        paths.append('/etc/apache/')
-        paths.append('/etc/httpd/')
-        paths.append('/usr/local/apache2/conf/')
-        paths.append('/usr/local/apache/conf/')
-        paths.append('/usr/local/etc/apache/')
-        paths.append('/usr/local/etc/apache2/')
-        paths.append('/opt/apache/conf/')
-        paths.append('/etc/httpd/conf/')
-        paths.append('/usr/pkg/etc/httpd/')
-        paths.append('/usr/local/etc/apache22/')
+        paths = ['/etc/apache2/',
+                 '/etc/apache/',
+                 '/etc/httpd/',
+                 '/usr/local/apache2/conf/',
+                 '/usr/local/apache/conf/',
+                 '/usr/local/etc/apache/',
+                 '/usr/local/etc/apache2/',
+                 '/opt/apache/conf/',
+                 '/etc/httpd/conf/',
+                 '/usr/pkg/etc/httpd/',
+                 '/usr/local/etc/apache22/']
+
+        try:
+            parsed_1 = parse_apache2_init(self.shell.read('/etc/init.d/apache2'))
+            parsed_2 = parse_apache_init(self.shell.read('/etc/init.d/apache'))
+        except BaseFrameworkException:
+            parsed_1 = None
+            parsed_2 = None
+
+        for parsed_path in (parsed_1, parsed_2):
+            if parsed_path:
+                paths.append(parsed_path)
 
         for path in paths:
             yield path + 'httpd.conf'
             yield path + 'apache2.conf'
 
     def api_read(self):
-        result = {}
-        result['apache_directory'] = []
+        result = {'apache_directory': []}
 
         fname_iter = self.fname_generator()
         for file_path, content in self.read_multi(fname_iter):
@@ -67,9 +74,7 @@ class apache_config_directory(Payload):
         if not api_result['apache_directory']:
             return 'Apache configuration directory not found.'
         else:
-            rows = []
-            rows.append(['Apache directories', ])
-            rows.append([])
+            rows = [['Apache directories', ], []]
             for key_name in api_result:
                 for path in api_result[key_name]:
                     rows.append([path, ])
