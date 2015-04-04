@@ -29,6 +29,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.kb_observer import KBObserver
+from w3af.core.data.misc.encoding import smart_str
 from w3af.core.ui.gui import helpers
 from w3af.core.ui.gui.tabs.exploit.exploit_all import effectively_exploit_all
 
@@ -210,14 +211,16 @@ class KBTree(gtk.TreeView):
         
         :param data: The data for the new item to add.
         """
-        contains_location_a = [r for r in self.treestore if \
+        contains_location_a = [r for r in self.treestore if
                                r[1] == data.location_a]
         
         if not contains_location_a:
             # Add the new data to the treestore
             child_count = '( 1 )'
             color = helpers.KB_COLORS[data.color_level]
-            store_iter = self.treestore.append(None, [None, data.location_a,
+            location_a = smart_str(data.location_a, errors='ignore')
+            store_iter = self.treestore.append(None, [None,
+                                                      location_a,
                                                       0, None, 0,
                                                       color,
                                                       child_count])
@@ -253,12 +256,12 @@ class KBTree(gtk.TreeView):
         Update the child count, keep in mind that the child count for this
         level is increased by each call to this method.
         """
-        location_a = [r for r in self.treestore if \
+        location_a = [r for r in self.treestore if
                       r[1] == data.location_a]
         assert len(location_a), 1
         location_a_row = location_a[0]
         
-        contains_location_ab = [r for r in location_a_row.iterchildren() if \
+        contains_location_ab = [r for r in location_a_row.iterchildren() if
                                 r[1] == data.location_b]
         
         if not contains_location_ab:
