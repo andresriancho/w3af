@@ -1,6 +1,6 @@
 import re
 
-from w3af.plugins.attack.payloads.base_payload import Payload
+from w3af.plugins.attack.payloads.base_payload import Payload, read_error_handler
 from w3af.core.ui.console.tables import table
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
@@ -56,7 +56,8 @@ class apache_config_directory(Payload):
         result = {'apache_directory': []}
 
         fname_iter = self.fname_generator()
-        for file_path, content in self.read_multi(fname_iter):
+        for file_path, content in self.read_multi(fname_iter,
+                                                  error_handler=read_error_handler):
             for keyword in ('#', 'NCSA', 'Global'):
                 if keyword in content:
                     file_path = file_path.replace('httpd.conf', '')

@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import textwrap
+from functools import wraps
 
 import w3af.plugins.attack.payloads.payload_handler as payload_handler
 import w3af.core.controllers.output_manager as om
@@ -94,8 +95,9 @@ class Payload(object):
 
     def run_api(self, *args):
         """
-        :return: The result of running the payload using the most performant way. Basically, if
-        I can run commands using exec() I'll use that, if not I'll use read().
+        :return: The result of running the payload using the most performant way
+                 Basically, if I can run commands using exec() I'll use that, if
+                 not I'll use read().
         """
         available_syscalls = self.get_shell_syscalls()
         run_options = self.get_payload_implemented_methods()
@@ -114,11 +116,22 @@ class Payload(object):
         """
         return 'linux'
 
-    def read_multi(self, fname_iter):
+    def read_multi(self, fname_iter, error_handler=None):
         """
         :param fname_iter: An iterator that yields all the file names to read.
+        :param error_handler: A function which creates a wrapper around the
+                              function that it takes as parameter, returning
+                              the same tuple as the read_multi function.
+
+        :yield: Tuple:
+                    - The name of the file which was read
+                    - The contents of the file
         """
-        read_file = return_args(self.shell.read)
+        if error_handler is None:
+            read_file = return_args(self.shell.read)
+        else:
+            read_file = return_args(error_handler(self.shell.read))
+
         results = self.worker_pool.imap_unordered(read_file, fname_iter)
         for (file_name,), content in results:
             yield file_name, content
@@ -169,3 +182,19 @@ class Payload(object):
                 implemented_methods.append(syscall)
         
         return set(implemented_methods)
+
+
+def read_error_handler(func):
+    """
+    Ignores exceptions by always returning the filename and an empty string as
+    read file content.
+    """
+
+    @wraps(func)
+    def error_handler_wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            return args[0], ''
+
+    return error_handler_wrapper
