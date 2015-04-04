@@ -134,12 +134,12 @@ class cors_origin(AuditPlugin):
                 self._reported_global.add(section)
 
                 response_id = analysis_response[0].get_id()
-                msg = 'More than %s URLs in the Web application under analysis' \
-                      ' returned a CORS response that triggered the %s' \
-                      ' detection. Given that this seems to be an issue' \
-                      ' that affects all of the site URLs, the scanner will' \
-                      ' not report any other specific vulnerabilities of this'\
-                      ' type.'
+                msg = ('More than %s URLs in the Web application under analysis'
+                       ' returned a CORS response that triggered the %s'
+                       ' detection. Given that this seems to be an issue'
+                       ' that affects all of the site URLs, the scanner will'
+                       ' not report any other specific vulnerabilities of this'
+                       ' type.')
                 msg = msg % (self.MAX_REPEATED_REPORTS, section)
 
                 v = Vuln('Multiple CORS misconfigurations', msg,
@@ -200,30 +200,30 @@ class cors_origin(AuditPlugin):
 
         if len(report_sensitive) > 0 or len(report_strange) > 0:
 
-            msg = 'The remote Web application, specifically "%s", returned'\
-                  ' an %s header with the value set to "%s" which is ' \
-                  'insecure'
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to "%s" which is'
+                   ' insecure')
 
             msg = msg % (url, ACCESS_CONTROL_ALLOW_METHODS, allow_methods)
 
             if report_sensitive and report_strange:
                 name = 'Sensitive and strange CORS methods enabled'
-                msg += ' since it allows the following sensitive HTTP' \
-                       ' methods: %s and the following uncommon HTTP' \
-                       ' methods: %s.'
+                msg += (' since it allows the following sensitive HTTP'
+                        ' methods: %s and the following uncommon HTTP'
+                        ' methods: %s.')
                 msg = msg % (', '.join(report_sensitive),
                              ', '.join(report_strange))
 
             elif report_sensitive:
                 name = 'Sensitive CORS methods enabled'
-                msg += ' since it allows the following sensitive HTTP' \
-                       ' methods: %s.'
+                msg += (' since it allows the following sensitive HTTP'
+                        ' methods: %s.')
                 msg = msg % (', '.join(report_sensitive),)
 
             elif report_strange:
                 name = 'Uncommon CORS methods enabled'
-                msg += ' since it allows the following uncommon HTTP' \
-                       ' methods: %s.'
+                msg += (' since it allows the following uncommon HTTP'
+                        ' methods: %s.')
                 msg = msg % (', '.join(report_strange),)
 
             v = Vuln(name, msg, severity.LOW, response.get_id(),
@@ -235,7 +235,8 @@ class cors_origin(AuditPlugin):
 
             return self._filter_report('_allow_methods_counter',
                                        'sensitive and uncommon methods',
-                                       severity.LOW, [v, ])
+                                       severity.LOW,
+                                       [v])
 
         return []
 
@@ -292,12 +293,12 @@ class cors_origin(AuditPlugin):
         if allow_credentials:
             sev = severity.HIGH
             name = 'Insecure Access-Control-Allow-Origin with credentials'
-            msg = 'The remote Web application, specifically "%s", returned' \
-                  ' an %s header with the value set to the value sent in the'\
-                  ' request\'s Origin header and a %s header with the value'\
-                  ' set to "true", which is insecure and leaves the'\
-                  ' application open to Cross-domain attacks which can' \
-                  ' affect logged-in users.'
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to the value sent in the'
+                   ' request\'s Origin header and a %s header with the value'
+                   ' set to "true", which is insecure and leaves the'
+                   ' application open to Cross-domain attacks which can'
+                   ' affect logged-in users.')
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN,
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
@@ -305,10 +306,10 @@ class cors_origin(AuditPlugin):
         else:
             sev = severity.LOW
             name = 'Insecure Access-Control-Allow-Origin'
-            msg = 'The remote Web application, specifically "%s", returned' \
-                  ' an %s header with the value set to the value sent in the'\
-                  ' request\'s Origin header, which is insecure and leaves'\
-                  ' the application open to Cross-domain attacks.'
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to the value sent in the'
+                   ' request\'s Origin header, which is insecure and leaves'
+                   ' the application open to Cross-domain attacks.')
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN)
 
@@ -319,7 +320,8 @@ class cors_origin(AuditPlugin):
 
         return self._filter_report('_origin_echo_counter',
                                    'origin echoed in allow-origin',
-                                   severity.HIGH, [v, ])
+                                   severity.HIGH,
+                                   [v])
 
     def _universal_origin_allow_creds(self, forged_req, url, origin, response,
                                       allow_origin, allow_credentials_str,
@@ -344,11 +346,11 @@ class cors_origin(AuditPlugin):
 
         if allow_credentials and allow_origin == '*':
 
-            msg = 'The remote Web application, specifically "%s", returned' \
-                  ' an %s header with the value set to "*"  and an %s header'\
-                  ' with the value set to "true" which according to Mozilla\'s'\
-                  ' documentation is invalid. This implementation error might'\
-                  ' affect the application behavior.'
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to "*"  and an %s header'
+                   ' with the value set to "true" which according to Mozilla\'s'
+                   ' documentation is invalid. This implementation error might'
+                   ' affect the application behavior.')
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN,
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
@@ -373,8 +375,8 @@ class cors_origin(AuditPlugin):
         opt_list = OptionList()
 
         desc = "Origin HTTP header value"
-        _help = "Define value used to specify the 'Origin' HTTP header for"\
-                " HTTP request sent to test application behavior"
+        _help = ("Define value used to specify the 'Origin' HTTP header for"
+                 " HTTP request sent to test application behavior")
         opt = opt_factory('origin_header_value',
                           self.origin_header_value, desc, "string", help=_help)
         opt_list.add(opt)
@@ -385,7 +387,7 @@ class cors_origin(AuditPlugin):
         self.origin_header_value = options_list[
             'origin_header_value'].get_value()
 
-        # Check options setted
+        # Check set options
         if self.origin_header_value is None or\
                 len(self.origin_header_value.strip()) == 0:
             msg = 'Please enter a valid value for the "Origin" HTTP header.'
@@ -403,8 +405,8 @@ class cors_origin(AuditPlugin):
         Configurable parameters are:
             - origin_header_value
 
-        Note : This plugin is useful to test "Cross Origin Resource Sharing (CORS)"
-               application behaviors.
-        CORS : http://developer.mozilla.org/en-US/docs/HTTP_access_control
-               http://www.w3.org/TR/cors
+        Note: This plugin is useful to test "Cross Origin Resource Sharing (CORS)"
+              application behaviors.
+        CORS: http://developer.mozilla.org/en-US/docs/HTTP_access_control
+              http://www.w3.org/TR/cors
         """
