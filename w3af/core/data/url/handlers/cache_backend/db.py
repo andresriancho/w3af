@@ -90,12 +90,12 @@ class SQLCachedResponse(CachedResponse):
             raise ScanMustStopException(msg)
 
         except Exception, ex:
+            args = (ex, resp.get_id(), request.get_uri(), resp.get_code())
             msg = ('Exception while inserting request/response to the'
-                   ' database: %s\nThe request/response that generated'
-                   ' the error is: %s %s %s' %
-                   (ex, resp.get_id(), request.get_uri(), resp.get_code()))
-            om.out.error(msg)
-            raise Exception(msg)
+                   ' database: "%s". The request/response that generated'
+                   ' the error is: %s %s %s')
+            om.out.error(msg % args)
+            raise Exception(msg % args)
 
     @staticmethod
     def exists_in_cache(req):

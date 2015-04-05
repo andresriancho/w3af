@@ -300,24 +300,23 @@ class HistoryItem(object):
     def save(self):
         """Save object into DB."""
         resp = self.response
-        values = []
-        values.append(resp.get_id())
-        values.append(self.request.get_uri().url_string)
-        values.append(resp.get_code())
-        values.append(self.tag)
-        values.append(int(self.mark))
-        values.append(str(resp.info()))
-        values.append(resp.get_wait_time())
-        values.append(resp.get_msg())
-        values.append(resp.content_type)
-        ch = resp.charset
-        values.append(ch)
-        values.append(self.request.get_method())
-        values.append(len(resp.body))
         code = int(resp.get_code()) / 100
-        values.append(code)
-        values.append(resp.get_alias())
-        values.append(int(self.request.get_uri().has_query_string()))
+
+        values = [resp.get_id(),
+                  self.request.get_uri().url_string,
+                  resp.get_code(),
+                  self.tag,
+                  int(self.mark),
+                  str(resp.info()),
+                  resp.get_wait_time(),
+                  resp.get_msg(),
+                  resp.content_type,
+                  resp.charset,
+                  self.request.get_method(),
+                  len(resp.body),
+                  code,
+                  resp.get_alias(),
+                  int(self.request.get_uri().has_query_string())]
 
         if not self.id:
             sql = ('INSERT INTO %s '
