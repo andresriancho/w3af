@@ -87,10 +87,9 @@ def http_request_parser(head, postdata):
     :param head: The head of the request.
     :param postdata: The post data of the request
     :return: A FuzzableRequest object with all the corresponding information
-        that was sent in head and postdata
+             that was sent in head and postdata
 
     :author: Andres Riancho (andres.riancho@gmail.com)
-
     """
     # Parse the request head, the strip() helps us deal with the \r (if any)
     split_head = head.split('\n')
