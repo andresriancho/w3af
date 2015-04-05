@@ -88,3 +88,27 @@ class TestSSLCertificate(PluginTest):
 
         for estring in self.EXPECTED_STRINGS:
             self.assertIn(estring, info.get_desc())
+
+    @attr('internet')
+    def test_ssl_certificate_api_mercadopago_com(self):
+        api_url = 'https://api.mercadopago.com/'
+
+        cfg = self._run_configs['cfg']
+        self._scan(api_url, cfg['plugins'])
+
+        #
+        #   Check the certificate information
+        #
+        invalid_ssl_cert = self.kb.get('ssl_certificate', 'invalid_ssl_cert')
+        ssl_v2 = self.kb.get('ssl_certificate', 'ssl_v2')
+        ssl_soon_expire = self.kb.get('ssl_certificate', 'ssl_soon_expire')
+        certificate = self.kb.get('ssl_certificate', 'certificate')
+        invalid_ssl_connect = self.kb.get('ssl_certificate',
+                                          'invalid_ssl_connect')
+
+        self.assertEqual(len(invalid_ssl_cert), 0)
+        self.assertEqual(len(invalid_ssl_connect), 0)
+        self.assertEqual(len(ssl_v2), 0)
+        self.assertEqual(len(ssl_soon_expire), 0)
+        self.assertEqual(len(certificate), 1)
+

@@ -128,9 +128,9 @@ class ssl_certificate(AuditPlugin):
                     invalid_cert = True
 
             if invalid_cert:
-                desc = '"%s" uses an invalid security certificate.'\
-                       ' The certificate is not trusted because: "%s".'
-                desc = desc % (domain, details)
+                desc = ('"%s" uses an invalid security certificate.'
+                        ' The certificate is not trusted because: "%s".')
+                desc %= (domain, details)
                 
                 v = Vuln('Self-signed SSL certificate', desc,
                          severity.LOW, 1, self.get_name())
@@ -138,9 +138,9 @@ class ssl_certificate(AuditPlugin):
                 tag = 'invalid_ssl_cert'
             else:
                 # We use here Info instead of Vuln because it is too common case
-                desc = '"%s" has an invalid SSL configuration. ' \
-                       'Technical details: "%s"'
-                desc = desc % (domain, details)
+                desc = ('"%s" has an invalid SSL configuration.'
+                        ' Technical details: "%s"')
+                desc %= (domain, details)
                 
                 v = Info('Invalid SSL connection', desc, 1, self.get_name())
 
