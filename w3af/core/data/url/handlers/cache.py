@@ -61,9 +61,9 @@ class CacheHandler(urllib2.BaseHandler):
             try:
                 cache_response_obj = CacheClass(request)
             except Exception:
-                # Sometimes the cache gets corrupted, or the initial HTTP request
-                # that's saved to disk doesn't completely respect the RFC and
-                # when we try to read it, it crashes.
+                # Sometimes the cache gets corrupted, or the initial HTTP
+                # request that's saved to disk doesn't completely respect the
+                # RFC and when we try to read it, it crashes.
 
                 # Send None to the urllib2 framework, which means that we don't
                 # know how to handle the request, and we forward it to the next

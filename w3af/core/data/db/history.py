@@ -328,10 +328,10 @@ class HistoryItem(object):
         else:
             values.append(self.id)
             sql = ('UPDATE %s'
-                   ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, '
-                   'time = ?, msg = ?, content_type = ?, charset = ?, '
-                   'method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
-                   ' WHERE id = ?' % self._DATA_TABLE)
+                   ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?,'
+                   ' info = ?, time = ?, msg = ?, content_type = ?,'
+                   ' charset = ?, method = ?, response_size = ?, codef = ?,'
+                   ' alias = ?, has_qs = ? WHERE id = ?' % self._DATA_TABLE)
             self._db.execute(sql, values)
 
         #
@@ -362,9 +362,7 @@ class HistoryItem(object):
 
     def _update_field(self, name, value):
         """Update custom field in DB."""
-        sql = 'UPDATE ' + self._DATA_TABLE
-        sql += ' SET ' + name + ' = ? '
-        sql += ' WHERE id = ?'
+        sql = 'UPDATE %s SET %s = ? WHERE id = ?' % (self._DATA_TABLE, name)
         self._db.execute(sql, (value, self.id))
 
     def update_tag(self, value, force_db=False):
