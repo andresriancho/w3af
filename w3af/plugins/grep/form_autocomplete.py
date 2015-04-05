@@ -59,7 +59,7 @@ class form_autocomplete(GrepPlugin):
 
     def grep(self, request, response):
         """
-        Plugin entry point, test existance of HTML auto-completable forms
+        Plugin entry point, test existence of HTML auto-completable forms
         containing password-type inputs. Either form's <autocomplete> attribute
         is not present or is 'off'.
 
@@ -86,29 +86,27 @@ class form_autocomplete(GrepPlugin):
                                          chain(passwd_inputs,
                                                self._text_input_xpath(form)))):
 
-                desc = 'The URL: "%s" has a "<form>" element with ' \
-                       'auto-complete enabled.'
-                desc = desc % url
+                form_str = etree.tostring(form)
+                to_highlight = form_str[:form_str.find('>') + 1]
+
+                desc = ('The URL: "%s" has a "<form>" element with '
+                        'auto-complete enabled.')
+                desc %= url
 
                 i = Info('Auto-completable form', desc, response.id,
                          self.get_name())
                 i.set_url(url)
-
-                form_str = etree.tostring(form)
-                to_highlight = form_str[:form_str.find('>') + 1]
                 i.add_to_highlight(to_highlight)
 
-                # Store and print
-                kb.kb.append(self, 'form_autocomplete', i)
-                om.out.information(desc)
-
+                self.kb_append_uniq(self, 'form_autocomplete', i,
+                                    filter_by='URL')
                 break
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
-        return """\
+        return """
         This plugin greps every page for autocomplete-able forms containing 
         password-type inputs.
         """
