@@ -337,9 +337,32 @@ class HistoryItem(object):
         #
         # Save raw data to file
         #
-        fname = self._get_fname_for_id(self.id)
-        
-        req_res = open(fname, 'wb')
+        path_fname = self._get_fname_for_id(self.id)
+
+        try:
+            req_res = open(path_fname, 'wb')
+        except IOError, ioe:
+            # We get here when the path_fname does not exist (for some reason)
+            # and want to analyze exactly why to be able to fix the issue in
+            # the future.
+            #
+            # Now the path_fname looks like:
+            #   /root/.w3af/tmp/19524/main.db_traces/1.trace
+            #
+            # I want to investigate which path doesn't exist, so I'm starting
+            # from the first and add directories until reaching the last one
+            #
+            # https://github.com/andresriancho/w3af/issues/9022
+            path, fname = os.path.split(path_fname)
+            split_path = path.split('/')
+
+            for i in xrange(len(split_path) + 1):
+                test_path = '/'.join(split_path[:i])
+                if not os.path.exists(test_path):
+                    msg = ('Directory does not exist: "%s" while trying to'
+                           ' write DB history to "%s"')
+                    raise IOError(msg % (test_path, path_fname))
+
         data = (self.request.to_dict(),
                 self.response.to_dict(),
                 self._MSGPACK_CANARY)
