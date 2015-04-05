@@ -341,7 +341,7 @@ class HistoryItem(object):
 
         try:
             req_res = open(path_fname, 'wb')
-        except IOError, ioe:
+        except IOError:
             # We get here when the path_fname does not exist (for some reason)
             # and want to analyze exactly why to be able to fix the issue in
             # the future.
@@ -362,6 +362,8 @@ class HistoryItem(object):
                     msg = ('Directory does not exist: "%s" while trying to'
                            ' write DB history to "%s"')
                     raise IOError(msg % (test_path, path_fname))
+
+            raise
 
         data = (self.request.to_dict(),
                 self.response.to_dict(),
