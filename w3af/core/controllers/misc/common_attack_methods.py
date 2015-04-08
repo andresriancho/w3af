@@ -41,20 +41,23 @@ class CommonAttackMethods(object):
 
     def _guess_cut(self, body_a, body_b, expected_result):
         """
-        Guesses the header and footer based on two responses and an expected result
-        that should be in body_a.
+        Guesses the header and footer based on two responses and an expected
+        result that should be in body_a.
 
-        :param body_a: The response body for the request with the expected result.
-        For example, in local file read vulnerabilities this should be the result
-        of requesting file.php?f=/etc/passwd
+        :param body_a: The response body for the request with the expected
+                       result. For example, in local file read vulnerabilities
+                       this should be the result of requesting
+                       file.php?f=/etc/passwd
 
-        :param body_b: The response body for the request with an invalid resource.
-        For example, in local file read vulnerabilities this should be the result
-        of requesting file.php?f=/does/not/exist
+        :param body_b: The response body for the request with an invalid
+                       resource. For example, in local file read vulnerabilities
+                       this should be the result of requesting
+                       file.php?f=/does/not/exist
 
-        :param expected_result: The expected result that should be found in body_a.
-        For example, in local file read vulnerabilities this should look like:
-        root:x:0:0:root:/root:/bin/bash
+        :param expected_result: The expected result that should be found in
+                                body_a. For example, in local file read
+                                vulnerabilities this should look like:
+                                root:x:0:0:root:/root:/bin/bash
 
         :return: True if the cut could be defined
         """
@@ -76,14 +79,15 @@ class CommonAttackMethods(object):
         longest_match_b = longest_match[1]
         longest_match_size = longest_match[2]
 
-        #    This should return a long match at the beginning or the end of the string
+        # This should return a long match at the beginning or the end of the
+        # string
         #
-        #    If the longest_match is very small in relation to the whole response,
-        #    then we're in a case in which there is no header or footer.
+        # If the longest_match is very small in relation to the whole response,
+        # then we're in a case in which there is no header or footer.
         #
-        #    I measure against the body_b_len because in that response (generally an error)
-        #    the amount of bytes consumed by the "/etc/passwd" file is less and allows
-        #    me to calculate a more accurate ratio.
+        # I measure against the body_b_len because in that response (generally
+        # an error) the amount of bytes consumed by the "/etc/passwd" file is
+        # less and allows me to calculate a more accurate ratio.
         #
 
         if float(longest_match_size) == body_b_len == 0 or \
@@ -93,15 +97,16 @@ class CommonAttackMethods(object):
 
         else:
             #
-            #    The match object has the following interesting attributes:
-            #        a: The index where the longest match starts at body_a
-            #        b: The index where the longest match starts at body_b
-            #        size: Size of the longest match
+            # The match object has the following interesting attributes:
+            #     a: The index where the longest match starts at body_a
+            #     b: The index where the longest match starts at body_b
+            #     size: Size of the longest match
             #
-            #    Now that I have that info, I want to know if this represents the header
-            #    or the footer of the response.
+            # Now that I have that info, I want to know if this represents the
+            # header or the footer of the response.
             #
-            #    We're in the case where at least we have a header, a footer or both.
+            # We're in the case where at least we have a header, a footer or
+            # both.
             #
 
             if longest_match_a + longest_match_size == body_a_len:
@@ -204,10 +209,10 @@ class CommonAttackMethods(object):
         """
         Defines the section where the result of an attack will be.
 
-        For example, when performing an OS Commanding attack, the command response
-        could be in the middle of some HTML text. This function defines the header
-        and footer attributes that are used by _cut() in order to extract the
-        information from the HTML.
+        For example, when performing an OS Commanding attack, the command
+        response could be in the middle of some HTML text. This function defines
+        the header and footer attributes that are used by _cut() in order to
+        extract the information from the HTML.
 
         :return: True if the cut could be defined
         """
@@ -244,11 +249,12 @@ class CommonAttackMethods(object):
 
         if self._header_length + self._footer_length > len(body):
             # FIXME: I should handle this in some way.
-            msg = ('Cut algorithm error: len(header+footer)>len(body).')
+            msg = 'Cut algorithm error: len(header+footer)>len(body).'
             raise BaseFrameworkException(msg)
 
         if body == '':
-            om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')
+            om.out.debug('Called _cut() with an empty body to cut,'
+                         ' returning an empty result.')
             return body
 
         #   Special case where there are no header or footers,
