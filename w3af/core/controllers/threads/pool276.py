@@ -536,7 +536,11 @@ class Pool(object):
             debug('terminating workers')
             for p in pool:
                 if p.exitcode is None:
-                    p.terminate()
+                    try:
+                        p.terminate()
+                    except AttributeError:
+                        # https://github.com/andresriancho/w3af/issues/9361
+                        continue
 
         debug('joining task handler')
         if threading.current_thread() is not task_handler:
