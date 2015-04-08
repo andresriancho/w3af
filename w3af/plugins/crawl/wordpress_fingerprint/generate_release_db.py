@@ -25,10 +25,10 @@ Utility to HTTP GET from wordpress.org and generate a DB with the archives/md5su
 import urllib2
 import re
 
-release_re = " \(<a href='http://wordpress.org/wordpress-(.*?).md5'>md5</a>"
-release_md5_fmt = 'http://wordpress.org/wordpress-%s.md5'
+release_re = " \(<a href='https://wordpress.org/wordpress-(.*?).md5'>md5</a>"
+release_md5_fmt = 'https://wordpress.org/wordpress-%s.md5'
 
-response = urllib2.urlopen('http://wordpress.org/download/release-archive/')
+response = urllib2.urlopen('https://wordpress.org/download/release-archive/')
 extracted_links = re.findall(release_re, response.read())
 
 if len(extracted_links) < 500:
