@@ -71,8 +71,7 @@ class w3af_core_target(Configurable):
         o = opt_factory('target', targets, d, 'url_list')
         ol.add(o)
 
-        d = 'Target operating system (' + '/'.join(
-            self._operating_systems) + ')'
+        d = 'Target operating system (%s)' % '/'.join(self._operating_systems)
         h = 'This setting is here to enhance w3af performance.'
 
         # This list "hack" has to be done because the default value is the one
@@ -83,8 +82,8 @@ class w3af_core_target(Configurable):
         o = opt_factory('target_os', tmp_list, d, 'combo', help=h)
         ol.add(o)
 
-        d = 'Target programming framework (' + '/'.join(
-            self._programming_frameworks) + ')'
+        frameworks = '/'.join(self._programming_frameworks)
+        d = 'Target programming framework (%s)' % frameworks
         h = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done because the default value is the one
         # in the first position on the list
