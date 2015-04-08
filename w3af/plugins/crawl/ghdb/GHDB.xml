@@ -1579,4 +1579,29 @@ arbitrary Unix commands sending a special POST request documented here:
 http://www.exploit-db.com/exploits/36251/
 
 PsyDel
+</textualDescription></signature><signature><signatureReferenceNumber>3996</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3996/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=ext:sql intext:&quot;alter user&quot; intext:&quot;identified by&quot;</querystring><shortDescription>ext:sql intext:&quot;alter user&quot; intext:&quot;identified by&quot;</shortDescription><textualDescription>This dork will show files containing SQL instructions where the
+administrator set a password for a database user.
+
+Author: @felmoltor</textualDescription></signature><signature><signatureReferenceNumber>3997</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3997/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=allintext:Copyright Smart PHP Poll. All Rights Reserved. -exploit</querystring><shortDescription>allintext:Copyright Smart PHP Poll. All Rights Reserved. -exploit</shortDescription><textualDescription>The dork &quot;allintext:Copyright Smart PHP Poll. All Rights Reserved.
+-exploit&quot; show all the sites that uses Smart Pool php module.
+
+The login page can be bypassed using these credentials
+
+User: admin 'or' 1=1
+Password: anything
+
+More info here: http://www.exploit-db.com/exploits/36386/
+
+
+PsyDel
+</textualDescription></signature><signature><signatureReferenceNumber>3998</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3998/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intitle:index of /weekly cpbackup</querystring><shortDescription>intitle:index of /weekly cpbackup</shortDescription><textualDescription>useful for finding cpanel backups
+
+-- 
+Regards,
+H.R.
+</textualDescription></signature><signature><signatureReferenceNumber>3999</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3999/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:index.of +&quot;Indexed by Apache::Gallery&quot;</querystring><shortDescription>intitle:index.of +&quot;Indexed by Apache::Gallery&quot;</shortDescription><textualDescription>Google dork for finding Private pics ;) :D
+
+#13lacKDemOn
+</textualDescription></signature><signature><signatureReferenceNumber>4000</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/4000/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:index.of.accounts</querystring><shortDescription>intitle:index.of.accounts</shortDescription><textualDescription>Dork for directory with accounts.
+By Rootkit.
 </textualDescription></signature></searchEngineSignature>
