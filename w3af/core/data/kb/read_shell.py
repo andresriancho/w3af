@@ -24,13 +24,15 @@ import textwrap
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.kb.shell import Shell
+from w3af.core.controllers.exceptions import OSDetectionException
 from w3af.core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from w3af.plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
 class ReadShell(Shell):
     """
-    This class represents a shell that can only read files from the remote system.
+    This class represents a shell that can only read files from the remote
+    system.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -141,8 +143,11 @@ class ReadShell(Shell):
         Identify the remote operating system by reading different files from
         the OS.
         """
-        self._rOS = read_os_detection(self.read)
-        
+        try:
+            self._rOS = read_os_detection(self.read)
+        except OSDetectionException:
+            self._rOS = 'unknown'
+
         # TODO: Could we determine this by calling some payloads?
         self._rSystem = 'unknown'
         self._rSystemName = 'unknown'
@@ -167,6 +172,6 @@ class ReadShell(Shell):
 
     def read(self, filename):
         """
-        To be overriden by subclasses.
+        To be overridden by subclasses.
         """
         raise NotImplementedError
