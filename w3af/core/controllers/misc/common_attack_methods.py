@@ -23,7 +23,7 @@ import re
 import difflib
 
 import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import BodyCutException
 
 
 class CommonAttackMethods(object):
@@ -236,8 +236,8 @@ class CommonAttackMethods(object):
 
     def _cut(self, body):
         """
-        After defining a cut, I can cut parts of an HTML and return the important
-        sections.
+        After defining a cut, I can cut parts of an HTML and return the
+        important sections.
 
         :param body: The HTML response that I need to cut to obtain the useful
                      information.
@@ -245,15 +245,15 @@ class CommonAttackMethods(object):
         if self._header_length is None or self._footer_length is None:
             msg = ('You need to call _define_exact_cut() or _guess_cut() before'
                    'calling _cut().')
-            raise BaseFrameworkException(msg)
+            raise RuntimeError(msg)
 
         if self._header_length + self._footer_length > len(body):
             # FIXME: I should handle this in some way.
-            msg = 'Cut algorithm error: len(header+footer)>len(body).'
-            raise BaseFrameworkException(msg)
+            msg = 'Cut algorithm error: len(header+footer) > len(body).'
+            raise BodyCutException(msg)
 
         if body == '':
-            om.out.debug('Called _cut() with an empty body to cut,'
+            om.out.debug('Called _cut() with an empty body,'
                          ' returning an empty result.')
             return body
 

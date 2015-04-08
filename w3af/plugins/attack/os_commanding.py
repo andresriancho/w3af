@@ -19,18 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import base64
-
 import w3af.core.controllers.output_manager as om
 import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
+from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.common_attack_methods import CommonAttackMethods
-from w3af.plugins.attack.payloads.decorators.exec_decorator import exec_debug
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              BodyCutException)
 
 
 class ExploitStrategy(object):
@@ -98,7 +97,20 @@ class BasicExploitStrategy(SeparatorExploitStrategy, CommonAttackMethods):
         return command
     
     def extract_result(self, http_response):
-        return self._cut(http_response.get_body())
+        try:
+            return self._cut(http_response.get_body())
+        except BodyCutException, bce:
+            issue = 'https://github.com/andresriancho/w3af/issues/5139'
+
+            msg = ('Unexpected exception "%s" while trying to extract the'
+                   ' command output from the HTTP response body. Please try'
+                   ' again.\n\n'
+
+                   'If the problem persists please add a comment with this'
+                   ' exception message and the steps to reproduce the issue'
+                   ' to %s\n\n')
+
+            return msg % (bce, issue)
 
 
 class FullPathExploitStrategy(SeparatorExploitStrategy):
@@ -309,8 +321,8 @@ class OSCommandingShell(ExecShell):
             http_response = self.strategy.send(strategy_cmd,
                                                self.get_url_opener())
         except BaseFrameworkException, e:
-            msg = 'Error "%s" while sending command to remote host. Please '\
-                  'try again.'
+            msg = ('Error "%s" while sending HTTP request with OS command to'
+                   ' remote host. Please try again.')
             return msg % e
         else:
             return self.strategy.extract_result(http_response)

@@ -167,3 +167,7 @@ class NoVulnerabilityFoundException(BaseFrameworkException):
 
 class ExploitFailedException(BaseFrameworkException):
     pass
+
+
+class BodyCutException(BaseFrameworkException):
+    pass

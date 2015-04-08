@@ -26,9 +26,10 @@ import threading
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.kb.read_shell import ReadShell
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              BodyCutException)
 
 from w3af.plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -294,11 +295,23 @@ class FileReaderShell(ReadShell):
         except BaseFrameworkException, e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
-        else:
-            cut_response = self._cut(response.get_body())
-            filtered_response = self._filter_errors(cut_response, filename)
 
-            return filtered_response
+        try:
+            cut_response = self._cut(response.get_body())
+        except BodyCutException, bce:
+            issue = 'https://github.com/andresriancho/w3af/issues/5139'
+
+            msg = ('Unexpected exception "%s" while trying to extract the file'
+                   ' content from the HTTP response body. Please try again.\n\n'
+
+                   'If the problem persists please add a comment with this'
+                   ' exception message and the steps to reproduce the issue'
+                   ' to %s\n\n')
+
+            return msg % (bce, issue)
+
+        filtered_response = self._filter_errors(cut_response, filename)
+        return filtered_response
 
     def _filter_errors(self, result, filename):
         """
