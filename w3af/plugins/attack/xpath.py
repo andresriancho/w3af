@@ -212,6 +212,21 @@ class xpath(AttackPlugin):
 
         except BaseFrameworkException, e:
             om.out.debug('Error "%s"' % e)
+        except RuntimeError, rte:
+            issue = 'https://github.com/andresriancho/w3af/issues/5278'
+
+            msg = ('An unhandled exception occurred while trying to setup'
+                   ' the error detection for XPATH injection. This situation'
+                   ' is very strange, but others have reported it in the'
+                   ' past.\n\n'
+
+                   'The exception message is: "%s"'
+
+                   'Please help us fix this issue by adding a comment with'
+                   ' the steps to reproduce it and the exception message to'
+                   ' %s\n\n')
+
+            om.out.console(msg % (issue, rte))
         else:
             #use_difflib = (diff_ratio / count) < THRESHOLD
             # FIXME: I'm not using difflib since it doesn't work well in my
