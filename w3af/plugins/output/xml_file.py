@@ -380,7 +380,7 @@ class xml_file(OutputPlugin):
 
         try:
             self._xmldoc.writexml(self._file, addindent=' ' * 4,
-                                  newl='\n', encoding='utf8')
+                                  newl='\n', encoding='UTF-8')
             self._file.flush()
         finally:
             self._file.close()
