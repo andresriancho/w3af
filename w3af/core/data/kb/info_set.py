@@ -77,6 +77,8 @@ class InfoSet(object):
     TEMPLATE = None
     ITAG = None
 
+    MAX_INFO_INSTANCES = 30
+
     JINJA2_ENV = Environment(undefined=StrictUndefined,
                              trim_blocks=True,
                              lstrip_blocks=True)
@@ -99,10 +101,19 @@ class InfoSet(object):
         self._mutant = EmptyMutant()
 
     def add(self, info):
+        if len(self.infos) == self.MAX_INFO_INSTANCES:
+            return False
+
         self.infos.append(info)
+        return True
 
     def extend(self, infos):
-        self.infos.extend(infos)
+        for i in infos:
+            added = self.add(i)
+            if not added:
+                return False
+
+        return True
 
     @property
     def first_info(self):
