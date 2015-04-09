@@ -753,13 +753,13 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
     def test_append_uniq_group_filter_func_attribute_match(self):
-        vuln1 = MockVuln(name='Foos')
+        vuln1 = MockVuln(name='Foos', _id=47)
         vuln1['tag'] = 'foo'
 
         vuln2 = MockVuln(name='Bars')
         vuln2['tag'] = 'bar'
 
-        vuln3 = MockVuln(_id=42)
+        vuln3 = MockVuln(name='Foos', _id=42)
         vuln3['tag'] = 'foo'
 
         kb.append_uniq_group('a', 'b', vuln1, group_klass=MockInfoSetITag)
@@ -774,6 +774,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[0].get_name(), 'Foos')
         self.assertEqual(len(raw_data[0].infos), 2)
         self.assertEqual(raw_data[0].infos[1].get_id(), [42])
+        self.assertEqual(raw_data[0].infos[0].get_id(), [47])
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
 
