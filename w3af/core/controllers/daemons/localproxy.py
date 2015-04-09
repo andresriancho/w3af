@@ -19,9 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import Queue
 import re
+import sys
 import time
+import Queue
 import traceback
 
 import w3af.core.controllers.output_manager as om
@@ -107,8 +108,8 @@ class w3afLocalProxyHandler(w3afProxyHandler):
 
                 try:
                     res = self._uri_opener.send_raw_request(head, body)
-                except Exception, e:
-                    res = e
+                except Exception:
+                    res = sys.exc_info()
 
                 # Save it so the upper layer can read this response.
                 fr_id = id(fuzzable_request)
@@ -269,8 +270,9 @@ class LocalProxy(Proxy):
                 del self.edited_responses[id(orig_fuzzable_req)]
 
                 # Now we return it...
-                if isinstance(res, Exception):
-                    raise res
+                if isinstance(res, tuple) and isinstance(res[0], Exception):
+                    exception, value, _traceback = res
+                    raise exception, value, _traceback
                 else:
                     return res
 
