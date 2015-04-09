@@ -77,8 +77,23 @@ class TestInfoSet(unittest.TestCase):
         i1 = MockInfo(ids=1)
         i2 = MockInfo(ids=2)
         iset = InfoSet([i1])
-        iset.add(i2)
+        added = iset.add(i2)
+
         self.assertEqual(iset.get_id(), [1, 2])
+        self.assertTrue(added)
+
+    def test_add_more_than_max(self):
+        i1 = MockInfo(ids=1)
+        i2 = MockInfo(ids=2)
+
+        iset = InfoSet([i1])
+        iset.MAX_INFO_INSTANCES = 2
+
+        added = iset.add(i1)
+        self.assertTrue(added)
+
+        added = iset.add(i2)
+        self.assertFalse(added)
 
     def test_get_uniq_id(self):
         i = MockInfo()

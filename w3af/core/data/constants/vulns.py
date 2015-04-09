@@ -25,8 +25,6 @@ VULNS = {
          # Audit
          'Blind SQL injection vulnerability': 46,
          'Buffer overflow vulnerability': None,
-         'Multiple CORS misconfigurations': None,
-         'Sensitive and strange CORS methods enabled': None,
          'Sensitive CORS methods enabled': None,
          'Uncommon CORS methods enabled': None,
          'Access-Control-Allow-Origin set to "*"': None,

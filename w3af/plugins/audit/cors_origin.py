@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
@@ -32,6 +33,12 @@ from w3af.core.controllers.cors.utils import (build_cors_request,
                                               ACCESS_CONTROL_ALLOW_METHODS,
                                               ACCESS_CONTROL_ALLOW_CREDENTIALS)
 
+ACAO = ACCESS_CONTROL_ALLOW_ORIGIN
+ACAM = ACCESS_CONTROL_ALLOW_METHODS
+ACAC = ACCESS_CONTROL_ALLOW_CREDENTIALS
+METHODS = 'methods'
+DOMAIN = 'domain'
+
 
 class cors_origin(AuditPlugin):
     """
@@ -41,8 +48,6 @@ class cors_origin(AuditPlugin):
 
     :author: Dominique RIGHETTO (dominique.righetto@owasp.org)
     """
-
-    MAX_REPEATED_REPORTS = 3
     SENSITIVE_METHODS = ('PUT', 'DELETE')
     COMMON_METHODS = ('POST', 'GET', 'OPTIONS', 'PUT', 'DELETE')
 
@@ -54,16 +59,12 @@ class cors_origin(AuditPlugin):
 
         # Internal variables
         self._reported_global = set()
-        self._universal_allow_counter = 0
-        self._origin_echo_counter = 0
-        self._universal_origin_allow_creds_counter = 0
-        self._allow_methods_counter = 0
 
     def audit(self, freq, orig_response):
         """
         Plugin entry point.
 
-        :param freq: A fuzzableRequest
+        :param freq: A FuzzableRequest
         """
         # Detect if current url provides CORS features
         if not provides_cors_features(freq, self._uri_opener):
@@ -95,79 +96,29 @@ class cors_origin(AuditPlugin):
 
             # Send forged request and retrieve response information
             response = self._uri_opener.send_mutant(forged_req)
-            allow_origin = retrieve_cors_header(response,
-                                                ACCESS_CONTROL_ALLOW_ORIGIN)
-            allow_credentials = retrieve_cors_header(response,
-                                                     ACCESS_CONTROL_ALLOW_CREDENTIALS)
-            allow_methods = retrieve_cors_header(response,
-                                                 ACCESS_CONTROL_ALLOW_METHODS)
+            allow_origin = retrieve_cors_header(response, ACAO)
+            allow_credentials = retrieve_cors_header(response, ACAC)
+            allow_methods = retrieve_cors_header(response, ACAM)
 
             self._analyze_server_response(forged_req, url, origin, response,
                                           allow_origin, allow_credentials,
                                           allow_methods)
 
-    def _filter_report(self, counter, section, vuln_severity, analysis_response):
-        """
-        :param counter: A string representing the name of the attr to increment
-                        when a vulnerability is found by the decorated method.
-
-        :param section: A string with the section name to use in the
-                        description when there are too many vulnerabilities of
-                        this type.
-
-        :param vuln_severity: One of the constants in the severity module.
-
-        :param analysis_response: The vulnerability (if any) found by the
-                                  analysis method.
-        """
-        if not len(analysis_response):
-            return []
-
-        counter_val = getattr(self, counter)
-
-        if counter_val <= self.MAX_REPEATED_REPORTS:
-            counter_val += 1
-            setattr(self, counter, counter_val)
-            return analysis_response
-        else:
-            if section not in self._reported_global:
-                self._reported_global.add(section)
-
-                response_id = analysis_response[0].get_id()
-                msg = ('More than %s URLs in the Web application under analysis'
-                       ' returned a CORS response that triggered the %s'
-                       ' detection. Given that this seems to be an issue'
-                       ' that affects all of the site URLs, the scanner will'
-                       ' not report any other specific vulnerabilities of this'
-                       ' type.')
-                msg = msg % (self.MAX_REPEATED_REPORTS, section)
-
-                v = Vuln('Multiple CORS misconfigurations', msg,
-                         vuln_severity, response_id, self.get_name())
-
-                self.kb_append(self, 'cors_origin', v)
-                return [v, ]
-
-        return []
-
     def _analyze_server_response(self, forged_req, url, origin, response,
-                                 allow_origin, allow_credentials, allow_methods):
+                                 allow_origin, allow_credentials,
+                                 allow_methods):
         """Analyze the server response and identify vulnerabilities which are'
         then saved to the KB.
 
         :return: A list of vulnerability objects with the identified vulns
                  (if any).
         """
-        res = []
         for analysis_method in [self._universal_allow, self._origin_echo,
                                 self._universal_origin_allow_creds,
                                 self._allow_methods]:
 
-            res.extend(analysis_method(forged_req, url, origin, response,
-                                       allow_origin, allow_credentials,
-                                       allow_methods))
-
-        return res
+            analysis_method(forged_req, url, origin, response, allow_origin,
+                            allow_credentials, allow_methods)
 
     def _allow_methods(self, forged_req, url, origin, response,
                        allow_origin, allow_credentials, allow_methods):
@@ -178,7 +129,7 @@ class cors_origin(AuditPlugin):
                  (if any).
         """
         if allow_methods is None:
-            return []
+            return
 
         # Access-Control-Allow-Methods: POST, GET, OPTIONS
         allow_methods_list = allow_methods.split(',')
@@ -198,47 +149,37 @@ class cors_origin(AuditPlugin):
             if allowed_method not in self.COMMON_METHODS:
                 report_strange.add(allowed_method)
 
-        if len(report_sensitive) > 0 or len(report_strange) > 0:
+        if not (len(report_sensitive) or len(report_strange)):
+            return
 
-            msg = ('The remote Web application, specifically "%s", returned'
-                   ' a "%s" header with the value set to "%s" which is'
-                   ' insecure')
+        msg = ('The remote Web application, specifically "%s", returned'
+               ' a "%s" header with the value set to "%s" which is'
+               ' insecure')
+        msg %= (url, ACCESS_CONTROL_ALLOW_METHODS, allow_methods)
 
-            msg = msg % (url, ACCESS_CONTROL_ALLOW_METHODS, allow_methods)
+        if report_sensitive:
+            name = 'Sensitive CORS methods enabled'
+            msg += ' since it allows the following sensitive HTTP methods: %s.'
+            msg %= (', '.join(report_sensitive),)
 
-            if report_sensitive and report_strange:
-                name = 'Sensitive and strange CORS methods enabled'
-                msg += (' since it allows the following sensitive HTTP'
-                        ' methods: %s and the following uncommon HTTP'
-                        ' methods: %s.')
-                msg = msg % (', '.join(report_sensitive),
-                             ', '.join(report_strange))
-
-            elif report_sensitive:
-                name = 'Sensitive CORS methods enabled'
-                msg += (' since it allows the following sensitive HTTP'
-                        ' methods: %s.')
-                msg = msg % (', '.join(report_sensitive),)
-
-            elif report_strange:
-                name = 'Uncommon CORS methods enabled'
-                msg += (' since it allows the following uncommon HTTP'
-                        ' methods: %s.')
-                msg = msg % (', '.join(report_strange),)
-
-            v = Vuln(name, msg, severity.LOW, response.get_id(),
-                     self.get_name())
-
+            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
+            v[METHODS] = allow_methods_set
 
-            self.kb_append(self, 'cors_origin', v)
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=SensitiveMethodsInfoSet)
 
-            return self._filter_report('_allow_methods_counter',
-                                       'sensitive and uncommon methods',
-                                       severity.LOW,
-                                       [v])
+        if report_strange:
+            name = 'Uncommon CORS methods enabled'
+            msg += ' since it allows the following uncommon HTTP methods: %s.'
+            msg %= (', '.join(report_strange),)
 
-        return []
+            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
+            v.set_url(forged_req.get_url())
+            v[METHODS] = allow_methods_set
+
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=StrangeMethodsInfoSet)
 
     def _universal_allow(self, forged_req, url, origin, response,
                          allow_origin, allow_credentials, allow_methods):
@@ -252,20 +193,15 @@ class cors_origin(AuditPlugin):
             msg = 'The remote Web application, specifically "%s", returned' \
                   ' an %s header with the value set to "*" which is insecure'\
                   ' and leaves the application open to Cross-domain attacks.'
-            msg = msg % (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN)
+            msg %= (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN)
             
             v = Vuln('Access-Control-Allow-Origin set to "*"', msg,
                      severity.LOW, response.get_id(), self.get_name())
-
             v.set_url(forged_req.get_url())
+            v[DOMAIN] = forged_req.get_url().get_domain()
 
-            self.kb_append(self, 'cors_origin', v)
-
-            return self._filter_report('_universal_allow_counter',
-                                       'universal allow-origin',
-                                       severity.MEDIUM, [v, ])
-
-        return []
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=UniversalAllowInfoSet)
 
     def _origin_echo(self, forged_req, url, origin, response,
                      allow_origin, allow_credentials_str, allow_methods):
@@ -279,7 +215,7 @@ class cors_origin(AuditPlugin):
                  (if any).
         """
         if allow_origin is None:
-            return []
+            return
 
         allow_origin = allow_origin.lower()
 
@@ -288,7 +224,7 @@ class cors_origin(AuditPlugin):
             allow_credentials = 'true' in allow_credentials_str.lower()
 
         if origin not in allow_origin:
-            return []
+            return
 
         if allow_credentials:
             sev = severity.HIGH
@@ -303,6 +239,13 @@ class cors_origin(AuditPlugin):
                          ACCESS_CONTROL_ALLOW_ORIGIN,
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
 
+            v = Vuln(name, msg, sev, response.get_id(), self.get_name())
+            v.set_url(forged_req.get_url())
+            v[DOMAIN] = forged_req.get_url().get_domain()
+
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=OriginEchoWithCredsInfoSet)
+
         else:
             sev = severity.LOW
             name = 'Insecure Access-Control-Allow-Origin'
@@ -313,15 +256,12 @@ class cors_origin(AuditPlugin):
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN)
 
-        v = Vuln(name, msg, sev, response.get_id(), self.get_name())
-        v.set_url(forged_req.get_url())
+            v = Vuln(name, msg, sev, response.get_id(), self.get_name())
+            v.set_url(forged_req.get_url())
+            v[DOMAIN] = forged_req.get_url().get_domain()
 
-        self.kb_append(self, 'cors_origin', v)
-
-        return self._filter_report('_origin_echo_counter',
-                                   'origin echoed in allow-origin',
-                                   severity.HIGH,
-                                   [v])
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=OriginEchoInfoSet)
 
     def _universal_origin_allow_creds(self, forged_req, url, origin, response,
                                       allow_origin, allow_credentials_str,
@@ -358,15 +298,10 @@ class cors_origin(AuditPlugin):
             v = Vuln('Incorrect withCredentials implementation', msg,
                      severity.INFORMATION, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
+            v[DOMAIN] = forged_req.get_url().get_domain()
             
-            self.kb_append(self, 'cors_origin', v)
-
-            return self._filter_report('_universal_origin_allow_creds_counter',
-                                       'withCredentials CORS implementation'
-                                       ' error',
-                                       severity.INFORMATION, [v, ])
-
-        return []
+            self.kb_append_uniq_group(self, 'cors_origin', v,
+                                      group_klass=IncorrectWithCredsInfoSet)
 
     def get_options(self):
         """
@@ -374,22 +309,22 @@ class cors_origin(AuditPlugin):
         """
         opt_list = OptionList()
 
-        desc = "Origin HTTP header value"
+        desc = 'Origin HTTP header value'
         _help = ("Define value used to specify the 'Origin' HTTP header for"
                  " HTTP request sent to test application behavior")
-        opt = opt_factory('origin_header_value',
-                          self.origin_header_value, desc, "string", help=_help)
+        opt = opt_factory('origin_header_value', self.origin_header_value,
+                          desc, 'string', help=_help)
         opt_list.add(opt)
 
         return opt_list
 
     def set_options(self, options_list):
-        self.origin_header_value = options_list[
-            'origin_header_value'].get_value()
+        origin_header_value = options_list['origin_header_value']
+        self.origin_header_value = origin_header_value.get_value()
 
         # Check set options
-        if self.origin_header_value is None or\
-                len(self.origin_header_value.strip()) == 0:
+        if self.origin_header_value is None or \
+        len(self.origin_header_value.strip()) == 0:
             msg = 'Please enter a valid value for the "Origin" HTTP header.'
             raise BaseFrameworkException(msg)
 
@@ -405,8 +340,101 @@ class cors_origin(AuditPlugin):
         Configurable parameters are:
             - origin_header_value
 
-        Note: This plugin is useful to test "Cross Origin Resource Sharing (CORS)"
-              application behaviors.
+        Note: This plugin is useful to test "Cross Origin Resource Sharing"
+              (CORS) application behaviors.
         CORS: http://developer.mozilla.org/en-US/docs/HTTP_access_control
               http://www.w3.org/TR/cors
         """
+
+
+class SensitiveMethodsInfoSet(InfoSet):
+    ITAG = METHODS
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Methods with a value which enables these'
+        ' HTTP methods: "{{ methods|join(\', \') }}". The enabled methods are'
+        ' considered sensitive and should be reviewed. The first ten URLs which'
+        ' sent the insecure header are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class StrangeMethodsInfoSet(InfoSet):
+    ITAG = METHODS
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Methods with a value which enables these'
+        ' HTTP methods: "{{ methods|join(\', \') }}". The enabled methods are'
+        ' considered uncommon and should be reviewed. The first ten URLs which'
+        ' sent the insecure header are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class UniversalAllowInfoSet(InfoSet):
+    ITAG = DOMAIN
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Origin with the value set to "*" which is'
+        ' considered insecure and leaves the application open to Cross-domain'
+        ' attacks. The first ten URLs which sent the insecure header are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class OriginEchoInfoSet(InfoSet):
+    ITAG = DOMAIN
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Origin with it\'s value set to the domain sent'
+        ' in the HTTP request\'s Origin header which is insecure and leaves'
+        ' the application open to Cross-domain attacks that can affect'
+        ' logged-in users. The first ten URLs which sent the insecure headers'
+        ' are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class OriginEchoWithCredsInfoSet(InfoSet):
+    ITAG = DOMAIN
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Origin with it\'s value set to the domain sent'
+        ' in the HTTP request\'s Origin header and an'
+        ' Access-Control-Allow-Credentials header with the value set to "true",'
+        ' which is insecure and leaves the application open to Cross-domain'
+        ' attacks that can affect logged-in users. The first ten URLs which'
+        ' sent the insecure headers are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class IncorrectWithCredsInfoSet(InfoSet):
+    ITAG = DOMAIN
+    TEMPLATE = (
+        'The application sent the CORS response header'
+        ' Access-Control-Allow-Origin with it\'s value set to "*" and an'
+        ' Access-Control-Allow-Credentials header with the value set to "true",'
+        ' which according to Mozilla\'s documentation is invalid. This'
+        ' implementation error might affect the application behavior'
+        ' The first ten URLs which sent the incorrect headers are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
