@@ -99,7 +99,7 @@ class php_eggs(InfrastructurePlugin):
         response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
-                                    (among other things) the URL to test.
+                                 (among other things) the URL to test.
         """
         # Get the extension of the URL (.html, .php, .. etc)
         ext = fuzzable_request.get_url().get_extension()
@@ -134,15 +134,11 @@ class php_eggs(InfrastructurePlugin):
 
         # Send the requests using threads:
         query_results = []
-        EggQueryResult = namedtuple('EggQueryResult', ['http_response',
-                                                       'egg_desc',
-                                                       'egg_URL'])
-        
+
         http_get = one_to_many(http_get)
         fr_repeater = repeat(fuzzable_request)
         args_iterator = izip(fr_repeater, self.PHP_EGGS)
-        pool_results = self.worker_pool.imap_unordered(http_get,
-                                                       args_iterator)
+        pool_results = self.worker_pool.imap_unordered(http_get, args_iterator)
 
         for response, egg_URL, egg_desc in pool_results:
             eqr = EggQueryResult(response, egg_desc, egg_URL)
@@ -287,3 +283,8 @@ def md5_hash(body):
     if isinstance(body, unicode):
         body = body.encode('utf-8')
     return hashlib.md5(body).hexdigest()
+
+
+EggQueryResult = namedtuple('EggQueryResult', ['http_response',
+                                               'egg_desc',
+                                               'egg_URL'])
