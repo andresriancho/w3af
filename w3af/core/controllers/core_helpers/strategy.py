@@ -346,8 +346,8 @@ class w3af_core_strategy(object):
             except ScanMustStopByUserRequest:
                 raise
             except Exception, e:
-                msg = 'Failed to initialize the 404 detection, original' \
-                      ' exception was: "%s".'
+                msg = ('Failed to initialize the 404 detection, original'
+                       ' exception was: "%s".')
                 raise ScanMustStopException(msg % e)
 
     def _setup_crawl_infrastructure(self):

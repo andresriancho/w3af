@@ -25,7 +25,6 @@ import cgi
 import thread
 import urllib
 import string
-import copy
 
 from collections import deque
 from functools import wraps
