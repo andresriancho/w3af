@@ -37,6 +37,10 @@ class profile(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    PROFILE_SECTION = 'profile'
+    EXTENSION = '.pw3af'
+
     def __init__(self, profname='', workdir=None):
         """
         Creating a profile instance like p = profile() is done in order to be
@@ -61,17 +65,17 @@ class profile(object):
                     self._config.readfp(fp)
                 except ConfigParser.Error, cpe:
                     msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
-                    raise BaseFrameworkException(msg % (profname, str(cpe)))
+                    raise BaseFrameworkException(msg % (profname, cpe))
                 except Exception, e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
-                    raise BaseFrameworkException(msg % (profname, str(e)))
+                    raise BaseFrameworkException(msg % (profname, e))
 
         # Save the profname variable
         self._profile_file_name = profname
 
-    def _get_real_profile_path(self, profilename, workdir):
+    def _get_real_profile_path(self, profile_name, workdir):
         """
-        Return the complete path for `profilename`.
+        Return the complete path for `profile_name`.
 
         @raise BaseFrameworkException: If no existing profile file is found this
                               exception is raised with the proper desc
@@ -81,35 +85,32 @@ class profile(object):
         >>> p._get_real_profile_path('OWASP_TOP10', '.')
         './profiles/OWASP_TOP10.pw3af'
         """
-        # Alias for os.path. Minor optimization
-        ospath = os.path
-        pathexists = os.path.exists
-
         # Add extension if necessary
-        if not profilename.endswith('.pw3af'):
-            profilename += '.pw3af'
+        if not profile_name.endswith(self.EXTENSION):
+            profile_name += self.EXTENSION
 
-        if pathexists(profilename):
-            return profilename
+        if os.path.exists(profile_name):
+            return profile_name
 
         # Let's try to find it in the workdir directory.
         if workdir is not None:
-            tmp_path = ospath.join(workdir, profilename)
-            if pathexists(tmp_path):
+            tmp_path = os.path.join(workdir, profile_name)
+            if os.path.exists(tmp_path):
                 return tmp_path
 
         # Let's try to find it in the "profiles" directory inside workdir
         if workdir is not None:
-            tmp_path = ospath.join(workdir, 'profiles', profilename)
-            if pathexists(tmp_path):
+            tmp_path = os.path.join(workdir, 'profiles', profile_name)
+            if os.path.exists(tmp_path):
                 return tmp_path
 
-        if not ospath.isabs(profilename):
-            tmp_path = ospath.join(get_home_dir(), 'profiles', profilename)
-            if pathexists(tmp_path):
+        if not os.path.isabs(profile_name):
+            tmp_path = os.path.join(get_home_dir(), 'profiles', profile_name)
+            if os.path.exists(tmp_path):
                 return tmp_path
 
-        raise BaseFrameworkException('The profile "%s" wasn\'t found.' % profilename)
+        msg = 'The profile "%s" wasn\'t found.'
+        raise BaseFrameworkException(msg % profile_name)
 
     def get_profile_file(self):
         """
@@ -144,8 +145,8 @@ class profile(object):
             new_profile_path_name = os.path.join(dir, copy_profile_name)
 
         # Check extension
-        if not new_profile_path_name.endswith('.pw3af'):
-            new_profile_path_name += '.pw3af'
+        if not new_profile_path_name.endswith(self.EXTENSION):
+            new_profile_path_name += self.EXTENSION
 
         try:
             shutil.copyfile(self._profile_file_name, new_profile_path_name)
@@ -156,9 +157,9 @@ class profile(object):
         else:
             # Now I have to change the data inside the copied profile, to
             # reflect the changes.
-            pNew = profile(new_profile_path_name)
-            pNew.set_name(copy_profile_name)
-            pNew.save(new_profile_path_name)
+            new_profile = profile(new_profile_path_name)
+            new_profile.set_name(copy_profile_name)
+            new_profile.save(new_profile_path_name)
 
             return True
 
@@ -183,7 +184,7 @@ class profile(object):
         for plugin in plugin_names:
             try:
                 self._config.add_section(plugin_type + "." + plugin)
-            except ConfigParser.DuplicateSectionError, ds:
+            except ConfigParser.DuplicateSectionError:
                 pass
 
     def get_enabled_plugins(self, plugin_type):
@@ -309,7 +310,7 @@ class profile(object):
             for option in self._config.options(section):
                 try:
                     value = self._config.get(section, option)
-                except KeyError, k:
+                except KeyError:
                     # We should never get here...
                     msg = 'The option "%s" is unknown for the "%s" section.'
                     raise BaseFrameworkException(msg % (option, section))
@@ -328,10 +329,10 @@ class profile(object):
         :param name: The description of the profile
         :return: None
         """
-        section = 'profile'
-        if section not in self._config.sections():
-            self._config.add_section(section)
-        self._config.set(section, 'name', name)
+        if self.PROFILE_SECTION not in self._config.sections():
+            self._config.add_section(self.PROFILE_SECTION)
+
+        self._config.set(self.PROFILE_SECTION, 'name', name)
 
     def get_name(self):
         """
@@ -340,7 +341,7 @@ class profile(object):
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             # or [profile]
-            if section == 'profile':
+            if section == self.PROFILE_SECTION:
                 for option in self._config.options(section):
                     if option == 'name':
                         return self._config.get(section, option)
@@ -384,10 +385,10 @@ class profile(object):
         :param desc: The description of the profile
         :return: None
         """
-        section = 'profile'
-        if section not in self._config.sections():
-            self._config.add_section(section)
-        self._config.set(section, 'description', desc)
+        if self.PROFILE_SECTION not in self._config.sections():
+            self._config.add_section(self.PROFILE_SECTION)
+
+        self._config.set(self.PROFILE_SECTION, 'description', desc)
 
     def get_desc(self):
         """
@@ -396,7 +397,7 @@ class profile(object):
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             # or [profile]
-            if section == 'profile':
+            if section == self.PROFILE_SECTION:
                 for option in self._config.options(section):
                     if option == 'description':
                         return self._config.get(section, option)
@@ -415,18 +416,17 @@ class profile(object):
                 raise BaseFrameworkException('Error saving profile, profile'
                                              ' file name is required.')
             else:  # The user's specified a file_name!
-                if not file_name.endswith('.pw3af'):
-                    file_name += '.pw3af'
+                if not file_name.endswith(self.EXTENSION):
+                    file_name += self.EXTENSION
 
             if os.path.sep not in file_name:
-                file_name = os.path.join(
-                    get_home_dir(), 'profiles', file_name)
+                file_name = os.path.join(get_home_dir(), 'profiles', file_name)
             self._profile_file_name = file_name
 
         try:
             file_handler = open(self._profile_file_name, 'w')
         except:
-            raise BaseFrameworkException(
-                'Failed to open profile file: ' + self._profile_file_name)
+            msg = 'Failed to open profile file: "%s"'
+            raise BaseFrameworkException(msg % self._profile_file_name)
         else:
             self._config.write(file_handler)
