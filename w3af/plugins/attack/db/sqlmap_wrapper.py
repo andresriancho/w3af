@@ -81,6 +81,8 @@ class SQLMapWrapper(object):
         
         self.proxy = Proxy(host, 0, uri_opener, name='SQLMapWrapperProxy')
         self.proxy.start()
+        self.proxy.wait_for_start()
+
         self.local_proxy_url = 'http://%s:%s/' % (host,
                                                   self.proxy.get_bind_port())
 
