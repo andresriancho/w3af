@@ -298,7 +298,9 @@ class MainApp(object):
              '<Control>e', _('Export HTTP request'), self._export_request),
             ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), '<Control>r',
              _('Compare different requests and responses'), self._compare),
-            ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), '<Control>p', _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
+            ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), '<Control>p',
+             _('Proxies the HTTP requests, allowing their modification'),
+             self._proxy_tool),
             ('ToolsMenu', None, _('_Tools')),
 
             ('Wizards', gtk.STOCK_SORT_ASCENDING, _('_Wizards'),
@@ -318,24 +320,23 @@ class MainApp(object):
         ])
 
         actiongroup.add_toggle_actions([
-            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            (
-                'Pause', gtk.STOCK_MEDIA_PAUSE, _(
-                    '_Pause'), None, _('Pause scan'),
-                self._scan_pause, False),
+            # xml_name, icon, real_menu_text, accelerator, tooltip, callback,
+            # initial_flag
+            ('Pause', gtk.STOCK_MEDIA_PAUSE, _('_Pause'),
+             None, _('Pause scan'), self._scan_pause, False),
         ])
 
         # the view menu for exploit
         actiongroup.add_toggle_actions([
-            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            (
-                'ExploitVuln', None, '_Plugins', None, _(
-                    'Toggle the plugins panel'),
-                lambda w: self.dyn_panels(w, "exploitvuln"), True),
-            (
-                'Interactive', None, '_Shells and Proxies', None, _(
-                    'Toggle the shells and proxies window'),
-                lambda w: self.dyn_panels(w, "interac"), True),
+            # xml_name, icon, real_menu_text, accelerator, tooltip, callback,
+            # initial_flag
+            ('ExploitVuln', None, '_Plugins', None,
+             _('Toggle the plugins panel'),
+             lambda w: self.dyn_panels(w, "exploitvuln"), True),
+
+            ('Interactive', None, '_Shells and Proxies', None,
+             _('Toggle the shells and proxies window'),
+             lambda w: self.dyn_panels(w, "interac"), True),
         ])
         ag = actiongroup.get_action("ViewMenuExploit")
         ag.set_sensitive(False)
@@ -414,8 +415,8 @@ class MainApp(object):
         except ValueError, ve:
             # This is raised when the profile doesn't exist
             #
-            # I handle this by creating the profiles without an initial profile selected
-            # and by reporting it to the user in a toolbar
+            # I handle this by creating the profiles without an initial profile
+            # selected and by reporting it to the user in a toolbar
             self.profiles = profiles.ProfileList(self.w3af, initial=None)
             self.sb(str(ve))
 
@@ -823,7 +824,9 @@ class MainApp(object):
     def dyn_panels(self, widget, panel):
         """Turns on and off the Log Panel."""
         active = widget.get_active()
-        self.viewSignalRecipient.toggle_panels(panel, active)
+
+        if hasattr(self.viewSignalRecipient, 'toggle_panels'):
+            self.viewSignalRecipient.toggle_panels(panel, active)
 
     def nb_changed_page(self, notebook, page, page_num):
         """Changed the page in the Notebook.
