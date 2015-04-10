@@ -618,11 +618,13 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
 
         # Remove the old, create new.
-        self.urls.cleanup()
+        old_urls = self.urls
         self.urls = DiskSet(table_prefix='kb_urls')
+        old_urls.cleanup()
 
-        self.fuzzable_requests.cleanup()
+        old_fuzzable_requests = self.fuzzable_requests
         self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
+        old_fuzzable_requests.cleanup()
 
         self.observers.clear()
 
