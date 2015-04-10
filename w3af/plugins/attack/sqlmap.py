@@ -110,26 +110,49 @@ class sqlmap(AttackPlugin):
             mutant = copy.deepcopy(mutant)
             mutant.set_token_value(pvalue)
 
-            post_data = mutant.get_data() or None
+            self._sqlmap = None
 
+            post_data = mutant.get_data() or None
             target = Target(mutant.get_uri(), post_data)
 
             try:
                 sqlmap = SQLMapWrapper(target, self._uri_opener)
             except TypeError:
                 issue_url = 'https://github.com/andresriancho/w3af/issues/6439'
-                msg = 'w3af\'s sqlmap wrapper has some limitations, and you' \
-                      ' just found one of them. For more information please' \
-                      ' visit %s .'
+                msg = ('w3af\'s sqlmap wrapper has some limitations, and you'
+                       ' just found one of them. For more information please'
+                       ' visit %s .')
                 om.out.console(msg % issue_url)
                 return False
+
+            try:
+                is_vuln = sqlmap.is_vulnerable()
+            except:
+                sqlmap.cleanup()
+
+                if sqlmap.last_stdout is None or sqlmap.last_stderr is None:
+                    # Not sure when we get here
+                    return False
+
+                taint_error = 'provided tainted parameter'
+                if not (taint_error in sqlmap.last_stdout or
+                        taint_error in sqlmap.last_stderr):
+                    # Some error that we don't have a special handling for
+                    return False
+
+                issue_url = 'https://github.com/andresriancho/w3af/issues/1989'
+                msg = ('w3af\'s sqlmap wrapper has some limitations, and you'
+                       ' just found one of them. For more information please'
+                       ' visit %s and add the steps required to reproduce this'
+                       ' issue which will help us debug and fix it.')
+                om.out.console(msg % issue_url)
+                return False
+
+            if is_vuln:
+                self._sqlmap = sqlmap
+                return True
             else:
-                if sqlmap.is_vulnerable():
-                    self._sqlmap = sqlmap
-                    return True
-                else:
-                    self._sqlmap = None
-                    sqlmap.cleanup()
+                sqlmap.cleanup()
         
         return False
 
