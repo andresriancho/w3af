@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import codecs
-import ConfigParser
 import os
+import codecs
 import shutil
+import ConfigParser
 
 from w3af.core.controllers.core_helpers.target import w3af_core_target
 from w3af.core.controllers.misc.factory import factory
@@ -59,7 +59,7 @@ class profile(object):
 
         if profname:
             # Get profile name's complete path
-            profname = self._get_real_profile_path(profname, workdir)
+            profname = self.get_real_profile_path(profname, workdir)
             with codecs.open(profname, "rb", UTF8) as fp:
                 try:
                     self._config.readfp(fp)
@@ -71,9 +71,9 @@ class profile(object):
                     raise BaseFrameworkException(msg % (profname, e))
 
         # Save the profname variable
-        self._profile_file_name = profname
+        self.profile_file_name = profname
 
-    def _get_real_profile_path(self, profile_name, workdir):
+    def get_real_profile_path(self, profile_name, workdir):
         """
         Return the complete path for `profile_name`.
 
@@ -82,7 +82,7 @@ class profile(object):
                               message.
 
         >>> p = profile()
-        >>> p._get_real_profile_path('OWASP_TOP10', '.')
+        >>> p.get_real_profile_path('OWASP_TOP10', '.')
         './profiles/OWASP_TOP10.pw3af'
         """
         # Add extension if necessary
@@ -92,39 +92,75 @@ class profile(object):
         if os.path.exists(profile_name):
             return profile_name
 
-        # Let's try to find it in the workdir directory.
-        if workdir is not None:
-            tmp_path = os.path.join(workdir, profile_name)
-            if os.path.exists(tmp_path):
-                return tmp_path
+        # Let's try to find the profile in different paths, using the
+        # profile_name as a filename
+        for profile_path in self.get_profile_paths(workdir):
+            _path = os.path.join(profile_path, profile_name)
+            if os.path.exists(_path):
+                return _path
 
-        # Let's try to find it in the "profiles" directory inside workdir
-        if workdir is not None:
-            tmp_path = os.path.join(workdir, 'profiles', profile_name)
-            if os.path.exists(tmp_path):
-                return tmp_path
+        # This is the worse case scenario, where the file name is different from
+        # the "name = ..." value which is inside the file
+        #
+        # https://github.com/andresriancho/w3af/issues/561
+        for profile_path in self.get_profile_paths(workdir):
+            for profile_file in os.listdir(profile_path):
 
-        if not os.path.isabs(profile_name):
-            tmp_path = os.path.join(get_home_dir(), 'profiles', profile_name)
-            if os.path.exists(tmp_path):
-                return tmp_path
+                if not profile_file.endswith(self.EXTENSION):
+                    continue
+
+                profile_path_file = os.path.join(profile_path, profile_file)
+
+                with codecs.open(profile_path_file, "rb", UTF8) as fp:
+                    config = ConfigParser.ConfigParser()
+                    try:
+                        config.readfp(fp)
+                    except:
+                        # Any errors simply break name detection
+                        continue
+
+                    try:
+                        name = config.get(self.PROFILE_SECTION, 'name')
+                    except:
+                        # Any errors simply break name detection
+                        continue
+                    else:
+                        if '%s%s' % (name, self.EXTENSION) == profile_name:
+                            return profile_path_file
 
         msg = 'The profile "%s" wasn\'t found.'
         raise BaseFrameworkException(msg % profile_name)
+
+    def get_profile_paths(self, workdir):
+        """
+        :param workdir: The working directory
+        :yield: The directories where we might find profiles
+        """
+        if workdir is not None:
+            if os.path.exists(workdir):
+                yield workdir
+
+            profile_path = os.path.join(workdir, 'profiles')
+            if os.path.exists(profile_path):
+                yield profile_path
+
+        profile_path = os.path.join(get_home_dir(), 'profiles')
+        if os.path.exists(profile_path):
+            yield profile_path
 
     def get_profile_file(self):
         """
         :return: The path and name of the file that contains the profile
                  definition.
         """
-        return self._profile_file_name
+        return self.profile_file_name
 
     def remove(self):
         """
         Removes the profile file which was used to create this instance.
         """
         try:
-            os.unlink(self._profile_file_name)
+            os.unlink(self.profile_file_name)
         except Exception, e:
             msg = ('An exception occurred while removing the profile.'
                    ' Exception: "%s".')
@@ -141,7 +177,7 @@ class profile(object):
 
         # Check path
         if os.path.sep not in copy_profile_name:
-            dir = os.path.dirname(self._profile_file_name)
+            dir = os.path.dirname(self.profile_file_name)
             new_profile_path_name = os.path.join(dir, copy_profile_name)
 
         # Check extension
@@ -149,7 +185,7 @@ class profile(object):
             new_profile_path_name += self.EXTENSION
 
         try:
-            shutil.copyfile(self._profile_file_name, new_profile_path_name)
+            shutil.copyfile(self.profile_file_name, new_profile_path_name)
         except Exception, e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
@@ -411,7 +447,7 @@ class profile(object):
 
         :return: None
         """
-        if not self._profile_file_name:
+        if not self.profile_file_name:
             if not file_name:
                 raise BaseFrameworkException('Error saving profile, profile'
                                              ' file name is required.')
@@ -421,12 +457,12 @@ class profile(object):
 
             if os.path.sep not in file_name:
                 file_name = os.path.join(get_home_dir(), 'profiles', file_name)
-            self._profile_file_name = file_name
+            self.profile_file_name = file_name
 
         try:
-            file_handler = open(self._profile_file_name, 'w')
+            file_handler = open(self.profile_file_name, 'w')
         except:
             msg = 'Failed to open profile file: "%s"'
-            raise BaseFrameworkException(msg % self._profile_file_name)
+            raise BaseFrameworkException(msg % self.profile_file_name)
         else:
             self._config.write(file_handler)

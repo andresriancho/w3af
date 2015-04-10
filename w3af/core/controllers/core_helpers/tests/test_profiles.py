@@ -95,19 +95,22 @@ class TestCoreProfiles(unittest.TestCase):
                           'unittest-remove')
 
     def test_remove_profile_not_exists(self):
-        self.assertRaises(
-            BaseFrameworkException, self.core.profiles.remove_profile, 'not-exists')
+        self.assertRaises(BaseFrameworkException,
+                          self.core.profiles.remove_profile,
+                          'not-exists')
 
     @attr('smoke')
     def test_use_all_profiles(self):
         """
-        This test catches the errors in my profiles that generate these messages:
+        This test catches the errors in my profiles that generate these
+        messages:
 
-        ***************************************************************************
-        The profile you are trying to load (web_infrastructure) seems to be outdated,
-        this is a common issue which happens when the framework is updated and one of
-        its plugins adds/removes one of the configuration parameters referenced by a
-        profile, or the plugin is removed all together.
+        ************************************************************************
+        The profile you are trying to load (web_infrastructure) seems to be
+        outdated, this is a common issue which happens when the framework is
+        updated and one of its plugins adds/removes one of the configuration
+        parameters referenced by a profile, or the plugin is removed all
+        together.
 
         The profile was loaded but some of your settings might have been lost.
         This is the list of issues that were found:
@@ -119,7 +122,7 @@ class TestCoreProfiles(unittest.TestCase):
         required changes and save the profile in order to update it and avoid
         this message. If this warning does not disappear you can manually edit
         the profile file to fix it.
-        ***************************************************************************
+        ************************************************************************
         """
         valid, invalid = self.core.profiles.get_profile_list('.')
 
@@ -151,4 +154,3 @@ class TestCoreProfiles(unittest.TestCase):
                                                            'ssl_certificate')
         ca_path = plugin_opts['caFileName'].get_value()
         self.assertEqual(ca_path, self.INPUT_FILE)
-
