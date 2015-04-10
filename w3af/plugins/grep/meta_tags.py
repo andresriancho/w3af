@@ -26,6 +26,9 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.info import Info
 
+ATTR_NAME = 'name'
+ATTR_VALUE = 'value'
+
 
 class meta_tags(GrepPlugin):
     """
@@ -33,7 +36,6 @@ class meta_tags(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     """
     Can someone explain what this meta tag does?
     <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2...0g7kdY=" />
@@ -44,10 +46,6 @@ class meta_tags(GrepPlugin):
     demonstrate to Google that you're the site owner. So there is probably a
     Sitemaps account for the site, if you haven't found it already.
     """
-
-    ATTR_NAME = 'name'
-    ATTR_VALUE = 'value'
-
     INTERESTING_WORDS = {'user': None, 'pass': None, 'microsoft': None,
                          'visual': None, 'linux': None, 'source': None,
                          'author': None, 'release': None, 'version': None,
@@ -76,58 +74,46 @@ class meta_tags(GrepPlugin):
 
         for tag in meta_tag_list:
             for attr_name, attr_value in tag.items():
-
                 for word in self.INTERESTING_WORDS:
 
-                    # Check if we have something interesting
-                    # and WHERE that thing actually is
+                    # Check if we have something interesting and WHERE that
+                    # thing actually is
                     where = content = None
                     if word in attr_name:
-                        where = self.ATTR_NAME
+                        where = ATTR_NAME
                         content = attr_name
                     elif word in attr_value:
-                        where = self.ATTR_VALUE
+                        where = ATTR_VALUE
                         content = attr_value
 
+                    # Go to the next one if nothing is found
+                    if where is None:
+                        continue
+
                     # Now... if we found something, report it =)
-                    if self._should_report(attr_name, attr_value, where):
+                    fmt = 'The URI: "%s" sent a <meta> tag with the attribute'\
+                          ' "%s" set to "%s" which looks interesting.'
+                    desc = fmt % (response.get_uri(), where, content)
 
-                        # The attribute is interesting!
-                        fmt = 'The URI: "%s" sent a <meta> tag with attribute'\
-                              ' %s set to "%s" which looks interesting.'
-                        desc = fmt % (response.get_uri(), where, content)
+                    tag_name = self._find_tag_name(tag)
+                    usage = self.INTERESTING_WORDS.get(tag_name, None)
+                    if usage is not None:
+                        desc += ' The tag is used for %s.' % usage
 
-                        tag_name = self._find_name(tag)
-                        if self.INTERESTING_WORDS.get(tag_name, None):
-                            usage = self.INTERESTING_WORDS[tag_name]
-                            desc += ' The tag is used for %s.' % usage
-                        
-                        i = Info('Interesting META tag', desc, response.id,
-                                 self.get_name())
-                        i.set_uri(response.get_uri())
-                        i.add_to_highlight(where, content)
+                    i = Info('Interesting META tag', desc, response.id,
+                             self.get_name())
+                    i.set_uri(response.get_uri())
+                    i.add_to_highlight(where, content)
 
-                        self.kb_append_uniq(self, 'meta_tags', i, 'URL')
+                    self.kb_append_uniq(self, 'meta_tags', i, 'URL')
 
-    def _should_report(self, key, value, where):
-        """
-        :param key: The meta tag attribute name
-        :param value: The meta tag attribute value
-        :param where: The location (key|value) that we found interesting
-        :return: True if we should report this information
-        """
-        if where is None:
-            return False
-
-        return True
-
-    def _find_name(self, tag):
+    def _find_tag_name(self, tag):
         """
         :return: the tag name.
         """
         for key, value in tag.items():
             if key.lower() == 'name':
-                return value
+                return value.lower()
         return None
 
     def get_long_desc(self):
