@@ -1,5 +1,5 @@
 """
-GrepPlugin.py
+grep_plugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,7 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.plugins.plugin import Plugin
+from w3af.core.controllers.exceptions import FourOhFourDetectionException
 
 
 class GrepPlugin(Plugin):
@@ -48,7 +51,15 @@ class GrepPlugin(Plugin):
         """
         # Take a look at should_grep in grep.py to understand other
         # filters which are applied before analyzing a response.
-        self.grep(fuzzable_request, response)
+        try:
+            self.grep(fuzzable_request, response)
+        except FourOhFourDetectionException, ffde:
+            # We simply ignore any exceptions we find during the 404 detection
+            # process. FYI: This doesn't break the xurllib error handling which
+            # happens at lower layers.
+            #
+            # https://github.com/andresriancho/w3af/issues/8949
+            om.out.debug('%s' % ffde)
 
     def grep(self, fuzzable_request, response):
         """

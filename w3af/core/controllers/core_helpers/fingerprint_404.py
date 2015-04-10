@@ -40,6 +40,8 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.misc.decorators import retry
+from w3af.core.controllers.exceptions import (HTTPRequestException,
+                                              FourOhFourDetectionException)
 
 
 IS_EQUAL_RATIO = 0.90
@@ -180,7 +182,12 @@ class fingerprint_404(object):
         """
         # I don't use the cache, because the URLs are random and the only thing
         # that cache does is to fill up disk space
-        response = self._uri_opener.GET(url404, cache=False, grep=False)
+        try:
+            response = self._uri_opener.GET(url404, cache=False, grep=False)
+        except HTTPRequestException, hre:
+            message = 'Exception found while detecting 404: "%s"'
+            raise FourOhFourDetectionException(message % hre)
+
         return response
 
     @lru_404_cache

@@ -171,3 +171,7 @@ class ExploitFailedException(BaseFrameworkException):
 
 class BodyCutException(BaseFrameworkException):
     pass
+
+
+class FourOhFourDetectionException(BaseFrameworkException):
+    pass
