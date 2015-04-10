@@ -233,17 +233,19 @@ class analyze_cookies(GrepPlugin):
 
                 # The cookie was sent using SSL, I'll check if the current
                 # request, is using these values in the POSTDATA / QS / COOKIE
-                for key in info[COOKIE_KEYS]:
+                for cookie_key in info[COOKIE_KEYS]:
 
-                    value = info.get_cookie_object()[key].value
+                    cookie_value = info.get_cookie_object()[cookie_key].value
 
                     # This if is to create less false positives
-                    if len(value) > 6 and value in request_dump:
+                    if len(cookie_value) > 6 and cookie_value in request_dump:
 
-                        desc = 'Cookie values that were set over HTTPS, are' \
-                               ' then sent over an insecure channel in a' \
-                               ' request to "%s".'
-                        desc = desc % request.get_url()
+                        desc = ('The cookie "%s" with value "%s" which was'
+                                ' set over HTTPS, was then sent over an'
+                                ' insecure channel in a request to "%s".')
+                        desc = desc % (cookie_key,
+                                       cookie_value,
+                                       request.get_url())
 
                         v = CookieVuln('Secure cookies over insecure channel',
                                        desc, severity.HIGH, response.id,
